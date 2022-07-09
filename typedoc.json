@@ -1,0 +1,6 @@
+{
+  "name": "Valrus",
+  "out": "./docs",
+  "includeVersion": true,
+  "cleanOutputDir": true
+}
