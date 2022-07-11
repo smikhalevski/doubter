@@ -10,10 +10,10 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "valrus": [
-        "./packages/valrus/src/main"
+      "doubter": [
+        "./packages/doubter/src/main"
       ],
-      "@valrus/*": [
+      "@doubter/*": [
         "./packages/*/src/main"
       ]
     }

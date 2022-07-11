@@ -3,7 +3,7 @@ module.exports = {
   preset: 'ts-jest',
   modulePathIgnorePatterns: ['/lib/'],
   moduleNameMapper: {
-    '^valrus$': __dirname + '/packages/valrus',
-    '^@valrus/(.*)$': __dirname + '/packages/$1/src/main',
+    '^doubter$': __dirname + '/packages/doubter',
+    '^@doubter/(.*)$': __dirname + '/packages/$1/src/main',
   },
 };

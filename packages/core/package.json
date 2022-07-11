@@ -1,5 +1,5 @@
 {
-  "name": "@valrus/core",
+  "name": "@doubter/core",
   "version": "1.0.0",
   "description": "",
   "main": "./lib/index-cjs.js",
@@ -18,16 +18,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/smikhalevski/valrus.git"
+    "url": "git+https://github.com/smikhalevski/doubter.git"
   },
   "keywords": [
   ],
   "author": "Savva Mikhalevski <smikhalevski@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/smikhalevski/valrus/issues"
+    "url": "https://github.com/smikhalevski/doubter/issues"
   },
-  "homepage": "https://github.com/smikhalevski/valrus#readme",
+  "homepage": "https://github.com/smikhalevski/doubter#readme",
   "dependencies": {
     "tslib": "^2.4.0"
   }
