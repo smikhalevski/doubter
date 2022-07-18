@@ -1,8 +1,7 @@
 import { Type } from './Type';
 import { InferType } from '../shared-types';
 import { ParserContext } from '../ParserContext';
-import { getValueType, ValueType } from '../utils';
-import { createInvalidTypeIssue, createTooBigIssue, createTooSmallIssue } from '../issue-utils';
+import { createIssue, getValueType, IssueCode, ValueType } from '../utils';
 
 export class ArrayType<X extends Type> extends Type<InferType<X>[]> {
   private _minLength?: number;
@@ -29,10 +28,8 @@ export class ArrayType<X extends Type> extends Type<InferType<X>[]> {
   }
 
   _parse(value: any, context: ParserContext): any {
-    const receivedType = getValueType(value);
-
-    if (receivedType !== ValueType.ARRAY) {
-      context.raiseIssue(createInvalidTypeIssue(context, value, ValueType.ARRAY, receivedType));
+    if (getValueType(value) !== ValueType.ARRAY) {
+      context.raiseIssue(createIssue(context, IssueCode.INVALID_TYPE, value, ValueType.ARRAY));
       return value;
     }
 
@@ -42,7 +39,7 @@ export class ArrayType<X extends Type> extends Type<InferType<X>[]> {
     const { _minLength, _maxLength, _elementType } = this;
 
     if (_minLength !== undefined && arrLength < _minLength) {
-      context.raiseIssue(createTooSmallIssue(context, receivedType, value, _minLength, arrLength));
+      context.raiseIssue(createIssue(context, IssueCode.ARRAY_TOO_SHORT, value, _minLength));
 
       if (context.aborted) {
         return value;
@@ -50,7 +47,7 @@ export class ArrayType<X extends Type> extends Type<InferType<X>[]> {
     }
 
     if (_maxLength !== undefined && arrLength > _maxLength) {
-      context.raiseIssue(createTooBigIssue(context, receivedType, value, _maxLength, arrLength));
+      context.raiseIssue(createIssue(context, IssueCode.ARRAY_TOO_LONG, value, _maxLength));
 
       if (context.aborted) {
         return value;
@@ -58,7 +55,7 @@ export class ArrayType<X extends Type> extends Type<InferType<X>[]> {
     }
 
     if (this.async) {
-      return Promise.all(arr.map((element, i) => _elementType._parse(element, context.fork().enterKey(i))));
+      return Promise.all(arr.map((element, i) => _elementType._parse(element, context.fork(false).enterKey(i))));
     }
 
     const elements = [];

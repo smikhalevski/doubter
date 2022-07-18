@@ -1,16 +1,25 @@
 import { Type } from './types/Type';
+import { ParserContext } from './ParserContext';
+import { Issue } from './shared-types';
 
-export enum IssueCode {
-  INVALID_TYPE = 'invalid_type',
-  TOO_SMALL = 'too_small',
-  TOO_BIG = 'too_big',
-  NOT_MULTIPLE_OF = 'not_multiple_of',
-  NOT_MATCHING = 'not_matching',
-  NOT_LITERAL = 'not_literal',
-  NOT_ONE_OF = 'not_one_of',
+export const enum IssueCode {
+  INVALID_TYPE,
+  ARRAY_TOO_SHORT,
+  ARRAY_TOO_LONG,
+  NUMBER_TOO_SMALL_INCLUSIVE,
+  NUMBER_TOO_BIG_INCLUSIVE,
+  NUMBER_TOO_SMALL,
+  NUMBER_TOO_BIG,
+  NUMBER_NOT_MULTIPLE_OF,
+  STRING_TOO_SHORT,
+  STRING_TOO_LONG,
+  STRING_NO_MATCH,
+  TUPLE_INVALID_LENGTH,
+  NOT_LITERAL,
+  NOT_ONE_OF,
 }
 
-export enum ValueType {
+export const enum ValueType {
   STRING = 'string',
   NAN = 'nan',
   NUMBER = 'number',
@@ -76,4 +85,8 @@ export function getValueType(value: unknown): ValueType {
     default:
       return ValueType.UNKNOWN;
   }
+}
+
+export function createIssue(context: ParserContext, code: IssueCode, value: any, param?: any): Issue {
+  return { code, path: context.getPath(), value, valueType: getValueType(value), param };
 }

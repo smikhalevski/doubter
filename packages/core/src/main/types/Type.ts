@@ -1,7 +1,6 @@
 import { ParserContext } from '../ParserContext';
-import { Awaitable, Predicate, Transformer } from '../shared-types';
+import { Awaitable, Issue, Predicate, Transformer } from '../shared-types';
 import { ValidationError } from '../ValidationError';
-import { Issue } from '../issue-utils';
 
 /**
  * The abstract type definition.
@@ -16,8 +15,6 @@ export abstract class Type<T = any> {
    * This method is the part of the internal parsing flow. Use {@link parse} and {@link parseAsync} instead.
    *
    * @param value The value to parse.
-   * @param quick If `true` then value is returned as soon as the first issue is raised. Otherwise, the value is
-   * returned after all issues are collected.
    * @param context The context of the parser.
    * @returns The parsed value.
    *
@@ -144,9 +141,8 @@ export abstract class Type<T = any> {
       throw new Error('Cannot use async type');
     }
 
-    const context = new ParserContext();
-    // this._parse(value, false, context);
-
+    const context = new ParserContext(false);
+    this._parse(value, context);
     return context.issues;
   }
 
@@ -157,8 +153,8 @@ export abstract class Type<T = any> {
    * @returns The list of issues encountered during validation.
    */
   validateAsync(value: unknown): Promise<Issue[]> {
-    const context = new ParserContext();
-    return Promise.resolve(this._parse(value, /*false,*/ context)).then(() => context.issues);
+    const context = new ParserContext(false);
+    return Promise.resolve(this._parse(value, context)).then(() => context.issues);
   }
 
   /**
@@ -174,8 +170,8 @@ export abstract class Type<T = any> {
       throw new Error('Cannot use async type');
     }
 
-    const context = new ParserContext();
-    // this._parse(value, true, context);
+    const context = new ParserContext(true);
+    this._parse(value, context);
 
     return context.valid;
   }
@@ -194,8 +190,8 @@ export abstract class Type<T = any> {
       throw new Error('Cannot use async type');
     }
 
-    const context = new ParserContext();
-    const result = this._parse(value, /*true,*/ context);
+    const context = new ParserContext(true);
+    const result = this._parse(value, context);
 
     if (context.valid) {
       return result;
@@ -212,9 +208,9 @@ export abstract class Type<T = any> {
    * @throws {@link ValidationError} if encountered issues during parsing.
    */
   parseAsync(value: unknown): Promise<T> {
-    const context = new ParserContext();
+    const context = new ParserContext(true);
 
-    return Promise.resolve(this._parse(value, /*true,*/ context)).then(value => {
+    return Promise.resolve(this._parse(value, context)).then(value => {
       if (context.valid) {
         return value;
       }
@@ -283,9 +279,9 @@ export class TransformedType<I, O> extends Type<O> {
     const result = _type._parse(value, context);
 
     if (this.async) {
-      return Promise.resolve(result).then(result => (context.valid ? _transformer(result, raiseIssue) : value));
+      return Promise.resolve(result).then(result => (context.aborted ? _transformer(result, raiseIssue) : value));
     }
-    return context.valid ? _transformer(result, raiseIssue) : value;
+    return context.aborted ? _transformer(result, raiseIssue) : value;
   }
 }
 

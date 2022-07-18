@@ -21,7 +21,7 @@ export class UnionType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
     let typeContext;
 
     for (const type of _types) {
-      typeContext = context.fork();
+      typeContext = context.fork(true);
       const result = type._parse(value, typeContext);
 
       if (typeContext.valid) {

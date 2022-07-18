@@ -1,7 +1,6 @@
 import { Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { getValueType, IssueCode, ValueType } from '../utils';
-import { createInvalidTypeIssue, createTooBigIssue, createTooSmallIssue, NotMatchingIssue } from '../issue-utils';
+import { createIssue, getValueType, IssueCode, ValueType } from '../utils';
 
 export class StringType extends Type<string> {
   private _minLength?: number;
@@ -27,10 +26,8 @@ export class StringType extends Type<string> {
   }
 
   _parse(value: any, context: ParserContext): any {
-    const receivedType = getValueType(value);
-
-    if (receivedType !== ValueType.STRING) {
-      context.raiseIssue(createInvalidTypeIssue(context, value, ValueType.STRING, receivedType));
+    if (getValueType(value) !== ValueType.STRING) {
+      context.raiseIssue(createIssue(context, IssueCode.INVALID_TYPE, value, ValueType.STRING));
       return value;
     }
 
@@ -39,20 +36,27 @@ export class StringType extends Type<string> {
     const { _minLength, _maxLength, _re } = this;
 
     if (_minLength !== undefined && valueLength < _minLength) {
-      context.raiseIssue(createTooSmallIssue(context, receivedType, value, value, _minLength));
+      context.raiseIssue(createIssue(context, IssueCode.STRING_TOO_SHORT, value, _minLength));
+
+      if (context.aborted) {
+        return value;
+      }
     }
 
     if (_maxLength !== undefined && valueLength > _maxLength) {
-      context.raiseIssue(createTooBigIssue(context, receivedType, value, value, _maxLength));
+      context.raiseIssue(createIssue(context, IssueCode.STRING_TOO_LONG, value, _minLength));
+
+      if (context.aborted) {
+        return value;
+      }
     }
 
     if (_re !== undefined && !_re.test(value)) {
-      return context.raiseIssue<NotMatchingIssue>({
-        code: IssueCode.NOT_MATCHING,
-        path: context.getPath(),
-        value,
-        re: _re,
-      });
+      context.raiseIssue(createIssue(context, IssueCode.STRING_NO_MATCH, value, _re));
+
+      if (context.aborted) {
+        return value;
+      }
     }
 
     return value;

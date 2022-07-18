@@ -1,108 +1,61 @@
-import { RaiseIssue } from './shared-types';
-import { Issue } from './issue-utils';
+import { Issue, RaiseIssue } from './shared-types';
 
 export class ParserContext {
-  issues: Issue[];
+  /**
+   * `true` if the parsing is aborted, or `false` otherwise.
+   */
+  aborted = false;
 
   /**
-   * `true` if the context contains issues under the current path.
+   * `true` if there's no issues.
    */
   valid = true;
 
-  aborted = false;
+  private _cursor;
 
-  private _keyStack: any[];
-  private _validityStack: boolean[];
+  /**
+   * Creates a new {@link ParserContext} instance.
+   *
+   * @param _quick If `true` then value is returned as soon as the first issue is raised. Otherwise, the value is
+   * returned after all issues are collected.
+   * @param _path The path represented by this context.
+   * @param issues The mutable list of issues.
+   */
+  constructor(private _quick = false, private _path: any[] = [], public issues: Issue[] = []) {
+    this._cursor = _path.length;
+  }
 
-  private _cursor = 0;
-  private _offset = 0;
-
-  constructor(private _parent?: ParserContext, isolated = false) {
-    this.issues = _parent && !isolated ? _parent.issues : [];
-    this._keyStack = _parent ? _parent.getPath() : [];
-    this._validityStack = _parent ? _parent._validityStack.slice(0) : [];
+  fork(isolated: boolean): ParserContext {
+    return new ParserContext(this._quick, this.getPath(), isolated ? [] : this.issues);
   }
 
   raiseIssue: RaiseIssue = (issue): void => {
-    // this.issues.push({
-    //   path: this.getPath(),
-    //   code,
-    //   message,
-    //   meta,
-    // });
-    //
-    // if (!this.valid) {
-    //   return;
-    // }
-    //
-    // this.valid = false;
-    //
-    // const { _cursor, _validityStack, _parent, _offset } = this;
-    //
-    // if (_parent !== null) {
-    //   const parentValidityStack = _parent._validityStack;
-    //   for (let i = 0; i <= _offset; ++i) {
-    //     parentValidityStack[i] = false;
-    //   }
-    // }
-    //
-    // for (let i = 0; i <= _cursor; ++i) {
-    //   _validityStack[i] = true;
-    // }
+    this.issues.push(issue);
+    this.aborted = this._quick;
+    this.valid = false;
   };
 
-  // /**
-  //  * Checks that an object was already visited, and adds it to the visited objects' list if it wasn't.
-  //  *
-  //  * @param value The value to check.
-  //  * @returns `true` if the object was visited before, or `false` otherwise.
-  //  */
-  // getParsedValue<T extends object>(value: T): T | null {
-  //   return null;
-  // }
-  //
-  // setParsedValue() {}
-
   /**
-   * Creates a new branch context.
+   * Adds issues from the context to this context.
    *
-   * @param isolated If `true` then the returned branch tracks issues in a separate list.
-   * @return The new branch context.
+   * @param context The context to absorb issues from.
    */
-  fork(isolated?: boolean): ParserContext {
-    return new ParserContext(this, isolated);
+  absorb(context: ParserContext): void {
+    context.issues.forEach(this.raiseIssue);
   }
 
-  absorb(context: ParserContext): void {}
-
-  // /**
-  //  * Adds issues raised for this branch to the parent context, if this branch was isolated.
-  //  */
-  // exitBranch(): void {
-  //   const { issues, _parent, _offset } = this;
-  //
-  //   if (this.valid || _parent === null || _parent.issues === issues) {
-  //     return;
-  //   }
-  //   for (let i = 0; i <= _offset; ++i) {
-  //     _parent._validityStack[i] = false;
-  //   }
-  //   _parent.issues.push(...issues);
-  // }
-
   /**
-   * The current object path.
+   * The current path pointed to by the context.
    */
   getPath(): any[] {
-    return this._keyStack.slice(0, this._cursor);
+    return this._path.slice(0, this._cursor);
   }
 
   /**
-   * Appends a key to the path.
+   * Appends a key to the path, so consequent {@link getPath} calls return the longer path.
    */
   enterKey(key: unknown): this {
-    this._keyStack[this._cursor++] = key;
-    this.valid = this._validityStack[this._cursor] = true;
+    this._path[this._cursor++] = key;
     return this;
   }
 
@@ -110,8 +63,6 @@ export class ParserContext {
    * Removes the last key from the path.
    */
   exitKey(): void {
-    if (this._cursor > 0) {
-      this.valid = this._validityStack[--this._cursor];
-    }
+    --this._cursor;
   }
 }

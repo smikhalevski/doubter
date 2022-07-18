@@ -1,8 +1,7 @@
 import { Primitive } from '../shared-types';
 import { Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { NotOneOfIssue } from '../issue-utils';
-import { IssueCode } from '../utils';
+import { createIssue, IssueCode } from '../utils';
 
 export class OneOfType<T extends Primitive> extends Type<T> {
   constructor(private _values: T[]) {
@@ -13,12 +12,7 @@ export class OneOfType<T extends Primitive> extends Type<T> {
     const { _values } = this;
 
     if (!_values.includes(value)) {
-      context.raiseIssue<NotOneOfIssue>({
-        code: IssueCode.NOT_ONE_OF,
-        path: context.getPath(),
-        value,
-        values: _values,
-      });
+      context.raiseIssue(createIssue(context, IssueCode.NOT_ONE_OF, value, _values));
     }
     return value;
   }

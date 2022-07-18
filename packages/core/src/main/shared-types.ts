@@ -1,5 +1,13 @@
 import { Type } from './types/Type';
-import { Issue } from './issue-utils';
+import { ValueType } from './utils';
+
+export interface Issue {
+  code: any;
+  path: any[];
+  value: any;
+  valueType: ValueType;
+  param: any;
+}
 
 export type RaiseIssue = <E extends Issue>(issue: E) => any;
 

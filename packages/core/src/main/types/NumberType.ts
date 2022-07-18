@@ -1,7 +1,6 @@
 import { Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { getValueType, IssueCode, ValueType } from '../utils';
-import { createInvalidTypeIssue, createTooBigIssue, createTooSmallIssue, NotMultipleOfIssue } from '../issue-utils';
+import { createIssue, getValueType, IssueCode, ValueType } from '../utils';
 
 export class NumberType extends Type<number> {
   private _integer?: boolean;
@@ -57,17 +56,16 @@ export class NumberType extends Type<number> {
 
   _parse(value: any, context: ParserContext): any {
     const expectedType = this._integer ? ValueType.INTEGER : ValueType.NUMBER;
-    const receivedType = getValueType(value);
 
-    if (receivedType !== expectedType) {
-      context.raiseIssue(createInvalidTypeIssue(context, value, expectedType, receivedType));
+    if (getValueType(value) !== expectedType) {
+      context.raiseIssue(createIssue(context, IssueCode.INVALID_TYPE, value, expectedType));
       return value;
     }
 
     const { _min, _max, _inclusiveMin, _inclusiveMax, _divisor } = this;
 
     if (_min !== undefined && value < _min) {
-      context.raiseIssue(createTooSmallIssue(context, receivedType, value, value, _min, false));
+      context.raiseIssue(createIssue(context, IssueCode.NUMBER_TOO_SMALL, value, _min));
 
       if (context.aborted) {
         return value;
@@ -75,7 +73,7 @@ export class NumberType extends Type<number> {
     }
 
     if (_max !== undefined && value > _max) {
-      context.raiseIssue(createTooBigIssue(context, receivedType, value, value, _max, false));
+      context.raiseIssue(createIssue(context, IssueCode.NUMBER_TOO_BIG, value, _max));
 
       if (context.aborted) {
         return value;
@@ -83,7 +81,7 @@ export class NumberType extends Type<number> {
     }
 
     if (_inclusiveMin !== undefined && value <= _inclusiveMin) {
-      context.raiseIssue(createTooSmallIssue(context, receivedType, value, value, _inclusiveMin));
+      context.raiseIssue(createIssue(context, IssueCode.NUMBER_TOO_SMALL_INCLUSIVE, value, _inclusiveMin));
 
       if (context.aborted) {
         return value;
@@ -91,7 +89,7 @@ export class NumberType extends Type<number> {
     }
 
     if (_inclusiveMax !== undefined && value >= _inclusiveMax) {
-      context.raiseIssue(createTooBigIssue(context, receivedType, value, value, _inclusiveMax));
+      context.raiseIssue(createIssue(context, IssueCode.NUMBER_TOO_BIG_INCLUSIVE, value, _inclusiveMax));
 
       if (context.aborted) {
         return value;
@@ -99,12 +97,7 @@ export class NumberType extends Type<number> {
     }
 
     if (_divisor !== undefined && value % _divisor !== 0) {
-      context.raiseIssue<NotMultipleOfIssue>({
-        code: IssueCode.NOT_MULTIPLE_OF,
-        path: context.getPath(),
-        value,
-        divisor: _divisor,
-      });
+      context.raiseIssue(createIssue(context, IssueCode.NUMBER_NOT_MULTIPLE_OF, value, _divisor));
 
       if (context.aborted) {
         return value;

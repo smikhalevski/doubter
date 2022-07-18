@@ -109,7 +109,7 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
           if (!_keys.has(key)) {
             // context.raiseIssue('UNKNOWN_KEY', 'Must have known keys only but "' + key + '" was found');
             //
-            // if (quick) {
+            // if (aborted) {
             //   return value;
             // }
           }
@@ -134,7 +134,7 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
             return type._parse(value[key], context);
           })
           .then(value => {
-            if (!Object.is(value, value[key]) && context.valid) {
+            if (!Object.is(value, value[key]) && context.aborted) {
               if (!copied) {
                 copied = true;
                 value = Object.assign({}, value);
@@ -155,7 +155,7 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
 
       const result = type._parse(value[key], context);
 
-      if (!Object.is(result, value[key]) && context.valid) {
+      if (!Object.is(result, value[key]) && context.aborted) {
         if (!copied) {
           copied = true;
           value = Object.assign({}, value);
