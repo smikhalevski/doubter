@@ -3,10 +3,10 @@ import { ParserContext } from '../ParserContext';
 import { createIssue, isObjectLike } from '../utils';
 import { Dict } from '../shared-types';
 
-export class RecordType<K extends Type<string> | Type<number>, V extends Type> extends Type<
+export class RecordType<V extends Type, K extends Type<string> | Type<number> = Type> extends Type<
   Record<InferType<K>, InferType<V>>
 > {
-  constructor(private _keyType: K, private _valueType: V) {
+  constructor(private _valueType: V, private _keyType: K | null) {
     super();
   }
 
@@ -16,20 +16,52 @@ export class RecordType<K extends Type<string> | Type<number>, V extends Type> e
       return input;
     }
 
-    const entries = Object.entries(input);
     const { _keyType, _valueType } = this;
+    const inputEntries = Object.entries(input);
 
     if (this.isAsync()) {
+      const promises = [];
+
+      for (const [key, value] of inputEntries) {
+        promises.push(
+          // Output key
+          _keyType === null ? key : _keyType._parse(key, context),
+
+          // Output value
+          _valueType._parse(value, context.fork(false).enterKey(key))
+        );
+      }
+
+      return Promise.all(promises).then(results => {
+        if (context.aborted) {
+          return input;
+        }
+        const output: Dict = {};
+
+        for (let i = 0; i < promises.length; i += 2) {
+          output[results[i]] = results[i + 1];
+        }
+        return output;
+      });
     }
 
-    const record: Dict = {};
+    const output: Dict = {};
 
-    for (const [key, v] of entries) {
-      record[_keyType._parse(key, context)] = _valueType._parse(v, context);
+    for (const [key, value] of inputEntries) {
+      const outputKey = _keyType === null ? key : _keyType._parse(key, context);
+
+      if (context.aborted) {
+        return input;
+      }
+
+      context.enterKey(key);
+      output[outputKey] = _valueType._parse(value, context);
+      context.exitKey();
 
       if (context.aborted) {
         return input;
       }
     }
+    return output;
   }
 }

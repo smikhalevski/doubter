@@ -11,6 +11,7 @@ export * from './never';
 export * from './nullable';
 export * from './nullish';
 export * from './number';
+export * from './object';
 export * from './oneOf';
 export * from './optional';
 export * from './or';

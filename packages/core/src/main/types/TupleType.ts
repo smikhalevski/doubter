@@ -3,12 +3,12 @@ import { ParserContext } from '../ParserContext';
 import { createIssue, isAsync } from '../utils';
 
 export class TupleType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U]: InferType<U[K]> }> {
-  constructor(private _elementTypes: U) {
+  constructor(private _types: U) {
     super();
   }
 
   isAsync(): boolean {
-    return isAsync(this._elementTypes);
+    return isAsync(this._types);
   }
 
   _parse(input: unknown, context: ParserContext): any {
@@ -17,13 +17,12 @@ export class TupleType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
       return input;
     }
 
-    const valueLength = input.length;
+    const { _types } = this;
+    const typesLength = _types.length;
+    const inputLength = input.length;
 
-    const { _elementTypes } = this;
-    const elementsLength = _elementTypes.length;
-
-    if (valueLength !== elementsLength) {
-      context.raiseIssue(createIssue(context, 'tuple_length', input, elementsLength));
+    if (inputLength !== typesLength) {
+      context.raiseIssue(createIssue(context, 'tuple_length', input, typesLength));
 
       if (context.aborted) {
         return input;
@@ -31,22 +30,20 @@ export class TupleType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
     }
 
     if (this.isAsync()) {
-      return Promise.all(
-        _elementTypes.map((elementType, i) => elementType._parse(input[i], context.fork(false).enterKey(i)))
-      );
+      return Promise.all(_types.map((elementType, i) => elementType._parse(input[i], context.fork(false).enterKey(i))));
     }
 
-    const elements = [];
+    const output = [];
 
-    for (let i = 0; i < elementsLength; ++i) {
+    for (let i = 0; i < typesLength; ++i) {
       context.enterKey(i);
-      elements[i] = _elementTypes[i]._parse(input[i], context);
+      output[i] = _types[i]._parse(input[i], context);
       context.exitKey();
 
       if (context.aborted) {
         return input;
       }
     }
-    return elements;
+    return output;
   }
 }

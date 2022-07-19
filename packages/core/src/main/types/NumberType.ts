@@ -1,6 +1,6 @@
 import { Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { createIssue } from '../utils';
+import { createIssue, shallowClone } from '../utils';
 
 export class NumberType extends Type<number> {
   private _min?: number;
@@ -18,35 +18,35 @@ export class NumberType extends Type<number> {
   }
 
   gt(value: number): NumberType {
-    const type = this.clone();
+    const type = shallowClone(this);
     type._min = value;
     type._minIncluded = false;
     return type;
   }
 
   lt(value: number): NumberType {
-    const type = this.clone();
+    const type = shallowClone(this);
     type._max = value;
     type._maxIncluded = false;
     return type;
   }
 
   gte(value: number): NumberType {
-    const type = this.clone();
+    const type = shallowClone(this);
     type._min = value;
     type._minIncluded = true;
     return type;
   }
 
   lte(value: number): NumberType {
-    const type = this.clone();
+    const type = shallowClone(this);
     type._max = value;
     type._maxIncluded = true;
     return type;
   }
 
   multipleOf(divisor: number): NumberType {
-    const type = this.clone();
+    const type = shallowClone(this);
     type._divisor = divisor;
     return type;
   }

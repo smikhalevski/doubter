@@ -1,6 +1,6 @@
 import { InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { createIssue } from '../utils';
+import { createIssue, shallowClone } from '../utils';
 
 export class ArrayType<X extends Type = Type> extends Type<InferType<X>[]> {
   private _minLength?: number;
@@ -10,14 +10,14 @@ export class ArrayType<X extends Type = Type> extends Type<InferType<X>[]> {
     super();
   }
 
-  min(length: number): this {
-    const type = this.clone();
+  min(length: number): ArrayType<X> {
+    const type = shallowClone(this);
     type._minLength = length;
     return type;
   }
 
-  max(length: number): this {
-    const type = this.clone();
+  max(length: number): ArrayType<X> {
+    const type = shallowClone(this);
     type._maxLength = length;
     return type;
   }
@@ -34,9 +34,8 @@ export class ArrayType<X extends Type = Type> extends Type<InferType<X>[]> {
       return input;
     }
 
-    const inputLength = input.length;
-
     const { _minLength, _maxLength, _type } = this;
+    const inputLength = input.length;
 
     if (_minLength !== undefined && inputLength < _minLength) {
       context.raiseIssue(createIssue(context, 'array_min', input, _minLength));

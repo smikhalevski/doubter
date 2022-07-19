@@ -1,17 +1,7 @@
-import { isAsync, isObjectLike } from '../utils';
+import { createIssue, isAsync, isObjectLike, shallowClone } from '../utils';
 import { ParserContext } from '../ParserContext';
 import { InferType, Type } from './Type';
 import { Dict } from '../shared-types';
-
-export function object<P extends Dict<Type>>(props: P): ObjectType<P> {
-  return new ObjectType(props, ObjectKeysMode.PRESERVE, null);
-}
-
-export const enum ObjectKeysMode {
-  EXACT,
-  STRIP,
-  PRESERVE,
-}
 
 export type InferObjectType<P extends Dict<Type>> = Squash<UndefinedAsOptional<{ [K in keyof P]: InferType<P[K]> }>>;
 
@@ -23,19 +13,26 @@ export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> 
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
-  private _entries;
-  private _keys;
+const enum ObjectKeysMode {
+  STRIP,
+  PRESERVE,
+}
 
-  constructor(private _props: P, private _keyMode: ObjectKeysMode, private _unknownKeyType: Type | null) {
+export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
+  private _propsMap;
+  private _keys;
+  private _valueTypes;
+
+  constructor(private _props: P, private _keysMode = ObjectKeysMode.STRIP, private _restType: Type | null = null) {
     super();
 
-    this._entries = Object.entries(_props);
-    this._keys = new Set(Object.keys(_props));
+    this._propsMap = new Map(Object.entries(_props));
+    this._keys = Object.keys(_props);
+    this._valueTypes = Object.values(_props);
   }
 
   isAsync(): boolean {
-    return isAsync(Object.values(this._props));
+    return this._restType?.isAsync() || isAsync(this._valueTypes);
   }
 
   extend<P1 extends Dict<Type>>(type: ObjectType<P1>): ObjectType<Pick<P, Exclude<keyof P, keyof P1>> & P1>;
@@ -45,7 +42,7 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
   extend(source: ObjectType<any> | Dict<Type>): ObjectType<any> {
     const nextProps = Object.assign({}, this._props, source instanceof ObjectType ? source._props : source);
 
-    return new ObjectType(nextProps, this._keyMode, this._unknownKeyType);
+    return new ObjectType(nextProps, this._keysMode, this._restType);
   }
 
   pick<A extends Array<keyof P & string>>(...keys: A): ObjectType<Pick<P, A[number]>> {
@@ -54,137 +51,89 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
     for (const key of keys) {
       nextProps[key] = this._props[key];
     }
-    return new ObjectType<any>(nextProps, this._keyMode, this._unknownKeyType);
+    return new ObjectType<any>(nextProps, this._keysMode, this._restType);
   }
 
   omit<A extends Array<keyof P & string>>(...keys: A): ObjectType<Omit<P, A[number]>> {
     const nextProps: Dict<Type> = {};
 
-    for (const [key, type] of this._entries) {
+    this._propsMap.forEach((valueType, key) => {
       if (!keys.includes(key)) {
-        nextProps[key] = type;
+        nextProps[key] = valueType;
       }
-    }
-    return new ObjectType<any>(nextProps, this._keyMode, this._unknownKeyType);
-  }
-
-  // partial(): ObjectType<{ [K in keyof P]: OptionalType<InferType<P[K]>, InferFlow<P[K]>> }> {
-  //   const nextProps: Dict<Type> = {};
-  //
-  //   for (const [key, type] of this._entries) {
-  //     nextProps[key] = new OptionalType(type);
-  //   }
-  //   return new ObjectType<any>(nextProps, this._keyMode, this._unknownKeyType);
-  // }
-
-  exact(): ObjectType<P> {
-    return new ObjectType(this._props, ObjectKeysMode.EXACT, this._unknownKeyType);
+    });
+    return new ObjectType<any>(nextProps, this._keysMode, this._restType);
   }
 
   strip(): ObjectType<P> {
-    return new ObjectType(this._props, ObjectKeysMode.STRIP, this._unknownKeyType);
+    const type = shallowClone(this);
+    type._keysMode = ObjectKeysMode.STRIP;
+    return type;
   }
 
   preserve(): ObjectType<P> {
-    return new ObjectType(this._props, ObjectKeysMode.PRESERVE, this._unknownKeyType);
+    const type = shallowClone(this);
+    type._keysMode = ObjectKeysMode.PRESERVE;
+    return type;
   }
 
-  rest(type: Type): ObjectType<P> {
-    return new ObjectType(this._props, this._keyMode, type);
+  rest(restType: Type): ObjectType<P> {
+    const type = shallowClone(this);
+    type._restType = restType;
+    return type;
   }
 
-  _parse(input: any, context: ParserContext): any {
-    if (!isObjectLike(input) || Object.getPrototypeOf(input) !== Object.prototype) {
-      // context.raiseIssue('NOT_PLAIN_OBJECT', 'Must be a plain object');
+  _parse(input: unknown, context: ParserContext): any {
+    if (!isObjectLike(input)) {
+      context.raiseIssue(createIssue(context, 'type', input, 'object'));
       return input;
     }
 
-    let copied = false;
-
-    const { _entries, _keys } = this;
-
-    switch (this._keyMode) {
-      case ObjectKeysMode.EXACT:
-        for (const key of Object.keys(input)) {
-          if (!_keys.has(key)) {
-            // context.raiseIssue('UNKNOWN_KEY', 'Must have known keys only but "' + key + '" was found');
-            //
-            // if (aborted) {
-            //   return input;
-            // }
-          }
-        }
-        break;
-
-      case ObjectKeysMode.STRIP:
-        const nextValue = stripUnknownKeys(input, _keys);
-        copied = input !== nextValue;
-        input = nextValue;
-        break;
-    }
+    const { _propsMap, _restType } = this;
+    const outputKeys = this._keysMode === ObjectKeysMode.STRIP ? this._keys : Object.keys(input);
 
     if (this.isAsync()) {
-      let promise = Promise.resolve(() => input);
+      const promises = [];
 
-      for (const [key, type] of _entries) {
-        promise = promise
-          .then(() => {
-            context.enterKey(key);
+      for (const key of outputKeys) {
+        const value = input[key];
+        const valueType = _propsMap.get(key) || _restType;
 
-            return type._parse(input[key], context);
-          })
-          .then(value => {
-            if (!Object.is(value, value[key]) && context.aborted) {
-              if (!copied) {
-                copied = true;
-                value = Object.assign({}, value);
-              }
-              value[key] = value;
-            }
-
-            context.exitKey();
-            return value;
-          });
+        promises.push(valueType === null ? value : valueType._parse(value, context.fork(false).enterKey(key)));
       }
 
-      return promise;
-    }
-
-    for (const [key, type] of _entries) {
-      context.enterKey(key);
-
-      const result = type._parse(input[key], context);
-
-      if (!Object.is(result, input[key]) && context.aborted) {
-        if (!copied) {
-          copied = true;
-          input = Object.assign({}, input);
+      return Promise.all(promises).then(outputValues => {
+        if (context.aborted) {
+          return input;
         }
-        input[key] = result;
-      }
+        const output: Dict = {};
 
+        for (let i = 0; i < promises.length; ++i) {
+          output[outputKeys[i]] = outputValues[i];
+        }
+        return output;
+      });
+    }
+
+    const output: Dict = {};
+
+    for (const key of outputKeys) {
+      const value = input[key];
+      const valueType = _propsMap.get(key) || _restType;
+
+      if (valueType === null) {
+        output[key] = value;
+        continue;
+      }
+      context.enterKey(key);
+      output[key] = valueType._parse(value, context);
       context.exitKey();
-    }
 
-    return input;
-  }
-}
-
-function stripUnknownKeys(value: Dict, knownKeys: Set<string>): Dict {
-  const keys = Object.keys(value);
-
-  for (const key of keys) {
-    if (knownKeys.has(key)) {
-      continue;
-    }
-    const nextValue: Dict = {};
-
-    for (const key of keys) {
-      if (knownKeys.has(key)) {
-        nextValue[key] = value[key];
+      if (context.aborted) {
+        return input;
       }
     }
-    return nextValue;
+
+    return output;
   }
-  return value;
 }

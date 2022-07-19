@@ -37,13 +37,6 @@ export abstract class Type<T = any> {
   abstract _parse(input: unknown, context: ParserContext): any;
 
   /**
-   * Clones the type instance.
-   */
-  clone(): this {
-    return Object.assign(new (this.constructor as new () => this)(), this);
-  }
-
-  /**
    * Returns `true` if parsing is async, or `false` otherwise.
    *
    * With async types you should use {@link parseAsync} and {@link validateAsync}.
@@ -139,10 +132,10 @@ export abstract class Type<T = any> {
     }
 
     const context = new ParserContext(true);
-    const result = this._parse(input, context);
+    const output = this._parse(input, context);
 
     if (context.valid) {
-      return result;
+      return output;
     }
     throw new ValidationError(context.issues);
   }
@@ -180,11 +173,11 @@ export class TransformedType<I, O> extends Type<O> {
     const { _type, _transformer } = this;
     const { raiseIssue } = context;
 
-    const result = _type._parse(input, context);
+    const output = _type._parse(input, context);
 
     if (this.isAsync()) {
-      return Promise.resolve(result).then(result => (context.aborted ? _transformer(result, raiseIssue) : input));
+      return Promise.resolve(output).then(output => (context.aborted ? _transformer(output, raiseIssue) : input));
     }
-    return context.aborted ? _transformer(result, raiseIssue) : input;
+    return context.aborted ? _transformer(output, raiseIssue) : input;
   }
 }

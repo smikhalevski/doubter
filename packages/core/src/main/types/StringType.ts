@@ -1,6 +1,6 @@
 import { Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { createIssue } from '../utils';
+import { createIssue, shallowClone } from '../utils';
 
 export class StringType extends Type<string> {
   private _minLength?: number;
@@ -8,19 +8,19 @@ export class StringType extends Type<string> {
   private _re?: RegExp;
 
   min(length: number): StringType {
-    const type = this.clone();
+    const type = shallowClone(this);
     type._minLength = length;
     return type;
   }
 
   max(length: number): StringType {
-    const type = this.clone();
+    const type = shallowClone(this);
     type._maxLength = length;
     return type;
   }
 
   pattern(re: RegExp): StringType {
-    const type = this.clone();
+    const type = shallowClone(this);
     type._re = re;
     return type;
   }
@@ -31,11 +31,10 @@ export class StringType extends Type<string> {
       return input;
     }
 
+    const { _minLength, _maxLength, _re } = this;
     const inputLength = input.length;
 
-    const { _minLength, _maxLength, _re } = this;
-
-    if (_minLength !== undefined && inputLength < _minLength) {
+    if (_minLength !== undefined && inputLength <= _minLength) {
       context.raiseIssue(createIssue(context, 'string_min', input, _minLength));
 
       if (context.aborted) {
@@ -43,7 +42,7 @@ export class StringType extends Type<string> {
       }
     }
 
-    if (_maxLength !== undefined && inputLength > _maxLength) {
+    if (_maxLength !== undefined && inputLength >= _maxLength) {
       context.raiseIssue(createIssue(context, 'string_max', input, _minLength));
 
       if (context.aborted) {
