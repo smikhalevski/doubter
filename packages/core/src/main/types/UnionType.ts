@@ -11,7 +11,7 @@ export class UnionType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
     return isAsync(this._types);
   }
 
-  _parse(value: unknown, context: ParserContext): any {
+  _parse(input: unknown, context: ParserContext): any {
     const { _types } = this;
 
     if (this.isAsync()) {
@@ -21,7 +21,7 @@ export class UnionType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
 
     for (const type of _types) {
       typeContext = context.fork(true);
-      const result = type._parse(value, typeContext);
+      const result = type._parse(input, typeContext);
 
       if (typeContext.valid) {
         return result;
@@ -30,6 +30,6 @@ export class UnionType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
     if (typeContext !== undefined) {
       context.absorb(typeContext);
     }
-    return value;
+    return input;
   }
 }

@@ -10,13 +10,13 @@ export class NullableType<T> extends Type<T | null> {
     return this._type.isAsync();
   }
 
-  _parse(value: unknown, context: ParserContext): any {
+  _parse(input: unknown, context: ParserContext): any {
     const { _type } = this;
 
-    if (value === null) {
-      return this.isAsync() ? Promise.resolve(value) : value;
+    if (input === null) {
+      return this.isAsync() ? Promise.resolve(input) : input;
     } else {
-      return _type._parse(value, context);
+      return _type._parse(input, context);
     }
   }
 }

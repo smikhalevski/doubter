@@ -6,7 +6,7 @@ export class ArrayType<X extends Type = Type> extends Type<InferType<X>[]> {
   private _minLength?: number;
   private _maxLength?: number;
 
-  constructor(private _elementType?: X) {
+  constructor(private _type?: X) {
     super();
   }
 
@@ -23,56 +23,56 @@ export class ArrayType<X extends Type = Type> extends Type<InferType<X>[]> {
   }
 
   isAsync(): boolean {
-    const { _elementType } = this;
+    const { _type } = this;
 
-    return _elementType !== undefined && _elementType.isAsync();
+    return _type !== undefined && _type.isAsync();
   }
 
-  _parse(value: unknown, context: ParserContext): any {
-    if (!Array.isArray(value)) {
-      context.raiseIssue(createIssue(context, 'type', value, 'array'));
-      return value;
+  _parse(input: unknown, context: ParserContext): any {
+    if (!Array.isArray(input)) {
+      context.raiseIssue(createIssue(context, 'type', input, 'array'));
+      return input;
     }
 
-    const valueLength = value.length;
+    const inputLength = input.length;
 
-    const { _minLength, _maxLength, _elementType } = this;
+    const { _minLength, _maxLength, _type } = this;
 
-    if (_minLength !== undefined && valueLength < _minLength) {
-      context.raiseIssue(createIssue(context, 'array_min', value, _minLength));
+    if (_minLength !== undefined && inputLength < _minLength) {
+      context.raiseIssue(createIssue(context, 'array_min', input, _minLength));
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
 
-    if (_maxLength !== undefined && valueLength > _maxLength) {
-      context.raiseIssue(createIssue(context, 'array_max', value, _maxLength));
+    if (_maxLength !== undefined && inputLength > _maxLength) {
+      context.raiseIssue(createIssue(context, 'array_max', input, _maxLength));
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
 
-    if (_elementType === undefined) {
-      return value;
+    if (_type === undefined) {
+      return input;
     }
 
     if (this.isAsync()) {
-      return Promise.all(value.map((element, i) => _elementType._parse(element, context.fork(false).enterKey(i))));
+      return Promise.all(input.map((element, i) => _type._parse(element, context.fork(false).enterKey(i))));
     }
 
-    const elements = [];
+    const output = [];
 
-    for (let i = 0; i < valueLength; ++i) {
+    for (let i = 0; i < inputLength; ++i) {
       context.enterKey(i);
-      elements[i] = _elementType._parse(value[i], context);
+      output[i] = _type._parse(input[i], context);
       context.exitKey();
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
-    return elements;
+    return output;
   }
 }

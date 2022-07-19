@@ -3,10 +3,10 @@ import { ParserContext } from '../ParserContext';
 import { createIssue } from '../utils';
 
 export class BooleanType extends Type<boolean> {
-  _parse(value: unknown, context: ParserContext): any {
-    if (typeof value !== 'boolean') {
-      context.raiseIssue(createIssue(context, 'type', value, 'boolean'));
+  _parse(input: unknown, context: ParserContext): any {
+    if (typeof input !== 'boolean') {
+      context.raiseIssue(createIssue(context, 'type', input, 'boolean'));
     }
-    return value;
+    return input;
   }
 }

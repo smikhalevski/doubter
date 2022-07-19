@@ -1,7 +1,7 @@
 export interface Issue {
   code: string;
   path: any[];
-  value: any;
+  input: any;
   param: any;
 }
 

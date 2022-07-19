@@ -9,10 +9,10 @@ export class InstanceOfType<C extends Constructor> extends Type<C> {
     super();
   }
 
-  _parse(value: unknown, context: ParserContext): any {
-    if (value instanceof this._constructor) {
-      context.raiseIssue(createIssue(context, 'instance_of', value, this._constructor));
+  _parse(input: unknown, context: ParserContext): any {
+    if (input instanceof this._constructor) {
+      context.raiseIssue(createIssue(context, 'instance_of', input, this._constructor));
     }
-    return value;
+    return input;
   }
 }

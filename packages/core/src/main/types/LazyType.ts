@@ -10,7 +10,7 @@ export class LazyType<X extends Type> extends Type<InferType<X>> {
     return this._typeProvider().isAsync();
   }
 
-  _parse(value: unknown, context: ParserContext): any {
-    return this._typeProvider()._parse(value, context);
+  _parse(input: unknown, context: ParserContext): any {
+    return this._typeProvider()._parse(input, context);
   }
 }

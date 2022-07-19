@@ -8,12 +8,12 @@ export class OneOfType<T extends Primitive> extends Type<T> {
     super();
   }
 
-  _parse(value: any, context: ParserContext): any {
+  _parse(input: any, context: ParserContext): any {
     const { _values } = this;
 
-    if (!_values.includes(value)) {
-      context.raiseIssue(createIssue(context, 'one_of', value, _values));
+    if (!_values.includes(input)) {
+      context.raiseIssue(createIssue(context, 'one_of', input, _values));
     }
-    return value;
+    return input;
   }
 }

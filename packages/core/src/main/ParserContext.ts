@@ -16,7 +16,7 @@ export class ParserContext {
   /**
    * Creates a new {@link ParserContext} instance.
    *
-   * @param _quick If `true` then value is returned as soon as the first issue is raised. Otherwise, the value is
+   * @param _quick If `true` then input is returned as soon as the first issue is raised. Otherwise, the input is
    * returned after all issues are collected.
    * @param _path The path represented by this context.
    * @param issues The mutable list of issues.

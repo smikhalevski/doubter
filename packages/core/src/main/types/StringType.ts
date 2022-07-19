@@ -25,40 +25,40 @@ export class StringType extends Type<string> {
     return type;
   }
 
-  _parse(value: unknown, context: ParserContext): any {
-    if (typeof value !== 'string') {
-      context.raiseIssue(createIssue(context, 'type', value, 'string'));
-      return value;
+  _parse(input: unknown, context: ParserContext): any {
+    if (typeof input !== 'string') {
+      context.raiseIssue(createIssue(context, 'type', input, 'string'));
+      return input;
     }
 
-    const valueLength = value.length;
+    const inputLength = input.length;
 
     const { _minLength, _maxLength, _re } = this;
 
-    if (_minLength !== undefined && valueLength < _minLength) {
-      context.raiseIssue(createIssue(context, 'string_min', value, _minLength));
+    if (_minLength !== undefined && inputLength < _minLength) {
+      context.raiseIssue(createIssue(context, 'string_min', input, _minLength));
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
 
-    if (_maxLength !== undefined && valueLength > _maxLength) {
-      context.raiseIssue(createIssue(context, 'string_max', value, _minLength));
+    if (_maxLength !== undefined && inputLength > _maxLength) {
+      context.raiseIssue(createIssue(context, 'string_max', input, _minLength));
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
 
-    if (_re !== undefined && !_re.test(value)) {
-      context.raiseIssue(createIssue(context, 'string_pattern', value, _re));
+    if (_re !== undefined && !_re.test(input)) {
+      context.raiseIssue(createIssue(context, 'string_pattern', input, _re));
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
 
-    return value;
+    return input;
   }
 }

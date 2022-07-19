@@ -8,12 +8,12 @@ export class LiteralType<T extends Primitive> extends Type<T> {
     super();
   }
 
-  _parse(value: unknown, context: ParserContext): any {
+  _parse(input: unknown, context: ParserContext): any {
     const { _value } = this;
 
-    if (!Object.is(value, _value)) {
-      context.raiseIssue(createIssue(context, 'literal', value, _value));
+    if (!Object.is(input, _value)) {
+      context.raiseIssue(createIssue(context, 'literal', input, _value));
     }
-    return value;
+    return input;
   }
 }

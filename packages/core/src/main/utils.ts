@@ -2,6 +2,10 @@ import { Type } from './types/Type';
 import { ParserContext } from './ParserContext';
 import { Issue } from './shared-types';
 
+export function isObjectLike(value: unknown): value is object {
+  return value !== null && typeof value === 'object';
+}
+
 export function isAsync(types: Type[]): boolean {
   let async = false;
 
@@ -11,6 +15,6 @@ export function isAsync(types: Type[]): boolean {
   return async;
 }
 
-export function createIssue(context: ParserContext, code: string, value: any, param?: any): Issue {
-  return { code, path: context.getPath(), value, param };
+export function createIssue(context: ParserContext, code: string, input: any, param?: any): Issue {
+  return { code, path: context.getPath(), input, param };
 }

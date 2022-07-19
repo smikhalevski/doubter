@@ -10,13 +10,13 @@ export class OptionalType<T> extends Type<T | undefined> {
     return this._type.isAsync();
   }
 
-  _parse(value: unknown, context: ParserContext): any {
+  _parse(input: unknown, context: ParserContext): any {
     const { _type, _defaultValue } = this;
 
-    if (value === undefined) {
+    if (input === undefined) {
       return this.isAsync() ? Promise.resolve(_defaultValue) : _defaultValue;
     } else {
-      return _type._parse(value, context);
+      return _type._parse(input, context);
     }
   }
 }

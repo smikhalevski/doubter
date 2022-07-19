@@ -3,11 +3,11 @@ import { NumberType } from './NumberType';
 import { ParserContext } from '../ParserContext';
 
 export class IntegerType extends NumberType {
-  _parse(value: unknown, context: ParserContext): any {
-    if (!Number.isInteger(value)) {
-      context.raiseIssue(createIssue(context, 'type', value, 'integer'));
-      return value;
+  _parse(input: unknown, context: ParserContext): any {
+    if (!Number.isInteger(input)) {
+      context.raiseIssue(createIssue(context, 'type', input, 'integer'));
+      return input;
     }
-    return super._parse(value, context);
+    return super._parse(input, context);
   }
 }

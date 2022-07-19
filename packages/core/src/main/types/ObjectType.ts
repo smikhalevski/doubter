@@ -1,4 +1,4 @@
-import { isAsync } from '../utils';
+import { isAsync, isObjectLike } from '../utils';
 import { ParserContext } from '../ParserContext';
 import { InferType, Type } from './Type';
 import { Dict } from '../shared-types';
@@ -93,10 +93,10 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
     return new ObjectType(this._props, this._keyMode, type);
   }
 
-  _parse(value: any, context: ParserContext): any {
-    if (value === null || typeof value !== 'object' || Object.getPrototypeOf(value) !== Object.prototype) {
+  _parse(input: any, context: ParserContext): any {
+    if (!isObjectLike(input) || Object.getPrototypeOf(input) !== Object.prototype) {
       // context.raiseIssue('NOT_PLAIN_OBJECT', 'Must be a plain object');
-      return value;
+      return input;
     }
 
     let copied = false;
@@ -105,33 +105,33 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
 
     switch (this._keyMode) {
       case ObjectKeysMode.EXACT:
-        for (const key of Object.keys(value)) {
+        for (const key of Object.keys(input)) {
           if (!_keys.has(key)) {
             // context.raiseIssue('UNKNOWN_KEY', 'Must have known keys only but "' + key + '" was found');
             //
             // if (aborted) {
-            //   return value;
+            //   return input;
             // }
           }
         }
         break;
 
       case ObjectKeysMode.STRIP:
-        const nextValue = stripUnknownKeys(value, _keys);
-        copied = value !== nextValue;
-        value = nextValue;
+        const nextValue = stripUnknownKeys(input, _keys);
+        copied = input !== nextValue;
+        input = nextValue;
         break;
     }
 
     if (this.isAsync()) {
-      let promise = Promise.resolve(() => value);
+      let promise = Promise.resolve(() => input);
 
       for (const [key, type] of _entries) {
         promise = promise
           .then(() => {
             context.enterKey(key);
 
-            return type._parse(value[key], context);
+            return type._parse(input[key], context);
           })
           .then(value => {
             if (!Object.is(value, value[key]) && context.aborted) {
@@ -153,20 +153,20 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
     for (const [key, type] of _entries) {
       context.enterKey(key);
 
-      const result = type._parse(value[key], context);
+      const result = type._parse(input[key], context);
 
-      if (!Object.is(result, value[key]) && context.aborted) {
+      if (!Object.is(result, input[key]) && context.aborted) {
         if (!copied) {
           copied = true;
-          value = Object.assign({}, value);
+          input = Object.assign({}, input);
         }
-        value[key] = result;
+        input[key] = result;
       }
 
       context.exitKey();
     }
 
-    return value;
+    return input;
   }
 }
 

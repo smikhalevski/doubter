@@ -5,8 +5,8 @@ import { createIssue } from '../utils';
 export class NumberType extends Type<number> {
   private _min?: number;
   private _max?: number;
-  private _inclusiveMin?: number;
-  private _inclusiveMax?: number;
+  private _minIncluded?: boolean;
+  private _maxIncluded?: boolean;
   private _divisor?: number;
 
   positive(): NumberType {
@@ -20,24 +20,28 @@ export class NumberType extends Type<number> {
   gt(value: number): NumberType {
     const type = this.clone();
     type._min = value;
+    type._minIncluded = false;
     return type;
   }
 
   lt(value: number): NumberType {
     const type = this.clone();
     type._max = value;
+    type._maxIncluded = false;
     return type;
   }
 
   gte(value: number): NumberType {
     const type = this.clone();
-    type._inclusiveMin = value;
+    type._min = value;
+    type._minIncluded = true;
     return type;
   }
 
   lte(value: number): NumberType {
     const type = this.clone();
-    type._inclusiveMax = value;
+    type._max = value;
+    type._maxIncluded = true;
     return type;
   }
 
@@ -47,54 +51,38 @@ export class NumberType extends Type<number> {
     return type;
   }
 
-  _parse(value: unknown, context: ParserContext): any {
-    if (typeof value !== 'number' || isNaN(value)) {
-      context.raiseIssue(createIssue(context, 'type', value, 'number'));
-      return value;
+  _parse(input: unknown, context: ParserContext): any {
+    if (typeof input !== 'number' || isNaN(input)) {
+      context.raiseIssue(createIssue(context, 'type', input, 'number'));
+      return input;
     }
 
-    const { _min, _max, _inclusiveMin, _inclusiveMax, _divisor } = this;
+    const { _min, _max, _minIncluded, _maxIncluded, _divisor } = this;
 
-    if (_min !== undefined && value < _min) {
-      context.raiseIssue(createIssue(context, 'number_gt', value, _min));
+    if (_min !== undefined && (_minIncluded ? input <= _min : input < _min)) {
+      context.raiseIssue(createIssue(context, _minIncluded ? 'number_gte' : 'number_gt', input, _min));
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
 
-    if (_max !== undefined && value > _max) {
-      context.raiseIssue(createIssue(context, 'number_lt', value, _max));
+    if (_max !== undefined && (_maxIncluded ? input >= _max : input > _max)) {
+      context.raiseIssue(createIssue(context, _maxIncluded ? 'number_lte' : 'number_lt', input, _max));
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
 
-    if (_inclusiveMin !== undefined && value <= _inclusiveMin) {
-      context.raiseIssue(createIssue(context, 'number_gte', value, _inclusiveMin));
+    if (_divisor !== undefined && input % _divisor !== 0) {
+      context.raiseIssue(createIssue(context, 'number_multiple_of', input, _divisor));
 
       if (context.aborted) {
-        return value;
+        return input;
       }
     }
 
-    if (_inclusiveMax !== undefined && value >= _inclusiveMax) {
-      context.raiseIssue(createIssue(context, 'number_lte', value, _inclusiveMax));
-
-      if (context.aborted) {
-        return value;
-      }
-    }
-
-    if (_divisor !== undefined && value % _divisor !== 0) {
-      context.raiseIssue(createIssue(context, 'number_multiple_of', value, _divisor));
-
-      if (context.aborted) {
-        return value;
-      }
-    }
-
-    return value;
+    return input;
   }
 }
