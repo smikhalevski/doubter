@@ -1,6 +1,5 @@
-import { Type } from './Type';
+import { InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { InferType } from '../shared-types';
 
 export class RecordType<K extends Type<string> | Type<number>, V extends Type> extends Type<
   Record<InferType<K>, InferType<V>>
@@ -9,5 +8,5 @@ export class RecordType<K extends Type<string> | Type<number>, V extends Type> e
     super();
   }
 
-  _parse(value: any, context: ParserContext): any {}
+  _parse(value: unknown, context: ParserContext): any {}
 }

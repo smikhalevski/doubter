@@ -1,5 +1,5 @@
-import { NumberType } from '../types';
+import { IntegerType } from '../types';
 
-export function int(): NumberType {
-  return new NumberType().int();
+export function int(): IntegerType {
+  return new IntegerType();
 }

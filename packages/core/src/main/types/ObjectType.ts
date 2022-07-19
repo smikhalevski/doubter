@@ -1,7 +1,7 @@
 import { isAsync } from '../utils';
 import { ParserContext } from '../ParserContext';
-import { Type } from './Type';
-import { Dict, InferType } from '../shared-types';
+import { InferType, Type } from './Type';
+import { Dict } from '../shared-types';
 
 export function object<P extends Dict<Type>>(props: P): ObjectType<P> {
   return new ObjectType(props, ObjectKeysMode.PRESERVE, null);
@@ -34,7 +34,7 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
     this._keys = new Set(Object.keys(_props));
   }
 
-  protected _isAsync(): boolean {
+  isAsync(): boolean {
     return isAsync(Object.values(this._props));
   }
 
@@ -123,7 +123,7 @@ export class ObjectType<P extends Dict<Type>> extends Type<InferObjectType<P>> {
         break;
     }
 
-    if (this.async) {
+    if (this.isAsync()) {
       let promise = Promise.resolve(() => value);
 
       for (const [key, type] of _entries) {

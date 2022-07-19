@@ -1,25 +1,24 @@
-import { Primitive } from '../shared-types';
+import { Dict, Primitive } from '../shared-types';
 import { OneOfType } from '../types';
 
-export function oneOf<T extends { [key: string | number]: string | number }>(values: T): OneOfType<T[keyof T]>;
+export function oneOf<U extends Primitive, T extends [U, ...U[]]>(...values: T): OneOfType<T[number]>;
 
-export function oneOf<U extends Primitive, T extends readonly [U, ...U[]]>(values: T): OneOfType<T[number]>;
+export function oneOf<U extends Primitive, T extends readonly [U, ...U[]]>(...values: T): OneOfType<T[number]>;
 
-export function oneOf<U extends Primitive, T extends [U, ...U[]]>(values: T): OneOfType<T[number]>;
+export function oneOf<T extends Dict<string | number>>(values: T): OneOfType<T[keyof T]>;
 
-export function oneOf(values: any): OneOfType<any> {
-  if (Array.isArray(values)) {
-    return new OneOfType(values);
-  }
+export function oneOf(value: Primitive | Dict<string | number>): OneOfType<any> {
+  const values = [];
 
-  const keys = Object.keys(values);
-
-  values = Object.values(values);
-
-  for (const key of keys) {
-    const keyIndex = values.indexOf(key);
-    if (keyIndex !== -1) {
-      values.splice(keyIndex, 1);
+  if (value === null || typeof value !== 'object') {
+    for (let i = 0; i < arguments.length; ++i) {
+      values.push(arguments[i]);
+    }
+  } else {
+    for (const element of Object.values(value)) {
+      if (typeof value[element] !== 'number') {
+        values.push(element);
+      }
     }
   }
 

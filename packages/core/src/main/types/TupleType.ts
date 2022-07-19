@@ -1,40 +1,38 @@
-import { Type } from './Type';
-import { InferType } from '../shared-types';
+import { InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { createIssue, getValueType, isAsync, IssueCode, ValueType } from '../utils';
+import { createIssue, isAsync } from '../utils';
 
 export class TupleType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U]: InferType<U[K]> }> {
   constructor(private _elementTypes: U) {
     super();
   }
 
-  protected _isAsync(): boolean {
+  isAsync(): boolean {
     return isAsync(this._elementTypes);
   }
 
-  _parse(value: any, context: ParserContext): any {
-    if (getValueType(value) !== ValueType.ARRAY) {
-      context.raiseIssue(createIssue(context, IssueCode.INVALID_TYPE, value, ValueType.ARRAY));
+  _parse(value: unknown, context: ParserContext): any {
+    if (!Array.isArray(value)) {
+      context.raiseIssue(createIssue(context, 'type', value, 'array'));
       return value;
     }
 
-    const arr: any[] = value;
-    const arrLength = arr.length;
+    const valueLength = value.length;
 
     const { _elementTypes } = this;
     const elementsLength = _elementTypes.length;
 
-    if (arrLength !== elementsLength) {
-      context.raiseIssue(createIssue(context, IssueCode.TUPLE_INVALID_LENGTH, value, elementsLength));
+    if (valueLength !== elementsLength) {
+      context.raiseIssue(createIssue(context, 'tuple_length', value, elementsLength));
 
       if (context.aborted) {
         return value;
       }
     }
 
-    if (this.async) {
+    if (this.isAsync()) {
       return Promise.all(
-        _elementTypes.map((elementType, i) => elementType._parse(arr[i], context.fork(false).enterKey(i)))
+        _elementTypes.map((elementType, i) => elementType._parse(value[i], context.fork(false).enterKey(i)))
       );
     }
 
@@ -42,7 +40,7 @@ export class TupleType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
 
     for (let i = 0; i < elementsLength; ++i) {
       context.enterKey(i);
-      elements[i] = _elementTypes[i]._parse(arr[i], context);
+      elements[i] = _elementTypes[i]._parse(value[i], context);
       context.exitKey();
 
       if (context.aborted) {

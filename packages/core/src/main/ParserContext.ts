@@ -25,15 +25,15 @@ export class ParserContext {
     this._cursor = _path.length;
   }
 
-  fork(isolated: boolean): ParserContext {
-    return new ParserContext(this._quick, this.getPath(), isolated ? [] : this.issues);
-  }
-
   raiseIssue: RaiseIssue = (issue): void => {
     this.issues.push(issue);
     this.aborted = this._quick;
     this.valid = false;
   };
+
+  fork(isolated: boolean): ParserContext {
+    return new ParserContext(this._quick, this.getPath(), isolated ? [] : this.issues);
+  }
 
   /**
    * Adds issues from the context to this context.
@@ -45,7 +45,7 @@ export class ParserContext {
   }
 
   /**
-   * The current path pointed to by the context.
+   * The current path pointed by the context.
    */
   getPath(): any[] {
     return this._path.slice(0, this._cursor);

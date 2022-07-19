@@ -1,5 +1,4 @@
-import { Type } from './Type';
-import { InferType } from '../shared-types';
+import { InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
 
 export class LazyType<X extends Type> extends Type<InferType<X>> {
@@ -7,11 +6,11 @@ export class LazyType<X extends Type> extends Type<InferType<X>> {
     super();
   }
 
-  protected _isAsync(): boolean {
-    return this._typeProvider().async;
+  isAsync(): boolean {
+    return this._typeProvider().isAsync();
   }
 
-  _parse(value: any, context: ParserContext): any {
+  _parse(value: unknown, context: ParserContext): any {
     return this._typeProvider()._parse(value, context);
   }
 }

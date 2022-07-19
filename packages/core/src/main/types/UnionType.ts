@@ -1,5 +1,4 @@
-import { Type } from './Type';
-import { InferType } from '../shared-types';
+import { InferType, Type } from './Type';
 import { isAsync } from '../utils';
 import { ParserContext } from '../ParserContext';
 
@@ -8,14 +7,14 @@ export class UnionType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
     super();
   }
 
-  protected _isAsync(): boolean {
+  isAsync(): boolean {
     return isAsync(this._types);
   }
 
-  _parse(value: any, context: ParserContext): any {
+  _parse(value: unknown, context: ParserContext): any {
     const { _types } = this;
 
-    if (this.async) {
+    if (this.isAsync()) {
     }
 
     let typeContext;

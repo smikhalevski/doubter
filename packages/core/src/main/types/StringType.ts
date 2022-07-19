@@ -1,6 +1,6 @@
 import { Type } from './Type';
 import { ParserContext } from '../ParserContext';
-import { createIssue, getValueType, IssueCode, ValueType } from '../utils';
+import { createIssue } from '../utils';
 
 export class StringType extends Type<string> {
   private _minLength?: number;
@@ -8,26 +8,26 @@ export class StringType extends Type<string> {
   private _re?: RegExp;
 
   min(length: number): StringType {
-    const type = this._clone();
+    const type = this.clone();
     type._minLength = length;
     return type;
   }
 
   max(length: number): StringType {
-    const type = this._clone();
+    const type = this.clone();
     type._maxLength = length;
     return type;
   }
 
-  matches(re: RegExp): StringType {
-    const type = this._clone();
+  pattern(re: RegExp): StringType {
+    const type = this.clone();
     type._re = re;
     return type;
   }
 
-  _parse(value: any, context: ParserContext): any {
-    if (getValueType(value) !== ValueType.STRING) {
-      context.raiseIssue(createIssue(context, IssueCode.INVALID_TYPE, value, ValueType.STRING));
+  _parse(value: unknown, context: ParserContext): any {
+    if (typeof value !== 'string') {
+      context.raiseIssue(createIssue(context, 'type', value, 'string'));
       return value;
     }
 
@@ -36,7 +36,7 @@ export class StringType extends Type<string> {
     const { _minLength, _maxLength, _re } = this;
 
     if (_minLength !== undefined && valueLength < _minLength) {
-      context.raiseIssue(createIssue(context, IssueCode.STRING_TOO_SHORT, value, _minLength));
+      context.raiseIssue(createIssue(context, 'string_min', value, _minLength));
 
       if (context.aborted) {
         return value;
@@ -44,7 +44,7 @@ export class StringType extends Type<string> {
     }
 
     if (_maxLength !== undefined && valueLength > _maxLength) {
-      context.raiseIssue(createIssue(context, IssueCode.STRING_TOO_LONG, value, _minLength));
+      context.raiseIssue(createIssue(context, 'string_max', value, _minLength));
 
       if (context.aborted) {
         return value;
@@ -52,7 +52,7 @@ export class StringType extends Type<string> {
     }
 
     if (_re !== undefined && !_re.test(value)) {
-      context.raiseIssue(createIssue(context, IssueCode.STRING_NO_MATCH, value, _re));
+      context.raiseIssue(createIssue(context, 'string_pattern', value, _re));
 
       if (context.aborted) {
         return value;
