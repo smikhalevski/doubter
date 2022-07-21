@@ -1,27 +1,36 @@
 import { ParserContext } from '../ParserContext';
-import { Awaitable, Issue, RaiseIssue } from '../shared-types';
+import { Issue } from '../shared-types';
 import { ValidationError } from '../ValidationError';
+import { toPromise } from '../utils';
 
 /**
  * Infers the type from the type definition.
+ *
+ * @template X The type definition to infer the data type from.
  */
-export type InferType<X extends Type> = X extends Type<infer T> ? T : never;
+export type InferType<X extends AnyType> = X extends Type<infer T> ? T : never;
 
 /**
- * The transformer that converts the input input to the output type.
+ * Transforms the input value to the output value.
  *
- * @param input The input input that must be transformed.
+ * @param input The input value that must be transformed.
  * @param raiseIssue The callback that raises a validation issue to notify the parser that input cannot be
- * transformed.
+ * properly transformed.
+ * @returns The output value.
+ *
+ * @template I The type of the input value.
+ * @template O The type of the output input.
  */
-export type Transformer<I, O> = (value: I, raiseIssue: RaiseIssue) => O;
+export type Transformer<I, O> = (input: I, context: ParserContext) => O;
+
+export type AnyType = Type<any> | Type<never>;
 
 /**
  * The abstract type definition.
  *
- * @template T The type of the parsed input.
+ * @template T The type of the value represented by the type definition.
  */
-export abstract class Type<T = any> {
+export abstract class Type<T> {
   /**
    * Parses the input so it conforms the type. If input cannot be parsed then it is returned as is. To indicate that
    * the input is invalid call {@link ParserContext.raiseIssue}.
@@ -39,7 +48,7 @@ export abstract class Type<T = any> {
   /**
    * Returns `true` if parsing is async, or `false` otherwise.
    *
-   * With async types you should use {@link parseAsync} and {@link validateAsync}.
+   * Use {@link parseAsync} and {@link validateAsync} with async type definitions.
    */
   isAsync(): boolean {
     return false;
@@ -53,7 +62,7 @@ export abstract class Type<T = any> {
    *
    * @template O The type of the output input.
    */
-  transform<O>(transformer: Transformer<T, O>): TransformedType<T, O> {
+  transform<O>(transformer: Transformer<T, O>): TransformedType<this, O> {
     return new TransformedType(this, false, transformer);
   }
 
@@ -65,7 +74,7 @@ export abstract class Type<T = any> {
    *
    * @template O The type of the output input.
    */
-  transformAsync<O>(transformer: Transformer<T, Promise<O>>): TransformedType<T, O> {
+  transformAsync<O>(transformer: Transformer<T, Promise<O>>): TransformedType<this, O> {
     return new TransformedType(this, true, transformer);
   }
 
@@ -75,14 +84,14 @@ export abstract class Type<T = any> {
    * @param input The input to validate.
    * @returns The list of issues encountered during validation.
    *
-   * @throws Error if the type {@link isAsync}.
+   * @throws Error if the type is async.
    */
   validate(input: unknown): Issue[] {
     if (this.isAsync()) {
       throw new Error('Cannot use async type as sync');
     }
 
-    const context = new ParserContext(false);
+    const context = ParserContext.create();
     this._parse(input, context);
     return context.issues;
   }
@@ -94,8 +103,8 @@ export abstract class Type<T = any> {
    * @returns The list of issues encountered during validation.
    */
   validateAsync(input: unknown): Promise<Issue[]> {
-    const context = new ParserContext(false);
-    return Promise.resolve(this._parse(input, context)).then(() => context.issues);
+    const context = ParserContext.create();
+    return toPromise(this._parse(input, context)).then(() => context.issues);
   }
 
   /**
@@ -104,14 +113,14 @@ export abstract class Type<T = any> {
    * @param input The input to check.
    * @returns `true` if input conforms the type, or `false` otherwise.
    *
-   * @throws Error if the type {@link isAsync}.
+   * @throws Error if the type is async.
    */
   is(input: unknown): input is T {
     if (this.isAsync()) {
       throw new Error('Cannot use async type as sync');
     }
 
-    const context = new ParserContext(true);
+    const context = ParserContext.create(true);
     this._parse(input, context);
 
     return context.valid;
@@ -121,17 +130,18 @@ export abstract class Type<T = any> {
    * Parses the input, so it conforms the type.
    *
    * @param input The input to parse.
+   * @param quick If `true` then parsing is aborted as soon as the first issue is detected.
    * @returns `true` if input conforms the type, or `false` otherwise.
    *
-   * @throws Error if the type {@link isAsync}.
+   * @throws Error if the type is async.
    * @throws {@link ValidationError} if encountered issues during parsing.
    */
-  parse(input: unknown): T {
+  parse(input: unknown, quick = true): T {
     if (this.isAsync()) {
       throw new Error('Cannot use async type as sync');
     }
 
-    const context = new ParserContext(true);
+    const context = ParserContext.create(quick);
     const output = this._parse(input, context);
 
     if (context.valid) {
@@ -144,14 +154,15 @@ export abstract class Type<T = any> {
    * Asynchronously parses the input, so it conforms the type.
    *
    * @param input The input to parse.
+   * @param quick If `true` then parsing is aborted as soon as the first issue is detected.
    * @returns `true` if input conforms the type, or `false` otherwise.
    *
    * @throws {@link ValidationError} if encountered issues during parsing.
    */
-  parseAsync(input: unknown): Promise<T> {
-    const context = new ParserContext(true);
+  parseAsync(input: unknown, quick = true): Promise<T> {
+    const context = ParserContext.create(quick);
 
-    return Promise.resolve(this._parse(input, context)).then(value => {
+    return toPromise(this._parse(input, context)).then(value => {
       if (context.valid) {
         return value;
       }
@@ -160,8 +171,25 @@ export abstract class Type<T = any> {
   }
 }
 
-export class TransformedType<I, O> extends Type<O> {
-  constructor(private _type: Type<I>, private _async: boolean, private _transformer: Transformer<I, Awaitable<O>>) {
+/**
+ * The transforming type definition.
+ *
+ * @template X The type definition of the input value.
+ * @template T The output value.
+ */
+export class TransformedType<X extends AnyType, T> extends Type<T> {
+  /**
+   * Creates a new {@link TransformedType} instance.
+   *
+   * @param _type The type that parses a transformation input value.
+   * @param _async `true` if transformer returns a `Promise`, or `false` otherwise.
+   * @param _transformer The transformer that converts input value to the output value.
+   */
+  constructor(
+    private _type: X,
+    private _async: boolean,
+    private _transformer: Transformer<InferType<X>, Promise<T> | T>
+  ) {
     super();
   }
 
@@ -171,13 +199,12 @@ export class TransformedType<I, O> extends Type<O> {
 
   _parse(input: unknown, context: ParserContext): any {
     const { _type, _transformer } = this;
-    const { raiseIssue } = context;
 
     const output = _type._parse(input, context);
 
     if (this.isAsync()) {
-      return Promise.resolve(output).then(output => (context.aborted ? _transformer(output, raiseIssue) : input));
+      return toPromise(output).then(output => (context.aborted ? _transformer(output, context) : input));
     }
-    return context.aborted ? _transformer(output, raiseIssue) : input;
+    return context.aborted ? _transformer(output, context) : input;
   }
 }

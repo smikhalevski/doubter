@@ -1,5 +1,8 @@
-import { UnconstrainedType } from '../types';
+import { NeverType } from '../types';
 
-export function never(): UnconstrainedType<never> {
-  return new UnconstrainedType();
+/**
+ * Creates the type definition that always raises an issue.
+ */
+export function never(): NeverType {
+  return new NeverType();
 }

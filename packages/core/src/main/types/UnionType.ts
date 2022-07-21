@@ -1,8 +1,19 @@
-import { InferType, Type } from './Type';
-import { isAsync } from '../utils';
+import { AnyType, InferType, Type } from './Type';
+import { callOrChain, createIssue, isAsync } from '../utils';
 import { ParserContext } from '../ParserContext';
+import { Issue, Several } from '../shared-types';
 
-export class UnionType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U]: InferType<U[K]> }[number]> {
+/**
+ * The union type definition.
+ *
+ * @template U The list of united type definitions.
+ */
+export class UnionType<U extends Several<AnyType>> extends Type<{ [K in keyof U]: InferType<U[K]> }[number]> {
+  /**
+   * Creates a new {@link UnionType} instance.
+   *
+   * @param _types The list of united type definitions.
+   */
   constructor(private _types: U) {
     super();
   }
@@ -14,22 +25,46 @@ export class UnionType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
   _parse(input: unknown, context: ParserContext): any {
     const { _types } = this;
 
-    if (this.isAsync()) {
-    }
+    const issues: Issue[] = [];
 
-    let typeContext;
+    if (this.isAsync()) {
+      let i = 0;
+      let localContext: ParserContext;
+
+      const handleInput = (): unknown => {
+        if (i < _types.length) {
+          localContext = context.fork(true);
+          return callOrChain(_types[i]._parse(input, localContext), handleOutput);
+        }
+
+        context.raiseIssue(createIssue(context, 'union', input, issues));
+        return input;
+      };
+
+      const handleOutput = (output: unknown) => {
+        if (localContext.valid) {
+          return output;
+        }
+        issues.push(...localContext.issues);
+
+        i++;
+        return handleInput();
+      };
+
+      return handleInput();
+    }
 
     for (const type of _types) {
-      typeContext = context.fork(true);
-      const result = type._parse(input, typeContext);
+      const localContext = context.fork(true);
+      const output = type._parse(input, localContext);
 
-      if (typeContext.valid) {
-        return result;
+      if (localContext.valid) {
+        return output;
       }
+      issues.push(...localContext.issues);
     }
-    if (typeContext !== undefined) {
-      context.absorb(typeContext);
-    }
+
+    context.raiseIssue(createIssue(context, 'union', input, issues));
     return input;
   }
 }

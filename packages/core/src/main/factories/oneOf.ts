@@ -1,20 +1,28 @@
-import { Dict, Primitive } from '../shared-types';
+import { Dict, Primitive, Several } from '../shared-types';
 import { OneOfType } from '../types';
 import { isObjectLike } from '../utils';
 
-export function oneOf<U extends Primitive, T extends [U, ...U[]]>(...values: T): OneOfType<T[number]>;
+/**
+ * The type definition that constrains input with the list of primitive values.
+ *
+ * @param values The list of values allowed for the input.
+ */
+export function oneOf<U extends Several<Primitive>>(...values: U): OneOfType<U[number]>;
 
-export function oneOf<U extends Primitive, T extends readonly [U, ...U[]]>(...values: T): OneOfType<T[number]>;
+/**
+ * The type definition that constrains input with values of the enum-like object.
+ *
+ * @param values The enum-like object.
+ */
+export function oneOf<U extends Dict<string | number>>(values: U): OneOfType<U[keyof U]>;
 
-export function oneOf<T extends Dict<string | number>>(values: T): OneOfType<T[keyof T]>;
-
-export function oneOf(value: Primitive | Dict<string | number>): OneOfType<any> {
+export function oneOf(arg0: Primitive | Dict<string | number>): OneOfType<any> {
   const values = [];
 
-  if (isObjectLike(value)) {
-    for (const element of Object.values(value)) {
-      if (typeof value[element] !== 'number') {
-        values.push(element);
+  if (isObjectLike(arg0)) {
+    for (const value of Object.values(arg0)) {
+      if (typeof arg0[value] !== 'number') {
+        values.push(value);
       }
     }
   } else {

@@ -3,13 +3,11 @@ import { ParserContext } from '../ParserContext';
 import { createIssue } from '../utils';
 
 /**
- * The boolean type definition.
+ * The type definition that always raises an issue.
  */
-export class BooleanType extends Type<boolean> {
+export class NeverType extends Type<never> {
   _parse(input: unknown, context: ParserContext): any {
-    if (typeof input !== 'boolean') {
-      context.raiseIssue(createIssue(context, 'type', input, 'boolean'));
-    }
+    context.raiseIssue(createIssue(context, 'never', input));
     return input;
   }
 }

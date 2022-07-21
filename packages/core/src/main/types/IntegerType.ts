@@ -2,6 +2,9 @@ import { createIssue } from '../utils';
 import { NumberType } from './NumberType';
 import { ParserContext } from '../ParserContext';
 
+/**
+ * The integer type definition.
+ */
 export class IntegerType extends NumberType {
   _parse(input: unknown, context: ParserContext): any {
     if (!Number.isInteger(input)) {

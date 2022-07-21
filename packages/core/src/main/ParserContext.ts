@@ -1,51 +1,56 @@
-import { Issue, RaiseIssue } from './shared-types';
+import { Issue } from './shared-types';
 
 export class ParserContext {
   /**
-   * `true` if the parsing is aborted, or `false` otherwise.
+   * `true` if the parsing should be aborted, or `false` otherwise.
    */
   aborted = false;
 
   /**
-   * `true` if there's no issues.
+   * `true` if there are no issues, or `false` otherwise.
    */
   valid = true;
 
   private _cursor;
 
-  /**
-   * Creates a new {@link ParserContext} instance.
-   *
-   * @param _quick If `true` then input is returned as soon as the first issue is raised. Otherwise, the input is
-   * returned after all issues are collected.
-   * @param _path The path represented by this context.
-   * @param issues The mutable list of issues.
-   */
-  constructor(private _quick = false, private _path: any[] = [], public issues: Issue[] = []) {
+  static create(quick = false): ParserContext {
+    return new ParserContext([], null, quick, []);
+  }
+
+  protected constructor(
+    public issues: Issue[],
+    private _parent: ParserContext | null,
+    private _quick: boolean,
+    private _path: any[]
+  ) {
     this._cursor = _path.length;
   }
 
-  raiseIssue: RaiseIssue = (issue): void => {
-    this.issues.push(issue);
-    this.aborted = this._quick;
-    this.valid = false;
-  };
-
-  fork(isolated: boolean): ParserContext {
-    return new ParserContext(this._quick, this.getPath(), isolated ? [] : this.issues);
-  }
-
   /**
-   * Adds issues from the context to this context.
+   * Creates a new context that originates from the current path.
    *
-   * @param context The context to absorb issues from.
+   * @param local If `true` then the forked context would raise issues in this context.
    */
-  absorb(context: ParserContext): void {
-    context.issues.forEach(this.raiseIssue);
+  fork(local = false): ParserContext {
+    return new ParserContext(local ? [] : this.issues, local ? null : this, this._quick, this.getPath());
+  }
+
+  raiseIssue<T extends Issue>(issue: T): void {
+    const { _parent } = this;
+
+    this.valid = false;
+
+    if (_parent === null) {
+      this.issues.push(issue);
+      this.aborted = this._quick;
+    } else {
+      _parent.raiseIssue(issue);
+      this.aborted = _parent.aborted;
+    }
   }
 
   /**
-   * The current path pointed by the context.
+   * The current path that the context points to.
    */
   getPath(): any[] {
     return this._path.slice(0, this._cursor);

@@ -1,12 +1,22 @@
-import { Type } from './Type';
+import { AnyType, InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
 
-export class NullableType<T> extends Type<T | null> {
-  constructor(private _type: Type<T>) {
+/**
+ * The nullable type definition.
+ *
+ * @template X The underlying type definition.
+ */
+export class NullableType<X extends AnyType> extends Type<InferType<X> | null> {
+  /**
+   * Creates a new {@link NullableType} instance.
+   *
+   * @param _type The underlying type definition.
+   */
+  constructor(private _type: X) {
     super();
   }
 
-  isAsync() {
+  isAsync(): boolean {
     return this._type.isAsync();
   }
 

@@ -1,5 +1,10 @@
-import { NullableType, Type } from '../types';
+import { AnyType, NullableType } from '../types';
 
-export function nullable<T>(type: Type): NullableType<T> {
+/**
+ * Creates the nullable type definition.
+ *
+ * @param type The underlying type definition.
+ */
+export function nullable<X extends AnyType>(type: X): NullableType<X> {
   return new NullableType(type);
 }

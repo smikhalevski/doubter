@@ -1,8 +1,19 @@
-import { InferType, Type } from './Type';
+import { AnyType, InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
 import { createIssue, isAsync } from '../utils';
+import { Several } from '../shared-types';
 
-export class TupleType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U]: InferType<U[K]> }> {
+/**
+ * The tuple type definition.
+ *
+ * @template U The list of tuple elements.
+ */
+export class TupleType<U extends Several<AnyType>> extends Type<{ [K in keyof U]: InferType<U[K]> }> {
+  /**
+   * Creates a new {@link TupleType} instance.
+   *
+   * @param _types The list of tuple elements.
+   */
   constructor(private _types: U) {
     super();
   }
@@ -22,7 +33,7 @@ export class TupleType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
     const inputLength = input.length;
 
     if (inputLength !== typesLength) {
-      context.raiseIssue(createIssue(context, 'tuple_length', input, typesLength));
+      context.raiseIssue(createIssue(context, 'tupleLength', input, typesLength));
 
       if (context.aborted) {
         return input;
@@ -30,7 +41,13 @@ export class TupleType<U extends [Type, ...Type[]]> extends Type<{ [K in keyof U
     }
 
     if (this.isAsync()) {
-      return Promise.all(_types.map((elementType, i) => elementType._parse(input[i], context.fork(false).enterKey(i))));
+      const promises = [];
+
+      for (let i = 0; i < typesLength; ++i) {
+        promises.push(_types[i]._parse(input[i], context.fork().enterKey(i)));
+      }
+
+      return Promise.all(promises);
     }
 
     const output = [];

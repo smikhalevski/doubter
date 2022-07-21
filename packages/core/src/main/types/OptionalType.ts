@@ -1,12 +1,23 @@
-import { Type } from './Type';
+import { AnyType, InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
 
-export class OptionalType<T> extends Type<T | undefined> {
-  constructor(private _type: Type<T>, private _defaultValue?: T) {
+/**
+ * The optional type definition.
+ *
+ * @template X The underlying type definition.
+ */
+export class OptionalType<X extends AnyType> extends Type<InferType<X> | undefined> {
+  /**
+   * Creates a new {@link OptionalType} instance.
+   *
+   * @param _type The underlying type definition.
+   * @param _defaultValue The value that should be used if input is `undefined`.
+   */
+  constructor(private _type: X, private _defaultValue?: InferType<X>) {
     super();
   }
 
-  isAsync() {
+  isAsync(): boolean {
     return this._type.isAsync();
   }
 

@@ -1,13 +1,26 @@
-import { InferType, Type } from './Type';
+import { AnyType, InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
 import { createIssue, isObjectLike } from '../utils';
 import { Dict } from '../shared-types';
 
-export class RecordType<V extends Type, K extends Type<string> | Type<number> = Type> extends Type<
-  Record<InferType<K>, InferType<V>>
-> {
-  constructor(private _valueType: V, private _keyType: K | null) {
+/**
+ * The key-value record type definition.
+ *
+ * @template K The type definition that constrains record keys.
+ * @template V The type definition that constrains record values.
+ */
+export class RecordType<K extends Type<string>, V extends AnyType> extends Type<Record<InferType<K>, InferType<V>>> {
+  /**
+   *
+   * @param _keyType The type definition that constrains record keys. If `null` then keys aren't constrained at runtime.
+   * @param _valueType The type definition that constrains record values.
+   */
+  constructor(private _keyType: K | null, private _valueType: V) {
     super();
+  }
+
+  isAsync(): boolean {
+    return this._keyType?.isAsync() || this._valueType.isAsync();
   }
 
   _parse(input: unknown, context: ParserContext): any {
@@ -28,7 +41,7 @@ export class RecordType<V extends Type, K extends Type<string> | Type<number> = 
           _keyType === null ? key : _keyType._parse(key, context),
 
           // Output value
-          _valueType._parse(value, context.fork(false).enterKey(key))
+          _valueType._parse(value, context.fork().enterKey(key))
         );
       }
 

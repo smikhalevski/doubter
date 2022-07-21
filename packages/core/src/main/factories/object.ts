@@ -1,6 +1,11 @@
 import { Dict } from '../shared-types';
-import { ObjectType, Type } from '../types';
+import { AnyType, ObjectType, Type } from '../types';
 
-export function object<P extends Dict<Type>>(props: P): ObjectType<P> {
-  return new ObjectType(props);
+/**
+ * Creates the array type definition.
+ *
+ * @param props The mapping from an object key to a corresponding type definition.
+ */
+export function object<P extends Dict<AnyType>>(props: P): ObjectType<P, Type<never>> {
+  return new ObjectType<P, Type<never>>(props, null);
 }

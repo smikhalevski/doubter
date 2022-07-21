@@ -1,5 +1,17 @@
-import { ArrayType, Type } from '../types';
+import { AnyType, ArrayType } from '../types';
 
-export function array<X extends Type = Type>(elementType?: X): ArrayType<X> {
-  return new ArrayType(elementType);
+/**
+ * Creates the array type definition that doesn't constrain array elements.
+ */
+export function array(): ArrayType<any>;
+
+/**
+ * Creates the array type definition.
+ *
+ * @param type The type definition of array elements.
+ */
+export function array<X extends AnyType>(type: X): ArrayType<X>;
+
+export function array(type?: AnyType): ArrayType<any> {
+  return new ArrayType(type || null);
 }

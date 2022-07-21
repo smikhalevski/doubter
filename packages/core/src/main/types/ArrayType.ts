@@ -1,31 +1,60 @@
-import { InferType, Type } from './Type';
+import { AnyType, InferType, Type } from './Type';
 import { ParserContext } from '../ParserContext';
 import { createIssue, shallowClone } from '../utils';
 
-export class ArrayType<X extends Type = Type> extends Type<InferType<X>[]> {
+/**
+ * The array type definition.
+ *
+ * @template X The type definition of array elements.
+ */
+export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
   private _minLength?: number;
   private _maxLength?: number;
 
-  constructor(private _type?: X) {
+  /**
+   * Creates a new {@link ArrayType} instance.
+   *
+   * @param _type The type definition of array elements. If `null` then element types aren't constrained at runtime.
+   */
+  constructor(private _type: X | null) {
     super();
   }
 
-  min(length: number): ArrayType<X> {
+  /**
+   * Constrains the minimum array length.
+   *
+   * @param length The minimum length of the array to satisfy the constraint.
+   */
+  min(length: number): this {
     const type = shallowClone(this);
     type._minLength = length;
     return type;
   }
 
-  max(length: number): ArrayType<X> {
+  /**
+   * Constrains the maximum array length.
+   *
+   * @param length The maximum length of the array to satisfy the constraint.
+   */
+  max(length: number): this {
     const type = shallowClone(this);
     type._maxLength = length;
     return type;
   }
 
+  /**
+   * Constrains the array length.
+   *
+   * @param length The length of the array to satisfy the constraint.
+   */
+  length(length: number): this {
+    return this.min(length).max(length);
+  }
+
   isAsync(): boolean {
     const { _type } = this;
 
-    return _type !== undefined && _type.isAsync();
+    return _type !== null && _type.isAsync();
   }
 
   _parse(input: unknown, context: ParserContext): any {
@@ -38,7 +67,7 @@ export class ArrayType<X extends Type = Type> extends Type<InferType<X>[]> {
     const inputLength = input.length;
 
     if (_minLength !== undefined && inputLength < _minLength) {
-      context.raiseIssue(createIssue(context, 'array_min', input, _minLength));
+      context.raiseIssue(createIssue(context, 'arrayMinLength', input, _minLength));
 
       if (context.aborted) {
         return input;
@@ -46,19 +75,25 @@ export class ArrayType<X extends Type = Type> extends Type<InferType<X>[]> {
     }
 
     if (_maxLength !== undefined && inputLength > _maxLength) {
-      context.raiseIssue(createIssue(context, 'array_max', input, _maxLength));
+      context.raiseIssue(createIssue(context, 'arrayMaxLength', input, _maxLength));
 
       if (context.aborted) {
         return input;
       }
     }
 
-    if (_type === undefined) {
-      return input;
+    if (_type === null) {
+      return input.slice(0);
     }
 
     if (this.isAsync()) {
-      return Promise.all(input.map((element, i) => _type._parse(element, context.fork(false).enterKey(i))));
+      const promises = [];
+
+      for (let i = 0; i < inputLength; ++i) {
+        promises.push(_type._parse(input[i], context.fork().enterKey(i)));
+      }
+
+      return Promise.all(promises);
     }
 
     const output = [];

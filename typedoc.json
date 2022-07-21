@@ -2,5 +2,6 @@
   "name": "Doubter",
   "out": "./docs",
   "includeVersion": true,
+  "excludePrivate": true,
   "cleanOutputDir": true
 }

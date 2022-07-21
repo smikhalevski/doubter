@@ -2,6 +2,9 @@ import { Type } from './Type';
 import { ParserContext } from '../ParserContext';
 import { createIssue, shallowClone } from '../utils';
 
+/**
+ * The number type definition.
+ */
 export class NumberType extends Type<number> {
   private _min?: number;
   private _max?: number;
@@ -9,43 +12,66 @@ export class NumberType extends Type<number> {
   private _maxIncluded?: boolean;
   private _divisor?: number;
 
-  positive(): NumberType {
+  /**
+   * Constrains the number to be greater than zero.
+   */
+  positive(): this {
     return this.gt(0);
   }
 
-  negative(): NumberType {
+  /**
+   * Constrains the number to be less than zero.
+   */
+  negative(): this {
     return this.lt(0);
   }
 
-  gt(value: number): NumberType {
+  /**
+   * Constrains the number to be greater than the value.
+   */
+  gt(value: number): this {
     const type = shallowClone(this);
     type._min = value;
     type._minIncluded = false;
     return type;
   }
 
-  lt(value: number): NumberType {
+  /**
+   * Constrains the number to be less than the value.
+   */
+  lt(value: number): this {
     const type = shallowClone(this);
     type._max = value;
     type._maxIncluded = false;
     return type;
   }
 
-  gte(value: number): NumberType {
+  /**
+   * Constrains the number to be greater than or equal to the value.
+   */
+  gte(value: number): this {
     const type = shallowClone(this);
     type._min = value;
     type._minIncluded = true;
     return type;
   }
 
-  lte(value: number): NumberType {
+  /**
+   * Constrains the number to be less than or equal to the value.
+   */
+  lte(value: number): this {
     const type = shallowClone(this);
     type._max = value;
     type._maxIncluded = true;
     return type;
   }
 
-  multipleOf(divisor: number): NumberType {
+  /**
+   * Constrains the number to be a multiple of the divisor.
+   *
+   * @param divisor The number by which the input should be divisible without a remainder.
+   */
+  multipleOf(divisor: number): this {
     const type = shallowClone(this);
     type._divisor = divisor;
     return type;
@@ -59,16 +85,18 @@ export class NumberType extends Type<number> {
 
     const { _min, _max, _minIncluded, _maxIncluded, _divisor } = this;
 
-    if (_min !== undefined && (_minIncluded ? input <= _min : input < _min)) {
-      context.raiseIssue(createIssue(context, _minIncluded ? 'number_gte' : 'number_gt', input, _min));
+    if (_min !== undefined && (_minIncluded ? input < _min : input <= _min)) {
+      context.raiseIssue(
+        createIssue(context, _minIncluded ? 'numberGreaterThanOrEqual' : 'numberGreaterThan', input, _min)
+      );
 
       if (context.aborted) {
         return input;
       }
     }
 
-    if (_max !== undefined && (_maxIncluded ? input >= _max : input > _max)) {
-      context.raiseIssue(createIssue(context, _maxIncluded ? 'number_lte' : 'number_lt', input, _max));
+    if (_max !== undefined && (_maxIncluded ? input > _max : input >= _max)) {
+      context.raiseIssue(createIssue(context, _maxIncluded ? 'numberLessThanOrEqual' : 'numberLessThan', input, _max));
 
       if (context.aborted) {
         return input;
@@ -76,11 +104,7 @@ export class NumberType extends Type<number> {
     }
 
     if (_divisor !== undefined && input % _divisor !== 0) {
-      context.raiseIssue(createIssue(context, 'number_multiple_of', input, _divisor));
-
-      if (context.aborted) {
-        return input;
-      }
+      context.raiseIssue(createIssue(context, 'numberMultipleOf', input, _divisor));
     }
 
     return input;

@@ -1,12 +1,11 @@
-import { OptionalType, Type } from '../types';
+import { AnyType, InferType, OptionalType } from '../types';
 
 /**
  * Marks the type as optional.
  *
  * @param type The type that must be optional.
- * @param defaultValue The default input that should be used if input is `undefined`.
- * @returns The optional type.
+ * @param defaultValue The value that should be used if input is `undefined`.
  */
-export function optional<T>(type: Type<T>, defaultValue?: T): OptionalType<T> {
+export function optional<X extends AnyType>(type: X, defaultValue?: InferType<X>): OptionalType<X> {
   return new OptionalType(type, defaultValue);
 }

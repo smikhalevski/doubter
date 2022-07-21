@@ -4,9 +4,9 @@ describe('oneOf', () => {
   test('raises issue when value is not one of values from the list', () => {
     expect(oneOf('aaa', 'bbb').validate('ccc')).toEqual([
       {
-        code: 'one_of',
+        code: 'oneOf',
         path: [],
-        value: 'ccc',
+        input: 'ccc',
         param: ['aaa', 'bbb'],
       },
     ]);
@@ -24,9 +24,9 @@ describe('oneOf', () => {
 
     expect(oneOf(Foo).validate(2)).toEqual([
       {
-        code: 'one_of',
+        code: 'oneOf',
         path: [],
-        value: 2,
+        input: 2,
         param: [Foo.AAA, Foo.BBB],
       },
     ]);
@@ -40,9 +40,9 @@ describe('oneOf', () => {
 
     expect(oneOf(Foo).validate('AAA')).toEqual([
       {
-        code: 'one_of',
+        code: 'oneOf',
         path: [],
-        value: 'AAA',
+        input: 'AAA',
         param: [Foo.AAA, Foo.BBB],
       },
     ]);
@@ -65,9 +65,9 @@ describe('oneOf', () => {
 
     expect(oneOf(Foo).validate('ccc')).toEqual([
       {
-        code: 'one_of',
+        code: 'oneOf',
         path: [],
-        value: 'ccc',
+        input: 'ccc',
         param: [Foo.AAA, Foo.BBB],
       },
     ]);
