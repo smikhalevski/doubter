@@ -2,6 +2,7 @@
   "compilerOptions": {
     "importHelpers": true,
     "declaration": true,
+    "esModuleInterop": true,
     "moduleResolution": "Node",
     "strict": true,
     "target": "ES5",
