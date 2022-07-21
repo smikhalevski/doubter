@@ -1,7 +1,7 @@
 import { ParserContext } from '../ParserContext';
 import { Issue } from '../shared-types';
 import { ValidationError } from '../ValidationError';
-import { toPromise } from '../utils';
+import { createIssue, toPromise } from '../utils';
 
 /**
  * Infers the type from the type definition.
@@ -76,6 +76,19 @@ export abstract class Type<T> {
    */
   transformAsync<O>(transformer: Transformer<T, Promise<O>>): TransformedType<this, O> {
     return new TransformedType(this, true, transformer);
+  }
+
+  refine<O extends T>(refiner: (input: T) => input is O, code?: string): TransformedType<this, O>;
+
+  refine(refiner: (input: T) => boolean, code?: string): TransformedType<this, T>;
+
+  refine(refiner: (input: T) => boolean, code = 'refinement'): TransformedType<this, T> {
+    return new TransformedType(this, false, (input, context) => {
+      if (!refiner(input)) {
+        context.raiseIssue(createIssue(context, code, input));
+      }
+      return input;
+    });
   }
 
   /**

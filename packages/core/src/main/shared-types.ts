@@ -5,7 +5,7 @@ export interface Issue {
   /**
    * The unique code of the validation issue.
    */
-  code: string;
+  code: KnownIssueCode | string;
 
   /**
    * The object path to the field where an issue has occurred.
@@ -20,8 +20,28 @@ export interface Issue {
   /**
    * An additional param that is specific for {@link code}.
    */
-  param: any;
+  param?: any;
 }
+
+export type KnownIssueCode =
+  | 'type'
+  | 'arrayMinLength'
+  | 'arrayMaxLength'
+  | 'instanceOf'
+  | 'literal'
+  | 'never'
+  | 'numberGreaterThanOrEqual'
+  | 'numberGreaterThan'
+  | 'numberLessThanOrEqual'
+  | 'numberLessThan'
+  | 'numberMultipleOf'
+  | 'oneOf'
+  | 'stringMinLength'
+  | 'stringMaxLength'
+  | 'stringPattern'
+  | 'tupleLength'
+  | 'union'
+  | 'refinement';
 
 export type Several<T> = [T, ...T[]];
 
