@@ -1,15 +1,37 @@
 {
-  "private": true,
+  "name": "doubter",
+  "version": "1.0.0",
+  "description": "No-hassle schema declaration and validation.",
+  "main": "./lib/index-cjs.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "lib"
+  ],
   "scripts": {
-    "build": "npm run build --workspaces",
-    "clean": "rimraf './docs' && npm run clean --workspaces",
+    "build": "tsc && rollup --external tslib --input ./lib/index.js --file ./lib/index-cjs.js --format cjs --plugin @rollup/plugin-node-resolve",
+    "clean": "rimraf './lib' './docs' './coverage'",
     "test": "jest",
-    "docs:build": "typedoc ./packages/*/src/main/index.ts",
+    "perf": "[ -d ./lib ] || npm run build && toofast './src/test/perf.js'",
+    "docs:build": "typedoc './src/main/index.ts'",
     "docs:release": "npm run docs:build && SHA=$(git rev-parse --short HEAD) && ORIGIN=$(git config --get remote.origin.url) && TEMP=$(mktemp -d) && git clone -b ghpages --single-branch $ORIGIN $TEMP && ls -A $TEMP | grep -wv .git | xargs rm -rf && cp -R ./docs/ $TEMP && cd $TEMP && git add . && git commit -m \"Updated docs ($SHA)\" && git push && rm -rf $TEMP"
   },
-  "workspaces": [
-    "./packages/core"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smikhalevski/doubter.git"
+  },
+  "keywords": [
+    "validation",
+    "parse",
+    "string"
   ],
+  "author": "Savva Mikhalevski <smikhalevski@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smikhalevski/doubter/issues"
+  },
+  "homepage": "https://github.com/smikhalevski/doubter#readme",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@types/jest": "^28.1.3",
@@ -17,10 +39,12 @@
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "rollup": "^2.75.7",
-    "terser": "^5.14.1",
     "toofast": "^1.3.1",
     "ts-jest": "^28.0.5",
     "typedoc": "^0.22.18",
     "typescript": "^4.7.3"
+  },
+  "dependencies": {
+    "tslib": "^2.4.0"
   }
 }

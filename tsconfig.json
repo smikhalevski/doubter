@@ -3,25 +3,16 @@
     "importHelpers": true,
     "declaration": true,
     "moduleResolution": "Node",
-    "esModuleInterop": true,
     "strict": true,
     "target": "ES5",
     "module": "ES6",
+    "rootDir": "./src/main",
+    "outDir": "./lib",
     "lib": [
       "ES7"
-    ],
-    "rootDir": ".",
-    "baseUrl": ".",
-    "paths": {
-      "doubter": [
-        "./packages/doubter/src/main"
-      ],
-      "@doubter/*": [
-        "./packages/*/src/main"
-      ]
-    }
+    ]
   },
   "include": [
-    "./packages/*/src/main/**/*"
+    "./src/main/**/*"
   ]
 }
