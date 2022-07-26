@@ -1,74 +1,101 @@
 import { Type } from './Type';
-import { ParserContext } from '../ParserContext';
-import { createIssue, shallowClone } from '../utils';
+import { cloneObject, raiseIssue, raiseIssuesIfDefined, raiseIssuesOrPush } from '../utils';
+import { ConstraintOptions, ParserOptions } from '../shared-types';
 
 /**
  * The string type definition.
  */
 export class StringType extends Type<string> {
-  private _minLength?: number;
-  private _maxLength?: number;
-  private _re?: RegExp;
+  protected minLength?: number;
+  protected maxLength?: number;
+  protected re?: RegExp;
+  protected minLengthOptions?: ConstraintOptions;
+  protected maxLengthOptions?: ConstraintOptions;
+  protected reOptions?: ConstraintOptions;
+
+  /**
+   * Constrains the string length.
+   */
+  length(length: number, options?: ConstraintOptions): this {
+    return this.min(length, options).max(length, options);
+  }
 
   /**
    * Constrains the string length to be greater than or equal to the length.
    */
-  min(length: number): StringType {
-    const type = shallowClone(this);
-    type._minLength = length;
+  min(length: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.minLength = length;
+    type.minLengthOptions = options;
     return type;
   }
 
   /**
    * Constrains the string length to be less than or equal to the length.
    */
-  max(length: number): StringType {
-    const type = shallowClone(this);
-    type._maxLength = length;
+  max(length: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.maxLength = length;
+    type.maxLengthOptions = options;
     return type;
   }
 
   /**
    * Constrains the string to match a regexp.
    */
-  pattern(re: RegExp): StringType {
-    const type = shallowClone(this);
-    type._re = re;
+  regex(re: RegExp, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.re = re;
+    type.reOptions = options;
     return type;
   }
 
-  _parse(input: unknown, context: ParserContext): any {
+  parse(input: unknown, options?: ParserOptions): string {
     if (typeof input !== 'string') {
-      context.raiseIssue(createIssue(context, 'type', input, 'string'));
-      return input;
+      raiseIssue(input, 'type', 'string', this.options, 'Must be a string');
     }
 
-    const { _minLength, _maxLength, _re } = this;
-    const inputLength = input.length;
+    const { minLength, maxLength, re } = this;
 
-    if (_minLength !== undefined && inputLength < _minLength) {
-      context.raiseIssue(createIssue(context, 'stringMinLength', input, _minLength));
+    let issues;
 
-      if (context.aborted) {
-        return input;
-      }
+    if (minLength != null && input.length < minLength) {
+      issues = raiseIssuesOrPush(
+        issues,
+        options,
+        input,
+        'stringMinLength',
+        minLength,
+        this.minLengthOptions,
+        'Must have the minimum length of ' + minLength
+      );
     }
 
-    if (_maxLength !== undefined && inputLength > _maxLength) {
-      context.raiseIssue(createIssue(context, 'stringMaxLength', input, _maxLength));
-
-      if (context.aborted) {
-        return input;
-      }
+    if (maxLength != null && input.length > maxLength) {
+      issues = raiseIssuesOrPush(
+        issues,
+        options,
+        input,
+        'stringMaxLength',
+        maxLength,
+        this.maxLengthOptions,
+        'Must have the maximum length of ' + maxLength
+      );
     }
 
-    if (_re !== undefined && !_re.test(input)) {
-      context.raiseIssue(createIssue(context, 'stringPattern', input, _re));
-
-      if (context.aborted) {
-        return input;
-      }
+    if (re != null && !re.test(input)) {
+      issues = raiseIssuesOrPush(
+        issues,
+        options,
+        input,
+        'stringRegex',
+        re,
+        this.reOptions,
+        'Must match the pattern ' + re
+      );
     }
+
+    raiseIssuesIfDefined(issues);
 
     return input;
   }

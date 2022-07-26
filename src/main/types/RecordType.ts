@@ -1,80 +1,107 @@
 import { AnyType, InferType, Type } from './Type';
-import { ParserContext } from '../ParserContext';
-import { createIssue, isObjectLike } from '../utils';
-import { Dict } from '../shared-types';
+import {
+  copyObjectEnumerableKeys,
+  createCatchForKey,
+  createValuesExtractor,
+  isEqual,
+  isFast,
+  isObjectLike,
+  parseAsync,
+  promiseAll,
+  promiseAllSettled,
+  raiseIssue,
+  raiseIssuesIfDefined,
+  raiseIssuesOrCaptureForKey,
+} from '../utils';
+import { Awaitable, ConstraintOptions, ParserOptions } from '../shared-types';
 
-/**
- * The key-value record type definition.
- *
- * @template K The type definition that constrains record keys.
- * @template V The type definition that constrains record values.
- */
 export class RecordType<K extends Type<string>, V extends AnyType> extends Type<Record<InferType<K>, InferType<V>>> {
-  /**
-   *
-   * @param _keyType The type definition that constrains record keys. If `null` then keys aren't constrained at runtime.
-   * @param _valueType The type definition that constrains record values.
-   */
-  constructor(private _keyType: K | null, private _valueType: V) {
-    super();
+  constructor(protected keyType: K, protected valueType: V, options?: ConstraintOptions) {
+    super(options);
   }
 
   isAsync(): boolean {
-    return this._keyType?.isAsync() || this._valueType.isAsync();
+    return this.keyType.isAsync() || this.valueType.isAsync();
   }
 
-  _parse(input: unknown, context: ParserContext): any {
+  parse(input: unknown, options?: ParserOptions): Awaitable<Record<InferType<K>, InferType<V>>> {
     if (!isObjectLike(input)) {
-      context.raiseIssue(createIssue(context, 'type', input, 'object'));
-      return input;
+      raiseIssue(input, 'type', 'object', this.options, 'Must be an object');
     }
 
-    const { _keyType, _valueType } = this;
-    const inputEntries = Object.entries(input);
+    const { keyType, valueType } = this;
 
     if (this.isAsync()) {
-      const promises = [];
+      const results = [];
 
-      for (const [key, value] of inputEntries) {
-        promises.push(
-          // Output key
-          _keyType === null ? key : _keyType._parse(key, context),
+      const handleResults = (results: any[]): any => {
+        let output = input;
+        let i = 0;
 
-          // Output value
-          _valueType._parse(value, context.fork().enterKey(key))
+        for (const key in input) {
+          const outputKey = results[i];
+          const outputValue = results[i + 1];
+
+          if (key === outputKey && isEqual(input[key], outputValue) && output === input) {
+            continue;
+          }
+          if (output === input) {
+            output = copyObjectEnumerableKeys(input, i);
+          }
+          output[outputKey] = outputValue;
+
+          i += 2;
+        }
+
+        return output;
+      };
+
+      for (const key in input) {
+        results.push(
+          parseAsync(keyType, key, options).catch(createCatchForKey(key)),
+          parseAsync(valueType, input[key], options).catch(createCatchForKey(key))
         );
       }
 
-      return Promise.all(promises).then(results => {
-        if (context.aborted) {
-          return input;
-        }
-        const output: Dict = {};
-
-        for (let i = 0; i < promises.length; i += 2) {
-          output[results[i]] = results[i + 1];
-        }
-        return output;
-      });
+      if (isFast(options)) {
+        return promiseAll(results).then(handleResults);
+      }
+      return promiseAllSettled(results).then(createValuesExtractor()).then(handleResults);
     }
 
-    const output: Dict = {};
+    let output = input;
+    let issues;
+    let i = 0;
 
-    for (const [key, value] of inputEntries) {
-      const outputKey = _keyType === null ? key : _keyType._parse(key, context);
+    for (const key in input) {
+      ++i;
+      const value = input[key];
 
-      if (context.aborted) {
-        return input;
+      let outputKey = key;
+      let outputValue;
+
+      try {
+        outputKey = keyType.parse(key, options) as string;
+      } catch (error) {
+        issues = raiseIssuesOrCaptureForKey(error, issues, options, key);
+      }
+      try {
+        outputValue = valueType.parse(value, options);
+      } catch (error) {
+        issues = raiseIssuesOrCaptureForKey(error, issues, options, key);
       }
 
-      context.enterKey(key);
-      output[outputKey] = _valueType._parse(value, context);
-      context.exitKey();
-
-      if (context.aborted) {
-        return input;
+      if ((key === outputKey && isEqual(value, outputValue) && output === input) || issues !== undefined) {
+        continue;
       }
+      if (output === input) {
+        output = copyObjectEnumerableKeys(input, i);
+      }
+      output[outputKey] = outputValue;
     }
-    return output;
+
+    raiseIssuesIfDefined(issues);
+
+    return output as Record<InferType<K>, InferType<V>>;
   }
 }

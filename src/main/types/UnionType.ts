@@ -1,70 +1,62 @@
 import { AnyType, InferType, Type } from './Type';
-import { callOrChain, createIssue, isAsync } from '../utils';
-import { ParserContext } from '../ParserContext';
-import { Issue, Several } from '../shared-types';
+import { Awaitable, ParserOptions, Several } from '../shared-types';
+import { extractIssues, isAsync, parseAsync, promiseAllSettled, raiseIssue } from '../utils';
+
+export type InferUnionType<U extends Several<AnyType>> = { [K in keyof U]: InferType<U[K]> }[number];
 
 /**
  * The union type definition.
  *
  * @template U The list of united type definitions.
  */
-export class UnionType<U extends Several<AnyType>> extends Type<{ [K in keyof U]: InferType<U[K]> }[number]> {
+export class UnionType<U extends Several<AnyType>> extends Type<InferUnionType<U>> {
   /**
    * Creates a new {@link UnionType} instance.
    *
-   * @param _types The list of united type definitions.
+   * @param types The list of united type definitions.
    */
-  constructor(private _types: U) {
+  constructor(protected types: U) {
     super();
   }
 
   isAsync(): boolean {
-    return isAsync(this._types);
+    return isAsync(this.types);
   }
 
-  _parse(input: unknown, context: ParserContext): any {
-    const { _types } = this;
-
-    const issues: Issue[] = [];
+  parse(input: unknown, options?: ParserOptions): Awaitable<InferUnionType<U>> {
+    const { types } = this;
 
     if (this.isAsync()) {
-      let i = 0;
-      let localContext: ParserContext;
+      const promises = [];
 
-      const handleInput = (): unknown => {
-        if (i < _types.length) {
-          localContext = context.fork(true);
-          return callOrChain(_types[i]._parse(input, localContext), handleOutput);
-        }
-
-        context.raiseIssue(createIssue(context, 'union', input, issues));
-        return input;
-      };
-
-      const handleOutput = (output: unknown) => {
-        if (localContext.valid) {
-          return output;
-        }
-        issues.push(...localContext.issues);
-
-        i++;
-        return handleInput();
-      };
-
-      return handleInput();
-    }
-
-    for (const type of _types) {
-      const localContext = context.fork(true);
-      const output = type._parse(input, localContext);
-
-      if (localContext.valid) {
-        return output;
+      for (const type of types) {
+        promises.push(parseAsync(type, input, options));
       }
-      issues.push(...localContext.issues);
+
+      return promiseAllSettled(promises).then(results => {
+        let issues;
+
+        for (const result of results) {
+          if (result.status === 'fulfilled') {
+            return result.value;
+          }
+          issues = extractIssues(result.reason);
+        }
+
+        raiseIssue(input, 'union', issues, this.options, 'Must conform a union');
+      });
     }
 
-    context.raiseIssue(createIssue(context, 'union', input, issues));
-    return input;
+    let issues;
+
+    for (const type of types) {
+      try {
+        return type.parse(input);
+      } catch (error) {
+        issues = extractIssues(error);
+      }
+    }
+
+    raiseIssue(input, 'union', issues, this.options, 'Must conform a union');
   }
 }

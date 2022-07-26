@@ -1,5 +1,5 @@
 import { AnyType, InferType, Type } from './Type';
-import { ParserContext } from '../ParserContext';
+import { Awaitable, ParserOptions } from '../shared-types';
 
 /**
  * The lazily-evaluated type definition.
@@ -7,20 +7,26 @@ import { ParserContext } from '../ParserContext';
  * @template X The type definition returned by the provider.
  */
 export class LazyType<X extends AnyType> extends Type<InferType<X>> {
+  protected type: X | undefined;
+
   /**
    * Creates a new {@link LazyType} instance.
    *
-   * @param _typeProvider Returns the type definition that must be applied to the input value.
+   * @param provider Returns the type definition that must be applied to the input value.
    */
-  constructor(private _typeProvider: () => X) {
+  constructor(private provider: () => X) {
     super();
   }
 
-  isAsync(): boolean {
-    return this._typeProvider().isAsync();
+  protected getType(): X {
+    return (this.type ||= this.provider());
   }
 
-  _parse(input: unknown, context: ParserContext): any {
-    return this._typeProvider()._parse(input, context);
+  isAsync(): boolean {
+    return this.getType().isAsync();
+  }
+
+  parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X>> {
+    return this.getType().parse(input, options);
   }
 }

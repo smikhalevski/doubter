@@ -1,13 +1,12 @@
 import { Dict, Primitive, Several } from '../shared-types';
 import { OneOfType } from '../types';
-import { isObjectLike } from '../utils';
 
 /**
  * The type definition that constrains input with the list of primitive values.
  *
  * @param values The list of values allowed for the input.
  */
-export function oneOf<U extends Several<Primitive>>(...values: U): OneOfType<U[number]>;
+export function oneOf<T extends Primitive, U extends Several<T>>(values: U): OneOfType<U[number]>;
 
 /**
  * The type definition that constrains input with values of the enum-like object.
@@ -16,20 +15,18 @@ export function oneOf<U extends Several<Primitive>>(...values: U): OneOfType<U[n
  */
 export function oneOf<U extends Dict<string | number>>(values: U): OneOfType<U[keyof U]>;
 
-export function oneOf(arg0: Primitive | Dict<string | number>): OneOfType<any> {
-  const values = [];
+export function oneOf(values: Several<Primitive> | Dict<string | number>): OneOfType<any> {
+  if (Array.isArray(values)) {
+    return new OneOfType(values);
+  }
 
-  if (isObjectLike(arg0)) {
-    for (const value of Object.values(arg0)) {
-      if (typeof arg0[value] !== 'number') {
-        values.push(value);
-      }
-    }
-  } else {
-    for (let i = 0; i < arguments.length; ++i) {
-      values.push(arguments[i]);
+  const enumValues = [];
+
+  for (const value of Object.values(values)) {
+    if (typeof values[value] !== 'number') {
+      enumValues.push(value);
     }
   }
 
-  return new OneOfType(values);
+  return new OneOfType(enumValues);
 }

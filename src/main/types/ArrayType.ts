@@ -1,6 +1,20 @@
 import { AnyType, InferType, Type } from './Type';
-import { ParserContext } from '../ParserContext';
-import { createIssue, shallowClone } from '../utils';
+import { Awaitable, ConstraintOptions, ParserOptions } from '../shared-types';
+import {
+  cloneObject,
+  createCatchForKey,
+  createValuesExtractor,
+  isArray,
+  isEqual,
+  isEqualArray,
+  isFast,
+  promiseAll,
+  promiseAllSettled,
+  raiseIssue,
+  raiseIssuesIfDefined,
+  raiseIssuesOrCaptureForKey,
+  raiseIssuesOrPush,
+} from '../utils';
 
 /**
  * The array type definition.
@@ -8,26 +22,43 @@ import { createIssue, shallowClone } from '../utils';
  * @template X The type definition of array elements.
  */
 export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
-  private _minLength?: number;
-  private _maxLength?: number;
+  protected minLength?: number;
+  protected maxLength?: number;
+  protected minLengthOptions?: ConstraintOptions;
+  protected maxLengthOptions?: ConstraintOptions;
 
   /**
-   * Creates a new {@link ArrayType} instance.
+   * Creates the new {@link ArrayType} instance.
    *
-   * @param _type The type definition of array elements. If `null` then element types aren't constrained at runtime.
+   * @param type The type definition of array elements.
+   * @param options The type constraint options.
    */
-  constructor(private _type: X | null) {
-    super();
+  constructor(protected type: X, options?: ConstraintOptions) {
+    super(options);
+  }
+
+  /**
+   * Constrains the array length.
+   *
+   * @param length The length of the array to satisfy the constraint.
+   * @param options The options applied to both {@link min} and {@link max} constraints.
+   * @returns The new type definition.
+   */
+  length(length: number, options?: ConstraintOptions): this {
+    return this.min(length, options).max(length, options);
   }
 
   /**
    * Constrains the minimum array length.
    *
    * @param length The minimum length of the array to satisfy the constraint.
+   * @param options The minimum constraint options.
+   * @returns The new type definition.
    */
-  min(length: number): this {
-    const type = shallowClone(this);
-    type._minLength = length;
+  min(length: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.minLength = length;
+    type.minLengthOptions = options;
     return type;
   }
 
@@ -35,78 +66,90 @@ export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
    * Constrains the maximum array length.
    *
    * @param length The maximum length of the array to satisfy the constraint.
+   * @param options The maximum constraint options.
+   * @returns The new type definition.
    */
-  max(length: number): this {
-    const type = shallowClone(this);
-    type._maxLength = length;
+  max(length: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.maxLength = length;
+    type.maxLengthOptions = options;
     return type;
   }
 
-  /**
-   * Constrains the array length.
-   *
-   * @param length The length of the array to satisfy the constraint.
-   */
-  length(length: number): this {
-    return this.min(length).max(length);
-  }
-
   isAsync(): boolean {
-    const { _type } = this;
-
-    return _type !== null && _type.isAsync();
+    return this.type.isAsync();
   }
 
-  _parse(input: unknown, context: ParserContext): any {
-    if (!Array.isArray(input)) {
-      context.raiseIssue(createIssue(context, 'type', input, 'array'));
-      return input;
+  parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X>[]> {
+    if (!isArray(input)) {
+      raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
     }
 
-    const { _minLength, _maxLength, _type } = this;
+    const { minLength, maxLength, type } = this;
     const inputLength = input.length;
 
-    if (_minLength !== undefined && inputLength < _minLength) {
-      context.raiseIssue(createIssue(context, 'arrayMinLength', input, _minLength));
+    let issues;
 
-      if (context.aborted) {
-        return input;
-      }
+    if (minLength != null && inputLength < minLength) {
+      issues = raiseIssuesOrPush(
+        issues,
+        options,
+        input,
+        'arrayMinLength',
+        minLength,
+        this.minLengthOptions,
+        'Must have the minimum length of ' + minLength
+      );
     }
 
-    if (_maxLength !== undefined && inputLength > _maxLength) {
-      context.raiseIssue(createIssue(context, 'arrayMaxLength', input, _maxLength));
-
-      if (context.aborted) {
-        return input;
-      }
+    if (maxLength != null && inputLength > maxLength) {
+      issues = raiseIssuesOrPush(
+        issues,
+        options,
+        input,
+        'arrayMaxLength',
+        maxLength,
+        this.maxLengthOptions,
+        'Must have the maximum length of ' + maxLength
+      );
     }
 
-    if (_type === null) {
-      return input.slice(0);
-    }
-
-    if (this.isAsync()) {
+    if (type.isAsync()) {
       const promises = [];
 
-      for (let i = 0; i < inputLength; ++i) {
-        promises.push(_type._parse(input[i], context.fork().enterKey(i)));
-      }
+      const handleOutput = (output: unknown[]) => (isEqualArray(input, output) ? input : output);
 
-      return Promise.all(promises);
+      for (let i = 0; i < inputLength; ++i) {
+        promises.push(type.parse(input[i], options).catch(createCatchForKey(i)));
+      }
+      if (isFast(options)) {
+        return promiseAll(promises).then(handleOutput);
+      }
+      return promiseAllSettled(promises).then(createValuesExtractor(issues)).then(handleOutput);
     }
 
-    const output = [];
+    let output = input;
 
     for (let i = 0; i < inputLength; ++i) {
-      context.enterKey(i);
-      output[i] = _type._parse(input[i], context);
-      context.exitKey();
+      const value = input[i];
 
-      if (context.aborted) {
-        return input;
+      let outputValue;
+      try {
+        outputValue = type.parse(value, options);
+      } catch (error) {
+        issues = raiseIssuesOrCaptureForKey(error, issues, options, i);
       }
+      if (isEqual(outputValue, value) || issues !== undefined) {
+        continue;
+      }
+      if (output === input) {
+        output = input.slice(0);
+      }
+      output[i] = outputValue;
     }
+
+    raiseIssuesIfDefined(issues);
+
     return output;
   }
 }

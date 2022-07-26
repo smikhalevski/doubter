@@ -1,14 +1,14 @@
 import { Type } from './Type';
-import { ParserContext } from '../ParserContext';
-import { createIssue } from '../utils';
+import { raiseIssue } from '../utils';
+import { ParserOptions } from '../shared-types';
 
 /**
  * The bigint type definition.
  */
 export class BigIntType extends Type<bigint> {
-  _parse(input: unknown, context: ParserContext): any {
+  parse(input: unknown, options?: ParserOptions): bigint {
     if (typeof input !== 'bigint') {
-      context.raiseIssue(createIssue(context, 'type', input, 'bigint'));
+      raiseIssue(input, 'type', 'bigint', this.options, 'Must be a bigint');
     }
     return input;
   }

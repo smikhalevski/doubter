@@ -1,68 +1,78 @@
 import { Type } from './Type';
-import { ParserContext } from '../ParserContext';
-import { createIssue, shallowClone } from '../utils';
+import { cloneObject, raiseIssue, raiseIssuesIfDefined, raiseIssuesOrPush } from '../utils';
+import { ConstraintOptions, ParserOptions } from '../shared-types';
+import { number } from '../dsl';
+
+const isFinite = Number.isFinite;
 
 /**
  * The number type definition.
  */
 export class NumberType extends Type<number> {
-  private _min?: number;
-  private _max?: number;
-  private _minIncluded?: boolean;
-  private _maxIncluded?: boolean;
-  private _divisor?: number;
+  protected min?: number;
+  protected max?: number;
+  protected minIncluded?: boolean;
+  protected maxIncluded?: boolean;
+  protected divisor?: number;
+  protected minOptions?: ConstraintOptions;
+  protected maxOptions?: ConstraintOptions;
+  protected divisorOptions?: ConstraintOptions;
 
   /**
    * Constrains the number to be greater than zero.
    */
-  positive(): this {
-    return this.gt(0);
+  positive(options?: ConstraintOptions): this {
+    return this.gt(0, options);
   }
 
   /**
    * Constrains the number to be less than zero.
    */
-  negative(): this {
-    return this.lt(0);
+  negative(options?: ConstraintOptions): this {
+    return this.lt(0, options);
   }
 
   /**
    * Constrains the number to be greater than the value.
    */
-  gt(value: number): this {
-    const type = shallowClone(this);
-    type._min = value;
-    type._minIncluded = false;
+  gt(value: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.min = value;
+    type.minIncluded = false;
+    type.minOptions = options;
     return type;
   }
 
   /**
    * Constrains the number to be less than the value.
    */
-  lt(value: number): this {
-    const type = shallowClone(this);
-    type._max = value;
-    type._maxIncluded = false;
+  lt(value: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.max = value;
+    type.maxIncluded = false;
+    type.maxOptions = options;
     return type;
   }
 
   /**
    * Constrains the number to be greater than or equal to the value.
    */
-  gte(value: number): this {
-    const type = shallowClone(this);
-    type._min = value;
-    type._minIncluded = true;
+  gte(value: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.min = value;
+    type.minIncluded = true;
+    type.minOptions = options;
     return type;
   }
 
   /**
    * Constrains the number to be less than or equal to the value.
    */
-  lte(value: number): this {
-    const type = shallowClone(this);
-    type._max = value;
-    type._maxIncluded = true;
+  lte(value: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.max = value;
+    type.maxIncluded = true;
+    type.maxOptions = options;
     return type;
   }
 
@@ -70,42 +80,61 @@ export class NumberType extends Type<number> {
    * Constrains the number to be a multiple of the divisor.
    *
    * @param divisor The number by which the input should be divisible without a remainder.
+   * @param options
    */
-  multipleOf(divisor: number): this {
-    const type = shallowClone(this);
-    type._divisor = divisor;
+  multipleOf(divisor: number, options?: ConstraintOptions): this {
+    const type = cloneObject(this);
+    type.divisor = divisor;
+    type.divisorOptions = options;
     return type;
   }
 
-  _parse(input: unknown, context: ParserContext): any {
-    if (typeof input !== 'number' || isNaN(input)) {
-      context.raiseIssue(createIssue(context, 'type', input, 'number'));
-      return input;
+  parse(input: any, options?: ParserOptions): number {
+    if (!isFinite(input)) {
+      raiseIssue(input, 'type', 'number', this.options, 'Must be a number');
     }
 
-    const { _min, _max, _minIncluded, _maxIncluded, _divisor } = this;
+    const { min, max, minIncluded, maxIncluded, divisor } = this;
 
-    if (_min !== undefined && (_minIncluded ? input < _min : input <= _min)) {
-      context.raiseIssue(
-        createIssue(context, _minIncluded ? 'numberGreaterThanOrEqual' : 'numberGreaterThan', input, _min)
+    let issues;
+
+    if (min != null && (minIncluded ? input < min : input <= min)) {
+      issues = raiseIssuesOrPush(
+        issues,
+        options,
+        input,
+        minIncluded ? 'numberGreaterThanOrEqual' : 'numberGreaterThan',
+        min,
+        this.minOptions,
+        'Must be greater than ' + (minIncluded ? 'or equal to ' + min : min)
       );
-
-      if (context.aborted) {
-        return input;
-      }
     }
 
-    if (_max !== undefined && (_maxIncluded ? input > _max : input >= _max)) {
-      context.raiseIssue(createIssue(context, _maxIncluded ? 'numberLessThanOrEqual' : 'numberLessThan', input, _max));
-
-      if (context.aborted) {
-        return input;
-      }
+    if (max != null && (maxIncluded ? input > max : input >= max)) {
+      issues = raiseIssuesOrPush(
+        issues,
+        options,
+        input,
+        maxIncluded ? 'numberLessThanOrEqual' : 'numberLessThan',
+        max,
+        this.maxOptions,
+        'Must be less than ' + (maxIncluded ? 'or equal to ' + max : max)
+      );
     }
 
-    if (_divisor !== undefined && input % _divisor !== 0) {
-      context.raiseIssue(createIssue(context, 'numberMultipleOf', input, _divisor));
+    if (divisor != null && input % divisor !== 0) {
+      issues = raiseIssuesOrPush(
+        issues,
+        options,
+        input,
+        'numberMultipleOf',
+        divisor,
+        this.divisorOptions,
+        'Must be a multiple of ' + divisor
+      );
     }
+
+    raiseIssuesIfDefined(issues);
 
     return input;
   }

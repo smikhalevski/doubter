@@ -1,14 +1,7 @@
-import { never } from '../../main';
+import { never, NeverType } from '../../main';
 
 describe('never', () => {
-  test('always raises', () => {
-    expect(never().validate(111)).toEqual([
-      {
-        code: 'never',
-        path: [],
-        input: 111,
-        param: undefined,
-      },
-    ]);
+  test('returns an never type', () => {
+    expect(never()).toBeInstanceOf(NeverType);
   });
 });

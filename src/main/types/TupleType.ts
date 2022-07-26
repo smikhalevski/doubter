@@ -1,66 +1,92 @@
 import { AnyType, InferType, Type } from './Type';
-import { ParserContext } from '../ParserContext';
-import { createIssue, isAsync } from '../utils';
-import { Several } from '../shared-types';
+import { Awaitable, ConstraintOptions, ParserOptions, Several } from '../shared-types';
+import {
+  createCatchForKey,
+  createValuesExtractor,
+  isArray,
+  isAsync,
+  isEqual,
+  isEqualArray,
+  isFast,
+  parseAsync,
+  promiseAll,
+  promiseAllSettled,
+  raiseIssue,
+  raiseIssuesIfDefined,
+  raiseIssuesOrCaptureForKey,
+} from '../utils';
+
+export type InferTupleType<U extends Several<AnyType>> = { [K in keyof U]: InferType<U[K]> };
 
 /**
  * The tuple type definition.
  *
  * @template U The list of tuple elements.
  */
-export class TupleType<U extends Several<AnyType>> extends Type<{ [K in keyof U]: InferType<U[K]> }> {
+export class TupleType<U extends Several<AnyType>> extends Type<InferTupleType<U>> {
   /**
    * Creates a new {@link TupleType} instance.
    *
-   * @param _types The list of tuple elements.
+   * @param types The list of tuple elements.
+   * @param options
    */
-  constructor(private _types: U) {
-    super();
+  constructor(protected types: U, options?: ConstraintOptions) {
+    super(options);
   }
 
   isAsync(): boolean {
-    return isAsync(this._types);
+    return isAsync(this.types);
   }
 
-  _parse(input: unknown, context: ParserContext): any {
-    if (!Array.isArray(input)) {
-      context.raiseIssue(createIssue(context, 'type', input, 'array'));
-      return input;
+  parse(input: unknown, options?: ParserOptions): Awaitable<InferTupleType<U>> {
+    if (!isArray(input)) {
+      raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
     }
 
-    const { _types } = this;
-    const typesLength = _types.length;
-    const inputLength = input.length;
+    const { types } = this;
+    const typesLength = types.length;
 
-    if (inputLength !== typesLength) {
-      context.raiseIssue(createIssue(context, 'tupleLength', input, typesLength));
-
-      if (context.aborted) {
-        return input;
-      }
+    if (input.length !== typesLength) {
+      raiseIssue(input, 'tupleLength', typesLength, this.options, 'Must have a length of ' + typesLength);
     }
 
     if (this.isAsync()) {
       const promises = [];
 
-      for (let i = 0; i < typesLength; ++i) {
-        promises.push(_types[i]._parse(input[i], context.fork().enterKey(i)));
-      }
+      const handleOutput = (output: any) => (isEqualArray(input, output) ? input : output);
 
-      return Promise.all(promises);
+      for (let i = 0; i < typesLength; ++i) {
+        promises.push(parseAsync(types[i], input[i], options).catch(createCatchForKey(i)));
+      }
+      if (isFast(options)) {
+        return promiseAll(promises).then(handleOutput);
+      }
+      return promiseAllSettled(promises).then(createValuesExtractor()).then(handleOutput);
     }
 
-    const output = [];
+    let output = input;
+    let issues;
 
     for (let i = 0; i < typesLength; ++i) {
-      context.enterKey(i);
-      output[i] = _types[i]._parse(input[i], context);
-      context.exitKey();
+      const value = input[i];
 
-      if (context.aborted) {
-        return input;
+      let outputValue;
+      try {
+        outputValue = types[i].parse(value, options);
+      } catch (error) {
+        issues = raiseIssuesOrCaptureForKey(error, issues, options, i);
       }
+      if (isEqual(outputValue, value) || issues !== undefined) {
+        continue;
+      }
+      if (output === input) {
+        output = input.slice(0);
+      }
+      output[i] = outputValue;
     }
-    return output;
+
+    raiseIssuesIfDefined(issues);
+
+    return output as InferTupleType<U>;
   }
 }

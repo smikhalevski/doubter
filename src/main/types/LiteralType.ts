@@ -1,7 +1,6 @@
-import { Primitive } from '../shared-types';
+import { Awaitable, ConstraintOptions, ParserOptions, Primitive } from '../shared-types';
 import { Type } from './Type';
-import { ParserContext } from '../ParserContext';
-import { createIssue } from '../utils';
+import { isEqual, raiseIssue } from '../utils';
 
 /**
  * The literal value type definition.
@@ -12,17 +11,18 @@ export class LiteralType<T extends Primitive> extends Type<T> {
   /**
    * Creates a new {@link LiteralType} instance.
    *
-   * @param _value The literal value that is compared with the input value.
+   * @param value The literal value that is compared with the input value.
+   * @param options
    */
-  constructor(private _value: T) {
+  constructor(protected value: T, options?: ConstraintOptions) {
     super();
   }
 
-  _parse(input: unknown, context: ParserContext): any {
-    const { _value } = this;
+  parse(input: any, options?: ParserOptions): Awaitable<T> {
+    const { value } = this;
 
-    if (!Object.is(input, _value)) {
-      context.raiseIssue(createIssue(context, 'literal', input, _value));
+    if (!isEqual(input, value)) {
+      raiseIssue(input, 'literal', value, this.options, 'Must be exactly equal to ' + value);
     }
     return input;
   }

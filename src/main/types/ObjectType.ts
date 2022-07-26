@@ -1,7 +1,25 @@
-import { createIssue, isAsync, isObjectLike, shallowClone } from '../utils';
-import { ParserContext } from '../ParserContext';
 import { AnyType, InferType, Type } from './Type';
-import { Dict, Several } from '../shared-types';
+import { Awaitable, ConstraintOptions, Dict, ParserOptions, Several } from '../shared-types';
+import {
+  cloneObject,
+  copyObjectEnumerableKeys,
+  copyObjectKnownKeys,
+  createCatchForKey,
+  createValuesExtractor,
+  isAsync,
+  isEqual,
+  isFast,
+  isObjectLike,
+  parseAsync,
+  promiseAll,
+  promiseAllSettled,
+  raiseIssue,
+  raiseIssuesIfDefined,
+  raiseIssuesOrCaptureForKey,
+  raiseIssuesOrPush,
+  returnFalse,
+  returnTrue,
+} from '../utils';
 
 type InferObjectType<P extends Dict<AnyType>, I extends AnyType> = Squash<
   UndefinedAsOptional<{ [K in keyof P]: InferType<P[K]> }> & InferIndexerType<I>
@@ -18,8 +36,10 @@ type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : n
 type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
 const enum ObjectKeysMode {
+  EXACT,
   STRIP,
   PRESERVE,
+  INDEXER,
 }
 
 /**
@@ -29,25 +49,27 @@ const enum ObjectKeysMode {
  * @template I The type definition that constrains the indexer signature.
  */
 export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type<InferObjectType<P, I>> {
-  private _propsMap;
-  private _keys;
-  private _valueTypes;
-  private _keysMode;
+  protected keys;
+  protected valueTypes;
+  protected keysMode;
+  protected propEntries;
+  protected exactOptions?: ConstraintOptions;
 
   /**
    * Creates a new {@link ObjectType} instance.
    *
-   * @param _props The mapping from an object key to a corresponding type definition.
-   * @param _indexerType The type definition that constrains the indexer signature. If `null` then values thea fall
+   * @param props The mapping from an object key to a corresponding type definition.
+   * @param indexerType The type definition that constrains the indexer signature. If `null` then values thea fall
    * under the indexer signature are unconstrained.
+   * @param options
    */
-  constructor(private _props: P, private _indexerType: I | null) {
-    super();
+  constructor(protected props: P, protected indexerType: I | null, options?: ConstraintOptions) {
+    super(options);
 
-    this._propsMap = new Map(Object.entries(_props));
-    this._keys = Object.keys(_props);
-    this._valueTypes = Object.values(_props);
-    this._keysMode = _indexerType === null ? ObjectKeysMode.STRIP : ObjectKeysMode.PRESERVE;
+    this.keys = Object.keys(props);
+    this.valueTypes = Object.values(props);
+    this.propEntries = Object.entries(props);
+    this.keysMode = indexerType === null ? ObjectKeysMode.PRESERVE : ObjectKeysMode.INDEXER;
   }
 
   /**
@@ -75,10 +97,10 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
   extend<P1 extends Dict<AnyType>>(props: P1): ObjectType<Pick<P, Exclude<keyof P, keyof P1>> & P1, I>;
 
   extend(arg: ObjectType<any, AnyType> | Dict<AnyType>): ObjectType<any, I> {
-    const nextProps = Object.assign({}, this._props, arg instanceof ObjectType ? arg._props : arg);
+    const nextProps = Object.assign({}, this.props, arg instanceof ObjectType ? arg.props : arg);
 
-    const type = new ObjectType<any, I>(nextProps, this._indexerType);
-    type._keysMode = this._keysMode;
+    const type = new ObjectType<any, I>(nextProps, this.indexerType);
+    type.keysMode = this.keysMode;
     return type;
   }
 
@@ -94,33 +116,45 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
     const nextProps: Dict<AnyType> = {};
 
     for (const key of keys) {
-      nextProps[key] = this._props[key];
+      nextProps[key] = this.props[key];
     }
-    const type = new ObjectType<any, I>(nextProps, this._indexerType);
-    type._keysMode = this._keysMode;
+    const type = new ObjectType<any, I>(nextProps, this.indexerType);
+    type.keysMode = this.keysMode;
     return type;
   }
 
   /**
    * Returns an object type that doesn't have the listed keys.
    *
-   * @param keys The list of property keys to omit.
+   * @param keys2 The list of property keys to omit.
    * @returns The modified object type.
    *
    * @template K The tuple of keys to omit.
    */
-  omit<K extends Several<keyof P & string>>(...keys: K): ObjectType<Omit<P, K[number]>, I> {
-    const { _keys } = this;
+  omit<K extends Several<keyof P & string>>(...keys2: K): ObjectType<Omit<P, K[number]>, I> {
+    const { keys } = this;
     const nextProps: Dict<AnyType> = {};
 
-    for (let i = 0; i < this._keys.length; ++i) {
-      if (!keys.includes(_keys[i])) {
-        nextProps[_keys[i]] = this._valueTypes[i];
+    for (let i = 0; i < keys.length; ++i) {
+      if (!keys2.includes(keys[i])) {
+        nextProps[keys[i]] = this.valueTypes[i];
       }
     }
 
-    const type = new ObjectType<any, I>(nextProps, this._indexerType);
-    type._keysMode = this._keysMode;
+    const type = new ObjectType<any, I>(nextProps, this.indexerType);
+    type.keysMode = this.keysMode;
+    return type;
+  }
+
+  /**
+   * Returns an object type that allows only known keys and has no index signature.
+   *
+   * @returns The modified object type.
+   */
+  exact(options?: ConstraintOptions): ObjectType<P, Type<never>> {
+    const type = cloneObject<ObjectType<any, any>>(this);
+    type.keysMode = ObjectKeysMode.EXACT;
+    type.exactOptions = options;
     return type;
   }
 
@@ -130,9 +164,8 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
    * @returns The modified object type.
    */
   strip(): ObjectType<P, Type<never>> {
-    const type = shallowClone<ObjectType<any, any>>(this);
-    type._keysMode = ObjectKeysMode.STRIP;
-    type._indexerType = null;
+    const type = cloneObject<ObjectType<any, any>>(this);
+    type.keysMode = ObjectKeysMode.STRIP;
     return type;
   }
 
@@ -142,9 +175,8 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
    * @returns The modified object type.
    */
   preserve(): ObjectType<P, Type<any>> {
-    const type = shallowClone<ObjectType<any, any>>(this);
-    type._keysMode = ObjectKeysMode.PRESERVE;
-    type._indexerType = null;
+    const type = cloneObject<ObjectType<any, any>>(this);
+    type.keysMode = ObjectKeysMode.PRESERVE;
     return type;
   }
 
@@ -157,68 +189,143 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
    * @template I1 The indexer signature type.
    */
   index<I1 extends AnyType>(indexType: I1): ObjectType<P, I1> {
-    const type = shallowClone<ObjectType<any, any>>(this);
-    type._keysMode = ObjectKeysMode.PRESERVE;
-    type._indexerType = indexType;
+    const type = cloneObject<ObjectType<any, any>>(this);
+    type.keysMode = ObjectKeysMode.INDEXER;
+    type.indexerType = indexType;
     return type;
   }
 
   isAsync(): boolean {
-    return this._indexerType?.isAsync() || isAsync(this._valueTypes);
+    const { indexerType } = this;
+
+    const async = (indexerType != null && indexerType.isAsync()) || isAsync(this.valueTypes);
+
+    this.isAsync = async ? returnTrue : returnFalse;
+
+    return async;
   }
 
-  _parse(input: unknown, context: ParserContext): any {
+  parse(input: unknown, options?: ParserOptions): Awaitable<InferObjectType<P, I>> {
     if (!isObjectLike(input)) {
-      context.raiseIssue(createIssue(context, 'type', input, 'object'));
-      return input;
+      raiseIssue(input, 'type', 'object', this.options, 'Must be an object');
     }
 
-    const { _propsMap, _indexerType } = this;
-    const outputKeys = this._keysMode === ObjectKeysMode.STRIP ? this._keys : Object.keys(input);
+    const { propEntries, keysMode, keys, indexerType } = this;
+
+    let output = input;
+    let issues;
+
+    if (keysMode === ObjectKeysMode.EXACT || keysMode === ObjectKeysMode.STRIP) {
+      for (const key in input) {
+        if (keys.includes(key)) {
+          continue;
+        }
+
+        if (keysMode === ObjectKeysMode.EXACT) {
+          issues = raiseIssuesOrPush(
+            issues,
+            options,
+            input,
+            'unknownKeys',
+            key,
+            this.exactOptions,
+            'Must have known keys but found ' + key
+          );
+        }
+        if (output === input) {
+          output = copyObjectKnownKeys(input, keys);
+        }
+      }
+    }
 
     if (this.isAsync()) {
       const promises = [];
 
-      for (const key of outputKeys) {
-        const value = input[key];
-        const valueType = _propsMap.get(key) || _indexerType;
+      let objectKeys = keys;
 
-        promises.push(valueType === null ? value : valueType._parse(value, context.fork().enterKey(key)));
-      }
+      const handleResults = (results: any): any => {
+        for (let i = 0; i < objectKeys.length; ++i) {
+          const key = objectKeys[i];
+          const outputValue = results[i];
 
-      return Promise.all(promises).then(outputValues => {
-        if (context.aborted) {
-          return input;
-        }
-        const output: Dict = {};
-        const valuesLength = outputValues.length;
-
-        for (let i = 0; i < valuesLength; ++i) {
-          output[outputKeys[i]] = outputValues[i];
+          if (isEqual(outputValue, input[key])) {
+            continue;
+          }
+          if (output === input) {
+            output = copyObjectEnumerableKeys(input);
+          }
+          output[key] = outputValue;
         }
         return output;
-      });
+      };
+
+      for (const [key, type] of propEntries) {
+        promises.push(parseAsync(type, input[key], options).catch(createCatchForKey(key)));
+      }
+
+      if (keysMode === ObjectKeysMode.INDEXER) {
+        for (const key in input) {
+          if (keys.includes(key)) {
+            continue;
+          }
+          if (objectKeys === keys) {
+            objectKeys = keys.slice(0);
+          }
+          objectKeys.push(key);
+          promises.push(parseAsync(indexerType!, input[key], options).catch(createCatchForKey(key)));
+        }
+      }
+
+      if (isFast(options)) {
+        return promiseAll(promises).then(handleResults);
+      }
+      return promiseAllSettled(promises).then(createValuesExtractor(issues)).then(handleResults);
     }
 
-    const output: Dict = {};
-
-    for (const key of outputKeys) {
+    for (const [key, type] of propEntries) {
       const value = input[key];
-      const valueType = _propsMap.get(key) || _indexerType;
 
-      if (valueType === null) {
-        output[key] = value;
+      let outputValue;
+      try {
+        outputValue = type.parse(value, options);
+      } catch (error) {
+        issues = raiseIssuesOrCaptureForKey(error, issues, options, key);
+      }
+      if (isEqual(outputValue, value) || issues !== undefined) {
         continue;
       }
-      context.enterKey(key);
-      output[key] = valueType._parse(value, context);
-      context.exitKey();
+      if (output === input) {
+        output = copyObjectEnumerableKeys(input);
+      }
+      output[key] = outputValue;
+    }
 
-      if (context.aborted) {
-        return input;
+    if (keysMode === ObjectKeysMode.INDEXER) {
+      for (const key in input) {
+        if (keys.includes(key)) {
+          continue;
+        }
+
+        const value = input[key];
+
+        let outputValue;
+        try {
+          outputValue = indexerType!.parse(value, options);
+        } catch (error) {
+          issues = raiseIssuesOrCaptureForKey(error, issues, options, key);
+        }
+        if (isEqual(outputValue, value) || issues !== undefined) {
+          continue;
+        }
+        if (output === input) {
+          output = copyObjectEnumerableKeys(input);
+        }
+        output[key] = outputValue;
       }
     }
 
-    return output;
+    raiseIssuesIfDefined(issues);
+
+    return output as InferObjectType<P, I>;
   }
 }

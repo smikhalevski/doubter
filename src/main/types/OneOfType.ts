@@ -1,7 +1,6 @@
-import { Primitive } from '../shared-types';
+import { ConstraintOptions, ParserOptions, Primitive } from '../shared-types';
 import { Type } from './Type';
-import { ParserContext } from '../ParserContext';
-import { createIssue } from '../utils';
+import { raiseIssue } from '../utils';
 
 /**
  * The type definition that constrains input to one of the primitive values.
@@ -12,17 +11,18 @@ export class OneOfType<T extends Primitive> extends Type<T> {
   /**
    * Creates a new {@link OneOfType} instance.
    *
-   * @param _values The list of values allowed for the input.
+   * @param values The list of values allowed for the input.
+   * @param options
    */
-  constructor(private _values: T[]) {
-    super();
+  constructor(protected values: T[], options?: ConstraintOptions) {
+    super(options);
   }
 
-  _parse(input: any, context: ParserContext): any {
-    const { _values } = this;
+  parse(input: any, options?: ParserOptions): T {
+    const { values } = this;
 
-    if (!_values.includes(input)) {
-      context.raiseIssue(createIssue(context, 'oneOf', input, _values));
+    if (!values.includes(input)) {
+      raiseIssue(input, 'oneOf', values, this.options, 'Must be equal to one of: ' + values.join(', '));
     }
     return input;
   }

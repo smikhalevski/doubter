@@ -1,5 +1,5 @@
 import { AnyType, InferType, Type } from './Type';
-import { ParserContext } from '../ParserContext';
+import { Awaitable, ParserOptions } from '../shared-types';
 
 /**
  * The optional type definition.
@@ -10,24 +10,23 @@ export class OptionalType<X extends AnyType> extends Type<InferType<X> | undefin
   /**
    * Creates a new {@link OptionalType} instance.
    *
-   * @param _type The underlying type definition.
-   * @param _defaultValue The value that should be used if input is `undefined`.
+   * @param type The underlying type definition.
+   * @param defaultValue The value that should be used if input is `undefined`.
    */
-  constructor(private _type: X, private _defaultValue?: InferType<X>) {
+  constructor(protected type: X, protected defaultValue?: InferType<X>) {
     super();
   }
 
   isAsync(): boolean {
-    return this._type.isAsync();
+    return this.type.isAsync();
   }
 
-  _parse(input: unknown, context: ParserContext): any {
-    const { _type, _defaultValue } = this;
+  parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X> | undefined> {
+    const { type, defaultValue } = this;
 
     if (input === undefined) {
-      return this.isAsync() ? Promise.resolve(_defaultValue) : _defaultValue;
-    } else {
-      return _type._parse(input, context);
+      return type.isAsync() ? Promise.resolve(defaultValue) : defaultValue;
     }
+    return type.parse(input, options);
   }
 }

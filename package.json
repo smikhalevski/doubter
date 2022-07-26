@@ -10,11 +10,12 @@
     "lib"
   ],
   "scripts": {
-    "build": "tsc && rollup --external tslib --input ./lib/index.js --file ./lib/index-cjs.js --format cjs --plugin @rollup/plugin-node-resolve",
+    "build": "tsc && rollup --external tslib --input ./lib/index.js --file ./lib/index-cjs.js --format cjs --plugin @rollup/plugin-node-resolve && npm run build:terser",
+    "build:terser": "TEMP=$(mktemp) && rm $TEMP && for FILE in $(find ./lib -name '*.js'); do terser --compress --mangle toplevel --name-cache $TEMP --mangle-props reserved=[__esModule,__extends],regex=/^__/ --output $FILE -- $FILE; done && rm $TEMP || exit 1",
     "clean": "rimraf './lib' './docs' './coverage'",
     "test": "jest",
-    "perf": "[ -d ./lib ] || npm run build && toofast './src/test/perf.js'",
-    "docs:build": "typedoc './src/main/index.ts'",
+    "perf": "[ -d ./lib ] || npm run build && toofast 'src/test/perf.js'",
+    "docs:build": "typedoc 'src/main/index.ts'",
     "docs:release": "npm run docs:build && SHA=$(git rev-parse --short HEAD) && ORIGIN=$(git config --get remote.origin.url) && TEMP=$(mktemp -d) && git clone -b ghpages --single-branch $ORIGIN $TEMP && ls -A $TEMP | grep -wv .git | xargs rm -rf && cp -R ./docs/ $TEMP && cd $TEMP && git add . && git commit -m \"Updated docs ($SHA)\" && git push && rm -rf $TEMP"
   },
   "repository": {
@@ -41,6 +42,7 @@
     "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "rollup": "^2.75.7",
+    "terser": "^5.14.2",
     "toofast": "^1.3.1",
     "ts-jest": "^28.0.5",
     "typedoc": "^0.22.18",

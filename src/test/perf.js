@@ -2,134 +2,400 @@ const Ajv = require('ajv');
 const myzod = require('myzod');
 const lib = require('../../lib/index-cjs');
 
-const testData = {
-  number: 1,
-  negNumber: -1,
-  maxNumber: Number.MAX_VALUE,
-  string: 'string',
-  longString:
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Vivendum intellegat et qui, ei denique consequuntur vix. Semper aeterno percipit ut his, sea ex utinam referrentur repudiandae. No epicuri hendrerit consetetur sit, sit dicta adipiscing ex, in facete detracto deterruisset duo. Quot populo ad qui. Sit fugit nostrum et. Ad per diam dicant interesset, lorem iusto sensibus ut sed. No dicam aperiam vis. Pri posse graeco definitiones cu, id eam populo quaestio adipiscing, usu quod malorum te. Ex nam agam veri, dicunt efficiantur ad qui, ad legere adversarium sit. Commune platonem mel id, brute adipiscing duo an. Vivendum intellegat et qui, ei denique consequuntur vix. Offendit eleifend moderatius ex vix, quem odio mazim et qui, purto expetendis cotidieque quo cu, veri persius vituperata ei nec. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-  boolean: true,
-  deeplyNested: {
-    foo: 'bar',
-    num: 1,
-    bool: false,
+describe(
+  'Unconstrained string',
+  () => {
+    const value = 'aaa';
+
+    test('myzod', measure => {
+      const type = myzod.string();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.string();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
   },
-};
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
 
-test(
-  'Ajv',
-  measure => {
-    const ajv = new Ajv();
+describe(
+  'String',
+  () => {
+    const value = 'aaa';
 
-    const schema = {
-      $id: 'AjvTest',
-      $schema: 'http://json-schema.org/draft-07/schema#',
-      type: 'object',
-      properties: {
-        number: {
-          type: 'number',
-        },
-        negNumber: {
-          type: 'number',
-        },
-        maxNumber: {
-          type: 'number',
-        },
-        string: {
-          type: 'string',
-        },
-        longString: {
-          type: 'string',
-        },
-        boolean: {
-          type: 'boolean',
-        },
-        deeplyNested: {
-          type: 'object',
-          properties: {
-            foo: {
-              type: 'string',
-            },
-            num: {
-              type: 'number',
-            },
-            bool: {
-              type: 'boolean',
-            },
-          },
-          required: ['foo', 'num', 'bool'],
-        },
-      },
-      required: ['number', 'negNumber', 'maxNumber', 'string', 'longString', 'boolean', 'deeplyNested'],
+    test('myzod', measure => {
+      const type = myzod.string().min(1).max(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.string().min(1).max(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'Unconstrained integer',
+  () => {
+    const value = 4;
+
+    test('lib', measure => {
+      const type = lib.integer();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'Unconstrained number',
+  () => {
+    const value = 4;
+
+    test('myzod', measure => {
+      const type = myzod.number();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.number();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'Number',
+  () => {
+    const value = 4;
+
+    test('myzod', measure => {
+      const type = myzod.number().min(1).max(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.number().gte(1).lte(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'Unconstrained array',
+  () => {
+    const value = [1, 2, 3];
+
+    test('myzod', measure => {
+      const type = myzod.array(myzod.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.array(lib.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'Array',
+  () => {
+    const value = [1, 2, 3];
+
+    test('myzod', measure => {
+      const type = myzod.array(myzod.number()).min(1).max(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.array(lib.number()).min(1).max(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'Unconstrained tuple',
+  () => {
+    const value = [1, 2, 3];
+
+    test('myzod', measure => {
+      const type = myzod.tuple([myzod.number(), myzod.number(), myzod.number()]);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.tuple([lib.number(), lib.number(), lib.number()]);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'Unconstrained record',
+  () => {
+    const value = { a: 1, b: 2, c: 3 };
+
+    test('myzod', measure => {
+      const type = myzod.record(myzod.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.record(lib.string(), lib.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'Object',
+  () => {
+    const value = {
+      aaa: 'aaa',
+      bbb: 'bbb',
+      ccc: 'ccc',
     };
 
-    const validate = ajv.compile(schema);
+    test('Ajv', measure => {
+      const ajv = new Ajv();
 
-    measure(() => {
-      validate(testData);
-    });
-  },
-  { warmupIterationCount: 100, targetRme: 0.002 }
-);
-
-test(
-  'myzod',
-  measure => {
-    const dataType = myzod.object(
-      {
-        number: myzod.number(),
-        negNumber: myzod.number(),
-        maxNumber: myzod.number(),
-        string: myzod.string(),
-        longString: myzod.string(),
-        boolean: myzod.boolean(),
-        deeplyNested: myzod.object(
-          {
-            foo: myzod.string(),
-            num: myzod.number(),
-            bool: myzod.boolean(),
+      const schema = {
+        $id: 'AjvTest',
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          aaa: {
+            type: 'string',
           },
-          {
-            allowUnknown: true,
-          }
-        ),
-      },
-      {
-        allowUnknown: true,
-      }
-    );
+          bbb: {
+            type: 'string',
+          },
+          ccc: {
+            type: 'string',
+          },
+        },
+        required: ['aaa', 'bbb', 'ccc'],
+      };
 
-    measure(() => {
-      dataType.parse(testData);
+      const validate = ajv.compile(schema);
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.object(
+        {
+          aaa: myzod.string(),
+          bbb: myzod.string(),
+          ccc: myzod.string(),
+        },
+        {
+          allowUnknown: true,
+        }
+      );
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.object({
+        aaa: lib.string({ message: 'qweqwe' }),
+        bbb: lib.string(),
+        ccc: lib.string(),
+      });
+
+      measure(() => {
+        type.parse(value);
+      });
     });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
 
-test(
-  'lib',
-  measure => {
-    const dataType = lib
-      .object({
-        number: lib.number(),
-        negNumber: lib.number(),
-        maxNumber: lib.number(),
-        string: lib.string(),
-        longString: lib.string(),
-        boolean: lib.boolean(),
-        deeplyNested: lib
-          .object({
-            foo: lib.string(),
-            num: lib.number(),
-            bool: lib.boolean(),
-          })
-          .preserve(),
-      })
-      .preserve();
+describe(
+  'External test',
+  () => {
+    const value = {
+      a1: 1,
+      a2: -1,
+      a3: Number.MAX_VALUE,
+      a4: 'foo',
+      a5: 'bar',
+      a6: true,
+      a7: {
+        a71: 'baz',
+        a72: 1,
+        a73: false,
+      },
+    };
 
-    measure(() => {
-      dataType.parse(testData);
+    test('Ajv', measure => {
+      const ajv = new Ajv();
+
+      const schema = {
+        $id: 'AjvTest',
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          a1: {
+            type: 'number',
+          },
+          a2: {
+            type: 'number',
+          },
+          a3: {
+            type: 'number',
+          },
+          a4: {
+            type: 'string',
+          },
+          a5: {
+            type: 'string',
+          },
+          a6: {
+            type: 'boolean',
+          },
+          a7: {
+            type: 'object',
+            properties: {
+              a71: {
+                type: 'string',
+              },
+              a72: {
+                type: 'number',
+              },
+              a73: {
+                type: 'boolean',
+              },
+            },
+            required: ['a71', 'a72', 'a73'],
+          },
+        },
+        required: ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'],
+      };
+
+      const validate = ajv.compile(schema);
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.object(
+        {
+          a1: myzod.number(),
+          a2: myzod.number(),
+          a3: myzod.number(),
+          a4: myzod.string(),
+          a5: myzod.string(),
+          a6: myzod.boolean(),
+          a7: myzod.object(
+            {
+              a71: myzod.string(),
+              a72: myzod.number(),
+              a73: myzod.boolean(),
+            },
+            {
+              allowUnknown: true,
+            }
+          ),
+        },
+        {
+          allowUnknown: true,
+        }
+      );
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib', measure => {
+      const type = lib.object({
+        a1: lib.number(),
+        a2: lib.number(),
+        a3: lib.number(),
+        a4: lib.string(),
+        a5: lib.string(),
+        a6: lib.boolean(),
+        a7: lib.object({
+          a71: lib.string(),
+          a72: lib.number(),
+          a73: lib.boolean(),
+        }),
+      });
+
+      measure(() => {
+        type.parse(value);
+      });
     });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }

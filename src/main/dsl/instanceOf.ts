@@ -5,6 +5,6 @@ import { Constructor, InstanceOfType } from '../types';
  *
  * @template C The type of the instance constructor.
  */
-export function instanceOf<C extends Constructor>(constructor: C): InstanceOfType<C> {
-  return new InstanceOfType(constructor);
+export function instanceOf<C extends Constructor<any>>(ctor: C): InstanceOfType<C> {
+  return new InstanceOfType(ctor);
 }

@@ -1,18 +1,7 @@
-import { boolean } from '../../main';
+import { boolean, BooleanType } from '../../main';
 
 describe('boolean', () => {
-  test('raises if value is not a boolean', () => {
-    expect(boolean().validate('aaa')).toEqual([
-      {
-        code: 'type',
-        path: [],
-        input: 'aaa',
-        param: 'boolean',
-      },
-    ]);
-  });
-
-  test('allows a boolean', () => {
-    expect(boolean().validate(true)).toEqual([]);
+  test('returns an boolean type', () => {
+    expect(boolean()).toBeInstanceOf(BooleanType);
   });
 });

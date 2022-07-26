@@ -1,18 +1,7 @@
-import { bigint } from '../../main';
+import { bigint, BigIntType } from '../../main';
 
 describe('bigint', () => {
-  test('raises if value is not a bigint', () => {
-    expect(bigint().validate('aaa')).toEqual([
-      {
-        code: 'type',
-        path: [],
-        input: 'aaa',
-        param: 'bigint',
-      },
-    ]);
-  });
-
-  test('allows a bigint', () => {
-    expect(bigint().validate(BigInt(111))).toEqual([]);
+  test('returns an bigint type', () => {
+    expect(bigint()).toBeInstanceOf(BigIntType);
   });
 });

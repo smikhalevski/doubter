@@ -10,7 +10,7 @@
     "rootDir": "./src/main",
     "outDir": "./lib",
     "lib": [
-      "ES7"
+      "ES2020"
     ]
   },
   "include": [

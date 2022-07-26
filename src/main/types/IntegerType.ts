@@ -1,16 +1,18 @@
-import { createIssue } from '../utils';
 import { NumberType } from './NumberType';
-import { ParserContext } from '../ParserContext';
+import { raiseIssue } from '../utils';
+import { ParserOptions } from '../shared-types';
+
+const isInteger = Number.isInteger;
 
 /**
  * The integer type definition.
  */
 export class IntegerType extends NumberType {
-  _parse(input: unknown, context: ParserContext): any {
-    if (!Number.isInteger(input)) {
-      context.raiseIssue(createIssue(context, 'type', input, 'integer'));
-      return input;
+  parse(input: unknown, options?: ParserOptions): number {
+    if (!isInteger(input)) {
+      raiseIssue(input, 'type', 'integer', this.options, 'Must be an integer');
     }
-    return super._parse(input, context);
+
+    return super.parse(input, options);
   }
 }

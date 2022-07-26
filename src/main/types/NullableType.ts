@@ -1,5 +1,5 @@
 import { AnyType, InferType, Type } from './Type';
-import { ParserContext } from '../ParserContext';
+import { Awaitable, ParserOptions } from '../shared-types';
 
 /**
  * The nullable type definition.
@@ -10,23 +10,22 @@ export class NullableType<X extends AnyType> extends Type<InferType<X> | null> {
   /**
    * Creates a new {@link NullableType} instance.
    *
-   * @param _type The underlying type definition.
+   * @param type The underlying type definition.
    */
-  constructor(private _type: X) {
+  constructor(protected type: X) {
     super();
   }
 
   isAsync(): boolean {
-    return this._type.isAsync();
+    return this.type.isAsync();
   }
 
-  _parse(input: unknown, context: ParserContext): any {
-    const { _type } = this;
+  parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X> | null> {
+    const { type } = this;
 
     if (input === null) {
-      return this.isAsync() ? Promise.resolve(input) : input;
-    } else {
-      return _type._parse(input, context);
+      return type.isAsync() ? Promise.resolve(input) : input;
     }
+    return type.parse(input, options);
   }
 }

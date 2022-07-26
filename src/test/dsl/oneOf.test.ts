@@ -2,18 +2,20 @@ import { oneOf } from '../../main';
 
 describe('oneOf', () => {
   test('raises issue when value is not one of values from the list', () => {
-    expect(oneOf('aaa', 'bbb').validate('ccc')).toEqual([
+    expect(oneOf(['aaa', 'bbb']).validate('ccc')).toEqual([
       {
         code: 'oneOf',
         path: [],
         input: 'ccc',
         param: ['aaa', 'bbb'],
+        message: 'Must be equal to one of: aaa, bbb',
+        meta: undefined,
       },
     ]);
   });
 
   test('allows the value from the list', () => {
-    expect(oneOf('aaa', 'bbb').validate('aaa')).toEqual([]);
+    expect(oneOf(['aaa', 'bbb']).validate('aaa')).toBe(null);
   });
 
   test('raises issue when value is not one of the numeric enum values', () => {
@@ -28,6 +30,8 @@ describe('oneOf', () => {
         path: [],
         input: 2,
         param: [Foo.AAA, Foo.BBB],
+        message: 'Must be equal to one of: 0, 1',
+        meta: undefined,
       },
     ]);
   });
@@ -44,6 +48,8 @@ describe('oneOf', () => {
         path: [],
         input: 'AAA',
         param: [Foo.AAA, Foo.BBB],
+        message: 'Must be equal to one of: 0, 1',
+        meta: undefined,
       },
     ]);
   });
@@ -54,7 +60,7 @@ describe('oneOf', () => {
       BBB,
     }
 
-    expect(oneOf(Foo).validate(Foo.AAA)).toEqual([]);
+    expect(oneOf(Foo).validate(Foo.AAA)).toBe(null);
   });
 
   test('raises issue when value is not one of the string enum values', () => {
@@ -69,6 +75,8 @@ describe('oneOf', () => {
         path: [],
         input: 'ccc',
         param: [Foo.AAA, Foo.BBB],
+        message: 'Must be equal to one of: aaa, bbb',
+        meta: undefined,
       },
     ]);
   });
@@ -79,6 +87,6 @@ describe('oneOf', () => {
       BBB = 'bbb',
     }
 
-    expect(oneOf(Foo).validate(Foo.AAA)).toEqual([]);
+    expect(oneOf(Foo).validate(Foo.AAA)).toBe(null);
   });
 });
