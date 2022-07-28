@@ -1,5 +1,5 @@
 import { Awaitable, ConstraintOptions, Issue, ParserOptions } from '../shared-types';
-import { extractIssues, parseAsync, returnNull } from '../utils';
+import { extractIssues, parseAsync, raiseIssue, returnNull } from '../utils';
 
 /**
  * Infers the type from the type definition.
@@ -74,6 +74,19 @@ export abstract class Type<T> {
    */
   transformAsync<O>(transformer: Transformer<T, Promise<O>>): TransformedType<this, O> {
     return new TransformedType(this, true, transformer);
+  }
+
+  refine<O extends T>(refiner: (value: T) => value is O, options?: ConstraintOptions): TransformedType<this, O>;
+
+  refine(refiner: (value: T) => unknown, options?: ConstraintOptions): TransformedType<this, T>;
+
+  refine(refiner: (value: T) => unknown, options?: ConstraintOptions): TransformedType<this, T> {
+    return this.transform(input => {
+      if (!refiner(input)) {
+        raiseIssue(input, 'refined', undefined, options, 'Must be refined');
+      }
+      return input;
+    });
   }
 }
 

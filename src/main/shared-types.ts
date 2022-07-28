@@ -17,12 +17,13 @@ export interface Issue {
    */
   input: any;
 
+  message: string;
+
   /**
    * An additional param that is specific for {@link code}.
    */
   param?: any;
   meta?: any;
-  message?: string;
 }
 
 export type Several<T> = [T, ...T[]];

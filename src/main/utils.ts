@@ -6,8 +6,8 @@ export function raiseIssue(
   input: unknown,
   code: string,
   param: unknown,
-  options?: ConstraintOptions | undefined,
-  message?: string
+  options: ConstraintOptions | undefined,
+  message: string
 ): never {
   raiseIssuesIfDefined([
     {
