@@ -3,9 +3,20 @@ const myzod = require('myzod');
 const lib = require('../../lib/index-cjs');
 
 describe(
-  'Unconstrained string',
+  'string()',
   () => {
     const value = 'aaa';
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'string',
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
 
     test('myzod', measure => {
       const type = myzod.string();
@@ -27,9 +38,22 @@ describe(
 );
 
 describe(
-  'String',
+  'string().length(3)',
   () => {
     const value = 'aaa';
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'string',
+        minLength: 3,
+        maxLength: 3,
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
 
     test('myzod', measure => {
       const type = myzod.string().min(1).max(5);
@@ -40,7 +64,7 @@ describe(
     });
 
     test('lib', measure => {
-      const type = lib.string().min(1).max(5);
+      const type = lib.string().length(3);
 
       measure(() => {
         type.parse(value);
@@ -51,9 +75,20 @@ describe(
 );
 
 describe(
-  'Unconstrained integer',
+  'integer()',
   () => {
     const value = 4;
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'integer',
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
 
     test('lib', measure => {
       const type = lib.integer();
@@ -67,9 +102,20 @@ describe(
 );
 
 describe(
-  'Unconstrained number',
+  'number()',
   () => {
     const value = 4;
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'number',
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
 
     test('myzod', measure => {
       const type = myzod.number();
@@ -91,9 +137,22 @@ describe(
 );
 
 describe(
-  'Number',
+  'number().gte(1).lte(5)',
   () => {
     const value = 4;
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'number',
+        minimum: 1,
+        maximum: 5,
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
 
     test('myzod', measure => {
       const type = myzod.number().min(1).max(5);
@@ -115,9 +174,21 @@ describe(
 );
 
 describe(
-  'Unconstrained array',
+  'array(number())',
   () => {
     const value = [1, 2, 3];
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'array',
+        items: { type: 'number' },
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
 
     test('myzod', measure => {
       const type = myzod.array(myzod.number());
@@ -139,12 +210,26 @@ describe(
 );
 
 describe(
-  'Array',
+  'array(number()).length(3)',
   () => {
     const value = [1, 2, 3];
 
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'array',
+        items: { type: 'number' },
+        minItems: 3,
+        maxItems: 3,
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = myzod.array(myzod.number()).min(1).max(5);
+      const type = myzod.array(myzod.number()).length(3);
 
       measure(() => {
         type.parse(value);
@@ -152,7 +237,7 @@ describe(
     });
 
     test('lib', measure => {
-      const type = lib.array(lib.number()).min(1).max(5);
+      const type = lib.array(lib.number()).length(3);
 
       measure(() => {
         type.parse(value);
@@ -163,12 +248,26 @@ describe(
 );
 
 describe(
-  'Unconstrained tuple',
+  'tuple([number(), number()])',
   () => {
-    const value = [1, 2, 3];
+    const value = [111, 222];
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'array',
+        items: [{ type: 'number' }, { type: 'number' }],
+        minItems: 2,
+        maxItems: 2,
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
 
     test('myzod', measure => {
-      const type = myzod.tuple([myzod.number(), myzod.number(), myzod.number()]);
+      const type = myzod.tuple([myzod.number(), myzod.number()]);
 
       measure(() => {
         type.parse(value);
@@ -176,7 +275,7 @@ describe(
     });
 
     test('lib', measure => {
-      const type = lib.tuple([lib.number(), lib.number(), lib.number()]);
+      const type = lib.tuple([lib.number(), lib.number()]);
 
       measure(() => {
         type.parse(value);
@@ -187,9 +286,22 @@ describe(
 );
 
 describe(
-  'Unconstrained record',
+  'record(string(), number())',
   () => {
     const value = { a: 1, b: 2, c: 3 };
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        propertyNames: { type: 'string' },
+        additionalProperties: { type: 'number' },
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
 
     test('myzod', measure => {
       const type = myzod.record(myzod.number());
@@ -211,33 +323,24 @@ describe(
 );
 
 describe(
-  'Object',
+  'object({ foo: string(), bar: number() })',
   () => {
     const value = {
-      aaa: 'aaa',
-      bbb: 'bbb',
-      ccc: 'ccc',
+      foo: 'aaa',
+      bar: 111,
     };
 
     test('Ajv', measure => {
       const ajv = new Ajv();
 
       const schema = {
-        $id: 'AjvTest',
         $schema: 'http://json-schema.org/draft-07/schema#',
         type: 'object',
         properties: {
-          aaa: {
-            type: 'string',
-          },
-          bbb: {
-            type: 'string',
-          },
-          ccc: {
-            type: 'string',
-          },
+          foo: { type: 'string' },
+          bar: { type: 'number' },
         },
-        required: ['aaa', 'bbb', 'ccc'],
+        required: ['foo', 'bar'],
       };
 
       const validate = ajv.compile(schema);
@@ -250,9 +353,8 @@ describe(
     test('myzod', measure => {
       const type = myzod.object(
         {
-          aaa: myzod.string(),
-          bbb: myzod.string(),
-          ccc: myzod.string(),
+          foo: myzod.string(),
+          bar: myzod.number(),
         },
         {
           allowUnknown: true,
@@ -266,9 +368,8 @@ describe(
 
     test('lib', measure => {
       const type = lib.object({
-        aaa: lib.string({ message: 'qweqwe' }),
-        bbb: lib.string(),
-        ccc: lib.string(),
+        foo: lib.string(),
+        bar: lib.number(),
       });
 
       measure(() => {
@@ -280,7 +381,7 @@ describe(
 );
 
 describe(
-  'External test',
+  'https://moltar.github.io/typescript-runtime-type-benchmarks/',
   () => {
     const value = {
       a1: 1,
