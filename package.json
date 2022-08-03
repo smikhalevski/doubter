@@ -1,6 +1,6 @@
 {
   "name": "doubter",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "No-hassle runtime type validation and parsing.",
   "main": "./lib/index-cjs.js",
   "module": "./lib/index.js",
@@ -22,11 +22,12 @@
     "url": "git+https://github.com/smikhalevski/doubter.git"
   },
   "keywords": [
-    "validation",
+    "typings",
     "validate",
-    "parsing",
     "parse",
-    "union"
+    "runtime",
+    "union",
+    "lazy"
   ],
   "author": "Savva Mikhalevski <smikhalevski@gmail.com>",
   "license": "MIT",

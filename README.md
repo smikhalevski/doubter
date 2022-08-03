@@ -1,4 +1,4 @@
-# Doubter 🤔
+# Doubter&ensp;🤔&ensp;[![build](https://github.com/smikhalevski/doubter/actions/workflows/master.yml/badge.svg?branch=master&event=push)](https://github.com/smikhalevski/doubter/actions/workflows/master.yml)
 
 No-hassle runtime type validation and parsing.
 
