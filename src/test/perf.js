@@ -27,6 +27,14 @@ describe(
       });
     });
 
+    test('valita', measure => {
+      const type = v.string();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('lib', measure => {
       const type = lib.string();
 
@@ -126,6 +134,14 @@ describe(
       });
     });
 
+    test('valita', measure => {
+      const type = v.number();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('lib', measure => {
       const type = lib.number();
 
@@ -193,6 +209,14 @@ describe(
 
     test('myzod', measure => {
       const type = z.array(z.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.array(v.number());
 
       measure(() => {
         type.parse(value);
@@ -275,6 +299,14 @@ describe(
       });
     });
 
+    test('valita', measure => {
+      const type = v.tuple([v.number(), v.number()]);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('lib', measure => {
       const type = lib.tuple([lib.number(), lib.number()]);
 
@@ -306,6 +338,14 @@ describe(
 
     test('myzod', measure => {
       const type = z.record(z.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.record(v.number());
 
       measure(() => {
         type.parse(value);
@@ -361,6 +401,17 @@ describe(
           allowUnknown: true,
         }
       );
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.object({
+        foo: v.string(),
+        bar: v.number(),
+      });
 
       measure(() => {
         type.parse(value);

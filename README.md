@@ -5,6 +5,8 @@ No-hassle runtime type validation and parsing.
 - [High performance and low memory consumption](#performance);
 - [Just 4 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable.
 
+🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
+
 ```shell
 npm install --save-prod doubter
 ```
@@ -56,6 +58,8 @@ npm install --save-prod doubter
 - [Performance](#performance)
 
 # Usage
+
+🔎 [API documentation is available here.](https://smikhalevski.github.io/doubter/)
 
 Doubter provides a DSL API to compose a runtime type definition that can be used to validate arbitrary data.
 
@@ -482,3 +486,7 @@ const fooType: Type<Foo> = d.object({
 Note that type of `fooType` must be explicitly defined to satisfy TypeScript type inference.
 
 # Performance
+
+Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
+
+![Parsing performance chart](https://github.com/smikhalevski/doubter/raw/master/images/perf-parse.svg)
