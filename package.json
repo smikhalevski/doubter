@@ -15,7 +15,7 @@
     "test": "jest",
     "perf": "[ -d ./lib ] || npm run build && toofast 'src/test/perf.js'",
     "docs:build": "typedoc 'src/main/index.ts'",
-    "docs:release": "npm run docs:build && SHA=$(git rev-parse --short HEAD) && ORIGIN=$(git config --get remote.origin.url) && TEMP=$(mktemp -d) && git clone -b ghpages --single-branch $ORIGIN $TEMP && ls -A $TEMP | grep -wv .git | xargs rm -rf && cp -R ./docs/ $TEMP && cd $TEMP && git add . && git commit -m \"Updated docs ($SHA)\" && git push && rm -rf $TEMP"
+    "docs:release": "npm run docs:build && SHA=$(git rev-parse --short HEAD) && ORIGIN=$(git config --get remote.origin.url) && TEMP=$(mktemp -d) && FROM=$(pwd) && git clone -b ghpages --single-branch $ORIGIN $TEMP && cd $TEMP && ls -A | grep -wv .git | xargs rm -rf && cp -R $FROM/docs/ $TEMP && git add . && git commit -m \"Updated docs ($SHA)\" && git push && rm -rf $TEMP"
   },
   "repository": {
     "type": "git",
