@@ -6,6 +6,6 @@ import { Several } from '../shared-types';
  *
  * @param types The list of types to try.
  */
-export function or<U extends Several<AnyType>>(...types: U): UnionType<U> {
+export function or<U extends Several<AnyType>>(types: U): UnionType<U> {
   return new UnionType(types);
 }

@@ -1,8 +1,9 @@
 import { IntegerType } from '../types';
+import { ConstraintOptions } from '../shared-types';
 
 /**
  * Creates the integer type definition.
  */
-export function integer(): IntegerType {
-  return new IntegerType();
+export function integer(options?: ConstraintOptions): IntegerType {
+  return new IntegerType(options);
 }
