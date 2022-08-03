@@ -1,5 +1,6 @@
 const Ajv = require('ajv');
-const myzod = require('myzod');
+const z = require('myzod');
+const v = require('@badrap/valita');
 const lib = require('../../lib/index-cjs');
 
 describe(
@@ -19,7 +20,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.string();
+      const type = z.string();
 
       measure(() => {
         type.parse(value);
@@ -56,7 +57,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.string().min(1).max(5);
+      const type = z.string().min(1).max(5);
 
       measure(() => {
         type.parse(value);
@@ -118,7 +119,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.number();
+      const type = z.number();
 
       measure(() => {
         type.parse(value);
@@ -155,7 +156,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.number().min(1).max(5);
+      const type = z.number().min(1).max(5);
 
       measure(() => {
         type.parse(value);
@@ -191,7 +192,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.array(myzod.number());
+      const type = z.array(z.number());
 
       measure(() => {
         type.parse(value);
@@ -229,7 +230,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.array(myzod.number()).length(3);
+      const type = z.array(z.number()).length(3);
 
       measure(() => {
         type.parse(value);
@@ -267,7 +268,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.tuple([myzod.number(), myzod.number()]);
+      const type = z.tuple([z.number(), z.number()]);
 
       measure(() => {
         type.parse(value);
@@ -304,7 +305,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.record(myzod.number());
+      const type = z.record(z.number());
 
       measure(() => {
         type.parse(value);
@@ -351,10 +352,10 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.object(
+      const type = z.object(
         {
-          foo: myzod.string(),
-          bar: myzod.number(),
+          foo: z.string(),
+          bar: z.number(),
         },
         {
           allowUnknown: true,
@@ -381,7 +382,7 @@ describe(
 );
 
 describe(
-  'https://moltar.github.io/typescript-runtime-type-benchmarks/',
+  'huge object',
   () => {
     const value = {
       a1: 1,
@@ -450,19 +451,19 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = myzod.object(
+      const type = z.object(
         {
-          a1: myzod.number(),
-          a2: myzod.number(),
-          a3: myzod.number(),
-          a4: myzod.string(),
-          a5: myzod.string(),
-          a6: myzod.boolean(),
-          a7: myzod.object(
+          a1: z.number(),
+          a2: z.number(),
+          a3: z.number(),
+          a4: z.string(),
+          a5: z.string(),
+          a6: z.boolean(),
+          a7: z.object(
             {
-              a71: myzod.string(),
-              a72: myzod.number(),
-              a73: myzod.boolean(),
+              a71: z.string(),
+              a72: z.number(),
+              a73: z.boolean(),
             },
             {
               allowUnknown: true,
@@ -473,6 +474,26 @@ describe(
           allowUnknown: true,
         }
       );
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.object({
+        a1: v.number(),
+        a2: v.number(),
+        a3: v.number(),
+        a4: v.string(),
+        a5: v.string(),
+        a6: v.boolean(),
+        a7: v.object({
+          a71: v.string(),
+          a72: v.number(),
+          a73: v.boolean(),
+        }),
+      });
 
       measure(() => {
         type.parse(value);

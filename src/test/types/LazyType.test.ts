@@ -6,7 +6,7 @@ describe('LazyType', () => {
 
     const parserSpy = jest.spyOn(type, 'parse');
 
-    expect(new LazyType(() => type).validate(111)).toEqual([
+    expect(new LazyType(false, () => type).validate(111)).toEqual([
       {
         code: 'type',
         path: [],
@@ -23,17 +23,11 @@ describe('LazyType', () => {
   test('provider is called only once', () => {
     const providerMock = jest.fn(() => new StringType());
 
-    const type = new LazyType(providerMock);
+    const type = new LazyType(false, providerMock);
 
     type.validate(111);
     type.validate(222);
 
     expect(providerMock).toHaveBeenCalledTimes(1);
-  });
-
-  test('inherits async status', () => {
-    const type = new LazyType(() => new StringType().transformAsync(() => Promise.resolve(222)));
-
-    expect(type.isAsync()).toBe(true);
   });
 });

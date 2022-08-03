@@ -17,7 +17,7 @@ export type AnyType = Type<any> | Type<never>;
  * The abstract type definition.
  */
 export abstract class Type<T> {
-  constructor(protected options?: ConstraintOptions) {}
+  constructor(readonly async: boolean, protected options?: ConstraintOptions) {}
 
   /**
    * Parses the input so it conforms the type definition.
@@ -30,7 +30,7 @@ export abstract class Type<T> {
   abstract parse(input: unknown, options?: ParserOptions): Awaitable<T>;
 
   validate(input: unknown, options?: ParserOptions): Issue[] | null {
-    if (this.isAsync()) {
+    if (this.async) {
       throw new Error('Cannot use async type');
     }
     try {
@@ -43,13 +43,6 @@ export abstract class Type<T> {
 
   validateAsync(input: unknown, options?: ParserOptions): Promise<Issue[] | null> {
     return parseAsync(this, input, options).then(returnNull, extractIssues);
-  }
-
-  /**
-   * Returns `true` if {@link parse} returns a promise, or `false` otherwise.
-   */
-  isAsync(): boolean {
-    return false;
   }
 
   /**
@@ -115,23 +108,15 @@ export class TransformedType<X extends AnyType, O> extends Type<O> {
    * @param async `true` if transformer returns a `Promise`, or `false` otherwise.
    * @param transformer The transformer that converts input value to the output value.
    */
-  constructor(
-    protected type: X,
-    protected async: boolean,
-    protected transformer: Transformer<InferType<X>, Awaitable<O>>
-  ) {
-    super();
-  }
-
-  isAsync(): boolean {
-    return this.async || this.type.isAsync();
+  constructor(protected type: X, async: boolean, protected transformer: Transformer<InferType<X>, Awaitable<O>>) {
+    super(async || type.async);
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<O> {
     const { type, transformer } = this;
 
-    if (this.isAsync()) {
-      const promise = type.isAsync() ? type.parse(input, options) : parseAsync(type, input, options);
+    if (this.async) {
+      const promise = type.async ? type.parse(input, options) : parseAsync(type, input, options);
 
       return promise.then(transformer);
     }

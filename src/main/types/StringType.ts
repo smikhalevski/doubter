@@ -13,6 +13,10 @@ export class StringType extends Type<string> {
   protected maxLengthOptions?: ConstraintOptions;
   protected reOptions?: ConstraintOptions;
 
+  constructor(options?: ConstraintOptions) {
+    super(false, options);
+  }
+
   /**
    * Constrains the string length.
    */

@@ -16,7 +16,7 @@ export type InferConstructorType<C> = C extends Constructor<infer T> ? T : never
  */
 export class InstanceOfType<C extends Constructor<any>> extends Type<InferConstructorType<C>> {
   constructor(protected ctor: C, options?: ConstraintOptions) {
-    super(options);
+    super(false, options);
   }
 
   parse(input: unknown, options?: ParserOptions): InferConstructorType<C> {

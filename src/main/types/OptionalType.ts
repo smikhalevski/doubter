@@ -14,18 +14,14 @@ export class OptionalType<X extends AnyType> extends Type<InferType<X> | undefin
    * @param defaultValue The value that should be used if input is `undefined`.
    */
   constructor(protected type: X, protected defaultValue?: InferType<X>) {
-    super();
-  }
-
-  isAsync(): boolean {
-    return this.type.isAsync();
+    super(type.async);
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X> | undefined> {
     const { type, defaultValue } = this;
 
     if (input === undefined) {
-      return type.isAsync() ? Promise.resolve(defaultValue) : defaultValue;
+      return type.async ? Promise.resolve(defaultValue) : defaultValue;
     }
     return type.parse(input, options);
   }

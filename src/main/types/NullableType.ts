@@ -13,18 +13,14 @@ export class NullableType<X extends AnyType> extends Type<InferType<X> | null> {
    * @param type The underlying type definition.
    */
   constructor(protected type: X) {
-    super();
-  }
-
-  isAsync(): boolean {
-    return this.type.isAsync();
+    super(type.async);
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X> | null> {
     const { type } = this;
 
     if (input === null) {
-      return type.isAsync() ? Promise.resolve(input) : input;
+      return type.async ? Promise.resolve(input) : input;
     }
     return type.parse(input, options);
   }

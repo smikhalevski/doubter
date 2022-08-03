@@ -16,17 +16,13 @@ export class UnionType<U extends Several<AnyType>> extends Type<InferUnionType<U
    * @param types The list of united type definitions.
    */
   constructor(protected types: U) {
-    super();
-  }
-
-  isAsync(): boolean {
-    return isAsync(this.types);
+    super(isAsync(types));
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<InferUnionType<U>> {
     const { types } = this;
 
-    if (this.isAsync()) {
+    if (this.async) {
       const promises = [];
 
       for (const type of types) {

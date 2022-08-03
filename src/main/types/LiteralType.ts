@@ -15,7 +15,7 @@ export class LiteralType<T extends Primitive> extends Type<T> {
    * @param options
    */
   constructor(protected value: T, options?: ConstraintOptions) {
-    super();
+    super(false, options);
   }
 
   parse(input: any, options?: ParserOptions): Awaitable<T> {

@@ -13,14 +13,14 @@ describe('Type', () => {
       parse = fn;
     }
 
-    new MockType().validate('aaa', options);
+    new MockType(false).validate('aaa', options);
 
     expect(fn).toHaveBeenCalledTimes(1);
     expect(fn).toHaveBeenNthCalledWith(1, 'aaa', options);
   });
 
   test('returns null if no errors were thrown', () => {
-    expect(new MockType().validate('')).toBe(null);
+    expect(new MockType(false).validate('')).toBe(null);
   });
 
   test('passes parsed value to transform', () => {
@@ -32,19 +32,19 @@ describe('Type', () => {
       }
     }
 
-    expect(new MockType().transform(fn).parse('aaa')).toBe('aaa_bbb_ccc');
+    expect(new MockType(false).transform(fn).parse('aaa')).toBe('aaa_bbb_ccc');
     expect(fn).toHaveBeenCalledTimes(1);
     expect(fn).toHaveBeenNthCalledWith(1, 'aaa_bbb');
   });
 
   test('marks type as async', () => {
-    expect(new MockType().transform(() => undefined).isAsync()).toBe(false);
-    expect(new MockType().transformAsync(Promise.resolve).isAsync()).toBe(true);
+    expect(new MockType(false).transform(() => undefined).async).toBe(false);
+    expect(new MockType(false).transformAsync(Promise.resolve).async).toBe(true);
   });
 
   test('inherits async status', () => {
-    const type = new MockType().transformAsync(Promise.resolve).transform(() => undefined);
+    const type = new MockType(false).transformAsync(Promise.resolve).transform(() => undefined);
 
-    expect(type.isAsync()).toBe(true);
+    expect(type.async).toBe(true);
   });
 });

@@ -34,7 +34,7 @@ export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
    * @param options The type constraint options.
    */
   constructor(protected type: X, options?: ConstraintOptions) {
-    super(options);
+    super(type.async, options);
   }
 
   /**
@@ -76,10 +76,6 @@ export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
     return type;
   }
 
-  isAsync(): boolean {
-    return this.type.isAsync();
-  }
-
   parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X>[]> {
     if (!isArray(input)) {
       raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
@@ -114,7 +110,7 @@ export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
       );
     }
 
-    if (type.isAsync()) {
+    if (this.async) {
       const promises = [];
 
       const handleOutput = (output: unknown[]) => (isEqualArray(input, output) ? input : output);

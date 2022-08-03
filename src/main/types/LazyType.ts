@@ -14,19 +14,11 @@ export class LazyType<X extends AnyType> extends Type<InferType<X>> {
    *
    * @param provider Returns the type definition that must be applied to the input value.
    */
-  constructor(private provider: () => X) {
-    super();
-  }
-
-  protected getType(): X {
-    return (this.type ||= this.provider());
-  }
-
-  isAsync(): boolean {
-    return this.getType().isAsync();
+  constructor(async: boolean, private provider: () => X) {
+    super(async);
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X>> {
-    return this.getType().parse(input, options);
+    return (this.type ||= this.provider()).parse(input, options);
   }
 }

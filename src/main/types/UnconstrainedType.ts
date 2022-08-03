@@ -8,7 +8,7 @@ import { ParserOptions } from '../shared-types';
  */
 export class UnconstrainedType<T = any> extends Type<T> {
   constructor() {
-    super();
+    super(false);
   }
 
   parse(input: any, options?: ParserOptions): T {

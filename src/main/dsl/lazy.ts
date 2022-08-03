@@ -8,5 +8,5 @@ import { AnyType, LazyType } from '../types';
  * @template X The type definition returned by the provider.
  */
 export function lazy<X extends AnyType>(provider: () => X): LazyType<X> {
-  return new LazyType(provider);
+  return new LazyType(false, provider);
 }

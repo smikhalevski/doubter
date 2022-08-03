@@ -133,7 +133,7 @@ export function isAsync(types: Array<AnyType>): boolean {
   let async = false;
 
   for (let i = 0; i < types.length && !async; ++i) {
-    async = types[i].isAsync();
+    async = types[i].async;
   }
   return async;
 }
@@ -147,7 +147,7 @@ export const promiseAll = Promise.all.bind(Promise);
 export const promiseAllSettled = Promise.allSettled.bind(Promise);
 
 export function parseAsync(type: AnyType, input: any, options: ParserOptions | undefined): Promise<any> {
-  return type.isAsync() ? type.parse(input, options) : Promise.resolve().then(() => type.parse(input, options));
+  return type.async ? type.parse(input, options) : Promise.resolve().then(() => type.parse(input, options));
 }
 
 export function isEqualArray(a: any[], b: any[]): boolean {

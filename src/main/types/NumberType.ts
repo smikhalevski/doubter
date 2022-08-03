@@ -1,7 +1,6 @@
 import { Type } from './Type';
 import { cloneObject, raiseIssue, raiseIssuesIfDefined, raiseIssuesOrPush } from '../utils';
 import { ConstraintOptions, ParserOptions } from '../shared-types';
-import { number } from '../dsl';
 
 const isFinite = Number.isFinite;
 
@@ -17,6 +16,10 @@ export class NumberType extends Type<number> {
   protected minOptions?: ConstraintOptions;
   protected maxOptions?: ConstraintOptions;
   protected divisorOptions?: ConstraintOptions;
+
+  constructor(options?: ConstraintOptions) {
+    super(false, options);
+  }
 
   /**
    * Constrains the number to be greater than zero.

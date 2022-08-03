@@ -31,11 +31,7 @@ export class TupleType<U extends Several<AnyType>> extends Type<InferTupleType<U
    * @param options
    */
   constructor(protected types: U, options?: ConstraintOptions) {
-    super(options);
-  }
-
-  isAsync(): boolean {
-    return isAsync(this.types);
+    super(isAsync(types), options);
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<InferTupleType<U>> {
@@ -50,7 +46,7 @@ export class TupleType<U extends Several<AnyType>> extends Type<InferTupleType<U
       raiseIssue(input, 'tupleLength', typesLength, this.options, 'Must have a length of ' + typesLength);
     }
 
-    if (this.isAsync()) {
+    if (this.async) {
       const promises = [];
 
       const handleOutput = (output: any) => (isEqualArray(input, output) ? input : output);

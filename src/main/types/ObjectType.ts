@@ -64,10 +64,12 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
    * @param options
    */
   constructor(protected props: P, protected indexerType: I | null, options?: ConstraintOptions) {
-    super(options);
+    const valueTypes = Object.values(props);
+
+    super(indexerType?.async || isAsync(valueTypes), options);
 
     this.keys = Object.keys(props);
-    this.valueTypes = Object.values(props);
+    this.valueTypes = valueTypes;
     this.propEntries = Object.entries(props);
     this.keysMode = indexerType === null ? ObjectKeysMode.PRESERVE : ObjectKeysMode.INDEXER;
   }
@@ -195,16 +197,6 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
     return type;
   }
 
-  isAsync(): boolean {
-    const { indexerType } = this;
-
-    const async = (indexerType != null && indexerType.isAsync()) || isAsync(this.valueTypes);
-
-    this.isAsync = async ? returnTrue : returnFalse;
-
-    return async;
-  }
-
   parse(input: unknown, options?: ParserOptions): Awaitable<InferObjectType<P, I>> {
     if (!isObjectLike(input)) {
       raiseIssue(input, 'type', 'object', this.options, 'Must be an object');
@@ -238,7 +230,7 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
       }
     }
 
-    if (this.isAsync()) {
+    if (this.async) {
       const promises = [];
 
       let objectKeys = keys;

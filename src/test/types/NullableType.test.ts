@@ -29,6 +29,6 @@ describe('NullableType', () => {
   test('inherits async status', () => {
     const type = new NullableType(new StringType().transformAsync(() => Promise.resolve(222)));
 
-    expect(type.isAsync()).toBe(true);
+    expect(type.async).toBe(true);
   });
 });

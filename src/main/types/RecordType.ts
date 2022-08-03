@@ -17,11 +17,7 @@ import { Awaitable, ConstraintOptions, ParserOptions } from '../shared-types';
 
 export class RecordType<K extends Type<string>, V extends AnyType> extends Type<Record<InferType<K>, InferType<V>>> {
   constructor(protected keyType: K, protected valueType: V, options?: ConstraintOptions) {
-    super(options);
-  }
-
-  isAsync(): boolean {
-    return this.keyType.isAsync() || this.valueType.isAsync();
+    super(keyType.async || valueType.async, options);
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<Record<InferType<K>, InferType<V>>> {
@@ -31,7 +27,7 @@ export class RecordType<K extends Type<string>, V extends AnyType> extends Type<
 
     const { keyType, valueType } = this;
 
-    if (this.isAsync()) {
+    if (this.async) {
       const results = [];
 
       const handleResults = (results: any[]): any => {

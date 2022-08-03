@@ -44,6 +44,6 @@ describe('OptionalType', () => {
   test('inherits async status', () => {
     const type = new OptionalType(new StringType().transformAsync(() => Promise.resolve(222)));
 
-    expect(type.isAsync()).toBe(true);
+    expect(type.async).toBe(true);
   });
 });

@@ -15,7 +15,7 @@ export class OneOfType<T extends Primitive> extends Type<T> {
    * @param options
    */
   constructor(protected values: T[], options?: ConstraintOptions) {
-    super(options);
+    super(false, options);
   }
 
   parse(input: any, options?: ParserOptions): T {
