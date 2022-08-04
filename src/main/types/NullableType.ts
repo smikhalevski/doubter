@@ -1,5 +1,6 @@
 import { AnyType, InferType, Type } from './Type';
 import { Awaitable, ParserOptions } from '../shared-types';
+import { OptionalType } from './OptionalType';
 
 /**
  * The nullable type definition.
@@ -14,6 +15,11 @@ export class NullableType<X extends AnyType> extends Type<InferType<X> | null> {
    */
   constructor(protected type: X) {
     super(type.async);
+  }
+
+  at(key: unknown): AnyType | null {
+    const childType = this.type.at(key);
+    return childType === null ? null : new OptionalType(childType);
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X> | null> {

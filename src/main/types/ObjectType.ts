@@ -17,8 +17,6 @@ import {
   raiseIssuesIfDefined,
   raiseIssuesOrCaptureForKey,
   raiseIssuesOrPush,
-  returnFalse,
-  returnTrue,
 } from '../utils';
 
 type InferObjectType<P extends Dict<AnyType>, I extends AnyType> = Squash<
@@ -72,6 +70,16 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
     this.valueTypes = valueTypes;
     this.propEntries = Object.entries(props);
     this.keysMode = indexerType === null ? ObjectKeysMode.PRESERVE : ObjectKeysMode.INDEXER;
+  }
+
+  at(key: unknown): AnyType | null {
+    if (typeof key !== 'string') {
+      return null;
+    }
+    if (this.keys.includes(key)) {
+      return this.props[key];
+    }
+    return this.indexerType;
   }
 
   /**
@@ -157,6 +165,7 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
     const type = cloneObject<ObjectType<any, any>>(this);
     type.keysMode = ObjectKeysMode.EXACT;
     type.exactOptions = options;
+    type.indexerType = null;
     return type;
   }
 
@@ -168,6 +177,7 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
   strip(): ObjectType<P, Type<never>> {
     const type = cloneObject<ObjectType<any, any>>(this);
     type.keysMode = ObjectKeysMode.STRIP;
+    type.indexerType = null;
     return type;
   }
 
@@ -179,6 +189,7 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
   preserve(): ObjectType<P, Type<any>> {
     const type = cloneObject<ObjectType<any, any>>(this);
     type.keysMode = ObjectKeysMode.PRESERVE;
+    type.indexerType = null;
     return type;
   }
 

@@ -8,6 +8,7 @@ import {
   isEqual,
   isEqualArray,
   isFast,
+  isInteger,
   parseAsync,
   promiseAll,
   promiseAllSettled,
@@ -32,6 +33,12 @@ export class TupleType<U extends Several<AnyType>> extends Type<InferTupleType<U
    */
   constructor(protected types: U, options?: ConstraintOptions) {
     super(isAsync(types), options);
+  }
+
+  at(key: unknown): AnyType | null {
+    const { types } = this;
+
+    return typeof key === 'number' && isInteger(key) && key > -1 && key < types.length ? types[key] : null;
   }
 
   parse(input: unknown, options?: ParserOptions): Awaitable<InferTupleType<U>> {

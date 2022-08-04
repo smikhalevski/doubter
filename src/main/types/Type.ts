@@ -29,6 +29,10 @@ export abstract class Type<T> {
    */
   abstract parse(input: unknown, options?: ParserOptions): Awaitable<T>;
 
+  at(key: unknown): AnyType | null {
+    return null;
+  }
+
   validate(input: unknown, options?: ParserOptions): Issue[] | null {
     if (this.async) {
       throw new Error('Cannot use async type');

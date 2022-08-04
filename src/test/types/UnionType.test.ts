@@ -1,4 +1,4 @@
-import { NumberType, StringType, UnionType } from '../../main';
+import { ArrayType, NumberType, StringType, UnionType } from '../../main';
 
 describe('UnionType', () => {
   test('returns the input as is', () => {
@@ -25,5 +25,21 @@ describe('UnionType', () => {
         meta: undefined,
       },
     ]);
+  });
+
+  test('returns child type at key', () => {
+    const childType1 = new NumberType();
+    const childType2 = new StringType();
+    const type = new UnionType([new ArrayType(childType1), new ArrayType(childType2)]);
+
+    expect(type.at(0)).toStrictEqual(new UnionType([childType1, childType2]));
+    expect(type.at('aaa')).toBe(null);
+  });
+
+  test('returns child type at key excluding nulls', () => {
+    const childType = new NumberType();
+    const type = new UnionType([new ArrayType(childType), new StringType()]);
+
+    expect(type.at(0)).toStrictEqual(childType);
   });
 });

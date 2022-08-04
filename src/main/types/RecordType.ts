@@ -20,6 +20,10 @@ export class RecordType<K extends Type<string>, V extends AnyType> extends Type<
     super(keyType.async || valueType.async, options);
   }
 
+  at(key: unknown): AnyType | null {
+    return typeof key === 'string' ? this.valueType : null;
+  }
+
   parse(input: unknown, options?: ParserOptions): Awaitable<Record<InferType<K>, InferType<V>>> {
     if (!isObjectLike(input)) {
       raiseIssue(input, 'type', 'object', this.options, 'Must be an object');

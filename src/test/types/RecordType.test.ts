@@ -56,4 +56,12 @@ describe('RecordType', () => {
       },
     ]);
   });
+
+  test('returns child type at key', () => {
+    const childType = new NumberType();
+    const type = new RecordType(new StringType(), childType);
+
+    expect(type.at('aaa')).toBe(childType);
+    expect(type.at(1)).toBe(null);
+  });
 });

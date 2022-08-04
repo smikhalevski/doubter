@@ -1,4 +1,4 @@
-import { NullableType, StringType } from '../../main';
+import { ArrayType, NullableType, NumberType, OptionalType, StringType } from '../../main';
 
 describe('NullableType', () => {
   test('allows null', () => {
@@ -30,5 +30,15 @@ describe('NullableType', () => {
     const type = new NullableType(new StringType().transformAsync(() => Promise.resolve(222)));
 
     expect(type.async).toBe(true);
+  });
+
+  test('returns child type at key', () => {
+    const childType = new NumberType();
+    const type = new NullableType(new ArrayType(childType));
+
+    expect(type.at(1)).toStrictEqual(new OptionalType(childType));
+    expect(type.at(-1)).toBe(null);
+    expect(type.at(0.5)).toBe(null);
+    expect(type.at('aaa')).toBe(null);
   });
 });

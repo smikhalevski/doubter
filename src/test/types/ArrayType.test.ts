@@ -276,4 +276,14 @@ describe('ArrayType', () => {
 
     await expect(() => type.validateAsync([1])).rejects.toEqual(new MockError());
   });
+
+  test('returns child type at key', () => {
+    const childType = new NumberType();
+    const type = new ArrayType(childType);
+
+    expect(type.at(1)).toBe(childType);
+    expect(type.at(-1)).toBe(null);
+    expect(type.at(0.5)).toBe(null);
+    expect(type.at('aaa')).toBe(null);
+  });
 });
