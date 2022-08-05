@@ -85,7 +85,7 @@ type MyType = InferType<typeof myType>;
 // → Type<{ name: string, age: number }>
 ```
 
-Validate the value using the type definition:
+Validate the input using the type definition:
 
 ```ts
 myType.validate({ age: 5 });
@@ -110,7 +110,7 @@ You can use a boolean predicate to validate a specific condition:
 
 ```ts
 function isEven(input: number): boolean {
-  return input & 1 === 0;
+  return (input & 1) === 0;
 }
 
 d.number().narrow(isEven);
@@ -166,7 +166,7 @@ Many of the DSL methods support an `options` argument. You can use it to pass a 
 attached to an issue:
 
 ```ts
-d.array({ message: 'Expected array' }).min(3, { message: 'Not enough' })
+d.array(d.string(), { message: 'Expected an array' }).min(3, { message: 'Not enough' })
 ```
 
 # DSL reference
@@ -245,7 +245,7 @@ const indexType = d.or([
 // → Type<string | number>
 
 type.index(indexType);
-// → Type<{ foo: string bar: number, [key: string]: string | number }>
+// → Type<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
 ### Unknown keys
@@ -266,7 +266,7 @@ d.object({
 }).exact();
 ```
 
-You can strip unknown keys, so the object is cloned and only known keys are preserved.
+You can strip unknown keys, so the object is cloned if an unknown key is met, and only known keys are preserved.
 
 ```ts
 d.object({
@@ -280,7 +280,7 @@ You can derive a new type and override the strategy for unknown keys:
 ```ts
 const type = d.object({ foo: d.string() }).exact();
 
-// Unknonwn keys are preserved this new type
+// Unknonwn keys are now preserved
 type.preserve();
 ```
 
