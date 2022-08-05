@@ -1,4 +1,4 @@
-import { OptionalType, StringType } from '../../main';
+import { ArrayType, NumberType, OptionalType, StringType } from '../../main';
 
 describe('OptionalType', () => {
   test('allows undefined', () => {
@@ -45,5 +45,15 @@ describe('OptionalType', () => {
     const type = new OptionalType(new StringType().transformAsync(() => Promise.resolve(222)));
 
     expect(type.async).toBe(true);
+  });
+
+  test('returns child type at key', () => {
+    const childType = new NumberType();
+    const type = new OptionalType(new ArrayType(childType));
+
+    expect(type.at(1)).toStrictEqual(new OptionalType(childType));
+    expect(type.at(-1)).toBe(null);
+    expect(type.at(0.5)).toBe(null);
+    expect(type.at('aaa')).toBe(null);
   });
 });

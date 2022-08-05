@@ -142,6 +142,8 @@ export const isEqual = Object.is;
 
 export const isArray = Array.isArray;
 
+export const isInteger = Number.isInteger;
+
 export const promiseAll = Promise.all.bind(Promise);
 
 export const promiseAllSettled = Promise.allSettled.bind(Promise);
@@ -199,12 +201,4 @@ export function copyObjectEnumerableKeys(input: Dict, keyCount?: number): Dict {
     i++;
   }
   return output;
-}
-
-export function returnTrue() {
-  return true;
-}
-
-export function returnFalse() {
-  return false;
 }

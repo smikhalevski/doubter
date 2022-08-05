@@ -19,6 +19,25 @@ export class UnionType<U extends Several<AnyType>> extends Type<InferUnionType<U
     super(isAsync(types));
   }
 
+  at(key: unknown): AnyType | null {
+    const childTypes: AnyType[] = [];
+
+    for (const type of this.types) {
+      const childType = type.at(key);
+
+      if (childType !== null) {
+        childTypes.push(childType);
+      }
+    }
+    if (childTypes.length === 0) {
+      return null;
+    }
+    if (childTypes.length === 1) {
+      return childTypes[0];
+    }
+    return new UnionType(childTypes as Several<AnyType>);
+  }
+
   parse(input: unknown, options?: ParserOptions): Awaitable<InferUnionType<U>> {
     const { types } = this;
 

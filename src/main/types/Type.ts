@@ -29,6 +29,10 @@ export abstract class Type<T> {
    */
   abstract parse(input: unknown, options?: ParserOptions): Awaitable<T>;
 
+  at(key: unknown): AnyType | null {
+    return null;
+  }
+
   validate(input: unknown, options?: ParserOptions): Issue[] | null {
     if (this.async) {
       throw new Error('Cannot use async type');
@@ -69,14 +73,14 @@ export abstract class Type<T> {
     return new TransformedType(this, true, transformer);
   }
 
-  refine<O extends T>(refiner: (value: T) => value is O, options?: ConstraintOptions): TransformedType<this, O>;
+  narrow<O extends T>(predicate: (value: T) => value is O, options?: ConstraintOptions): TransformedType<this, O>;
 
-  refine(refiner: (value: T) => unknown, options?: ConstraintOptions): TransformedType<this, T>;
+  narrow(predicate: (value: T) => unknown, options?: ConstraintOptions): TransformedType<this, T>;
 
-  refine(refiner: (value: T) => unknown, options?: ConstraintOptions): TransformedType<this, T> {
+  narrow(predicate: (value: T) => unknown, options?: ConstraintOptions): TransformedType<this, T> {
     return this.transform(input => {
-      if (!refiner(input)) {
-        raiseIssue(input, 'refined', undefined, options, 'Must be refined');
+      if (!predicate(input)) {
+        raiseIssue(input, 'narrow', undefined, options, 'Must be narrowed');
       }
       return input;
     });

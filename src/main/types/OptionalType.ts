@@ -17,6 +17,11 @@ export class OptionalType<X extends AnyType> extends Type<InferType<X> | undefin
     super(type.async);
   }
 
+  at(key: unknown): AnyType | null {
+    const childType = this.type.at(key);
+    return childType === null ? null : new OptionalType(childType);
+  }
+
   parse(input: unknown, options?: ParserOptions): Awaitable<InferType<X> | undefined> {
     const { type, defaultValue } = this;
 

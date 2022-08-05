@@ -8,6 +8,7 @@ import {
   isEqual,
   isEqualArray,
   isFast,
+  isInteger,
   promiseAll,
   promiseAllSettled,
   raiseIssue,
@@ -35,6 +36,10 @@ export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
    */
   constructor(protected type: X, options?: ConstraintOptions) {
     super(type.async, options);
+  }
+
+  at(key: unknown): AnyType | null {
+    return typeof key === 'number' && isInteger(key) && key > -1 ? this.type : null;
   }
 
   /**

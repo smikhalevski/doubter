@@ -58,4 +58,16 @@ describe('tuple', () => {
       },
     ]);
   });
+
+  test('returns child type at key', () => {
+    const childType1 = new StringType();
+    const childType2 = new NumberType();
+    const type = new TupleType([childType1, childType2]);
+
+    expect(type.at(0)).toBe(childType1);
+    expect(type.at(1)).toBe(childType2);
+    expect(type.at(2)).toBe(null);
+    expect(type.at(-1)).toBe(null);
+    expect(type.at('aaa')).toBe(null);
+  });
 });

@@ -17,12 +17,19 @@ export interface Issue {
    */
   input: any;
 
-  message: string;
+  /**
+   * A message associated with an issue. Built-in messages are strings but custom messages can have an arbitrary type.
+   */
+  message: any;
 
   /**
    * An additional param that is specific for {@link code}.
    */
   param?: any;
+
+  /**
+   * An arbitrary metadata that can be used for message formatting.
+   */
   meta?: any;
 }
 
@@ -37,7 +44,14 @@ export interface Dict<T = any> {
 }
 
 export interface ConstraintOptions {
-  message?: string;
+  /**
+   * The custom issue message.
+   */
+  message?: any;
+
+  /**
+   * An arbitrary metadata that is added to an issue.
+   */
   meta?: any;
 }
 

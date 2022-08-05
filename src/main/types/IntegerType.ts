@@ -1,8 +1,6 @@
 import { NumberType } from './NumberType';
-import { raiseIssue } from '../utils';
+import { isInteger, raiseIssue } from '../utils';
 import { ConstraintOptions, ParserOptions } from '../shared-types';
-
-const isInteger = Number.isInteger;
 
 /**
  * The integer type definition.

@@ -213,4 +213,19 @@ describe('ObjectType', () => {
     expect(input).toEqual({ foo: 111 });
     expect(output).toEqual({ foo: 'aaa' });
   });
+
+  test('returns child type at key', () => {
+    const childType = new NumberType();
+    const type = new ObjectType({ foo: childType }, null);
+
+    expect(type.at('foo')).toBe(childType);
+    expect(type.at('bar')).toBe(null);
+  });
+
+  test('returns indexer type at key', () => {
+    const indexerType = new StringType();
+    const type = new ObjectType({}, indexerType);
+
+    expect(type.at('bar')).toBe(indexerType);
+  });
 });
