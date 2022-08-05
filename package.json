@@ -1,6 +1,6 @@
 {
   "name": "doubter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "No-hassle runtime type validation and parsing.",
   "main": "./lib/index-cjs.js",
   "module": "./lib/index.js",
