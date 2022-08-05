@@ -98,8 +98,8 @@ The type of each type definition can be
 [narrowed using a type predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates):
 
 ```ts
-function isFooOrBar(value: string): value is 'foo' | 'bar' {
-  return value === 'foo' || value === 'bar';
+function isFooOrBar(input: string): input is 'foo' | 'bar' {
+  return input === 'foo' || input === 'bar';
 }
 
 d.string().narrow(isFooOrBar);
@@ -109,8 +109,8 @@ d.string().narrow(isFooOrBar);
 You can use a boolean predicate to validate a specific condition:
 
 ```ts
-function isEven(value: number): boolean {
-  return value & 1 === 0;
+function isEven(input: number): boolean {
+  return input & 1 === 0;
 }
 
 d.number().narrow(isEven);
@@ -122,8 +122,8 @@ d.number().narrow(isEven);
 You can perform custom type transformations.
 
 ```ts
-function toFixed(value: number): string {
-  return value.toFixed(2);
+function toFixed(input: number): string {
+  return input.toFixed(2);
 }
 
 d.number().transform(toFixed);
@@ -132,32 +132,37 @@ d.number().transform(toFixed);
 
 ## Validation errors
 
-If you encounter an error during a [narrowing](#type-narrowing) or [transformation](#type-transformations), throw
-a `ValidationError`:
+If you encounter an error during a [narrowing](#type-narrowing) or a [transformation](#type-transformations), throw
+a `ValidationError` with an array of associated issues:
 
 ```ts
 import * as d from 'doubter';
 import { ValidationError } from 'doubter';
 
-function beautify(value: unknown): string {
-  if (typeof value === 'number') {
-    return value.toFixed(2);
+function toNumber(input: any): number {
+  const output = +input;
+
+  if (isNaN(output)) {
+    throw new ValidationError([
+      {
+        code: 'nan',
+        path: [],
+        input: input,
+        message: 'Must be a number',
+      }
+    ]);
   }
 
-  throw new ValidationError({
-    code: 'unbeautifiable',
-    path: [],
-    input: value,
-    message: 'Expected a number to beautify',
-  });
+  return output;
 }
 
-d.unknown().transform(beautify);
+d.any().transform(toNumber);
+// → Type<number>
 ```
 
 ## Custom messages
 
-Many of the DSL methods support an options argument. You can use it to pass a customized message and metadata that are
+Many of the DSL methods support an `options` argument. You can use it to pass a customized message and metadata that are
 attached to an issue:
 
 ```ts
