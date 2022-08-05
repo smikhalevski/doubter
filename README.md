@@ -13,6 +13,12 @@ npm install --save-prod doubter
 
 - [Usage](#usage)
 
+    - [Type narrowing](#type-narrowing)
+    - [Type transformations](#type-transformations)
+    - [Validation errors](#validation-errors)
+    - [Custom messages](#custom-messages)
+
+- [DSL reference](#dsl-reference)
     - Arrays<br>
       [`array`](#array)
       [`tuple`](#tuple)
@@ -59,8 +65,6 @@ npm install --save-prod doubter
 
 # Usage
 
-🔎 [API documentation is available here.](https://smikhalevski.github.io/doubter/)
-
 Doubter provides a DSL API to compose a runtime type definition that can be used to validate arbitrary data.
 
 ```ts
@@ -87,6 +91,82 @@ Validate the value using the type definition:
 myType.validate({ age: 5 });
 // → [{path: ['name'], message: 'Must be a string', …}, …]
 ```
+
+## Type narrowing
+
+The type of each type definition can be
+[narrowed using a type predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates):
+
+```ts
+function isFooOrBar(value: string): value is 'foo' | 'bar' {
+  return value === 'foo' || value === 'bar';
+}
+
+d.string().narrow(isFooOrBar);
+// → Type<'foo' | 'bar'>
+```
+
+You can use a boolean predicate to validate a specific condition:
+
+```ts
+function isEven(value: number): boolean {
+  return value & 1 === 0;
+}
+
+d.number().narrow(isEven);
+// → Type<number>
+```
+
+## Type transformations
+
+You can perform custom type transformations.
+
+```ts
+function toFixed(value: number): string {
+  return value.toFixed(2);
+}
+
+d.number().transform(toFixed);
+// → Type<string>
+```
+
+## Validation errors
+
+If you encounter an error during a [narrowing](#type-narrowing) or [transformation](#type-transformations), throw
+a `ValidationError`:
+
+```ts
+import * as d from 'doubter';
+import { ValidationError } from 'doubter';
+
+function beautify(value: unknown): string {
+  if (typeof value === 'number') {
+    return value.toFixed(2);
+  }
+
+  throw new ValidationError({
+    code: 'unbeautifiable',
+    path: [],
+    input: value,
+    message: 'Expected a number to beautify',
+  });
+}
+
+d.unknown().transform(beautify);
+```
+
+## Custom messages
+
+Many of the DSL methods support an options argument. You can use it to pass a customized message and metadata that are
+attached to an issue:
+
+```ts
+d.array({ message: 'Expected array' }).min(3, { message: 'Not enough' })
+```
+
+# DSL reference
+
+🔎[API documentation is available here.](https://smikhalevski.github.io/doubter/)
 
 ## `array`
 
