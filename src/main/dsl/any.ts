@@ -1,8 +1,8 @@
 import { UnconstrainedType } from '../types';
 
 /**
- * Creates the unconstrained type definition that accepts any value.
+ * Creates the unconstrained type definition.
  */
-export function any(): UnconstrainedType<any> {
+export function any<T = any>(): UnconstrainedType<T> {
   return new UnconstrainedType();
 }

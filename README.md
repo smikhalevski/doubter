@@ -496,6 +496,13 @@ d.any();
 // → Type<any>
 ```
 
+You can use `any` to create types that are unconstrained at runtime but constrained at compile time:
+
+```ts
+d.any<{ foo: string }>();
+// → Type<{ foo: string }>;
+```
+
 ## `unknown`
 
 An unconstrained value that is inferred as `unknown`:
