@@ -19,11 +19,10 @@ import {
   raiseIssuesOrPush,
 } from '../utils';
 
-type InferObjectType<P extends Dict<AnyType>, I extends AnyType> = Squash<
-  UndefinedAsOptional<{ [K in keyof P]: InferType<P[K]> }> & InferIndexerType<I>
+type InferObjectType<P extends Dict<AnyType>, I extends AnyType, V extends 'input' | 'output'> = Squash<
+  UndefinedAsOptional<{ [K in keyof P]: InferType<P[K]>[V] }> &
+    (I extends Type<never> ? unknown : { [indexer: string]: InferType<I>[V] })
 >;
-
-type InferIndexerType<I extends AnyType> = I extends Type<never> ? unknown : { [indexer: string]: InferType<I> };
 
 type Squash<T> = T extends never ? never : { [K in keyof T]: T[K] };
 
@@ -46,7 +45,10 @@ const enum ObjectKeysMode {
  * @template P The mapping from an object key to a corresponding type definition.
  * @template I The type definition that constrains the indexer signature.
  */
-export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type<InferObjectType<P, I>> {
+export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type<
+  InferObjectType<P, I, 'input'>,
+  InferObjectType<P, I, 'output'>
+> {
   protected keys;
   protected valueTypes;
   protected keysMode;
@@ -208,7 +210,7 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
     return type;
   }
 
-  parse(input: unknown, options?: ParserOptions): Awaitable<InferObjectType<P, I>> {
+  parse(input: unknown, options?: ParserOptions): Awaitable<InferObjectType<P, I, 'output'>> {
     if (!isObjectLike(input)) {
       raiseIssue(input, 'type', 'object', this.options, 'Must be an object');
     }
@@ -329,6 +331,6 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
 
     raiseIssuesIfDefined(issues);
 
-    return output as InferObjectType<P, I>;
+    return output as any;
   }
 }

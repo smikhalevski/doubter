@@ -8,6 +8,9 @@ import { optional } from './optional';
  * @param type The underlying type definition.
  * @param defaultValue The value that should be used if input is `undefined`.
  */
-export function nullish<X extends AnyType>(type: X, defaultValue?: InferType<X> | null): OptionalType<NullableType<X>> {
+export function nullish<X extends AnyType>(
+  type: X,
+  defaultValue?: InferType<X>['output'] | null
+): OptionalType<NullableType<X>> {
   return optional(nullable(type), defaultValue);
 }

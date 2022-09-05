@@ -2,14 +2,15 @@ import { AnyType, InferType, Type } from './Type';
 import { Awaitable, ParserOptions, Several } from '../shared-types';
 import { extractIssues, isAsync, parseAsync, promiseAllSettled, raiseIssue } from '../utils';
 
-export type InferUnionType<U extends Several<AnyType>> = { [K in keyof U]: InferType<U[K]> }[number];
-
 /**
  * The union type definition.
  *
  * @template U The list of united type definitions.
  */
-export class UnionType<U extends Several<AnyType>> extends Type<InferUnionType<U>> {
+export class UnionType<U extends Several<AnyType>> extends Type<
+  { [K in keyof U]: InferType<U[K]>['input'] }[number],
+  { [K in keyof U]: InferType<U[K]>['output'] }[number]
+> {
   /**
    * Creates a new {@link UnionType} instance.
    *
@@ -38,7 +39,7 @@ export class UnionType<U extends Several<AnyType>> extends Type<InferUnionType<U
     return new UnionType(childTypes as Several<AnyType>);
   }
 
-  parse(input: unknown, options?: ParserOptions): Awaitable<InferUnionType<U>> {
+  parse(input: unknown, options?: ParserOptions): Awaitable<{ [K in keyof U]: InferType<U[K]>['output'] }[number]> {
     const { types } = this;
 
     if (this.async) {

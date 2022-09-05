@@ -6,14 +6,17 @@ import { Awaitable, ParserOptions } from '../shared-types';
  *
  * @template X The underlying type definition.
  */
-export class OptionalType<X extends AnyType> extends Type<InferType<X> | undefined> {
+export class OptionalType<X extends AnyType> extends Type<
+  InferType<X>['input'] | undefined,
+  InferType<X>['output'] | undefined
+> {
   /**
    * Creates a new {@link OptionalType} instance.
    *
    * @param type The underlying type definition.
    * @param defaultValue The value that should be used if input is `undefined`.
    */
-  constructor(protected type: X, protected defaultValue?: InferType<X>) {
+  constructor(protected type: X, protected defaultValue?: InferType<X>['output']) {
     super(type.async);
   }
 

@@ -22,7 +22,7 @@ import {
  *
  * @template X The type definition of array elements.
  */
-export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
+export class ArrayType<X extends AnyType> extends Type<InferType<X>['input'][], InferType<X>['output'][]> {
   protected minLength?: number;
   protected maxLength?: number;
   protected minLengthOptions?: ConstraintOptions;

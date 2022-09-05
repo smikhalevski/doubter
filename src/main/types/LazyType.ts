@@ -6,7 +6,7 @@ import { Awaitable, ParserOptions } from '../shared-types';
  *
  * @template X The type definition returned by the provider.
  */
-export class LazyType<X extends AnyType> extends Type<InferType<X>> {
+export class LazyType<X extends AnyType> extends Type<InferType<X>['input'], InferType<X>['output']> {
   protected type: X | undefined;
 
   /**

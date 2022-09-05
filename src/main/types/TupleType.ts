@@ -17,14 +17,15 @@ import {
   raiseIssuesOrCaptureForKey,
 } from '../utils';
 
-export type InferTupleType<U extends Several<AnyType>> = { [K in keyof U]: InferType<U[K]> };
-
 /**
  * The tuple type definition.
  *
  * @template U The list of tuple elements.
  */
-export class TupleType<U extends Several<AnyType>> extends Type<InferTupleType<U>> {
+export class TupleType<U extends Several<AnyType>> extends Type<
+  { [K in keyof U]: InferType<U[K]>['input'] },
+  { [K in keyof U]: InferType<U[K]>['output'] }
+> {
   /**
    * Creates a new {@link TupleType} instance.
    *
@@ -41,7 +42,7 @@ export class TupleType<U extends Several<AnyType>> extends Type<InferTupleType<U
     return typeof key === 'number' && isInteger(key) && key > -1 && key < types.length ? types[key] : null;
   }
 
-  parse(input: unknown, options?: ParserOptions): Awaitable<InferTupleType<U>> {
+  parse(input: unknown, options?: ParserOptions): Awaitable<{ [K in keyof U]: InferType<U[K]>['output'] }> {
     if (!isArray(input)) {
       raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
     }
@@ -90,6 +91,6 @@ export class TupleType<U extends Several<AnyType>> extends Type<InferTupleType<U
 
     raiseIssuesIfDefined(issues);
 
-    return output as InferTupleType<U>;
+    return output as { [K in keyof U]: InferType<U[K]>['output'] };
   }
 }

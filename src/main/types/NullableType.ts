@@ -7,7 +7,7 @@ import { OptionalType } from './OptionalType';
  *
  * @template X The underlying type definition.
  */
-export class NullableType<X extends AnyType> extends Type<InferType<X> | null> {
+export class NullableType<X extends AnyType> extends Type<InferType<X>['input'] | null, InferType<X>['output'] | null> {
   /**
    * Creates a new {@link NullableType} instance.
    *

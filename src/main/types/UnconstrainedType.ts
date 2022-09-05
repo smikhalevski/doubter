@@ -6,12 +6,12 @@ import { ParserOptions } from '../shared-types';
  *
  * @template The type of the unconstrained value.
  */
-export class UnconstrainedType<T = any> extends Type<T> {
+export class UnconstrainedType<I = any> extends Type<I> {
   constructor() {
     super(false);
   }
 
-  parse(input: any, options?: ParserOptions): T {
+  parse(input: any, options?: ParserOptions): I {
     return input;
   }
 }

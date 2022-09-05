@@ -15,7 +15,10 @@ import {
 } from '../utils';
 import { Awaitable, ConstraintOptions, ParserOptions } from '../shared-types';
 
-export class RecordType<K extends Type<string>, V extends AnyType> extends Type<Record<InferType<K>, InferType<V>>> {
+export class RecordType<K extends Type<string>, V extends AnyType> extends Type<
+  Record<InferType<K>['input'], InferType<V>['input']>,
+  Record<InferType<K>['output'], InferType<V>['output']>
+> {
   constructor(protected keyType: K, protected valueType: V, options?: ConstraintOptions) {
     super(keyType.async || valueType.async, options);
   }
@@ -24,7 +27,7 @@ export class RecordType<K extends Type<string>, V extends AnyType> extends Type<
     return typeof key === 'string' ? this.valueType : null;
   }
 
-  parse(input: unknown, options?: ParserOptions): Awaitable<Record<InferType<K>, InferType<V>>> {
+  parse(input: unknown, options?: ParserOptions): Awaitable<Record<InferType<K>['output'], InferType<V>['output']>> {
     if (!isObjectLike(input)) {
       raiseIssue(input, 'type', 'object', this.options, 'Must be an object');
     }
@@ -102,6 +105,6 @@ export class RecordType<K extends Type<string>, V extends AnyType> extends Type<
 
     raiseIssuesIfDefined(issues);
 
-    return output as Record<InferType<K>, InferType<V>>;
+    return output as Record<InferType<K>['output'], InferType<V>['output']>;
   }
 }
