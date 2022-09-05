@@ -12,7 +12,7 @@ export class OneOfType<T extends Primitive> extends Type<T> {
    * Creates a new {@link OneOfType} instance.
    *
    * @param values The list of values allowed for the input.
-   * @param options
+   * @param options The constraint options.
    */
   constructor(protected values: T[], options?: ConstraintOptions) {
     super(false, options);

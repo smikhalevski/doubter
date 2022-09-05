@@ -29,7 +29,7 @@ export class TupleType<U extends Several<AnyType>> extends Type<InferTupleType<U
    * Creates a new {@link TupleType} instance.
    *
    * @param types The list of tuple elements.
-   * @param options
+   * @param options The constraint options.
    */
   constructor(protected types: U, options?: ConstraintOptions) {
     super(isAsync(types), options);

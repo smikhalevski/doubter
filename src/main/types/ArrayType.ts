@@ -57,7 +57,7 @@ export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
    * Constrains the minimum array length.
    *
    * @param length The minimum length of the array to satisfy the constraint.
-   * @param options The minimum constraint options.
+   * @param options The constraint options.
    * @returns The new type definition.
    */
   min(length: number, options?: ConstraintOptions): this {
@@ -71,7 +71,7 @@ export class ArrayType<X extends AnyType> extends Type<InferType<X>[]> {
    * Constrains the maximum array length.
    *
    * @param length The maximum length of the array to satisfy the constraint.
-   * @param options The maximum constraint options.
+   * @param options The constraint options.
    * @returns The new type definition.
    */
   max(length: number, options?: ConstraintOptions): this {

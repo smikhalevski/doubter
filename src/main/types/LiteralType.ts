@@ -12,7 +12,7 @@ export class LiteralType<T extends Primitive> extends Type<T> {
    * Creates a new {@link LiteralType} instance.
    *
    * @param value The literal value that is compared with the input value.
-   * @param options
+   * @param options The constraint options.
    */
   constructor(protected value: T, options?: ConstraintOptions) {
     super(false, options);

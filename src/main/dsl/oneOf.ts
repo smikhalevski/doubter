@@ -5,7 +5,7 @@ import { OneOfType } from '../types';
  * The type definition that constrains input with the list of primitive values.
  *
  * @param values The list of values allowed for the input.
- * @param options
+ * @param options The constraint options.
  */
 export function oneOf<T extends Primitive, U extends Several<T>>(
   values: U,
@@ -16,7 +16,7 @@ export function oneOf<T extends Primitive, U extends Several<T>>(
  * The type definition that constrains input with values of the enum-like object.
  *
  * @param values The enum-like object.
- * @param options
+ * @param options The constraint options.
  */
 export function oneOf<U extends Dict<string | number>>(values: U, options?: ConstraintOptions): OneOfType<U[keyof U]>;
 

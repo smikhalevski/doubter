@@ -59,7 +59,7 @@ export class ObjectType<P extends Dict<AnyType>, I extends AnyType> extends Type
    * @param props The mapping from an object key to a corresponding type definition.
    * @param indexerType The type definition that constrains the indexer signature. If `null` then values thea fall
    * under the indexer signature are unconstrained.
-   * @param options
+   * @param options The constraint options.
    */
   constructor(protected props: P, protected indexerType: I | null, options?: ConstraintOptions) {
     const valueTypes = Object.values(props);

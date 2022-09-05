@@ -83,7 +83,7 @@ export class NumberType extends Type<number> {
    * Constrains the number to be a multiple of the divisor.
    *
    * @param divisor The number by which the input should be divisible without a remainder.
-   * @param options
+   * @param options The constraint options.
    */
   multipleOf(divisor: number, options?: ConstraintOptions): this {
     const type = cloneObject(this);
