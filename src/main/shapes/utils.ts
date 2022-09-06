@@ -2,6 +2,25 @@ import { ConstraintOptions, ParserOptions } from './shared-types';
 import { ValidationError } from '../ValidationError';
 import type { Constraint, Shape } from './Shape';
 
+export const isArray = Array.isArray;
+
+export const isInteger = Number.isInteger;
+
+export const isEqual = Object.is;
+
+export const promiseAll = Promise.all.bind(Promise);
+
+export const promiseAllSettled = Promise.allSettled.bind(Promise);
+
+export function isEqualArray(a: any[], b: any[]): boolean {
+  for (let i = 0; i < a.length; ++i) {
+    if (!isEqual(a[i], b[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 export interface PropertyDescriptor<T, V> {
   configurable?: boolean;
   enumerable?: boolean;
@@ -29,6 +48,12 @@ export function die(message: string): never {
   throw new Error(message);
 }
 
+export function dieError(error: Error | null): void {
+  if (error !== null) {
+    throw error;
+  }
+}
+
 /**
  * Adds constraint to a shape.
  */
@@ -38,16 +63,17 @@ export function addConstraint<S extends Shape<any>>(
   constraint: Constraint<S['output']>
 ): S {
   const shapeCopy = Object.assign(Object.create(Object.getPrototypeOf(shape)), shape);
-  const constraintIds = (shapeCopy.constraintIds = shapeCopy.constraintIds.slice(0));
-  const constraints = (shapeCopy.constraints = shapeCopy.constraints.slice(0));
+  const constraintIds = (shapeCopy.constraintIds = shapeCopy.constraintIds?.slice(0) || []);
+  const constraints = (shapeCopy.constraints = shapeCopy.constraints?.slice(0) || []);
   const i = constraintIds.indexOf(id);
 
   if (id == null || i === -1) {
-    constraintIds[constraints.push(constraint)] = id;
+    constraints.push(constraint);
+    constraintIds.push(id);
   } else {
     constraints[i] = constraint;
   }
-  return shape;
+  return shapeCopy;
 }
 
 /**
@@ -56,77 +82,128 @@ export function addConstraint<S extends Shape<any>>(
 export function applyConstraints<T>(
   input: T,
   constraints: Constraint<T>[],
-  parserOptions: ParserOptions | undefined
-): void {
-  let rootError: ValidationError | undefined;
-
+  parserOptions: ParserOptions | undefined,
+  rootError: ValidationError | null
+): ValidationError | null {
   const constraintsLength = constraints.length;
 
-  if (constraintsLength === 1) {
+  try {
     constraints[0](input);
-    return;
+  } catch (error) {
+    rootError = raiseOrCaptureError(error, rootError, parserOptions);
+  }
+
+  if (constraintsLength === 1) {
+    return rootError;
+  }
+
+  try {
+    constraints[1](input);
+  } catch (error) {
+    rootError = raiseOrCaptureError(error, rootError, parserOptions);
   }
 
   if (constraintsLength === 2) {
-    try {
-      constraints[0](input);
-    } catch (error) {
-      rootError = raiseOrCaptureError(error, rootError, parserOptions);
-    }
-    try {
-      constraints[1](input);
-    } catch (error) {
-      rootError = raiseOrCaptureError(error, rootError, parserOptions);
-    }
-    if (rootError !== undefined) {
-      throw rootError;
-    }
-    return;
+    return rootError;
+  }
+
+  try {
+    constraints[2](input);
+  } catch (error) {
+    rootError = raiseOrCaptureError(error, rootError, parserOptions);
   }
 
   if (constraintsLength === 3) {
-    try {
-      constraints[0](input);
-    } catch (error) {
-      rootError = raiseOrCaptureError(error, rootError, parserOptions);
-    }
-    try {
-      constraints[1](input);
-    } catch (error) {
-      rootError = raiseOrCaptureError(error, rootError, parserOptions);
-    }
-    try {
-      constraints[2](input);
-    } catch (error) {
-      rootError = raiseOrCaptureError(error, rootError, parserOptions);
-    }
-    if (rootError !== undefined) {
-      throw rootError;
-    }
-    return;
+    return rootError;
   }
 
-  for (const constraint of constraints) {
+  try {
+    constraints[3](input);
+  } catch (error) {
+    rootError = raiseOrCaptureError(error, rootError, parserOptions);
+  }
+
+  if (constraintsLength === 4) {
+    return rootError;
+  }
+
+  for (let i = 4; i < constraintsLength; ++i) {
     try {
-      constraint(input);
+      constraints[i](input);
     } catch (error) {
       rootError = raiseOrCaptureError(error, rootError, parserOptions);
     }
   }
-  if (rootError !== undefined) {
-    throw rootError;
-  }
+  return rootError;
 }
 
-function raiseOrCaptureError(
+// export function applyConstraints<T>(
+//   input: T,
+//   constraints: Constraint<T>[],
+//   parserOptions: ParserOptions | undefined,
+//   rootError: ValidationError | null
+// ): ValidationError | null {
+//   const constraintsLength = constraints.length;
+//
+//   try {
+//     constraints[0](input);
+//   } catch (error) {
+//     rootError = raiseOrCaptureError(error, rootError, parserOptions);
+//   }
+//
+//   if (constraintsLength === 1) {
+//     return rootError;
+//   }
+//
+//   try {
+//     constraints[1](input);
+//   } catch (error) {
+//     rootError = raiseOrCaptureError(error, rootError, parserOptions);
+//   }
+//
+//   if (constraintsLength === 2) {
+//     return rootError;
+//   }
+//
+//   try {
+//     constraints[2](input);
+//   } catch (error) {
+//     rootError = raiseOrCaptureError(error, rootError, parserOptions);
+//   }
+//
+//   if (constraintsLength === 3) {
+//     return rootError;
+//   }
+//
+//   try {
+//     constraints[3](input);
+//   } catch (error) {
+//     rootError = raiseOrCaptureError(error, rootError, parserOptions);
+//   }
+//
+//   if (constraintsLength === 4) {
+//     return rootError;
+//   }
+//
+//   for (let i = 4; i < constraintsLength; ++i) {
+//     try {
+//       constraints[i](input);
+//     } catch (error) {
+//       rootError = raiseOrCaptureError(error, rootError, parserOptions);
+//     }
+//   }
+//   return rootError;
+// }
+
+export function raiseOrCaptureError(
   error: unknown,
-  rootError: ValidationError | undefined,
+  rootError: ValidationError | null,
   parserOptions: ParserOptions | undefined
 ): ValidationError {
   if (!(error instanceof ValidationError)) {
     throw error;
   }
-  if (rootError !== undefined) {
+  if (rootError !== null) {
     rootError.issues.push(...error.issues);
     return rootError;
   }
@@ -160,4 +237,46 @@ export function raiseError(
   }
 
   throw new ValidationError([{ code, path: [], input, param, message, meta }]);
+}
+
+export function createCatchForKey(key: unknown): (error: unknown) => never {
+  return error => {
+    if (error instanceof ValidationError) {
+      for (const issue of error.issues) {
+        issue.path.unshift(key);
+      }
+    }
+    throw error;
+  };
+}
+
+export function createSettledResultExtractor(
+  rootError: ValidationError | null
+): <T>(results: PromiseSettledResult<T>[]) => T[] {
+  return results => {
+    const values = [];
+
+    for (let i = 0; i < results.length; ++i) {
+      const result = results[i];
+
+      if (result.status === 'fulfilled') {
+        values.push(result.value);
+        continue;
+      }
+
+      const error = result.reason;
+
+      if (!(error instanceof ValidationError)) {
+        throw error;
+      }
+      if (rootError !== null) {
+        rootError.issues.push(...error.issues);
+      } else {
+        rootError = error;
+      }
+    }
+
+    dieError(rootError);
+    return values;
+  };
 }

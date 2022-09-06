@@ -59,26 +59,26 @@ describe(
   () => {
     const value = 'aaa';
 
-    // test('Ajv', measure => {
-    //   const validate = new Ajv().compile({
-    //     $schema: 'http://json-schema.org/draft-07/schema#',
-    //     type: 'string',
-    //     minLength: 3,
-    //     maxLength: 3,
-    //   });
-    //
-    //   measure(() => {
-    //     validate(value);
-    //   });
-    // });
-    //
-    // test('myzod', measure => {
-    //   const type = z.string().min(1).max(5);
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'string',
+        minLength: 3,
+        maxLength: 3,
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = z.string().min(1).max(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
 
     test('lib', measure => {
       const type = lib.string().length(3);
@@ -99,32 +99,32 @@ describe(
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
 
-describe(
-  'integer()',
-  () => {
-    const value = 4;
-
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'integer',
-      });
-
-      measure(() => {
-        validate(value);
-      });
-    });
-
-    test('lib', measure => {
-      const type = lib.integer();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-  },
-  { warmupIterationCount: 100, targetRme: 0.002 }
-);
+// describe(
+//   'integer()',
+//   () => {
+//     const value = 4;
+//
+//     test('Ajv', measure => {
+//       const validate = new Ajv().compile({
+//         $schema: 'http://json-schema.org/draft-07/schema#',
+//         type: 'integer',
+//       });
+//
+//       measure(() => {
+//         validate(value);
+//       });
+//     });
+//
+//     test('lib', measure => {
+//       const type = lib.integer();
+//
+//       measure(() => {
+//         type.parse(value);
+//       });
+//     });
+//   },
+//   { warmupIterationCount: 100, targetRme: 0.002 }
+// );
 
 describe(
   'number()',
@@ -165,6 +165,14 @@ describe(
         type.parse(value);
       });
     });
+
+    test('lib.NumberShape', measure => {
+      const type = new lib.NumberShape();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
@@ -197,6 +205,14 @@ describe(
 
     test('lib', measure => {
       const type = lib.number().gte(1).lte(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib.NumberShape', measure => {
+      const type = new lib.NumberShape().gte(1).lte(5);
 
       measure(() => {
         type.parse(value);
@@ -246,6 +262,14 @@ describe(
         type.parse(value);
       });
     });
+
+    test('lib.ArrayShape', measure => {
+      const type = new lib.ArrayShape(new lib.NumberShape());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
@@ -279,6 +303,38 @@ describe(
 
     test('lib', measure => {
       const type = lib.array(lib.number()).length(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib.ArrayShape', measure => {
+      const type = new lib.ArrayShape(new lib.NumberShape()).length(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  '___array(number().gte(0)).length(3)',
+  () => {
+    const value = [1, 2, 3];
+
+    test('lib', measure => {
+      const type = lib.array(lib.number().gte(0)).length(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib.ArrayShape', measure => {
+      const type = new lib.ArrayShape(new lib.NumberShape().gte(0).lte(10)).length(3);
 
       measure(() => {
         type.parse(value);

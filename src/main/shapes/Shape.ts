@@ -12,15 +12,17 @@ export interface Shape<I, O> {
   readonly output: O;
 }
 
-export class Shape<I, O = I> {
-  protected constraintIds: string[] = [];
-  protected constraints: Constraint<O>[] = [];
+export abstract class Shape<I, O = I> {
+  protected constraintIds: string[] | undefined;
+  protected constraints: Constraint<O>[] | undefined;
 
-  constructor(readonly async: boolean) {}
+  protected constructor(readonly async: boolean) {}
 
-  parse(input: unknown, options?: ParserOptions): O {
-    die('Shape is asynchronous');
+  at(key: unknown): AnyShape | null {
+    return null;
   }
+
+  abstract parse(input: unknown, options?: ParserOptions): O;
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<O> {
     return new Promise(resolve => resolve(this.parse(input, options)));
@@ -66,8 +68,11 @@ export class TransformedShape<X extends AnyShape, O> extends Shape<X['input'], O
     const { shape, transformer, constraints } = this;
     const output = transformer(shape.parse(input, options)) as O;
 
-    if (constraints.length !== 0) {
-      applyConstraints(output, constraints, options);
+    if (constraints !== undefined) {
+      const error = applyConstraints(output, constraints, options, null);
+      if (error !== undefined) {
+        throw error;
+      }
     }
     return output;
   }
@@ -77,9 +82,13 @@ export class TransformedShape<X extends AnyShape, O> extends Shape<X['input'], O
 
     const promise = shape.parseAsync(input, options).then(transformer);
 
-    if (constraints.length !== 0) {
+    if (constraints !== undefined) {
       return promise.then(output => {
-        applyConstraints(output, constraints, options);
+        const error = applyConstraints(output, constraints, options, null);
+
+        if (error !== undefined) {
+          throw error;
+        }
         return output;
       });
     }

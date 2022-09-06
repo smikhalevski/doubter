@@ -1,9 +1,9 @@
 import { ConstraintOptions, ParserOptions } from './shared-types';
 import { Shape } from './Shape';
-import { addConstraint, applyConstraints, die, raiseError } from './utils';
+import { addConstraint, applyConstraints, dieError, raiseError } from './utils';
 
 export class StringShape extends Shape<string> {
-  constructor(protected options?: ConstraintOptions) {
+  constructor(protected options?: ConstraintOptions | string) {
     super(false);
   }
 
@@ -41,8 +41,8 @@ export class StringShape extends Shape<string> {
     }
     const { constraints } = this;
 
-    if (constraints.length !== 0) {
-      applyConstraints(input, constraints, options);
+    if (constraints !== undefined) {
+      dieError(applyConstraints(input, constraints, options, null));
     }
     return input;
   }
