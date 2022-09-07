@@ -55,6 +55,46 @@ describe(
 );
 
 describe(
+  '000',
+  () => {
+    const value1 = 4;
+    const value2 = 'a';
+    const value3 = 1.5;
+
+    test('lib', measure => {
+      const type1 = lib.number().gte(1).lte(5);
+      const type2 = lib.number().gte(1);
+      // const type2 = lib.string().min(0);
+
+      measure(() => {
+        type1.parse(value1);
+        // type2.parse(value2);
+        type2.parse(value3);
+      });
+
+      // measure(() => {
+      // });
+    });
+
+    test('lib.NumberShape', measure => {
+      const type1 = new lib.NumberShape().gte(1).lte(5);
+      const type2 = new lib.NumberShape().gte(1);
+      // const type2 = new lib.StringShape().min(0);
+
+      measure(() => {
+        type1.parse(value1);
+        // type2.parse(value2);
+        type2.parse(value3);
+      });
+
+      // measure(() => {
+      // });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
   'string().length(3)',
   () => {
     const value = 'aaa';
@@ -325,8 +365,16 @@ describe(
   () => {
     const value = [1, 2, 3];
 
+    test('myzod', measure => {
+      const type = z.array(z.number().min(0).max(10)).length(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('lib', measure => {
-      const type = lib.array(lib.number().gte(0)).length(3);
+      const type = lib.array(lib.number().gte(0).lte(10)).length(3);
 
       measure(() => {
         type.parse(value);

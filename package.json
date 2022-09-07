@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "build": "tsc && rollup --external tslib --input ./lib/index.js --file ./lib/index-cjs.js --format cjs --plugin @rollup/plugin-node-resolve && npm run build:terser",
-    "build:terser": "TEMP=$(mktemp) && rm $TEMP && for FILE in $(find ./lib -name '*.js'); do terser --name-cache $TEMP --compress --output $FILE -- $FILE; done && rm $TEMP || exit 1",
+    "build:terser": "TEMP=$(mktemp) && rm $TEMP && for FILE in $(find ./lib -name '*.js'); do terser --name-cache $TEMP --compress --mangle toplevel --output $FILE -- $FILE; done && rm $TEMP || exit 1",
     "clean": "rimraf './lib' './docs' './coverage'",
     "test": "jest",
     "perf": "[ -d ./lib ] || npm run build && toofast 'src/test/perf.js'",

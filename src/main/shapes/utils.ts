@@ -1,16 +1,27 @@
-import { ConstraintOptions, ParserOptions } from './shared-types';
+import { ConstraintOptions, Dict, ParserOptions } from './shared-types';
 import { ValidationError } from '../ValidationError';
-import type { Constraint, Shape } from './Shape';
+import type { AnyShape, Constraint, Shape } from './Shape';
 
 export const isArray = Array.isArray;
 
-export const isInteger = Number.isInteger;
+export const isEqual = Object.is as <T>(a: unknown, b: T) => a is T;
 
-export const isEqual = Object.is;
+export const isInteger = Number.isInteger as (value: unknown) => value is number;
 
-export const promiseAll = Promise.all.bind(Promise);
+export const isFinite = Number.isFinite as (value: unknown) => value is number;
 
-export const promiseAllSettled = Promise.allSettled.bind(Promise);
+export function isObjectLike(value: unknown): value is Dict {
+  return value !== null && typeof value === 'object';
+}
+
+export function isAsync(shapes: Array<AnyShape>): boolean {
+  let async = false;
+
+  for (let i = 0; i < shapes.length && !async; ++i) {
+    async = shapes[i].async;
+  }
+  return async;
+}
 
 export function isEqualArray(a: any[], b: any[]): boolean {
   for (let i = 0; i < a.length; ++i) {
@@ -48,10 +59,21 @@ export function die(message: string): never {
   throw new Error(message);
 }
 
-export function dieError(error: Error | null): void {
+export function dieAsyncParse(): never {
+  die('Shape is asynchronous');
+}
+
+export function raiseError(error: Error | null): void {
   if (error !== null) {
     throw error;
   }
+}
+
+export function copyShape<S extends Shape<any>>(shape: S): any {
+  const shapeCopy = Object.assign(Object.create(Object.getPrototypeOf(shape)), shape);
+  shapeCopy.constraintIds = shapeCopy.constraintIds?.slice(0) || [];
+  shapeCopy.constraints = shapeCopy.constraints?.slice(0) || [];
+  return shapeCopy;
 }
 
 /**
@@ -62,9 +84,8 @@ export function addConstraint<S extends Shape<any>>(
   id: string | undefined,
   constraint: Constraint<S['output']>
 ): S {
-  const shapeCopy = Object.assign(Object.create(Object.getPrototypeOf(shape)), shape);
-  const constraintIds = (shapeCopy.constraintIds = shapeCopy.constraintIds?.slice(0) || []);
-  const constraints = (shapeCopy.constraints = shapeCopy.constraints?.slice(0) || []);
+  const shapeCopy = copyShape(shape);
+  const { constraintIds, constraints } = shapeCopy;
   const i = constraintIds.indexOf(id);
 
   if (id == null || i === -1) {
@@ -90,7 +111,7 @@ export function applyConstraints<T>(
   try {
     constraints[0](input);
   } catch (error) {
-    rootError = raiseOrCaptureError(error, rootError, parserOptions);
+    rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
   }
 
   if (constraintsLength === 1) {
@@ -100,7 +121,7 @@ export function applyConstraints<T>(
   try {
     constraints[1](input);
   } catch (error) {
-    rootError = raiseOrCaptureError(error, rootError, parserOptions);
+    rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
   }
 
   if (constraintsLength === 2) {
@@ -110,7 +131,7 @@ export function applyConstraints<T>(
   try {
     constraints[2](input);
   } catch (error) {
-    rootError = raiseOrCaptureError(error, rootError, parserOptions);
+    rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
   }
 
   if (constraintsLength === 3) {
@@ -120,7 +141,7 @@ export function applyConstraints<T>(
   try {
     constraints[3](input);
   } catch (error) {
-    rootError = raiseOrCaptureError(error, rootError, parserOptions);
+    rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
   }
 
   if (constraintsLength === 4) {
@@ -131,71 +152,13 @@ export function applyConstraints<T>(
     try {
       constraints[i](input);
     } catch (error) {
-      rootError = raiseOrCaptureError(error, rootError, parserOptions);
+      rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
     }
   }
   return rootError;
 }
 
-// export function applyConstraints<T>(
-//   input: T,
-//   constraints: Constraint<T>[],
-//   parserOptions: ParserOptions | undefined,
-//   rootError: ValidationError | null
-// ): ValidationError | null {
-//   const constraintsLength = constraints.length;
-//
-//   try {
-//     constraints[0](input);
-//   } catch (error) {
-//     rootError = raiseOrCaptureError(error, rootError, parserOptions);
-//   }
-//
-//   if (constraintsLength === 1) {
-//     return rootError;
-//   }
-//
-//   try {
-//     constraints[1](input);
-//   } catch (error) {
-//     rootError = raiseOrCaptureError(error, rootError, parserOptions);
-//   }
-//
-//   if (constraintsLength === 2) {
-//     return rootError;
-//   }
-//
-//   try {
-//     constraints[2](input);
-//   } catch (error) {
-//     rootError = raiseOrCaptureError(error, rootError, parserOptions);
-//   }
-//
-//   if (constraintsLength === 3) {
-//     return rootError;
-//   }
-//
-//   try {
-//     constraints[3](input);
-//   } catch (error) {
-//     rootError = raiseOrCaptureError(error, rootError, parserOptions);
-//   }
-//
-//   if (constraintsLength === 4) {
-//     return rootError;
-//   }
-//
-//   for (let i = 4; i < constraintsLength; ++i) {
-//     try {
-//       constraints[i](input);
-//     } catch (error) {
-//       rootError = raiseOrCaptureError(error, rootError, parserOptions);
-//     }
-//   }
-//   return rootError;
-// }
-
-export function raiseOrCaptureError(
+export function raiseOrCaptureIssues(
   error: unknown,
   rootError: ValidationError | null,
   parserOptions: ParserOptions | undefined
@@ -213,10 +176,32 @@ export function raiseOrCaptureError(
   return new ValidationError(error.issues.slice(0));
 }
 
+export function raiseOrCaptureIssuesForKey(
+  error: unknown,
+  rootError: ValidationError | null,
+  parserOptions: ParserOptions | undefined,
+  key: unknown
+): ValidationError {
+  if (!(error instanceof ValidationError)) {
+    throw error;
+  }
+  for (const issue of error.issues) {
+    issue.path.unshift(key);
+  }
+  if (rootError !== null) {
+    rootError.issues.push(...error.issues);
+    return rootError;
+  }
+  if (parserOptions != null && parserOptions.fast) {
+    throw error;
+  }
+  return new ValidationError(error.issues.slice(0));
+}
+
 /**
  * Raises a validation error with a single issue.
  */
-export function raiseError(
+export function raiseIssue(
   input: unknown,
   code: string,
   param: unknown,
@@ -250,9 +235,7 @@ export function createCatchForKey(key: unknown): (error: unknown) => never {
   };
 }
 
-export function createSettledResultExtractor(
-  rootError: ValidationError | null
-): <T>(results: PromiseSettledResult<T>[]) => T[] {
+export function createExtractor(rootError: ValidationError | null): <T>(results: PromiseSettledResult<T>[]) => T[] {
   return results => {
     const values = [];
 
@@ -276,7 +259,38 @@ export function createSettledResultExtractor(
       }
     }
 
-    dieError(rootError);
+    raiseError(rootError);
     return values;
   };
+}
+
+export function copyObjectKnownKeys(input: Dict, keys: string[]): Dict {
+  const output: Dict = {};
+
+  for (const key of keys) {
+    output[key] = input[key];
+  }
+  return output;
+}
+
+export function copyObjectEnumerableKeys(input: Dict, keyCount?: number): Dict {
+  const output: Dict = {};
+
+  if (keyCount === undefined) {
+    for (const key in input) {
+      output[key] = input[key];
+    }
+    return output;
+  }
+
+  let i = 0;
+
+  for (const key in input) {
+    if (i >= keyCount) {
+      break;
+    }
+    output[key] = input[key];
+    i++;
+  }
+  return output;
 }

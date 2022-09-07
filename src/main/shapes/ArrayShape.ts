@@ -4,21 +4,24 @@ import {
   addConstraint,
   applyConstraints,
   createCatchForKey,
-  createSettledResultExtractor,
-  dieError,
+  createExtractor,
   isArray,
   isEqual,
   isEqualArray,
-  promiseAll,
-  promiseAllSettled,
+  isInteger,
   raiseError,
-  raiseOrCaptureError,
+  raiseIssue,
+  raiseOrCaptureIssues,
 } from './utils';
 import { ValidationError } from '../ValidationError';
 
 export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['output'][]> {
   constructor(protected shape: X, protected options?: ConstraintOptions | string) {
     super(shape.async);
+  }
+
+  at(key: unknown): AnyShape | null {
+    return isInteger(key) && key >= 0 ? this.shape : null;
   }
 
   length(length: number, options?: ConstraintOptions | string): this {
@@ -28,7 +31,7 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
   min(length: number, options?: ConstraintOptions | string): this {
     return addConstraint(this, 'min', input => {
       if (input.length < length) {
-        raiseError(input, 'arrayMinLength', length, options, 'Must have the minimum length of ' + length);
+        raiseIssue(input, 'arrayMinLength', length, options, 'Must have the minimum length of ' + length);
       }
     });
   }
@@ -36,14 +39,14 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
   max(length: number, options?: ConstraintOptions | string): this {
     return addConstraint(this, 'max', input => {
       if (input.length > length) {
-        raiseError(input, 'arrayMaxLength', length, options, 'Must have the maximum length of ' + length);
+        raiseIssue(input, 'arrayMaxLength', length, options, 'Must have the maximum length of ' + length);
       }
     });
   }
 
   parse(input: unknown, options?: ParserOptions): X['output'][] {
     if (!isArray(input)) {
-      raiseError(input, 'type', 'array', this.options, 'Must be an array');
+      raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
     }
 
     const { shape, constraints } = this;
@@ -61,11 +64,11 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
 
       let outputValue;
       try {
-        outputValue = shape.parse(input[i]);
+        outputValue = shape.parse(inputValue);
       } catch (error) {
-        rootError = raiseOrCaptureError(error, rootError, options);
+        rootError = raiseOrCaptureIssues(error, rootError, options);
       }
-      if (isEqual(outputValue, inputValue) || rootError !== undefined) {
+      if (isEqual(outputValue, inputValue) || rootError !== null) {
         continue;
       }
       if (output === input) {
@@ -74,36 +77,39 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
       output[i] = outputValue;
     }
 
-    dieError(rootError);
+    raiseError(rootError);
     return output;
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<X['output'][]> {
-    if (!isArray(input)) {
-      raiseError(input, 'type', 'array', this.options, 'Must be an array');
-    }
+    return new Promise(resolve => {
+      if (!isArray(input)) {
+        raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
+      }
 
-    const { shape, constraints } = this;
+      const { shape, constraints } = this;
 
-    let rootError: ValidationError | null = null;
+      let rootError: ValidationError | null = null;
 
-    if (constraints !== undefined) {
-      rootError = applyConstraints(input, constraints, options, rootError);
-    }
+      if (constraints !== undefined) {
+        rootError = applyConstraints(input, constraints, options, rootError);
+      }
 
-    const promises = [];
+      const promises = [];
 
-    for (let i = 0; i < input.length; ++i) {
-      promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i)));
-    }
+      for (let i = 0; i < input.length; ++i) {
+        promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i)));
+      }
 
-    const returnOutput = (output: unknown[]): unknown[] => {
-      return isEqualArray(input, output) ? input : output;
-    };
+      const returnOutput = (output: unknown[]): unknown[] => {
+        return isEqualArray(input, output) ? input : output;
+      };
 
-    if (options?.fast) {
-      return promiseAll(promises).then(returnOutput);
-    }
-    return promiseAllSettled(promises).then(createSettledResultExtractor(rootError)).then(returnOutput);
+      if (options != null && options.fast) {
+        resolve(Promise.all(promises).then(returnOutput));
+      } else {
+        resolve(Promise.allSettled(promises).then(createExtractor(rootError)).then(returnOutput));
+      }
+    });
   }
 }

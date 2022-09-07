@@ -1,5 +1,5 @@
 import { ParserOptions } from './shared-types';
-import { addConstraint, applyConstraints, defineProperty, die } from './utils';
+import { addConstraint, applyConstraints, defineProperty, die, dieAsyncParse } from './utils';
 import { Awaitable, ConstraintOptions } from '../shared-types';
 import { raiseIssue } from '../utils';
 
@@ -16,7 +16,11 @@ export abstract class Shape<I, O = I> {
   protected constraintIds: string[] | undefined;
   protected constraints: Constraint<O>[] | undefined;
 
-  protected constructor(readonly async: boolean) {}
+  protected constructor(readonly async: boolean) {
+    if (async) {
+      this.parse = dieAsyncParse;
+    }
+  }
 
   at(key: unknown): AnyShape | null {
     return null;
