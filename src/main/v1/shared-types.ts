@@ -34,9 +34,15 @@ export interface Issue {
 }
 
 /**
+ * Transforms the value from one type to another. Transformer may throw a {@link ValidationError} if there are issues
+ * that prevent the value from being properly transformed.
+ */
+export type Transformer<I, O> = (value: I) => O;
+
+/**
  * Constraint is a callback that takes an input and throws a {@link ValidationError} if it has recognised issues.
  */
-export type Constraint<T> = (input: T) => void;
+export type Constraint<T> = (value: T) => void;
 
 export interface ConstraintOptions {
   /**

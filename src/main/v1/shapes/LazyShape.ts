@@ -1,10 +1,10 @@
 import { AnyShape, Shape } from './Shape';
 import { ParserOptions } from '../shared-types';
 
-export class LazyShape<X extends AnyShape> extends Shape<X['input'], X['output']> {
-  protected shape: X | undefined;
+export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
+  protected shape: S | undefined;
 
-  constructor(async: boolean, protected provider: () => X) {
+  constructor(async: boolean, protected provider: () => S) {
     super(async);
   }
 
@@ -12,11 +12,11 @@ export class LazyShape<X extends AnyShape> extends Shape<X['input'], X['output']
     return (this.shape ||= this.provider()).at(key);
   }
 
-  parse(input: unknown, options?: ParserOptions): X['output'] {
+  parse(input: unknown, options?: ParserOptions): S['output'] {
     return (this.shape ||= this.provider()).parse(input, options);
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<X['output']> {
+  parseAsync(input: unknown, options?: ParserOptions): Promise<S['output']> {
     return (this.shape ||= this.provider()).parseAsync(input, options);
   }
 }

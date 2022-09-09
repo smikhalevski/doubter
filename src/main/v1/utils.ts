@@ -2,6 +2,21 @@ import { Constraint, ConstraintOptions, Dict, ParserOptions } from './shared-typ
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
 
+export function raiseUnknownError(error: unknown): asserts error is ValidationError {
+  if (!(error instanceof ValidationError)) {
+    throw error;
+  }
+}
+
+export function returnNull(): null {
+  return null;
+}
+
+export function catchError(error: unknown) {
+  raiseUnknownError(error);
+  return error.issues;
+}
+
 export const isArray = Array.isArray;
 
 export const isEqual = Object.is as <T>(a: unknown, b: T) => a is T;
@@ -60,7 +75,7 @@ export function die(message: string): never {
 }
 
 export function dieAsyncParse(): never {
-  die('Shape is asynchronous');
+  die('Shape does not support synchronous parsing');
 }
 
 export function raiseError(error: Error | null): void {

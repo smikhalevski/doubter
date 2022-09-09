@@ -63,7 +63,7 @@ export abstract class Type<I, O = I> {
    *
    * @template O The type of the output input.
    */
-  transform<O2>(transformer: Transformer<O, O2>): TransformedType<this, O2> {
+  transform<O2>(transformer: _Transformer<O, O2>): TransformedType<this, O2> {
     return new TransformedType(this, false, transformer);
   }
 
@@ -75,7 +75,7 @@ export abstract class Type<I, O = I> {
    *
    * @template O The type of the output input.
    */
-  transformAsync<O2>(transformer: Transformer<O, Promise<O2>>): TransformedType<this, O2> {
+  transformAsync<O2>(transformer: _Transformer<O, Promise<O2>>): TransformedType<this, O2> {
     return new TransformedType(this, true, transformer);
   }
 
@@ -102,7 +102,7 @@ export abstract class Type<I, O = I> {
  * @template I The type of the input value.
  * @template O The type of the output input.
  */
-export type Transformer<I, O> = (input: I) => O;
+export type _Transformer<I, O> = (input: I) => O;
 
 /**
  * The transforming type definition.
@@ -121,7 +121,7 @@ export class TransformedType<X extends AnyType, O> extends Type<InferType<X>['in
   constructor(
     protected type: X,
     async: boolean,
-    protected transformer: Transformer<InferType<X>['output'], Awaitable<O>>
+    protected transformer: _Transformer<InferType<X>['output'], Awaitable<O>>
   ) {
     super(async || type.async);
   }
