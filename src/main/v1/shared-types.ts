@@ -8,12 +8,12 @@ export interface Issue {
   code: string;
 
   /**
-   * The object path to the field where an issue has occurred.
+   * The object path where an issue has occurred.
    */
   path: any[];
 
   /**
-   * The input value that caused an issue.
+   * The value that caused an issue to occur.
    */
   input: any;
 
@@ -23,23 +23,20 @@ export interface Issue {
   message: any;
 
   /**
-   * An additional param that is specific for {@link code}.
+   * An additional param that is specific for a particular {@link code}.
    */
-  param?: any;
+  param: any;
 
   /**
    * An arbitrary metadata that can be used for message formatting.
    */
-  meta?: any;
+  meta: any;
 }
 
-export type Several<T> = [T, ...T[]];
-
-export type Primitive = string | number | bigint | boolean | null | undefined;
-
-export interface Dict<T = any> {
-  [key: string]: T;
-}
+/**
+ * Constraint is a callback that takes an input and throws a {@link ValidationError} if it has recognised issues.
+ */
+export type Constraint<T> = (input: T) => void;
 
 export interface ConstraintOptions {
   /**
@@ -55,10 +52,18 @@ export interface ConstraintOptions {
 
 export interface ParserOptions {
   /**
-   * If `true` then parsing should end as soon as the first error is captured, otherwise maximum number of errors should
+   * If `true` then parsing should end as soon as the first issue is captured, otherwise maximum number of issues should
    * be collected before parsing is terminated.
    *
    * @default false
    */
   fast?: boolean;
+}
+
+export type Multiple<T> = [T, ...T[]];
+
+export type Primitive = string | number | bigint | boolean | null | undefined;
+
+export interface Dict<T = any> {
+  [key: string]: T;
 }

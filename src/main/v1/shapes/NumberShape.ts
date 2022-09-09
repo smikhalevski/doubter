@@ -1,7 +1,6 @@
 import { Shape } from './Shape';
-import { ConstraintOptions } from '../shared-types';
-import { addConstraint, applyConstraints, isFinite, raiseError, raiseIssue } from './utils';
-import { ParserOptions } from './shared-types';
+import { ConstraintOptions, ParserOptions } from '../shared-types';
+import { addConstraint, applyConstraints, isFinite, raiseError, raiseIssue } from '../utils';
 
 export class NumberShape extends Shape<number> {
   constructor(protected options?: ConstraintOptions | string) {

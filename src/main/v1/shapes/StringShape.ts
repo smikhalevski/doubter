@@ -1,6 +1,6 @@
-import { ConstraintOptions, ParserOptions } from './shared-types';
+import { ConstraintOptions, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
-import { addConstraint, applyConstraints, raiseError, raiseIssue } from './utils';
+import { addConstraint, applyConstraints, raiseError, raiseIssue } from '../utils';
 
 export class StringShape extends Shape<string> {
   constructor(protected options?: ConstraintOptions | string) {

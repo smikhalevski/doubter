@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
-import { ConstraintOptions, ParserOptions } from './shared-types';
-import { raiseIssue } from './utils';
+import { ConstraintOptions, ParserOptions } from '../shared-types';
+import { raiseIssue } from '../utils';
 
 export class BigIntShape extends Shape<bigint> {
   constructor(protected options?: ConstraintOptions | string) {

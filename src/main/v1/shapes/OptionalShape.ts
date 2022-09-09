@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ParserOptions } from './shared-types';
+import { ParserOptions } from '../shared-types';
 
 export class OptionalShape<X extends AnyShape> extends Shape<X['input'] | undefined, X['output'] | undefined> {
   constructor(protected shape: X, protected defaultValue?: X['output']) {

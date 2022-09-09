@@ -1,6 +1,6 @@
 import { NumberShape } from './NumberShape';
-import { ParserOptions } from './shared-types';
-import { applyConstraints, isInteger, raiseError, raiseIssue } from './utils';
+import { ParserOptions } from '../shared-types';
+import { applyConstraints, isInteger, raiseError, raiseIssue } from '../utils';
 
 export class IntegerShape extends NumberShape {
   parse(input: unknown, options?: ParserOptions): number {

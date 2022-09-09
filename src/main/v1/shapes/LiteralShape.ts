@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
-import { ConstraintOptions, ParserOptions, Primitive } from './shared-types';
-import { isEqual, raiseIssue } from './utils';
+import { ConstraintOptions, ParserOptions, Primitive } from '../shared-types';
+import { isEqual, raiseIssue } from '../utils';
 
 export class LiteralShape<T extends Primitive> extends Shape<T> {
   constructor(protected value: T, protected options?: ConstraintOptions | string) {

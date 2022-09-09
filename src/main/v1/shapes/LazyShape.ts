@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ParserOptions } from './shared-types';
+import { ParserOptions } from '../shared-types';
 
 export class LazyShape<X extends AnyShape> extends Shape<X['input'], X['output']> {
   protected shape: X | undefined;

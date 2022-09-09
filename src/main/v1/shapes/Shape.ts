@@ -1,9 +1,5 @@
-import { ParserOptions } from './shared-types';
-import { addConstraint, applyConstraints, defineProperty, die, dieAsyncParse } from './utils';
-import { Awaitable, ConstraintOptions } from '../shared-types';
-import { raiseIssue } from '../utils';
-
-export type Constraint<T> = (input: T) => void;
+import { Constraint, ConstraintOptions, ParserOptions } from '../shared-types';
+import { addConstraint, applyConstraints, defineProperty, die, dieAsyncParse, raiseIssue } from '../utils';
 
 export type AnyShape = Shape<any> | Shape<never>;
 
@@ -32,11 +28,7 @@ export abstract class Shape<I, O = I> {
     return new Promise(resolve => resolve(this.parse(input, options)));
   }
 
-  narrow<O2 extends O>(predicate: (value: O) => value is O2, options?: ConstraintOptions): Shape<I, O2>;
-
-  narrow(predicate: (value: O) => boolean, options?: ConstraintOptions): this;
-
-  narrow(predicate: (value: O) => boolean, options?: ConstraintOptions): this {
+  narrow<O2 extends O>(predicate: (value: O) => value is O2, options?: ConstraintOptions): Shape<I, O2> {
     return addConstraint(this, undefined, input => {
       if (!predicate(input)) {
         raiseIssue(input, 'narrow', undefined, options, 'Must be narrowable');

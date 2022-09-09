@@ -1,11 +1,11 @@
-import { ConstraintOptions, ParserOptions, Several } from './shared-types';
+import { ConstraintOptions, ParserOptions, Multiple } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { applyConstraints, isAsync, raiseIssue, raiseOrCaptureIssues } from './utils';
+import { applyConstraints, isAsync, raiseIssue, raiseOrCaptureIssues } from '../utils';
 import { ValidationError } from '../ValidationError';
 
-type OutputUnion<U extends Several<AnyShape>> = { [K in keyof U]: U[K]['output'] }[number];
+type OutputUnion<U extends Multiple<AnyShape>> = { [K in keyof U]: U[K]['output'] }[number];
 
-export class UnionShape<U extends Several<AnyShape>> extends Shape<
+export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
   { [K in keyof U]: U[K]['input'] }[number],
   OutputUnion<U>
 > {
@@ -29,7 +29,7 @@ export class UnionShape<U extends Several<AnyShape>> extends Shape<
     if (childShapes.length === 1) {
       return childShapes[0];
     }
-    return new UnionShape(childShapes as Several<AnyShape>);
+    return new UnionShape(childShapes as Multiple<AnyShape>);
   }
 
   parse(input: unknown, options?: ParserOptions): OutputUnion<U> {

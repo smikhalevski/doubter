@@ -7,9 +7,9 @@ import {
   raiseError,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
-} from './utils';
+} from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { ConstraintOptions, ParserOptions } from './shared-types';
+import { ConstraintOptions, ParserOptions } from '../shared-types';
 import { ValidationError } from '../ValidationError';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<

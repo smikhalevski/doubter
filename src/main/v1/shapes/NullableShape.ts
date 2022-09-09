@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { OptionalShape } from './OptionalShape';
-import { ParserOptions } from './shared-types';
+import { ParserOptions } from '../shared-types';
 
 export class NullableShape<X extends AnyShape> extends Shape<X['input'] | null, X['output'] | null> {
   constructor(protected shape: X) {

@@ -1,4 +1,4 @@
-import { ArrayShape, NumberShape, StringShape } from '../../main';
+import { ArrayShape, NumberShape, StringShape } from '../../../main';
 
 describe('StringShape', () => {
   test('validates string', () => {

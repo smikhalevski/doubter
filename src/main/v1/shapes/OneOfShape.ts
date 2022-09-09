@@ -1,6 +1,6 @@
-import { ConstraintOptions, ParserOptions, Primitive } from './shared-types';
+import { ConstraintOptions, ParserOptions, Primitive } from '../shared-types';
 import { Shape } from './Shape';
-import { raiseIssue } from './utils';
+import { raiseIssue } from '../utils';
 
 export class OneOfShape<T extends Primitive> extends Shape<T> {
   constructor(protected values: T[], protected options?: ConstraintOptions | string) {

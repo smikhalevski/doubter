@@ -1,6 +1,6 @@
-import { ConstraintOptions, Dict, ParserOptions } from './shared-types';
-import { ValidationError } from '../ValidationError';
-import type { AnyShape, Constraint, Shape } from './Shape';
+import { Constraint, ConstraintOptions, Dict, ParserOptions } from './shared-types';
+import { ValidationError } from './ValidationError';
+import type { AnyShape, Shape } from './shapes/Shape';
 
 export const isArray = Array.isArray;
 

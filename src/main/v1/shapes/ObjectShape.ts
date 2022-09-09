@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ConstraintOptions, Dict, ParserOptions, Several } from './shared-types';
+import { ConstraintOptions, Dict, ParserOptions, Multiple } from '../shared-types';
 import {
   copyObjectEnumerableKeys,
   copyObjectKnownKeys,
@@ -12,7 +12,7 @@ import {
   raiseError,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
-} from './utils';
+} from '../utils';
 import { ValidationError } from '../ValidationError';
 
 type InferObjectShape<P extends Dict<AnyShape>, I extends AnyShape, V extends 'input' | 'output'> = Squash<
@@ -79,7 +79,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
     return shape;
   }
 
-  pick<K extends Several<keyof P & string>>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
+  pick<K extends Multiple<keyof P & string>>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
     const nextProps: Dict<AnyShape> = {};
 
     for (const key of keys) {
@@ -90,7 +90,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
     return shape;
   }
 
-  omit<K extends Several<keyof P & string>>(...keys2: K): ObjectShape<Omit<P, K[number]>, I> {
+  omit<K extends Multiple<keyof P & string>>(...keys2: K): ObjectShape<Omit<P, K[number]>, I> {
     const { keys } = this;
     const nextProps: Dict<AnyShape> = {};
 

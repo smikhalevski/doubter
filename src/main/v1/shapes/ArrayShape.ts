@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ConstraintOptions, ParserOptions } from './shared-types';
+import { ConstraintOptions, ParserOptions } from '../shared-types';
 import {
   addConstraint,
   applyConstraints,
@@ -12,7 +12,7 @@ import {
   raiseError,
   raiseIssue,
   raiseOrCaptureIssues,
-} from './utils';
+} from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['output'][]> {
