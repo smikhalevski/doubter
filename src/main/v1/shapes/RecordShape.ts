@@ -1,10 +1,10 @@
 import {
   copyObjectEnumerableKeys,
-  createCatchForKey,
-  createExtractor,
+  captureIssuesForKey,
+  extractSettledValues,
   isEqual,
   isObjectLike,
-  raiseError,
+  raiseOnError,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
@@ -62,7 +62,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       output[outputKey] = outputValue;
     }
 
-    raiseError(rootError);
+    raiseOnError(rootError);
 
     return output as Record<K['output'], V['output']>;
   }
@@ -101,15 +101,15 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       for (const key in input) {
         results.push(
-          keyShape.parseAsync(key, options).catch(createCatchForKey(key)),
-          valueShape.parseAsync(input[key], options).catch(createCatchForKey(key))
+          keyShape.parseAsync(key, options).catch(captureIssuesForKey(key)),
+          valueShape.parseAsync(input[key], options).catch(captureIssuesForKey(key))
         );
       }
 
       if (options != null && options.fast) {
         resolve(Promise.all(results).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(results).then(createExtractor(null)).then(returnOutput));
+        resolve(Promise.allSettled(results).then(extractSettledValues(null)).then(returnOutput));
       }
     });
   }

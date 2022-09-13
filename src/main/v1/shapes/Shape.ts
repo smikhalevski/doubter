@@ -1,15 +1,5 @@
 import { Constraint, ConstraintOptions, Issue, ParserOptions, Transformer } from '../shared-types';
-import {
-  applyConstraints,
-  catchError,
-  die,
-  dieAsyncParse,
-  raiseError,
-  raiseIssue,
-  raiseUnknownError,
-  returnNull,
-} from '../utils';
-import { ValidationError } from '../ValidationError';
+import { applyConstraints, raise, raiseOnError, raiseIssue, raiseOnUnknownError } from '../utils';
 
 /**
  * An arbitrary shape.
@@ -34,25 +24,18 @@ export interface Shape<I, O> {
  * @template I The input value.
  * @template O The output value.
  */
-export abstract class Shape<I, O = I> {
-  /**
-   * @internal
-   */
-  protected constraintIds?: Array<string | null>;
-
-  /**
-   * @internal
-   */
-  protected constraints?: Constraint<O>[];
+export abstract class Shape<in I, in O = I> {
+  protected constraintKeys: Array<string | null> | null = null;
+  protected constraints: Constraint<O>[] | null = null;
 
   /**
    * Creates the new {@link Shape}.
    *
-   * @param async If `true` that shape would allow only {@link parseAsync} and throw error if {@link parse} is called.
+   * @param async If `true` that shape would allow only {@link parseAsync} and throw an error if {@link parse} is called.
    */
   protected constructor(readonly async: boolean) {
     if (async) {
-      this.parse = dieAsyncParse;
+      this.parse = raiseParseUnsupported;
     }
   }
 
@@ -61,9 +44,9 @@ export abstract class Shape<I, O = I> {
    *
    * @param input The value to parse.
    * @param options The parsing options.
-   * @returns The value that conforms the output type of the shape, or throws a {@link ValidationError} if any issues
-   * occur during parsing.
+   * @returns The value that conforms the output type of the shape.
    * @throws Error if the shape doesn't support the synchronous parsing.
+   * @throws {@link ValidationError} if any issues occur during parsing.
    */
   abstract parse(input: unknown, options?: ParserOptions): O;
 
@@ -72,8 +55,8 @@ export abstract class Shape<I, O = I> {
    *
    * @param input The value to parse.
    * @param options The parsing options.
-   * @returns The value that conforms the output type of the shape, or throws a {@link ValidationError} if any issues
-   * occur during parsing.
+   * @returns The value that conforms the output type of the shape.
+   * @throws {@link ValidationError} if any issues occur during parsing.
    */
   parseAsync(input: unknown, options?: ParserOptions): Promise<O> {
     return new Promise(resolve => resolve(this.parse(input, options)));
@@ -91,7 +74,7 @@ export abstract class Shape<I, O = I> {
     try {
       this.parse(input, options);
     } catch (error) {
-      raiseUnknownError(error);
+      raiseOnUnknownError(error);
       return error.issues;
     }
     return null;
@@ -105,7 +88,7 @@ export abstract class Shape<I, O = I> {
    * @returns The list of detected issues, or `null` if value is valid.
    */
   validateAsync(input: unknown, options?: ParserOptions): Promise<Issue[] | null> {
-    return this.parseAsync(input, options).then(returnNull, catchError);
+    return this.parseAsync(input, options).then(nullFunction, captureIssues);
   }
 
   /**
@@ -115,7 +98,7 @@ export abstract class Shape<I, O = I> {
    * @return The transformed shape.
    * @template T The transformed value.
    */
-  transform<T>(transformer: Transformer<O, T>): TransformedShape<this, T> {
+  transform<T>(transformer: Transformer<O, T>): TransformedShape<I, O, T> {
     return new TransformedShape(this, false, transformer);
   }
 
@@ -126,7 +109,7 @@ export abstract class Shape<I, O = I> {
    * @return The transformed shape.
    * @template T The transformed value.
    */
-  transformAsync<T>(transformer: Transformer<O, Promise<T>>): TransformedShape<this, T> {
+  transformAsync<T>(transformer: Transformer<O, Promise<T>>): TransformedShape<I, O, T> {
     return new TransformedShape(this, true, transformer);
   }
 
@@ -134,87 +117,111 @@ export abstract class Shape<I, O = I> {
    * Returns a sub-shape that describes a value at given key, or `null` if there's no such shape.
    *
    * @param key The key for which the sub-shape must be retrieved.
-   * @returns The sub-shape or `null`.
+   * @returns The sub-shape or `null` if there's no such key in the shape.
    */
   at(key: unknown): AnyShape | null {
     return null;
   }
 
   /**
-   * Copies a shape and adds a constraint to the copy. If there is a constraint with the same ID then it is replaced,
-   * otherwise it is appended to the list of constraints. If no ID was specified, or ID is `null`, then the given
-   * constraint is always appended to the list of constraints.
+   * Returns the shape copy with an additional constraint.
+   *
+   * If there is a constraint with the same key then it is replaced, otherwise it is appended to the list of constraints.
+   * If the key is omitted or `null` then the constraint is always appended to the list of constraints.
    *
    * @param constraint The constraint to add.
-   * @param id The constraint identifier.
+   * @param key The constraint key.
    * @returns The copy of this shape with the constraint added.
    */
-  constrain(constraint: Constraint<O>, id: string | null = null): this {
+  constrain(constraint: Constraint<O>, key: string | null = null): this {
     const shape = this.clone();
-    const { constraintIds = [], constraints = [] } = shape;
-    const constraintIndex = constraintIds.indexOf(id);
 
-    if (id === null || constraintIndex === -1) {
-      constraintIds.push(id);
+    const constraintKeys = (shape.constraintKeys ||= []);
+    const constraints = (shape.constraints ||= []);
+
+    if (key === null) {
+      constraintKeys.push(null);
+      constraints.push(constraint);
+    }
+
+    const keyIndex = constraintKeys.indexOf(key);
+
+    if (keyIndex === -1) {
+      constraintKeys.push(key);
       constraints.push(constraint);
     } else {
-      constraints[constraintIndex] = constraint;
+      constraints[keyIndex] = constraint;
     }
     return shape;
   }
 
   /**
-   * Narrows the output type of the shape using a type predicate.
+   * [Narrows the shape output type](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) of the shape using
+   * a type predicate.
    *
-   * @param predicate The type predicate that narrows the shape output value.
+   * @param predicate The type predicate that returns `true` if shape output conforms required type, or `false` otherwise.
    * @param options The constraint options.
    * @returns The shape that has the narrowed output value.
-   * @template T The narrowed output value.
+   * @template T The narrowed value.
    */
   narrow<T extends O>(predicate: (output: O) => output is T, options?: ConstraintOptions): Shape<I, T> {
     return this.constrain(output => {
       if (!predicate(output)) {
         raiseIssue(output, 'narrow', undefined, options, 'Must be narrowable');
       }
-    }) as unknown as Shape<I, T>;
+    }, null) as unknown as Shape<I, T>;
   }
 
   /**
-   * Returns the clone of the shape.
+   * Returns the shape clone.
    */
   clone(): this {
-    const shape = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-    const { constraintIds, constraints } = shape;
+    const shape: this = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    const { constraintKeys, constraints } = shape;
 
-    if (constraintIds) {
-      shape.constraintIds = constraintIds.slice(0);
+    if (constraintKeys !== null) {
+      shape.constraintKeys = constraintKeys.slice(0);
     }
-    if (constraints) {
+    if (constraints !== null) {
       shape.constraints = constraints.slice(0);
     }
     return shape;
   }
 }
 
+function raiseParseUnsupported(): never {
+  raise('Shape does not support synchronous parsing');
+}
+
+function nullFunction(): null {
+  return null;
+}
+
+function captureIssues(error: unknown): Issue[] {
+  raiseOnUnknownError(error);
+  return error.issues;
+}
+
 Object.defineProperty(Shape.prototype, 'input', {
   get() {
-    die('Cannot be used at runtime');
+    raise('Cannot be used at runtime');
   },
 });
 
 Object.defineProperty(Shape.prototype, 'output', {
   get() {
-    die('Cannot be used at runtime');
+    raise('Cannot be used at runtime');
   },
 });
 
 /**
- * The shape that applies a transformed to the output of the base shape.
+ * The shape that applies a transformer to the output of the base shape.
  *
- * @template S The base shape that provides the output value to transform.
+ * @template I The base shape input value.
+ * @template O The base shape output value.
  * @template T The transformed value.
  */
-export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T> {
+export class TransformedShape<I, O, T> extends Shape<I, T> {
   /**
    * Creates the new {@link TransformedShape}.
    *
@@ -222,7 +229,7 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
    * @param async If `true` then transformer must return a promise.
    * @param transformer The transformed callback.
    */
-  constructor(protected shape: S, async: boolean, protected transformer: Transformer<S['output'], Promise<T> | T>) {
+  constructor(protected shape: Shape<I, O>, async: boolean, protected transformer: Transformer<O, Promise<T> | T>) {
     super(shape.async || async);
   }
 
@@ -230,8 +237,8 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
     const { shape, transformer, constraints } = this;
     const output = transformer(shape.parse(input, options)) as T;
 
-    if (constraints !== undefined) {
-      raiseError(applyConstraints(output, constraints, options, null));
+    if (constraints !== null) {
+      raiseOnError(applyConstraints(output, constraints, options, null));
     }
     return output;
   }
@@ -240,9 +247,9 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
     const { shape, transformer, constraints } = this;
     const outputPromise = shape.parseAsync(input, options).then(transformer);
 
-    if (constraints !== undefined) {
+    if (constraints !== null) {
       return outputPromise.then(output => {
-        raiseError(applyConstraints(output, constraints, options, null));
+        raiseOnError(applyConstraints(output, constraints, options, null));
         return output;
       });
     }

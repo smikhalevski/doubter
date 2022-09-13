@@ -4,12 +4,12 @@ import {
   copyObjectEnumerableKeys,
   copyObjectKnownKeys,
   copyShape,
-  createCatchForKey,
-  createExtractor,
+  captureIssuesForKey,
+  extractSettledValues,
   isAsync,
   isEqual,
   isObjectLike,
-  raiseError,
+  raiseOnError,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
@@ -208,7 +208,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
       }
     }
 
-    raiseError(rootError);
+    raiseOnError(rootError);
 
     return output as any;
   }
@@ -243,7 +243,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
       };
 
       for (const [key, shape] of propEntries) {
-        promises.push(shape.parseAsync(input[key], options).catch(createCatchForKey(key)));
+        promises.push(shape.parseAsync(input[key], options).catch(captureIssuesForKey(key)));
       }
 
       if (keysMode === ObjectKeysMode.INDEXER) {
@@ -255,14 +255,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
             objectKeys = keys.slice(0);
           }
           objectKeys.push(key);
-          promises.push(indexerShape!.parseAsync(input[key], options).catch(createCatchForKey(key)));
+          promises.push(indexerShape!.parseAsync(input[key], options).catch(captureIssuesForKey(key)));
         }
       }
 
       if (options != null && options.fast) {
         resolve(Promise.all(promises).then(handleResults));
       } else {
-        resolve(Promise.allSettled(promises).then(createExtractor(null)).then(handleResults));
+        resolve(Promise.allSettled(promises).then(extractSettledValues(null)).then(handleResults));
       }
     });
   }

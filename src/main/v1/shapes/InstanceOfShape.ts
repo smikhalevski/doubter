@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ConstraintOptions, ParserOptions } from '../shared-types';
-import { raiseIssue } from '../utils';
+import { applyConstraints, raiseIssue, raiseOnError } from '../utils';
 
 export type InstanceOf<C> = C extends new (...args: any[]) => infer T ? T : never;
 
@@ -14,6 +14,12 @@ export class InstanceOfShape<C extends new (...args: any[]) => any> extends Shap
 
     if (!(input instanceof ctor)) {
       raiseIssue(input, 'instanceOf', ctor, this.options, 'Must be an instance of ' + ctor.name);
+    }
+
+    const { constraints } = this;
+
+    if (constraints !== null) {
+      raiseOnError(applyConstraints(input, constraints, options, null));
     }
     return input;
   }

@@ -37,7 +37,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
 
     let rootError: ValidationError | null = null;
 
-    if (constraints !== undefined) {
+    if (constraints !== null) {
       rootError = applyConstraints(input, constraints, options, rootError);
     }
 
@@ -61,7 +61,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
 
       let rootError: ValidationError | null = null;
 
-      if (constraints !== undefined) {
+      if (constraints !== null) {
         rootError = applyConstraints(input, constraints, options, rootError);
       }
 

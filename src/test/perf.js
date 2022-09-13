@@ -8,32 +8,32 @@ describe(
   () => {
     const value = 'aaa';
 
-    // test('Ajv', measure => {
-    //   const validate = new Ajv().compile({
-    //     $schema: 'http://json-schema.org/draft-07/schema#',
-    //     type: 'string',
-    //   });
-    //
-    //   measure(() => {
-    //     validate(value);
-    //   });
-    // });
-    //
-    // test('myzod', measure => {
-    //   const type = z.string();
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
-    //
-    // test('valita', measure => {
-    //   const type = v.string();
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'string',
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = z.string();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.string();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
 
     test('lib', measure => {
       const type = lib.string();
@@ -49,46 +49,6 @@ describe(
       measure(() => {
         type.parse(value);
       });
-    });
-  },
-  { warmupIterationCount: 100, targetRme: 0.002 }
-);
-
-describe(
-  '000',
-  () => {
-    const value1 = 4;
-    const value2 = 'a';
-    const value3 = 1.5;
-
-    test('lib', measure => {
-      const type1 = lib.number().gte(1).lte(5);
-      const type2 = lib.number().gte(1);
-      // const type2 = lib.string().min(0);
-
-      measure(() => {
-        type1.parse(value1);
-        // type2.parse(value2);
-        type2.parse(value3);
-      });
-
-      // measure(() => {
-      // });
-    });
-
-    test('lib.NumberShape', measure => {
-      const type1 = new lib.NumberShape().gte(1).lte(5);
-      const type2 = new lib.NumberShape().gte(1);
-      // const type2 = new lib.StringShape().min(0);
-
-      measure(() => {
-        type1.parse(value1);
-        // type2.parse(value2);
-        type2.parse(value3);
-      });
-
-      // measure(() => {
-      // });
     });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }

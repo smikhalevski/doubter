@@ -2,14 +2,14 @@ import { AnyShape, Shape } from './Shape';
 import { ConstraintOptions, ParserOptions, Multiple } from '../shared-types';
 import {
   applyConstraints,
-  createCatchForKey,
-  createExtractor,
+  captureIssuesForKey,
+  extractSettledValues,
   isArray,
   isAsync,
   isEqual,
-  isEqualArray,
+  returnOutputArray,
   isInteger,
-  raiseError,
+  raiseOnError,
   raiseIssue,
   raiseOrCaptureIssues,
 } from '../utils';
@@ -42,7 +42,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
 
     let rootError: ValidationError | null = null;
 
-    if (constraints !== undefined) {
+    if (constraints !== null) {
       rootError = applyConstraints(input as OutputTuple<U>, constraints, options, rootError);
     }
 
@@ -66,7 +66,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
       output[i] = outputValue;
     }
 
-    raiseError(rootError);
+    raiseOnError(rootError);
     return output as OutputTuple<U>;
   }
 
@@ -85,24 +85,22 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
 
       let rootError: ValidationError | null = null;
 
-      if (constraints !== undefined) {
+      if (constraints !== null) {
         rootError = applyConstraints(input as U, constraints, options, rootError);
       }
 
       const promises = [];
 
       for (let i = 0; i < input.length; ++i) {
-        promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i)));
+        promises.push(shapes[i].parseAsync(input[i], options).catch(captureIssuesForKey(i)));
       }
 
-      const returnOutput = (output: unknown[]): OutputTuple<U> => {
-        return (isEqualArray(input, output) ? input : output) as OutputTuple<U>;
-      };
+      const returnOutput = (output: unknown[]): OutputTuple<U> => returnOutputArray(input, output) as OutputTuple<U>;
 
       if (options != null && options.fast) {
         resolve(Promise.all(promises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(promises).then(createExtractor(rootError)).then(returnOutput));
+        resolve(Promise.allSettled(promises).then(extractSettledValues(rootError)).then(returnOutput));
       }
     });
   }

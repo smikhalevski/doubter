@@ -21,23 +21,14 @@ export class NumberType extends Type<number> {
     super(false, options);
   }
 
-  /**
-   * Constrains the number to be greater than zero.
-   */
   positive(options?: ConstraintOptions): this {
     return this.gt(0, options);
   }
 
-  /**
-   * Constrains the number to be less than zero.
-   */
   negative(options?: ConstraintOptions): this {
     return this.lt(0, options);
   }
 
-  /**
-   * Constrains the number to be greater than the value.
-   */
   gt(value: number, options?: ConstraintOptions): this {
     const type = cloneObject(this);
     type.min = value;
@@ -46,9 +37,6 @@ export class NumberType extends Type<number> {
     return type;
   }
 
-  /**
-   * Constrains the number to be less than the value.
-   */
   lt(value: number, options?: ConstraintOptions): this {
     const type = cloneObject(this);
     type.max = value;
@@ -57,9 +45,6 @@ export class NumberType extends Type<number> {
     return type;
   }
 
-  /**
-   * Constrains the number to be greater than or equal to the value.
-   */
   gte(value: number, options?: ConstraintOptions): this {
     const type = cloneObject(this);
     type.min = value;
@@ -68,9 +53,6 @@ export class NumberType extends Type<number> {
     return type;
   }
 
-  /**
-   * Constrains the number to be less than or equal to the value.
-   */
   lte(value: number, options?: ConstraintOptions): this {
     const type = cloneObject(this);
     type.max = value;

@@ -1,22 +1,30 @@
 import { AnyShape, Shape } from './Shape';
 import { ConstraintOptions, ParserOptions } from '../shared-types';
 import {
-  addConstraint,
   applyConstraints,
-  createCatchForKey,
-  createExtractor,
+  captureIssuesForKey,
+  extractSettledValues,
   isArray,
   isEqual,
-  isEqualArray,
   isInteger,
-  raiseError,
   raiseIssue,
-  raiseOrCaptureIssues,
+  raiseOnError,
+  raiseOrCaptureIssuesForKey,
+  returnOutputArray,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 
-export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['output'][]> {
-  constructor(protected shape: X, protected options?: ConstraintOptions | string) {
+/**
+ * The shape that constrains every element of an array with the element shape.
+ */
+export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['output'][]> {
+  /**
+   * Creates a new {@link ArrayShape} instance.
+   *
+   * @param shape The shape of an array element.
+   * @param options The constraint options or an issue message.
+   */
+  constructor(protected shape: S, protected options?: ConstraintOptions | string) {
     super(shape.async);
   }
 
@@ -24,27 +32,48 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
     return isInteger(key) && key >= 0 ? this.shape : null;
   }
 
+  /**
+   * Constrains the array length.
+   *
+   * @param length The minimum array length.
+   * @param options The constraint options or an issue message.
+   * @returns The copy of the shape.
+   */
   length(length: number, options?: ConstraintOptions | string): this {
     return this.min(length, options).max(length, options);
   }
 
+  /**
+   * Constrains the minimum array length.
+   *
+   * @param length The minimum array length.
+   * @param options The constraint options or an issue message.
+   * @returns The copy of the shape.
+   */
   min(length: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'min', input => {
-      if (input.length < length) {
-        raiseIssue(input, 'arrayMinLength', length, options, 'Must have the minimum length of ' + length);
+    return this.constrain(output => {
+      if (output.length < length) {
+        raiseIssue(output, 'arrayMinLength', length, options, 'Must have the minimum length of ' + length);
       }
-    });
+    }, 'min');
   }
 
+  /**
+   * Constrains the maximum array length.
+   *
+   * @param length The maximum array length.
+   * @param options The constraint options or an issue message.
+   * @returns The copy of the shape.
+   */
   max(length: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'max', input => {
-      if (input.length > length) {
-        raiseIssue(input, 'arrayMaxLength', length, options, 'Must have the maximum length of ' + length);
+    return this.constrain(output => {
+      if (output.length > length) {
+        raiseIssue(output, 'arrayMaxLength', length, options, 'Must have the maximum length of ' + length);
       }
-    });
+    }, 'max');
   }
 
-  parse(input: unknown, options?: ParserOptions): X['output'][] {
+  parse(input: unknown, options?: ParserOptions): S['output'][] {
     if (!isArray(input)) {
       raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
     }
@@ -52,10 +81,6 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
     const { shape, constraints } = this;
 
     let rootError: ValidationError | null = null;
-
-    if (constraints !== undefined) {
-      rootError = applyConstraints(input, constraints, options, rootError);
-    }
 
     let output = input;
 
@@ -66,7 +91,7 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
       try {
         outputValue = shape.parse(inputValue);
       } catch (error) {
-        rootError = raiseOrCaptureIssues(error, rootError, options);
+        rootError = raiseOrCaptureIssuesForKey(error, rootError, options, i);
       }
       if (isEqual(outputValue, inputValue) || rootError !== null) {
         continue;
@@ -77,11 +102,19 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
       output[i] = outputValue;
     }
 
-    raiseError(rootError);
+    if (constraints !== null) {
+      rootError = applyConstraints(input, constraints, options, rootError);
+    }
+
+    raiseOnError(rootError);
     return output;
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<X['output'][]> {
+  parseAsync(input: unknown, options?: ParserOptions): Promise<S['output'][]> {
+    if (!this.async) {
+      return super.parseAsync(input, options);
+    }
+
     return new Promise(resolve => {
       if (!isArray(input)) {
         raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
@@ -91,24 +124,26 @@ export class ArrayShape<X extends AnyShape> extends Shape<X['input'][], X['outpu
 
       let rootError: ValidationError | null = null;
 
-      if (constraints !== undefined) {
-        rootError = applyConstraints(input, constraints, options, rootError);
-      }
-
-      const promises = [];
+      const outputPromises = [];
 
       for (let i = 0; i < input.length; ++i) {
-        promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i)));
+        outputPromises.push(shape.parseAsync(input[i], options).catch(captureIssuesForKey(i)));
       }
 
       const returnOutput = (output: unknown[]): unknown[] => {
-        return isEqualArray(input, output) ? input : output;
+        output = returnOutputArray(input, output);
+
+        if (constraints !== null) {
+          rootError = applyConstraints(output, constraints, options, rootError);
+        }
+        raiseOnError(rootError);
+        return output;
       };
 
       if (options != null && options.fast) {
-        resolve(Promise.all(promises).then(returnOutput));
+        resolve(Promise.all(outputPromises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(promises).then(createExtractor(rootError)).then(returnOutput));
+        resolve(Promise.allSettled(outputPromises).then(extractSettledValues(rootError)).then(returnOutput));
       }
     });
   }

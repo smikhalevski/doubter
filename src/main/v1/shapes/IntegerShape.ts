@@ -1,6 +1,6 @@
 import { NumberShape } from './NumberShape';
 import { ParserOptions } from '../shared-types';
-import { applyConstraints, isInteger, raiseError, raiseIssue } from '../utils';
+import { applyConstraints, isInteger, raiseIssue, raiseOnError } from '../utils';
 
 export class IntegerShape extends NumberShape {
   parse(input: unknown, options?: ParserOptions): number {
@@ -10,8 +10,8 @@ export class IntegerShape extends NumberShape {
 
     const { constraints } = this;
 
-    if (constraints !== undefined) {
-      raiseError(applyConstraints(input, constraints, options, null));
+    if (constraints !== null) {
+      raiseOnError(applyConstraints(input, constraints, options, null));
     }
     return input;
   }

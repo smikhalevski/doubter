@@ -2,19 +2,10 @@ import { Constraint, ConstraintOptions, Dict, ParserOptions } from './shared-typ
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
 
-export function raiseUnknownError(error: unknown): asserts error is ValidationError {
+export function raiseOnUnknownError(error: unknown): asserts error is ValidationError {
   if (!(error instanceof ValidationError)) {
     throw error;
   }
-}
-
-export function returnNull(): null {
-  return null;
-}
-
-export function catchError(error: unknown) {
-  raiseUnknownError(error);
-  return error.issues;
 }
 
 export const isArray = Array.isArray;
@@ -22,8 +13,6 @@ export const isArray = Array.isArray;
 export const isEqual = Object.is as <T>(a: unknown, b: T) => a is T;
 
 export const isInteger = Number.isInteger as (value: unknown) => value is number;
-
-export const isFinite = Number.isFinite as (value: unknown) => value is number;
 
 export function isObjectLike(value: unknown): value is Dict {
   return value !== null && typeof value === 'object';
@@ -38,47 +27,43 @@ export function isAsync(shapes: Array<AnyShape>): boolean {
   return async;
 }
 
-export function isEqualArray(a: any[], b: any[]): boolean {
-  for (let i = 0; i < a.length; ++i) {
-    if (!isEqual(a[i], b[i])) {
-      return false;
+export function returnOutputArray(input: any[], output: any[]): any[] {
+  for (let i = 0; i < input.length; ++i) {
+    if (!isEqual(input[i], output[i])) {
+      return output;
     }
   }
-  return true;
+  return input;
 }
 
-export interface PropertyDescriptor<T, V> {
-  configurable?: boolean;
-  enumerable?: boolean;
-  value?: V;
-  writable?: boolean;
+// export interface PropertyDescriptor<T, V> {
+//   configurable?: boolean;
+//   enumerable?: boolean;
+//   value?: V;
+//   writable?: boolean;
+//
+//   get?(this: T): V;
+//
+//   set?(this: T, value: V): void;
+// }
 
-  get?(this: T): V;
+// export type Constructor<T> = new (...args: any[]) => T;
 
-  set?(this: T, value: V): void;
-}
+// export function extendClass<T>(constructor: Constructor<T>, baseConstructor: Constructor<any>): T {
+//   const prototype = Object.create(baseConstructor.prototype);
+//   constructor.prototype = prototype;
+//   prototype.constructor = constructor;
+//   return prototype;
+// }
 
-export type Constructor<T> = new (...args: any[]) => T;
+// export const defineProperty: <T, P extends keyof T>(object: T, key: P, descriptor: PropertyDescriptor<T, T[P]>) => T =
+//   Object.defineProperty;
 
-export function extendClass<T>(constructor: Constructor<T>, baseConstructor: Constructor<any>): T {
-  const prototype = Object.create(baseConstructor.prototype);
-  constructor.prototype = prototype;
-  prototype.constructor = constructor;
-  return prototype;
-}
-
-export const defineProperty: <T, P extends keyof T>(object: T, key: P, descriptor: PropertyDescriptor<T, T[P]>) => T =
-  Object.defineProperty;
-
-export function die(message: string): never {
+export function raise(message: string): never {
   throw new Error(message);
 }
 
-export function dieAsyncParse(): never {
-  die('Shape does not support synchronous parsing');
-}
-
-export function raiseError(error: Error | null): void {
+export function raiseOnError(error: Error | null): void {
   if (error !== null) {
     throw error;
   }
@@ -176,16 +161,15 @@ export function applyConstraints<T>(
 export function raiseOrCaptureIssues(
   error: unknown,
   rootError: ValidationError | null,
-  parserOptions: ParserOptions | undefined
+  options: ParserOptions | undefined
 ): ValidationError {
-  if (!(error instanceof ValidationError)) {
-    throw error;
-  }
+  raiseOnUnknownError(error);
+
   if (rootError !== null) {
     rootError.issues.push(...error.issues);
     return rootError;
   }
-  if (parserOptions != null && parserOptions.fast) {
+  if (options != null && options.fast) {
     throw error;
   }
   return new ValidationError(error.issues.slice(0));
@@ -194,12 +178,11 @@ export function raiseOrCaptureIssues(
 export function raiseOrCaptureIssuesForKey(
   error: unknown,
   rootError: ValidationError | null,
-  parserOptions: ParserOptions | undefined,
+  options: ParserOptions | undefined,
   key: unknown
 ): ValidationError {
-  if (!(error instanceof ValidationError)) {
-    throw error;
-  }
+  raiseOnUnknownError(error);
+
   for (const issue of error.issues) {
     issue.path.unshift(key);
   }
@@ -207,7 +190,7 @@ export function raiseOrCaptureIssuesForKey(
     rootError.issues.push(...error.issues);
     return rootError;
   }
-  if (parserOptions != null && parserOptions.fast) {
+  if (options != null && options.fast) {
     throw error;
   }
   return new ValidationError(error.issues.slice(0));
@@ -239,18 +222,20 @@ export function raiseIssue(
   throw new ValidationError([{ code, path: [], input, param, message, meta }]);
 }
 
-export function createCatchForKey(key: unknown): (error: unknown) => never {
+export function captureIssuesForKey(key: unknown): (error: unknown) => never {
   return error => {
-    if (error instanceof ValidationError) {
-      for (const issue of error.issues) {
-        issue.path.unshift(key);
-      }
+    raiseOnUnknownError(error);
+
+    for (const issue of error.issues) {
+      issue.path.unshift(key);
     }
     throw error;
   };
 }
 
-export function createExtractor(rootError: ValidationError | null): <T>(results: PromiseSettledResult<T>[]) => T[] {
+export function extractSettledValues(
+  rootError: ValidationError | null
+): <T>(results: PromiseSettledResult<T>[]) => T[] {
   return results => {
     const values = [];
 
@@ -264,9 +249,8 @@ export function createExtractor(rootError: ValidationError | null): <T>(results:
 
       const error = result.reason;
 
-      if (!(error instanceof ValidationError)) {
-        throw error;
-      }
+      raiseOnUnknownError(error);
+
       if (rootError !== null) {
         rootError.issues.push(...error.issues);
       } else {
@@ -274,7 +258,7 @@ export function createExtractor(rootError: ValidationError | null): <T>(results:
       }
     }
 
-    raiseError(rootError);
+    raiseOnError(rootError);
     return values;
   };
 }

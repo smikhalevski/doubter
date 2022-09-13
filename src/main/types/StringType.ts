@@ -24,9 +24,6 @@ export class StringType extends Type<string> {
     return this.min(length, options).max(length, options);
   }
 
-  /**
-   * Constrains the string length to be greater than or equal to the length.
-   */
   min(length: number, options?: ConstraintOptions): this {
     const type = cloneObject(this);
     type.minLength = length;
@@ -34,9 +31,6 @@ export class StringType extends Type<string> {
     return type;
   }
 
-  /**
-   * Constrains the string length to be less than or equal to the length.
-   */
   max(length: number, options?: ConstraintOptions): this {
     const type = cloneObject(this);
     type.maxLength = length;
@@ -44,9 +38,6 @@ export class StringType extends Type<string> {
     return type;
   }
 
-  /**
-   * Constrains the string to match a regexp.
-   */
   regex(re: RegExp, options?: ConstraintOptions): this {
     const type = cloneObject(this);
     type.re = re;
