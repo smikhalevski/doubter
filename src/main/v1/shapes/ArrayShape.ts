@@ -1,6 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { ConstraintOptions, ParserOptions } from '../shared-types';
 import {
+  addConstraint,
   applyConstraints,
   captureIssuesForKey,
   extractSettledValues,
@@ -19,7 +20,7 @@ import { ValidationError } from '../ValidationError';
  */
 export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['output'][]> {
   /**
-   * Creates a new {@link ArrayShape} instance.
+   * Creates a new {@linkcode ArrayShape} instance.
    *
    * @param shape The shape of an array element.
    * @param options The constraint options or an issue message.
@@ -51,11 +52,11 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @returns The copy of the shape.
    */
   min(length: number, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'min', output => {
       if (output.length < length) {
         raiseIssue(output, 'arrayMinLength', length, options, 'Must have the minimum length of ' + length);
       }
-    }, 'min');
+    });
   }
 
   /**
@@ -66,11 +67,11 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @returns The copy of the shape.
    */
   max(length: number, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'max', output => {
       if (output.length > length) {
         raiseIssue(output, 'arrayMaxLength', length, options, 'Must have the maximum length of ' + length);
       }
-    }, 'max');
+    });
   }
 
   parse(input: unknown, options?: ParserOptions): S['output'][] {

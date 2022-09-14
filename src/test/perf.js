@@ -8,32 +8,32 @@ describe(
   () => {
     const value = 'aaa';
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'string',
-      });
-
-      measure(() => {
-        validate(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = z.string();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('valita', measure => {
-      const type = v.string();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
+    // test('Ajv', measure => {
+    //   const validate = new Ajv().compile({
+    //     $schema: 'http://json-schema.org/draft-07/schema#',
+    //     type: 'string',
+    //   });
+    //
+    //   measure(() => {
+    //     validate(value);
+    //   });
+    // });
+    //
+    // test('myzod', measure => {
+    //   const type = z.string();
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
+    //
+    // test('valita', measure => {
+    //   const type = v.string();
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
 
     test('lib', measure => {
       const type = lib.string();

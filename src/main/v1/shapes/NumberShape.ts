@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ConstraintOptions, ParserOptions } from '../shared-types';
-import { applyConstraints, raiseOnError, raiseIssue } from '../utils';
+import { addConstraint, applyConstraints, raiseIssue, raiseOnError } from '../utils';
 
 export class NumberShape extends Shape<number> {
   constructor(protected options?: ConstraintOptions | string) {
@@ -35,11 +35,11 @@ export class NumberShape extends Shape<number> {
    * @returns The copy of the shape.
    */
   gt(value: number, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'gt', output => {
       if (output <= value) {
         raiseIssue(output, 'numberGreaterThan', value, options, 'Must be greater than ' + value);
       }
-    }, 'gt');
+    });
   }
 
   /**
@@ -50,11 +50,11 @@ export class NumberShape extends Shape<number> {
    * @returns The copy of the shape.
    */
   lt(value: number, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'lt', output => {
       if (output >= value) {
         raiseIssue(output, 'numberLessThan', value, options, 'Must be less than ' + value);
       }
-    }, 'lt');
+    });
   }
 
   /**
@@ -65,11 +65,11 @@ export class NumberShape extends Shape<number> {
    * @returns The copy of the shape.
    */
   gte(value: number, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'gte', output => {
       if (output < value) {
         raiseIssue(output, 'numberGreaterThanOrEqual', value, options, 'Must be greater than or equal to ' + value);
       }
-    }, 'gte');
+    });
   }
 
   /**
@@ -80,11 +80,11 @@ export class NumberShape extends Shape<number> {
    * @returns The copy of the shape.
    */
   lte(value: number, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'lte', output => {
       if (output > value) {
         raiseIssue(output, 'numberLessThanOrEqual', value, options, 'Must be less than or equal to ' + value);
       }
-    }, 'lte');
+    });
   }
 
   /**
@@ -95,11 +95,11 @@ export class NumberShape extends Shape<number> {
    * @returns The copy of the shape.
    */
   multipleOf(divisor: number, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'multipleOf', output => {
       if (output % divisor !== 0) {
         raiseIssue(output, 'numberMultipleOf', divisor, options, 'Must be a multiple of ' + divisor);
       }
-    }, 'multipleOf');
+    });
   }
 
   parse(input: any, options?: ParserOptions): number {

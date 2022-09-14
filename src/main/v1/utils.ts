@@ -36,29 +36,6 @@ export function returnOutputArray(input: any[], output: any[]): any[] {
   return input;
 }
 
-// export interface PropertyDescriptor<T, V> {
-//   configurable?: boolean;
-//   enumerable?: boolean;
-//   value?: V;
-//   writable?: boolean;
-//
-//   get?(this: T): V;
-//
-//   set?(this: T, value: V): void;
-// }
-
-// export type Constructor<T> = new (...args: any[]) => T;
-
-// export function extendClass<T>(constructor: Constructor<T>, baseConstructor: Constructor<any>): T {
-//   const prototype = Object.create(baseConstructor.prototype);
-//   constructor.prototype = prototype;
-//   prototype.constructor = constructor;
-//   return prototype;
-// }
-
-// export const defineProperty: <T, P extends keyof T>(object: T, key: P, descriptor: PropertyDescriptor<T, T[P]>) => T =
-//   Object.defineProperty;
-
 export function raise(message: string): never {
   throw new Error(message);
 }
@@ -76,25 +53,15 @@ export function copyShape<S extends Shape<any>>(shape: S): any {
   return shapeCopy;
 }
 
-/**
- * Adds constraint to a shape.
- */
 export function addConstraint<S extends Shape<any>>(
   shape: S,
-  id: string | undefined,
-  constraint: Constraint<S['output']>
+  name: string | null = null,
+  cb: Constraint<S['output']>,
+  unsafe = false
 ): S {
-  const shapeCopy = copyShape(shape);
-  const { constraintIds, constraints } = shapeCopy;
-  const i = constraintIds.indexOf(id);
-
-  if (id == null || i === -1) {
-    constraints.push(constraint);
-    constraintIds.push(id);
-  } else {
-    constraints[i] = constraint;
-  }
-  return shapeCopy;
+  const shapeClone = shape.clone();
+  shapeClone.addConstraint(name, unsafe, cb);
+  return shapeClone;
 }
 
 /**
@@ -102,57 +69,41 @@ export function addConstraint<S extends Shape<any>>(
  */
 export function applyConstraints<T>(
   input: T,
-  constraints: Constraint<T>[],
-  parserOptions: ParserOptions | undefined,
+  constraints: any[],
+  options: ParserOptions | undefined,
   rootError: ValidationError | null
 ): ValidationError | null {
   const constraintsLength = constraints.length;
 
-  try {
-    constraints[0](input);
-  } catch (error) {
-    rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
+  if (rootError === null || constraints[1]) {
+    try {
+      constraints[2](input);
+    } catch (error) {
+      rootError = raiseOrCaptureIssues(error, rootError, options);
+    }
   }
-
-  if (constraintsLength === 1) {
-    return rootError;
-  }
-
-  try {
-    constraints[1](input);
-  } catch (error) {
-    rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
-  }
-
-  if (constraintsLength === 2) {
-    return rootError;
-  }
-
-  try {
-    constraints[2](input);
-  } catch (error) {
-    rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
-  }
-
   if (constraintsLength === 3) {
     return rootError;
   }
 
-  try {
-    constraints[3](input);
-  } catch (error) {
-    rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
+  if (rootError === null || constraints[4]) {
+    try {
+      constraints[5](input);
+    } catch (error) {
+      rootError = raiseOrCaptureIssues(error, rootError, options);
+    }
   }
-
-  if (constraintsLength === 4) {
+  if (constraintsLength === 6) {
     return rootError;
   }
 
-  for (let i = 4; i < constraintsLength; ++i) {
-    try {
-      constraints[i](input);
-    } catch (error) {
-      rootError = raiseOrCaptureIssues(error, rootError, parserOptions);
+  for (let i = 7; i < constraintsLength; i += 3) {
+    if (rootError === null || constraints[i].unsafe) {
+      try {
+        constraints[i + 1](input);
+      } catch (error) {
+        rootError = raiseOrCaptureIssues(error, rootError, options);
+      }
     }
   }
   return rootError;

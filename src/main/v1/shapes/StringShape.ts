@@ -1,6 +1,6 @@
 import { ConstraintOptions, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
-import { applyConstraints, raiseOnError, raiseIssue } from '../utils';
+import { applyConstraints, raiseOnError, raiseIssue, addConstraint } from '../utils';
 
 export class StringShape extends Shape<string> {
   constructor(protected options?: ConstraintOptions | string) {
@@ -26,11 +26,11 @@ export class StringShape extends Shape<string> {
    * @returns The copy of the shape.
    */
   min(length: number, options?: ConstraintOptions | string): this {
-    return this.constrain(input => {
+    return addConstraint(this, 'min', input => {
       if (input.length < length) {
         raiseIssue(input, 'stringMinLength', length, options, 'Must have the minimum length of ' + length);
       }
-    }, 'min');
+    });
   }
 
   /**
@@ -41,11 +41,11 @@ export class StringShape extends Shape<string> {
    * @returns The copy of the shape.
    */
   max(length: number, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'max', output => {
       if (output.length > length) {
         raiseIssue(output, 'stringMaxLength', length, options, 'Must have the maximum length of ' + length);
       }
-    }, 'max');
+    });
   }
 
   /**
@@ -56,11 +56,11 @@ export class StringShape extends Shape<string> {
    * @returns The copy of the shape.
    */
   regex(re: RegExp, options?: ConstraintOptions | string): this {
-    return this.constrain(output => {
+    return addConstraint(this, 'regex', output => {
       if (!re.test(output)) {
         raiseIssue(output, 'stringRegex', re, options, 'Must match the pattern ' + re);
       }
-    }, 'regex');
+    });
   }
 
   parse(input: unknown, options?: ParserOptions): string {
