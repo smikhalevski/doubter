@@ -1,10 +1,10 @@
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import {
   addConstraint,
   applyConstraints,
-  captureIssuesForKey,
-  extractSettledValues,
+  createCatchClauseForKey,
+  createOutputExtractor,
   isArray,
   isEqual,
   isInteger,
@@ -14,6 +14,7 @@ import {
   returnOutputArray,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
+import { ARRAY_MAX_CODE, ARRAY_MIN_CODE, TYPE_CODE } from './issue-codes';
 
 /**
  * The shape that constrains every element of an array with the element shape.
@@ -29,8 +30,8 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     super(shape.async);
   }
 
-  at(key: unknown): AnyShape | null {
-    return isInteger(key) && key >= 0 ? this.shape : null;
+  at(propertyName: unknown): AnyShape | null {
+    return isInteger(propertyName) && propertyName >= 0 ? this.shape : null;
   }
 
   /**
@@ -40,7 +41,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  length(length: number, options?: InputConstraintOptions | string): this {
+  length(length: number, options?: OutputConstraintOptions | string): this {
     return this.min(length, options).max(length, options);
   }
 
@@ -51,10 +52,10 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  min(length: number, options?: InputConstraintOptions | string): this {
-    return addConstraint(this, 'min', options, output => {
+  min(length: number, options?: OutputConstraintOptions | string): this {
+    return addConstraint(this, ARRAY_MIN_CODE, options, output => {
       if (output.length < length) {
-        raiseIssue(output, 'arrayMinLength', length, options, 'Must have the minimum length of ' + length);
+        raiseIssue(output, ARRAY_MIN_CODE, length, options, 'Must have the minimum length of ' + length);
       }
     });
   }
@@ -66,23 +67,22 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  max(length: number, options?: InputConstraintOptions | string): this {
-    return addConstraint(this, 'max', options, output => {
+  max(length: number, options?: OutputConstraintOptions | string): this {
+    return addConstraint(this, ARRAY_MAX_CODE, options, output => {
       if (output.length > length) {
-        raiseIssue(output, 'arrayMaxLength', length, options, 'Must have the maximum length of ' + length);
+        raiseIssue(output, ARRAY_MAX_CODE, length, options, 'Must have the maximum length of ' + length);
       }
     });
   }
 
   parse(input: unknown, options?: ParserOptions): S['output'][] {
     if (!isArray(input)) {
-      raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
+      raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
 
     const { shape, constraints } = this;
 
     let rootError: ValidationError | null = null;
-
     let output = input;
 
     for (let i = 0; i < input.length; ++i) {
@@ -118,21 +118,19 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
+        raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
       }
 
       const { shape, constraints } = this;
 
-      let rootError: ValidationError | null = null;
-
       const outputPromises = [];
 
       for (let i = 0; i < input.length; ++i) {
-        outputPromises.push(shape.parseAsync(input[i], options).catch(captureIssuesForKey(i)));
+        outputPromises.push(shape.parseAsync(input[i], options).catch(createCatchClauseForKey(i)));
       }
 
-      const returnOutput = (output: unknown[]): unknown[] => {
-        output = returnOutputArray(input, output);
+      const returnOutput = (output: unknown[], rootError: ValidationError | null = null): unknown[] => {
+        output = rootError !== null ? input : returnOutputArray(input, output);
 
         if (constraints !== null) {
           rootError = applyConstraints(output, constraints, options, rootError);
@@ -144,7 +142,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       if (options != null && options.fast) {
         resolve(Promise.all(outputPromises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(outputPromises).then(extractSettledValues(rootError)).then(returnOutput));
+        resolve(Promise.allSettled(outputPromises).then(createOutputExtractor(null, returnOutput)));
       }
     });
   }

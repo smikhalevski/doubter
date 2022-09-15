@@ -218,7 +218,7 @@ describe('IntegerShape', () => {
   });
 
   test('raises multiple issues', () => {
-    expect(new IntegerShape().gt(2).multipleOf(3).validate(1)).toEqual([
+    expect(new IntegerShape().gt(2).multipleOf(3, { unsafe: true }).validate(1)).toEqual([
       {
         code: 'numberGreaterThan',
         path: [],

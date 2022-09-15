@@ -1,10 +1,10 @@
 import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
 import {
-  captureIssuesForKey,
   cloneObjectEnumerableKeys,
   cloneObjectKnownKeys,
-  extractSettledValues,
+  createCatchClauseForKey,
+  createOutputExtractor,
   isAsync,
   isEqual,
   isObjectLike,
@@ -54,12 +54,12 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
     this.keysMode = indexerShape === null ? ObjectKeysMode.PRESERVE : ObjectKeysMode.INDEXER;
   }
 
-  at(key: unknown): AnyShape | null {
-    if (typeof key !== 'string') {
+  at(propertyName: unknown): AnyShape | null {
+    if (typeof propertyName !== 'string') {
       return null;
     }
-    if (this.keys.includes(key)) {
-      return this.props[key];
+    if (this.keys.includes(propertyName)) {
+      return this.props[propertyName];
     }
     return this.indexerShape;
   }
@@ -225,7 +225,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
 
       let output = input;
 
-      const handleResults = (results: any): any => {
+      const handleResults = (results: any, rootError: ValidationError | null = null): any => {
         for (let i = 0; i < objectKeys.length; ++i) {
           const key = objectKeys[i];
           const outputValue = results[i];
@@ -242,7 +242,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
       };
 
       for (const [key, shape] of propEntries) {
-        promises.push(shape.parseAsync(input[key], options).catch(captureIssuesForKey(key)));
+        promises.push(shape.parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
       }
 
       if (keysMode === ObjectKeysMode.INDEXER) {
@@ -254,14 +254,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
             objectKeys = keys.slice(0);
           }
           objectKeys.push(key);
-          promises.push(indexerShape!.parseAsync(input[key], options).catch(captureIssuesForKey(key)));
+          promises.push(indexerShape!.parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
         }
       }
 
       if (options != null && options.fast) {
         resolve(Promise.all(promises).then(handleResults));
       } else {
-        resolve(Promise.allSettled(promises).then(extractSettledValues(null)).then(handleResults));
+        resolve(Promise.allSettled(promises).then(createOutputExtractor(null, handleResults)));
       }
     });
   }

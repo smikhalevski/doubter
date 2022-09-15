@@ -1,7 +1,7 @@
 import {
   cloneObjectEnumerableKeys,
-  captureIssuesForKey,
-  extractSettledValues,
+  createCatchClauseForKey,
+  createOutputExtractor,
   isEqual,
   isObjectLike,
   raiseOnError,
@@ -20,8 +20,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     super(keyShape.async || valueShape.async);
   }
 
-  at(key: unknown): AnyShape | null {
-    return typeof key === 'string' ? this.valueShape : null;
+  at(propertyName: unknown): AnyShape | null {
+    return typeof propertyName === 'string' ? this.valueShape : null;
   }
 
   parse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> {
@@ -77,7 +77,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       const results = [];
 
-      const returnOutput = (results: any[]): any => {
+      const returnOutput = (results: any[], rootError: ValidationError | null = null): any => {
         let output = input;
         let i = 0;
 
@@ -101,15 +101,15 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       for (const key in input) {
         results.push(
-          keyShape.parseAsync(key, options).catch(captureIssuesForKey(key)),
-          valueShape.parseAsync(input[key], options).catch(captureIssuesForKey(key))
+          keyShape.parseAsync(key, options).catch(createCatchClauseForKey(key)),
+          valueShape.parseAsync(input[key], options).catch(createCatchClauseForKey(key))
         );
       }
 
       if (options != null && options.fast) {
         resolve(Promise.all(results).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(results).then(extractSettledValues(null)).then(returnOutput));
+        resolve(Promise.allSettled(results).then(createOutputExtractor(null, returnOutput)));
       }
     });
   }

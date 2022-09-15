@@ -25,7 +25,7 @@ describe('ArrayShape', () => {
   test('raises if string length is not exactly equal', () => {
     expect(new ArrayShape(new NumberShape()).length(2).validate([1])).toEqual([
       {
-        code: 'arrayMinLength',
+        code: 'arrayMin',
         path: [],
         input: [1],
         param: 2,
@@ -39,7 +39,7 @@ describe('ArrayShape', () => {
   test('raises if an array does not conform the min length', () => {
     expect(new ArrayShape(new NumberShape()).min(2).validate([1])).toEqual([
       {
-        code: 'arrayMinLength',
+        code: 'arrayMin',
         path: [],
         input: [1],
         param: 2,
@@ -54,7 +54,7 @@ describe('ArrayShape', () => {
   test('raises if an array does not conform the max length', () => {
     expect(new ArrayShape(new NumberShape()).max(2).validate([1, 2, 3])).toEqual([
       {
-        code: 'arrayMaxLength',
+        code: 'arrayMax',
         path: [],
         input: [1, 2, 3],
         param: 2,
@@ -82,7 +82,7 @@ describe('ArrayShape', () => {
   test('overrides message for min length issue', () => {
     expect(new ArrayShape(new NumberShape()).min(2, { message: 'xxx', meta: 'yyy' }).validate([1])).toEqual([
       {
-        code: 'arrayMinLength',
+        code: 'arrayMin',
         path: [],
         input: [1],
         param: 2,
@@ -95,7 +95,7 @@ describe('ArrayShape', () => {
   test('overrides message for max length issue', () => {
     expect(new ArrayShape(new NumberShape()).max(2, { message: 'xxx', meta: 'yyy' }).validate([1, 2, 3])).toEqual([
       {
-        code: 'arrayMaxLength',
+        code: 'arrayMax',
         path: [],
         input: [1, 2, 3],
         param: 2,
@@ -106,7 +106,7 @@ describe('ArrayShape', () => {
   });
 
   test('raises multiple issues', () => {
-    expect(new ArrayShape(new NumberShape()).min(3).validate(['aaa', 'bbb'])).toEqual([
+    expect(new ArrayShape(new NumberShape()).min(3, { unsafe: true }).validate(['aaa', 'bbb'])).toEqual([
       {
         code: 'type',
         path: [0],
@@ -124,7 +124,7 @@ describe('ArrayShape', () => {
         meta: undefined,
       },
       {
-        code: 'arrayMinLength',
+        code: 'arrayMin',
         path: [],
         input: ['aaa', 'bbb'],
         param: 3,
@@ -135,7 +135,8 @@ describe('ArrayShape', () => {
   });
 
   test('raises multiple issues for async array', async () => {
-    const shape = new ArrayShape(new NumberShape().transformAsync(value => Promise.resolve('a' + value))).min(3);
+    const elementShape = new NumberShape().transformAsync(value => Promise.resolve('a' + value));
+    const shape = new ArrayShape(elementShape).min(3, { unsafe: true });
 
     expect(await shape.validateAsync(['aaa', 'bbb'])).toEqual([
       {
@@ -155,7 +156,7 @@ describe('ArrayShape', () => {
         meta: undefined,
       },
       {
-        code: 'arrayMinLength',
+        code: 'arrayMin',
         path: [],
         input: ['aaa', 'bbb'],
         param: 3,
@@ -182,7 +183,7 @@ describe('ArrayShape', () => {
 
     expect(await shape.validateAsync(['aaa', 'bbb'], { fast: true })).toEqual([
       {
-        code: 'arrayMinLength',
+        code: 'arrayMin',
         path: [],
         input: ['aaa', 'bbb'],
         param: 3,

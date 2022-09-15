@@ -1,4 +1,4 @@
-import { NumberShape, StringShape } from '../../../main';
+import { NumberShape } from '../../../main';
 import { ValidationError } from '../../../main/v1/ValidationError';
 
 describe('NumberShape', () => {
@@ -205,7 +205,7 @@ describe('NumberShape', () => {
   });
 
   test('raises multiple issues', () => {
-    expect(new NumberShape().gt(2).multipleOf(3).validate(1)).toEqual([
+    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).validate(1)).toEqual([
       {
         code: 'numberGreaterThan',
         path: [],

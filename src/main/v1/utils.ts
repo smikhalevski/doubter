@@ -182,7 +182,7 @@ export function raiseIssue(
   throw new ValidationError([{ code, path: [], input, param, message, meta }]);
 }
 
-export function captureIssuesForKey(key: unknown): (error: unknown) => never {
+export function createCatchClauseForKey(key: unknown): (error: unknown) => never {
   return error => {
     raiseOnUnknownError(error);
 
@@ -193,9 +193,10 @@ export function captureIssuesForKey(key: unknown): (error: unknown) => never {
   };
 }
 
-export function extractSettledValues(
-  rootError: ValidationError | null
-): <T>(results: PromiseSettledResult<T>[]) => T[] {
+export function createOutputExtractor<T, R>(
+  rootError: ValidationError | null,
+  outputProcessor: (values: T[], rootError: ValidationError | null) => R
+): (results: PromiseSettledResult<T>[]) => R {
   return results => {
     const values = [];
 
@@ -218,8 +219,7 @@ export function extractSettledValues(
       }
     }
 
-    raiseOnError(rootError);
-    return values;
+    return outputProcessor(values, rootError);
   };
 }
 

@@ -1,19 +1,20 @@
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, ParserOptions, Multiple } from '../shared-types';
+import { InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
 import {
   applyConstraints,
-  captureIssuesForKey,
-  extractSettledValues,
+  createCatchClauseForKey,
+  createOutputExtractor,
   isArray,
   isAsync,
   isEqual,
-  returnOutputArray,
   isInteger,
-  raiseOnError,
   raiseIssue,
+  raiseOnError,
   raiseOrCaptureIssues,
+  returnOutputArray,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
+import { TUPLE_LENGTH_CODE, TYPE_CODE } from './issue-codes';
 
 type OutputTuple<U extends Multiple<AnyShape>> = { [K in keyof U]: U[K]['output'] };
 
@@ -22,30 +23,25 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
     super(isAsync(shapes));
   }
 
-  at(key: unknown): AnyShape | null {
+  at(propertyName: unknown): AnyShape | null {
     const { shapes } = this;
 
-    return isInteger(key) && key >= 0 && key < shapes.length ? shapes[key] : null;
+    return isInteger(propertyName) && propertyName >= 0 && propertyName < shapes.length ? shapes[propertyName] : null;
   }
 
   parse(input: unknown, options?: ParserOptions): OutputTuple<U> {
     if (!isArray(input)) {
-      raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
+      raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
 
     const { shapes, constraints } = this;
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
-      raiseIssue(input, 'tupleLength', shapesLength, this.options, 'Must have a length of ' + shapesLength);
+      raiseIssue(input, TUPLE_LENGTH_CODE, shapesLength, this.options, 'Must have a length of ' + shapesLength);
     }
 
     let rootError: ValidationError | null = null;
-
-    if (constraints !== null) {
-      rootError = applyConstraints(input as OutputTuple<U>, constraints, options, rootError);
-    }
-
     let output = input;
 
     for (let i = 0; i < input.length; ++i) {
@@ -66,6 +62,10 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
       output[i] = outputValue;
     }
 
+    if (constraints !== null) {
+      rootError = applyConstraints(input as OutputTuple<U>, constraints, options, rootError);
+    }
+
     raiseOnError(rootError);
     return output as OutputTuple<U>;
   }
@@ -73,14 +73,14 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
   parseAsync(input: unknown, options?: ParserOptions): Promise<OutputTuple<U>> {
     return new Promise(resolve => {
       if (!isArray(input)) {
-        raiseIssue(input, 'type', 'array', this.options, 'Must be an array');
+        raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
       }
 
       const { shapes, constraints } = this;
       const shapesLength = shapes.length;
 
       if (input.length !== shapesLength) {
-        raiseIssue(input, 'tupleLength', shapesLength, this.options, 'Must have a length of ' + shapesLength);
+        raiseIssue(input, TUPLE_LENGTH_CODE, shapesLength, this.options, 'Must have a length of ' + shapesLength);
       }
 
       let rootError: ValidationError | null = null;
@@ -89,18 +89,26 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
         rootError = applyConstraints(input as U, constraints, options, rootError);
       }
 
-      const promises = [];
+      const outputPromises = [];
 
       for (let i = 0; i < input.length; ++i) {
-        promises.push(shapes[i].parseAsync(input[i], options).catch(captureIssuesForKey(i)));
+        outputPromises.push(shapes[i].parseAsync(input[i], options).catch(createCatchClauseForKey(i)));
       }
 
-      const returnOutput = (output: unknown[]): OutputTuple<U> => returnOutputArray(input, output) as OutputTuple<U>;
+      const returnOutput = (output: unknown[], rootError: ValidationError | null = null): OutputTuple<U> => {
+        output = rootError !== null ? input : returnOutputArray(input, output);
+
+        if (constraints !== null) {
+          rootError = applyConstraints(output, constraints, options, rootError);
+        }
+        raiseOnError(rootError);
+        return output as OutputTuple<U>;
+      };
 
       if (options != null && options.fast) {
-        resolve(Promise.all(promises).then(returnOutput));
+        resolve(Promise.all(outputPromises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(promises).then(extractSettledValues(rootError)).then(returnOutput));
+        resolve(Promise.allSettled(outputPromises).then(createOutputExtractor(rootError, returnOutput)));
       }
     });
   }

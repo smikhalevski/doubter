@@ -3,17 +3,17 @@ import { OptionalShape } from './OptionalShape';
 import { ParserOptions } from '../shared-types';
 import { applyConstraints, raiseOnError } from '../utils';
 
-export class NullableShape<X extends AnyShape> extends Shape<X['input'] | null, X['output'] | null> {
-  constructor(protected shape: X) {
+export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, S['output'] | null> {
+  constructor(protected shape: S) {
     super(shape.async);
   }
 
-  at(key: unknown): AnyShape | null {
-    const childShape = this.shape.at(key);
-    return childShape === null ? null : new OptionalShape(childShape);
+  at(propertyName: unknown): AnyShape | null {
+    const shape = this.shape.at(propertyName);
+    return shape === null ? null : new OptionalShape(shape);
   }
 
-  parse(input: unknown, options?: ParserOptions): X['output'] | undefined {
+  parse(input: unknown, options?: ParserOptions): S['output'] | undefined {
     const output = input === null ? null : this.shape.parse(input, options);
 
     const { constraints } = this;
@@ -23,7 +23,7 @@ export class NullableShape<X extends AnyShape> extends Shape<X['input'] | null, 
     return output;
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<X['output'] | undefined> {
+  parseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | undefined> {
     if (!this.async) {
       return super.parseAsync(input, options);
     }
