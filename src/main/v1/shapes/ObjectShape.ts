@@ -47,6 +47,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   protected unknownKeyOptions?: InputConstraintOptions;
   protected missingKeyOptions?: InputConstraintOptions;
 
+  protected applyKeysConstraint: (() => Dict) | null = null;
+
   constructor(protected propShapes: P, protected indexerShape: I | null, protected options?: InputConstraintOptions) {
     const valueShapes = Object.values(propShapes);
 
@@ -155,66 +157,75 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     if (!isObjectLike(input)) {
       raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
     }
-    const { keys, keysMode, entries, indexerShape, applyConstraints } = this;
+
+    const { entries, applyConstraints, applyKeysConstraint } = this;
     const entriesLength = entries.length;
 
     let rootError: ValidationError | null = null;
     let output = input;
 
-    if (keysMode !== ObjectKeysMode.PRESERVE) {
-      if (keysMode === ObjectKeysMode.STRIP) {
-        for (const key in input) {
-          if (!keys.includes(key)) {
-            output = pickDictKeys(input, keys);
-            break;
-          }
-        }
-      } else if (keysMode === ObjectKeysMode.EXACT) {
-        let knownKeyCount = 0;
-
-        for (const key in input) {
-          if (keys.includes(key)) {
-            ++knownKeyCount;
-            continue;
-          }
-          rootError = raiseOrCaptureIssues(
-            createError(input, UNKNOWN_KEY, key, this.unknownKeyOptions, 'Must not contain unknown keys'),
-            rootError,
-            options
-          );
-        }
-        if (knownKeyCount !== keys.length) {
-          rootError = raiseOrCaptureIssues(
-            createError(input, MISSING_KEY, null, this.missingKeyOptions, 'Must not have missing keys'),
-            rootError,
-            options
-          );
-        }
-      } else {
-        for (const key in input) {
-          if (keys.includes(key)) {
-            continue;
-          }
-
-          const inputValue = input[key];
-
-          let outputValue;
-          try {
-            outputValue = indexerShape!.parse(inputValue, options);
-          } catch (error) {
-            rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
-            output = input;
-          }
-          if (isEqual(outputValue, inputValue) || rootError !== null) {
-            continue;
-          }
-          if (output === input) {
-            output = cloneDict(input);
-          }
-          output[key] = outputValue;
-        }
+    if (applyKeysConstraint !== null) {
+      try {
+        output = applyKeysConstraint();
+      } catch (error) {
+        rootError = raiseOrCaptureIssues(error, rootError, options);
       }
     }
+
+    // if (keysMode !== ObjectKeysMode.PRESERVE) {
+    //   if (keysMode === ObjectKeysMode.STRIP) {
+    //     for (const key in input) {
+    //       if (!keys.includes(key)) {
+    //         output = pickDictKeys(input, keys);
+    //         break;
+    //       }
+    //     }
+    //   } else if (keysMode === ObjectKeysMode.EXACT) {
+    //     let knownKeyCount = 0;
+    //
+    //     for (const key in input) {
+    //       if (keys.includes(key)) {
+    //         ++knownKeyCount;
+    //         continue;
+    //       }
+    //       rootError = raiseOrCaptureIssues(
+    //         createError(input, UNKNOWN_KEY, key, this.unknownKeyOptions, 'Must not contain unknown keys'),
+    //         rootError,
+    //         options
+    //       );
+    //     }
+    //     if (knownKeyCount !== keys.length) {
+    //       rootError = raiseOrCaptureIssues(
+    //         createError(input, MISSING_KEY, null, this.missingKeyOptions, 'Must not have missing keys'),
+    //         rootError,
+    //         options
+    //       );
+    //     }
+    //   } else {
+    //     for (const key in input) {
+    //       if (keys.includes(key)) {
+    //         continue;
+    //       }
+    //
+    //       const inputValue = input[key];
+    //
+    //       let outputValue;
+    //       try {
+    //         outputValue = indexerShape!.parse(inputValue, options);
+    //       } catch (error) {
+    //         rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
+    //         output = input;
+    //       }
+    //       if (isEqual(outputValue, inputValue) || rootError !== null) {
+    //         continue;
+    //       }
+    //       if (output === input) {
+    //         output = cloneDict(input);
+    //       }
+    //       output[key] = outputValue;
+    //     }
+    //   }
+    // }
 
     for (let i = 0; i < entriesLength; i += 2) {
       const key = entries[i];
