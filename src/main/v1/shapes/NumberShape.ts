@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
-import { addConstraint, applyConstraints, raiseIssue, raiseOnError } from '../utils';
+import { addConstraint, raiseIssue, raiseOnError } from '../utils';
 import {
   NUMBER_GT_CODE,
   NUMBER_GTE_CODE,
@@ -111,15 +111,17 @@ export class NumberShape extends Shape<number> {
   }
 
   parse(input: any, options?: ParserOptions): number {
-    // noinspection PointlessArithmeticExpressionJS
-    if (typeof input !== 'number' || input * 0 !== 0) {
+    if (!isFinite(input)) {
       raiseIssue(input, TYPE_CODE, 'number', this.options, 'Must be a number');
     }
 
-    const { constraints } = this;
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(input, constraints, options, null));
+    const { applyConstraints } = this;
+
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(input, options, null));
     }
     return input;
   }
 }
+
+const isFinite = Number.isFinite;

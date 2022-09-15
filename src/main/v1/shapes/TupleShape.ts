@@ -1,7 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
 import {
-  applyConstraints,
   createCatchClauseForKey,
   createOutputExtractor,
   isArray,
@@ -34,7 +33,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
 
-    const { shapes, constraints } = this;
+    const { shapes, applyConstraints } = this;
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
@@ -44,7 +43,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
     let rootError: ValidationError | null = null;
     let output = input;
 
-    for (let i = 0; i < input.length; ++i) {
+    for (let i = 0; i < shapesLength; ++i) {
       const inputValue = input[i];
 
       let outputValue;
@@ -63,8 +62,8 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       output[i] = outputValue;
     }
 
-    if (constraints !== null) {
-      rootError = applyConstraints(output, constraints, options, rootError);
+    if (applyConstraints !== null) {
+      rootError = applyConstraints(output, options, rootError);
     }
 
     raiseOnError(rootError);
@@ -77,7 +76,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
         raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
       }
 
-      const { shapes, constraints } = this;
+      const { shapes, applyConstraints } = this;
       const shapesLength = shapes.length;
 
       if (input.length !== shapesLength) {
@@ -86,21 +85,21 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
 
       let rootError: ValidationError | null = null;
 
-      if (constraints !== null) {
-        rootError = applyConstraints(input, constraints, options, rootError);
+      if (applyConstraints !== null) {
+        rootError = applyConstraints(input, options, rootError);
       }
 
       const outputPromises = [];
 
-      for (let i = 0; i < input.length; ++i) {
+      for (let i = 0; i < shapesLength; ++i) {
         outputPromises.push(shapes[i].parseAsync(input[i], options).catch(createCatchClauseForKey(i)));
       }
 
       const returnOutput = (output: unknown[], rootError: ValidationError | null = null): InferTuple<U, 'output'> => {
         output = rootError !== null ? input : returnOutputArray(input, output);
 
-        if (constraints !== null) {
-          rootError = applyConstraints(output, constraints, options, rootError);
+        if (applyConstraints !== null) {
+          rootError = applyConstraints(output, options, rootError);
         }
         raiseOnError(rootError);
         return output as InferTuple<U, 'output'>;

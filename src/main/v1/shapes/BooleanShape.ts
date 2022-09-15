@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions } from '../shared-types';
-import { applyConstraints, raiseIssue, raiseOnError } from '../utils';
+import { raiseIssue, raiseOnError } from '../utils';
 import { TYPE_CODE } from './issue-codes';
 
 export class BooleanShape extends Shape<boolean> {
@@ -13,9 +13,9 @@ export class BooleanShape extends Shape<boolean> {
       raiseIssue(input, TYPE_CODE, 'boolean', this.options, 'Must be a boolean');
     }
 
-    const { constraints } = this;
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(input, constraints, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(input, options, null));
     }
     return input;
   }

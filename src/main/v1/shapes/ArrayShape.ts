@@ -2,7 +2,6 @@ import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import {
   addConstraint,
-  applyConstraints,
   createCatchClauseForKey,
   createOutputExtractor,
   isArray,
@@ -80,12 +79,13 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
 
-    const { shape, constraints } = this;
+    const { shape, applyConstraints } = this;
+    const inputLength = input.length;
 
     let rootError: ValidationError | null = null;
     let output = input;
 
-    for (let i = 0; i < input.length; ++i) {
+    for (let i = 0; i < inputLength; ++i) {
       const inputValue = input[i];
 
       let outputValue;
@@ -104,10 +104,9 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       output[i] = outputValue;
     }
 
-    if (constraints !== null) {
-      rootError = applyConstraints(output, constraints, options, rootError);
+    if (applyConstraints !== null) {
+      rootError = applyConstraints(output, options, rootError);
     }
-
     raiseOnError(rootError);
     return output;
   }
@@ -122,19 +121,20 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
       }
 
-      const { shape, constraints } = this;
+      const { shape, applyConstraints } = this;
+      const inputLength = input.length;
 
       const outputPromises = [];
 
-      for (let i = 0; i < input.length; ++i) {
+      for (let i = 0; i < inputLength; ++i) {
         outputPromises.push(shape.parseAsync(input[i], options).catch(createCatchClauseForKey(i)));
       }
 
       const returnOutput = (output: unknown[], rootError: ValidationError | null = null): unknown[] => {
         output = rootError !== null ? input : returnOutputArray(input, output);
 
-        if (constraints !== null) {
-          rootError = applyConstraints(output, constraints, options, rootError);
+        if (applyConstraints !== null) {
+          rootError = applyConstraints(output, options, rootError);
         }
         raiseOnError(rootError);
         return output;

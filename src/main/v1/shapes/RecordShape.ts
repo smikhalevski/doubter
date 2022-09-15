@@ -1,5 +1,4 @@
 import {
-  applyConstraints,
   cloneDictFirstKeys,
   createCatchClauseForKey,
   createOutputExtractor,
@@ -31,7 +30,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
     }
 
-    const { keyShape, valueShape, constraints } = this;
+    const { keyShape, valueShape, applyConstraints } = this;
 
     let rootError: ValidationError | null = null;
     let output = input;
@@ -64,8 +63,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       output[outputKey] = outputValue;
     }
 
-    if (constraints !== null) {
-      rootError = applyConstraints(input, constraints, options, rootError);
+    if (applyConstraints !== null) {
+      rootError = applyConstraints(input, options, rootError);
     }
     raiseOnError(rootError);
 
@@ -78,7 +77,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
       }
 
-      const { keyShape, valueShape, constraints } = this;
+      const { keyShape, valueShape, applyConstraints } = this;
 
       const results = [];
 
@@ -103,8 +102,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
           }
         }
 
-        if (constraints !== null) {
-          rootError = applyConstraints(output, constraints, options, rootError);
+        if (applyConstraints !== null) {
+          rootError = applyConstraints(output, options, rootError);
         }
 
         raiseOnError(rootError);

@@ -46,65 +46,6 @@ export function addConstraint<S extends Shape<any>>(
   return shape.constrain(constraint, { name, unsafe: typeof options === 'object' ? options.unsafe : false });
 }
 
-/**
- * Runs constraints against an input value and throws a validation error that contains captured issues.
- */
-export function applyConstraints<T>(
-  input: T,
-  constraints: any[],
-  options: ParserOptions | undefined,
-  rootError: ValidationError
-): ValidationError;
-
-export function applyConstraints<T>(
-  input: T,
-  constraints: any[],
-  options: ParserOptions | undefined,
-  rootError: ValidationError | null
-): ValidationError | null;
-
-export function applyConstraints<T>(
-  input: T,
-  constraints: any[],
-  options: ParserOptions | undefined,
-  rootError: ValidationError | null
-): ValidationError | null {
-  const constraintsLength = constraints.length;
-
-  if (rootError === null || constraints[1]) {
-    try {
-      constraints[2](input);
-    } catch (error) {
-      rootError = raiseOrCaptureIssues(error, rootError, options);
-    }
-  }
-  if (constraintsLength === 3) {
-    return rootError;
-  }
-
-  if (rootError === null || constraints[4]) {
-    try {
-      constraints[5](input);
-    } catch (error) {
-      rootError = raiseOrCaptureIssues(error, rootError, options);
-    }
-  }
-  if (constraintsLength === 6) {
-    return rootError;
-  }
-
-  for (let i = 7; i < constraintsLength; i += 3) {
-    if (rootError === null || constraints[i].unsafe) {
-      try {
-        constraints[i + 1](input);
-      } catch (error) {
-        rootError = raiseOrCaptureIssues(error, rootError, options);
-      }
-    }
-  }
-  return rootError;
-}
-
 export function captureIssues(error: unknown): Issue[] {
   raiseOnUnknownError(error);
   return error.issues;

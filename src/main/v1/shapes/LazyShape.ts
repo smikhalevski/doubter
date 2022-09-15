@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ParserOptions } from '../shared-types';
-import { applyConstraints, raiseOnError } from '../utils';
+import { raiseOnError } from '../utils';
 
 export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
   protected shape: S | undefined;
@@ -17,9 +17,9 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     const shape = (this.shape ||= this.provider());
     const output = shape.parse(input, options);
 
-    const { constraints } = this;
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(input, constraints, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(input, options, null));
     }
     return output;
   }
@@ -32,10 +32,10 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     const shape = (this.shape ||= this.provider());
     const outputPromise = shape.parseAsync(input, options);
 
-    const { constraints } = this;
-    if (constraints !== null) {
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
       return outputPromise.then(output => {
-        raiseOnError(applyConstraints(output, constraints, options, null));
+        raiseOnError(applyConstraints(output, options, null));
         return output;
       });
     }

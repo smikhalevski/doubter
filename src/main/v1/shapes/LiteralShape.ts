@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions, Primitive } from '../shared-types';
-import { applyConstraints, isEqual, raiseIssue, raiseOnError } from '../utils';
+import { isEqual, raiseIssue, raiseOnError } from '../utils';
 import { LITERAL_CODE } from './issue-codes';
 
 export class LiteralShape<T extends Primitive> extends Shape<T> {
@@ -15,9 +15,9 @@ export class LiteralShape<T extends Primitive> extends Shape<T> {
       raiseIssue(input, LITERAL_CODE, value, this.options, 'Must be exactly equal to ' + value);
     }
 
-    const { constraints } = this;
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(input, constraints, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(input, options, null));
     }
     return input;
   }

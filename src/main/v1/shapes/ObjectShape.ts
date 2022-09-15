@@ -1,7 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
 import {
-  applyConstraints,
   cloneDict,
   createCatchClauseForKey,
   createError,
@@ -41,13 +40,10 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   InferObject<P, I, 'input'>,
   InferObject<P, I, 'output'>
 > {
-  protected knownKeys;
+  protected keys;
   protected keysMode;
   protected valueShapes;
-
-  // Perf opt: entries are stored as an array of repeated tuples:
-  // the property name, the property value shape.
-  protected knownEntries: any[];
+  protected entries: any[];
   protected unknownKeyOptions?: InputConstraintOptions;
   protected missingKeyOptions?: InputConstraintOptions;
 
@@ -56,14 +52,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
 
     super(indexerShape?.async || isAsync(valueShapes));
 
-    this.knownKeys = Object.keys(propShapes);
+    this.keys = Object.keys(propShapes);
     this.keysMode = indexerShape !== null ? ObjectKeysMode.INDEXER : ObjectKeysMode.PRESERVE;
     this.valueShapes = valueShapes;
 
-    this.knownEntries = [];
+    this.entries = [];
 
     for (const [key, value] of Object.entries(propShapes)) {
-      this.knownEntries.push(key, value);
+      this.entries.push(key, value);
     }
   }
 
@@ -71,7 +67,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     if (typeof propertyName !== 'string') {
       return null;
     }
-    if (this.knownKeys.includes(propertyName)) {
+    if (this.keys.includes(propertyName)) {
       return this.propShapes[propertyName];
     }
     return this.indexerShape;
@@ -96,7 +92,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   }
 
   pick<K extends Multiple<keyof P & string>>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
-    const { knownKeys } = this;
+    const knownKeys = this.keys;
     const propShapes: Dict<AnyShape> = {};
 
     for (let i = 0; i < knownKeys.length; ++i) {
@@ -111,7 +107,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   }
 
   omit<K extends Multiple<keyof P & string>>(...keys: K): ObjectShape<Omit<P, K[number]>, I> {
-    const { knownKeys } = this;
+    const knownKeys = this.keys;
     const propShapes: Dict<AnyShape> = {};
 
     for (let i = 0; i < knownKeys.length; ++i) {
@@ -159,7 +155,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     if (!isObjectLike(input)) {
       raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
     }
-    const { knownKeys, keysMode, knownEntries, indexerShape, constraints } = this;
+    const { keys, keysMode, entries, indexerShape, applyConstraints } = this;
+    const entriesLength = entries.length;
 
     let rootError: ValidationError | null = null;
     let output = input;
@@ -167,8 +164,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     if (keysMode !== ObjectKeysMode.PRESERVE) {
       if (keysMode === ObjectKeysMode.STRIP) {
         for (const key in input) {
-          if (!knownKeys.includes(key)) {
-            output = pickDictKeys(input, knownKeys);
+          if (!keys.includes(key)) {
+            output = pickDictKeys(input, keys);
             break;
           }
         }
@@ -176,7 +173,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
         let knownKeyCount = 0;
 
         for (const key in input) {
-          if (knownKeys.includes(key)) {
+          if (keys.includes(key)) {
             ++knownKeyCount;
             continue;
           }
@@ -186,7 +183,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
             options
           );
         }
-        if (knownKeyCount !== knownKeys.length) {
+        if (knownKeyCount !== keys.length) {
           rootError = raiseOrCaptureIssues(
             createError(input, MISSING_KEY, null, this.missingKeyOptions, 'Must not have missing keys'),
             rootError,
@@ -195,7 +192,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
         }
       } else {
         for (const key in input) {
-          if (knownKeys.includes(key)) {
+          if (keys.includes(key)) {
             continue;
           }
 
@@ -219,13 +216,13 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       }
     }
 
-    for (let i = 0; i < knownEntries.length; i += 2) {
-      const key = knownEntries[i];
+    for (let i = 0; i < entriesLength; i += 2) {
+      const key = entries[i];
       const inputValue = input[key];
 
       let outputValue;
       try {
-        outputValue = knownEntries[i + 1].parse(inputValue, options);
+        outputValue = entries[i + 1].parse(inputValue, options);
       } catch (error) {
         rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
         output = input;
@@ -239,8 +236,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       output[key] = outputValue;
     }
 
-    if (constraints !== null) {
-      rootError = applyConstraints(output, constraints, options, rootError);
+    if (applyConstraints !== null) {
+      rootError = applyConstraints(output, options, rootError);
     }
     raiseOnError(rootError);
 
@@ -252,15 +249,16 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       if (!isObjectLike(input)) {
         raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
       }
-      const { knownKeys, keysMode, knownEntries, indexerShape, constraints } = this;
+      const { keys, keysMode, entries, indexerShape, applyConstraints } = this;
+      const entriesLength = entries.length;
 
       let rootError: ValidationError | null = null;
       let output = input;
 
       if (keysMode === ObjectKeysMode.STRIP) {
         for (const key in input) {
-          if (!knownKeys.includes(key)) {
-            output = pickDictKeys(input, knownKeys);
+          if (!keys.includes(key)) {
+            output = pickDictKeys(input, keys);
             break;
           }
         }
@@ -270,7 +268,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
         let knownKeyCount = 0;
 
         for (const key in input) {
-          if (knownKeys.includes(key)) {
+          if (keys.includes(key)) {
             ++knownKeyCount;
             continue;
           }
@@ -280,7 +278,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
             options
           );
         }
-        if (knownKeyCount !== knownKeys.length) {
+        if (knownKeyCount !== keys.length) {
           rootError = raiseOrCaptureIssues(
             createError(input, MISSING_KEY, null, this.missingKeyOptions, 'Must not have missing keys'),
             rootError,
@@ -291,14 +289,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
 
       const promises = [];
 
-      for (let i = 0; i < knownEntries.length; i += 2) {
-        const key = knownEntries[i];
-        promises.push(key, knownEntries[i + 1].parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
+      for (let i = 0; i < entriesLength; i += 2) {
+        const key = entries[i];
+        promises.push(key, entries[i + 1].parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
       }
 
       if (indexerShape !== null) {
         for (const key in input) {
-          if (knownKeys.includes(key)) {
+          if (keys.includes(key)) {
             continue;
           }
           promises.push(key, indexerShape.parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
@@ -309,7 +307,9 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
         if (rootError !== null) {
           output = input;
         } else {
-          for (let i = 0; i < entries.length; i += 2) {
+          const entriesLength = entries.length;
+
+          for (let i = 0; i < entriesLength; i += 2) {
             const key = entries[i];
             const outputValue = entries[i + 1];
 
@@ -323,8 +323,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
           }
         }
 
-        if (constraints !== null) {
-          rootError = applyConstraints(output, constraints, options, rootError);
+        if (applyConstraints !== null) {
+          rootError = applyConstraints(output, options, rootError);
         }
         raiseOnError(rootError);
         return output;

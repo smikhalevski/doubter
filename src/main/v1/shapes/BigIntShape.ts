@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions } from '../shared-types';
-import { applyConstraints, raiseIssue, raiseOnError } from '../utils';
+import { raiseIssue, raiseOnError } from '../utils';
 import { TYPE_CODE } from './issue-codes';
 
 export class BigIntShape extends Shape<bigint> {
@@ -13,9 +13,9 @@ export class BigIntShape extends Shape<bigint> {
       raiseIssue(input, TYPE_CODE, 'bigint', this.options, 'Must be a bigint');
     }
 
-    const { constraints } = this;
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(input, constraints, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(input, options, null));
     }
     return input;
   }

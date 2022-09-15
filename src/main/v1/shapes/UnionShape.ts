@@ -1,6 +1,6 @@
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { applyConstraints, captureIssues, createError, isAsync } from '../utils';
+import { captureIssues, createError, isAsync } from '../utils';
 import { UNION_CODE } from './issue-codes';
 
 const fastOptions: ParserOptions = { fast: true };
@@ -32,7 +32,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
   }
 
   parse(input: unknown, options?: ParserOptions): InferUnion<U, 'output'> {
-    const { shapes, constraints } = this;
+    const { shapes, applyConstraints } = this;
 
     let firstIssues: Issue[] | null = null;
     for (const shape of shapes) {
@@ -50,8 +50,8 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
     if (options != null && options.fast) {
       throw rootError;
     }
-    if (constraints !== null) {
-      rootError = applyConstraints(input, constraints, options, rootError);
+    if (applyConstraints !== null) {
+      rootError = applyConstraints(input, options, rootError)!;
     }
     throw rootError;
   }
@@ -62,7 +62,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
     }
 
     return new Promise(resolve => {
-      const { shapes, constraints } = this;
+      const { shapes, applyConstraints } = this;
 
       const outputPromises = [];
 
@@ -87,8 +87,8 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
           if (options != null && options.fast) {
             throw rootError;
           }
-          if (constraints !== null) {
-            rootError = applyConstraints(input, constraints, options, rootError);
+          if (applyConstraints !== null) {
+            rootError = applyConstraints(input, options, rootError)!;
           }
           throw rootError;
         })

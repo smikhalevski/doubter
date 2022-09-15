@@ -8,14 +8,15 @@ import {
 } from '../shared-types';
 import {
   addConstraint,
-  applyConstraints,
   captureIssues,
   raise,
   raiseIssue,
   raiseOnError,
   raiseOnUnknownError,
+  raiseOrCaptureIssues,
 } from '../utils';
 import { NARROWING_CODE } from './issue-codes';
+import { ValidationError } from '../ValidationError';
 
 /**
  * An arbitrary shape.
@@ -34,6 +35,12 @@ export interface Shape<I, O> {
   readonly output: O;
 }
 
+type ApplyConstraints = (
+  input: unknown,
+  options: ParserOptions | undefined,
+  rootError: ValidationError | null
+) => ValidationError | null;
+
 /**
  * The abstract shape.
  *
@@ -41,9 +48,9 @@ export interface Shape<I, O> {
  * @template O The output value.
  */
 export abstract class Shape<I, O = I> {
-  // Perf opt: constraints are stored as an array of repeated triplets:
-  // the constraint name, the unsafe flag, and the callback.
-  protected constraints: any[] | null = null;
+  private _constraints: any[] = [];
+
+  protected applyConstraints: ApplyConstraints | null = null;
 
   /**
    * Creates the new {@linkcode Shape}.
@@ -155,7 +162,8 @@ export abstract class Shape<I, O = I> {
    */
   constrain(constraint: Constraint<O>, options?: CustomConstraintOptions): this {
     const shape = this.clone();
-    const constraints = (shape.constraints ||= []);
+
+    const { _constraints } = shape;
 
     let name = null;
     let unsafe = false;
@@ -166,16 +174,71 @@ export abstract class Shape<I, O = I> {
       if (options.name != null) {
         name = options.name;
 
-        for (let i = 0; i < constraints.length; i += 3) {
-          if (constraints[i] === name) {
-            constraints.splice(i, 3);
+        for (let i = 0; i < _constraints.length; i += 3) {
+          if (_constraints[i] === name) {
+            _constraints.splice(i, 3);
             break;
           }
         }
       }
     }
 
-    constraints.push(name, unsafe, constraint);
+    _constraints.push(name, unsafe, constraint);
+
+    let applyConstraints: ApplyConstraints;
+
+    if (_constraints.length === 3) {
+      applyConstraints = (input, options, rootError) => {
+        if (rootError === null || unsafe) {
+          try {
+            (constraint as Constraint<any>)(input);
+          } catch (error) {
+            rootError = raiseOrCaptureIssues(error, rootError, options);
+          }
+        }
+        return rootError;
+      };
+    } else if (_constraints.length === 6) {
+      const unsafe0 = _constraints[1];
+      const constraint0 = _constraints[2];
+
+      const unsafe1 = _constraints[4];
+      const constraint1 = _constraints[5];
+
+      applyConstraints = (input, options, rootError) => {
+        if (rootError === null || unsafe0) {
+          try {
+            constraint0(input);
+          } catch (error) {
+            rootError = raiseOrCaptureIssues(error, rootError, options);
+          }
+        }
+        if (rootError === null || unsafe1) {
+          try {
+            constraint1(input);
+          } catch (error) {
+            rootError = raiseOrCaptureIssues(error, rootError, options);
+          }
+        }
+        return rootError;
+      };
+    } else {
+      applyConstraints = (input, options, rootError) => {
+        for (let i = 1; i < _constraints.length; i += 3) {
+          if (rootError === null || _constraints[i]) {
+            try {
+              _constraints[i + 1](input);
+            } catch (error) {
+              rootError = raiseOrCaptureIssues(error, rootError, options);
+            }
+          }
+        }
+        return rootError;
+      };
+    }
+
+    shape.applyConstraints = applyConstraints;
+
     return shape;
   }
 
@@ -217,11 +280,7 @@ export abstract class Shape<I, O = I> {
    */
   clone(): this {
     const shape: this = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-    const { constraints } = shape;
-
-    if (constraints !== null) {
-      shape.constraints = constraints.slice(0);
-    }
+    shape._constraints = shape._constraints.slice(0);
     return shape;
   }
 }
@@ -266,22 +325,22 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
   }
 
   parse(input: unknown, options?: ParserOptions): T {
-    const { shape, transformer, constraints } = this;
+    const { shape, transformer, applyConstraints } = this;
     const output = transformer(shape.parse(input, options)) as T;
 
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(output, constraints, options, null));
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(output, options, null));
     }
     return output;
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<T> {
-    const { shape, transformer, constraints } = this;
+    const { shape, transformer, applyConstraints } = this;
     const outputPromise = shape.parseAsync(input, options).then(transformer);
 
-    if (constraints !== null) {
+    if (applyConstraints !== null) {
       return outputPromise.then(output => {
-        raiseOnError(applyConstraints(output, constraints, options, null));
+        raiseOnError(applyConstraints(output, options, null));
         return output;
       });
     }

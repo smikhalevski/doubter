@@ -1,6 +1,6 @@
 import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
-import { addConstraint, applyConstraints, raiseIssue, raiseOnError } from '../utils';
+import { addConstraint, raiseIssue, raiseOnError } from '../utils';
 import { STRING_MAX_CODE, STRING_MIN_CODE, STRING_REGEX_CODE, TYPE_CODE } from './issue-codes';
 
 export class StringShape extends Shape<string> {
@@ -71,9 +71,9 @@ export class StringShape extends Shape<string> {
       raiseIssue(input, TYPE_CODE, 'string', this.options, 'Must be a string');
     }
 
-    const { constraints } = this;
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(input, constraints, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(input, options, null));
     }
     return input;
   }

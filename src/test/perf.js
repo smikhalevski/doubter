@@ -159,7 +159,7 @@ describe(
     // });
 
     test('lib', measure => {
-      const type = lib.number();
+      const type = new lib.NumberType();
 
       measure(() => {
         type.parse(value);

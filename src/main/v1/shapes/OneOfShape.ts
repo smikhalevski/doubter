@@ -1,6 +1,6 @@
 import { InputConstraintOptions, ParserOptions, Primitive } from '../shared-types';
 import { Shape } from './Shape';
-import { applyConstraints, raiseIssue, raiseOnError } from '../utils';
+import { raiseIssue, raiseOnError } from '../utils';
 import { ONE_OF_CODE } from './issue-codes';
 
 export class OneOfShape<T extends Primitive> extends Shape<T> {
@@ -15,9 +15,9 @@ export class OneOfShape<T extends Primitive> extends Shape<T> {
       raiseIssue(input, ONE_OF_CODE, values, this.options, 'Must be equal to one of: ' + values.join(', '));
     }
 
-    const { constraints } = this;
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(input, constraints, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(input, options, null));
     }
     return input;
   }

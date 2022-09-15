@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ParserOptions } from '../shared-types';
-import { applyConstraints, raiseOnError } from '../utils';
+import { raiseOnError } from '../utils';
 
 export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefined, S['output'] | undefined> {
   constructor(protected shape: S, protected defaultValue?: S['output']) {
@@ -15,9 +15,9 @@ export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefi
   parse(input: unknown, options?: ParserOptions): S['output'] | undefined {
     const output = input === undefined ? this.defaultValue : this.shape.parse(input, options);
 
-    const { constraints } = this;
-    if (constraints !== null) {
-      raiseOnError(applyConstraints(output, constraints, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseOnError(applyConstraints(output, options, null));
     }
     return output;
   }
@@ -30,10 +30,10 @@ export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefi
     const outputPromise =
       input === undefined ? Promise.resolve(this.defaultValue) : this.shape.parseAsync(input, options);
 
-    const { constraints } = this;
-    if (constraints !== null) {
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
       return outputPromise.then(output => {
-        raiseOnError(applyConstraints(output, constraints, options, null));
+        raiseOnError(applyConstraints(output, options, null));
         return output;
       });
     }
