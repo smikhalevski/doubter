@@ -1,5 +1,13 @@
-import { Constraint, ConstraintOptions, Issue, ParserOptions, Transformer } from '../shared-types';
+import {
+  Constraint,
+  CustomConstraintOptions,
+  Issue,
+  NarrowingConstraintOptions,
+  ParserOptions,
+  Transformer,
+} from '../shared-types';
 import { addConstraint, applyConstraints, raise, raiseIssue, raiseOnError, raiseOnUnknownError } from '../utils';
+import { NARROWING_CODE } from './issue-codes';
 
 /**
  * An arbitrary shape.
@@ -25,15 +33,24 @@ export interface Shape<I, O> {
  * @template O The output value.
  */
 export abstract class Shape<I, O = I> {
+  /**
+   * Constraints are stored as an array of repeated triplets: constraint name, an unsafe flag, and a constraint callback.
+   * For performance reasons, the array of constraints must not be empty, so use `null` if there are no constraints.
+   */
   protected constraints: any[] | null = null;
 
   /**
    * Creates the new {@linkcode Shape}.
    *
-   * @param async If `true` that shape would allow only {@linkcode parseAsync} and throw an error if {@linkcode parse}
-   * is called.
+   * @param async If `true` then the shape would allow only {@linkcode parseAsync} and throw an error if
+   * {@linkcode parse} is called.
    */
-  protected constructor(readonly async: boolean) {
+  protected constructor(
+    /**
+     * `true` when the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
+     */
+    readonly async: boolean
+  ) {
     if (async) {
       this.parse = raiseParseUnsupported;
     }
@@ -114,54 +131,79 @@ export abstract class Shape<I, O = I> {
   }
 
   /**
-   * Returns a sub-shape that describes a value at given key, or `null` if there's no such shape.
+   * Returns a sub-shape that describes a value at an object property name, or `null` if there's no such shape.
    *
-   * @param key The key for which the sub-shape must be retrieved.
+   * @param propertyName The key for which the sub-shape must be retrieved.
    * @returns The sub-shape or `null` if there's no such key in the shape.
    */
-  at(key: unknown): AnyShape | null {
+  at(propertyName: unknown): AnyShape | null {
     return null;
   }
 
   /**
-   * Returns the shape clone with an additional constraint. The added constraint is executed only if preceding
-   * constraints and type checks succeeded.
+   * Adds a custom constraint.
    *
    * @param constraint The constraint to add.
-   * @param name The unique constraint name. If there's a constraint with the same name then it would be replaced.
+   * @param options The constraint options.
    * @returns The clone of this shape with the constraint added.
    */
-  constrain(constraint: Constraint<O>, name?: string): this {
-    return addConstraint(this, name, constraint, false);
+  constrain(constraint: Constraint<O>, options?: CustomConstraintOptions): this {
+    const shape = this.clone();
+    const constraints = (shape.constraints ||= []);
+
+    let name = null;
+    let unsafe = false;
+
+    if (options != null) {
+      unsafe = options.unsafe || false;
+
+      if (options.name != null) {
+        name = options.name;
+
+        for (let i = 0; i < constraints.length; i += 3) {
+          if (constraints[i] === name) {
+            constraints.splice(i, 3);
+            break;
+          }
+        }
+      }
+    }
+
+    constraints.push(name, unsafe, constraint);
+    return shape;
   }
 
   /**
    * Adds a constraint that [narrows the shape output type](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
-   * of the shape using a type predicate.
+   * of using a type predicate.
    *
    * @param predicate The type predicate that returns `true` if value conforms the required type, or `false` otherwise.
-   * @param options The constraint options.
+   * @param options The constraint options or an issue message.
    * @returns The shape that has the narrowed output value.
    * @template T The narrowed value.
    */
-  narrow<T extends O>(predicate: (output: O) => output is T, options?: ConstraintOptions): Shape<I, T> {
-    return addConstraint(this, null, output => {
+  narrow<T extends O>(
+    predicate: (output: O) => output is T,
+    options?: NarrowingConstraintOptions | string
+  ): Shape<I, T> {
+    return addConstraint(this, typeof options === 'object' ? options.name : undefined, options, output => {
       if (!predicate(output)) {
-        raiseIssue(output, 'narrow', undefined, options, 'Must be narrowed');
+        raiseIssue(output, NARROWING_CODE, predicate, options, 'Must conform the narrowing predicate');
       }
     }) as unknown as Shape<I, T>;
   }
 
   /**
-   * Adds a constraint that [asserts the shape output type](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions)
-   * and throws a {@linkcode ValidationError} if the value doesn't conform type requirements.
+   * Adds a constraint that [narrows the shape output type](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
+   * of using an [assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions).
    *
-   * @param callback The assertion function that throws {@linkcode ValidationError}, or returns `undefined` otherwise.
+   * @param callback The assertion function that throws a {@linkcode ValidationError} or returns `undefined`.
+   * @param options The constraint options.
    * @returns The shape that has the refined output value.
    * @template T The refined value.
    */
-  assert<T extends O>(callback: (output: O) => asserts output is T): Shape<I, T> {
-    return addConstraint(this, null, callback) as unknown as Shape<I, T>;
+  assert<T extends O>(callback: (output: O) => asserts output is T, options?: CustomConstraintOptions): Shape<I, T> {
+    return addConstraint(this, options?.name, options, callback) as unknown as Shape<I, T>;
   }
 
   /**
@@ -175,35 +217,6 @@ export abstract class Shape<I, O = I> {
       shape.constraints = constraints.slice(0);
     }
     return shape;
-  }
-
-  /**
-   * Adds a new constraint to the shape, or replaces an existing constraint.
-   *
-   * This method mutates the {@linkcode Shape} instance. Use {@linkcode constrain} and {@linkcode unsafeConstrain} when
-   * declaring a shape using DSL.
-   *
-   * If there is a constraint with the same name then it is replaced, otherwise it is appended to the list of
-   * constraints. If the name is `null` then the constraint is always appended to the list of constraints.
-   *
-   * @param name The name that would uniquely identify the constraint in scope of this shape.
-   * @param unsafe If `true` then the constraint would be executed even if the preceding constraint failed, or it would
-   * be ignored otherwise. Note that constraints aren't called if the input value has an invalid type.
-   * @param cb The constraint callback that receives a value of the type implied by the shape.
-   */
-  addConstraint(name: string | null, unsafe: boolean, cb: Constraint<O>): void {
-    const constraints = (this.constraints ||= []);
-
-    if (name !== null) {
-      for (let i = 0; i < constraints.length; i += 3) {
-        if (constraints[i] === name) {
-          constraints[i + 1] = unsafe;
-          constraints[i + 2] = cb;
-          break;
-        }
-      }
-    }
-    constraints.push(name, unsafe, cb);
   }
 }
 

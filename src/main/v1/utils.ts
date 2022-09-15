@@ -1,12 +1,6 @@
-import { Constraint, ConstraintOptions, Dict, ParserOptions } from './shared-types';
+import { Constraint, Dict, InputConstraintOptions, OutputConstraintOptions, ParserOptions } from './shared-types';
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
-
-export function raiseOnUnknownError(error: unknown): asserts error is ValidationError {
-  if (!(error instanceof ValidationError)) {
-    throw error;
-  }
-}
 
 export const isArray = Array.isArray;
 
@@ -36,32 +30,13 @@ export function returnOutputArray(input: any[], output: any[]): any[] {
   return input;
 }
 
-export function raise(message: string): never {
-  throw new Error(message);
-}
-
-export function raiseOnError(error: Error | null): void {
-  if (error !== null) {
-    throw error;
-  }
-}
-
-export function copyShape<S extends Shape<any>>(shape: S): any {
-  const shapeCopy = Object.assign(Object.create(Object.getPrototypeOf(shape)), shape);
-  shapeCopy.constraintIds = shapeCopy.constraintIds?.slice(0) || [];
-  shapeCopy.constraints = shapeCopy.constraints?.slice(0) || [];
-  return shapeCopy;
-}
-
 export function addConstraint<S extends Shape<any>>(
   shape: S,
-  name: string | null = null,
-  cb: Constraint<S['output']>,
-  unsafe = false
+  name: string | undefined,
+  options: OutputConstraintOptions | string | undefined,
+  constraint: Constraint<S['output']>
 ): S {
-  const shapeClone = shape.clone();
-  shapeClone.addConstraint(name, unsafe, cb);
-  return shapeClone;
+  return shape.constrain(constraint, { name, unsafe: typeof options === 'object' ? options.unsafe : false });
 }
 
 /**
@@ -109,6 +84,40 @@ export function applyConstraints<T>(
   return rootError;
 }
 
+/**
+ * Throws a fatal error.
+ *
+ * @param message The error message.
+ */
+export function raise(message: string): never {
+  throw new Error(message);
+}
+
+/**
+ * Asserts that an error is {@linkcode ValidationError}.
+ *
+ * @param error The error to assert.
+ */
+export function raiseOnUnknownError(error: unknown): asserts error is ValidationError {
+  if (!(error instanceof ValidationError)) {
+    throw error;
+  }
+}
+
+/**
+ * Throws an error if it isn't null.
+ *
+ * @param error An error to throw.
+ */
+export function raiseOnError(error: Error | null): void {
+  if (error !== null) {
+    throw error;
+  }
+}
+
+/**
+ * Adds issues from a validation error to a root error.
+ */
 export function raiseOrCaptureIssues(
   error: unknown,
   rootError: ValidationError | null,
@@ -154,7 +163,7 @@ export function raiseIssue(
   input: unknown,
   code: string,
   param: unknown,
-  options: ConstraintOptions | string | undefined,
+  options: InputConstraintOptions | string | undefined,
   message: string
 ): never {
   let meta;
@@ -214,7 +223,7 @@ export function extractSettledValues(
   };
 }
 
-export function copyObjectKnownKeys(input: Dict, keys: string[]): Dict {
+export function cloneObjectKnownKeys(input: Dict, keys: string[]): Dict {
   const output: Dict = {};
 
   for (const key of keys) {
@@ -223,7 +232,7 @@ export function copyObjectKnownKeys(input: Dict, keys: string[]): Dict {
   return output;
 }
 
-export function copyObjectEnumerableKeys(input: Dict, keyCount?: number): Dict {
+export function cloneObjectEnumerableKeys(input: Dict, keyCount?: number): Dict {
   const output: Dict = {};
 
   if (keyCount === undefined) {

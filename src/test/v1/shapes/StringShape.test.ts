@@ -36,7 +36,7 @@ describe('StringShape', () => {
   test('raises if string length is not exactly equal', () => {
     expect(new StringShape().length(2).validate('a')).toEqual([
       {
-        code: 'stringMinLength',
+        code: 'stringMin',
         path: [],
         input: 'a',
         param: 2,
@@ -50,7 +50,7 @@ describe('StringShape', () => {
   test('raises if string length is not greater than', () => {
     expect(new StringShape().min(2).validate('a')).toEqual([
       {
-        code: 'stringMinLength',
+        code: 'stringMin',
         path: [],
         input: 'a',
         param: 2,
@@ -64,7 +64,7 @@ describe('StringShape', () => {
   test('raises if string length is not less than', () => {
     expect(new StringShape().max(2).validate('aaa')).toEqual([
       {
-        code: 'stringMaxLength',
+        code: 'stringMax',
         path: [],
         input: 'aaa',
         param: 2,
@@ -105,7 +105,7 @@ describe('StringShape', () => {
   test('overrides message for min length issue', () => {
     expect(new StringShape().min(2, { message: 'xxx', meta: 'yyy' }).validate('a')).toEqual([
       {
-        code: 'stringMinLength',
+        code: 'stringMin',
         path: [],
         input: 'a',
         param: 2,
@@ -118,7 +118,7 @@ describe('StringShape', () => {
   test('overrides message for max length issue', () => {
     expect(new StringShape().max(2, { message: 'xxx', meta: 'yyy' }).validate('aaa')).toEqual([
       {
-        code: 'stringMaxLength',
+        code: 'stringMax',
         path: [],
         input: 'aaa',
         param: 2,
@@ -129,9 +129,9 @@ describe('StringShape', () => {
   });
 
   test('raises multiple issues', () => {
-    expect(new StringShape().min(3).regex(/aaaa/).validate('aa')).toEqual([
+    expect(new StringShape({}).min(3).regex(/aaaa/, { unsafe: true }).validate('aa')).toEqual([
       {
-        code: 'stringMinLength',
+        code: 'stringMin',
         path: [],
         input: 'aa',
         param: 3,
@@ -152,7 +152,7 @@ describe('StringShape', () => {
   test('raises a single issue in fast mode', () => {
     expect(new StringShape().min(3).regex(/aaaa/).validate('aa', { fast: true })).toEqual([
       {
-        code: 'stringMinLength',
+        code: 'stringMin',
         path: [],
         input: 'aa',
         param: 3,
@@ -185,7 +185,7 @@ describe('StringShape', () => {
   test('supports async validation', async () => {
     expect(await new StringShape().min(3).validateAsync('aa')).toEqual([
       {
-        code: 'stringMinLength',
+        code: 'stringMin',
         path: [],
         input: 'aa',
         param: 3,

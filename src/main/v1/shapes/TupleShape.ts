@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ConstraintOptions, ParserOptions, Multiple } from '../shared-types';
+import { InputConstraintOptions, ParserOptions, Multiple } from '../shared-types';
 import {
   applyConstraints,
   captureIssuesForKey,
@@ -18,7 +18,7 @@ import { ValidationError } from '../ValidationError';
 type OutputTuple<U extends Multiple<AnyShape>> = { [K in keyof U]: U[K]['output'] };
 
 export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyof U]: U[K]['input'] }, OutputTuple<U>> {
-  constructor(protected shapes: U, protected options?: ConstraintOptions | string) {
+  constructor(protected shapes: U, protected options?: InputConstraintOptions | string) {
     super(isAsync(shapes));
   }
 

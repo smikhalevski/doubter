@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, ParserOptions } from '../shared-types';
 import {
   addConstraint,
   applyConstraints,
@@ -25,7 +25,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param shape The shape of an array element.
    * @param options The constraint options or an issue message.
    */
-  constructor(protected shape: S, protected options?: ConstraintOptions | string) {
+  constructor(protected shape: S, protected options?: InputConstraintOptions | string) {
     super(shape.async);
   }
 
@@ -38,9 +38,9 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    *
    * @param length The minimum array length.
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  length(length: number, options?: ConstraintOptions | string): this {
+  length(length: number, options?: InputConstraintOptions | string): this {
     return this.min(length, options).max(length, options);
   }
 
@@ -49,10 +49,10 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    *
    * @param length The minimum array length.
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  min(length: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'min', output => {
+  min(length: number, options?: InputConstraintOptions | string): this {
+    return addConstraint(this, 'min', options, output => {
       if (output.length < length) {
         raiseIssue(output, 'arrayMinLength', length, options, 'Must have the minimum length of ' + length);
       }
@@ -64,10 +64,10 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    *
    * @param length The maximum array length.
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  max(length: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'max', output => {
+  max(length: number, options?: InputConstraintOptions | string): this {
+    return addConstraint(this, 'max', options, output => {
       if (output.length > length) {
         raiseIssue(output, 'arrayMaxLength', length, options, 'Must have the maximum length of ' + length);
       }

@@ -1,16 +1,15 @@
 import { AnyShape, Shape } from './Shape';
-import { ConstraintOptions, Dict, ParserOptions, Multiple } from '../shared-types';
+import { Dict, InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
 import {
-  copyObjectEnumerableKeys,
-  copyObjectKnownKeys,
-  copyShape,
   captureIssuesForKey,
+  cloneObjectEnumerableKeys,
+  cloneObjectKnownKeys,
   extractSettledValues,
   isAsync,
   isEqual,
   isObjectLike,
-  raiseOnError,
   raiseIssue,
+  raiseOnError,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
@@ -42,9 +41,9 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
   protected valueShapes;
   protected keysMode;
   protected propEntries;
-  protected exactOptions?: ConstraintOptions;
+  protected exactOptions?: InputConstraintOptions;
 
-  constructor(protected props: P, protected indexerShape: I | null, protected options?: ConstraintOptions) {
+  constructor(protected props: P, protected indexerShape: I | null, protected options?: InputConstraintOptions) {
     const valueShapes = Object.values(props);
 
     super(indexerShape?.async || isAsync(valueShapes));
@@ -105,8 +104,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
     return shape;
   }
 
-  exact(options?: ConstraintOptions): ObjectShape<P, Shape<never>> {
-    const shape = copyShape(this);
+  exact(options?: InputConstraintOptions): ObjectShape<P, Shape<never>> {
+    const shape = this.clone() as any;
     shape.keysMode = ObjectKeysMode.EXACT;
     shape.exactOptions = options;
     shape.indexerShape = null;
@@ -114,21 +113,21 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
   }
 
   strip(): ObjectShape<P, Shape<never>> {
-    const shape = copyShape(this);
+    const shape = this.clone() as any;
     shape.keysMode = ObjectKeysMode.STRIP;
     shape.indexerShape = null;
     return shape;
   }
 
   preserve(): ObjectShape<P, Shape<any>> {
-    const shape = copyShape(this);
+    const shape = this.clone() as any;
     shape.keysMode = ObjectKeysMode.PRESERVE;
     shape.indexerShape = null;
     return shape;
   }
 
   index<I1 extends AnyShape>(indexShape: I1): ObjectShape<P, I1> {
-    const shape = copyShape(this);
+    const shape = this.clone() as any;
     shape.keysMode = ObjectKeysMode.INDEXER;
     shape.indexerShape = indexShape;
     return shape;
@@ -161,7 +160,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
           // );
         }
         if (output === input) {
-          output = copyObjectKnownKeys(input, keys);
+          output = cloneObjectKnownKeys(input, keys);
         }
       }
     }
@@ -179,7 +178,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
         continue;
       }
       if (output === input) {
-        output = copyObjectEnumerableKeys(input);
+        output = cloneObjectEnumerableKeys(input);
       }
       output[key] = outputValue;
     }
@@ -202,7 +201,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
           continue;
         }
         if (output === input) {
-          output = copyObjectEnumerableKeys(input);
+          output = cloneObjectEnumerableKeys(input);
         }
         output[key] = outputValue;
       }
@@ -235,7 +234,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
             continue;
           }
           if (output === input) {
-            output = copyObjectEnumerableKeys(input);
+            output = cloneObjectEnumerableKeys(input);
           }
           output[key] = outputValue;
         }

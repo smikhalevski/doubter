@@ -1,13 +1,14 @@
 import { Shape } from './Shape';
-import { ConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, ParserOptions } from '../shared-types';
 import { raiseIssue } from '../utils';
+import { NEVER_CODE } from './issue-codes';
 
 export class NeverShape extends Shape<never> {
-  constructor(protected options?: ConstraintOptions | string) {
+  constructor(protected options?: InputConstraintOptions | string) {
     super(false);
   }
 
   parse(input: unknown, options?: ParserOptions): never {
-    raiseIssue(input, 'never', undefined, this.options, 'Must not be used');
+    raiseIssue(input, NEVER_CODE, undefined, this.options, 'Must not be used');
   }
 }

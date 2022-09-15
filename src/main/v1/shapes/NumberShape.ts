@@ -1,9 +1,17 @@
 import { Shape } from './Shape';
-import { ConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import { addConstraint, applyConstraints, raiseIssue, raiseOnError } from '../utils';
+import {
+  NUMBER_GT_CODE,
+  NUMBER_GTE_CODE,
+  NUMBER_LT_CODE,
+  NUMBER_LTE_CODE,
+  NUMBER_MULTIPLE_OF_CODE,
+  TYPE_CODE,
+} from './issue-codes';
 
 export class NumberShape extends Shape<number> {
-  constructor(protected options?: ConstraintOptions | string) {
+  constructor(protected options?: InputConstraintOptions | string) {
     super(false);
   }
 
@@ -11,9 +19,9 @@ export class NumberShape extends Shape<number> {
    * Constrains the number to be greater than zero.
    *
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  positive(options?: ConstraintOptions | string): this {
+  positive(options?: OutputConstraintOptions | string): this {
     return this.gt(0, options);
   }
 
@@ -21,9 +29,9 @@ export class NumberShape extends Shape<number> {
    * Constrains the number to be less than zero.
    *
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  negative(options?: ConstraintOptions | string): this {
+  negative(options?: OutputConstraintOptions | string): this {
     return this.lt(0, options);
   }
 
@@ -32,12 +40,12 @@ export class NumberShape extends Shape<number> {
    *
    * @param value The exclusive minimum value.
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  gt(value: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'gt', output => {
+  gt(value: number, options?: OutputConstraintOptions | string): this {
+    return addConstraint(this, NUMBER_GT_CODE, options, output => {
       if (output <= value) {
-        raiseIssue(output, 'numberGreaterThan', value, options, 'Must be greater than ' + value);
+        raiseIssue(output, NUMBER_GT_CODE, value, options, 'Must be greater than ' + value);
       }
     });
   }
@@ -47,12 +55,12 @@ export class NumberShape extends Shape<number> {
    *
    * @param value The exclusive maximum value.
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  lt(value: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'lt', output => {
+  lt(value: number, options?: OutputConstraintOptions | string): this {
+    return addConstraint(this, NUMBER_LT_CODE, options, output => {
       if (output >= value) {
-        raiseIssue(output, 'numberLessThan', value, options, 'Must be less than ' + value);
+        raiseIssue(output, NUMBER_LT_CODE, value, options, 'Must be less than ' + value);
       }
     });
   }
@@ -62,12 +70,12 @@ export class NumberShape extends Shape<number> {
    *
    * @param value The inclusive minimum value.
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  gte(value: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'gte', output => {
+  gte(value: number, options?: OutputConstraintOptions | string): this {
+    return addConstraint(this, NUMBER_GTE_CODE, options, output => {
       if (output < value) {
-        raiseIssue(output, 'numberGreaterThanOrEqual', value, options, 'Must be greater than or equal to ' + value);
+        raiseIssue(output, NUMBER_GTE_CODE, value, options, 'Must be greater than or equal to ' + value);
       }
     });
   }
@@ -77,12 +85,12 @@ export class NumberShape extends Shape<number> {
    *
    * @param value The inclusive maximum value.
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  lte(value: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'lte', output => {
+  lte(value: number, options?: OutputConstraintOptions | string): this {
+    return addConstraint(this, NUMBER_LTE_CODE, options, output => {
       if (output > value) {
-        raiseIssue(output, 'numberLessThanOrEqual', value, options, 'Must be less than or equal to ' + value);
+        raiseIssue(output, NUMBER_LTE_CODE, value, options, 'Must be less than or equal to ' + value);
       }
     });
   }
@@ -92,12 +100,12 @@ export class NumberShape extends Shape<number> {
    *
    * @param divisor The number by which the input should be divisible without a remainder.
    * @param options The constraint options or an issue message.
-   * @returns The copy of the shape.
+   * @returns The clone of the shape.
    */
-  multipleOf(divisor: number, options?: ConstraintOptions | string): this {
-    return addConstraint(this, 'multipleOf', output => {
+  multipleOf(divisor: number, options?: OutputConstraintOptions | string): this {
+    return addConstraint(this, NUMBER_MULTIPLE_OF_CODE, options, output => {
       if (output % divisor !== 0) {
-        raiseIssue(output, 'numberMultipleOf', divisor, options, 'Must be a multiple of ' + divisor);
+        raiseIssue(output, NUMBER_MULTIPLE_OF_CODE, divisor, options, 'Must be a multiple of ' + divisor);
       }
     });
   }
@@ -105,11 +113,10 @@ export class NumberShape extends Shape<number> {
   parse(input: any, options?: ParserOptions): number {
     // noinspection PointlessArithmeticExpressionJS
     if (typeof input !== 'number' || input * 0 !== 0) {
-      raiseIssue(input, 'type', 'number', this.options, 'Must be a number');
+      raiseIssue(input, TYPE_CODE, 'number', this.options, 'Must be a number');
     }
 
     const { constraints } = this;
-
     if (constraints !== null) {
       raiseOnError(applyConstraints(input, constraints, options, null));
     }

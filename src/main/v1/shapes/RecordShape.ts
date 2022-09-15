@@ -1,5 +1,5 @@
 import {
-  copyObjectEnumerableKeys,
+  cloneObjectEnumerableKeys,
   captureIssuesForKey,
   extractSettledValues,
   isEqual,
@@ -9,14 +9,14 @@ import {
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { ConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, ParserOptions } from '../shared-types';
 import { ValidationError } from '../ValidationError';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
   Record<K['input'], V['input']>,
   Record<K['output'], V['output']>
 > {
-  constructor(protected keyShape: K, protected valueShape: V, protected options?: ConstraintOptions) {
+  constructor(protected keyShape: K, protected valueShape: V, protected options?: InputConstraintOptions) {
     super(keyShape.async || valueShape.async);
   }
 
@@ -57,7 +57,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         continue;
       }
       if (output === input) {
-        output = copyObjectEnumerableKeys(input, i);
+        output = cloneObjectEnumerableKeys(input, i);
       }
       output[outputKey] = outputValue;
     }
@@ -89,7 +89,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
             continue;
           }
           if (output === input) {
-            output = copyObjectEnumerableKeys(input, i);
+            output = cloneObjectEnumerableKeys(input, i);
           }
           output[outputKey] = outputValue;
 

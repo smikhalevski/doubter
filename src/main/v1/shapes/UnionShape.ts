@@ -1,4 +1,4 @@
-import { ConstraintOptions, ParserOptions, Multiple } from '../shared-types';
+import { InputConstraintOptions, ParserOptions, Multiple } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
 import { applyConstraints, isAsync, raiseIssue, raiseOrCaptureIssues } from '../utils';
 import { ValidationError } from '../ValidationError';
@@ -9,7 +9,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
   { [K in keyof U]: U[K]['input'] }[number],
   OutputUnion<U>
 > {
-  constructor(protected shapes: U, protected options?: ConstraintOptions) {
+  constructor(protected shapes: U, protected options?: InputConstraintOptions) {
     super(isAsync(shapes));
   }
 

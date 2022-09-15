@@ -44,7 +44,10 @@ export type Transformer<I, O> = (value: I) => O;
  */
 export type Constraint<T> = (value: T) => void;
 
-export interface ConstraintOptions {
+/**
+ * The set of options that are applicable for the type constraints.
+ */
+export interface InputConstraintOptions {
   /**
    * The custom issue message.
    */
@@ -55,6 +58,38 @@ export interface ConstraintOptions {
    */
   meta?: any;
 }
+
+/**
+ * The set of options that are applicable for the build-in type-specific constraints.
+ */
+export interface OutputConstraintOptions extends InputConstraintOptions {
+  /**
+   * If `true` then the constraint would be executed even if the preceding constraint failed, otherwise constraint is
+   * ignored.
+   */
+  unsafe?: boolean;
+}
+
+/**
+ * The set of options that are applicable for the custom constraints.
+ */
+export interface CustomConstraintOptions {
+  /**
+   * The name that would uniquely identify the constraint in scope of the shape.
+   *
+   * If there is a constraint with the same name then it is replaced, otherwise it is appended to the list of
+   * constraints. If the name is `null` then the constraint is always appended to the list of constraints.
+   */
+  name?: string;
+
+  /**
+   * If `true` then the constraint would be executed even if the preceding constraint failed, otherwise constraint is
+   * ignored.
+   */
+  unsafe?: boolean;
+}
+
+export interface NarrowingConstraintOptions extends OutputConstraintOptions, CustomConstraintOptions {}
 
 export interface ParserOptions {
   /**
