@@ -16,9 +16,12 @@ import {
 import { ValidationError } from '../ValidationError';
 import { TUPLE_LENGTH_CODE, TYPE_CODE } from './issue-codes';
 
-type OutputTuple<U extends Multiple<AnyShape>> = { [K in keyof U]: U[K]['output'] };
+type TupleShapeOutput<U extends Multiple<AnyShape>> = { [K in keyof U]: U[K]['output'] };
 
-export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyof U]: U[K]['input'] }, OutputTuple<U>> {
+export class TupleShape<U extends Multiple<AnyShape>> extends Shape<
+  { [K in keyof U]: U[K]['input'] },
+  TupleShapeOutput<U>
+> {
   constructor(protected shapes: U, protected options?: InputConstraintOptions | string) {
     super(isAsync(shapes));
   }
@@ -29,7 +32,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
     return isInteger(propertyName) && propertyName >= 0 && propertyName < shapes.length ? shapes[propertyName] : null;
   }
 
-  parse(input: unknown, options?: ParserOptions): OutputTuple<U> {
+  parse(input: unknown, options?: ParserOptions): TupleShapeOutput<U> {
     if (!isArray(input)) {
       raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
@@ -63,14 +66,14 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
     }
 
     if (constraints !== null) {
-      rootError = applyConstraints(input as OutputTuple<U>, constraints, options, rootError);
+      rootError = applyConstraints(input as TupleShapeOutput<U>, constraints, options, rootError);
     }
 
     raiseOnError(rootError);
-    return output as OutputTuple<U>;
+    return output as TupleShapeOutput<U>;
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<OutputTuple<U>> {
+  parseAsync(input: unknown, options?: ParserOptions): Promise<TupleShapeOutput<U>> {
     return new Promise(resolve => {
       if (!isArray(input)) {
         raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
@@ -95,14 +98,14 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<{ [K in keyo
         outputPromises.push(shapes[i].parseAsync(input[i], options).catch(createCatchClauseForKey(i)));
       }
 
-      const returnOutput = (output: unknown[], rootError: ValidationError | null = null): OutputTuple<U> => {
+      const returnOutput = (output: unknown[], rootError: ValidationError | null = null): TupleShapeOutput<U> => {
         output = rootError !== null ? input : returnOutputArray(input, output);
 
         if (constraints !== null) {
           rootError = applyConstraints(output, constraints, options, rootError);
         }
         raiseOnError(rootError);
-        return output as OutputTuple<U>;
+        return output as TupleShapeOutput<U>;
       };
 
       if (options != null && options.fast) {

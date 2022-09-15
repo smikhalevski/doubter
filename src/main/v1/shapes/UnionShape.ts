@@ -1,13 +1,15 @@
-import { InputConstraintOptions, ParserOptions, Multiple } from '../shared-types';
+import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { applyConstraints, isAsync, raiseIssue, raiseOrCaptureIssues } from '../utils';
-import { ValidationError } from '../ValidationError';
+import { applyConstraints, captureIssues, createError, isAsync } from '../utils';
+import { UNION_CODE } from './issue-codes';
 
-type OutputUnion<U extends Multiple<AnyShape>> = { [K in keyof U]: U[K]['output'] }[number];
+const fastParserOptions: ParserOptions = { fast: true };
+
+type UnionShapeOutput<U extends Multiple<AnyShape>> = { [K in keyof U]: U[K]['output'] }[number];
 
 export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
   { [K in keyof U]: U[K]['input'] }[number],
-  OutputUnion<U>
+  UnionShapeOutput<U>
 > {
   constructor(protected shapes: U, protected options?: InputConstraintOptions) {
     super(isAsync(shapes));
@@ -32,57 +34,68 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
     return new UnionShape(childShapes as Multiple<AnyShape>);
   }
 
-  parse(input: unknown, options?: ParserOptions): OutputUnion<U> {
+  parse(input: unknown, options?: ParserOptions): UnionShapeOutput<U> {
     const { shapes, constraints } = this;
 
-    let rootError: ValidationError | null = null;
+    let firstIssues: Issue[] | null = null;
+    for (const shape of shapes) {
+      try {
+        return shape.parse(input, options);
+      } catch (error) {
+        const issues = captureIssues(error);
+        firstIssues ||= issues;
+      }
+      options = fastParserOptions;
+    }
 
+    let rootError = createError(input, UNION_CODE, firstIssues, this.options, 'Must conform a union');
+
+    if (options != null && options.fast) {
+      throw rootError;
+    }
     if (constraints !== null) {
       rootError = applyConstraints(input, constraints, options, rootError);
     }
-
-    for (const shape of shapes) {
-      try {
-        return shape.parse(input);
-      } catch (error) {
-        // TODO extract issues instead of raise
-        rootError = raiseOrCaptureIssues(error, rootError, options);
-      }
-    }
-
-    if (rootError !== null) {
-      raiseIssue(input, 'union', rootError.issues, this.options, 'Must conform a union');
-    }
+    throw rootError;
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<OutputUnion<U>> {
+  parseAsync(input: unknown, options?: ParserOptions): Promise<UnionShapeOutput<U>> {
+    if (!this.async) {
+      return super.parseAsync(input, options);
+    }
+
     return new Promise(resolve => {
       const { shapes, constraints } = this;
 
-      let rootError: ValidationError | null = null;
-
-      if (constraints !== null) {
-        rootError = applyConstraints(input, constraints, options, rootError);
-      }
-
-      const promises = [];
+      const outputPromises = [];
 
       for (const shape of shapes) {
-        promises.push(shape.parseAsync(input, options));
+        outputPromises.push(shape.parseAsync(input, options));
       }
 
-      return Promise.allSettled(promises).then(results => {
-        for (const result of results) {
-          if (result.status === 'fulfilled') {
-            return result.value;
-          }
-          rootError = raiseOrCaptureIssues(result.reason, rootError, options);
-        }
+      resolve(
+        Promise.allSettled(outputPromises).then(results => {
+          let firstIssues: Issue[] | null = null;
 
-        if (rootError !== null) {
-          raiseIssue(input, 'union', rootError.issues, this.options, 'Must conform a union');
-        }
-      });
+          for (const result of results) {
+            if (result.status === 'fulfilled') {
+              return result.value;
+            }
+            const issues = captureIssues(result.reason);
+            firstIssues ||= issues;
+          }
+
+          let rootError = createError(input, UNION_CODE, firstIssues, this.options, 'Must conform a union');
+
+          if (options != null && options.fast) {
+            throw rootError;
+          }
+          if (constraints !== null) {
+            rootError = applyConstraints(input, constraints, options, rootError);
+          }
+          throw rootError;
+        })
+      );
     });
   }
 }

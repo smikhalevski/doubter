@@ -3,14 +3,14 @@ import { InputConstraintOptions, ParserOptions } from '../shared-types';
 import { applyConstraints, raiseIssue, raiseOnError } from '../utils';
 import { INSTANCE_OF_CODE } from './issue-codes';
 
-export type InstanceOf<C> = C extends new (...args: any[]) => infer T ? T : never;
+export type InstanceOfShapeOutput<C> = C extends new (...args: any[]) => infer T ? T : never;
 
-export class InstanceOfShape<C extends new (...args: any[]) => any> extends Shape<InstanceOf<C>> {
+export class InstanceOfShape<C extends new (...args: any[]) => any> extends Shape<InstanceOfShapeOutput<C>> {
   constructor(protected ctor: C, protected options?: InputConstraintOptions | string) {
     super(false);
   }
 
-  parse(input: unknown, options?: ParserOptions): InstanceOf<C> {
+  parse(input: unknown, options?: ParserOptions): InstanceOfShapeOutput<C> {
     const { ctor } = this;
 
     if (!(input instanceof ctor)) {

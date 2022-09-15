@@ -1,4 +1,11 @@
-import { Constraint, Dict, InputConstraintOptions, OutputConstraintOptions, ParserOptions } from './shared-types';
+import {
+  Constraint,
+  Dict,
+  InputConstraintOptions,
+  Issue,
+  OutputConstraintOptions,
+  ParserOptions,
+} from './shared-types';
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
 
@@ -46,6 +53,20 @@ export function applyConstraints<T>(
   input: T,
   constraints: any[],
   options: ParserOptions | undefined,
+  rootError: ValidationError
+): ValidationError;
+
+export function applyConstraints<T>(
+  input: T,
+  constraints: any[],
+  options: ParserOptions | undefined,
+  rootError: ValidationError | null
+): ValidationError | null;
+
+export function applyConstraints<T>(
+  input: T,
+  constraints: any[],
+  options: ParserOptions | undefined,
   rootError: ValidationError | null
 ): ValidationError | null {
   const constraintsLength = constraints.length;
@@ -82,6 +103,11 @@ export function applyConstraints<T>(
     }
   }
   return rootError;
+}
+
+export function captureIssues(error: unknown): Issue[] {
+  raiseOnUnknownError(error);
+  return error.issues;
 }
 
 /**
@@ -159,13 +185,13 @@ export function raiseOrCaptureIssuesForKey(
 /**
  * Raises a validation error with a single issue.
  */
-export function raiseIssue(
+export function createError(
   input: unknown,
   code: string,
   param: unknown,
   options: InputConstraintOptions | string | undefined,
   message: string
-): never {
+): ValidationError {
   let meta;
 
   if (options != null) {
@@ -179,7 +205,20 @@ export function raiseIssue(
     }
   }
 
-  throw new ValidationError([{ code, path: [], input, param, message, meta }]);
+  return new ValidationError([{ code, path: [], input, param, message, meta }]);
+}
+
+/**
+ * Raises a validation error with a single issue.
+ */
+export function raiseIssue(
+  input: unknown,
+  code: string,
+  param: unknown,
+  options: InputConstraintOptions | string | undefined,
+  message: string
+): never {
+  throw createError(input, code, param, options, message);
 }
 
 export function createCatchClauseForKey(key: unknown): (error: unknown) => never {

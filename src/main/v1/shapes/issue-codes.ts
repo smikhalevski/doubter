@@ -3,6 +3,7 @@ export const INSTANCE_OF_CODE = 'instanceOf';
 export const LITERAL_CODE = 'literal';
 export const NEVER_CODE = 'never';
 export const ONE_OF_CODE = 'oneOf';
+export const UNION_CODE = 'union';
 export const NARROWING_CODE = 'narrowing';
 export const STRING_MIN_CODE = 'stringMin';
 export const STRING_MAX_CODE = 'stringMax';

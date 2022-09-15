@@ -1,17 +1,16 @@
 import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
 import {
-  cloneDictFirstKeys,
-  pickDictKeys,
+  cloneDict,
   createCatchClauseForKey,
   createOutputExtractor,
   isAsync,
   isEqual,
   isObjectLike,
+  pickDictKeys,
   raiseIssue,
   raiseOnError,
   raiseOrCaptureIssuesForKey,
-  cloneDict,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 

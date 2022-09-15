@@ -6,7 +6,15 @@ import {
   ParserOptions,
   Transformer,
 } from '../shared-types';
-import { addConstraint, applyConstraints, raise, raiseIssue, raiseOnError, raiseOnUnknownError } from '../utils';
+import {
+  addConstraint,
+  applyConstraints,
+  captureIssues,
+  raise,
+  raiseIssue,
+  raiseOnError,
+  raiseOnUnknownError,
+} from '../utils';
 import { NARROWING_CODE } from './issue-codes';
 
 /**
@@ -222,11 +230,6 @@ export abstract class Shape<I, O = I> {
 
 function raiseParseUnsupported(): never {
   raise('Shape is asynchronous');
-}
-
-function captureIssues(error: unknown): Issue[] {
-  raiseOnUnknownError(error);
-  return error.issues;
 }
 
 function returnNull(): null {
