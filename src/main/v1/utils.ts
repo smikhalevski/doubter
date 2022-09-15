@@ -223,7 +223,7 @@ export function createOutputExtractor<T, R>(
   };
 }
 
-export function cloneObjectKnownKeys(input: Dict, keys: string[]): Dict {
+export function pickDictKeys(input: Dict, keys: string[]): Dict {
   const output: Dict = {};
 
   for (const key of keys) {
@@ -232,16 +232,17 @@ export function cloneObjectKnownKeys(input: Dict, keys: string[]): Dict {
   return output;
 }
 
-export function cloneObjectEnumerableKeys(input: Dict, keyCount?: number): Dict {
+export function cloneDict(input: Dict): Dict {
   const output: Dict = {};
 
-  if (keyCount === undefined) {
-    for (const key in input) {
-      output[key] = input[key];
-    }
-    return output;
+  for (const key in input) {
+    output[key] = input[key];
   }
+  return output;
+}
 
+export function cloneDictFirstKeys(input: Dict, keyCount: number): Dict {
+  const output: Dict = {};
   let i = 0;
 
   for (const key in input) {

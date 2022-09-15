@@ -1,16 +1,18 @@
 import {
-  cloneObjectEnumerableKeys,
+  applyConstraints,
+  cloneDictFirstKeys,
   createCatchClauseForKey,
   createOutputExtractor,
   isEqual,
   isObjectLike,
-  raiseOnError,
   raiseIssue,
+  raiseOnError,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions } from '../shared-types';
 import { ValidationError } from '../ValidationError';
+import { TYPE_CODE } from './issue-codes';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
   Record<K['input'], V['input']>,
@@ -26,24 +28,24 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
   parse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> {
     if (!isObjectLike(input)) {
-      raiseIssue(input, 'type', 'object', this.options, 'Must be an object');
+      raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
     }
 
-    const { keyShape, valueShape } = this;
+    const { keyShape, valueShape, constraints } = this;
 
     let rootError: ValidationError | null = null;
     let output = input;
-    let i = 0;
+    let keyIndex = 0;
 
     for (const key in input) {
-      ++i;
+      ++keyIndex;
       const inputValue = input[key];
 
       let outputKey = key;
       let outputValue;
 
       try {
-        outputKey = keyShape.parse(key, options) as string;
+        outputKey = keyShape.parse(key, options);
       } catch (error) {
         rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
       }
@@ -53,15 +55,18 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
       }
 
-      if ((key === outputKey && isEqual(inputValue, outputValue) && output === input) || rootError !== null) {
+      if ((output === input && key === outputKey && isEqual(inputValue, outputValue)) || rootError !== null) {
         continue;
       }
       if (output === input) {
-        output = cloneObjectEnumerableKeys(input, i);
+        output = cloneDictFirstKeys(input, keyIndex);
       }
       output[outputKey] = outputValue;
     }
 
+    if (constraints !== null) {
+      rootError = applyConstraints(input, constraints, options, rootError);
+    }
     raiseOnError(rootError);
 
     return output as Record<K['output'], V['output']>;
@@ -70,32 +75,39 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
   parseAsync(input: unknown, options?: ParserOptions): Promise<Record<K['output'], V['output']>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        raiseIssue(input, 'type', 'object', this.options, 'Must be an object');
+        raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
       }
 
-      const { keyShape, valueShape } = this;
+      const { keyShape, valueShape, constraints } = this;
 
       const results = [];
 
       const returnOutput = (results: any[], rootError: ValidationError | null = null): any => {
         let output = input;
-        let i = 0;
+        let keyIndex = 0;
 
-        for (const key in input) {
-          const outputKey = results[i];
-          const outputValue = results[i + 1];
+        if (rootError === null) {
+          for (const key in input) {
+            const outputKey = results[keyIndex];
+            const outputValue = results[keyIndex + 1];
 
-          if (key === outputKey && isEqual(input[key], outputValue) && output === input) {
-            continue;
+            if (output === input && key === outputKey && isEqual(input[key], outputValue)) {
+              continue;
+            }
+            if (output === input) {
+              output = cloneDictFirstKeys(input, keyIndex);
+            }
+            output[outputKey] = outputValue;
+
+            keyIndex += 2;
           }
-          if (output === input) {
-            output = cloneObjectEnumerableKeys(input, i);
-          }
-          output[outputKey] = outputValue;
-
-          i += 2;
         }
 
+        if (constraints !== null) {
+          rootError = applyConstraints(output, constraints, options, rootError);
+        }
+
+        raiseOnError(rootError);
         return output;
       };
 

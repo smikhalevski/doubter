@@ -43,7 +43,7 @@ describe(
       });
     });
 
-    test('lib.StringType2', measure => {
+    test('lib.StringShape', measure => {
       const type = new lib.StringShape();
 
       measure(() => {
@@ -88,7 +88,7 @@ describe(
       });
     });
 
-    test('lib.StringType2', measure => {
+    test('lib.StringShape', measure => {
       const type = new lib.StringShape().length(3);
 
       measure(() => {
@@ -434,6 +434,14 @@ describe(
 
     test('lib', measure => {
       const type = lib.record(lib.string(), lib.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('lib.RecordShape', measure => {
+      const type = new lib.RecordShape(new lib.StringShape(), new lib.NumberShape());
 
       measure(() => {
         type.parse(value);

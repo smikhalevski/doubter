@@ -1,8 +1,8 @@
 import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
 import {
-  cloneObjectEnumerableKeys,
-  cloneObjectKnownKeys,
+  cloneDictFirstKeys,
+  pickDictKeys,
   createCatchClauseForKey,
   createOutputExtractor,
   isAsync,
@@ -11,6 +11,7 @@ import {
   raiseIssue,
   raiseOnError,
   raiseOrCaptureIssuesForKey,
+  cloneDict,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 
@@ -160,7 +161,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
           // );
         }
         if (output === input) {
-          output = cloneObjectKnownKeys(input, keys);
+          output = pickDictKeys(input, keys);
         }
       }
     }
@@ -178,7 +179,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
         continue;
       }
       if (output === input) {
-        output = cloneObjectEnumerableKeys(input);
+        output = cloneDict(input);
       }
       output[key] = outputValue;
     }
@@ -201,7 +202,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
           continue;
         }
         if (output === input) {
-          output = cloneObjectEnumerableKeys(input);
+          output = cloneDict(input);
         }
         output[key] = outputValue;
       }
@@ -234,7 +235,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape> extends S
             continue;
           }
           if (output === input) {
-            output = cloneObjectEnumerableKeys(input);
+            output = cloneDict(input);
           }
           output[key] = outputValue;
         }
