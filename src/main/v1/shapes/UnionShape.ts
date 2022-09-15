@@ -3,14 +3,11 @@ import { AnyShape, Shape } from './Shape';
 import { applyConstraints, captureIssues, createError, isAsync } from '../utils';
 import { UNION_CODE } from './issue-codes';
 
-const fastParserOptions: ParserOptions = { fast: true };
+const fastOptions: ParserOptions = { fast: true };
 
-type UnionShapeOutput<U extends Multiple<AnyShape>> = { [K in keyof U]: U[K]['output'] }[number];
+type InferUnion<U extends Multiple<AnyShape>, X extends 'input' | 'output'> = { [K in keyof U]: U[K][X] }[number];
 
-export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
-  { [K in keyof U]: U[K]['input'] }[number],
-  UnionShapeOutput<U>
-> {
+export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
   constructor(protected shapes: U, protected options?: InputConstraintOptions) {
     super(isAsync(shapes));
   }
@@ -34,7 +31,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
     return new UnionShape(childShapes as Multiple<AnyShape>);
   }
 
-  parse(input: unknown, options?: ParserOptions): UnionShapeOutput<U> {
+  parse(input: unknown, options?: ParserOptions): InferUnion<U, 'output'> {
     const { shapes, constraints } = this;
 
     let firstIssues: Issue[] | null = null;
@@ -45,7 +42,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
         const issues = captureIssues(error);
         firstIssues ||= issues;
       }
-      options = fastParserOptions;
+      options = fastOptions;
     }
 
     let rootError = createError(input, UNION_CODE, firstIssues, this.options, 'Must conform a union');
@@ -59,7 +56,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<
     throw rootError;
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<UnionShapeOutput<U>> {
+  parseAsync(input: unknown, options?: ParserOptions): Promise<InferUnion<U, 'output'>> {
     if (!this.async) {
       return super.parseAsync(input, options);
     }

@@ -82,14 +82,14 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       const results = [];
 
-      const returnOutput = (results: any[], rootError: ValidationError | null = null): any => {
+      const returnOutput = (entries: any[], rootError: ValidationError | null = null): any => {
         let output = input;
         let keyIndex = 0;
 
         if (rootError === null) {
           for (const key in input) {
-            const outputKey = results[keyIndex];
-            const outputValue = results[keyIndex + 1];
+            const outputKey = entries[keyIndex];
+            const outputValue = entries[keyIndex + 1];
 
             if (output === input && key === outputKey && isEqual(input[key], outputValue)) {
               continue;

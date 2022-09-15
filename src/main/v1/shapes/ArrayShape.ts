@@ -93,6 +93,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         outputValue = shape.parse(inputValue);
       } catch (error) {
         rootError = raiseOrCaptureIssuesForKey(error, rootError, options, i);
+        output = input;
       }
       if (isEqual(outputValue, inputValue) || rootError !== null) {
         continue;
@@ -104,7 +105,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     }
 
     if (constraints !== null) {
-      rootError = applyConstraints(input, constraints, options, rootError);
+      rootError = applyConstraints(output, constraints, options, rootError);
     }
 
     raiseOnError(rootError);

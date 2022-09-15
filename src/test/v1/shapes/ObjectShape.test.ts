@@ -23,14 +23,14 @@ describe('ObjectShape', () => {
 
     expect(type.validate({ foo: 'aaa', bar: 'aaa' })).toEqual([
       {
-        code: 'unknownKeys',
+        code: 'unknownKey',
         path: [],
         input: {
           bar: 'aaa',
           foo: 'aaa',
         },
         param: 'bar',
-        message: 'Must have known keys but found bar',
+        message: 'Must not contain unknown keys',
         meta: undefined,
       },
     ]);
@@ -152,18 +152,18 @@ describe('ObjectShape', () => {
     expect(type.validate({ foo: 111, bar: 'aaa' })).toEqual([
       {
         code: 'type',
-        path: ['foo'],
-        input: 111,
-        param: 'string',
-        message: 'Must be a string',
-        meta: undefined,
-      },
-      {
-        code: 'type',
         path: ['bar'],
         input: 'aaa',
         param: 'number',
         message: 'Must be a number',
+        meta: undefined,
+      },
+      {
+        code: 'type',
+        path: ['foo'],
+        input: 111,
+        param: 'string',
+        message: 'Must be a string',
         meta: undefined,
       },
     ]);

@@ -41,10 +41,8 @@ export interface Shape<I, O> {
  * @template O The output value.
  */
 export abstract class Shape<I, O = I> {
-  /**
-   * Constraints are stored as an array of repeated triplets: constraint name, an unsafe flag, and a constraint callback.
-   * For performance reasons, the array of constraints must not be empty, so use `null` if there are no constraints.
-   */
+  // Perf opt: constraints are stored as an array of repeated triplets:
+  // the constraint name, the unsafe flag, and the callback.
   protected constraints: any[] | null = null;
 
   /**
