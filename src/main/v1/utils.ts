@@ -1,5 +1,5 @@
 import {
-  Constraint,
+  ConstraintCallback,
   Dict,
   InputConstraintOptions,
   Issue,
@@ -8,6 +8,10 @@ import {
 } from './shared-types';
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
+
+export function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
 
 export const isArray = Array.isArray;
 
@@ -41,9 +45,9 @@ export function addConstraint<S extends Shape<any>>(
   shape: S,
   name: string | undefined,
   options: OutputConstraintOptions | string | undefined,
-  constraint: Constraint<S['output']>
+  constraint: ConstraintCallback<S['output']>
 ): S {
-  return shape.constrain(constraint, { name, unsafe: typeof options === 'object' ? options.unsafe : false });
+  return shape.constrain(constraint, { id: name, unsafe: typeof options === 'object' ? options.unsafe : false });
 }
 
 export function captureIssues(error: unknown): Issue[] {

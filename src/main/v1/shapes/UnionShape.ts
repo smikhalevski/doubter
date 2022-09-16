@@ -12,11 +12,11 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
     super(isAsync(shapes));
   }
 
-  at(propertyName: unknown): AnyShape | null {
+  at(key: unknown): AnyShape | null {
     const childShapes: AnyShape[] = [];
 
     for (const type of this.shapes) {
-      const childShape = type.at(propertyName);
+      const childShape = type.at(key);
 
       if (childShape !== null) {
         childShapes.push(childShape);

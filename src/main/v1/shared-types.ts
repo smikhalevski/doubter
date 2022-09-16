@@ -23,7 +23,7 @@ export interface Issue {
   message: any;
 
   /**
-   * An additional param that is specific for a particular {@link code}.
+   * An additional param that is specific for a particular {@linkcode code}.
    */
   param: any;
 
@@ -34,18 +34,18 @@ export interface Issue {
 }
 
 /**
- * Transforms the value from one type to another. Transformer may throw a {@link ValidationError} if there are issues
- * that prevent the value from being properly transformed.
+ * Transforms the value from one type to another. Transformer may throw a {@linkcode ValidationError} if there are
+ * issues that prevent the value from being properly transformed.
  */
 export type Transformer<I, O> = (value: I) => O;
 
 /**
- * Constraint is a callback that takes an input and throws a {@link ValidationError} if it has recognised issues.
+ * Constraint is a callback that takes an input and throws a {@linkcode ValidationError} if it has recognised issues.
  */
-export type Constraint<T> = (value: T) => void;
+export type ConstraintCallback<T> = (value: T) => void;
 
 /**
- * The set of options that are applicable for the type constraints.
+ * Options that are applicable for the type constraint.
  */
 export interface InputConstraintOptions {
   /**
@@ -60,9 +60,14 @@ export interface InputConstraintOptions {
 }
 
 /**
- * The set of options that are applicable for the build-in type-specific constraints.
+ * Options that are applicable for the built-in type-specific constraints.
  */
-export interface OutputConstraintOptions extends InputConstraintOptions {
+export interface OutputConstraintOptions extends InputConstraintOptions, ChainableConstraintOptions {}
+
+/**
+ * Options that follow in chain after the input constraint.
+ */
+export interface ChainableConstraintOptions {
   /**
    * If `true` then the constraint would be executed even if the preceding constraint failed, otherwise constraint is
    * ignored.
@@ -71,26 +76,26 @@ export interface OutputConstraintOptions extends InputConstraintOptions {
 }
 
 /**
- * The set of options that are applicable for the custom constraints.
+ * Options that are applicable for the custom constraints added via {@linkcode Shape.constrain}.
  */
-export interface CustomConstraintOptions {
+export interface IdentifiableConstraintOptions extends ChainableConstraintOptions {
   /**
-   * The name that would uniquely identify the constraint in scope of the shape.
+   * The unique ID of the constraint in scope of the shape.
    *
-   * If there is a constraint with the same name then it is replaced, otherwise it is appended to the list of
-   * constraints. If the name is `null` then the constraint is always appended to the list of constraints.
+   * If there is a constraint with the same ID then it is replaced, otherwise it is appended to the list of constraints.
+   * If the ID is `null` then the constraint is always appended to the list of constraints.
    */
-  name?: string;
-
-  /**
-   * If `true` then the constraint would be executed even if the preceding constraint failed, otherwise constraint is
-   * ignored.
-   */
-  unsafe?: boolean;
+  id?: any;
 }
 
-export interface NarrowingConstraintOptions extends OutputConstraintOptions, CustomConstraintOptions {}
+/**
+ * Options for narrowing constraints that are added
+ */
+export interface NarrowingConstraintOptions extends OutputConstraintOptions, IdentifiableConstraintOptions {}
 
+/**
+ * Options used by a shape to apply constraints and transformations.
+ */
 export interface ParserOptions {
   /**
    * If `true` then parsing should end as soon as the first issue is captured, otherwise maximum number of issues should

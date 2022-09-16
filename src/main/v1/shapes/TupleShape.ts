@@ -22,10 +22,10 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
     super(isAsync(shapes));
   }
 
-  at(propertyName: unknown): AnyShape | null {
+  at(key: unknown): AnyShape | null {
     const { shapes } = this;
 
-    return isInteger(propertyName) && propertyName >= 0 && propertyName < shapes.length ? shapes[propertyName] : null;
+    return isInteger(key) && key >= 0 && key < shapes.length ? shapes[key] : null;
   }
 
   parse(input: unknown, options?: ParserOptions): InferTuple<U, 'output'> {

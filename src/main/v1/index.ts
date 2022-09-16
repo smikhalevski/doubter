@@ -1,3 +1,3 @@
 export * from './shapes';
-export { Constraint } from './shared-types';
+export { ConstraintCallback } from './shared-types';
 export { Transformer } from './shared-types';

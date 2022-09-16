@@ -29,8 +29,8 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     super(shape.async);
   }
 
-  at(propertyName: unknown): AnyShape | null {
-    return isInteger(propertyName) && propertyName >= 0 ? this.shape : null;
+  at(key: unknown): AnyShape | null {
+    return isInteger(key) && key >= 0 ? this.shape : null;
   }
 
   /**

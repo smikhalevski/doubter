@@ -9,8 +9,8 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     super(async);
   }
 
-  at(propertyName: unknown): AnyShape | null {
-    return (this.shape ||= this.provider()).at(propertyName);
+  at(key: unknown): AnyShape | null {
+    return (this.shape ||= this.provider()).at(key);
   }
 
   parse(input: unknown, options?: ParserOptions): S['output'] {

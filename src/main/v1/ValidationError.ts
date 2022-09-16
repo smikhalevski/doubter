@@ -1,32 +1,49 @@
 import { Issue } from './shared-types';
+import { isString } from './utils';
 
 /**
  * The validation error that is thrown to indicate a set of issues detected in the input value.
  */
 export class ValidationError extends Error {
   /**
-   * The list of issues described by the error.
+   * The list of issues associated with the error.
    */
-  issues: Issue[] = [];
+  issues: Issue[];
 
   /**
-   * Creates a new {@link ValidationError}.
+   * Creates a new {@linkcode ValidationError}.
    *
-   * @param issues The optional array of issues.
+   * @param issues The mutable array of mutable partially defined issues.
    */
-  constructor(issues?: Partial<Issue>[]) {
+  constructor(issues: Partial<Issue>[]) {
     super();
 
     Object.setPrototypeOf(this, new.target.prototype);
 
-    if (issues != null) {
-      for (const issue of issues) {
-        const { code = 'unknown', path = [], input, message, param, meta } = issue;
+    Error.captureStackTrace?.(this, ValidationError);
 
-        this.issues.push({ code, path, input, message, param, meta });
-      }
+    for (const issue of issues) {
+      issue.code ??= 'unknown';
+      issue.path ??= [];
     }
 
     this.name = 'ValidationError';
+    this.issues = issues as Issue[];
+  }
+
+  get message() {
+    let errorMessage = '';
+    for (const { code, path, message } of this.issues) {
+      errorMessage += '\n' + code + ' at /' + path.join('/') + (isString(message) ? ': ' + message : '');
+    }
+    return errorMessage;
+  }
+
+  set message(message: string) {
+    Object.defineProperty(this, 'message', {
+      value: message,
+      writable: true,
+      configurable: true,
+    });
   }
 }

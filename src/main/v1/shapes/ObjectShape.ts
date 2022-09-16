@@ -65,12 +65,12 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     }
   }
 
-  at(propertyName: unknown): AnyShape | null {
-    if (typeof propertyName !== 'string') {
+  at(key: unknown): AnyShape | null {
+    if (typeof key !== 'string') {
       return null;
     }
-    if (this.keys.includes(propertyName)) {
-      return this.propShapes[propertyName];
+    if (this.keys.includes(key)) {
+      return this.propShapes[key];
     }
     return this.indexerShape;
   }
@@ -260,41 +260,17 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       if (!isObjectLike(input)) {
         raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
       }
-      const { keys, keysMode, entries, indexerShape, applyConstraints } = this;
+      const { entries, applyConstraints, applyKeysConstraint } = this;
       const entriesLength = entries.length;
 
       let rootError: ValidationError | null = null;
       let output = input;
 
-      if (keysMode === ObjectKeysMode.STRIP) {
-        for (const key in input) {
-          if (!keys.includes(key)) {
-            output = pickDictKeys(input, keys);
-            break;
-          }
-        }
-      }
-
-      if (keysMode === ObjectKeysMode.EXACT) {
-        let knownKeyCount = 0;
-
-        for (const key in input) {
-          if (keys.includes(key)) {
-            ++knownKeyCount;
-            continue;
-          }
-          rootError = raiseOrCaptureIssues(
-            createError(input, UNKNOWN_KEY, key, this.unknownKeyOptions, 'Must not contain unknown keys'),
-            rootError,
-            options
-          );
-        }
-        if (knownKeyCount !== keys.length) {
-          rootError = raiseOrCaptureIssues(
-            createError(input, MISSING_KEY, null, this.missingKeyOptions, 'Must not have missing keys'),
-            rootError,
-            options
-          );
+      if (applyKeysConstraint !== null) {
+        try {
+          output = applyKeysConstraint();
+        } catch (error) {
+          rootError = raiseOrCaptureIssues(error, rootError, options);
         }
       }
 
@@ -305,14 +281,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
         promises.push(key, entries[i + 1].parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
       }
 
-      if (indexerShape !== null) {
-        for (const key in input) {
-          if (keys.includes(key)) {
-            continue;
-          }
-          promises.push(key, indexerShape.parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
-        }
-      }
+      // if (indexerShape !== null) {
+      //   for (const key in input) {
+      //     if (keys.includes(key)) {
+      //       continue;
+      //     }
+      //     promises.push(key, indexerShape.parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
+      //   }
+      // }
 
       const returnOutput = (entries: any[], rootError: ValidationError | null = null): any => {
         if (rootError !== null) {
@@ -344,7 +320,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       if (options != null && options.fast) {
         resolve(Promise.all(promises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(promises).then(createOutputExtractor(null, returnOutput)));
+        resolve(Promise.allSettled(promises).then(createOutputExtractor(rootError, returnOutput)));
       }
     });
   }

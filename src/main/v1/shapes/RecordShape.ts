@@ -21,8 +21,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     super(keyShape.async || valueShape.async);
   }
 
-  at(propertyName: unknown): AnyShape | null {
-    return typeof propertyName === 'string' ? this.valueShape : null;
+  at(key: unknown): AnyShape | null {
+    return typeof key === 'string' ? this.valueShape : null;
   }
 
   parse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> {

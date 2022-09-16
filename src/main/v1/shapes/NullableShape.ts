@@ -8,8 +8,8 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
     super(shape.async);
   }
 
-  at(propertyName: unknown): AnyShape | null {
-    const shape = this.shape.at(propertyName);
+  at(key: unknown): AnyShape | null {
+    const shape = this.shape.at(key);
     return shape === null ? null : new OptionalShape(shape);
   }
 
