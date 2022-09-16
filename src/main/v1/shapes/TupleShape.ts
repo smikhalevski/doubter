@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
-  createCatchClauseForKey,
+  createCatchForKey,
   createOutputExtractor,
   isArray,
   isAsync,
@@ -11,7 +11,7 @@ import {
   raiseIssue,
   raiseOnIssues,
   raiseOrCaptureIssues,
-  returnOutputArray,
+  returnArrayOutput,
 } from '../utils';
 import { TUPLE_LENGTH_CODE, TYPE_CODE } from './issue-codes';
 
@@ -92,11 +92,11 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       const outputPromises = [];
 
       for (let i = 0; i < shapesLength; ++i) {
-        outputPromises.push(shapes[i].parseAsync(input[i], options).catch(createCatchClauseForKey(i)));
+        outputPromises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i)));
       }
 
       const returnOutput = (output: unknown[], issues: Issue[] | null = null): InferTuple<U, 'output'> => {
-        output = issues !== null ? input : returnOutputArray(input, output);
+        output = issues !== null ? input : returnArrayOutput(input, output);
 
         if (applyConstraints !== null) {
           issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);

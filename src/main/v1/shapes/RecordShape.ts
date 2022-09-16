@@ -1,6 +1,6 @@
 import {
   cloneDictFirstKeys,
-  createCatchClauseForKey,
+  createCatchForKey,
   createOutputExtractor,
   isEqual,
   isObjectLike,
@@ -111,8 +111,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       for (const key in input) {
         results.push(
-          keyShape.parseAsync(key, options).catch(createCatchClauseForKey(key)),
-          valueShape.parseAsync(input[key], options).catch(createCatchClauseForKey(key))
+          keyShape.parseAsync(key, options).catch(createCatchForKey(key)),
+          valueShape.parseAsync(input[key], options).catch(createCatchForKey(key))
         );
       }
 

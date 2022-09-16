@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
-import { addConstraint, raiseIssue, raiseOnIssues } from '../utils';
+import { addConstraint, isFinite, raiseIssue, raiseOnIssues } from '../utils';
 import {
   NUMBER_GT_CODE,
   NUMBER_GTE_CODE,
@@ -110,7 +110,7 @@ export class NumberShape extends Shape<number> {
     });
   }
 
-  parse(input: any, options?: ParserOptions): number {
+  parse(input: unknown, options?: ParserOptions): number {
     if (!isFinite(input)) {
       raiseIssue(input, TYPE_CODE, 'number', this.options, 'Must be a number');
     }
@@ -123,5 +123,3 @@ export class NumberShape extends Shape<number> {
     return input;
   }
 }
-
-const isFinite = Number.isFinite;

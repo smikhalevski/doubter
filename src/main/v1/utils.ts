@@ -10,38 +10,6 @@ import {
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
 
-export function isString(value: unknown): value is string {
-  return typeof value === 'string';
-}
-
-export const isArray = Array.isArray;
-
-export const isEqual = Object.is as <T>(a: unknown, b: T) => a is T;
-
-export const isInteger = Number.isInteger as (value: unknown) => value is number;
-
-export function isObjectLike(value: unknown): value is Dict {
-  return value !== null && typeof value === 'object';
-}
-
-export function isAsync(shapes: Array<AnyShape>): boolean {
-  let async = false;
-
-  for (let i = 0; i < shapes.length && !async; ++i) {
-    async = shapes[i].async;
-  }
-  return async;
-}
-
-export function returnOutputArray(input: any[], output: any[]): any[] {
-  for (let i = 0; i < input.length; ++i) {
-    if (!isEqual(input[i], output[i])) {
-      return output;
-    }
-  }
-  return input;
-}
-
 export function addConstraint<S extends Shape<any>>(
   shape: S,
   id: string | undefined | null,
@@ -49,22 +17,6 @@ export function addConstraint<S extends Shape<any>>(
   constraint: Constraint<S['output']>
 ): S {
   return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
-}
-
-export function captureIssues(error: unknown): Issue[] {
-  raiseOnUnknownError(error);
-  return error.issues;
-}
-
-export function createCatchClauseForKey(key: unknown): (error: unknown) => never {
-  return error => {
-    raiseOnUnknownError(error);
-
-    for (const issue of error.issues) {
-      issue.path.unshift(key);
-    }
-    throw error;
-  };
 }
 
 export function createOutputExtractor<T, R>(
@@ -130,8 +82,44 @@ export function cloneDictFirstKeys(input: Dict, keyCount: number): Dict {
 }
 
 /**
- * Creates an optimized function that applies constraints to the input.
+ * Returns the `output` if it differs from the `input`, or returns `input` otherwise.
  */
+export function returnArrayOutput(input: any[], output: any[]): any[] {
+  const inputLength = input.length;
+
+  for (let i = 0; i < inputLength; ++i) {
+    if (!isEqual(input[i], output[i])) {
+      return output;
+    }
+  }
+  return input;
+}
+
+export function isString(value: unknown): value is string {
+  return typeof value === 'string';
+}
+
+export function isObjectLike(value: unknown): value is Dict {
+  return value !== null && typeof value === 'object';
+}
+
+export const isArray = Array.isArray;
+
+export const isEqual = Object.is as <T>(value1: unknown, value2: T) => value1 is T;
+
+export const isInteger = Number.isInteger as (value: unknown) => value is number;
+
+export const isFinite = Number.isFinite as (value: unknown) => value is number;
+
+export function isAsync(shapes: AnyShape[]): boolean {
+  let async = false;
+
+  for (let i = 0; i < shapes.length && !async; ++i) {
+    async = shapes[i].async;
+  }
+  return async;
+}
+
 export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<T> | null {
   const constraintsLength = constraints.length;
 
@@ -276,6 +264,11 @@ export function createIssue(
   return { code, path: [], input, param, message, meta };
 }
 
+export function captureIssues(error: unknown): Issue[] {
+  raiseOnUnknownError(error);
+  return error.issues;
+}
+
 export function raise(message: string): never {
   throw new Error(message);
 }
@@ -338,4 +331,15 @@ export function raiseOrCaptureIssuesForKey(
     throw error;
   }
   return error.issues;
+}
+
+export function createCatchForKey(key: unknown): (error: unknown) => never {
+  return error => {
+    raiseOnUnknownError(error);
+
+    for (const issue of error.issues) {
+      issue.path.unshift(key);
+    }
+    throw error;
+  };
 }

@@ -2,7 +2,7 @@ import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import {
   addConstraint,
-  createCatchClauseForKey,
+  createCatchForKey,
   createOutputExtractor,
   isArray,
   isEqual,
@@ -11,7 +11,7 @@ import {
   raiseIssue,
   raiseOnIssues,
   raiseOrCaptureIssuesForKey,
-  returnOutputArray,
+  returnArrayOutput,
 } from '../utils';
 import { ARRAY_MAX_CODE, ARRAY_MIN_CODE, TYPE_CODE } from './issue-codes';
 
@@ -108,6 +108,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       issues = applyConstraints(output, options, issues);
     }
     raiseOnIssues(issues);
+
     return output;
   }
 
@@ -127,11 +128,11 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       const promises = [];
 
       for (let i = 0; i < inputLength; ++i) {
-        promises.push(shape.parseAsync(input[i], options).catch(createCatchClauseForKey(i)));
+        promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i)));
       }
 
       const returnOutput = (output: unknown[], issues: Issue[] | null = null): unknown[] => {
-        output = issues !== null ? input : returnOutputArray(input, output);
+        output = issues !== null ? input : returnArrayOutput(input, output);
 
         if (applyConstraints !== null) {
           issues = applyConstraints(output, options, issues);

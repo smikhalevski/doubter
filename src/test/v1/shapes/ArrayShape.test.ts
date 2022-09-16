@@ -2,7 +2,7 @@ import { ArrayShape, NumberShape, StringShape } from '../../../main';
 
 describe('ArrayShape', () => {
   test('infers type of an element shape', () => {
-    const output: 222[] = new ArrayShape(new NumberShape().transform((): 222 => 222)).parse([]);
+    const output: string[] = new ArrayShape(new NumberShape().transform(() => '')).parse([]);
   });
 
   test('allows an array', () => {

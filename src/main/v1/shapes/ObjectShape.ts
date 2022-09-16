@@ -2,7 +2,7 @@ import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
   cloneDict,
-  createCatchClauseForKey,
+  createCatchForKey,
   createOutputExtractor,
   isAsync,
   isEqual,
@@ -275,7 +275,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
 
       for (let i = 0; i < entriesLength; i += 2) {
         const key = entries[i];
-        promises.push(key, entries[i + 1].parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
+        promises.push(key, entries[i + 1].parseAsync(input[key], options).catch(createCatchForKey(key)));
       }
 
       // if (indexerShape !== null) {
