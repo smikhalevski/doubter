@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
   createCatchClauseForKey,
   createOutputExtractor,
@@ -7,12 +7,12 @@ import {
   isAsync,
   isEqual,
   isInteger,
+  isObjectLike,
   raiseIssue,
-  raiseOnError,
+  raiseOnIssues,
   raiseOrCaptureIssues,
   returnOutputArray,
 } from '../utils';
-import { ValidationError } from '../ValidationError';
 import { TUPLE_LENGTH_CODE, TYPE_CODE } from './issue-codes';
 
 type InferTuple<U extends Multiple<AnyShape>, X extends 'input' | 'output'> = { [K in keyof U]: U[K][X] };
@@ -40,7 +40,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       raiseIssue(input, TUPLE_LENGTH_CODE, shapesLength, this.options, 'Must have a length of ' + shapesLength);
     }
 
-    let rootError: ValidationError | null = null;
+    let issues: Issue[] | null = null;
     let output = input;
 
     for (let i = 0; i < shapesLength; ++i) {
@@ -50,10 +50,10 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       try {
         outputValue = shapes[i].parse(inputValue);
       } catch (error) {
-        rootError = raiseOrCaptureIssues(error, rootError, options);
+        issues = raiseOrCaptureIssues(error, options, issues);
         output = input;
       }
-      if (isEqual(outputValue, inputValue) || rootError !== null) {
+      if (isEqual(outputValue, inputValue) || issues !== null) {
         continue;
       }
       if (output === input) {
@@ -63,10 +63,10 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
     }
 
     if (applyConstraints !== null) {
-      rootError = applyConstraints(output, options, rootError);
+      issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
     }
 
-    raiseOnError(rootError);
+    raiseOnIssues(issues);
     return output as InferTuple<U, 'output'>;
   }
 
@@ -83,10 +83,10 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
         raiseIssue(input, TUPLE_LENGTH_CODE, shapesLength, this.options, 'Must have a length of ' + shapesLength);
       }
 
-      let rootError: ValidationError | null = null;
+      let issues: Issue[] | null = null;
 
       if (applyConstraints !== null) {
-        rootError = applyConstraints(input, options, rootError);
+        issues = applyConstraints(input as InferTuple<U, 'output'>, options, issues);
       }
 
       const outputPromises = [];
@@ -95,20 +95,20 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
         outputPromises.push(shapes[i].parseAsync(input[i], options).catch(createCatchClauseForKey(i)));
       }
 
-      const returnOutput = (output: unknown[], rootError: ValidationError | null = null): InferTuple<U, 'output'> => {
-        output = rootError !== null ? input : returnOutputArray(input, output);
+      const returnOutput = (output: unknown[], issues: Issue[] | null = null): InferTuple<U, 'output'> => {
+        output = issues !== null ? input : returnOutputArray(input, output);
 
         if (applyConstraints !== null) {
-          rootError = applyConstraints(output, options, rootError);
+          issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
         }
-        raiseOnError(rootError);
+        raiseOnIssues(issues);
         return output as InferTuple<U, 'output'>;
       };
 
-      if (options != null && options.fast) {
+      if (isObjectLike(options) && options.fast) {
         resolve(Promise.all(outputPromises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(outputPromises).then(createOutputExtractor(rootError, returnOutput)));
+        resolve(Promise.allSettled(outputPromises).then(createOutputExtractor(issues, returnOutput)));
       }
     });
   }

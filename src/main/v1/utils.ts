@@ -1,5 +1,6 @@
 import {
-  ConstraintCallback,
+  ApplyConstraints,
+  Constraint,
   Dict,
   InputConstraintOptions,
   Issue,
@@ -43,127 +44,16 @@ export function returnOutputArray(input: any[], output: any[]): any[] {
 
 export function addConstraint<S extends Shape<any>>(
   shape: S,
-  name: string | undefined,
+  id: string | undefined | null,
   options: OutputConstraintOptions | string | undefined,
-  constraint: ConstraintCallback<S['output']>
+  constraint: Constraint<S['output']>
 ): S {
-  return shape.constrain(constraint, { id: name, unsafe: typeof options === 'object' ? options.unsafe : false });
+  return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
 }
 
 export function captureIssues(error: unknown): Issue[] {
   raiseOnUnknownError(error);
   return error.issues;
-}
-
-/**
- * Throws a fatal error.
- *
- * @param message The error message.
- */
-export function raise(message: string): never {
-  throw new Error(message);
-}
-
-/**
- * Asserts that an error is {@linkcode ValidationError}.
- *
- * @param error The error to assert.
- */
-export function raiseOnUnknownError(error: unknown): asserts error is ValidationError {
-  if (!(error instanceof ValidationError)) {
-    throw error;
-  }
-}
-
-/**
- * Throws an error if it isn't null.
- *
- * @param error An error to throw.
- */
-export function raiseOnError(error: Error | null): void {
-  if (error !== null) {
-    throw error;
-  }
-}
-
-/**
- * Adds issues from a validation error to a root error.
- */
-export function raiseOrCaptureIssues(
-  error: unknown,
-  rootError: ValidationError | null,
-  options: ParserOptions | undefined
-): ValidationError {
-  raiseOnUnknownError(error);
-
-  if (rootError !== null) {
-    rootError.issues.push(...error.issues);
-    return rootError;
-  }
-  if (options != null && options.fast) {
-    throw error;
-  }
-  return new ValidationError(error.issues.slice(0));
-}
-
-export function raiseOrCaptureIssuesForKey(
-  error: unknown,
-  rootError: ValidationError | null,
-  options: ParserOptions | undefined,
-  key: unknown
-): ValidationError {
-  raiseOnUnknownError(error);
-
-  for (const issue of error.issues) {
-    issue.path.unshift(key);
-  }
-  if (rootError !== null) {
-    rootError.issues.push(...error.issues);
-    return rootError;
-  }
-  if (options != null && options.fast) {
-    throw error;
-  }
-  return new ValidationError(error.issues.slice(0));
-}
-
-/**
- * Raises a validation error with a single issue.
- */
-export function createError(
-  input: unknown,
-  code: string,
-  param: unknown,
-  options: InputConstraintOptions | string | undefined,
-  message: string
-): ValidationError {
-  let meta;
-
-  if (options != null) {
-    if (typeof options === 'string') {
-      message = options;
-    } else {
-      if (options.message !== undefined) {
-        message = options.message;
-      }
-      meta = options.meta;
-    }
-  }
-
-  return new ValidationError([{ code, path: [], input, param, message, meta }]);
-}
-
-/**
- * Raises a validation error with a single issue.
- */
-export function raiseIssue(
-  input: unknown,
-  code: string,
-  param: unknown,
-  options: InputConstraintOptions | string | undefined,
-  message: string
-): never {
-  throw createError(input, code, param, options, message);
 }
 
 export function createCatchClauseForKey(key: unknown): (error: unknown) => never {
@@ -178,8 +68,8 @@ export function createCatchClauseForKey(key: unknown): (error: unknown) => never
 }
 
 export function createOutputExtractor<T, R>(
-  rootError: ValidationError | null,
-  outputProcessor: (values: T[], rootError: ValidationError | null) => R
+  issues: Issue[] | null,
+  outputProcessor: (values: T[], issues: Issue[] | null) => R
 ): (results: PromiseSettledResult<T>[]) => R {
   return results => {
     const values = [];
@@ -196,14 +86,14 @@ export function createOutputExtractor<T, R>(
 
       raiseOnUnknownError(error);
 
-      if (rootError !== null) {
-        rootError.issues.push(...error.issues);
+      if (issues !== null) {
+        issues.push(...error.issues);
       } else {
-        rootError = error;
+        issues = error.issues;
       }
     }
 
-    return outputProcessor(values, rootError);
+    return outputProcessor(values, issues);
   };
 }
 
@@ -237,4 +127,215 @@ export function cloneDictFirstKeys(input: Dict, keyCount: number): Dict {
     i++;
   }
   return output;
+}
+
+/**
+ * Creates an optimized function that applies constraints to the input.
+ */
+export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<T> | null {
+  const constraintsLength = constraints.length;
+
+  if (constraintsLength === 0) {
+    return null;
+  }
+
+  if (constraintsLength === 3) {
+    const [, unsafe0, callback0] = constraints;
+
+    return (input, options, issues) => {
+      if (issues === null || unsafe0) {
+        try {
+          callback0(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      return issues;
+    };
+  }
+
+  if (constraintsLength === 6) {
+    const [, unsafe0, callback0, , unsafe1, callback1] = constraints;
+
+    return (input, options, issues) => {
+      if (issues === null || unsafe0) {
+        try {
+          callback0(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      if (issues === null || unsafe1) {
+        try {
+          callback1(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      return issues;
+    };
+  }
+
+  if (constraintsLength === 3) {
+    const [, unsafe0, callback0, , unsafe1, callback1, , unsafe2, callback2] = constraints;
+
+    return (input, options, issues) => {
+      if (issues === null || unsafe0) {
+        try {
+          callback0(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      if (issues === null || unsafe1) {
+        try {
+          callback1(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      if (issues === null || unsafe2) {
+        try {
+          callback2(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      return issues;
+    };
+  }
+
+  if (constraintsLength === 4) {
+    const [, unsafe0, callback0, , unsafe1, callback1, , unsafe2, callback2, , unsafe3, callback3] = constraints;
+
+    return (input, options, issues) => {
+      if (issues === null || unsafe0) {
+        try {
+          callback0(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      if (issues === null || unsafe1) {
+        try {
+          callback1(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      if (issues === null || unsafe2) {
+        try {
+          callback2(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      if (issues === null || unsafe3) {
+        try {
+          callback3(input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+      return issues;
+    };
+  }
+
+  return (input, options, issues) => {
+    for (let i = 1; i < constraintsLength; i += 3) {
+      if (issues === null || constraints[i]) {
+        try {
+          constraints[i + 1](input);
+        } catch (error) {
+          issues = raiseOrCaptureIssues(error, options, issues);
+        }
+      }
+    }
+    return issues;
+  };
+}
+
+export function createIssue(
+  input: unknown,
+  code: string,
+  param: unknown,
+  options: InputConstraintOptions | string | undefined,
+  message: string
+): Issue {
+  let meta;
+
+  if (isObjectLike(options)) {
+    if (options.message !== undefined) {
+      message = options.message;
+    }
+    meta = options.meta;
+  } else if (isString(options)) {
+    message = options;
+  }
+
+  return { code, path: [], input, param, message, meta };
+}
+
+export function raise(message: string): never {
+  throw new Error(message);
+}
+
+export function raiseIssue(
+  input: unknown,
+  code: string,
+  param: unknown,
+  options: InputConstraintOptions | string | undefined,
+  message: string
+): never {
+  throw new ValidationError([createIssue(input, code, param, options, message)]);
+}
+
+export function raiseOnUnknownError(error: unknown): asserts error is ValidationError {
+  if (!(error instanceof ValidationError)) {
+    throw error;
+  }
+}
+
+export function raiseOnIssues(issues: Issue[] | null): void {
+  if (issues !== null) {
+    throw new ValidationError(issues);
+  }
+}
+
+export function raiseOrCaptureIssues(
+  error: unknown,
+  options: ParserOptions | undefined,
+  issues: Issue[] | null
+): Issue[] {
+  raiseOnUnknownError(error);
+
+  if (issues !== null) {
+    issues.push(...error.issues);
+    return issues;
+  }
+  if (isObjectLike(options) && options.fast) {
+    throw error;
+  }
+  return error.issues;
+}
+
+export function raiseOrCaptureIssuesForKey(
+  error: unknown,
+  options: ParserOptions | undefined,
+  issues: Issue[] | null,
+  key: unknown
+): Issue[] {
+  raiseOnUnknownError(error);
+
+  for (const issue of error.issues) {
+    issue.path.unshift(key);
+  }
+  if (issues !== null) {
+    issues.push(...error.issues);
+    return issues;
+  }
+  if (isObjectLike(options) && options.fast) {
+    throw error;
+  }
+  return error.issues;
 }

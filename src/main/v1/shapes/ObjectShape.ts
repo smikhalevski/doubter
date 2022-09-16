@@ -1,21 +1,18 @@
 import { AnyShape, Shape } from './Shape';
-import { Dict, InputConstraintOptions, Multiple, ParserOptions } from '../shared-types';
+import { Dict, InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
   cloneDict,
   createCatchClauseForKey,
-  createError,
   createOutputExtractor,
   isAsync,
   isEqual,
   isObjectLike,
-  pickDictKeys,
   raiseIssue,
-  raiseOnError,
+  raiseOnIssues,
   raiseOrCaptureIssues,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
-import { ValidationError } from '../ValidationError';
-import { MISSING_KEY, TYPE_CODE, UNKNOWN_KEY } from './issue-codes';
+import { TYPE_CODE } from './issue-codes';
 
 type InferObject<P extends Dict<AnyShape>, I extends AnyShape | null, X extends 'input' | 'output'> = Squash<
   UndefinedAsOptional<{ [K in keyof P]: P[K][X] }> & (I extends AnyShape ? { [indexer: string]: I[X] } : unknown)
@@ -161,14 +158,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     const { entries, applyConstraints, applyKeysConstraint } = this;
     const entriesLength = entries.length;
 
-    let rootError: ValidationError | null = null;
+    let issues: Issue[] | null = null;
     let output = input;
 
     if (applyKeysConstraint !== null) {
       try {
         output = applyKeysConstraint();
       } catch (error) {
-        rootError = raiseOrCaptureIssues(error, rootError, options);
+        issues = raiseOrCaptureIssues(error, options, issues);
       }
     }
 
@@ -235,10 +232,10 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       try {
         outputValue = entries[i + 1].parse(inputValue, options);
       } catch (error) {
-        rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
+        issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
         output = input;
       }
-      if (isEqual(outputValue, inputValue) || rootError !== null) {
+      if (isEqual(outputValue, inputValue) || issues !== null) {
         continue;
       }
       if (output === input) {
@@ -248,9 +245,9 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     }
 
     if (applyConstraints !== null) {
-      rootError = applyConstraints(output, options, rootError);
+      issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
     }
-    raiseOnError(rootError);
+    raiseOnIssues(issues);
 
     return output as InferObject<P, I, 'output'>;
   }
@@ -263,14 +260,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       const { entries, applyConstraints, applyKeysConstraint } = this;
       const entriesLength = entries.length;
 
-      let rootError: ValidationError | null = null;
+      let issues: Issue[] | null = null;
       let output = input;
 
       if (applyKeysConstraint !== null) {
         try {
           output = applyKeysConstraint();
         } catch (error) {
-          rootError = raiseOrCaptureIssues(error, rootError, options);
+          issues = raiseOrCaptureIssues(error, options, issues);
         }
       }
 
@@ -290,8 +287,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       //   }
       // }
 
-      const returnOutput = (entries: any[], rootError: ValidationError | null = null): any => {
-        if (rootError !== null) {
+      const returnOutput = (entries: any[], issues: Issue[] | null = null): any => {
+        if (issues !== null) {
           output = input;
         } else {
           const entriesLength = entries.length;
@@ -311,16 +308,16 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
         }
 
         if (applyConstraints !== null) {
-          rootError = applyConstraints(output, options, rootError);
+          issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
         }
-        raiseOnError(rootError);
+        raiseOnIssues(issues);
         return output;
       };
 
       if (options != null && options.fast) {
         resolve(Promise.all(promises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(promises).then(createOutputExtractor(rootError, returnOutput)));
+        resolve(Promise.allSettled(promises).then(createOutputExtractor(issues, returnOutput)));
       }
     });
   }

@@ -1,6 +1,6 @@
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { captureIssues, createError, isAsync } from '../utils';
+import { captureIssues, createIssue, isAsync, isObjectLike, raiseOnIssues } from '../utils';
 import { UNION_CODE } from './issue-codes';
 
 const fastOptions: ParserOptions = { fast: true };
@@ -45,15 +45,13 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
       options = fastOptions;
     }
 
-    let rootError = createError(input, UNION_CODE, firstIssues, this.options, 'Must conform a union');
+    let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
 
-    if (options != null && options.fast) {
-      throw rootError;
-    }
-    if (applyConstraints !== null) {
-      rootError = applyConstraints(input, options, rootError)!;
-    }
-    throw rootError;
+    raiseOnIssues(
+      (isObjectLike(options) && options.fast) || applyConstraints === null
+        ? issues
+        : applyConstraints(input, options, issues)
+    );
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<InferUnion<U, 'output'>> {
@@ -82,15 +80,13 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
             firstIssues ||= issues;
           }
 
-          let rootError = createError(input, UNION_CODE, firstIssues, this.options, 'Must conform a union');
+          let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
 
-          if (options != null && options.fast) {
-            throw rootError;
-          }
-          if (applyConstraints !== null) {
-            rootError = applyConstraints(input, options, rootError)!;
-          }
-          throw rootError;
+          raiseOnIssues(
+            (isObjectLike(options) && options.fast) || applyConstraints === null
+              ? issues
+              : applyConstraints(input, options, issues)
+          );
         })
       );
     });

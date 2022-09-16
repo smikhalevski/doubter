@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions } from '../shared-types';
-import { raiseIssue, raiseOnError } from '../utils';
+import { raiseIssue, raiseOnIssues } from '../utils';
 import { TYPE_CODE } from './issue-codes';
 
 export class BigIntShape extends Shape<bigint> {
@@ -15,7 +15,7 @@ export class BigIntShape extends Shape<bigint> {
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseOnError(applyConstraints(input, options, null));
+      raiseOnIssues(applyConstraints(input, options, null));
     }
     return input;
   }

@@ -1,6 +1,6 @@
 import { NumberShape } from './NumberShape';
 import { ParserOptions } from '../shared-types';
-import { isInteger, raiseIssue, raiseOnError } from '../utils';
+import { isInteger, raiseIssue, raiseOnIssues } from '../utils';
 import { TYPE_CODE } from './issue-codes';
 
 export class IntegerShape extends NumberShape {
@@ -11,7 +11,7 @@ export class IntegerShape extends NumberShape {
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseOnError(applyConstraints(input, options, null));
+      raiseOnIssues(applyConstraints(input, options, null));
     }
     return input;
   }

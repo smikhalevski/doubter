@@ -5,12 +5,11 @@ import {
   isEqual,
   isObjectLike,
   raiseIssue,
-  raiseOnError,
+  raiseOnIssues,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, ParserOptions } from '../shared-types';
-import { ValidationError } from '../ValidationError';
+import { InputConstraintOptions, Issue, ParserOptions } from '../shared-types';
 import { TYPE_CODE } from './issue-codes';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
@@ -32,7 +31,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
     const { keyShape, valueShape, applyConstraints } = this;
 
-    let rootError: ValidationError | null = null;
+    let issues: Issue[] | null = null;
     let output = input;
     let keyIndex = 0;
 
@@ -46,15 +45,15 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       try {
         outputKey = keyShape.parse(key, options);
       } catch (error) {
-        rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
+        issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
       }
       try {
         outputValue = valueShape.parse(inputValue, options);
       } catch (error) {
-        rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
+        issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
       }
 
-      if ((output === input && key === outputKey && isEqual(inputValue, outputValue)) || rootError !== null) {
+      if ((output === input && key === outputKey && isEqual(inputValue, outputValue)) || issues !== null) {
         continue;
       }
       if (output === input) {
@@ -64,9 +63,9 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     }
 
     if (applyConstraints !== null) {
-      rootError = applyConstraints(input, options, rootError);
+      issues = applyConstraints(input as Record<K['output'], V['output']>, options, issues);
     }
-    raiseOnError(rootError);
+    raiseOnIssues(issues);
 
     return output as Record<K['output'], V['output']>;
   }
@@ -81,11 +80,11 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       const results = [];
 
-      const returnOutput = (entries: any[], rootError: ValidationError | null = null): any => {
+      const returnOutput = (entries: any[], issues: Issue[] | null = null): any => {
         let output = input;
         let keyIndex = 0;
 
-        if (rootError === null) {
+        if (issues === null) {
           for (const key in input) {
             const outputKey = entries[keyIndex];
             const outputValue = entries[keyIndex + 1];
@@ -103,10 +102,10 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         }
 
         if (applyConstraints !== null) {
-          rootError = applyConstraints(output, options, rootError);
+          issues = applyConstraints(output as Record<K['output'], V['output']>, options, issues);
         }
 
-        raiseOnError(rootError);
+        raiseOnIssues(issues);
         return output;
       };
 
@@ -117,7 +116,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         );
       }
 
-      if (options != null && options.fast) {
+      if (isObjectLike(options) && options.fast) {
         resolve(Promise.all(results).then(returnOutput));
       } else {
         resolve(Promise.allSettled(results).then(createOutputExtractor(null, returnOutput)));

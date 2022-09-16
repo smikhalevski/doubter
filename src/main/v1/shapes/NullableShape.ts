@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { OptionalShape } from './OptionalShape';
 import { ParserOptions } from '../shared-types';
-import { raiseOnError } from '../utils';
+import { raiseOnIssues } from '../utils';
 
 export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, S['output'] | null> {
   constructor(protected shape: S) {
@@ -18,7 +18,7 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseOnError(applyConstraints(output, options, null));
+      raiseOnIssues(applyConstraints(output, options, null));
     }
     return output;
   }
@@ -33,7 +33,7 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
       return outputPromise.then(output => {
-        raiseOnError(applyConstraints(output, options, null));
+        raiseOnIssues(applyConstraints(output, options, null));
         return output;
       });
     }

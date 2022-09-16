@@ -1,5 +1,6 @@
 import {
-  ConstraintCallback,
+  ApplyConstraints,
+  Constraint,
   IdentifiableConstraintOptions,
   Issue,
   NarrowingConstraintOptions,
@@ -9,14 +10,14 @@ import {
 import {
   addConstraint,
   captureIssues,
+  createApplyConstraints,
+  isObjectLike,
   raise,
   raiseIssue,
-  raiseOnError,
+  raiseOnIssues,
   raiseOnUnknownError,
-  raiseOrCaptureIssues,
 } from '../utils';
 import { NARROWING_CODE } from './issue-codes';
-import { ValidationError } from '../ValidationError';
 
 /**
  * An arbitrary shape.
@@ -36,30 +37,18 @@ export interface Shape<I, O> {
 }
 
 /**
- * The closure that applies constraints to the input value and throws a validation error if
- * {@linkcode ParserOptions.fast fast} parsing is enabled, or returns an error otherwise.
- *
- * @param input The value to parse.
- * @param options The parsing options.
- * @param rootError The root error that would be enriched with errors thrown by constraints.
- * @returns The root error, or `null` if there are neither root error nor errors were thrown by constraints.
- */
-export type ConstraintApplicator = (
-  input: unknown,
-  options: ParserOptions | undefined,
-  rootError: ValidationError | null
-) => ValidationError | null;
-
-/**
  * The abstract shape.
  *
  * @template I The input value.
  * @template O The output value.
  */
 export abstract class Shape<I, O = I> {
-  protected applyConstraints: ConstraintApplicator | null = null;
+  /**
+   * Applies shape constraints to the output.
+   */
+  protected applyConstraints: ApplyConstraints<O> | null = null;
 
-  protected constraints: any[] = [];
+  private constraints: any[] = [];
 
   /**
    * Creates the new {@linkcode Shape}.
@@ -77,7 +66,7 @@ export abstract class Shape<I, O = I> {
    * Synchronously parses the value.
    *
    * @param input The value to parse.
-   * @param options The parsing options.
+   * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
    * @throws Error if the shape doesn't support the synchronous parsing.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
@@ -88,7 +77,7 @@ export abstract class Shape<I, O = I> {
    * Asynchronously parses the value.
    *
    * @param input The value to parse.
-   * @param options The parsing options.
+   * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
@@ -100,7 +89,7 @@ export abstract class Shape<I, O = I> {
    * Synchronously checks that the value can be parsed as an output of the shape.
    *
    * @param input The value to validate.
-   * @param options The parsing options.
+   * @param options Parsing options.
    * @returns The list of detected issues, or `null` if value is valid.
    * @throws Error if the shape doesn't support the synchronous parsing.
    */
@@ -118,7 +107,7 @@ export abstract class Shape<I, O = I> {
    * Asynchronously checks that the value can be parsed as an output of the shape.
    *
    * @param input The value to validate.
-   * @param options The parsing options.
+   * @param options Parsing options.
    * @returns The list of detected issues, or `null` if value is valid.
    */
   validateAsync(input: unknown, options?: ParserOptions): Promise<Issue[] | null> {
@@ -164,86 +153,30 @@ export abstract class Shape<I, O = I> {
    * @param options The constraint options.
    * @returns The clone of this shape with the constraint added.
    */
-  constrain(constraint: ConstraintCallback<O>, options?: IdentifiableConstraintOptions): this {
-    const shape = this.clone();
+  constrain(constraint: Constraint<O>, options?: IdentifiableConstraintOptions): this {
+    const constraints = this.constraints.slice(0);
 
-    const constraints = shape.constraints.slice(0);
+    if (isObjectLike(options)) {
+      const { id = null, unsafe = false } = options;
 
-    shape.constraints = constraints;
-
-    let name = null;
-    let unsafe = false;
-
-    if (options != null) {
-      unsafe = options.unsafe || false;
-
-      if (options.id != null) {
-        name = options.id;
-
+      if (id !== null) {
         for (let i = 0; i < constraints.length; i += 3) {
-          if (constraints[i] === name) {
+          if (constraints[i] === id) {
             constraints.splice(i, 3);
             break;
           }
         }
       }
-    }
 
-    constraints.push(name, unsafe, constraint);
-
-    let applyConstraints: ConstraintApplicator;
-
-    if (constraints.length === 3) {
-      applyConstraints = (input, options, rootError) => {
-        if (rootError === null || unsafe) {
-          try {
-            (constraint as ConstraintCallback<any>)(input);
-          } catch (error) {
-            rootError = raiseOrCaptureIssues(error, rootError, options);
-          }
-        }
-        return rootError;
-      };
-    } else if (constraints.length === 6) {
-      const unsafe0 = constraints[1];
-      const constraint0 = constraints[2];
-
-      const unsafe1 = constraints[4];
-      const constraint1 = constraints[5];
-
-      applyConstraints = (input, options, rootError) => {
-        if (rootError === null || unsafe0) {
-          try {
-            constraint0(input);
-          } catch (error) {
-            rootError = raiseOrCaptureIssues(error, rootError, options);
-          }
-        }
-        if (rootError === null || unsafe1) {
-          try {
-            constraint1(input);
-          } catch (error) {
-            rootError = raiseOrCaptureIssues(error, rootError, options);
-          }
-        }
-        return rootError;
-      };
+      constraints.push(id, unsafe, constraint);
     } else {
-      applyConstraints = (input, options, rootError) => {
-        for (let i = 1; i < constraints.length; i += 3) {
-          if (rootError === null || constraints[i]) {
-            try {
-              constraints[i + 1](input);
-            } catch (error) {
-              rootError = raiseOrCaptureIssues(error, rootError, options);
-            }
-          }
-        }
-        return rootError;
-      };
+      constraints.push(null, false, constraint);
     }
 
-    shape.applyConstraints = applyConstraints;
+    const shape = this.clone();
+
+    shape.constraints = constraints;
+    shape.applyConstraints = createApplyConstraints(constraints);
 
     return shape;
   }
@@ -254,14 +187,14 @@ export abstract class Shape<I, O = I> {
    *
    * @param predicate The type predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The constraint options or an issue message.
-   * @returns The shape that has the narrowed output value.
+   * @returns The shape that has the narrowed output.
    * @template T The narrowed value.
    */
   narrow<T extends O>(
     predicate: (output: O) => output is T,
     options?: NarrowingConstraintOptions | string
   ): Shape<I, T> {
-    return addConstraint(this, typeof options === 'object' ? options.id : undefined, options, output => {
+    return addConstraint(this, isObjectLike(options) ? options.id : undefined, options, output => {
       if (!predicate(output)) {
         raiseIssue(output, NARROWING_CODE, predicate, options, 'Must conform the narrowing predicate');
       }
@@ -272,16 +205,16 @@ export abstract class Shape<I, O = I> {
    * Adds a constraint that [narrows the shape output type](https://www.typescriptlang.org/docs/handbook/2/narrowing.html)
    * of using an [assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions).
    *
-   * @param callback The assertion function that throws a {@linkcode ValidationError} or returns `undefined`.
+   * @param predicate The assertion function that throws a {@linkcode ValidationError} or returns `undefined`.
    * @param options The constraint options.
-   * @returns The shape that has the refined output value.
+   * @returns The shape that has the narrowed output.
    * @template T The refined value.
    */
   assert<T extends O>(
-    callback: (output: O) => asserts output is T,
+    predicate: (output: O) => asserts output is T,
     options?: IdentifiableConstraintOptions
   ): Shape<I, T> {
-    return addConstraint(this, options?.id, options, callback) as unknown as Shape<I, T>;
+    return addConstraint(this, options?.id, options, predicate) as unknown as Shape<I, T>;
   }
 
   /**
@@ -336,7 +269,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     const output = transformer(shape.parse(input, options)) as T;
 
     if (applyConstraints !== null) {
-      raiseOnError(applyConstraints(output, options, null));
+      raiseOnIssues(applyConstraints(output, options, null));
     }
     return output;
   }
@@ -347,7 +280,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
 
     if (applyConstraints !== null) {
       return outputPromise.then(output => {
-        raiseOnError(applyConstraints(output, options, null));
+        raiseOnIssues(applyConstraints(output, options, null));
         return output;
       });
     }

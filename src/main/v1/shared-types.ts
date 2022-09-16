@@ -42,7 +42,7 @@ export type Transformer<I, O> = (value: I) => O;
 /**
  * Constraint is a callback that takes an input and throws a {@linkcode ValidationError} if it has recognised issues.
  */
-export type ConstraintCallback<T> = (value: T) => void;
+export type Constraint<T> = (value: T) => Issue[] | null | undefined | void;
 
 /**
  * Options that are applicable for the type constraint.
@@ -85,7 +85,7 @@ export interface IdentifiableConstraintOptions extends ChainableConstraintOption
    * If there is a constraint with the same ID then it is replaced, otherwise it is appended to the list of constraints.
    * If the ID is `null` then the constraint is always appended to the list of constraints.
    */
-  id?: any;
+  id?: string | null;
 }
 
 /**
@@ -113,3 +113,18 @@ export type Primitive = string | number | bigint | boolean | null | undefined;
 export interface Dict<T = any> {
   [key: string]: T;
 }
+
+/**
+ * The closure that applies constraints to the input value and throws a validation error if
+ * {@linkcode ParserOptions.fast fast} parsing is enabled, or returns an error otherwise.
+ *
+ * @param input The value to parse.
+ * @param options Parsing options.
+ * @param issues The list of already captured issues.
+ * @returns The list of captured issues, or `null` if there are no issues.
+ */
+export type ApplyConstraints<T> = (
+  input: T,
+  options: ParserOptions | undefined,
+  issues: Issue[] | null
+) => Issue[] | null;
