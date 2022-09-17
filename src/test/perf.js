@@ -411,6 +411,14 @@ describe(
         type.parse(value);
       });
     });
+
+    test('lib.TupleShape', measure => {
+      const type = new lib.TupleShape([new lib.NumberShape(), new lib.NumberShape()]);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );

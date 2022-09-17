@@ -1,18 +1,19 @@
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
-  createProcessSettled,
   createCatchForKey,
+  createFulfillArray,
+  createProcessSettled,
   isArray,
   isAsync,
   isEqual,
   isInteger,
+  parseAsync,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
-  selectOutputArray,
 } from '../utils';
-import { TUPLE_LENGTH_CODE, TYPE_CODE } from './issue-codes';
+import { INVALID, TUPLE_LENGTH_CODE, TYPE_CODE } from './issue-codes';
 
 type InferTuple<U extends Multiple<AnyShape>, X extends 'input' | 'output'> = { [K in keyof U]: U[K][X] };
 
@@ -45,14 +46,15 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
     for (let i = 0; i < shapesLength; ++i) {
       const inputValue = input[i];
 
-      let outputValue;
+      let parsed = true;
+      let outputValue = INVALID;
       try {
         outputValue = shapes[i].parse(inputValue);
       } catch (error) {
+        parsed = false;
         issues = raiseOrCaptureIssuesForKey(error, options, issues, i);
-        output = input;
       }
-      if (isEqual(outputValue, inputValue) || issues !== null) {
+      if (parsed && isEqual(outputValue, inputValue)) {
         continue;
       }
       if (output === input) {
@@ -64,12 +66,16 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
     if (applyConstraints !== null) {
       issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
     }
-
     raiseIfIssues(issues);
+
     return output as InferTuple<U, 'output'>;
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<InferTuple<U, 'output'>> {
+    if (!this.async) {
+      return parseAsync(this, input, options);
+    }
+
     return new Promise(resolve => {
       if (!isArray(input)) {
         raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
@@ -82,32 +88,18 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
         raiseIssue(input, TUPLE_LENGTH_CODE, shapesLength, this.options, 'Must have a length of ' + shapesLength);
       }
 
-      let issues: Issue[] | null = null;
-
-      if (applyConstraints !== null) {
-        issues = applyConstraints(input as InferTuple<U, 'output'>, options, issues);
-      }
-
       const promises = [];
 
       for (let i = 0; i < shapesLength; ++i) {
         promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i)));
       }
 
-      const returnOutput = (output: unknown[], issues: Issue[] | null = null): InferTuple<U, 'output'> => {
-        output = issues !== null ? input : selectOutputArray(input, output);
-
-        if (applyConstraints !== null) {
-          issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
-        }
-        raiseIfIssues(issues);
-        return output as InferTuple<U, 'output'>;
-      };
+      const fulfillArray = createFulfillArray(input, options, applyConstraints);
 
       if (options != null && options.fast) {
-        resolve(Promise.all(promises).then(returnOutput));
+        resolve(Promise.all(promises).then(fulfillArray));
       } else {
-        resolve(Promise.allSettled(promises).then(createProcessSettled(issues, returnOutput)));
+        resolve(Promise.allSettled(promises).then(createProcessSettled(null, fulfillArray)));
       }
     });
   }
