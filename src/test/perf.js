@@ -279,27 +279,27 @@ describe(
   () => {
     const value = [1, 2, 3];
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'array',
-        items: { type: 'number' },
-        minItems: 3,
-        maxItems: 3,
-      });
-
-      measure(() => {
-        validate(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = z.array(z.number()).length(3);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
+    // test('Ajv', measure => {
+    //   const validate = new Ajv().compile({
+    //     $schema: 'http://json-schema.org/draft-07/schema#',
+    //     type: 'array',
+    //     items: { type: 'number' },
+    //     minItems: 3,
+    //     maxItems: 3,
+    //   });
+    //
+    //   measure(() => {
+    //     validate(value);
+    //   });
+    // });
+    //
+    // test('myzod', measure => {
+    //   const type = z.array(z.number()).length(3);
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
 
     test('lib', measure => {
       const type = lib.array(lib.number()).length(3);
@@ -325,30 +325,30 @@ describe(
   () => {
     const value = [1, 2, 3];
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'array',
-        items: {
-          type: 'number',
-          minimum: 0,
-        },
-        minItems: 3,
-        maxItems: 3,
-      });
-
-      measure(() => {
-        validate(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = z.array(z.number().min(0).max(10)).length(3);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
+    // test('Ajv', measure => {
+    //   const validate = new Ajv().compile({
+    //     $schema: 'http://json-schema.org/draft-07/schema#',
+    //     type: 'array',
+    //     items: {
+    //       type: 'number',
+    //       minimum: 0,
+    //     },
+    //     minItems: 3,
+    //     maxItems: 3,
+    //   });
+    //
+    //   measure(() => {
+    //     validate(value);
+    //   });
+    // });
+    //
+    // test('myzod', measure => {
+    //   const type = z.array(z.number().min(0).max(10)).length(3);
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
 
     test('lib', measure => {
       const type = lib.array(lib.number().gte(0).lte(10)).length(3);

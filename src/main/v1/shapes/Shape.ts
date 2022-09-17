@@ -9,13 +9,13 @@ import {
 } from '../shared-types';
 import {
   addConstraint,
-  captureIssues,
   createApplyConstraints,
   isObjectLike,
+  parseAsync,
   raise,
+  raiseIfIssues,
+  raiseIfUnknownError,
   raiseIssue,
-  raiseOnIssues,
-  raiseOnUnknownError,
 } from '../utils';
 import { NARROWING_CODE } from './issue-codes';
 
@@ -58,7 +58,7 @@ export abstract class Shape<I, O = I> {
    */
   protected constructor(readonly async: boolean) {
     if (async) {
-      this.parse = raiseParseUnsupported;
+      this.parse = raiseParseIsUnsupported;
     }
   }
 
@@ -82,7 +82,7 @@ export abstract class Shape<I, O = I> {
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parseAsync(input: unknown, options?: ParserOptions): Promise<O> {
-    return new Promise(resolve => resolve(this.parse(input, options)));
+    return parseAsync(this, input, options);
   }
 
   /**
@@ -97,7 +97,7 @@ export abstract class Shape<I, O = I> {
     try {
       this.parse(input, options);
     } catch (error) {
-      raiseOnUnknownError(error);
+      raiseIfUnknownError(error);
       return error.issues;
     }
     return null;
@@ -225,12 +225,17 @@ export abstract class Shape<I, O = I> {
   }
 }
 
-function raiseParseUnsupported(): never {
+function raiseParseIsUnsupported(): never {
   raise('Shape is asynchronous');
 }
 
 function returnNull(): null {
   return null;
+}
+
+export function captureIssues(error: unknown): Issue[] {
+  raiseIfUnknownError(error);
+  return error.issues;
 }
 
 Object.defineProperty(Shape.prototype, 'input', {
@@ -269,7 +274,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     const output = transformer(shape.parse(input, options)) as T;
 
     if (applyConstraints !== null) {
-      raiseOnIssues(applyConstraints(output, options, null));
+      raiseIfIssues(applyConstraints(output, options, null));
     }
     return output;
   }
@@ -280,7 +285,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
 
     if (applyConstraints !== null) {
       return outputPromise.then(output => {
-        raiseOnIssues(applyConstraints(output, options, null));
+        raiseIfIssues(applyConstraints(output, options, null));
         return output;
       });
     }

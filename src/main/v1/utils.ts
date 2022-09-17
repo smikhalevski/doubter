@@ -9,6 +9,7 @@ import {
 } from './shared-types';
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
+import { INVALID } from './shapes';
 
 export function addConstraint<S extends Shape<any>>(
   shape: S,
@@ -17,36 +18,6 @@ export function addConstraint<S extends Shape<any>>(
   constraint: Constraint<S['output']>
 ): S {
   return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
-}
-
-export function createOutputExtractor<T, R>(
-  issues: Issue[] | null,
-  outputProcessor: (values: T[], issues: Issue[] | null) => R
-): (results: PromiseSettledResult<T>[]) => R {
-  return results => {
-    const values = [];
-
-    for (let i = 0; i < results.length; ++i) {
-      const result = results[i];
-
-      if (result.status === 'fulfilled') {
-        values.push(result.value);
-        continue;
-      }
-
-      const error = result.reason;
-
-      raiseOnUnknownError(error);
-
-      if (issues !== null) {
-        issues.push(...error.issues);
-      } else {
-        issues = error.issues;
-      }
-    }
-
-    return outputProcessor(values, issues);
-  };
 }
 
 export function pickDictKeys(input: Dict, keys: string[]): Dict {
@@ -81,10 +52,27 @@ export function cloneDictFirstKeys(input: Dict, keyCount: number): Dict {
   return output;
 }
 
-/**
- * Returns the `output` if it differs from the `input`, or returns `input` otherwise.
- */
-export function returnArrayOutput(input: any[], output: any[]): any[] {
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------
+
+export function selectOutputArray(input: unknown[], output: unknown[]): unknown[] {
   const inputLength = input.length;
 
   for (let i = 0; i < inputLength; ++i) {
@@ -95,8 +83,67 @@ export function returnArrayOutput(input: any[], output: any[]): any[] {
   return input;
 }
 
-export function isString(value: unknown): value is string {
-  return typeof value === 'string';
+export function createFulfillArray(
+  input: unknown[],
+  options: ParserOptions | undefined,
+  applyConstraints: ApplyConstraints<any> | null
+): (output: unknown[], issues?: Issue[] | null) => any {
+  return (output, issues = null) => {
+    if (issues === null) {
+      output = selectOutputArray(input, output);
+    }
+    if (applyConstraints !== null) {
+      raiseIfIssues(applyConstraints(output, options, issues));
+    }
+    return output;
+  };
+}
+
+export function createCatchForKey(key: unknown): (error: unknown) => never {
+  return error => {
+    raiseIfUnknownError(error);
+
+    for (const issue of error.issues) {
+      issue.path.unshift(key);
+    }
+    throw error;
+  };
+}
+
+export function createCaptureSettled(
+  issues: Issue[] | null,
+  callback: (values: unknown[], issues: Issue[] | null) => any
+): (results: PromiseSettledResult<any>[]) => any {
+  return results => {
+    const resultsLength = results.length;
+
+    for (let i = 0; i < resultsLength; ++i) {
+      const result = results[i];
+
+      if (result.status === 'fulfilled') {
+        results[i] = result.value;
+        continue;
+      }
+
+      raiseIfUnknownError(result.reason);
+
+      const errorIssues = result.reason.issues;
+
+      results[i] = INVALID;
+
+      if (issues !== null) {
+        issues.push(...errorIssues);
+      } else {
+        issues = errorIssues;
+      }
+    }
+
+    return callback(results, issues);
+  };
+}
+
+export function parseAsync<O>(shape: Shape<any, O>, input: unknown, options: ParserOptions | undefined): Promise<O> {
+  return new Promise(resolve => resolve(shape.parse(input, options)));
 }
 
 export function isObjectLike(value: unknown): value is Dict {
@@ -257,16 +304,11 @@ export function createIssue(
       message = options.message;
     }
     meta = options.meta;
-  } else if (isString(options)) {
+  } else if (typeof options === 'string') {
     message = options;
   }
 
   return { code, path: [], input, param, message, meta };
-}
-
-export function captureIssues(error: unknown): Issue[] {
-  raiseOnUnknownError(error);
-  return error.issues;
 }
 
 export function raise(message: string): never {
@@ -283,13 +325,13 @@ export function raiseIssue(
   throw new ValidationError([createIssue(input, code, param, options, message)]);
 }
 
-export function raiseOnUnknownError(error: unknown): asserts error is ValidationError {
+export function raiseIfUnknownError(error: unknown): asserts error is ValidationError {
   if (!(error instanceof ValidationError)) {
     throw error;
   }
 }
 
-export function raiseOnIssues(issues: Issue[] | null): void {
+export function raiseIfIssues(issues: Issue[] | null): void {
   if (issues !== null) {
     throw new ValidationError(issues);
   }
@@ -300,16 +342,18 @@ export function raiseOrCaptureIssues(
   options: ParserOptions | undefined,
   issues: Issue[] | null
 ): Issue[] {
-  raiseOnUnknownError(error);
+  raiseIfUnknownError(error);
+
+  const errorIssues = error.issues;
 
   if (issues !== null) {
-    issues.push(...error.issues);
+    issues.push(...errorIssues);
     return issues;
   }
-  if (isObjectLike(options) && options.fast) {
+  if (options != null && options.fast) {
     throw error;
   }
-  return error.issues;
+  return errorIssues;
 }
 
 export function raiseOrCaptureIssuesForKey(
@@ -318,28 +362,19 @@ export function raiseOrCaptureIssuesForKey(
   issues: Issue[] | null,
   key: unknown
 ): Issue[] {
-  raiseOnUnknownError(error);
+  raiseIfUnknownError(error);
 
-  for (const issue of error.issues) {
+  const errorIssues = error.issues;
+
+  for (const issue of errorIssues) {
     issue.path.unshift(key);
   }
   if (issues !== null) {
-    issues.push(...error.issues);
+    issues.push(...errorIssues);
     return issues;
   }
-  if (isObjectLike(options) && options.fast) {
+  if (options != null && options.fast) {
     throw error;
   }
-  return error.issues;
-}
-
-export function createCatchForKey(key: unknown): (error: unknown) => never {
-  return error => {
-    raiseOnUnknownError(error);
-
-    for (const issue of error.issues) {
-      issue.path.unshift(key);
-    }
-    throw error;
-  };
+  return errorIssues;
 }

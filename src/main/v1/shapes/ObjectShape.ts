@@ -2,13 +2,13 @@ import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
   cloneDict,
+  createCaptureSettled,
   createCatchForKey,
-  createOutputExtractor,
   isAsync,
   isEqual,
   isObjectLike,
+  raiseIfIssues,
   raiseIssue,
-  raiseOnIssues,
   raiseOrCaptureIssues,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
@@ -247,7 +247,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     if (applyConstraints !== null) {
       issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
     }
-    raiseOnIssues(issues);
+    raiseIfIssues(issues);
 
     return output as InferObject<P, I, 'output'>;
   }
@@ -310,14 +310,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
         if (applyConstraints !== null) {
           issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
         }
-        raiseOnIssues(issues);
+        raiseIfIssues(issues);
         return output;
       };
 
       if (options != null && options.fast) {
         resolve(Promise.all(promises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(promises).then(createOutputExtractor(issues, returnOutput)));
+        resolve(Promise.allSettled(promises).then(createCaptureSettled(issues, returnOutput)));
       }
     });
   }

@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions, Primitive } from '../shared-types';
-import { isEqual, raiseIssue, raiseOnIssues } from '../utils';
+import { isEqual, raiseIfIssues, raiseIssue } from '../utils';
 import { LITERAL_CODE } from './issue-codes';
 
 export class LiteralShape<T extends Primitive> extends Shape<T> {
@@ -17,7 +17,7 @@ export class LiteralShape<T extends Primitive> extends Shape<T> {
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseOnIssues(applyConstraints(input, options, null));
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return input;
   }

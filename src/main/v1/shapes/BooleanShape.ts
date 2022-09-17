@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions } from '../shared-types';
-import { raiseIssue, raiseOnIssues } from '../utils';
+import { raiseIfIssues, raiseIssue } from '../utils';
 import { TYPE_CODE } from './issue-codes';
 
 export class BooleanShape extends Shape<boolean> {
@@ -15,7 +15,7 @@ export class BooleanShape extends Shape<boolean> {
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseOnIssues(applyConstraints(input, options, null));
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return input;
   }

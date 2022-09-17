@@ -1,6 +1,6 @@
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { captureIssues, createIssue, isAsync, isObjectLike, raiseOnIssues } from '../utils';
+import { createIssue, isAsync, raiseIfIssues, raiseIfUnknownError } from '../utils';
 import { UNION_CODE } from './issue-codes';
 
 const fastOptions: ParserOptions = { fast: true };
@@ -39,18 +39,16 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
       try {
         return shape.parse(input, options);
       } catch (error) {
-        const issues = captureIssues(error);
-        firstIssues ||= issues;
+        raiseIfUnknownError(error);
+        firstIssues ||= error.issues;
       }
       options = fastOptions;
     }
 
     let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
 
-    raiseOnIssues(
-      (isObjectLike(options) && options.fast) || applyConstraints === null
-        ? issues
-        : applyConstraints(input, options, issues)
+    raiseIfIssues(
+      (options != null && options.fast) || applyConstraints === null ? issues : applyConstraints(input, options, issues)
     );
   }
 
@@ -76,14 +74,14 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
             if (result.status === 'fulfilled') {
               return result.value;
             }
-            const issues = captureIssues(result.reason);
-            firstIssues ||= issues;
+            raiseIfUnknownError(result.reason);
+            firstIssues ||= result.reason.issues;
           }
 
           let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
 
-          raiseOnIssues(
-            (isObjectLike(options) && options.fast) || applyConstraints === null
+          raiseIfIssues(
+            (options != null && options.fast) || applyConstraints === null
               ? issues
               : applyConstraints(input, options, issues)
           );

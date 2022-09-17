@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions } from '../shared-types';
-import { raiseIssue, raiseOnIssues } from '../utils';
+import { raiseIfIssues, raiseIssue } from '../utils';
 import { INSTANCE_OF_CODE } from './issue-codes';
 
 type InstanceOf<C> = C extends new (...args: any[]) => infer T ? T : never;
@@ -19,7 +19,7 @@ export class InstanceOfShape<C extends new (...args: any[]) => any> extends Shap
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseOnIssues(applyConstraints(input, options, null));
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return input;
   }

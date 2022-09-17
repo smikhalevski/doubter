@@ -1,11 +1,11 @@
 import {
   cloneDictFirstKeys,
+  createCaptureSettled,
   createCatchForKey,
-  createOutputExtractor,
   isEqual,
   isObjectLike,
+  raiseIfIssues,
   raiseIssue,
-  raiseOnIssues,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
@@ -65,7 +65,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     if (applyConstraints !== null) {
       issues = applyConstraints(input as Record<K['output'], V['output']>, options, issues);
     }
-    raiseOnIssues(issues);
+    raiseIfIssues(issues);
 
     return output as Record<K['output'], V['output']>;
   }
@@ -105,7 +105,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
           issues = applyConstraints(output as Record<K['output'], V['output']>, options, issues);
         }
 
-        raiseOnIssues(issues);
+        raiseIfIssues(issues);
         return output;
       };
 
@@ -116,10 +116,10 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         );
       }
 
-      if (isObjectLike(options) && options.fast) {
+      if (options != null && options.fast) {
         resolve(Promise.all(results).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(results).then(createOutputExtractor(null, returnOutput)));
+        resolve(Promise.allSettled(results).then(createCaptureSettled(null, returnOutput)));
       }
     });
   }

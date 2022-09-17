@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
-import { addConstraint, isFinite, raiseIssue, raiseOnIssues } from '../utils';
+import { addConstraint, isFinite, raiseIfIssues, raiseIssue } from '../utils';
 import {
   NUMBER_GT_CODE,
   NUMBER_GTE_CODE,
@@ -118,7 +118,7 @@ export class NumberShape extends Shape<number> {
     const { applyConstraints } = this;
 
     if (applyConstraints !== null) {
-      raiseOnIssues(applyConstraints(input, options, null));
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return input;
   }

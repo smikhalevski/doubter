@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ParserOptions } from '../shared-types';
-import { raiseOnIssues } from '../utils';
+import { raiseIfIssues } from '../utils';
 
 export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefined, S['output'] | undefined> {
   constructor(protected shape: S, protected defaultValue?: S['output']) {
@@ -17,7 +17,7 @@ export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefi
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseOnIssues(applyConstraints(output, options, null));
+      raiseIfIssues(applyConstraints(output, options, null));
     }
     return output;
   }
@@ -33,7 +33,7 @@ export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefi
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
       return outputPromise.then(output => {
-        raiseOnIssues(applyConstraints(output, options, null));
+        raiseIfIssues(applyConstraints(output, options, null));
         return output;
       });
     }

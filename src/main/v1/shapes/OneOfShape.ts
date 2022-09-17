@@ -1,6 +1,6 @@
 import { InputConstraintOptions, ParserOptions, Primitive } from '../shared-types';
 import { Shape } from './Shape';
-import { raiseIssue, raiseOnIssues } from '../utils';
+import { raiseIfIssues, raiseIssue } from '../utils';
 import { ONE_OF_CODE } from './issue-codes';
 
 export class OneOfShape<T extends Primitive> extends Shape<T> {
@@ -17,7 +17,7 @@ export class OneOfShape<T extends Primitive> extends Shape<T> {
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseOnIssues(applyConstraints(input, options, null));
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return input;
   }

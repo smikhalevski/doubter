@@ -2,18 +2,18 @@ import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import {
   addConstraint,
+  createCaptureSettled,
   createCatchForKey,
-  createOutputExtractor,
+  createFulfillArray,
   isArray,
   isEqual,
   isInteger,
-  isObjectLike,
+  parseAsync,
+  raiseIfIssues,
   raiseIssue,
-  raiseOnIssues,
   raiseOrCaptureIssuesForKey,
-  returnArrayOutput,
 } from '../utils';
-import { ARRAY_MAX_CODE, ARRAY_MIN_CODE, TYPE_CODE } from './issue-codes';
+import { ARRAY_MAX_CODE, ARRAY_MIN_CODE, INVALID, TYPE_CODE } from './issue-codes';
 
 /**
  * The shape that constrains every element of an array with the element shape.
@@ -88,14 +88,15 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     for (let i = 0; i < inputLength; ++i) {
       const inputValue = input[i];
 
-      let outputValue;
+      let parsed = true;
+      let outputValue = INVALID;
       try {
         outputValue = shape.parse(inputValue);
       } catch (error) {
+        parsed = false;
         issues = raiseOrCaptureIssuesForKey(error, options, issues, i);
-        output = input;
       }
-      if (isEqual(outputValue, inputValue) || issues !== null) {
+      if (parsed && isEqual(outputValue, inputValue)) {
         continue;
       }
       if (output === input) {
@@ -107,14 +108,14 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     if (applyConstraints !== null) {
       issues = applyConstraints(output, options, issues);
     }
-    raiseOnIssues(issues);
+    raiseIfIssues(issues);
 
     return output;
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<S['output'][]> {
     if (!this.async) {
-      return super.parseAsync(input, options);
+      return parseAsync(this, input, options);
     }
 
     return new Promise(resolve => {
@@ -131,20 +132,12 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i)));
       }
 
-      const returnOutput = (output: unknown[], issues: Issue[] | null = null): unknown[] => {
-        output = issues !== null ? input : returnArrayOutput(input, output);
+      const fulfillArray = createFulfillArray(input, options, applyConstraints);
 
-        if (applyConstraints !== null) {
-          issues = applyConstraints(output, options, issues);
-        }
-        raiseOnIssues(issues);
-        return output;
-      };
-
-      if (isObjectLike(options) && options.fast) {
-        resolve(Promise.all(promises).then(returnOutput));
+      if (options != null && options.fast) {
+        resolve(Promise.all(promises).then(fulfillArray));
       } else {
-        resolve(Promise.allSettled(promises).then(createOutputExtractor(null, returnOutput)));
+        resolve(Promise.allSettled(promises).then(createCaptureSettled(null, fulfillArray)));
       }
     });
   }

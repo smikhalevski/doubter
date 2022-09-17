@@ -18,3 +18,5 @@ export const NUMBER_MULTIPLE_OF_CODE = 'numberMultipleOf';
 export const ARRAY_MIN_CODE = 'arrayMin';
 export const ARRAY_MAX_CODE = 'arrayMax';
 export const TUPLE_LENGTH_CODE = 'tupleLength';
+
+export const INVALID: any = Symbol('invalid');

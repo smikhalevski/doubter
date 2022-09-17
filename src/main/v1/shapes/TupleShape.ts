@@ -1,17 +1,16 @@
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
+  createCaptureSettled,
   createCatchForKey,
-  createOutputExtractor,
   isArray,
   isAsync,
   isEqual,
   isInteger,
-  isObjectLike,
+  raiseIfIssues,
   raiseIssue,
-  raiseOnIssues,
-  raiseOrCaptureIssues,
-  returnArrayOutput,
+  raiseOrCaptureIssuesForKey,
+  selectOutputArray,
 } from '../utils';
 import { TUPLE_LENGTH_CODE, TYPE_CODE } from './issue-codes';
 
@@ -50,7 +49,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       try {
         outputValue = shapes[i].parse(inputValue);
       } catch (error) {
-        issues = raiseOrCaptureIssues(error, options, issues);
+        issues = raiseOrCaptureIssuesForKey(error, options, issues, i);
         output = input;
       }
       if (isEqual(outputValue, inputValue) || issues !== null) {
@@ -66,7 +65,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
     }
 
-    raiseOnIssues(issues);
+    raiseIfIssues(issues);
     return output as InferTuple<U, 'output'>;
   }
 
@@ -96,19 +95,19 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       }
 
       const returnOutput = (output: unknown[], issues: Issue[] | null = null): InferTuple<U, 'output'> => {
-        output = issues !== null ? input : returnArrayOutput(input, output);
+        output = issues !== null ? input : selectOutputArray(input, output);
 
         if (applyConstraints !== null) {
           issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
         }
-        raiseOnIssues(issues);
+        raiseIfIssues(issues);
         return output as InferTuple<U, 'output'>;
       };
 
-      if (isObjectLike(options) && options.fast) {
+      if (options != null && options.fast) {
         resolve(Promise.all(outputPromises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(outputPromises).then(createOutputExtractor(issues, returnOutput)));
+        resolve(Promise.allSettled(outputPromises).then(createCaptureSettled(issues, returnOutput)));
       }
     });
   }

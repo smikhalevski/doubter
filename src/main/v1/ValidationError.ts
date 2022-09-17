@@ -1,5 +1,4 @@
 import { Issue } from './shared-types';
-import { isString } from './utils';
 
 /**
  * The validation error that is thrown to indicate a set of issues detected in the input value.
@@ -34,7 +33,7 @@ export class ValidationError extends Error {
   get message() {
     let errorMessage = '';
     for (const { code, path, message } of this.issues) {
-      errorMessage += '\n' + code + ' at /' + path.join('/') + (isString(message) ? ': ' + message : '');
+      errorMessage += '\n' + code + ' at /' + path.join('/') + (typeof message === 'string' ? ': ' + message : '');
     }
     return errorMessage;
   }
