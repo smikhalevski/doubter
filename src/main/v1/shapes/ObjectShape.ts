@@ -2,8 +2,8 @@ import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
   cloneDict,
-  createProcessSettled,
   createCatchForKey,
+  createProcessSettled,
   isAsync,
   isEqual,
   isObjectLike,
@@ -12,7 +12,7 @@ import {
   raiseOrCaptureIssues,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
-import { TYPE_CODE } from './issue-codes';
+import { INVALID, TYPE_CODE } from './issue-codes';
 
 type InferObject<P extends Dict<AnyShape>, I extends AnyShape | null, X extends 'input' | 'output'> = Squash<
   UndefinedAsOptional<{ [K in keyof P]: P[K][X] }> & (I extends AnyShape ? { [indexer: string]: I[X] } : unknown)
@@ -37,23 +37,17 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   InferObject<P, I, 'input'>,
   InferObject<P, I, 'output'>
 > {
-  protected keys;
-  protected keysMode;
-  protected valueShapes;
   protected entries: any[];
-  protected unknownKeyOptions?: InputConstraintOptions;
-  protected missingKeyOptions?: InputConstraintOptions;
-
-  protected applyKeysConstraint: (() => Dict) | null = null;
+  protected keys: string[];
+  protected keysMode;
+  protected exactOptions?: InputConstraintOptions;
+  protected processKeys: ProcessKeys | null = null;
 
   constructor(protected propShapes: P, protected indexerShape: I | null, protected options?: InputConstraintOptions) {
-    const valueShapes = Object.values(propShapes);
+    super(indexerShape?.async || isAsync(Object.values(propShapes)));
 
-    super(indexerShape?.async || isAsync(valueShapes));
-
-    this.keys = Object.keys(propShapes);
+    this.keys = Object.keys(this.propShapes);
     this.keysMode = indexerShape !== null ? ObjectKeysMode.INDEXER : ObjectKeysMode.PRESERVE;
-    this.valueShapes = valueShapes;
 
     this.entries = [];
 
@@ -66,7 +60,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     if (typeof key !== 'string') {
       return null;
     }
-    if (this.keys.includes(key)) {
+    if (key in this.propShapes) {
       return this.propShapes[key];
     }
     return this.indexerShape;
@@ -78,12 +72,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
 
   extend<P1 extends Dict<AnyShape>>(props: P1): ObjectShape<Pick<P, Exclude<keyof P, keyof P1>> & P1, I>;
 
-  extend(shapeOrProps: ObjectShape<any, AnyShape> | Dict<AnyShape>): ObjectShape<any, I> {
-    const propShapes = Object.assign(
-      {},
-      this.propShapes,
-      shapeOrProps instanceof ObjectShape ? shapeOrProps.propShapes : shapeOrProps
-    );
+  extend(props: ObjectShape<any, AnyShape> | Dict<AnyShape>): ObjectShape<any, I> {
+    const propShapes = Object.assign({}, this.propShapes, props instanceof ObjectShape ? props.propShapes : props);
 
     const shape = new ObjectShape<any, I>(propShapes, this.indexerShape);
     shape.keysMode = this.keysMode;
@@ -91,12 +81,11 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   }
 
   pick<K extends Multiple<keyof P & string>>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
-    const knownKeys = this.keys;
     const propShapes: Dict<AnyShape> = {};
 
-    for (let i = 0; i < knownKeys.length; ++i) {
-      if (keys.includes(knownKeys[i])) {
-        propShapes[knownKeys[i]] = this.valueShapes[i];
+    for (const [key, value] of Object.entries(this.propShapes)) {
+      if (keys.includes(key)) {
+        propShapes[key] = value;
       }
     }
 
@@ -106,12 +95,11 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   }
 
   omit<K extends Multiple<keyof P & string>>(...keys: K): ObjectShape<Omit<P, K[number]>, I> {
-    const knownKeys = this.keys;
     const propShapes: Dict<AnyShape> = {};
 
-    for (let i = 0; i < knownKeys.length; ++i) {
-      if (!keys.includes(knownKeys[i])) {
-        propShapes[knownKeys[i]] = this.valueShapes[i];
+    for (const [key, value] of Object.entries(this.propShapes)) {
+      if (!keys.includes(key)) {
+        propShapes[key] = value;
       }
     }
 
@@ -120,11 +108,11 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
     return shape;
   }
 
-  exact(unknownKeyOptions?: InputConstraintOptions, missingKeyOptions?: InputConstraintOptions): ObjectShape<P, null> {
+  exact(options?: InputConstraintOptions): ObjectShape<P, null> {
     const shape = this.clone();
     shape.keysMode = ObjectKeysMode.EXACT;
-    shape.unknownKeyOptions = unknownKeyOptions;
-    shape.missingKeyOptions = missingKeyOptions;
+    shape.exactOptions = options;
+    shape.processKeys = createProcessExactKeys(this.keys, options);
     shape.indexerShape = null;
     return shape as ObjectShape<P, null>;
   }
@@ -132,6 +120,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   strip(): ObjectShape<P, null> {
     const shape = this.clone();
     shape.keysMode = ObjectKeysMode.STRIP;
+    shape.exactOptions = undefined;
+    shape.processKeys = createProcessStripKeys(this.keys);
     shape.indexerShape = null;
     return shape as ObjectShape<P, null>;
   }
@@ -139,6 +129,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   preserve(): ObjectShape<P, Shape<any>> {
     const shape = this.clone();
     shape.keysMode = ObjectKeysMode.PRESERVE;
+    shape.exactOptions = undefined;
+    shape.processKeys = null;
     shape.indexerShape = null;
     return shape as ObjectShape<P, Shape<any>>;
   }
@@ -146,6 +138,8 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
   index<T extends AnyShape>(indexerShape: T): ObjectShape<P, T> {
     const shape = this.clone() as ObjectShape<P, T>;
     shape.keysMode = ObjectKeysMode.INDEXER;
+    shape.exactOptions = undefined;
+    shape.processKeys = null;
     shape.indexerShape = indexerShape;
     return shape;
   }
@@ -155,93 +149,67 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
     }
 
-    const { entries, applyConstraints, applyKeysConstraint } = this;
+    const { entries, applyConstraints, processKeys, indexerShape } = this;
     const entriesLength = entries.length;
 
     let issues: Issue[] | null = null;
     let output = input;
 
-    if (applyKeysConstraint !== null) {
+    if (processKeys !== null) {
       try {
-        output = applyKeysConstraint();
+        output = processKeys(input);
       } catch (error) {
         issues = raiseOrCaptureIssues(error, options, issues);
       }
     }
 
-    // if (keysMode !== ObjectKeysMode.PRESERVE) {
-    //   if (keysMode === ObjectKeysMode.STRIP) {
-    //     for (const key in input) {
-    //       if (!keys.includes(key)) {
-    //         output = pickDictKeys(input, keys);
-    //         break;
-    //       }
-    //     }
-    //   } else if (keysMode === ObjectKeysMode.EXACT) {
-    //     let knownKeyCount = 0;
-    //
-    //     for (const key in input) {
-    //       if (keys.includes(key)) {
-    //         ++knownKeyCount;
-    //         continue;
-    //       }
-    //       rootError = raiseOrCaptureIssues(
-    //         createError(input, UNKNOWN_KEY, key, this.unknownKeyOptions, 'Must not contain unknown keys'),
-    //         rootError,
-    //         options
-    //       );
-    //     }
-    //     if (knownKeyCount !== keys.length) {
-    //       rootError = raiseOrCaptureIssues(
-    //         createError(input, MISSING_KEY, null, this.missingKeyOptions, 'Must not have missing keys'),
-    //         rootError,
-    //         options
-    //       );
-    //     }
-    //   } else {
-    //     for (const key in input) {
-    //       if (keys.includes(key)) {
-    //         continue;
-    //       }
-    //
-    //       const inputValue = input[key];
-    //
-    //       let outputValue;
-    //       try {
-    //         outputValue = indexerShape!.parse(inputValue, options);
-    //       } catch (error) {
-    //         rootError = raiseOrCaptureIssuesForKey(error, rootError, options, key);
-    //         output = input;
-    //       }
-    //       if (isEqual(outputValue, inputValue) || rootError !== null) {
-    //         continue;
-    //       }
-    //       if (output === input) {
-    //         output = cloneDict(input);
-    //       }
-    //       output[key] = outputValue;
-    //     }
-    //   }
-    // }
-
     for (let i = 0; i < entriesLength; i += 2) {
       const key = entries[i];
       const inputValue = input[key];
 
-      let outputValue;
+      let parsed = true;
+      let outputValue = INVALID;
       try {
         outputValue = entries[i + 1].parse(inputValue, options);
       } catch (error) {
+        parsed = false;
         issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
-        output = input;
       }
-      if (isEqual(outputValue, inputValue) || issues !== null) {
+      if (parsed && isEqual(outputValue, inputValue)) {
         continue;
       }
       if (output === input) {
         output = cloneDict(input);
       }
       output[key] = outputValue;
+    }
+
+    if (indexerShape !== null) {
+      const { keys } = this;
+
+      for (const key in input) {
+        if (keys.includes(key)) {
+          continue;
+        }
+
+        const inputValue = input[key];
+
+        let parsed = true;
+        let outputValue = INVALID;
+        try {
+          outputValue = indexerShape.parse(inputValue, options);
+        } catch (error) {
+          parsed = false;
+          issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
+        }
+        if (parsed && isEqual(outputValue, inputValue)) {
+          continue;
+        }
+        if (output === input) {
+          output = cloneDict(input);
+        }
+        output[key] = outputValue;
+      }
     }
 
     if (applyConstraints !== null) {
@@ -257,15 +225,15 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       if (!isObjectLike(input)) {
         raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
       }
-      const { entries, applyConstraints, applyKeysConstraint } = this;
+      const { entries, applyConstraints, processKeys } = this;
       const entriesLength = entries.length;
 
       let issues: Issue[] | null = null;
       let output = input;
 
-      if (applyKeysConstraint !== null) {
+      if (processKeys !== null) {
         try {
-          output = applyKeysConstraint();
+          output = processKeys(input);
         } catch (error) {
           issues = raiseOrCaptureIssues(error, options, issues);
         }
@@ -277,15 +245,6 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
         const key = entries[i];
         promises.push(key, entries[i + 1].parseAsync(input[key], options).catch(createCatchForKey(key)));
       }
-
-      // if (indexerShape !== null) {
-      //   for (const key in input) {
-      //     if (keys.includes(key)) {
-      //       continue;
-      //     }
-      //     promises.push(key, indexerShape.parseAsync(input[key], options).catch(createCatchClauseForKey(key)));
-      //   }
-      // }
 
       const returnOutput = (entries: any[], issues: Issue[] | null = null): any => {
         if (issues !== null) {
@@ -321,4 +280,60 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       }
     });
   }
+}
+
+type ProcessKeys = (input: Dict) => Dict;
+
+function createProcessExactKeys(keys: string[], options: InputConstraintOptions | string | undefined): ProcessKeys {
+  const keysLength = keys.length;
+
+  return input => {
+    let knownKeyCount = 0;
+    let unknownKeys: string[] | null = null;
+    let missingKeys: string[] | null = null;
+
+    for (const key in input) {
+      if (keys.includes(key)) {
+        ++knownKeyCount;
+      } else {
+        (unknownKeys ||= []).push(key);
+      }
+    }
+    if (knownKeyCount !== keysLength) {
+      for (let i = 0; i < keysLength; ++i) {
+        const key = keys[i];
+
+        if (!(key in input)) {
+          (missingKeys ||= []).push(key);
+        }
+      }
+    }
+    if (unknownKeys !== null || missingKeys !== null) {
+      raiseIssue(input, 'exactKeys', { unknownKeys, missingKeys }, options, 'Must have exact keys');
+    }
+    return input;
+  };
+}
+
+function createProcessStripKeys(keys: string[]): ProcessKeys {
+  const keysLength = keys.length;
+
+  return input => {
+    for (const key in input) {
+      if (keys.includes(key)) {
+        continue;
+      }
+      const output: Dict = {};
+
+      for (let i = 0; i < keysLength; ++i) {
+        const key = keys[i];
+
+        if (key in input) {
+          output[key] = input[key];
+        }
+      }
+      return output;
+    }
+    return input;
+  };
 }

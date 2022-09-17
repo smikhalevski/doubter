@@ -20,15 +20,6 @@ export function addConstraint<S extends Shape<any>>(
   return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
 }
 
-export function pickDictKeys(input: Dict, keys: string[]): Dict {
-  const output: Dict = {};
-
-  for (const key of keys) {
-    output[key] = input[key];
-  }
-  return output;
-}
-
 export function cloneDict(input: Dict): Dict {
   const output: Dict = {};
 

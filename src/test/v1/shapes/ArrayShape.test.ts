@@ -1,4 +1,4 @@
-import { ArrayShape, NumberShape, StringShape } from '../../../main';
+import { ArrayShape, INVALID, NumberShape, StringShape } from '../../../main';
 
 describe('ArrayShape', () => {
   test('infers type of an element shape', () => {
@@ -126,7 +126,7 @@ describe('ArrayShape', () => {
       {
         code: 'arrayMin',
         path: [],
-        input: ['aaa', 'bbb'],
+        input: [INVALID, INVALID],
         param: 3,
         message: 'Must have the minimum length of 3',
         meta: undefined,
@@ -158,7 +158,7 @@ describe('ArrayShape', () => {
       {
         code: 'arrayMin',
         path: [],
-        input: ['aaa', 'bbb'],
+        input: [INVALID, INVALID],
         param: 3,
         message: 'Must have the minimum length of 3',
         meta: undefined,
