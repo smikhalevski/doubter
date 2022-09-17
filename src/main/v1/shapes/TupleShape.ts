@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
-  createCaptureSettled,
+  createProcessSettled,
   createCatchForKey,
   isArray,
   isAsync,
@@ -88,10 +88,10 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
         issues = applyConstraints(input as InferTuple<U, 'output'>, options, issues);
       }
 
-      const outputPromises = [];
+      const promises = [];
 
       for (let i = 0; i < shapesLength; ++i) {
-        outputPromises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i)));
+        promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i)));
       }
 
       const returnOutput = (output: unknown[], issues: Issue[] | null = null): InferTuple<U, 'output'> => {
@@ -105,9 +105,9 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       };
 
       if (options != null && options.fast) {
-        resolve(Promise.all(outputPromises).then(returnOutput));
+        resolve(Promise.all(promises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(outputPromises).then(createCaptureSettled(issues, returnOutput)));
+        resolve(Promise.allSettled(promises).then(createProcessSettled(issues, returnOutput)));
       }
     });
   }

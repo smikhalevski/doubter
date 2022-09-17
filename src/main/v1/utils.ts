@@ -110,7 +110,7 @@ export function createCatchForKey(key: unknown): (error: unknown) => never {
   };
 }
 
-export function createCaptureSettled(
+export function createProcessSettled(
   issues: Issue[] | null,
   callback: (values: unknown[], issues: Issue[] | null) => any
 ): (results: PromiseSettledResult<any>[]) => any {

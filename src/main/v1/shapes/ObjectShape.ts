@@ -2,7 +2,7 @@ import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
   cloneDict,
-  createCaptureSettled,
+  createProcessSettled,
   createCatchForKey,
   isAsync,
   isEqual,
@@ -317,7 +317,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape | null> ex
       if (options != null && options.fast) {
         resolve(Promise.all(promises).then(returnOutput));
       } else {
-        resolve(Promise.allSettled(promises).then(createCaptureSettled(issues, returnOutput)));
+        resolve(Promise.allSettled(promises).then(createProcessSettled(issues, returnOutput)));
       }
     });
   }

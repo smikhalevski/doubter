@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { OptionalShape } from './OptionalShape';
 import { ParserOptions } from '../shared-types';
-import { raiseIfIssues } from '../utils';
+import { parseAsync, raiseIfIssues } from '../utils';
 
 export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, S['output'] | null> {
   constructor(protected shape: S) {
@@ -25,18 +25,18 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | undefined> {
     if (!this.async) {
-      return super.parseAsync(input, options);
+      return parseAsync(this, input, options);
     }
 
-    const outputPromise = input === null ? Promise.resolve(null) : this.shape.parseAsync(input, options);
+    const promise = input === null ? Promise.resolve(null) : this.shape.parseAsync(input, options);
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      return outputPromise.then(output => {
+      return promise.then(output => {
         raiseIfIssues(applyConstraints(output, options, null));
         return output;
       });
     }
-    return outputPromise;
+    return promise;
   }
 }

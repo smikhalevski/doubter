@@ -2,7 +2,7 @@ import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import {
   addConstraint,
-  createCaptureSettled,
+  createProcessSettled,
   createCatchForKey,
   createFulfillArray,
   isArray,
@@ -137,7 +137,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       if (options != null && options.fast) {
         resolve(Promise.all(promises).then(fulfillArray));
       } else {
-        resolve(Promise.allSettled(promises).then(createCaptureSettled(null, fulfillArray)));
+        resolve(Promise.allSettled(promises).then(createProcessSettled(null, fulfillArray)));
       }
     });
   }

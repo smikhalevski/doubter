@@ -281,14 +281,14 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<T> {
     const { shape, transformer, applyConstraints } = this;
-    const outputPromise = shape.parseAsync(input, options).then(transformer);
+    const promise = shape.parseAsync(input, options).then(transformer);
 
     if (applyConstraints !== null) {
-      return outputPromise.then(output => {
+      return promise.then(output => {
         raiseIfIssues(applyConstraints(output, options, null));
         return output;
       });
     }
-    return outputPromise;
+    return promise;
   }
 }

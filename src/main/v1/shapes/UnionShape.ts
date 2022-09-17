@@ -60,14 +60,14 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
     return new Promise(resolve => {
       const { shapes, applyConstraints } = this;
 
-      const outputPromises = [];
+      const promises = [];
 
       for (const shape of shapes) {
-        outputPromises.push(shape.parseAsync(input, options));
+        promises.push(shape.parseAsync(input, options));
       }
 
       resolve(
-        Promise.allSettled(outputPromises).then(results => {
+        Promise.allSettled(promises).then(results => {
           let firstIssues: Issue[] | null = null;
 
           for (const result of results) {

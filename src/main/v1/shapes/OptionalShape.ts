@@ -27,16 +27,15 @@ export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefi
       return super.parseAsync(input, options);
     }
 
-    const outputPromise =
-      input === undefined ? Promise.resolve(this.defaultValue) : this.shape.parseAsync(input, options);
+    const promise = input === undefined ? Promise.resolve(this.defaultValue) : this.shape.parseAsync(input, options);
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      return outputPromise.then(output => {
+      return promise.then(output => {
         raiseIfIssues(applyConstraints(output, options, null));
         return output;
       });
     }
-    return outputPromise;
+    return promise;
   }
 }

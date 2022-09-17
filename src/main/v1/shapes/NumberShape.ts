@@ -116,7 +116,6 @@ export class NumberShape extends Shape<number> {
     }
 
     const { applyConstraints } = this;
-
     if (applyConstraints !== null) {
       raiseIfIssues(applyConstraints(input, options, null));
     }
