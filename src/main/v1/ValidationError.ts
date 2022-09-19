@@ -38,11 +38,7 @@ export class ValidationError extends Error {
     return errorMessage;
   }
 
-  set message(message: string) {
-    Object.defineProperty(this, 'message', {
-      value: message,
-      writable: true,
-      configurable: true,
-    });
+  set message(value: string) {
+    Object.defineProperty(this, 'message', { value, writable: true, configurable: true });
   }
 }

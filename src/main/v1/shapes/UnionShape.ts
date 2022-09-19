@@ -1,6 +1,6 @@
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { createIssue, isAsync, raiseIfIssues, raiseIfUnknownError } from '../utils';
+import { createIssue, isAsyncShapes, raiseIfIssues, raiseIfUnknownError } from '../utils';
 import { UNION_CODE } from './issue-codes';
 
 const fastOptions: ParserOptions = { fast: true };
@@ -9,7 +9,7 @@ type InferUnion<U extends Multiple<AnyShape>, X extends 'input' | 'output'> = { 
 
 export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
   constructor(protected shapes: U, protected options?: InputConstraintOptions) {
-    super(isAsync(shapes));
+    super(isAsyncShapes(shapes));
   }
 
   at(key: unknown): AnyShape | null {

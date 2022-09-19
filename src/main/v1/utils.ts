@@ -10,6 +10,7 @@ import {
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
 import { INVALID } from './shapes';
+import { returnNull } from '../utils';
 
 export function addConstraint<S extends Shape<any>>(
   shape: S,
@@ -149,7 +150,7 @@ export const isInteger = Number.isInteger as (value: unknown) => value is number
 
 export const isFinite = Number.isFinite as (value: unknown) => value is number;
 
-export function isAsync(shapes: AnyShape[]): boolean {
+export function isAsyncShapes(shapes: AnyShape[]): boolean {
   let async = false;
 
   for (let i = 0; i < shapes.length && !async; ++i) {

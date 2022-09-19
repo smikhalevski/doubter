@@ -5,7 +5,7 @@ import {
   createFulfillArray,
   createProcessSettled,
   isArray,
-  isAsync,
+  isAsyncShapes,
   isEqual,
   isInteger,
   parseAsync,
@@ -19,7 +19,7 @@ type InferTuple<U extends Multiple<AnyShape>, X extends 'input' | 'output'> = { 
 
 export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U, 'input'>, InferTuple<U, 'output'>> {
   constructor(protected shapes: U, protected options?: InputConstraintOptions | string) {
-    super(isAsync(shapes));
+    super(isAsyncShapes(shapes));
   }
 
   at(key: unknown): AnyShape | null {
