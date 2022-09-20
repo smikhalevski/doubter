@@ -1,5 +1,11 @@
 import { NumberShape, ObjectShape, StringShape } from '../../../main';
 
+const stringShape = new StringShape();
+const numberShape = new NumberShape();
+
+const asyncStringShape = stringShape.transformAsync(value => Promise.resolve(value));
+const asyncNumberShape = numberShape.transformAsync(value => Promise.resolve(value));
+
 describe('ObjectShape', () => {
   test('allows an empty object', () => {
     expect(new ObjectShape({}, null).validate({})).toBe(null);
@@ -18,73 +24,127 @@ describe('ObjectShape', () => {
     ]);
   });
 
-  test('raises when an object is exact and an unknown key is present', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, null).exact();
-
-    expect(type.validate({ foo: 'aaa', bar: 'aaa' })).toEqual([
+  test('raises if not an object in async mode', async () => {
+    expect(await new ObjectShape({ foo: asyncStringShape }, null).validateAsync('aaa')).toEqual([
       {
-        code: 'exactKeys',
+        code: 'type',
+        path: [],
+        input: 'aaa',
+        param: 'object',
+        message: 'Must be an object',
+        meta: undefined,
+      },
+    ]);
+  });
+
+  test('raises when an object must have exact keys and an unknown key is present', () => {
+    const shape = new ObjectShape({ foo: stringShape }, null).exact();
+
+    expect(shape.validate({ foo: 'aaa', bar: 'aaa' })).toEqual([
+      {
+        code: 'unknownKeys',
         path: [],
         input: {
           bar: 'aaa',
           foo: 'aaa',
         },
-        param: {
-          unknownKeys: ['bar'],
-          missingKeys: null,
+        param: ['bar'],
+        message: 'Must not have unknown keys',
+        meta: undefined,
+      },
+    ]);
+  });
+
+  test('raises when an object must have exact keys and an unknown key is present in async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape }, null).exact();
+
+    expect(await shape.validateAsync({ foo: 'aaa', bar: 'aaa' })).toEqual([
+      {
+        code: 'unknownKeys',
+        path: [],
+        input: {
+          bar: 'aaa',
+          foo: 'aaa',
         },
-        message: 'Must have exact keys',
+        param: ['bar'],
+        message: 'Must not have unknown keys',
         meta: undefined,
       },
     ]);
   });
 
   test('strips unknown keys', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, null).strip();
+    const shape = new ObjectShape({ foo: stringShape }, null).strip();
 
-    expect(type.parse({ foo: 'aaa', bar: 'aaa' })).toEqual({ foo: 'aaa' });
+    expect(shape.parse({ foo: 'aaa', bar: 'aaa' })).toEqual({ foo: 'aaa' });
+  });
+
+  test('strips unknown keys in async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape }, null).strip();
+
+    expect(await shape.parseAsync({ foo: 'aaa', bar: 'aaa' })).toEqual({ foo: 'aaa' });
   });
 
   test('preserves unknown properties', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, null).strip().preserve();
+    const shape = new ObjectShape({ foo: stringShape }, null).strip().preserve();
 
-    expect(type.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
+    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
+  });
+
+  test('preserves unknown properties in async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape }, null).strip().preserve();
+
+    expect(await shape.parseAsync({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
   });
 
   test('preserves unknown properties by default', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, null);
+    const shape = new ObjectShape({ foo: stringShape });
 
-    expect(type.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
+    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
+  });
+
+  test('preserves unknown properties by default in async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape });
+
+    expect(await shape.parseAsync({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
   });
 
   test('extends object type with new properties', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, null).extend({ bar: new NumberShape() }).strip();
+    const shape = new ObjectShape({ foo: stringShape }, null).extend({ bar: numberShape });
 
-    expect(type.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
+    expect(shape.propertyShapes).toEqual({
+      foo: stringShape,
+      bar: numberShape,
+    });
+    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
   });
 
   test('merges object type with another object', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, null)
-      .extend(new ObjectShape({ bar: new NumberShape() }, null))
-      .strip();
+    const shape = new ObjectShape({ foo: stringShape }, null).extend(new ObjectShape({ bar: numberShape }, null));
 
-    expect(type.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
+    expect(shape.propertyShapes).toEqual({
+      foo: stringShape,
+      bar: numberShape,
+    });
+    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
   });
 
   test('picks properties from an abject', () => {
-    const type = new ObjectShape({ foo: new StringShape(), bar: new NumberShape() }, null).pick('foo').strip();
+    const shape = new ObjectShape({ foo: stringShape, bar: numberShape }, null).pick('foo').strip();
 
-    expect(type.parse({ foo: 'aaa', bar: 'bbb' })).toEqual({ foo: 'aaa' });
+    expect(shape.propertyShapes).toEqual({ foo: stringShape });
+    expect(shape.parse({ foo: 'aaa', bar: 'bbb' })).toEqual({ foo: 'aaa' });
   });
 
   test('omits properties in an abject', () => {
-    const type = new ObjectShape({ foo: new StringShape(), bar: new NumberShape() }, null).omit('foo').strip();
+    const shape = new ObjectShape({ foo: stringShape, bar: numberShape }, null).omit('foo').strip();
 
-    expect(type.parse({ foo: 'aaa', bar: 111 })).toEqual({ bar: 111 });
+    expect(shape.propertyShapes).toEqual({ bar: numberShape });
+    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ bar: 111 });
   });
 
   test('raises issue when a property is absent', () => {
-    expect(new ObjectShape({ foo: new StringShape(), bar: new NumberShape() }, null).validate({ foo: 'aaa' })).toEqual([
+    expect(new ObjectShape({ foo: stringShape, bar: numberShape }, null).validate({ foo: 'aaa' })).toEqual([
       {
         code: 'type',
         path: ['bar'],
@@ -96,15 +156,10 @@ describe('ObjectShape', () => {
     ]);
   });
 
-  test('raises issue when a property is absent in async object', async () => {
-    const type = new ObjectShape(
-      {
-        foo: new StringShape().transformAsync(value => Promise.resolve(value)),
-        bar: new NumberShape(),
-      },
-      null
-    );
-    expect(await type.validateAsync({ foo: 'aaa' })).toEqual([
+  test('raises issue when a property is absent in async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape, bar: numberShape });
+
+    expect(await shape.validateAsync({ foo: 'aaa' })).toEqual([
       {
         code: 'type',
         path: ['bar'],
@@ -117,9 +172,9 @@ describe('ObjectShape', () => {
   });
 
   test('raises issue when an indexer property has invalid type', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, null).index(new StringShape());
+    const shape = new ObjectShape({ foo: stringShape }, null).index(stringShape);
 
-    expect(type.validate({ foo: 'aaa', bar: 111 })).toEqual([
+    expect(shape.validate({ foo: 'aaa', bar: 111 })).toEqual([
       {
         code: 'type',
         path: ['bar'],
@@ -131,13 +186,10 @@ describe('ObjectShape', () => {
     ]);
   });
 
-  test('raises issue when an indexer property has invalid type in async object', async () => {
-    const type = new ObjectShape(
-      { foo: new StringShape().transformAsync(value => Promise.resolve(value)) },
-      new StringShape()
-    );
+  test('raises issue when an indexer property has invalid type in async mode', async () => {
+    const shape = new ObjectShape({ foo: stringShape }, null).index(asyncStringShape);
 
-    expect(await type.validateAsync({ foo: 'aaa', bar: 111 })).toEqual([
+    expect(await shape.validateAsync({ foo: 'aaa', bar: 111 })).toEqual([
       {
         code: 'type',
         path: ['bar'],
@@ -150,9 +202,9 @@ describe('ObjectShape', () => {
   });
 
   test('raises multiple issues', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, new NumberShape());
+    const shape = new ObjectShape({ foo: stringShape }, numberShape);
 
-    expect(type.validate({ foo: 111, bar: 'aaa' })).toEqual([
+    expect(shape.validate({ foo: 111, bar: 'aaa' })).toEqual([
       {
         code: 'type',
         path: ['foo'],
@@ -172,13 +224,10 @@ describe('ObjectShape', () => {
     ]);
   });
 
-  test('raises multiple issues in async object', async () => {
-    const type = new ObjectShape(
-      { foo: new StringShape().transformAsync(value => Promise.resolve(value)) },
-      new NumberShape().transformAsync(value => Promise.resolve(value))
-    );
+  test('raises multiple issues in async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape }, asyncNumberShape);
 
-    expect(await type.validateAsync({ foo: 111, bar: 'aaa' })).toEqual([
+    expect(await shape.validateAsync({ foo: 111, bar: 'aaa' })).toEqual([
       {
         code: 'type',
         path: ['foo'],
@@ -193,24 +242,73 @@ describe('ObjectShape', () => {
         input: 'aaa',
         param: 'number',
         message: 'Must be a number',
+        meta: undefined,
+      },
+    ]);
+  });
+
+  test('raises a single issue in fast mode', () => {
+    const shape = new ObjectShape({ foo: stringShape }, numberShape);
+
+    expect(shape.validate({ foo: 111, bar: 'aaa' }, { fast: true })).toEqual([
+      {
+        code: 'type',
+        path: ['foo'],
+        input: 111,
+        param: 'string',
+        message: 'Must be a string',
+        meta: undefined,
+      },
+    ]);
+  });
+
+  test('raises multiple issues in fast async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape }, asyncNumberShape);
+
+    expect(await shape.validateAsync({ foo: 111, bar: 'aaa' }, { fast: true })).toEqual([
+      {
+        code: 'type',
+        path: ['foo'],
+        input: 111,
+        param: 'string',
+        message: 'Must be a string',
         meta: undefined,
       },
     ]);
   });
 
   test('returns the same object is unchanged', () => {
-    const type = new ObjectShape({ foo: new StringShape() }, null);
+    const shape = new ObjectShape({ foo: stringShape });
     const input = { foo: 'aaa' };
-    const output = type.parse(input);
+    const output = shape.parse(input);
+
+    expect(input).toBe(output);
+    expect(input).toEqual({ foo: 'aaa' });
+  });
+
+  test('returns the same object is unchanged in async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape });
+    const input = { foo: 'aaa' };
+    const output = await shape.parseAsync(input);
 
     expect(input).toBe(output);
     expect(input).toEqual({ foo: 'aaa' });
   });
 
   test('returns the object clone if changed', () => {
-    const type = new ObjectShape({ foo: new NumberShape().transform(() => 'aaa') }, null);
+    const shape = new ObjectShape({ foo: numberShape.transform(() => 'aaa') });
     const input = { foo: 111 };
-    const output = type.parse(input);
+    const output = shape.parse(input);
+
+    expect(input).not.toBe(output);
+    expect(input).toEqual({ foo: 111 });
+    expect(output).toEqual({ foo: 'aaa' });
+  });
+
+  test('returns the object clone if changed in async mode', async () => {
+    const shape = new ObjectShape({ foo: numberShape.transform(() => 'aaa') });
+    const input = { foo: 111 };
+    const output = await shape.parseAsync(input);
 
     expect(input).not.toBe(output);
     expect(input).toEqual({ foo: 111 });
@@ -218,17 +316,48 @@ describe('ObjectShape', () => {
   });
 
   test('returns value type at key', () => {
-    const valueShape = new NumberShape();
-    const type = new ObjectShape({ foo: valueShape }, null);
+    const valueShape = numberShape;
+    const shape = new ObjectShape({ foo: valueShape });
 
-    expect(type.at('foo')).toBe(valueShape);
-    expect(type.at('bar')).toBe(null);
+    expect(shape.at('foo')).toBe(valueShape);
+    expect(shape.at('bar')).toBe(null);
   });
 
   test('returns indexer type at key', () => {
-    const indexerShape = new StringShape();
-    const type = new ObjectShape({}, indexerShape);
+    const indexerShape = stringShape;
+    const shape = new ObjectShape({}, indexerShape);
 
-    expect(type.at('bar')).toBe(indexerShape);
+    expect(shape.at('foo')).toBe(indexerShape);
+    expect(shape.at('bar')).toBe(indexerShape);
+  });
+
+  test('does not swallow unknown errors', () => {
+    const shape = new ObjectShape({
+      foo: stringShape.constrain(() => {
+        throw new Error('Unknown');
+      }),
+    });
+
+    expect(() => shape.validate({ foo: '' })).toThrow(new Error('Unknown'));
+  });
+
+  test('does not swallow unknown errors in async mode', async () => {
+    const shape = new ObjectShape({
+      foo: asyncStringShape.constrain(() => {
+        throw new Error('Unknown');
+      }),
+    });
+
+    await expect(shape.validateAsync({ foo: '' })).rejects.toEqual(new Error('Unknown'));
+  });
+
+  test('does not swallow unknown errors in fast async mode', async () => {
+    const shape = new ObjectShape({
+      foo: asyncStringShape.constrain(() => {
+        throw new Error('Unknown');
+      }),
+    });
+
+    await expect(shape.validateAsync({ foo: '' }, { fast: true })).rejects.toEqual(new Error('Unknown'));
   });
 });

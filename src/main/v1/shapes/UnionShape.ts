@@ -48,7 +48,9 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
     let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
 
     raiseIfIssues(
-      (options != null && options.fast) || applyConstraints === null ? issues : applyConstraints(input, options, issues)
+      (options !== undefined && options.fast) || applyConstraints === null
+        ? issues
+        : applyConstraints(input, options, issues)
     );
   }
 
@@ -81,7 +83,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
           let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
 
           raiseIfIssues(
-            (options != null && options.fast) || applyConstraints === null
+            (options !== undefined && options.fast) || applyConstraints === null
               ? issues
               : applyConstraints(input, options, issues)
           );

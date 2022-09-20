@@ -88,15 +88,15 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     for (let i = 0; i < inputLength; ++i) {
       const inputValue = input[i];
 
-      let parsed = true;
+      let valid = true;
       let outputValue = INVALID;
       try {
         outputValue = shape.parse(inputValue);
       } catch (error) {
-        parsed = false;
+        valid = false;
         issues = raiseOrCaptureIssuesForKey(error, options, issues, i);
       }
-      if (parsed && isEqual(outputValue, inputValue)) {
+      if (valid && isEqual(outputValue, inputValue)) {
         continue;
       }
       if (output === input) {
@@ -134,7 +134,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
       const fulfillArray = createFulfillArray(input, options, applyConstraints);
 
-      if (options != null && options.fast) {
+      if (options !== undefined && options.fast) {
         resolve(Promise.all(promises).then(fulfillArray));
       } else {
         resolve(Promise.allSettled(promises).then(createProcessSettled(null, fulfillArray)));

@@ -1,16 +1,14 @@
 import {
   ApplyConstraints,
   Constraint,
-  Dict,
   InputConstraintOptions,
   Issue,
+  ObjectLike,
   OutputConstraintOptions,
   ParserOptions,
 } from './shared-types';
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
-import { INVALID } from './shapes';
-import { returnNull } from '../utils';
 
 export function addConstraint<S extends Shape<any>>(
   shape: S,
@@ -21,17 +19,8 @@ export function addConstraint<S extends Shape<any>>(
   return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
 }
 
-export function cloneDict(input: Dict): Dict {
-  const output: Dict = {};
-
-  for (const key in input) {
-    output[key] = input[key];
-  }
-  return output;
-}
-
-export function cloneDictFirstKeys(input: Dict, keyCount: number): Dict {
-  const output: Dict = {};
+export function cloneDictFirstKeys(input: ObjectLike, keyCount: number): ObjectLike {
+  const output: ObjectLike = {};
   let i = 0;
 
   for (const key in input) {
@@ -117,28 +106,33 @@ export function createProcessSettled(
         continue;
       }
 
-      raiseIfUnknownError(result.reason);
-
-      const errorIssues = result.reason.issues;
-
-      results[i] = INVALID;
-
-      if (issues !== null) {
-        issues.push(...errorIssues);
-      } else {
-        issues = errorIssues;
-      }
+      // issues = captureIssuesForKey(issues, result.reason);
     }
 
     return callback(results, issues);
   };
 }
 
+export function captureIssuesForKey(issues: Issue[] | null, error: unknown, key: unknown): Issue[] {
+  raiseIfUnknownError(error);
+
+  const errorIssues = error.issues;
+
+  for (const issue of errorIssues) {
+    issue.path.unshift(key);
+  }
+  if (issues !== null) {
+    issues.push(...errorIssues);
+    return issues;
+  }
+  return errorIssues;
+}
+
 export function parseAsync<O>(shape: Shape<any, O>, input: unknown, options: ParserOptions | undefined): Promise<O> {
   return new Promise(resolve => resolve(shape.parse(input, options)));
 }
 
-export function isObjectLike(value: unknown): value is Dict {
+export function isObjectLike(value: unknown): value is ObjectLike {
   return value !== null && typeof value === 'object';
 }
 
@@ -342,7 +336,7 @@ export function raiseOrCaptureIssues(
     issues.push(...errorIssues);
     return issues;
   }
-  if (options != null && options.fast) {
+  if (options !== undefined && options.fast) {
     throw error;
   }
   return errorIssues;
@@ -365,7 +359,7 @@ export function raiseOrCaptureIssuesForKey(
     issues.push(...errorIssues);
     return issues;
   }
-  if (options != null && options.fast) {
+  if (options !== undefined && options.fast) {
     throw error;
   }
   return errorIssues;

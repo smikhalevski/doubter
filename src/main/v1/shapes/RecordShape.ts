@@ -116,7 +116,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         );
       }
 
-      if (options != null && options.fast) {
+      if (options !== undefined && options.fast) {
         resolve(Promise.all(results).then(returnOutput));
       } else {
         resolve(Promise.allSettled(results).then(createProcessSettled(null, returnOutput)));
