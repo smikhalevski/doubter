@@ -71,9 +71,9 @@ export class StringShape extends Shape<string> {
       raiseIssue(input, TYPE_CODE, 'string', this.options, 'Must be a string');
     }
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+    const { constraintsProcessor } = this;
+    if (constraintsProcessor !== null) {
+      raiseIfIssues(constraintsProcessor(input, options, null));
     }
     return input;
   }

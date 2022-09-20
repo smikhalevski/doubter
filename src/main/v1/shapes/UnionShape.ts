@@ -32,7 +32,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
   }
 
   parse(input: unknown, options?: ParserOptions): InferUnion<U, 'output'> {
-    const { shapes, applyConstraints } = this;
+    const { shapes, constraintsProcessor } = this;
 
     let firstIssues: Issue[] | null = null;
     for (const shape of shapes) {
@@ -48,9 +48,9 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
     let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
 
     raiseIfIssues(
-      (options !== undefined && options.fast) || applyConstraints === null
+      (options !== undefined && options.fast) || constraintsProcessor === null
         ? issues
-        : applyConstraints(input, options, issues)
+        : constraintsProcessor(input, options, issues)
     );
   }
 
@@ -60,7 +60,7 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
     }
 
     return new Promise(resolve => {
-      const { shapes, applyConstraints } = this;
+      const { shapes, constraintsProcessor } = this;
 
       const promises = [];
 
@@ -83,9 +83,9 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
           let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
 
           raiseIfIssues(
-            (options !== undefined && options.fast) || applyConstraints === null
+            (options !== undefined && options.fast) || constraintsProcessor === null
               ? issues
-              : applyConstraints(input, options, issues)
+              : constraintsProcessor(input, options, issues)
           );
         })
       );

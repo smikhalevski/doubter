@@ -1,5 +1,5 @@
 import {
-  ApplyConstraints,
+  ConstraintsProcessor,
   Constraint,
   InputConstraintOptions,
   Issue,
@@ -67,14 +67,14 @@ export function selectOutputArray(input: unknown[], output: unknown[]): unknown[
 export function createFulfillArray(
   input: unknown[],
   options: ParserOptions | undefined,
-  applyConstraints: ApplyConstraints<any> | null
+  constraintsProcessor: ConstraintsProcessor<any> | null
 ): (output: unknown[], issues?: Issue[] | null) => any {
   return (output, issues = null) => {
     if (issues === null) {
       output = selectOutputArray(input, output);
     }
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(output, options, issues));
+    if (constraintsProcessor !== null) {
+      raiseIfIssues(constraintsProcessor(output, options, issues));
     }
     return output;
   };
@@ -153,7 +153,7 @@ export function isAsyncShapes(shapes: AnyShape[]): boolean {
   return async;
 }
 
-export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<T> | null {
+export function createApplyConstraints<T>(constraints: any[]): ConstraintsProcessor<T> | null {
   const constraintsLength = constraints.length;
 
   if (constraintsLength === 0) {

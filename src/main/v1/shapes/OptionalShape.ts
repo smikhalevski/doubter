@@ -15,9 +15,9 @@ export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefi
   parse(input: unknown, options?: ParserOptions): S['output'] | undefined {
     const output = input === undefined ? this.defaultValue : this.shape.parse(input, options);
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(output, options, null));
+    const { constraintsProcessor } = this;
+    if (constraintsProcessor !== null) {
+      raiseIfIssues(constraintsProcessor(output, options, null));
     }
     return output;
   }
@@ -29,10 +29,10 @@ export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefi
 
     const promise = input === undefined ? Promise.resolve(this.defaultValue) : this.shape.parseAsync(input, options);
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
+    const { constraintsProcessor } = this;
+    if (constraintsProcessor !== null) {
       return promise.then(output => {
-        raiseIfIssues(applyConstraints(output, options, null));
+        raiseIfIssues(constraintsProcessor(output, options, null));
         return output;
       });
     }

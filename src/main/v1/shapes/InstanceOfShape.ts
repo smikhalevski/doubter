@@ -17,9 +17,9 @@ export class InstanceOfShape<C extends new (...args: any[]) => any> extends Shap
       raiseIssue(input, INSTANCE_OF_CODE, ctor, this.options, 'Must be an instance of ' + ctor.name);
     }
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+    const { constraintsProcessor } = this;
+    if (constraintsProcessor !== null) {
+      raiseIfIssues(constraintsProcessor(input, options, null));
     }
     return input;
   }

@@ -15,9 +15,9 @@ export class OneOfShape<T extends Primitive> extends Shape<T> {
       raiseIssue(input, ONE_OF_CODE, values, this.options, 'Must be equal to one of: ' + values.join(', '));
     }
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+    const { constraintsProcessor } = this;
+    if (constraintsProcessor !== null) {
+      raiseIfIssues(constraintsProcessor(input, options, null));
     }
     return input;
   }

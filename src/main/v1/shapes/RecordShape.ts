@@ -29,7 +29,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
     }
 
-    const { keyShape, valueShape, applyConstraints } = this;
+    const { keyShape, valueShape, constraintsProcessor } = this;
 
     let issues: Issue[] | null = null;
     let output = input;
@@ -62,8 +62,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       output[outputKey] = outputValue;
     }
 
-    if (applyConstraints !== null) {
-      issues = applyConstraints(input as Record<K['output'], V['output']>, options, issues);
+    if (constraintsProcessor !== null) {
+      issues = constraintsProcessor(input as Record<K['output'], V['output']>, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -76,7 +76,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
       }
 
-      const { keyShape, valueShape, applyConstraints } = this;
+      const { keyShape, valueShape, constraintsProcessor } = this;
 
       const results = [];
 
@@ -101,8 +101,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
           }
         }
 
-        if (applyConstraints !== null) {
-          issues = applyConstraints(output as Record<K['output'], V['output']>, options, issues);
+        if (constraintsProcessor !== null) {
+          issues = constraintsProcessor(output as Record<K['output'], V['output']>, options, issues);
         }
 
         raiseIfIssues(issues);

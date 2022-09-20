@@ -121,7 +121,7 @@ export type ObjectLike<T = any> = Record<keyof any, any>;
  * @param issues The list of already captured issues.
  * @returns The list of captured issues, or `null` if there are no issues.
  */
-export type ApplyConstraints<T> = (
+export type ConstraintsProcessor<T> = (
   input: T,
   options: ParserOptions | undefined,
   issues: Issue[] | null

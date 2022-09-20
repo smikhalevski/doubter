@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ApplyConstraints, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { ConstraintsProcessor, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
 import {
   captureIssuesForKey,
   createCatchForKey,
@@ -30,118 +30,119 @@ type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : n
 
 type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-type Preprocessor = (input: ObjectLike) => ObjectLike;
+type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
-type ApplyIndexer = (
+type KeysProcessor = (input: ObjectLike) => ObjectLike;
+
+type IndexerProcessor = (
   input: ObjectLike,
   output: ObjectLike,
   options: ParserOptions | undefined,
   issues: Issue[] | null,
-  applyConstraints: ApplyConstraints<any> | null
+  constraintsProcessor: ConstraintsProcessor<any> | null
 ) => ObjectLike;
 
 export enum UnknownKeysMode {
-  IGNORED = 'ignored',
+  PRESERVED = 'preserved',
   STRIPPED = 'stripped',
-  FORBIDDEN = 'forbidden',
+  EXACT = 'exact',
 }
 
 export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Shape<never>> extends Shape<
   InferObject<P, I, 'input'>,
   InferObject<P, I, 'output'>
 > {
-  readonly knownKeys: Array<keyof P>;
+  readonly keys: ReadonlyArray<keyof P>;
+  readonly keysMode: UnknownKeysMode = UnknownKeysMode.PRESERVED;
 
-  private _valueShapes: any[] = [];
-  private _preprocessor: Preprocessor | null = null;
-  private _applyIndexer: ApplyIndexer | null = null;
+  private _valueShapes: AnyShape[] = [];
+  private _keysProcessor: KeysProcessor | null = null;
+  private _indexerProcessor: IndexerProcessor | null = null;
 
   constructor(
-    readonly propertyShapes: Readonly<P>,
+    readonly shapes: Readonly<P>,
     readonly indexerShape: I | null = null,
-    readonly unknownKeysMode: UnknownKeysMode = UnknownKeysMode.IGNORED,
     private _options?: InputConstraintOptions
   ) {
-    const knownKeys = Object.keys(propertyShapes);
-    const valueShapes = Object.values(propertyShapes);
+    const keys = Object.keys(shapes);
+    const valueShapes = Object.values(shapes);
 
-    super(indexerShape?.async || isAsyncShapes(valueShapes));
+    super((indexerShape !== null && indexerShape.async) || isAsyncShapes(valueShapes));
 
-    this.knownKeys = knownKeys;
+    this.keys = keys;
     this._valueShapes = valueShapes;
 
     if (indexerShape !== null) {
-      this._applyIndexer = createApplyIndexer(knownKeys, indexerShape);
+      this._indexerProcessor = createIndexerProcessor(keys, indexerShape);
     }
   }
 
-  at(key: unknown): AnyShape | null {
-    const { indexerShape } = this;
-    return typeof key !== 'string' ? null : this.knownKeys.includes(key) ? this.propertyShapes[key] : indexerShape;
+  at(key: any): AnyShape | null {
+    return this.shapes.hasOwnProperty(key) ? this.shapes[key] : this.indexerShape;
   }
 
   extend<T extends ObjectLike<AnyShape>>(
     shape: ObjectShape<T, AnyShape>
   ): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
 
-  extend<T extends ObjectLike<AnyShape>>(propertyShapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
+  extend<T extends ObjectLike<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
 
   extend(shape: ObjectShape<any, AnyShape> | ObjectLike<AnyShape>): ObjectShape<any, I> {
-    const propertyShapes = Object.assign(
-      {},
-      this.propertyShapes,
-      shape instanceof ObjectShape ? shape.propertyShapes : shape
-    );
+    const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
-    return new ObjectShape(propertyShapes, this.indexerShape, UnknownKeysMode.IGNORED, this._options);
+    return new ObjectShape(shapes, this.indexerShape, this._options);
   }
 
   pick<K extends Array<keyof P>>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
-    const { knownKeys, _valueShapes } = this;
-    const propertyShapes: ObjectLike<AnyShape> = {};
+    const knownKeys = this.keys;
+    const shapes: ObjectLike<AnyShape> = {};
 
     for (let i = 0; i < knownKeys.length; ++i) {
       if (keys.includes(knownKeys[i])) {
-        propertyShapes[knownKeys[i]] = _valueShapes[i];
+        shapes[knownKeys[i]] = this._valueShapes[i];
       }
     }
 
-    return new ObjectShape<any, I>(propertyShapes, this.indexerShape, UnknownKeysMode.IGNORED, this._options);
+    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options);
   }
 
   omit<K extends Array<keyof P>>(...keys: K): ObjectShape<Omit<P, K[number]>, I> {
-    const { knownKeys, _valueShapes } = this;
-    const propertyShapes: ObjectLike<AnyShape> = {};
+    const knownKeys = this.keys;
+    const shapes: ObjectLike<AnyShape> = {};
 
     for (let i = 0; i < knownKeys.length; ++i) {
       if (!keys.includes(knownKeys[i])) {
-        propertyShapes[knownKeys[i]] = _valueShapes[i];
+        shapes[knownKeys[i]] = this._valueShapes[i];
       }
     }
 
-    return new ObjectShape<any, I>(propertyShapes, this.indexerShape, UnknownKeysMode.IGNORED, this._options);
+    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options);
   }
 
   exact(options?: InputConstraintOptions): ObjectShape<P> {
-    const { propertyShapes } = this;
-    const shape = new ObjectShape<P>(propertyShapes, null, UnknownKeysMode.FORBIDDEN, this._options);
-    shape._preprocessor = createExactKeysPreprocessor(shape.knownKeys, options);
+    const shape = new ObjectShape<P>(this.shapes, null, this._options);
+
+    (shape as Mutable<ObjectShape<P>>).keysMode = UnknownKeysMode.EXACT;
+    shape._keysProcessor = createExactKeysProcessor(shape.keys, options);
+
     return shape;
   }
 
   strip(): ObjectShape<P> {
-    const { propertyShapes } = this;
-    const shape = new ObjectShape<P>(propertyShapes, null, UnknownKeysMode.STRIPPED, this._options);
-    shape._preprocessor = createStripKeysPreprocessor(shape.knownKeys);
+    const shape = new ObjectShape<P>(this.shapes, null, this._options);
+
+    (shape as Mutable<ObjectShape<P>>).keysMode = UnknownKeysMode.STRIPPED;
+    shape._keysProcessor = createStripKeysProcessor(shape.keys);
+
     return shape;
   }
 
   preserve(): ObjectShape<P> {
-    return new ObjectShape<P>(this.propertyShapes, null, UnknownKeysMode.IGNORED, this._options);
+    return new ObjectShape<P>(this.shapes, null, this._options);
   }
 
   index<T extends AnyShape>(indexerShape: T): ObjectShape<P, T> {
-    return new ObjectShape(this.propertyShapes, indexerShape, UnknownKeysMode.IGNORED, this._options);
+    return new ObjectShape(this.shapes, indexerShape, this._options);
   }
 
   parse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> {
@@ -149,31 +150,32 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
       raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
     }
 
-    const { knownKeys, _valueShapes, _preprocessor, _applyIndexer, applyConstraints } = this;
-    const knownKeysLength = knownKeys.length;
+    const { keys, _valueShapes, _keysProcessor, _indexerProcessor, constraintsProcessor } = this;
+    const keysLength = keys.length;
 
     let issues: Issue[] | null = null;
     let output = input;
 
-    if (_preprocessor !== null) {
+    if (_keysProcessor !== null) {
       try {
-        output = _preprocessor(input);
+        output = _keysProcessor(input);
       } catch (error) {
         issues = raiseOrCaptureIssues(error, options, issues);
       }
     }
 
-    for (let i = 0; i < knownKeysLength; ++i) {
-      const knownKey = knownKeys[i];
-      const inputValue = input[knownKey];
+    for (let i = 0; i < keysLength; ++i) {
+      const key = keys[i];
+      const inputValue = input[key];
 
-      let valid = true;
       let outputValue = INVALID;
+      let valid = true;
+
       try {
         outputValue = _valueShapes[i].parse(inputValue, options);
       } catch (error) {
+        issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
         valid = false;
-        issues = raiseOrCaptureIssuesForKey(error, options, issues, knownKey);
       }
       if (valid && isEqual(outputValue, inputValue)) {
         continue;
@@ -181,15 +183,15 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
       if (output === input) {
         output = cloneObjectLike(input);
       }
-      output[knownKey] = outputValue;
+      output[key] = outputValue;
     }
 
-    if (_applyIndexer !== null) {
-      return _applyIndexer(input, output, options, issues, applyConstraints) as InferObject<P, I, 'output'>;
+    if (_indexerProcessor !== null) {
+      return _indexerProcessor(input, output, options, issues, constraintsProcessor) as InferObject<P, I, 'output'>;
     }
 
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
+    if (constraintsProcessor !== null) {
+      issues = constraintsProcessor(output as InferObject<P, I, 'output'>, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -206,64 +208,67 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
         raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
       }
 
-      const { knownKeys, _valueShapes, _preprocessor, indexerShape, applyConstraints } = this;
-      const knownKeysLength = knownKeys.length;
+      const { keys, _valueShapes, _keysProcessor, indexerShape, constraintsProcessor } = this;
+      const keysLength = keys.length;
+      const promises = [];
 
       let issues: Issue[] | null = null;
       let output = input;
+      let inputKeys = keys as PropertyKey[];
 
-      if (_preprocessor !== null) {
+      if (_keysProcessor !== null) {
         try {
-          output = _preprocessor(input);
+          output = _keysProcessor(input);
         } catch (error) {
           issues = raiseOrCaptureIssues(error, options, issues);
         }
       }
 
-      let keys = knownKeys;
-
-      const promises = [];
-
-      for (let i = 0; i < knownKeysLength; ++i) {
-        const knownKey = knownKeys[i];
-        promises.push(_valueShapes[i].parseAsync(input[knownKey], options));
+      for (let i = 0; i < keysLength; ++i) {
+        promises.push(_valueShapes[i].parseAsync(input[keys[i]], options));
       }
 
       if (indexerShape !== null) {
-        keys = keys.slice(0);
+        inputKeys = keys.slice(0);
 
         for (const key in input) {
-          if (!knownKeys.includes(key)) {
-            keys.push(key);
+          if (!keys.includes(key)) {
+            inputKeys.push(key);
             promises.push(indexerShape.parseAsync(input[key], options));
           }
         }
       }
 
       if (options !== undefined && options.fast) {
-        for (let i = 0; i < promises.length; ++i) {
-          promises[i] = promises[i].catch(createCatchForKey(keys[i]));
+        const inputKeysLength = inputKeys.length;
+
+        for (let i = 0; i < inputKeysLength; ++i) {
+          promises[i] = promises[i].catch(createCatchForKey(inputKeys[i]));
         }
-        resolve(Promise.all(promises).then(createFastResolveObject(keys, input, output, applyConstraints, options)));
+        resolve(
+          Promise.all(promises).then(createObjectResolver(inputKeys, input, output, constraintsProcessor, options))
+        );
         return;
       }
 
       resolve(
-        Promise.allSettled(promises).then(createResolveObject(keys, input, output, applyConstraints, options, issues))
+        Promise.allSettled(promises).then(
+          createSettledObjectResolver(inputKeys, input, output, constraintsProcessor, options, issues)
+        )
       );
     });
   }
 }
 
-function createExactKeysPreprocessor(
-  knownKeys: PropertyKey[],
+function createExactKeysProcessor(
+  keys: readonly PropertyKey[],
   options: InputConstraintOptions | undefined
-): Preprocessor {
+): KeysProcessor {
   return input => {
     let unknownKeys: string[] | null = null;
 
     for (const key in input) {
-      if (!knownKeys.includes(key)) {
+      if (!keys.includes(key)) {
         (unknownKeys ||= []).push(key);
       }
     }
@@ -274,18 +279,18 @@ function createExactKeysPreprocessor(
   };
 }
 
-function createStripKeysPreprocessor(knownKeys: PropertyKey[]): Preprocessor {
-  const knownKeysLength = knownKeys.length;
+function createStripKeysProcessor(keys: readonly PropertyKey[]): KeysProcessor {
+  const keysLength = keys.length;
 
   return input => {
     for (const key in input) {
-      if (knownKeys.includes(key)) {
+      if (keys.includes(key)) {
         continue;
       }
       const output: ObjectLike = {};
 
-      for (let i = 0; i < knownKeysLength; ++i) {
-        const key = knownKeys[i];
+      for (let i = 0; i < keysLength; ++i) {
+        const key = keys[i];
 
         if (key in input) {
           output[key] = input[key];
@@ -297,8 +302,8 @@ function createStripKeysPreprocessor(knownKeys: PropertyKey[]): Preprocessor {
   };
 }
 
-function createApplyIndexer(keys: PropertyKey[], indexerShape: AnyShape): ApplyIndexer {
-  return (input, output, options, issues, applyConstraints) => {
+function createIndexerProcessor(keys: PropertyKey[], indexerShape: AnyShape): IndexerProcessor {
+  return (input, output, options, issues, constraintsProcessor) => {
     for (const key in input) {
       if (keys.includes(key)) {
         continue;
@@ -323,8 +328,8 @@ function createApplyIndexer(keys: PropertyKey[], indexerShape: AnyShape): ApplyI
       output[key] = outputValue;
     }
 
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output, options, issues);
+    if (constraintsProcessor !== null) {
+      issues = constraintsProcessor(output, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -341,11 +346,11 @@ function cloneObjectLike(input: ObjectLike): ObjectLike {
   return output;
 }
 
-function createFastResolveObject(
-  keys: PropertyKey[],
+function createObjectResolver(
+  keys: readonly PropertyKey[],
   input: ObjectLike,
   output: ObjectLike,
-  applyConstraints: ApplyConstraints<any> | null,
+  constraintsProcessor: ConstraintsProcessor<any> | null,
   options: ParserOptions | undefined
 ): (outputValues: unknown[]) => any {
   return outputValues => {
@@ -364,18 +369,18 @@ function createFastResolveObject(
       output[key] = outputValue;
     }
 
-    if (applyConstraints !== null) {
-      applyConstraints(output, options, null);
+    if (constraintsProcessor !== null) {
+      constraintsProcessor(output, options, null);
     }
     return output;
   };
 }
 
-function createResolveObject(
-  keys: PropertyKey[],
+function createSettledObjectResolver(
+  keys: readonly PropertyKey[],
   input: ObjectLike,
   output: ObjectLike,
-  applyConstraints: ApplyConstraints<any> | null,
+  constraintsProcessor: ConstraintsProcessor<any> | null,
   options: ParserOptions | undefined,
   issues: Issue[] | null
 ): (results: PromiseSettledResult<unknown>[]) => any {
@@ -388,14 +393,14 @@ function createResolveObject(
 
       let outputValue = INVALID;
 
-      if (result.status === 'fulfilled') {
+      if (result.status === 'rejected') {
+        issues = captureIssuesForKey(issues, result.reason, key);
+      } else {
         outputValue = result.value;
 
         if (isEqual(outputValue, input[key])) {
           continue;
         }
-      } else {
-        issues = captureIssuesForKey(issues, result.reason, key);
       }
 
       if (output === input) {
@@ -404,8 +409,8 @@ function createResolveObject(
       output[key] = outputValue;
     }
 
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output, options, issues);
+    if (constraintsProcessor !== null) {
+      issues = constraintsProcessor(output, options, issues);
     }
     raiseIfIssues(issues);
 

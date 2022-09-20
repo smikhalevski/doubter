@@ -79,7 +79,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
 
-    const { shape, applyConstraints } = this;
+    const { shape, constraintsProcessor } = this;
     const inputLength = input.length;
 
     let issues: Issue[] | null = null;
@@ -105,8 +105,8 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       output[i] = outputValue;
     }
 
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output, options, issues);
+    if (constraintsProcessor !== null) {
+      issues = constraintsProcessor(output, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -123,7 +123,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
       }
 
-      const { shape, applyConstraints } = this;
+      const { shape, constraintsProcessor } = this;
       const inputLength = input.length;
 
       const promises = [];
@@ -132,7 +132,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i)));
       }
 
-      const fulfillArray = createFulfillArray(input, options, applyConstraints);
+      const fulfillArray = createFulfillArray(input, options, constraintsProcessor);
 
       if (options !== undefined && options.fast) {
         resolve(Promise.all(promises).then(fulfillArray));

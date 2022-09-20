@@ -33,7 +33,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
 
-    const { shapes, applyConstraints } = this;
+    const { shapes, constraintsProcessor } = this;
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
@@ -63,8 +63,8 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       output[i] = outputValue;
     }
 
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
+    if (constraintsProcessor !== null) {
+      issues = constraintsProcessor(output as InferTuple<U, 'output'>, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -81,7 +81,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
         raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
       }
 
-      const { shapes, applyConstraints } = this;
+      const { shapes, constraintsProcessor } = this;
       const shapesLength = shapes.length;
 
       if (input.length !== shapesLength) {
@@ -94,7 +94,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
         promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i)));
       }
 
-      const fulfillArray = createFulfillArray(input, options, applyConstraints);
+      const fulfillArray = createFulfillArray(input, options, constraintsProcessor);
 
       if (options !== undefined && options.fast) {
         resolve(Promise.all(promises).then(fulfillArray));

@@ -13,9 +13,9 @@ export class BigIntShape extends Shape<bigint> {
       raiseIssue(input, TYPE_CODE, 'bigint', this.options, 'Must be a bigint');
     }
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+    const { constraintsProcessor } = this;
+    if (constraintsProcessor !== null) {
+      raiseIfIssues(constraintsProcessor(input, options, null));
     }
     return input;
   }

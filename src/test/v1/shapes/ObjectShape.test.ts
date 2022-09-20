@@ -1,4 +1,4 @@
-import { NumberShape, ObjectShape, StringShape } from '../../../main';
+import { NumberShape, ObjectShape, StringShape, UnknownKeysMode } from '../../../main';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
@@ -8,7 +8,10 @@ const asyncNumberShape = numberShape.transformAsync(value => Promise.resolve(val
 
 describe('ObjectShape', () => {
   test('allows an empty object', () => {
-    expect(new ObjectShape({}, null).validate({})).toBe(null);
+    const shape = new ObjectShape({}, null);
+
+    expect(shape.keysMode).toBe(UnknownKeysMode.PRESERVED);
+    expect(shape.validate({})).toBe(null);
   });
 
   test('raises if not an object', () => {
@@ -40,6 +43,7 @@ describe('ObjectShape', () => {
   test('raises when an object must have exact keys and an unknown key is present', () => {
     const shape = new ObjectShape({ foo: stringShape }, null).exact();
 
+    expect(shape.keysMode).toBe(UnknownKeysMode.EXACT);
     expect(shape.validate({ foo: 'aaa', bar: 'aaa' })).toEqual([
       {
         code: 'unknownKeys',
@@ -76,6 +80,7 @@ describe('ObjectShape', () => {
   test('strips unknown keys', () => {
     const shape = new ObjectShape({ foo: stringShape }, null).strip();
 
+    expect(shape.keysMode).toBe(UnknownKeysMode.STRIPPED);
     expect(shape.parse({ foo: 'aaa', bar: 'aaa' })).toEqual({ foo: 'aaa' });
   });
 
@@ -88,6 +93,7 @@ describe('ObjectShape', () => {
   test('preserves unknown properties', () => {
     const shape = new ObjectShape({ foo: stringShape }, null).strip().preserve();
 
+    expect(shape.keysMode).toBe(UnknownKeysMode.PRESERVED);
     expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
   });
 
@@ -112,7 +118,7 @@ describe('ObjectShape', () => {
   test('extends object type with new properties', () => {
     const shape = new ObjectShape({ foo: stringShape }, null).extend({ bar: numberShape });
 
-    expect(shape.propertyShapes).toEqual({
+    expect(shape.shapes).toEqual({
       foo: stringShape,
       bar: numberShape,
     });
@@ -122,7 +128,7 @@ describe('ObjectShape', () => {
   test('merges object type with another object', () => {
     const shape = new ObjectShape({ foo: stringShape }, null).extend(new ObjectShape({ bar: numberShape }, null));
 
-    expect(shape.propertyShapes).toEqual({
+    expect(shape.shapes).toEqual({
       foo: stringShape,
       bar: numberShape,
     });
@@ -132,14 +138,14 @@ describe('ObjectShape', () => {
   test('picks properties from an abject', () => {
     const shape = new ObjectShape({ foo: stringShape, bar: numberShape }, null).pick('foo').strip();
 
-    expect(shape.propertyShapes).toEqual({ foo: stringShape });
+    expect(shape.shapes).toEqual({ foo: stringShape });
     expect(shape.parse({ foo: 'aaa', bar: 'bbb' })).toEqual({ foo: 'aaa' });
   });
 
   test('omits properties in an abject', () => {
     const shape = new ObjectShape({ foo: stringShape, bar: numberShape }, null).omit('foo').strip();
 
-    expect(shape.propertyShapes).toEqual({ bar: numberShape });
+    expect(shape.shapes).toEqual({ bar: numberShape });
     expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ bar: 111 });
   });
 
