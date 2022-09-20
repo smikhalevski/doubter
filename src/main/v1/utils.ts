@@ -19,20 +19,6 @@ export function addConstraint<S extends Shape<any>>(
   return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
 }
 
-export function cloneDictFirstKeys(input: ObjectLike, keyCount: number): ObjectLike {
-  const output: ObjectLike = {};
-  let i = 0;
-
-  for (const key in input) {
-    if (i >= keyCount) {
-      break;
-    }
-    output[key] = input[key];
-    i++;
-  }
-  return output;
-}
-
 // -------------------------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------------------------

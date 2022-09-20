@@ -1,12 +1,18 @@
 import { NumberShape, RecordShape, StringShape } from '../../../main';
 
+const stringShape = new StringShape();
+const numberShape = new NumberShape();
+
+const asyncStringShape = stringShape.transformAsync(value => Promise.resolve(value));
+const asyncNumberShape = numberShape.transformAsync(value => Promise.resolve(value));
+
 describe('RecordShape', () => {
   test('allows a record', () => {
-    expect(new RecordShape(new StringShape(), new NumberShape()).validate({ aaa: 111 })).toBe(null);
+    expect(new RecordShape(stringShape, numberShape).validate({ aaa: 111 })).toBe(null);
   });
 
   test('raises if record value has an illegal type', () => {
-    expect(new RecordShape(new StringShape(), new NumberShape()).validate({ aaa: 'bbb' })).toEqual([
+    expect(new RecordShape(stringShape, numberShape).validate({ aaa: 'bbb' })).toEqual([
       {
         code: 'type',
         path: ['aaa'],
@@ -19,7 +25,7 @@ describe('RecordShape', () => {
   });
 
   test('raises if record key has an illegal type', () => {
-    expect(new RecordShape(new StringShape().max(2), new NumberShape()).validate({ aaa: 111 })).toEqual([
+    expect(new RecordShape(stringShape.max(2), numberShape).validate({ aaa: 111 })).toEqual([
       {
         code: 'stringMax',
         path: ['aaa'],
@@ -33,8 +39,8 @@ describe('RecordShape', () => {
 
   test('applies constrains to properties asynchronously', async () => {
     const type = new RecordShape(
-      new StringShape().max(2).transformAsync(input => Promise.resolve(input)),
-      new NumberShape().transformAsync(input => Promise.resolve(input))
+      stringShape.max(2).transformAsync(value => Promise.resolve(value)),
+      asyncNumberShape
     );
 
     expect(await type.validateAsync({ aaa: 'bbb' })).toEqual([
@@ -58,10 +64,9 @@ describe('RecordShape', () => {
   });
 
   test('returns child type at key', () => {
-    const valueShape = new NumberShape();
-    const type = new RecordShape(new StringShape(), valueShape);
+    const shape = new RecordShape(stringShape, numberShape);
 
-    expect(type.at('aaa')).toBe(valueShape);
-    expect(type.at(1)).toBe(null);
+    expect(shape.at('aaa')).toBe(numberShape);
+    expect(shape.at(1)).toBe(null);
   });
 });

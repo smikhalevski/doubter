@@ -1,22 +1,22 @@
 import {
-  cloneDictFirstKeys,
-  createProcessSettled,
+  captureIssuesForKey,
   createCatchForKey,
   isEqual,
   isObjectLike,
+  parseAsync,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, Issue, ParserOptions } from '../shared-types';
-import { TYPE_CODE } from './issue-codes';
+import { ConstraintsProcessor, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { INVALID, TYPE_CODE } from './issue-codes';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
   Record<K['input'], V['input']>,
   Record<K['output'], V['output']>
 > {
-  constructor(protected keyShape: K, protected valueShape: V, protected options?: InputConstraintOptions) {
+  constructor(readonly keyShape: K, readonly valueShape: V, private _options?: InputConstraintOptions) {
     super(keyShape.async || valueShape.async);
   }
 
@@ -26,7 +26,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
   parse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> {
     if (!isObjectLike(input)) {
-      raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
+      raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
     }
 
     const { keyShape, valueShape, constraintsProcessor } = this;
@@ -35,29 +35,41 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     let output = input;
     let keyIndex = 0;
 
-    for (const key in input) {
+    for (const inputKey in input) {
       ++keyIndex;
-      const inputValue = input[key];
 
-      let outputKey = key;
-      let outputValue;
+      const inputValue = input[inputKey];
+
+      let outputKey = inputKey;
+      let outputValue = INVALID;
+      let keyValid = true;
+      let valueValid = true;
 
       try {
-        outputKey = keyShape.parse(key, options);
+        outputKey = keyShape.parse(inputKey, options);
       } catch (error) {
-        issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
+        issues = raiseOrCaptureIssuesForKey(error, options, issues, inputKey);
+        keyValid = false;
+        continue;
       }
       try {
         outputValue = valueShape.parse(inputValue, options);
       } catch (error) {
-        issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
+        issues = raiseOrCaptureIssuesForKey(error, options, issues, inputKey);
+        valueValid = false;
       }
 
-      if ((output === input && key === outputKey && isEqual(inputValue, outputValue)) || issues !== null) {
+      if (!keyValid) {
+        if (output === input) {
+          output = sliceObjectLike(input, keyIndex);
+        }
+        continue;
+      }
+      if (valueValid && output === input && inputKey === outputKey && isEqual(inputValue, outputValue)) {
         continue;
       }
       if (output === input) {
-        output = cloneDictFirstKeys(input, keyIndex);
+        output = sliceObjectLike(input, keyIndex);
       }
       output[outputKey] = outputValue;
     }
@@ -71,56 +83,140 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<Record<K['output'], V['output']>> {
+    if (!this.async) {
+      return parseAsync(this, input, options);
+    }
+
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        raiseIssue(input, TYPE_CODE, 'object', this.options, 'Must be an object');
+        raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
       }
 
       const { keyShape, valueShape, constraintsProcessor } = this;
 
-      const results = [];
+      const promises = [];
+      const keys = Object.keys(input);
+      const keysLength = keys.length;
 
-      const returnOutput = (entries: any[], issues: Issue[] | null = null): any => {
-        let output = input;
-        let keyIndex = 0;
-
-        if (issues === null) {
-          for (const key in input) {
-            const outputKey = entries[keyIndex];
-            const outputValue = entries[keyIndex + 1];
-
-            if (output === input && key === outputKey && isEqual(input[key], outputValue)) {
-              continue;
-            }
-            if (output === input) {
-              output = cloneDictFirstKeys(input, keyIndex);
-            }
-            output[outputKey] = outputValue;
-
-            keyIndex += 2;
-          }
-        }
-
-        if (constraintsProcessor !== null) {
-          issues = constraintsProcessor(output as Record<K['output'], V['output']>, options, issues);
-        }
-
-        raiseIfIssues(issues);
-        return output;
-      };
-
-      for (const key in input) {
-        results.push(
-          keyShape.parseAsync(key, options).catch(createCatchForKey(key)),
-          valueShape.parseAsync(input[key], options).catch(createCatchForKey(key))
-        );
+      for (let i = 0; i < keysLength; ++i) {
+        const key = keys[i];
+        promises.push(keyShape.parseAsync(key, options), valueShape.parseAsync(input[key], options));
       }
 
       if (options !== undefined && options.fast) {
-        resolve(Promise.all(results).then(returnOutput));
-      } else {
-        resolve(Promise.allSettled(results).then(createProcessSettled(null, returnOutput)));
+        for (let i = 0; i < keysLength; ++i) {
+          promises[i] = promises[i].catch(createCatchForKey(keys[i]));
+        }
+        resolve(Promise.all(promises).then(createRecordResolver(keys, input, constraintsProcessor, options)));
+        return;
       }
+
+      resolve(
+        Promise.allSettled(promises).then(createSettledRecordResolver(keys, input, constraintsProcessor, options))
+      );
     });
   }
+}
+
+function sliceObjectLike(input: ObjectLike, keyCount: number): ObjectLike {
+  const output: ObjectLike = {};
+  let i = 0;
+
+  for (const key in input) {
+    if (i === keyCount) {
+      break;
+    }
+    output[key] = input[key];
+    i++;
+  }
+  return output;
+}
+
+function createRecordResolver(
+  keys: string[],
+  input: ObjectLike,
+  constraintsProcessor: ConstraintsProcessor<any> | null,
+  options: ParserOptions | undefined
+): (entries: any[]) => any {
+  return entries => {
+    const keysLength = keys.length;
+
+    let output = input;
+
+    for (let i = 0, j = 0; i < keysLength; ++i, j += 2) {
+      const inputKey = keys[i];
+      const outputKey = entries[j];
+      const outputValue = entries[j + 1];
+
+      if (output === input && inputKey === outputKey && isEqual(input[inputKey], outputValue)) {
+        continue;
+      }
+      if (output === input) {
+        output = sliceObjectLike(input, i);
+      }
+      output[outputKey] = outputValue;
+    }
+
+    if (constraintsProcessor !== null) {
+      constraintsProcessor(output, options, null);
+    }
+    return output;
+  };
+}
+
+function createSettledRecordResolver(
+  keys: string[],
+  input: ObjectLike,
+  constraintsProcessor: ConstraintsProcessor<any> | null,
+  options: ParserOptions | undefined
+): (results: PromiseSettledResult<any>[]) => any {
+  return results => {
+    const keysLength = keys.length;
+
+    let issues: Issue[] | null = null;
+    let output = input;
+
+    for (let i = 0, j = 0; i < keysLength; ++i, j += 2) {
+      const inputKey = keys[i];
+
+      const keyResult = results[j];
+      const valueResult = results[j + 1];
+
+      let outputKey = null;
+      let outputValue = INVALID;
+
+      let keyValid = true;
+
+      if (keyResult.status === 'rejected') {
+        issues = captureIssuesForKey(issues, keyResult.reason, inputKey);
+        keyValid = false;
+      } else {
+        outputKey = keyResult.value;
+      }
+
+      if (valueResult.status === 'rejected') {
+        issues = captureIssuesForKey(issues, valueResult.reason, inputKey);
+      } else {
+        outputValue = valueResult.value;
+
+        if (keyValid && input === output && inputKey === outputKey && isEqual(outputValue, input[inputKey])) {
+          continue;
+        }
+      }
+
+      if (output === input) {
+        output = sliceObjectLike(input, i);
+      }
+      if (keyValid) {
+        output[outputKey] = outputValue;
+      }
+    }
+
+    if (constraintsProcessor !== null) {
+      issues = constraintsProcessor(output, options, issues);
+    }
+    raiseIfIssues(issues);
+
+    return output;
+  };
 }
