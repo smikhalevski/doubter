@@ -1,4 +1,15 @@
-import { NumberShape, ObjectShape, StringShape, UnknownKeysMode } from '../../../main';
+import { NumberShape, ObjectShape, StringShape, KeysMode } from '../../../main';
+import {
+  CODE_TYPE,
+  CODE_UNKNOWN_KEYS,
+  MESSAGE_NUMBER_TYPE,
+  MESSAGE_OBJECT_TYPE,
+  MESSAGE_STRING_TYPE,
+  MESSAGE_UNKNOWN_KEYS,
+  TYPE_NUMBER,
+  TYPE_OBJECT,
+  TYPE_STRING,
+} from '../../../main/v1/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
@@ -10,18 +21,18 @@ describe('ObjectShape', () => {
   test('allows an empty object', () => {
     const shape = new ObjectShape({}, null);
 
-    expect(shape.keysMode).toBe(UnknownKeysMode.PRESERVED);
+    expect(shape.keysMode).toBe(KeysMode.PRESERVED);
     expect(shape.validate({})).toBe(null);
   });
 
   test('raises if not an object', () => {
     expect(new ObjectShape({}, null).validate('aaa')).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: [],
         input: 'aaa',
-        param: 'object',
-        message: 'Must be an object',
+        param: TYPE_OBJECT,
+        message: MESSAGE_OBJECT_TYPE,
         meta: undefined,
       },
     ]);
@@ -30,11 +41,11 @@ describe('ObjectShape', () => {
   test('raises if not an object in async mode', async () => {
     expect(await new ObjectShape({ foo: asyncStringShape }, null).validateAsync('aaa')).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: [],
         input: 'aaa',
-        param: 'object',
-        message: 'Must be an object',
+        param: TYPE_OBJECT,
+        message: MESSAGE_OBJECT_TYPE,
         meta: undefined,
       },
     ]);
@@ -43,17 +54,17 @@ describe('ObjectShape', () => {
   test('raises when an object must have exact keys and an unknown key is present', () => {
     const shape = new ObjectShape({ foo: stringShape }, null).exact();
 
-    expect(shape.keysMode).toBe(UnknownKeysMode.EXACT);
+    expect(shape.keysMode).toBe(KeysMode.EXACT);
     expect(shape.validate({ foo: 'aaa', bar: 'aaa' })).toEqual([
       {
-        code: 'unknownKeys',
+        code: CODE_UNKNOWN_KEYS,
         path: [],
         input: {
           bar: 'aaa',
           foo: 'aaa',
         },
         param: ['bar'],
-        message: 'Must not have unknown keys',
+        message: MESSAGE_UNKNOWN_KEYS,
         meta: undefined,
       },
     ]);
@@ -64,14 +75,14 @@ describe('ObjectShape', () => {
 
     expect(await shape.validateAsync({ foo: 'aaa', bar: 'aaa' })).toEqual([
       {
-        code: 'unknownKeys',
+        code: CODE_UNKNOWN_KEYS,
         path: [],
         input: {
           bar: 'aaa',
           foo: 'aaa',
         },
         param: ['bar'],
-        message: 'Must not have unknown keys',
+        message: MESSAGE_UNKNOWN_KEYS,
         meta: undefined,
       },
     ]);
@@ -80,7 +91,7 @@ describe('ObjectShape', () => {
   test('strips unknown keys', () => {
     const shape = new ObjectShape({ foo: stringShape }, null).strip();
 
-    expect(shape.keysMode).toBe(UnknownKeysMode.STRIPPED);
+    expect(shape.keysMode).toBe(KeysMode.STRIPPED);
     expect(shape.parse({ foo: 'aaa', bar: 'aaa' })).toEqual({ foo: 'aaa' });
   });
 
@@ -93,7 +104,7 @@ describe('ObjectShape', () => {
   test('preserves unknown properties', () => {
     const shape = new ObjectShape({ foo: stringShape }, null).strip().preserve();
 
-    expect(shape.keysMode).toBe(UnknownKeysMode.PRESERVED);
+    expect(shape.keysMode).toBe(KeysMode.PRESERVED);
     expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
   });
 
@@ -152,11 +163,11 @@ describe('ObjectShape', () => {
   test('raises issue when a property is absent', () => {
     expect(new ObjectShape({ foo: stringShape, bar: numberShape }, null).validate({ foo: 'aaa' })).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['bar'],
         input: undefined,
-        param: 'number',
-        message: 'Must be a number',
+        param: TYPE_NUMBER,
+        message: MESSAGE_NUMBER_TYPE,
         meta: undefined,
       },
     ]);
@@ -167,11 +178,11 @@ describe('ObjectShape', () => {
 
     expect(await shape.validateAsync({ foo: 'aaa' })).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['bar'],
         input: undefined,
-        param: 'number',
-        message: 'Must be a number',
+        param: TYPE_NUMBER,
+        message: MESSAGE_NUMBER_TYPE,
         meta: undefined,
       },
     ]);
@@ -182,11 +193,11 @@ describe('ObjectShape', () => {
 
     expect(shape.validate({ foo: 'aaa', bar: 111 })).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['bar'],
         input: 111,
-        param: 'string',
-        message: 'Must be a string',
+        param: TYPE_STRING,
+        message: MESSAGE_STRING_TYPE,
         meta: undefined,
       },
     ]);
@@ -197,11 +208,11 @@ describe('ObjectShape', () => {
 
     expect(await shape.validateAsync({ foo: 'aaa', bar: 111 })).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['bar'],
         input: 111,
-        param: 'string',
-        message: 'Must be a string',
+        param: TYPE_STRING,
+        message: MESSAGE_STRING_TYPE,
         meta: undefined,
       },
     ]);
@@ -212,19 +223,19 @@ describe('ObjectShape', () => {
 
     expect(shape.validate({ foo: 111, bar: 'aaa' })).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['foo'],
         input: 111,
-        param: 'string',
-        message: 'Must be a string',
+        param: TYPE_STRING,
+        message: MESSAGE_STRING_TYPE,
         meta: undefined,
       },
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['bar'],
         input: 'aaa',
-        param: 'number',
-        message: 'Must be a number',
+        param: TYPE_NUMBER,
+        message: MESSAGE_NUMBER_TYPE,
         meta: undefined,
       },
     ]);
@@ -235,19 +246,19 @@ describe('ObjectShape', () => {
 
     expect(await shape.validateAsync({ foo: 111, bar: 'aaa' })).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['foo'],
         input: 111,
-        param: 'string',
-        message: 'Must be a string',
+        param: TYPE_STRING,
+        message: MESSAGE_STRING_TYPE,
         meta: undefined,
       },
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['bar'],
         input: 'aaa',
-        param: 'number',
-        message: 'Must be a number',
+        param: TYPE_NUMBER,
+        message: MESSAGE_NUMBER_TYPE,
         meta: undefined,
       },
     ]);
@@ -258,11 +269,11 @@ describe('ObjectShape', () => {
 
     expect(shape.validate({ foo: 111, bar: 'aaa' }, { fast: true })).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['foo'],
         input: 111,
-        param: 'string',
-        message: 'Must be a string',
+        param: TYPE_STRING,
+        message: MESSAGE_STRING_TYPE,
         meta: undefined,
       },
     ]);
@@ -273,11 +284,11 @@ describe('ObjectShape', () => {
 
     expect(await shape.validateAsync({ foo: 111, bar: 'aaa' }, { fast: true })).toEqual([
       {
-        code: 'type',
+        code: CODE_TYPE,
         path: ['foo'],
         input: 111,
-        param: 'string',
-        message: 'Must be a string',
+        param: TYPE_STRING,
+        message: MESSAGE_STRING_TYPE,
         meta: undefined,
       },
     ]);

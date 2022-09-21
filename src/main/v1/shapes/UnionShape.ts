@@ -1,17 +1,24 @@
 import { InputConstraintOptions, Issue, ParserOptions } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { captureIssues, createIssue, isAsyncShapes, raise, raiseIfIssues, raiseIfUnknownError } from '../utils';
-import { CODE_UNION } from './constants';
+import { createIssue, isAsyncShapes, raiseIfIssues, raiseIfUnknownError } from '../utils';
+import { CODE_UNION, MESSAGE_UNION } from './constants';
 
 type InferUnion<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
 
+/**
+ * The shape that requires an input to conform at least one of the united shapes.
+ *
+ * @template U The list of united type definitions.
+ */
 export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
-  constructor(protected shapes: U, protected options?: InputConstraintOptions) {
+  /**
+   * Creates a new {@linkcode UnionShape} instance.
+   *
+   * @param shapes The list of united shapes.
+   * @param options The constraint options.
+   */
+  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptions) {
     super(isAsyncShapes(shapes));
-
-    if (shapes.length === 0) {
-      raise('Union expects at least one shape');
-    }
   }
 
   at(key: unknown): AnyShape | null {
@@ -44,14 +51,14 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
       try {
         return shapes[i].parse(input, options);
       } catch (error) {
-        issues = captureIssues(issues, error);
+        issues = captureOrMergeIssues(issues, error);
       }
     }
 
-    issues = [createIssue(input, CODE_UNION, issues, this.options, 'Must conform a union')];
+    issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
 
     raiseIfIssues(
-      shapesLength === 0 || (options !== undefined && options.fast) || applyConstraints === null
+      (options !== undefined && options.fast) || applyConstraints === null
         ? issues
         : applyConstraints(input, options, issues)
     );
@@ -71,7 +78,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
 
     for (let i = 1; i < shapesLength; ++i) {
       promise = promise.catch(error => {
-        issues = captureIssues(issues, error);
+        issues = captureOrMergeIssues(issues, error);
 
         return shapes[i].parseAsync(input, options);
       });
@@ -80,7 +87,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
     return promise.catch(error => {
       raiseIfUnknownError(error);
 
-      issues = [createIssue(input, CODE_UNION, issues, this.options, 'Must conform a union')];
+      issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
 
       raiseIfIssues(
         (options !== undefined && options.fast) || applyConstraints === null
@@ -89,4 +96,16 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
       );
     });
   }
+}
+
+function captureOrMergeIssues(issues: Issue[] | null, error: unknown): Issue[] {
+  raiseIfUnknownError(error);
+
+  const errorIssues = error.issues;
+
+  if (issues !== null) {
+    issues.push(...errorIssues);
+    return issues;
+  }
+  return errorIssues;
 }

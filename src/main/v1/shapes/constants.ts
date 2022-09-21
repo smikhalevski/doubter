@@ -19,6 +19,7 @@ export const CODE_NUMBER_MULTIPLE_OF = 'numberMultipleOf';
 export const CODE_TUPLE_LENGTH = 'tupleLength';
 
 export const TYPE_ARRAY = 'array';
+export const TYPE_OBJECT = 'object';
 export const TYPE_STRING = 'string';
 export const TYPE_NUMBER = 'number';
 export const TYPE_BIGINT = 'bigint';
@@ -26,9 +27,7 @@ export const TYPE_BOOLEAN = 'boolean';
 export const TYPE_INTEGER = 'integer';
 
 export const MESSAGE_ARRAY_TYPE = 'Must be an array';
-export const MESSAGE_ARRAY_MIN = 'Must have the minimum length of ';
-export const MESSAGE_ARRAY_MAX = 'Must have the maximum length of ';
-
+export const MESSAGE_OBJECT_TYPE = 'Must be an object';
 export const MESSAGE_NUMBER_TYPE = 'Must be a number';
 export const MESSAGE_STRING_TYPE = 'Must be a string';
 export const MESSAGE_BIGINT_TYPE = 'Must be a bigint';
@@ -36,8 +35,20 @@ export const MESSAGE_BOOLEAN_TYPE = 'Must be a boolean';
 export const MESSAGE_INTEGER_TYPE = 'Must be an integer';
 export const MESSAGE_INSTANCE = 'Must be an instance of ';
 
+export const MESSAGE_ARRAY_MIN = 'Must have the minimum length of ';
+export const MESSAGE_ARRAY_MAX = 'Must have the maximum length of ';
+
 export const MESSAGE_NUMBER_GT = 'Must be greater than ';
 export const MESSAGE_NUMBER_LT = 'Must be less than ';
 export const MESSAGE_NUMBER_GTE = 'Must be greater than or equal to ';
 export const MESSAGE_NUMBER_LTE = 'Must be less than or equal to ';
 export const MESSAGE_NUMBER_MULTIPLE_OF = 'Must be a multiple of ';
+export const MESSAGE_LITERAL = 'Must be exactly equal to ';
+export const MESSAGE_NEVER = 'Must not be used';
+export const MESSAGE_UNKNOWN_KEYS = 'Must not have unknown keys';
+export const MESSAGE_ENUM = 'Must be equal to one of: ';
+export const MESSAGE_STRING_MIN = 'Must have the minimum length of ';
+export const MESSAGE_STRING_MAX = 'Must have the maximum length of ';
+export const MESSAGE_STRING_REGEX = 'Must match the pattern ';
+export const MESSAGE_TUPLE_LENGTH = 'Must have a length of ';
+export const MESSAGE_UNION = 'Must conform a union';

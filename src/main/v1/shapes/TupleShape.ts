@@ -1,43 +1,52 @@
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, INVALID, Issue, Multiple, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, INVALID, Issue, ParserOptions } from '../shared-types';
 import {
   createCatchForKey,
   createResolveArray,
   isArray,
   isAsyncShapes,
   isEqual,
-  isInteger,
+  isTupleIndex,
   parseAsync,
   ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
-import { CODE_TUPLE_LENGTH, CODE_TYPE } from './constants';
+import { CODE_TUPLE_LENGTH, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE_LENGTH, TYPE_ARRAY } from './constants';
 
-type InferTuple<U extends Multiple<AnyShape>, X extends 'input' | 'output'> = { [K in keyof U]: U[K][X] };
+type InferTuple<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] };
 
-export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U, 'input'>, InferTuple<U, 'output'>> {
-  constructor(protected shapes: U, protected options?: InputConstraintOptions | string) {
+/**
+ * The shape of a tuple of elements
+ *
+ * @template U The list of tuple elements.
+ */
+export class TupleShape<U extends AnyShape[]> extends Shape<InferTuple<U, 'input'>, InferTuple<U, 'output'>> {
+  /**
+   * Creates a new {@linkcode TupleShape} instance.
+   *
+   * @param shapes The list of tuple element shapes.
+   * @param options The constraint options.
+   */
+  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptions | string) {
     super(isAsyncShapes(shapes));
   }
 
-  at(key: unknown): AnyShape | null {
-    const { shapes } = this;
-
-    return isInteger(key) && key >= 0 && key < shapes.length ? shapes[key] : null;
+  at(key: any): AnyShape | null {
+    return isTupleIndex(key, this.shapes.length) ? this.shapes[key] : null;
   }
 
   parse(input: unknown, options?: ParserOptions): InferTuple<U, 'output'> {
     if (!isArray(input)) {
-      raiseIssue(input, CODE_TYPE, 'array', this.options, 'Must be an array');
+      raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
     }
 
     const { shapes, applyConstraints } = this;
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
-      raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, 'Must have a length of ' + shapesLength);
+      raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, MESSAGE_TUPLE_LENGTH + shapesLength);
     }
 
     let issues: Issue[] | null = null;
@@ -46,15 +55,13 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
     for (let i = 0; i < shapesLength; ++i) {
       const inputValue = input[i];
 
-      let valid = true;
       let outputValue = INVALID;
       try {
         outputValue = shapes[i].parse(inputValue);
       } catch (error) {
-        valid = false;
         issues = raiseOrCaptureIssuesForKey(error, options, issues, i);
       }
-      if (valid && isEqual(outputValue, inputValue)) {
+      if (isEqual(outputValue, inputValue)) {
         continue;
       }
       if (output === input) {
@@ -78,7 +85,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        raiseIssue(input, CODE_TYPE, 'array', this.options, 'Must be an array');
+        raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
       }
 
       const { shapes, applyConstraints } = this;
@@ -87,7 +94,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       const promises = [];
 
       if (input.length !== shapesLength) {
-        raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, 'Must have a length of ' + shapesLength);
+        raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, MESSAGE_TUPLE_LENGTH + shapesLength);
       }
 
       for (let i = 0; i < shapesLength; ++i) {

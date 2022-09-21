@@ -16,13 +16,12 @@ export class InstanceShape<F extends new (...args: any[]) => any> extends Shape<
   }
 
   parse(input: unknown, options?: ParserOptions): InferInstance<F> {
-    const { ctor } = this;
+    const { ctor, applyConstraints } = this;
 
     if (!(input instanceof ctor)) {
       raiseIssue(input, CODE_INSTANCE, ctor, this.options, MESSAGE_INSTANCE + ctor.name);
     }
 
-    const { applyConstraints } = this;
     if (applyConstraints !== null) {
       raiseIfIssues(applyConstraints(input, options, null));
     }

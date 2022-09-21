@@ -65,42 +65,9 @@ export function createCatchForKey(
   };
 }
 
-export function createCatchForKey_OLD(key: unknown): (error: unknown) => never {
-  return error => {
-    raiseIfUnknownError(error);
-
-    for (const issue of error.issues) {
-      issue.path.unshift(key);
-    }
-    throw error;
-  };
-}
-
-export function captureIssues(issues: Issue[] | null, error: unknown): Issue[] {
+export function captureIssues(error: unknown): Issue[] {
   raiseIfUnknownError(error);
-
-  const errorIssues = error.issues;
-
-  if (issues !== null) {
-    issues.push(...errorIssues);
-    return issues;
-  }
-  return errorIssues;
-}
-
-export function captureIssuesForKey(issues: Issue[] | null, error: unknown, key: unknown): Issue[] {
-  raiseIfUnknownError(error);
-
-  const errorIssues = error.issues;
-
-  for (const issue of errorIssues) {
-    issue.path.unshift(key);
-  }
-  if (issues !== null) {
-    issues.push(...errorIssues);
-    return issues;
-  }
-  return errorIssues;
+  return error.issues;
 }
 
 export function parseAsync<O>(shape: Shape<any, O>, input: unknown, options: ParserOptions | undefined): Promise<O> {
@@ -129,7 +96,7 @@ export const isInteger = Number.isInteger as (value: unknown) => value is number
 
 export const isFinite = Number.isFinite as (value: unknown) => value is number;
 
-export function isAsyncShapes(shapes: AnyShape[]): boolean {
+export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   let async = false;
 
   for (let i = 0; i < shapes.length && !async; ++i) {

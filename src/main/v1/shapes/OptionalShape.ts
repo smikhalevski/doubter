@@ -1,41 +1,70 @@
 import { AnyShape, Shape } from './Shape';
-import { ParserOptions } from '../shared-types';
-import { raiseIfIssues } from '../utils';
+import { INVALID, Issue, ParserOptions } from '../shared-types';
+import { captureIssues, parseAsync, raiseIfIssues, raiseOrCaptureIssues } from '../utils';
 
-export class OptionalShape<S extends AnyShape> extends Shape<S['input'] | undefined, S['output'] | undefined> {
-  constructor(protected shape: S, protected defaultValue?: S['output']) {
+export class OptionalShape<S extends AnyShape, O extends S['output'] | undefined = undefined> extends Shape<
+  S['input'] | undefined,
+  S['output'] | O
+> {
+  constructor(readonly shape: S, readonly defaultValue?: O) {
     super(shape.async);
   }
 
   at(key: unknown): AnyShape | null {
     const shape = this.shape.at(key);
-    return shape === null ? null : new OptionalShape(shape);
+    return shape === null ? null : new OptionalShape(shape, this.defaultValue?.[key as keyof O]);
   }
 
-  parse(input: unknown, options?: ParserOptions): S['output'] | undefined {
-    const output = input === undefined ? this.defaultValue : this.shape.parse(input, options);
+  parse(input: unknown, options?: ParserOptions): S['output'] | O {
+    let issues: Issue[] | null = null;
+    let output = this.defaultValue;
+
+    if (input !== undefined) {
+      try {
+        output = this.shape.parse(input, options);
+      } catch (error) {
+        issues = raiseOrCaptureIssues(error, options, null);
+        output = INVALID;
+      }
+    }
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(output, options, null));
+      issues = applyConstraints(output, options, issues);
     }
+    raiseIfIssues(issues);
+
     return output;
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | undefined> {
+  parseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | O> {
     if (!this.async) {
-      return super.parseAsync(input, options);
+      return parseAsync(this, input, options);
     }
+
+    const { applyConstraints } = this;
 
     const promise = input === undefined ? Promise.resolve(this.defaultValue) : this.shape.parseAsync(input, options);
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
+    if (applyConstraints === null) {
+      return promise;
+    }
+
+    if (options !== undefined && options.fast) {
       return promise.then(output => {
-        raiseIfIssues(applyConstraints(output, options, null));
+        applyConstraints(output, options, null);
         return output;
       });
     }
-    return promise;
+
+    return promise.then(
+      output => {
+        raiseIfIssues(applyConstraints(output, options, null));
+        return output;
+      },
+      error => {
+        raiseIfIssues(applyConstraints(INVALID, options, captureIssues(error)));
+      }
+    );
   }
 }

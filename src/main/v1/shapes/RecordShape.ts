@@ -1,7 +1,5 @@
 import {
-  captureIssuesForKey,
   createCatchForKey,
-  createCatchForKey_OLD,
   isEqual,
   isObjectLike,
   parseAsync,
@@ -11,14 +9,14 @@ import {
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { ApplyConstraints, InputConstraintOptions, INVALID, Issue, ObjectLike, ParserOptions } from '../shared-types';
-import { CODE_TYPE } from './constants';
+import { InputConstraintOptions, INVALID, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
   Record<K['input'], V['input']>,
   Record<K['output'], V['output']>
 > {
-  constructor(readonly keyShape: K, readonly valueShape: V, private _options?: InputConstraintOptions) {
+  constructor(readonly keyShape: K, readonly valueShape: V, protected options?: InputConstraintOptions) {
     super(keyShape.async || valueShape.async);
   }
 
@@ -28,7 +26,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
   parse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> {
     if (!isObjectLike(input)) {
-      raiseIssue(input, CODE_TYPE, 'object', this._options, 'Must be an object');
+      raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
     }
 
     const { keyShape, valueShape, applyConstraints } = this;
@@ -44,30 +42,19 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       let outputKey = inputKey;
       let outputValue = INVALID;
-      let keyValid = true;
-      let valueValid = true;
 
       try {
         outputKey = keyShape.parse(inputKey, options);
       } catch (error) {
         issues = raiseOrCaptureIssuesForKey(error, options, issues, inputKey);
-        keyValid = false;
-        continue;
       }
       try {
         outputValue = valueShape.parse(inputValue, options);
       } catch (error) {
         issues = raiseOrCaptureIssuesForKey(error, options, issues, inputKey);
-        valueValid = false;
       }
 
-      if (!keyValid) {
-        if (output === input) {
-          output = sliceObjectLike(input, keyIndex);
-        }
-        continue;
-      }
-      if (valueValid && output === input && inputKey === outputKey && isEqual(inputValue, outputValue)) {
+      if (output === input && inputKey === outputKey && isEqual(inputValue, outputValue)) {
         continue;
       }
       if (output === input) {
@@ -91,50 +78,49 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        raiseIssue(input, CODE_TYPE, 'object', this._options, 'Must be an object');
+        raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
       }
 
       const { keyShape, valueShape, applyConstraints } = this;
-
-      const promises = [];
       const context: ParserContext = { issues: null };
+      const entryPromises = [];
 
       for (const key in input) {
-        promises.push(
+        entryPromises.push(
           key,
           keyShape.parseAsync(key, options).catch(createCatchForKey(key, options, context)),
           valueShape.parseAsync(input[key], options).catch(createCatchForKey(key, options, context))
         );
       }
 
-      resolve(
-        Promise.all(promises).then(entries => {
-          let output = input;
+      const promise = Promise.all(entryPromises).then(entries => {
+        let output = input;
 
-          for (let i = 0; i < entries.length; i += 3) {
-            const inputKey = entries[i];
-            const outputKey = entries[i + 1];
-            const outputValue = entries[i + 2];
+        for (let i = 0; i < entries.length; i += 3) {
+          const inputKey = entries[i];
+          const outputKey = entries[i + 1];
+          const outputValue = entries[i + 2];
 
-            if (output === input && inputKey === outputKey && isEqual(outputValue, input[inputKey])) {
-              continue;
-            }
-            if (output === input) {
-              output = sliceObjectLike(input, i / 3);
-            }
-            output[outputKey] = outputValue;
+          if (output === input && inputKey === outputKey && isEqual(outputValue, input[inputKey])) {
+            continue;
           }
-
-          let { issues } = context;
-
-          if (applyConstraints !== null) {
-            issues = applyConstraints(output as Record<K['output'], V['output']>, options, issues);
+          if (output === input) {
+            output = sliceObjectLike(input, i / 3);
           }
-          raiseIfIssues(issues);
+          output[outputKey] = outputValue;
+        }
 
-          return output as Record<K['output'], V['output']>;
-        })
-      );
+        let { issues } = context;
+
+        if (applyConstraints !== null) {
+          issues = applyConstraints(output as Record<K['output'], V['output']>, options, issues);
+        }
+        raiseIfIssues(issues);
+
+        return output as Record<K['output'], V['output']>;
+      });
+
+      resolve(promise);
     });
   }
 }

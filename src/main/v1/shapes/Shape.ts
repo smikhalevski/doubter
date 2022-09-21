@@ -9,6 +9,7 @@ import {
 } from '../shared-types';
 import {
   addConstraint,
+  captureIssues,
   createApplyConstraints,
   isObjectLike,
   parseAsync,
@@ -56,7 +57,7 @@ export abstract class Shape<I, O = I> {
    * @param async If `true` then the shape would allow only {@linkcode parseAsync} and throw an error if
    * {@linkcode parse} is called.
    */
-  protected constructor(readonly async: boolean) {
+  constructor(readonly async: boolean) {
     if (async) {
       this.parse = raiseParseIsUnsupported;
     }
@@ -231,11 +232,6 @@ function raiseParseIsUnsupported(): never {
 
 function returnNull(): null {
   return null;
-}
-
-export function captureIssues(error: unknown): Issue[] {
-  raiseIfUnknownError(error);
-  return error.issues;
 }
 
 Object.defineProperty(Shape.prototype, 'input', {

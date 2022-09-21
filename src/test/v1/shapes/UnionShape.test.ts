@@ -1,12 +1,15 @@
 import { ArrayShape, NumberShape, StringShape, UnionShape } from '../../../main';
 
+const stringShape = new StringShape();
+const numberShape = new NumberShape();
+
 describe('UnionShape', () => {
   test('returns the input as is', () => {
-    expect(new UnionShape([new NumberShape(), new StringShape()]).parse('aaa')).toBe('aaa');
+    expect(new UnionShape([numberShape, stringShape]).parse('aaa')).toBe('aaa');
   });
 
   test('raises issues from all failures', () => {
-    expect(new UnionShape([new NumberShape(), new StringShape()]).validate(true)).toEqual([
+    expect(new UnionShape([numberShape, stringShape]).validate(true)).toEqual([
       {
         code: 'union',
         path: [],
@@ -35,8 +38,9 @@ describe('UnionShape', () => {
   });
 
   test('raises issues from the first failure asynchronously', async () => {
-    const elementShape1 = new NumberShape().transformAsync(value => Promise.resolve(value + ''));
-    const elementShape2 = new StringShape().transformAsync(value => Promise.resolve(value + ''));
+    const elementShape1 = numberShape.transformAsync(value => Promise.resolve(value + ''));
+    const elementShape2 = stringShape.transformAsync(value => Promise.resolve(value + ''));
+
     expect(await new UnionShape([elementShape1, elementShape2]).validateAsync(true)).toEqual([
       {
         code: 'union',
@@ -59,19 +63,16 @@ describe('UnionShape', () => {
   });
 
   test('returns child type at key', () => {
-    const elementShape1 = new NumberShape();
-    const elementShape2 = new StringShape();
-    const shape = new UnionShape([new ArrayShape(elementShape1), new ArrayShape(elementShape2)]);
+    const shape = new UnionShape([new ArrayShape(numberShape), new ArrayShape(stringShape)]);
 
-    expect(shape.at(0)).toStrictEqual(new UnionShape([elementShape1, elementShape2]));
+    expect(shape.at(0)).toStrictEqual(new UnionShape([numberShape, stringShape]));
     expect(shape.at('aaa')).toBe(null);
   });
 
   test('returns child type at key excluding nulls', () => {
-    const elementShape = new NumberShape();
-    const shape = new UnionShape([new ArrayShape(elementShape), new StringShape()]);
+    const shape = new UnionShape([new ArrayShape(numberShape), stringShape]);
 
-    expect(shape.at(0)).toStrictEqual(elementShape);
-    expect(shape.at(1)).toStrictEqual(elementShape);
+    expect(shape.at(0)).toStrictEqual(numberShape);
+    expect(shape.at(1)).toStrictEqual(numberShape);
   });
 });

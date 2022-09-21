@@ -9,7 +9,7 @@ export * from './NeverShape';
 export * from './NullableShape';
 export * from './NumberShape';
 export * from './ObjectShape';
-export * from './OneOfShape';
+export * from './EnumShape';
 export * from './OptionalShape';
 export * from './RecordShape';
 export * from './StringShape';
