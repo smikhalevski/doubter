@@ -148,12 +148,12 @@ export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<
   if (constraintsLength === 3) {
     const [, unsafe0, callback0] = constraints;
 
-    return (input, options, issues) => {
+    return (input, parserOptions, issues) => {
       if (issues === null || unsafe0) {
         try {
-          callback0(input);
+          callback0(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       return issues;
@@ -163,19 +163,19 @@ export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<
   if (constraintsLength === 6) {
     const [, unsafe0, callback0, , unsafe1, callback1] = constraints;
 
-    return (input, options, issues) => {
+    return (input, parserOptions, issues) => {
       if (issues === null || unsafe0) {
         try {
-          callback0(input);
+          callback0(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe1) {
         try {
-          callback1(input);
+          callback1(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       return issues;
@@ -185,26 +185,26 @@ export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<
   if (constraintsLength === 3) {
     const [, unsafe0, callback0, , unsafe1, callback1, , unsafe2, callback2] = constraints;
 
-    return (input, options, issues) => {
+    return (input, parserOptions, issues) => {
       if (issues === null || unsafe0) {
         try {
-          callback0(input);
+          callback0(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe1) {
         try {
-          callback1(input);
+          callback1(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe2) {
         try {
-          callback2(input);
+          callback2(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       return issues;
@@ -214,46 +214,46 @@ export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<
   if (constraintsLength === 4) {
     const [, unsafe0, callback0, , unsafe1, callback1, , unsafe2, callback2, , unsafe3, callback3] = constraints;
 
-    return (input, options, issues) => {
+    return (input, parserOptions, issues) => {
       if (issues === null || unsafe0) {
         try {
-          callback0(input);
+          callback0(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe1) {
         try {
-          callback1(input);
+          callback1(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe2) {
         try {
-          callback2(input);
+          callback2(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe3) {
         try {
-          callback3(input);
+          callback3(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       return issues;
     };
   }
 
-  return (input, options, issues) => {
+  return (input, parserOptions, issues) => {
     for (let i = 1; i < constraintsLength; i += 3) {
       if (issues === null || constraints[i]) {
         try {
-          constraints[i + 1](input);
+          constraints[i + 1](input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
     }

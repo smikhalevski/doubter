@@ -1,4 +1,9 @@
 /**
+ * Symbol that denotes an invalid value.
+ */
+export const INVALID: any = Symbol('invalid');
+
+/**
  * A validation issue raised during input parsing.
  */
 export interface Issue {
@@ -42,7 +47,7 @@ export type Transformer<I, O> = (value: I) => O;
 /**
  * Constraint is a callback that takes an input and throws a {@linkcode ValidationError} if it has recognised issues.
  */
-export type Constraint<T> = (value: T) => Issue[] | null | undefined | void;
+export type Constraint<T> = (value: T, parserOptions: ParserOptions | undefined) => Issue[] | null | undefined | void;
 
 /**
  * Options that are applicable for the type constraint.
@@ -116,14 +121,13 @@ export type ObjectLike<T = any> = Record<keyof any, any>;
  * The closure that applies constraints to the input value and throws a validation error if
  * {@linkcode ParserOptions.fast fast} parsing is enabled, or returns an error otherwise.
  *
- * @param input The value to parse.
- * @param options Parsing options.
+ * @param value The value to which constraints are applied.
+ * @param parserOptions Parsing options.
  * @param issues The list of already captured issues.
  * @returns The list of captured issues, or `null` if there are no issues.
  */
 export type ApplyConstraints<T> = (
-  input: T,
-  options: ParserOptions | undefined,
+  value: T,
+  parserOptions: ParserOptions | undefined,
   issues: Issue[] | null
 ) => Issue[] | null;
-export const INVALID: any = Symbol('invalid');
