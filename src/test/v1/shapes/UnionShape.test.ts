@@ -5,7 +5,7 @@ describe('UnionShape', () => {
     expect(new UnionShape([new NumberShape(), new StringShape()]).parse('aaa')).toBe('aaa');
   });
 
-  test('raises issues from the first failure', () => {
+  test('raises issues from all failures', () => {
     expect(new UnionShape([new NumberShape(), new StringShape()]).validate(true)).toEqual([
       {
         code: 'union',
@@ -19,6 +19,13 @@ describe('UnionShape', () => {
             param: 'number',
             message: 'Must be a number',
             meta: undefined,
+          },
+          {
+            code: 'type',
+            input: true,
+            message: 'Must be a string',
+            param: 'string',
+            path: [],
           },
         ],
         message: 'Must conform a union',

@@ -1,22 +1,24 @@
-import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, Issue, ParserOptions } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { createIssue, isAsyncShapes, raiseIfIssues, raiseIfUnknownError } from '../utils';
+import { captureIssues, createIssue, isAsyncShapes, raise, raiseIfIssues, raiseIfUnknownError } from '../utils';
 import { UNION_CODE } from './issue-codes';
 
-const fastOptions: ParserOptions = { fast: true };
+type InferUnion<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
 
-type InferUnion<U extends Multiple<AnyShape>, X extends 'input' | 'output'> = { [K in keyof U]: U[K][X] }[number];
-
-export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
+export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
   constructor(protected shapes: U, protected options?: InputConstraintOptions) {
     super(isAsyncShapes(shapes));
+
+    if (shapes.length === 0) {
+      raise('Union expects at least one shape');
+    }
   }
 
   at(key: unknown): AnyShape | null {
     const childShapes: AnyShape[] = [];
 
-    for (const type of this.shapes) {
-      const childShape = type.at(key);
+    for (const shape of this.shapes) {
+      const childShape = shape.at(key);
 
       if (childShape !== null) {
         childShapes.push(childShape);
@@ -28,27 +30,28 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
     if (childShapes.length === 1) {
       return childShapes[0];
     }
-    return new UnionShape(childShapes as Multiple<AnyShape>);
+    return new UnionShape(childShapes);
   }
 
   parse(input: unknown, options?: ParserOptions): InferUnion<U, 'output'> {
     const { shapes, constraintsProcessor } = this;
 
-    let firstIssues: Issue[] | null = null;
-    for (const shape of shapes) {
+    const shapesLength = shapes.length;
+
+    let issues: Issue[] | null = null;
+
+    for (let i = 0; i < shapesLength; ++i) {
       try {
-        return shape.parse(input, options);
+        return shapes[i].parse(input, options);
       } catch (error) {
-        raiseIfUnknownError(error);
-        firstIssues ||= error.issues;
+        issues = captureIssues(issues, error);
       }
-      options = fastOptions;
     }
 
-    let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
+    issues = [createIssue(input, UNION_CODE, issues, this.options, 'Must conform a union')];
 
     raiseIfIssues(
-      (options !== undefined && options.fast) || constraintsProcessor === null
+      shapesLength === 0 || (options !== undefined && options.fast) || constraintsProcessor === null
         ? issues
         : constraintsProcessor(input, options, issues)
     );
@@ -59,35 +62,30 @@ export class UnionShape<U extends Multiple<AnyShape>> extends Shape<InferUnion<U
       return super.parseAsync(input, options);
     }
 
-    return new Promise(resolve => {
-      const { shapes, constraintsProcessor } = this;
+    const { shapes, constraintsProcessor } = this;
 
-      const promises = [];
+    const shapesLength = shapes.length;
 
-      for (const shape of shapes) {
-        promises.push(shape.parseAsync(input, options));
-      }
+    let issues: Issue[] | null = null;
+    let promise = shapes[0].parseAsync(input, options);
 
-      resolve(
-        Promise.allSettled(promises).then(results => {
-          let firstIssues: Issue[] | null = null;
+    for (let i = 1; i < shapesLength; ++i) {
+      promise = promise.catch(error => {
+        issues = captureIssues(issues, error);
 
-          for (const result of results) {
-            if (result.status === 'fulfilled') {
-              return result.value;
-            }
-            raiseIfUnknownError(result.reason);
-            firstIssues ||= result.reason.issues;
-          }
+        return shapes[i].parseAsync(input, options);
+      });
+    }
 
-          let issues = [createIssue(input, UNION_CODE, firstIssues, this.options, 'Must conform a union')];
+    return promise.catch(error => {
+      raiseIfUnknownError(error);
 
-          raiseIfIssues(
-            (options !== undefined && options.fast) || constraintsProcessor === null
-              ? issues
-              : constraintsProcessor(input, options, issues)
-          );
-        })
+      issues = [createIssue(input, UNION_CODE, issues, this.options, 'Must conform a union')];
+
+      raiseIfIssues(
+        (options !== undefined && options.fast) || constraintsProcessor === null
+          ? issues
+          : constraintsProcessor(input, options, issues)
       );
     });
   }

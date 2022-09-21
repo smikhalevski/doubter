@@ -99,6 +99,18 @@ export function createProcessSettled(
   };
 }
 
+export function captureIssues(issues: Issue[] | null, error: unknown): Issue[] {
+  raiseIfUnknownError(error);
+
+  const errorIssues = error.issues;
+
+  if (issues !== null) {
+    issues.push(...errorIssues);
+    return issues;
+  }
+  return errorIssues;
+}
+
 export function captureIssuesForKey(issues: Issue[] | null, error: unknown, key: unknown): Issue[] {
   raiseIfUnknownError(error);
 
