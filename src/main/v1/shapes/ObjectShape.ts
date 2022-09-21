@@ -1,11 +1,11 @@
 import { AnyShape, Shape } from './Shape';
 import { ConstraintsProcessor, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
 import {
-  captureIssuesForKey,
   createCatchForKey,
   isAsyncShapes,
   isEqual,
   isObjectLike,
+  IssuesContext,
   parseAsync,
   raiseIfIssues,
   raiseIssue,
@@ -169,15 +169,12 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
       const inputValue = input[key];
 
       let outputValue = INVALID;
-      let valid = true;
-
       try {
         outputValue = _valueShapes[i].parse(inputValue, options);
       } catch (error) {
         issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
-        valid = false;
       }
-      if (valid && isEqual(outputValue, inputValue)) {
+      if (isEqual(outputValue, inputValue)) {
         continue;
       }
       if (output === input) {
@@ -209,52 +206,68 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
       }
 
       const { keys, _valueShapes, _keysProcessor, indexerShape, constraintsProcessor } = this;
-      const keysLength = keys.length;
-      const promises = [];
 
-      let issues: Issue[] | null = null;
+      let issuesContext: IssuesContext = { issues: null };
       let output = input;
-      let inputKeys = keys as PropertyKey[];
 
       if (_keysProcessor !== null) {
         try {
           output = _keysProcessor(input);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, options, issues);
+          issuesContext.issues = raiseOrCaptureIssues(error, options, issuesContext.issues);
         }
       }
 
-      for (let i = 0; i < keysLength; ++i) {
-        promises.push(_valueShapes[i].parseAsync(input[keys[i]], options));
+      const entries: any[] = [];
+
+      for (let i = 0; i < keys.length; ++i) {
+        const key = keys[i];
+        entries.push(
+          key,
+          _valueShapes[i].parseAsync(input[key], options).catch(createCatchForKey(key, options, issuesContext))
+        );
       }
 
       if (indexerShape !== null) {
-        inputKeys = keys.slice(0);
-
         for (const key in input) {
           if (!keys.includes(key)) {
-            inputKeys.push(key);
-            promises.push(indexerShape.parseAsync(input[key], options));
+            entries.push(
+              key,
+              indexerShape.parseAsync(input[key], options).catch(createCatchForKey(key, options, issuesContext))
+            );
           }
         }
       }
 
-      if (options !== undefined && options.fast) {
-        const inputKeysLength = inputKeys.length;
-
-        for (let i = 0; i < inputKeysLength; ++i) {
-          promises[i] = promises[i].catch(createCatchForKey(inputKeys[i]));
-        }
-        resolve(
-          Promise.all(promises).then(createObjectResolver(inputKeys, input, output, constraintsProcessor, options))
-        );
-        return;
-      }
-
       resolve(
-        Promise.allSettled(promises).then(
-          createSettledObjectResolver(inputKeys, input, output, constraintsProcessor, options, issues)
-        )
+        Promise.all(entries).then(entries => {
+          for (let i = 0; i < entries.length; i += 2) {
+            const key = entries[i];
+            const inputValue = input[key];
+            const outputValue = entries[i + 1];
+
+            if (isEqual(outputValue, inputValue)) {
+              continue;
+            }
+            if (output === input) {
+              output = cloneObjectLike(input);
+            }
+            output[key] = outputValue;
+          }
+
+          const { issues } = issuesContext;
+
+          if (constraintsProcessor !== null) {
+            issuesContext.issues = constraintsProcessor(
+              output as InferObject<P, I, 'output'>,
+              options,
+              issuesContext.issues
+            );
+          }
+          raiseIfIssues(issuesContext.issues);
+
+          return output as InferObject<P, I, 'output'>;
+        })
       );
     });
   }
@@ -344,76 +357,4 @@ function cloneObjectLike(input: ObjectLike): ObjectLike {
     output[key] = input[key];
   }
   return output;
-}
-
-function createObjectResolver(
-  keys: readonly PropertyKey[],
-  input: ObjectLike,
-  output: ObjectLike,
-  constraintsProcessor: ConstraintsProcessor<any> | null,
-  options: ParserOptions | undefined
-): (outputValues: unknown[]) => any {
-  return outputValues => {
-    const keysLength = keys.length;
-
-    for (let i = 0; i < keysLength; ++i) {
-      const key = keys[i];
-      const outputValue = outputValues[i];
-
-      if (isEqual(outputValue, input[key])) {
-        continue;
-      }
-      if (output === input) {
-        output = cloneObjectLike(input);
-      }
-      output[key] = outputValue;
-    }
-
-    if (constraintsProcessor !== null) {
-      constraintsProcessor(output, options, null);
-    }
-    return output;
-  };
-}
-
-function createSettledObjectResolver(
-  keys: readonly PropertyKey[],
-  input: ObjectLike,
-  output: ObjectLike,
-  constraintsProcessor: ConstraintsProcessor<any> | null,
-  options: ParserOptions | undefined,
-  issues: Issue[] | null
-): (results: PromiseSettledResult<unknown>[]) => any {
-  return results => {
-    const keysLength = keys.length;
-
-    for (let i = 0; i < keysLength; ++i) {
-      const result = results[i];
-      const key = keys[i];
-
-      let outputValue = INVALID;
-
-      if (result.status === 'rejected') {
-        issues = captureIssuesForKey(issues, result.reason, key);
-      } else {
-        outputValue = result.value;
-
-        if (isEqual(outputValue, input[key])) {
-          continue;
-        }
-      }
-
-      if (output === input) {
-        output = cloneObjectLike(input);
-      }
-      output[key] = outputValue;
-    }
-
-    if (constraintsProcessor !== null) {
-      issues = constraintsProcessor(output, options, issues);
-    }
-    raiseIfIssues(issues);
-
-    return output;
-  };
 }

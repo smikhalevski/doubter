@@ -9,6 +9,7 @@ import {
 } from './shared-types';
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
+import { INVALID } from './shapes';
 
 export function addConstraint<S extends Shape<any>>(
   shape: S,
@@ -66,7 +67,26 @@ export function createFulfillArray(
   };
 }
 
-export function createCatchForKey(key: unknown): (error: unknown) => never {
+export interface IssuesContext {
+  issues: Issue[] | null;
+}
+
+export function createCatchForKey(
+  key: unknown,
+  options: ParserOptions | undefined,
+  issuesContext: IssuesContext
+): (error: unknown) => any {
+  return error => {
+    if (options !== undefined && options.fast && issuesContext.issues !== null) {
+      return;
+    }
+
+    issuesContext.issues = raiseOrCaptureIssuesForKey(error, options, issuesContext.issues, key);
+    return INVALID;
+  };
+}
+
+export function createCatchForKey_OLD(key: unknown): (error: unknown) => never {
   return error => {
     raiseIfUnknownError(error);
 
@@ -316,7 +336,7 @@ export function raiseIfUnknownError(error: unknown): asserts error is Validation
 }
 
 export function raiseIfIssues(issues: Issue[] | null): void {
-  if (issues !== null) {
+  if (issues !== null && issues.length !== 0) {
     throw new ValidationError(issues);
   }
 }

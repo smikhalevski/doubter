@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
-  createCatchForKey,
+  createCatchForKey_OLD,
   createFulfillArray,
   createProcessSettled,
   isArray,
@@ -91,7 +91,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       const promises = [];
 
       for (let i = 0; i < shapesLength; ++i) {
-        promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i)));
+        promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey_OLD(i)));
       }
 
       const fulfillArray = createFulfillArray(input, options, constraintsProcessor);

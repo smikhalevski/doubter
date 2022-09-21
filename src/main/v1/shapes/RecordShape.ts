@@ -1,6 +1,6 @@
 import {
   captureIssuesForKey,
-  createCatchForKey,
+  createCatchForKey_OLD,
   isEqual,
   isObjectLike,
   parseAsync,
@@ -105,7 +105,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       if (options !== undefined && options.fast) {
         for (let i = 0; i < keysLength; ++i) {
-          promises[i] = promises[i].catch(createCatchForKey(keys[i]));
+          promises[i] = promises[i].catch(createCatchForKey_OLD(keys[i]));
         }
         resolve(Promise.all(promises).then(createRecordResolver(keys, input, constraintsProcessor, options)));
         return;

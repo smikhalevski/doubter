@@ -3,7 +3,7 @@ import { InputConstraintOptions, Issue, OutputConstraintOptions, ParserOptions }
 import {
   addConstraint,
   createProcessSettled,
-  createCatchForKey,
+  createCatchForKey_OLD,
   createFulfillArray,
   isArray,
   isEqual,
@@ -129,7 +129,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       const promises = [];
 
       for (let i = 0; i < inputLength; ++i) {
-        promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i)));
+        promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey_OLD(i)));
       }
 
       const fulfillArray = createFulfillArray(input, options, constraintsProcessor);
