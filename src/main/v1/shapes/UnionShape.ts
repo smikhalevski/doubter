@@ -1,7 +1,7 @@
 import { InputConstraintOptions, Issue, ParserOptions } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
 import { captureIssues, createIssue, isAsyncShapes, raise, raiseIfIssues, raiseIfUnknownError } from '../utils';
-import { UNION_CODE } from './issue-codes';
+import { CODE_UNION } from './constants';
 
 type InferUnion<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
 
@@ -48,7 +48,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
       }
     }
 
-    issues = [createIssue(input, UNION_CODE, issues, this.options, 'Must conform a union')];
+    issues = [createIssue(input, CODE_UNION, issues, this.options, 'Must conform a union')];
 
     raiseIfIssues(
       shapesLength === 0 || (options !== undefined && options.fast) || applyConstraints === null
@@ -80,7 +80,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
     return promise.catch(error => {
       raiseIfUnknownError(error);
 
-      issues = [createIssue(input, UNION_CODE, issues, this.options, 'Must conform a union')];
+      issues = [createIssue(input, CODE_UNION, issues, this.options, 'Must conform a union')];
 
       raiseIfIssues(
         (options !== undefined && options.fast) || applyConstraints === null

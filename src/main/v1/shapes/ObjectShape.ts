@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ApplyConstraints, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { ApplyConstraints, InputConstraintOptions, INVALID, Issue, ObjectLike, ParserOptions } from '../shared-types';
 import {
   createCatchForKey,
   isAsyncShapes,
@@ -12,7 +12,7 @@ import {
   raiseOrCaptureIssues,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
-import { INVALID, TYPE_CODE } from './issue-codes';
+import { CODE_TYPE, CODE_UNKNOWN_KEYS } from './constants';
 
 type Channel = 'input' | 'output';
 
@@ -147,7 +147,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
 
   parse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> {
     if (!isObjectLike(input)) {
-      raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
+      raiseIssue(input, CODE_TYPE, 'object', this._options, 'Must be an object');
     }
 
     const { keys, _valueShapes, _keysProcessor, _indexerProcessor, applyConstraints } = this;
@@ -202,7 +202,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
 
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
+        raiseIssue(input, CODE_TYPE, 'object', this._options, 'Must be an object');
       }
 
       const { keys, _valueShapes, _keysProcessor, indexerShape, applyConstraints } = this;
@@ -282,7 +282,7 @@ function createExactKeysProcessor(
       }
     }
     if (unknownKeys !== null) {
-      raiseIssue(input, 'unknownKeys', unknownKeys, options, 'Must not have unknown keys');
+      raiseIssue(input, CODE_UNKNOWN_KEYS, unknownKeys, options, 'Must not have unknown keys');
     }
     return input;
   };

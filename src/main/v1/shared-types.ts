@@ -126,3 +126,4 @@ export type ApplyConstraints<T> = (
   options: ParserOptions | undefined,
   issues: Issue[] | null
 ) => Issue[] | null;
+export const INVALID: any = Symbol('invalid');

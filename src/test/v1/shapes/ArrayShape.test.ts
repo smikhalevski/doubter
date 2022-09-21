@@ -1,4 +1,5 @@
-import { ArrayShape, INVALID, NumberShape, StringShape } from '../../../main';
+import { ArrayShape, NumberShape, StringShape } from '../../../main';
+import { INVALID } from '../../../main/v1';
 
 describe('ArrayShape', () => {
   test('infers type of an element shape', () => {

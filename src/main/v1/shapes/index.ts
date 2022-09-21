@@ -17,4 +17,3 @@ export * from './TupleShape';
 export * from './Shape';
 export * from './UnconstrainedShape';
 export * from './UnionShape';
-export { INVALID } from './issue-codes';

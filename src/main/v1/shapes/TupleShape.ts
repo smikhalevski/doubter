@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
+import { InputConstraintOptions, INVALID, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
   createCatchForKey,
   createResolveArray,
@@ -13,7 +13,7 @@ import {
   raiseIssue,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
-import { INVALID, TUPLE_LENGTH_CODE, TYPE_CODE } from './issue-codes';
+import { CODE_TUPLE_LENGTH, CODE_TYPE } from './constants';
 
 type InferTuple<U extends Multiple<AnyShape>, X extends 'input' | 'output'> = { [K in keyof U]: U[K][X] };
 
@@ -30,14 +30,14 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
 
   parse(input: unknown, options?: ParserOptions): InferTuple<U, 'output'> {
     if (!isArray(input)) {
-      raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
+      raiseIssue(input, CODE_TYPE, 'array', this.options, 'Must be an array');
     }
 
     const { shapes, applyConstraints } = this;
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
-      raiseIssue(input, TUPLE_LENGTH_CODE, shapesLength, this.options, 'Must have a length of ' + shapesLength);
+      raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, 'Must have a length of ' + shapesLength);
     }
 
     let issues: Issue[] | null = null;
@@ -78,7 +78,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
+        raiseIssue(input, CODE_TYPE, 'array', this.options, 'Must be an array');
       }
 
       const { shapes, applyConstraints } = this;
@@ -87,7 +87,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       const promises = [];
 
       if (input.length !== shapesLength) {
-        raiseIssue(input, TUPLE_LENGTH_CODE, shapesLength, this.options, 'Must have a length of ' + shapesLength);
+        raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, 'Must have a length of ' + shapesLength);
       }
 
       for (let i = 0; i < shapesLength; ++i) {

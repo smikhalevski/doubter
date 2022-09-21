@@ -11,8 +11,8 @@ import {
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { ApplyConstraints, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
-import { INVALID, TYPE_CODE } from './issue-codes';
+import { ApplyConstraints, InputConstraintOptions, INVALID, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { CODE_TYPE } from './constants';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
   Record<K['input'], V['input']>,
@@ -28,7 +28,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
   parse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> {
     if (!isObjectLike(input)) {
-      raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
+      raiseIssue(input, CODE_TYPE, 'object', this._options, 'Must be an object');
     }
 
     const { keyShape, valueShape, applyConstraints } = this;
@@ -91,7 +91,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
+        raiseIssue(input, CODE_TYPE, 'object', this._options, 'Must be an object');
       }
 
       const { keyShape, valueShape, applyConstraints } = this;

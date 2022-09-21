@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { InputConstraintOptions, ParserOptions, Primitive } from '../shared-types';
 import { isEqual, raiseIfIssues, raiseIssue } from '../utils';
-import { LITERAL_CODE } from './issue-codes';
+import { CODE_LITERAL } from './constants';
 
 export class LiteralShape<T extends Primitive> extends Shape<T> {
   constructor(protected value: T, protected options?: InputConstraintOptions | string) {
@@ -12,7 +12,7 @@ export class LiteralShape<T extends Primitive> extends Shape<T> {
     const { value } = this;
 
     if (!isEqual(input, value)) {
-      raiseIssue(input, LITERAL_CODE, value, this.options, 'Must be exactly equal to ' + value);
+      raiseIssue(input, CODE_LITERAL, value, this.options, 'Must be exactly equal to ' + value);
     }
 
     const { applyConstraints } = this;

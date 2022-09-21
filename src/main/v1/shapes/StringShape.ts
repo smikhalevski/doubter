@@ -1,7 +1,7 @@
 import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
 import { addConstraint, raiseIfIssues, raiseIssue } from '../utils';
-import { STRING_MAX_CODE, STRING_MIN_CODE, STRING_REGEX_CODE, TYPE_CODE } from './issue-codes';
+import { CODE_STRING_MAX, CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE } from './constants';
 
 export class StringShape extends Shape<string> {
   constructor(protected options?: InputConstraintOptions | string) {
@@ -27,9 +27,9 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   min(length: number, options?: OutputConstraintOptions | string): this {
-    return addConstraint(this, STRING_MIN_CODE, options, input => {
+    return addConstraint(this, CODE_STRING_MIN, options, input => {
       if (input.length < length) {
-        raiseIssue(input, STRING_MIN_CODE, length, options, 'Must have the minimum length of ' + length);
+        raiseIssue(input, CODE_STRING_MIN, length, options, 'Must have the minimum length of ' + length);
       }
     });
   }
@@ -42,9 +42,9 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   max(length: number, options?: OutputConstraintOptions | string): this {
-    return addConstraint(this, STRING_MAX_CODE, options, output => {
+    return addConstraint(this, CODE_STRING_MAX, options, output => {
       if (output.length > length) {
-        raiseIssue(output, STRING_MAX_CODE, length, options, 'Must have the maximum length of ' + length);
+        raiseIssue(output, CODE_STRING_MAX, length, options, 'Must have the maximum length of ' + length);
       }
     });
   }
@@ -57,18 +57,18 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   regex(re: RegExp, options?: OutputConstraintOptions | string): this {
-    return addConstraint(this, STRING_REGEX_CODE, options, output => {
+    return addConstraint(this, CODE_STRING_REGEX, options, output => {
       re.lastIndex = 0;
 
       if (!re.test(output)) {
-        raiseIssue(output, STRING_REGEX_CODE, re, options, 'Must match the pattern ' + re);
+        raiseIssue(output, CODE_STRING_REGEX, re, options, 'Must match the pattern ' + re);
       }
     });
   }
 
   parse(input: unknown, options?: ParserOptions): string {
     if (typeof input !== 'string') {
-      raiseIssue(input, TYPE_CODE, 'string', this.options, 'Must be a string');
+      raiseIssue(input, CODE_TYPE, 'string', this.options, 'Must be a string');
     }
 
     const { applyConstraints } = this;

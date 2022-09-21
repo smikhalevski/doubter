@@ -2,6 +2,7 @@ import {
   ApplyConstraints,
   Constraint,
   InputConstraintOptions,
+  INVALID,
   Issue,
   ObjectLike,
   OutputConstraintOptions,
@@ -9,7 +10,6 @@ import {
 } from './shared-types';
 import { ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
-import { INVALID } from './shapes';
 
 export function addConstraint<S extends Shape<any>>(
   shape: S,
@@ -109,6 +109,16 @@ export function parseAsync<O>(shape: Shape<any, O>, input: unknown, options: Par
 
 export function isObjectLike(value: unknown): value is ObjectLike {
   return value !== null && typeof value === 'object';
+}
+
+const keyRegExp = /^[1-9]\d*$/;
+
+export function isArrayIndex(key: any): boolean {
+  return (isInteger(key) && key >= 0) || key === '0' || keyRegExp.test(key);
+}
+
+export function isTupleIndex(key: any, length: number): boolean {
+  return isArrayIndex(key) && parseInt(key) < length;
 }
 
 export const isArray = Array.isArray;

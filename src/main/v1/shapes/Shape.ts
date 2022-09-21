@@ -17,7 +17,7 @@ import {
   raiseIfUnknownError,
   raiseIssue,
 } from '../utils';
-import { NARROWING_CODE } from './issue-codes';
+import { CODE_NARROWING } from './constants';
 
 /**
  * An arbitrary shape.
@@ -196,7 +196,7 @@ export abstract class Shape<I, O = I> {
   ): Shape<I, T> {
     return addConstraint(this, isObjectLike(options) ? options.id : undefined, options, output => {
       if (!predicate(output)) {
-        raiseIssue(output, NARROWING_CODE, predicate, options, 'Must conform the narrowing predicate');
+        raiseIssue(output, CODE_NARROWING, predicate, options, 'Must conform the narrowing predicate');
       }
     }) as unknown as Shape<I, T>;
   }

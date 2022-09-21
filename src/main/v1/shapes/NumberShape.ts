@@ -2,13 +2,13 @@ import { Shape } from './Shape';
 import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import { addConstraint, isFinite, raiseIfIssues, raiseIssue } from '../utils';
 import {
-  NUMBER_GT_CODE,
-  NUMBER_GTE_CODE,
-  NUMBER_LT_CODE,
-  NUMBER_LTE_CODE,
-  NUMBER_MULTIPLE_OF_CODE,
-  TYPE_CODE,
-} from './issue-codes';
+  CODE_NUMBER_GT,
+  CODE_NUMBER_GTE,
+  CODE_NUMBER_LT,
+  CODE_NUMBER_LTE,
+  CODE_NUMBER_MULTIPLE_OF,
+  CODE_TYPE,
+} from './constants';
 
 export class NumberShape extends Shape<number> {
   constructor(protected options?: InputConstraintOptions | string) {
@@ -43,9 +43,9 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   gt(value: number, options?: OutputConstraintOptions | string): this {
-    return addConstraint(this, NUMBER_GT_CODE, options, output => {
+    return addConstraint(this, CODE_NUMBER_GT, options, output => {
       if (output <= value) {
-        raiseIssue(output, NUMBER_GT_CODE, value, options, 'Must be greater than ' + value);
+        raiseIssue(output, CODE_NUMBER_GT, value, options, 'Must be greater than ' + value);
       }
     });
   }
@@ -58,9 +58,9 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   lt(value: number, options?: OutputConstraintOptions | string): this {
-    return addConstraint(this, NUMBER_LT_CODE, options, output => {
+    return addConstraint(this, CODE_NUMBER_LT, options, output => {
       if (output >= value) {
-        raiseIssue(output, NUMBER_LT_CODE, value, options, 'Must be less than ' + value);
+        raiseIssue(output, CODE_NUMBER_LT, value, options, 'Must be less than ' + value);
       }
     });
   }
@@ -73,9 +73,9 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   gte(value: number, options?: OutputConstraintOptions | string): this {
-    return addConstraint(this, NUMBER_GTE_CODE, options, output => {
+    return addConstraint(this, CODE_NUMBER_GTE, options, output => {
       if (output < value) {
-        raiseIssue(output, NUMBER_GTE_CODE, value, options, 'Must be greater than or equal to ' + value);
+        raiseIssue(output, CODE_NUMBER_GTE, value, options, 'Must be greater than or equal to ' + value);
       }
     });
   }
@@ -88,9 +88,9 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   lte(value: number, options?: OutputConstraintOptions | string): this {
-    return addConstraint(this, NUMBER_LTE_CODE, options, output => {
+    return addConstraint(this, CODE_NUMBER_LTE, options, output => {
       if (output > value) {
-        raiseIssue(output, NUMBER_LTE_CODE, value, options, 'Must be less than or equal to ' + value);
+        raiseIssue(output, CODE_NUMBER_LTE, value, options, 'Must be less than or equal to ' + value);
       }
     });
   }
@@ -103,16 +103,16 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   multipleOf(divisor: number, options?: OutputConstraintOptions | string): this {
-    return addConstraint(this, NUMBER_MULTIPLE_OF_CODE, options, output => {
+    return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
       if (output % divisor !== 0) {
-        raiseIssue(output, NUMBER_MULTIPLE_OF_CODE, divisor, options, 'Must be a multiple of ' + divisor);
+        raiseIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, 'Must be a multiple of ' + divisor);
       }
     });
   }
 
   parse(input: unknown, options?: ParserOptions): number {
     if (!isFinite(input)) {
-      raiseIssue(input, TYPE_CODE, 'number', this.options, 'Must be a number');
+      raiseIssue(input, CODE_TYPE, 'number', this.options, 'Must be a number');
     }
 
     const { applyConstraints } = this;
