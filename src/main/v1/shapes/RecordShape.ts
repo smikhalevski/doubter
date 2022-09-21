@@ -1,9 +1,11 @@
 import {
   captureIssuesForKey,
+  createCatchForKey,
   createCatchForKey_OLD,
   isEqual,
   isObjectLike,
   parseAsync,
+  ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
@@ -95,23 +97,44 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       const { keyShape, valueShape, applyConstraints } = this;
 
       const promises = [];
-      const keys = Object.keys(input);
-      const keysLength = keys.length;
+      const context: ParserContext = { issues: null };
 
-      for (let i = 0; i < keysLength; ++i) {
-        const key = keys[i];
-        promises.push(keyShape.parseAsync(key, options), valueShape.parseAsync(input[key], options));
+      for (const key in input) {
+        promises.push(
+          key,
+          keyShape.parseAsync(key, options).catch(createCatchForKey(key, options, context)),
+          valueShape.parseAsync(input[key], options).catch(createCatchForKey(key, options, context))
+        );
       }
 
-      if (options !== undefined && options.fast) {
-        for (let i = 0; i < keysLength; ++i) {
-          promises[i] = promises[i].catch(createCatchForKey_OLD(keys[i]));
-        }
-        resolve(Promise.all(promises).then(createRecordResolver(keys, input, applyConstraints, options)));
-        return;
-      }
+      resolve(
+        Promise.all(promises).then(entries => {
+          let output = input;
 
-      resolve(Promise.allSettled(promises).then(createSettledRecordResolver(keys, input, applyConstraints, options)));
+          for (let i = 0; i < entries.length; i += 3) {
+            const inputKey = entries[i];
+            const outputKey = entries[i + 1];
+            const outputValue = entries[i + 2];
+
+            if (output === input && inputKey === outputKey && isEqual(outputValue, input[inputKey])) {
+              continue;
+            }
+            if (output === input) {
+              output = sliceObjectLike(input, i / 3);
+            }
+            output[outputKey] = outputValue;
+          }
+
+          let { issues } = context;
+
+          if (applyConstraints !== null) {
+            issues = applyConstraints(output as Record<K['output'], V['output']>, options, issues);
+          }
+          raiseIfIssues(issues);
+
+          return output as Record<K['output'], V['output']>;
+        })
+      );
     });
   }
 }
@@ -128,93 +151,4 @@ function sliceObjectLike(input: ObjectLike, keyCount: number): ObjectLike {
     i++;
   }
   return output;
-}
-
-function createRecordResolver(
-  keys: string[],
-  input: ObjectLike,
-  applyConstraints: ApplyConstraints<any> | null,
-  options: ParserOptions | undefined
-): (entries: any[]) => any {
-  return entries => {
-    const keysLength = keys.length;
-
-    let output = input;
-
-    for (let i = 0, j = 0; i < keysLength; ++i, j += 2) {
-      const inputKey = keys[i];
-      const outputKey = entries[j];
-      const outputValue = entries[j + 1];
-
-      if (output === input && inputKey === outputKey && isEqual(input[inputKey], outputValue)) {
-        continue;
-      }
-      if (output === input) {
-        output = sliceObjectLike(input, i);
-      }
-      output[outputKey] = outputValue;
-    }
-
-    if (applyConstraints !== null) {
-      applyConstraints(output, options, null);
-    }
-    return output;
-  };
-}
-
-function createSettledRecordResolver(
-  keys: string[],
-  input: ObjectLike,
-  applyConstraints: ApplyConstraints<any> | null,
-  options: ParserOptions | undefined
-): (results: PromiseSettledResult<any>[]) => any {
-  return results => {
-    const keysLength = keys.length;
-
-    let issues: Issue[] | null = null;
-    let output = input;
-
-    for (let i = 0, j = 0; i < keysLength; ++i, j += 2) {
-      const inputKey = keys[i];
-
-      const keyResult = results[j];
-      const valueResult = results[j + 1];
-
-      let outputKey = null;
-      let outputValue = INVALID;
-
-      let keyValid = true;
-
-      if (keyResult.status === 'rejected') {
-        issues = captureIssuesForKey(issues, keyResult.reason, inputKey);
-        keyValid = false;
-      } else {
-        outputKey = keyResult.value;
-      }
-
-      if (valueResult.status === 'rejected') {
-        issues = captureIssuesForKey(issues, valueResult.reason, inputKey);
-      } else {
-        outputValue = valueResult.value;
-
-        if (keyValid && input === output && inputKey === outputKey && isEqual(outputValue, input[inputKey])) {
-          continue;
-        }
-      }
-
-      if (output === input) {
-        output = sliceObjectLike(input, i);
-      }
-      if (keyValid) {
-        output[outputKey] = outputValue;
-      }
-    }
-
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output, options, issues);
-    }
-    raiseIfIssues(issues);
-
-    return output;
-  };
 }
