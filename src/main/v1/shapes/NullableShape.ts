@@ -16,9 +16,9 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
   parse(input: unknown, options?: ParserOptions): S['output'] | undefined {
     const output = input === null ? null : this.shape.parse(input, options);
 
-    const { constraintsProcessor } = this;
-    if (constraintsProcessor !== null) {
-      raiseIfIssues(constraintsProcessor(output, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseIfIssues(applyConstraints(output, options, null));
     }
     return output;
   }
@@ -30,10 +30,10 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
 
     const promise = input === null ? Promise.resolve(null) : this.shape.parseAsync(input, options);
 
-    const { constraintsProcessor } = this;
-    if (constraintsProcessor !== null) {
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
       return promise.then(output => {
-        raiseIfIssues(constraintsProcessor(output, options, null));
+        raiseIfIssues(applyConstraints(output, options, null));
         return output;
       });
     }

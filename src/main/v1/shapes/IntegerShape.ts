@@ -9,9 +9,9 @@ export class IntegerShape extends NumberShape {
       raiseIssue(input, TYPE_CODE, 'integer', this.options, 'Must be an integer');
     }
 
-    const { constraintsProcessor } = this;
-    if (constraintsProcessor !== null) {
-      raiseIfIssues(constraintsProcessor(input, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return input;
   }

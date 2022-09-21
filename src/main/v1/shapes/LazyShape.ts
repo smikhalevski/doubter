@@ -17,9 +17,9 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     const shape = (this.shape ||= this.provider());
     const output = shape.parse(input, options);
 
-    const { constraintsProcessor } = this;
-    if (constraintsProcessor !== null) {
-      raiseIfIssues(constraintsProcessor(input, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return output;
   }
@@ -32,10 +32,10 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     const shape = (this.shape ||= this.provider());
     const promise = shape.parseAsync(input, options);
 
-    const { constraintsProcessor } = this;
-    if (constraintsProcessor !== null) {
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
       return promise.then(output => {
-        raiseIfIssues(constraintsProcessor(output, options, null));
+        raiseIfIssues(applyConstraints(output, options, null));
         return output;
       });
     }

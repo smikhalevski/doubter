@@ -1,5 +1,5 @@
 import {
-  ConstraintsProcessor,
+  ApplyConstraints,
   Constraint,
   InputConstraintOptions,
   Issue,
@@ -20,68 +20,47 @@ export function addConstraint<S extends Shape<any>>(
   return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
 }
 
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------------------------------------------
-
-export function selectOutputArray(input: unknown[], output: unknown[]): unknown[] {
-  const inputLength = input.length;
-
-  for (let i = 0; i < inputLength; ++i) {
-    if (!isEqual(input[i], output[i])) {
-      return output;
-    }
-  }
-  return input;
-}
-
-export function createFulfillArray(
+export function createResolveArray(
   input: unknown[],
   options: ParserOptions | undefined,
-  constraintsProcessor: ConstraintsProcessor<any> | null
-): (output: unknown[], issues?: Issue[] | null) => any {
-  return (output, issues = null) => {
-    if (issues === null) {
-      output = selectOutputArray(input, output);
+  context: ParserContext,
+  applyConstraints: ApplyConstraints<any> | null
+): (output: unknown[]) => any {
+  return values => {
+    const inputLength = input.length;
+
+    let output = input;
+
+    for (let i = 0; i < inputLength; ++i) {
+      if (!isEqual(input[i], values[i])) {
+        output = values;
+      }
     }
-    if (constraintsProcessor !== null) {
-      raiseIfIssues(constraintsProcessor(output, options, issues));
+
+    let { issues } = context;
+    if (applyConstraints !== null) {
+      issues = applyConstraints(output, options, issues);
     }
+    raiseIfIssues(issues);
     return output;
   };
 }
 
-export interface IssuesContext {
+export interface ParserContext {
   issues: Issue[] | null;
 }
 
 export function createCatchForKey(
   key: unknown,
   options: ParserOptions | undefined,
-  issuesContext: IssuesContext
+  context: ParserContext
 ): (error: unknown) => any {
   return error => {
-    if (options !== undefined && options.fast && issuesContext.issues !== null) {
+    if (options !== undefined && options.fast && context.issues !== null) {
       return;
     }
 
-    issuesContext.issues = raiseOrCaptureIssuesForKey(error, options, issuesContext.issues, key);
+    context.issues = raiseOrCaptureIssuesForKey(error, options, context.issues, key);
     return INVALID;
   };
 }
@@ -94,28 +73,6 @@ export function createCatchForKey_OLD(key: unknown): (error: unknown) => never {
       issue.path.unshift(key);
     }
     throw error;
-  };
-}
-
-export function createProcessSettled(
-  issues: Issue[] | null,
-  callback: (values: unknown[], issues: Issue[] | null) => any
-): (results: PromiseSettledResult<any>[]) => any {
-  return results => {
-    const resultsLength = results.length;
-
-    for (let i = 0; i < resultsLength; ++i) {
-      const result = results[i];
-
-      if (result.status === 'fulfilled') {
-        results[i] = result.value;
-        continue;
-      }
-
-      // issues = captureIssuesForKey(issues, result.reason);
-    }
-
-    return callback(results, issues);
   };
 }
 
@@ -171,7 +128,7 @@ export function isAsyncShapes(shapes: AnyShape[]): boolean {
   return async;
 }
 
-export function createApplyConstraints<T>(constraints: any[]): ConstraintsProcessor<T> | null {
+export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<T> | null {
   const constraintsLength = constraints.length;
 
   if (constraintsLength === 0) {
@@ -336,7 +293,7 @@ export function raiseIfUnknownError(error: unknown): asserts error is Validation
 }
 
 export function raiseIfIssues(issues: Issue[] | null): void {
-  if (issues !== null && issues.length !== 0) {
+  if (issues !== null) {
     throw new ValidationError(issues);
   }
 }

@@ -2,13 +2,13 @@ import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, OutputConstraintOptions, ParserOptions } from '../shared-types';
 import {
   addConstraint,
-  createProcessSettled,
-  createCatchForKey_OLD,
-  createFulfillArray,
+  createCatchForKey,
+  createResolveArray,
   isArray,
   isEqual,
   isInteger,
   parseAsync,
+  ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
@@ -79,7 +79,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
 
-    const { shape, constraintsProcessor } = this;
+    const { shape, applyConstraints } = this;
     const inputLength = input.length;
 
     let issues: Issue[] | null = null;
@@ -88,15 +88,13 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     for (let i = 0; i < inputLength; ++i) {
       const inputValue = input[i];
 
-      let valid = true;
       let outputValue = INVALID;
       try {
         outputValue = shape.parse(inputValue);
       } catch (error) {
-        valid = false;
         issues = raiseOrCaptureIssuesForKey(error, options, issues, i);
       }
-      if (valid && isEqual(outputValue, inputValue)) {
+      if (isEqual(outputValue, inputValue)) {
         continue;
       }
       if (output === input) {
@@ -105,8 +103,8 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       output[i] = outputValue;
     }
 
-    if (constraintsProcessor !== null) {
-      issues = constraintsProcessor(output, options, issues);
+    if (applyConstraints !== null) {
+      issues = applyConstraints(output, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -123,22 +121,16 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
       }
 
-      const { shape, constraintsProcessor } = this;
+      const { shape, applyConstraints } = this;
       const inputLength = input.length;
-
+      const context: ParserContext = { issues: null };
       const promises = [];
 
       for (let i = 0; i < inputLength; ++i) {
-        promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey_OLD(i)));
+        promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i, options, context)));
       }
 
-      const fulfillArray = createFulfillArray(input, options, constraintsProcessor);
-
-      if (options !== undefined && options.fast) {
-        resolve(Promise.all(promises).then(fulfillArray));
-      } else {
-        resolve(Promise.allSettled(promises).then(createProcessSettled(null, fulfillArray)));
-      }
+      resolve(Promise.all(promises).then(createResolveArray(input, options, context, applyConstraints)));
     });
   }
 }

@@ -1,5 +1,5 @@
 import {
-  ConstraintsProcessor,
+  ApplyConstraints,
   Constraint,
   IdentifiableConstraintOptions,
   Issue,
@@ -46,7 +46,7 @@ export abstract class Shape<I, O = I> {
   /**
    * Applies shape constraints to the output.
    */
-  protected constraintsProcessor: ConstraintsProcessor<O> | null = null;
+  protected applyConstraints: ApplyConstraints<O> | null = null;
 
   private constraints: any[] = [];
 
@@ -176,7 +176,7 @@ export abstract class Shape<I, O = I> {
     const shape = this.clone();
 
     shape.constraints = constraints;
-    shape.constraintsProcessor = createApplyConstraints(constraints);
+    shape.applyConstraints = createApplyConstraints(constraints);
 
     return shape;
   }
@@ -270,22 +270,22 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
   }
 
   parse(input: unknown, options?: ParserOptions): T {
-    const { shape, transformer, constraintsProcessor } = this;
+    const { shape, transformer, applyConstraints } = this;
     const output = transformer(shape.parse(input, options)) as T;
 
-    if (constraintsProcessor !== null) {
-      raiseIfIssues(constraintsProcessor(output, options, null));
+    if (applyConstraints !== null) {
+      raiseIfIssues(applyConstraints(output, options, null));
     }
     return output;
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<T> {
-    const { shape, transformer, constraintsProcessor } = this;
+    const { shape, transformer, applyConstraints } = this;
     const promise = shape.parseAsync(input, options).then(transformer);
 
-    if (constraintsProcessor !== null) {
+    if (applyConstraints !== null) {
       return promise.then(output => {
-        raiseIfIssues(constraintsProcessor(output, options, null));
+        raiseIfIssues(applyConstraints(output, options, null));
         return output;
       });
     }

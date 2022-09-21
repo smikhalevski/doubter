@@ -1,12 +1,12 @@
 import { AnyShape, Shape } from './Shape';
-import { ConstraintsProcessor, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { ApplyConstraints, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
 import {
   createCatchForKey,
   isAsyncShapes,
   isEqual,
   isObjectLike,
-  IssuesContext,
   parseAsync,
+  ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssues,
@@ -39,7 +39,7 @@ type IndexerProcessor = (
   output: ObjectLike,
   options: ParserOptions | undefined,
   issues: Issue[] | null,
-  constraintsProcessor: ConstraintsProcessor<any> | null
+  applyConstraints: ApplyConstraints<any> | null
 ) => ObjectLike;
 
 export enum UnknownKeysMode {
@@ -150,7 +150,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
       raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
     }
 
-    const { keys, _valueShapes, _keysProcessor, _indexerProcessor, constraintsProcessor } = this;
+    const { keys, _valueShapes, _keysProcessor, _indexerProcessor, applyConstraints } = this;
     const keysLength = keys.length;
 
     let issues: Issue[] | null = null;
@@ -184,11 +184,11 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
     }
 
     if (_indexerProcessor !== null) {
-      return _indexerProcessor(input, output, options, issues, constraintsProcessor) as InferObject<P, I, 'output'>;
+      return _indexerProcessor(input, output, options, issues, applyConstraints) as InferObject<P, I, 'output'>;
     }
 
-    if (constraintsProcessor !== null) {
-      issues = constraintsProcessor(output as InferObject<P, I, 'output'>, options, issues);
+    if (applyConstraints !== null) {
+      issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -205,9 +205,9 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
         raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
       }
 
-      const { keys, _valueShapes, _keysProcessor, indexerShape, constraintsProcessor } = this;
+      const { keys, _valueShapes, _keysProcessor, indexerShape, applyConstraints } = this;
 
-      let issuesContext: IssuesContext = { issues: null };
+      let issuesContext: ParserContext = { issues: null };
       let output = input;
 
       if (_keysProcessor !== null) {
@@ -255,16 +255,12 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
             output[key] = outputValue;
           }
 
-          const { issues } = issuesContext;
+          let { issues } = issuesContext;
 
-          if (constraintsProcessor !== null) {
-            issuesContext.issues = constraintsProcessor(
-              output as InferObject<P, I, 'output'>,
-              options,
-              issuesContext.issues
-            );
+          if (applyConstraints !== null) {
+            issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
           }
-          raiseIfIssues(issuesContext.issues);
+          raiseIfIssues(issues);
 
           return output as InferObject<P, I, 'output'>;
         })
@@ -316,7 +312,7 @@ function createStripKeysProcessor(keys: readonly PropertyKey[]): KeysProcessor {
 }
 
 function createIndexerProcessor(keys: PropertyKey[], indexerShape: AnyShape): IndexerProcessor {
-  return (input, output, options, issues, constraintsProcessor) => {
+  return (input, output, options, issues, applyConstraints) => {
     for (const key in input) {
       if (keys.includes(key)) {
         continue;
@@ -341,8 +337,8 @@ function createIndexerProcessor(keys: PropertyKey[], indexerShape: AnyShape): In
       output[key] = outputValue;
     }
 
-    if (constraintsProcessor !== null) {
-      issues = constraintsProcessor(output, options, issues);
+    if (applyConstraints !== null) {
+      issues = applyConstraints(output, options, issues);
     }
     raiseIfIssues(issues);
 

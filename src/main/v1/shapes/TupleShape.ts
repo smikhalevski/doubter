@@ -1,14 +1,14 @@
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptions, Issue, Multiple, ParserOptions } from '../shared-types';
 import {
-  createCatchForKey_OLD,
-  createFulfillArray,
-  createProcessSettled,
+  createCatchForKey,
+  createResolveArray,
   isArray,
   isAsyncShapes,
   isEqual,
   isInteger,
   parseAsync,
+  ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
@@ -33,7 +33,7 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
     }
 
-    const { shapes, constraintsProcessor } = this;
+    const { shapes, applyConstraints } = this;
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
@@ -63,8 +63,8 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
       output[i] = outputValue;
     }
 
-    if (constraintsProcessor !== null) {
-      issues = constraintsProcessor(output as InferTuple<U, 'output'>, options, issues);
+    if (applyConstraints !== null) {
+      issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -81,26 +81,20 @@ export class TupleShape<U extends Multiple<AnyShape>> extends Shape<InferTuple<U
         raiseIssue(input, TYPE_CODE, 'array', this.options, 'Must be an array');
       }
 
-      const { shapes, constraintsProcessor } = this;
+      const { shapes, applyConstraints } = this;
       const shapesLength = shapes.length;
+      const context: ParserContext = { issues: null };
+      const promises = [];
 
       if (input.length !== shapesLength) {
         raiseIssue(input, TUPLE_LENGTH_CODE, shapesLength, this.options, 'Must have a length of ' + shapesLength);
       }
 
-      const promises = [];
-
       for (let i = 0; i < shapesLength; ++i) {
-        promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey_OLD(i)));
+        promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i, options, context)));
       }
 
-      const fulfillArray = createFulfillArray(input, options, constraintsProcessor);
-
-      if (options !== undefined && options.fast) {
-        resolve(Promise.all(promises).then(fulfillArray));
-      } else {
-        resolve(Promise.allSettled(promises).then(createProcessSettled(null, fulfillArray)));
-      }
+      resolve(Promise.all(promises).then(createResolveArray(input, options, context, applyConstraints)));
     });
   }
 }

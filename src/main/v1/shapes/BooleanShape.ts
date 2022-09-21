@@ -13,9 +13,9 @@ export class BooleanShape extends Shape<boolean> {
       raiseIssue(input, TYPE_CODE, 'boolean', this.options, 'Must be a boolean');
     }
 
-    const { constraintsProcessor } = this;
-    if (constraintsProcessor !== null) {
-      raiseIfIssues(constraintsProcessor(input, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return input;
   }

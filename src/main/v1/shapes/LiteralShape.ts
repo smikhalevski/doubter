@@ -15,9 +15,9 @@ export class LiteralShape<T extends Primitive> extends Shape<T> {
       raiseIssue(input, LITERAL_CODE, value, this.options, 'Must be exactly equal to ' + value);
     }
 
-    const { constraintsProcessor } = this;
-    if (constraintsProcessor !== null) {
-      raiseIfIssues(constraintsProcessor(input, options, null));
+    const { applyConstraints } = this;
+    if (applyConstraints !== null) {
+      raiseIfIssues(applyConstraints(input, options, null));
     }
     return input;
   }

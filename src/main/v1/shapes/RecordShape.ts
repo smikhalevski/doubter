@@ -9,7 +9,7 @@ import {
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { ConstraintsProcessor, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { ApplyConstraints, InputConstraintOptions, Issue, ObjectLike, ParserOptions } from '../shared-types';
 import { INVALID, TYPE_CODE } from './issue-codes';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
@@ -29,7 +29,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
     }
 
-    const { keyShape, valueShape, constraintsProcessor } = this;
+    const { keyShape, valueShape, applyConstraints } = this;
 
     let issues: Issue[] | null = null;
     let output = input;
@@ -74,8 +74,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       output[outputKey] = outputValue;
     }
 
-    if (constraintsProcessor !== null) {
-      issues = constraintsProcessor(input as Record<K['output'], V['output']>, options, issues);
+    if (applyConstraints !== null) {
+      issues = applyConstraints(input as Record<K['output'], V['output']>, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -92,7 +92,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         raiseIssue(input, TYPE_CODE, 'object', this._options, 'Must be an object');
       }
 
-      const { keyShape, valueShape, constraintsProcessor } = this;
+      const { keyShape, valueShape, applyConstraints } = this;
 
       const promises = [];
       const keys = Object.keys(input);
@@ -107,13 +107,11 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         for (let i = 0; i < keysLength; ++i) {
           promises[i] = promises[i].catch(createCatchForKey_OLD(keys[i]));
         }
-        resolve(Promise.all(promises).then(createRecordResolver(keys, input, constraintsProcessor, options)));
+        resolve(Promise.all(promises).then(createRecordResolver(keys, input, applyConstraints, options)));
         return;
       }
 
-      resolve(
-        Promise.allSettled(promises).then(createSettledRecordResolver(keys, input, constraintsProcessor, options))
-      );
+      resolve(Promise.allSettled(promises).then(createSettledRecordResolver(keys, input, applyConstraints, options)));
     });
   }
 }
@@ -135,7 +133,7 @@ function sliceObjectLike(input: ObjectLike, keyCount: number): ObjectLike {
 function createRecordResolver(
   keys: string[],
   input: ObjectLike,
-  constraintsProcessor: ConstraintsProcessor<any> | null,
+  applyConstraints: ApplyConstraints<any> | null,
   options: ParserOptions | undefined
 ): (entries: any[]) => any {
   return entries => {
@@ -157,8 +155,8 @@ function createRecordResolver(
       output[outputKey] = outputValue;
     }
 
-    if (constraintsProcessor !== null) {
-      constraintsProcessor(output, options, null);
+    if (applyConstraints !== null) {
+      applyConstraints(output, options, null);
     }
     return output;
   };
@@ -167,7 +165,7 @@ function createRecordResolver(
 function createSettledRecordResolver(
   keys: string[],
   input: ObjectLike,
-  constraintsProcessor: ConstraintsProcessor<any> | null,
+  applyConstraints: ApplyConstraints<any> | null,
   options: ParserOptions | undefined
 ): (results: PromiseSettledResult<any>[]) => any {
   return results => {
@@ -212,8 +210,8 @@ function createSettledRecordResolver(
       }
     }
 
-    if (constraintsProcessor !== null) {
-      issues = constraintsProcessor(output, options, issues);
+    if (applyConstraints !== null) {
+      issues = applyConstraints(output, options, issues);
     }
     raiseIfIssues(issues);
 
