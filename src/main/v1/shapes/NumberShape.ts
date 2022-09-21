@@ -8,6 +8,13 @@ import {
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
+  MESSAGE_NUMBER_GT,
+  MESSAGE_NUMBER_GTE,
+  MESSAGE_NUMBER_LT,
+  MESSAGE_NUMBER_LTE,
+  MESSAGE_NUMBER_MULTIPLE_OF,
+  MESSAGE_NUMBER_TYPE,
+  TYPE_NUMBER,
 } from './constants';
 
 export class NumberShape extends Shape<number> {
@@ -45,7 +52,7 @@ export class NumberShape extends Shape<number> {
   gt(value: number, options?: OutputConstraintOptions | string): this {
     return addConstraint(this, CODE_NUMBER_GT, options, output => {
       if (output <= value) {
-        raiseIssue(output, CODE_NUMBER_GT, value, options, 'Must be greater than ' + value);
+        raiseIssue(output, CODE_NUMBER_GT, value, options, MESSAGE_NUMBER_GT + value);
       }
     });
   }
@@ -60,7 +67,7 @@ export class NumberShape extends Shape<number> {
   lt(value: number, options?: OutputConstraintOptions | string): this {
     return addConstraint(this, CODE_NUMBER_LT, options, output => {
       if (output >= value) {
-        raiseIssue(output, CODE_NUMBER_LT, value, options, 'Must be less than ' + value);
+        raiseIssue(output, CODE_NUMBER_LT, value, options, MESSAGE_NUMBER_LT + value);
       }
     });
   }
@@ -75,7 +82,7 @@ export class NumberShape extends Shape<number> {
   gte(value: number, options?: OutputConstraintOptions | string): this {
     return addConstraint(this, CODE_NUMBER_GTE, options, output => {
       if (output < value) {
-        raiseIssue(output, CODE_NUMBER_GTE, value, options, 'Must be greater than or equal to ' + value);
+        raiseIssue(output, CODE_NUMBER_GTE, value, options, MESSAGE_NUMBER_GTE + value);
       }
     });
   }
@@ -90,7 +97,7 @@ export class NumberShape extends Shape<number> {
   lte(value: number, options?: OutputConstraintOptions | string): this {
     return addConstraint(this, CODE_NUMBER_LTE, options, output => {
       if (output > value) {
-        raiseIssue(output, CODE_NUMBER_LTE, value, options, 'Must be less than or equal to ' + value);
+        raiseIssue(output, CODE_NUMBER_LTE, value, options, MESSAGE_NUMBER_LTE + value);
       }
     });
   }
@@ -105,14 +112,14 @@ export class NumberShape extends Shape<number> {
   multipleOf(divisor: number, options?: OutputConstraintOptions | string): this {
     return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
       if (output % divisor !== 0) {
-        raiseIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, 'Must be a multiple of ' + divisor);
+        raiseIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, MESSAGE_NUMBER_MULTIPLE_OF + divisor);
       }
     });
   }
 
   parse(input: unknown, options?: ParserOptions): number {
     if (!isFinite(input)) {
-      raiseIssue(input, CODE_TYPE, 'number', this.options, 'Must be a number');
+      raiseIssue(input, CODE_TYPE, TYPE_NUMBER, this.options, MESSAGE_NUMBER_TYPE);
     }
 
     const { applyConstraints } = this;

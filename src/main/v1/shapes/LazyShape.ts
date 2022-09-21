@@ -2,20 +2,28 @@ import { AnyShape, Shape } from './Shape';
 import { ParserOptions } from '../shared-types';
 import { parseAsync, raiseIfIssues } from '../utils';
 
+/**
+ * The lazily-evaluated shape.
+ *
+ * @template S The lazily loaded shape.
+ */
 export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
-  protected shape: S | undefined;
+  private _shape: S | undefined;
 
-  constructor(async: boolean, protected provider: () => S) {
+  constructor(async: boolean, private _provider: () => S) {
     super(async);
   }
 
+  get shape() {
+    return (this._shape ||= this._provider());
+  }
+
   at(key: unknown): AnyShape | null {
-    return (this.shape ||= this.provider()).at(key);
+    return this.shape.at(key);
   }
 
   parse(input: unknown, options?: ParserOptions): S['output'] {
-    const shape = (this.shape ||= this.provider());
-    const output = shape.parse(input, options);
+    const output = this.shape.parse(input, options);
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
@@ -29,8 +37,7 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
       return parseAsync(this, input, options);
     }
 
-    const shape = (this.shape ||= this.provider());
-    const promise = shape.parseAsync(input, options);
+    const promise = this.shape.parseAsync(input, options);
 
     const { applyConstraints } = this;
     if (applyConstraints !== null) {
@@ -39,6 +46,7 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
         return output;
       });
     }
+
     return promise;
   }
 }

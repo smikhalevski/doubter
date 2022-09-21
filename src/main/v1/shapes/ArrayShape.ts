@@ -25,15 +25,17 @@ import {
 
 /**
  * The shape that constrains every element of an array with the element shape.
+ *
+ * @template S The element shape.
  */
 export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['output'][]> {
   /**
    * Creates a new {@linkcode ArrayShape} instance.
    *
    * @param shape The shape of an array element.
-   * @param _options The constraint options or an issue message.
+   * @param options The constraint options or an issue message.
    */
-  constructor(readonly shape: S, private _options?: InputConstraintOptions | string) {
+  constructor(readonly shape: S, protected options?: InputConstraintOptions | string) {
     super(shape.async);
   }
 
@@ -82,9 +84,9 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     });
   }
 
-  parse(input: unknown, parserOptions?: ParserOptions): S['output'][] {
+  parse(input: unknown, options?: ParserOptions): S['output'][] {
     if (!isArray(input)) {
-      raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
+      raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
     }
 
     const { shape, applyConstraints } = this;
@@ -100,7 +102,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       try {
         outputValue = shape.parse(inputValue);
       } catch (error) {
-        issues = raiseOrCaptureIssuesForKey(error, parserOptions, issues, i);
+        issues = raiseOrCaptureIssuesForKey(error, options, issues, i);
       }
       if (isEqual(outputValue, inputValue)) {
         continue;
@@ -112,37 +114,33 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     }
 
     if (applyConstraints !== null) {
-      issues = applyConstraints(output, parserOptions, issues);
+      issues = applyConstraints(output, options, issues);
     }
     raiseIfIssues(issues);
 
     return output;
   }
 
-  parseAsync(input: unknown, parserOptions?: ParserOptions): Promise<S['output'][]> {
+  parseAsync(input: unknown, options?: ParserOptions): Promise<S['output'][]> {
     if (!this.async) {
-      return parseAsync(this, input, parserOptions);
+      return parseAsync(this, input, options);
     }
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
+        raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
       }
 
       const { shape, applyConstraints } = this;
       const inputLength = input.length;
-      const parserContext: ParserContext = { issues: null };
-      const outputPromises = [];
+      const context: ParserContext = { issues: null };
+      const promises = [];
 
       for (let i = 0; i < inputLength; ++i) {
-        outputPromises.push(
-          shape.parseAsync(input[i], parserOptions).catch(createCatchForKey(i, parserOptions, parserContext))
-        );
+        promises.push(shape.parseAsync(input[i], options).catch(createCatchForKey(i, options, context)));
       }
 
-      resolve(
-        Promise.all(outputPromises).then(createResolveArray(input, parserOptions, parserContext, applyConstraints))
-      );
+      resolve(Promise.all(promises).then(createResolveArray(input, options, context, applyConstraints)));
     });
   }
 }
