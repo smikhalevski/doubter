@@ -1,9 +1,9 @@
-import { NumberType } from '../types';
-import { ConstraintOptions } from '../shared-types';
+import { NumberShape } from '../shapes';
+import { InputConstraintOptions } from '../shared-types';
 
 /**
- * Creates the number type definition.
+ * Creates the number shape.
  */
-export function number(options?: ConstraintOptions): NumberType {
-  return new NumberType(options);
+export function number(options?: InputConstraintOptions): NumberShape {
+  return new NumberShape(options);
 }

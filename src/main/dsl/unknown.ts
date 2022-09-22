@@ -1,5 +1,5 @@
-import { UnconstrainedType } from '../types';
+import { UnconstrainedShape } from '../shapes';
 
-export function unknown(): UnconstrainedType<unknown> {
-  return new UnconstrainedType();
+export function unknown(): UnconstrainedShape<unknown> {
+  return new UnconstrainedShape();
 }

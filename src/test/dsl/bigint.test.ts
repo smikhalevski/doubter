@@ -1,7 +1,7 @@
-import { bigint, BigIntType } from '../../main';
+import { bigint, BigIntShape } from '../../main';
 
 describe('bigint', () => {
-  test('returns an bigint type', () => {
-    expect(bigint()).toBeInstanceOf(BigIntType);
+  test('returns an bigint shape', () => {
+    expect(bigint()).toBeInstanceOf(BigIntShape);
   });
 });

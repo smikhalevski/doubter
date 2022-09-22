@@ -1,10 +1,10 @@
-import { AnyType, NullableType } from '../types';
+import { AnyShape, NullableShape } from '../shapes';
 
 /**
- * Creates the nullable type definition.
+ * Creates the nullable shape.
  *
- * @param type The underlying type definition.
+ * @param shape The underlying shape.
  */
-export function nullable<X extends AnyType>(type: X): NullableType<X> {
-  return new NullableType(type);
+export function nullable<S extends AnyShape>(shape: S): NullableShape<S> {
+  return new NullableShape(shape);
 }

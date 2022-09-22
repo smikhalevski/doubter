@@ -1,7 +1,7 @@
-import { integer, IntegerType } from '../../main';
+import { integer, IntegerShape } from '../../main';
 
 describe('integer', () => {
-  test('returns an integer type', () => {
-    expect(integer()).toBeInstanceOf(IntegerType);
+  test('returns an integer shape', () => {
+    expect(integer()).toBeInstanceOf(IntegerShape);
   });
 });

@@ -1,8 +1,8 @@
-import { UnconstrainedType } from '../types';
+import { UnconstrainedShape } from '../shapes';
 
 /**
- * Creates the unconstrained type definition.
+ * Creates the unconstrained shape.
  */
-export function any<O = any>(): UnconstrainedType<O> {
-  return new UnconstrainedType();
+export function any<T = any>(): UnconstrainedShape<T> {
+  return new UnconstrainedShape();
 }

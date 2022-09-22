@@ -1,7 +1,14 @@
-import { number, record, RecordType, string } from '../../main';
+import { number, record, RecordShape, string } from '../../main';
 
 describe('record', () => {
-  test('returns an record type', () => {
-    expect(record(string(), number())).toBeInstanceOf(RecordType);
+  test('infers type', () => {
+    const output: { bbb: number } = record(
+      string().transform((): 'bbb' => 'bbb'),
+      number()
+    ).parse({ aaa: 111 });
+  });
+
+  test('returns an record shape', () => {
+    expect(record(string(), number())).toBeInstanceOf(RecordShape);
   });
 });

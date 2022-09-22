@@ -1,9 +1,9 @@
-import { NeverType } from '../types';
-import { ConstraintOptions } from '../shared-types';
+import { NeverShape } from '../shapes';
+import { InputConstraintOptions } from '../shared-types';
 
 /**
- * Creates the type definition that always raises an issue.
+ * Creates the shape that always raises an issue.
  */
-export function never(options?: ConstraintOptions): NeverType {
-  return new NeverType(options);
+export function never(options?: InputConstraintOptions): NeverShape {
+  return new NeverShape(options);
 }

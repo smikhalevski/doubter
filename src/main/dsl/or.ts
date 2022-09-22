@@ -1,11 +1,12 @@
-import { AnyType, UnionType } from '../types';
-import { Several } from '../shared-types';
+import { AnyShape, UnionShape } from '../shapes';
+import { InputConstraintOptions, Tuple } from '../shared-types';
 
 /**
- * Creates a union type definition that tries to parse the input with one of the provided types.
+ * Creates a union shape that tries to parse the input with one of the provided types.
  *
- * @param types The list of types to try.
+ * @param shapes The list of shapes to try.
+ * @param options The constraint options.
  */
-export function or<U extends Several<AnyType>>(types: U): UnionType<U> {
-  return new UnionType(types);
+export function or<U extends Tuple<AnyShape>>(shapes: U, options?: InputConstraintOptions): UnionShape<U> {
+  return new UnionShape<U>(shapes, options);
 }
