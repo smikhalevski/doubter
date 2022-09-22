@@ -15,7 +15,6 @@ import {
   parseAsync,
   raise,
   raiseIfIssues,
-  raiseIfUnknownError,
   raiseIssue,
 } from '../utils';
 import { CODE_NARROWING, MESSAGE_NARROWING } from './constants';
@@ -49,7 +48,7 @@ export abstract class Shape<I, O = I> {
    */
   protected applyConstraints: ApplyConstraints | null = null;
 
-  private constraints: any[] = [];
+  private _constraints: any[] = [];
 
   /**
    * Creates the new {@linkcode Shape}.
@@ -98,8 +97,7 @@ export abstract class Shape<I, O = I> {
     try {
       this.parse(input, options);
     } catch (error) {
-      raiseIfUnknownError(error);
-      return error.issues;
+      return captureIssues(error);
     }
     return null;
   }
@@ -155,7 +153,7 @@ export abstract class Shape<I, O = I> {
    * @returns The clone of this shape with the constraint added.
    */
   constrain(constraint: Constraint<O>, options?: IdentifiableConstraintOptions): this {
-    const constraints = this.constraints.slice(0);
+    const constraints = this._constraints.slice(0);
 
     if (isDict(options)) {
       const { id = null, unsafe = false } = options;
@@ -176,7 +174,7 @@ export abstract class Shape<I, O = I> {
 
     const shape = this.clone();
 
-    shape.constraints = constraints;
+    shape._constraints = constraints;
     shape.applyConstraints = createApplyConstraints(constraints);
 
     return shape;
@@ -259,6 +257,7 @@ Object.defineProperty(Shape.prototype, 'output', {
  * @template T The transformed value.
  */
 export class TransformedShape<I, O, T> extends Shape<I, T> {
+  // any prevents type parameters from becoming invariant
   private _transformer: Transformer<any, any>;
 
   /**
