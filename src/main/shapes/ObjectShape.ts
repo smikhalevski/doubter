@@ -1,10 +1,10 @@
 import { AnyShape, Shape } from './Shape';
 import {
   ApplyConstraints,
+  Dict,
   InputConstraintOptionsOrMessage,
   INVALID,
   Issue,
-  ObjectLike,
   ParserOptions,
 } from '../shared-types';
 import {
@@ -23,7 +23,7 @@ import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS
 
 type Channel = 'input' | 'output';
 
-type InferObject<P extends ObjectLike<AnyShape>, I extends AnyShape, C extends Channel> = Squash<
+type InferObject<P extends Dict<AnyShape>, I extends AnyShape, C extends Channel> = Squash<
   UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<I, C>
 >;
 
@@ -41,15 +41,15 @@ type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : n
 
 type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-type ApplyKeys = (input: ObjectLike) => ObjectLike;
+type ApplyKeys = (input: Dict) => Dict;
 
 type ApplyIndexer = (
-  input: ObjectLike,
-  output: ObjectLike,
+  input: Dict,
+  output: Dict,
   options: ParserOptions | undefined,
   issues: Issue[] | null,
   applyConstraints: ApplyConstraints | null
-) => ObjectLike;
+) => Dict;
 
 export enum KeysMode {
   PRESERVED = 'preserved',
@@ -64,7 +64,7 @@ export enum KeysMode {
  * @template I The shape that constrains values of
  * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
  */
-export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Shape<never>> extends Shape<
+export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<never>> extends Shape<
   InferObject<P, I, 'input'>,
   InferObject<P, I, 'output'>
 > {
@@ -119,7 +119,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    *
    * @template T The type of properties to add.
    */
-  extend<T extends ObjectLike<AnyShape>>(
+  extend<T extends Dict<AnyShape>>(
     shape: ObjectShape<T, AnyShape>
   ): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
 
@@ -132,9 +132,9 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    *
    * @template T The shapes of properties to add.
    */
-  extend<T extends ObjectLike<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
+  extend<T extends Dict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
 
-  extend(shape: ObjectShape<any, AnyShape> | ObjectLike<AnyShape>): ObjectShape<any, I> {
+  extend(shape: ObjectShape<any, AnyShape> | Dict<AnyShape>): ObjectShape<any, I> {
     const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
     return new ObjectShape(shapes, this.indexerShape, this.options);
@@ -149,7 +149,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * @template K The tuple of keys to pick.
    */
   pick<K extends ObjectKeys<P>[]>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
-    const shapes: ObjectLike<AnyShape> = {};
+    const shapes: Dict<AnyShape> = {};
 
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
@@ -171,7 +171,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * @template K The tuple of keys to omit.
    */
   omit<K extends ObjectKeys<P>[]>(...keys: K): ObjectShape<Omit<P, K[number]>, I> {
-    const shapes: ObjectLike<AnyShape> = {};
+    const shapes: Dict<AnyShape> = {};
 
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
@@ -265,7 +265,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
         continue;
       }
       if (output === input) {
-        output = cloneObjectLike(input);
+        output = cloneDict(input);
       }
       output[key] = outputValue;
     }
@@ -336,7 +336,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
             continue;
           }
           if (output === input) {
-            output = cloneObjectLike(input);
+            output = cloneDict(input);
           }
           output[key] = outputValue;
         }
@@ -357,7 +357,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
 }
 
 function createApplyExactKeys(
-  keys: readonly PropertyKey[],
+  keys: readonly string[],
   options: InputConstraintOptionsOrMessage | undefined
 ): ApplyKeys {
   return input => {
@@ -375,7 +375,7 @@ function createApplyExactKeys(
   };
 }
 
-function createApplyStripKeys(keys: readonly PropertyKey[]): ApplyKeys {
+function createApplyStripKeys(keys: readonly string[]): ApplyKeys {
   const keysLength = keys.length;
 
   return input => {
@@ -383,7 +383,7 @@ function createApplyStripKeys(keys: readonly PropertyKey[]): ApplyKeys {
       if (keys.includes(key)) {
         continue;
       }
-      const output: ObjectLike = {};
+      const output: Dict = {};
 
       for (let i = 0; i < keysLength; ++i) {
         const key = keys[i];
@@ -398,7 +398,7 @@ function createApplyStripKeys(keys: readonly PropertyKey[]): ApplyKeys {
   };
 }
 
-function createApplyIndexer(keys: readonly PropertyKey[], indexerShape: AnyShape): ApplyIndexer {
+function createApplyIndexer(keys: readonly string[], indexerShape: AnyShape): ApplyIndexer {
   return (input, output, options, issues, applyConstraints) => {
     for (const key in input) {
       if (keys.includes(key)) {
@@ -417,7 +417,7 @@ function createApplyIndexer(keys: readonly PropertyKey[], indexerShape: AnyShape
         continue;
       }
       if (output === input) {
-        output = cloneObjectLike(input);
+        output = cloneDict(input);
       }
       output[key] = outputValue;
     }
@@ -431,8 +431,8 @@ function createApplyIndexer(keys: readonly PropertyKey[], indexerShape: AnyShape
   };
 }
 
-function cloneObjectLike(input: ObjectLike): ObjectLike {
-  const output: ObjectLike = {};
+function cloneDict(input: Dict): Dict {
+  const output: Dict = {};
 
   for (const key in input) {
     output[key] = input[key];

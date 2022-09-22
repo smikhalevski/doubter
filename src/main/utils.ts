@@ -1,10 +1,10 @@
 import {
   ApplyConstraints,
   Constraint,
+  Dict,
   InputConstraintOptionsOrMessage,
   INVALID,
   Issue,
-  ObjectLike,
   OutputConstraintOptionsOrMessage,
   ParserOptions,
 } from './shared-types';
@@ -77,7 +77,7 @@ export function parseAsync<O>(shape: Shape<any, O>, input: unknown, options: Par
   return new Promise(resolve => resolve(shape.parse(input, options)));
 }
 
-export function isObjectLike(value: unknown): value is ObjectLike {
+export function isObjectLike(value: unknown): value is Dict {
   return value !== null && typeof value === 'object';
 }
 

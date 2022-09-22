@@ -119,7 +119,9 @@ export type Tuple<T> = [T, ...T[]];
 
 export type Primitive = string | number | bigint | boolean | null | undefined;
 
-export type ObjectLike<T = any> = Record<keyof any, any>;
+export interface Dict<T = any> {
+  [key: string]: T;
+}
 
 /**
  * The closure that applies constraints to the input value and throws a validation error if

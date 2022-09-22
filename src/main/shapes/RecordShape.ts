@@ -9,7 +9,7 @@ import {
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptionsOrMessage, INVALID, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { Dict, InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions } from '../shared-types';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
@@ -58,7 +58,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         continue;
       }
       if (output === input) {
-        output = sliceObjectLike(input, keyIndex);
+        output = sliceDict(input, keyIndex);
       }
       output[outputKey] = outputValue;
     }
@@ -105,7 +105,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
             continue;
           }
           if (output === input) {
-            output = sliceObjectLike(input, i / 3);
+            output = sliceDict(input, i / 3);
           }
           output[outputKey] = outputValue;
         }
@@ -125,8 +125,8 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
   }
 }
 
-function sliceObjectLike(input: ObjectLike, keyCount: number): ObjectLike {
-  const output: ObjectLike = {};
+function sliceDict(input: Dict, keyCount: number): Dict {
+  const output: Dict = {};
   let i = 0;
 
   for (const key in input) {
