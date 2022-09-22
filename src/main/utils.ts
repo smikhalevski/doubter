@@ -26,7 +26,7 @@ export function addConstraint<S extends Shape<any>>(
 export function createResolveArray(
   input: unknown[],
   options: ParserOptions | undefined,
-  context: ParserContext,
+  context: IssuesContext,
   applyConstraints: ApplyConstraints | null
 ): (elements: unknown[]) => any {
   return elements => {
@@ -50,14 +50,17 @@ export function createResolveArray(
   };
 }
 
-export interface ParserContext {
+/**
+ * An internal context that is used during async parsing to share issues among parallel parser executions.
+ */
+export interface IssuesContext {
   issues: Issue[] | null;
 }
 
 export function createCatchForKey(
   key: unknown,
   options: ParserOptions | undefined,
-  context: ParserContext
+  context: IssuesContext
 ): (error: unknown) => any {
   return error => {
     const { issues } = context;
@@ -250,10 +253,11 @@ export function createIssue(
     meta = options.meta;
   } else if (typeof options === 'function') {
     message = options(param);
-  } else if (typeof options === 'string') {
-    message = options.replace('%s', String(param));
   } else {
-    message = message.replace('%s', String(param));
+    if (typeof options === 'string') {
+      message = options;
+    }
+    message = message.replace('%s', param === undefined ? '' : String(param));
   }
 
   return { code, path: [], input, param, message, meta };

@@ -13,8 +13,8 @@ import {
   isArray,
   isArrayIndex,
   isEqual,
+  IssuesContext,
   parseAsync,
-  ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
@@ -139,7 +139,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
       const { shape, applyConstraints } = this;
       const inputLength = input.length;
-      const context: ParserContext = { issues: null };
+      const context: IssuesContext = { issues: null };
       const promises = [];
 
       for (let i = 0; i < inputLength; ++i) {

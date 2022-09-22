@@ -2,8 +2,8 @@ import {
   createCatchForKey,
   isDict,
   isEqual,
+  IssuesContext,
   parseAsync,
-  ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
@@ -82,7 +82,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
       }
 
       const { keyShape, valueShape, applyConstraints } = this;
-      const context: ParserContext = { issues: null };
+      const context: IssuesContext = { issues: null };
       const entryPromises = [];
 
       for (const key in input) {

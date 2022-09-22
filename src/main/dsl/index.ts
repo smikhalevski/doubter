@@ -6,6 +6,7 @@ export * from './enum';
 export * from './instance';
 export * from './integer';
 export * from './lazy';
+export * from './lazyAsync';
 export * from './literal';
 export * from './never';
 export * from './nullable';

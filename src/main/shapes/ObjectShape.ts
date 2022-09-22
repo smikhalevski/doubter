@@ -12,8 +12,8 @@ import {
   isAsyncShapes,
   isDict,
   isEqual,
+  IssuesContext,
   parseAsync,
-  ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssues,
@@ -294,7 +294,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
       const { keys, _valueShapes, _applyKeys, indexerShape, applyConstraints } = this;
 
-      let context: ParserContext = { issues: null };
+      let context: IssuesContext = { issues: null };
       let output = input;
 
       if (_applyKeys !== null) {

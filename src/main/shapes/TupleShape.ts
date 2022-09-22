@@ -6,9 +6,9 @@ import {
   isArray,
   isAsyncShapes,
   isEqual,
+  IssuesContext,
   isTupleIndex,
   parseAsync,
-  ParserContext,
   raiseIfIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
@@ -90,7 +90,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
 
       const { shapes, applyConstraints } = this;
       const shapesLength = shapes.length;
-      const context: ParserContext = { issues: null };
+      const context: IssuesContext = { issues: null };
       const promises = [];
 
       if (input.length !== shapesLength) {

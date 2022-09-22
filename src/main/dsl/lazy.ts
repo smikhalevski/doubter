@@ -3,7 +3,8 @@ import { AnyShape, LazyShape } from '../shapes';
 /**
  * Returns the shape that is lazily resolved at parse time.
  *
- * @param provider Returns the shape that must be applied to the input.
+ * @param provider Returns the shape that must be applied to the input. The returned shape must support synchronous
+ * parsing.
  *
  * @template S The shape returned by the provider.
  */
