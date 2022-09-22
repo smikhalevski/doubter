@@ -3,6 +3,8 @@ const z = require('myzod');
 const v = require('@badrap/valita');
 const lib = require('../../lib/index-cjs');
 
+beforeBatch(gc);
+
 describe(
   'string()',
   () => {
@@ -469,6 +471,59 @@ describe(
         type.parse(value);
       });
     });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'union([string(), number()])',
+  () => {
+    const createTests = value => {
+      test('Ajv', measure => {
+        const ajv = new Ajv({ allowUnionTypes: true });
+
+        const schema = {
+          $id: 'AjvTest',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: ['string', 'number'],
+        };
+
+        const validate = ajv.compile(schema);
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = z.union([z.string(), z.number()]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('valita', measure => {
+        const type = v.union(v.string(), v.number());
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('lib', measure => {
+        const type = lib.or([lib.string(), lib.number()]);
+        const options = { fast: true };
+
+        measure(() => {
+          type.parse(value, options);
+        });
+      });
+    };
+
+    describe('string input', () => createTests('aaa'));
+
+    describe('number input', () => createTests(111));
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
