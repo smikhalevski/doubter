@@ -1,7 +1,7 @@
 const Ajv = require('ajv');
 const z = require('myzod');
 const v = require('@badrap/valita');
-const lib = require('../../lib/index-cjs');
+const d = require('../../lib/index-cjs');
 
 beforeBatch(gc);
 
@@ -37,8 +37,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.string();
+    test('doubter', measure => {
+      const type = d.string();
 
       measure(() => {
         type.parse(value);
@@ -74,8 +74,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.string().length(3);
+    test('doubter', measure => {
+      const type = d.string().length(3);
 
       measure(() => {
         type.parse(value);
@@ -101,8 +101,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.integer();
+    test('doubter', measure => {
+      const type = d.integer();
 
       measure(() => {
         type.parse(value);
@@ -144,8 +144,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.number();
+    test('doubter', measure => {
+      const type = d.number();
 
       measure(() => {
         type.parse(value);
@@ -181,8 +181,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.number().gte(1).lte(5);
+    test('doubter', measure => {
+      const type = d.number().gte(1).lte(5);
 
       measure(() => {
         type.parse(value);
@@ -225,8 +225,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.array(lib.number());
+    test('doubter', measure => {
+      const type = d.array(d.number());
 
       measure(() => {
         type.parse(value);
@@ -263,8 +263,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.array(lib.number()).length(3);
+    test('doubter', measure => {
+      const type = d.array(d.number()).length(3);
 
       measure(() => {
         type.parse(value);
@@ -304,8 +304,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.array(lib.number().gte(0).lte(10)).length(3);
+    test('doubter', measure => {
+      const type = d.array(d.number().gte(0).lte(10)).length(3);
 
       measure(() => {
         type.parse(value);
@@ -350,8 +350,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.tuple([lib.number(), lib.number()]);
+    test('doubter', measure => {
+      const type = d.tuple([d.number(), d.number()]);
 
       measure(() => {
         type.parse(value);
@@ -395,8 +395,8 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.record(lib.string(), lib.number());
+    test('doubter', measure => {
+      const type = d.record(d.string(), d.number());
 
       measure(() => {
         type.parse(value);
@@ -461,10 +461,10 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.object({
-        foo: lib.string(),
-        bar: lib.number(),
+    test('doubter', measure => {
+      const type = d.object({
+        foo: d.string(),
+        bar: d.number(),
       });
 
       measure(() => {
@@ -511,8 +511,8 @@ describe(
         });
       });
 
-      test('lib', measure => {
-        const type = lib.or([lib.string(), lib.number()]);
+      test('doubter', measure => {
+        const type = d.or([d.string(), d.number()]);
         const options = { fast: true };
 
         measure(() => {
@@ -647,18 +647,18 @@ describe(
       });
     });
 
-    test('lib', measure => {
-      const type = lib.object({
-        a1: lib.number(),
-        a2: lib.number(),
-        a3: lib.number(),
-        a4: lib.string(),
-        a5: lib.string(),
-        a6: lib.boolean(),
-        a7: lib.object({
-          a71: lib.string(),
-          a72: lib.number(),
-          a73: lib.boolean(),
+    test('doubter', measure => {
+      const type = d.object({
+        a1: d.number(),
+        a2: d.number(),
+        a3: d.number(),
+        a4: d.string(),
+        a5: d.string(),
+        a6: d.boolean(),
+        a7: d.object({
+          a71: d.string(),
+          a72: d.number(),
+          a73: d.boolean(),
         }),
       });
 
