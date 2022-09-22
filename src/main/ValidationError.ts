@@ -1,4 +1,4 @@
-import { Issue } from './shared-types';
+import { INVALID, Issue } from './shared-types';
 
 /**
  * The validation error that is thrown to indicate a set of issues detected in the input value.
@@ -26,7 +26,6 @@ export class ValidationError extends Error {
       issue.path ??= [];
     }
 
-    this.name = 'ValidationError';
     this.issues = issues as Issue[];
   }
 
@@ -42,3 +41,7 @@ export class ValidationError extends Error {
     Object.defineProperty(this, 'message', { value, writable: true, configurable: true });
   }
 }
+
+Object.defineProperty(ValidationError.prototype, 'name', { value: 'ValidationError', writable: true });
+
+Object.defineProperty(ValidationError.prototype, INVALID, { value: true });

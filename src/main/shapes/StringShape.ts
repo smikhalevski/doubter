@@ -1,6 +1,6 @@
 import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
-import { addConstraint, raiseIfIssues, raiseIssue } from '../utils';
+import { addConstraint, returnOrRaiseIssues, raiseIssue } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -14,7 +14,7 @@ import {
 } from './constants';
 
 export class StringShape extends Shape<string> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
+  constructor(private _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -39,7 +39,7 @@ export class StringShape extends Shape<string> {
   min(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_STRING_MIN, options, input => {
       if (input.length < length) {
-        raiseIssue(input, CODE_STRING_MIN, length, options, MESSAGE_STRING_MIN);
+        return raiseIssue(input, CODE_STRING_MIN, length, options, MESSAGE_STRING_MIN);
       }
     });
   }
@@ -54,7 +54,7 @@ export class StringShape extends Shape<string> {
   max(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_STRING_MAX, options, output => {
       if (output.length > length) {
-        raiseIssue(output, CODE_STRING_MAX, length, options, MESSAGE_STRING_MAX);
+        return raiseIssue(output, CODE_STRING_MAX, length, options, MESSAGE_STRING_MAX);
       }
     });
   }
@@ -71,19 +71,19 @@ export class StringShape extends Shape<string> {
       re.lastIndex = 0;
 
       if (!re.test(output)) {
-        raiseIssue(output, CODE_STRING_REGEX, re, options, MESSAGE_STRING_REGEX);
+        return raiseIssue(output, CODE_STRING_REGEX, re, options, MESSAGE_STRING_REGEX);
       }
     });
   }
 
   parse(input: unknown, options?: ParserOptions): string {
-    if (typeof input !== 'string') {
-      raiseIssue(input, CODE_TYPE, TYPE_STRING, this.options, MESSAGE_STRING_TYPE);
-    }
-
     const { applyConstraints } = this;
+
+    if (typeof input !== 'string') {
+      return raiseIssue(input, CODE_TYPE, TYPE_STRING, this._options, MESSAGE_STRING_TYPE);
+    }
     if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+      return returnOrRaiseIssues(input, applyConstraints(input, options, null));
     }
     return input;
   }

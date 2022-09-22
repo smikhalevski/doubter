@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ParserOptions } from '../shared-types';
-import { parseAsync, raiseIfIssues } from '../utils';
+import { parseAsync, returnOrRaiseIssues } from '../utils';
 
 /**
  * The lazily-evaluated shape.
@@ -23,11 +23,11 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
   }
 
   parse(input: unknown, options?: ParserOptions): S['output'] {
+    const { applyConstraints } = this;
     const output = this.shape.parse(input, options);
 
-    const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+      return returnOrRaiseIssues(output, applyConstraints(input, options, null));
     }
     return output;
   }
@@ -37,14 +37,11 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
       return parseAsync(this, input, options);
     }
 
+    const { applyConstraints } = this;
     const promise = this.shape.parseAsync(input, options);
 
-    const { applyConstraints } = this;
     if (applyConstraints !== null) {
-      return promise.then(output => {
-        raiseIfIssues(applyConstraints(output, options, null));
-        return output;
-      });
+      return promise.then(output => returnOrRaiseIssues(output, applyConstraints(output, options, null)));
     }
 
     return promise;

@@ -12,6 +12,6 @@ export class NeverShape extends Shape<never> {
   }
 
   parse(input: unknown, options?: ParserOptions): never {
-    raiseIssue(input, CODE_NEVER, undefined, this.options, MESSAGE_NEVER);
+    return raiseIssue(input, CODE_NEVER, undefined, this.options, MESSAGE_NEVER) as never;
   }
 }

@@ -12,10 +12,12 @@ import {
   createResolveArray,
   isArray,
   isArrayIndex,
+  isDict,
   isEqual,
   IssuesContext,
+  isValidationError,
   parseAsync,
-  raiseIfIssues,
+  returnOrRaiseIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
@@ -92,7 +94,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
   parse(input: unknown, options?: ParserOptions): S['output'][] {
     if (!isArray(input)) {
-      raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
     }
 
     const { shape, applyConstraints } = this;
@@ -113,6 +115,10 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       if (isEqual(outputValue, inputValue)) {
         continue;
       }
+      if (isValidationError(outputValue)) {
+        issues = raiseOrCaptureIssuesForKey(outputValue, options, issues, i);
+        outputValue = INVALID;
+      }
       if (output === input) {
         output = input.slice(0);
       }
@@ -122,9 +128,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     if (applyConstraints !== null) {
       issues = applyConstraints(output, options, issues);
     }
-    raiseIfIssues(issues);
-
-    return output;
+    return returnOrRaiseIssues(output, issues);
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<S['output'][]> {
@@ -134,7 +138,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
+        return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
       }
 
       const { shape, applyConstraints } = this;

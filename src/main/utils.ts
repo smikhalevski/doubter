@@ -44,9 +44,8 @@ export function createResolveArray(
     if (applyConstraints !== null) {
       issues = applyConstraints(output, options, issues);
     }
-    raiseIfIssues(issues);
 
-    return output;
+    return returnOrRaiseIssues(output, issues);
   };
 }
 
@@ -66,7 +65,7 @@ export function createCatchForKey(
     const { issues } = context;
 
     if (options !== undefined && options.fast && issues !== null) {
-      raiseIfIssues(issues);
+      return returnOrRaiseIssues(INVALID, issues);
     }
 
     context.issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
@@ -87,6 +86,10 @@ export function isDict(value: unknown): value is Dict {
   return value !== null && typeof value === 'object';
 }
 
+export function isValidationError(value: any): value is { issues: Issue[] } {
+  return value !== null && typeof value === 'object' && value[INVALID] === true;
+}
+
 const positiveIntegerPattern = /^[1-9]\d*$/;
 
 export function isArrayIndex(key: any): boolean {
@@ -99,7 +102,7 @@ export function isTupleIndex(key: any, length: number): boolean {
 
 export const isArray = Array.isArray;
 
-export const isEqual = Object.is as <T>(value1: unknown, value2: T) => value1 is T;
+export const isEqual = Object.is;
 
 export const isInteger = Number.isInteger as (value: unknown) => value is number;
 
@@ -126,10 +129,14 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
 
     return (input, parserOptions, issues) => {
       if (issues === null || unsafe0) {
+        let error;
         try {
-          callback0(input, parserOptions);
+          error = callback0(input, parserOptions);
         } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+          return raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
+          return error.issues;
         }
       }
       return issues;
@@ -141,16 +148,24 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
 
     return (input, parserOptions, issues) => {
       if (issues === null || unsafe0) {
+        let error;
         try {
-          callback0(input, parserOptions);
+          error = callback0(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe1) {
+        let error;
         try {
-          callback1(input, parserOptions);
+          error = callback1(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
@@ -163,23 +178,35 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
 
     return (input, parserOptions, issues) => {
       if (issues === null || unsafe0) {
+        let error;
         try {
-          callback0(input, parserOptions);
+          error = callback0(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe1) {
+        let error;
         try {
-          callback1(input, parserOptions);
+          error = callback1(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe2) {
+        let error;
         try {
-          callback2(input, parserOptions);
+          error = callback2(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
@@ -192,30 +219,46 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
 
     return (input, parserOptions, issues) => {
       if (issues === null || unsafe0) {
+        let error;
         try {
-          callback0(input, parserOptions);
+          error = callback0(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe1) {
+        let error;
         try {
-          callback1(input, parserOptions);
+          error = callback1(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe2) {
+        let error;
         try {
-          callback2(input, parserOptions);
+          error = callback2(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
       if (issues === null || unsafe3) {
+        let error;
         try {
-          callback3(input, parserOptions);
+          error = callback3(input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
@@ -226,9 +269,13 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
   return (input, parserOptions, issues) => {
     for (let i = 1; i < constraintsLength; i += 3) {
       if (issues === null || constraints[i]) {
+        let error;
         try {
-          constraints[i + 1](input, parserOptions);
+          error = constraints[i + 1](input, parserOptions);
         } catch (error) {
+          issues = raiseOrCaptureIssues(error, parserOptions, issues);
+        }
+        if (error !== undefined) {
           issues = raiseOrCaptureIssues(error, parserOptions, issues);
         }
       }
@@ -273,20 +320,18 @@ export function raiseIssue(
   param: unknown,
   options: InputConstraintOptionsOrMessage | undefined,
   message: string
-): never {
-  throw new ValidationError([createIssue(input, code, param, options, message)]);
+): any {
+  return { [INVALID]: true, issues: [createIssue(input, code, param, options, message)] };
 }
 
 export function raiseIfUnknownError(error: unknown): asserts error is ValidationError {
-  if (!(error instanceof ValidationError)) {
+  if (!isValidationError(error)) {
     throw error;
   }
 }
 
-export function raiseIfIssues(issues: Issue[] | null): void {
-  if (issues !== null) {
-    throw new ValidationError(issues);
-  }
+export function returnOrRaiseIssues(output: any, issues: Issue[] | null): any {
+  return issues === null ? output : new ValidationError(issues);
 }
 
 export function raiseOrCaptureIssues(

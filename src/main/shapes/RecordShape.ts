@@ -4,7 +4,7 @@ import {
   isEqual,
   IssuesContext,
   parseAsync,
-  raiseIfIssues,
+  returnOrRaiseIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
@@ -26,7 +26,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
   parse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> {
     if (!isDict(input)) {
-      raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
     }
 
     const { keyShape, valueShape, applyConstraints } = this;
@@ -66,9 +66,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     if (applyConstraints !== null) {
       issues = applyConstraints(input as Record<K['output'], V['output']>, options, issues);
     }
-    raiseIfIssues(issues);
-
-    return output as Record<K['output'], V['output']>;
+    return returnOrRaiseIssues(output, issues);
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<Record<K['output'], V['output']>> {
@@ -78,7 +76,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
     return new Promise(resolve => {
       if (!isDict(input)) {
-        raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
+        return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
       }
 
       const { keyShape, valueShape, applyConstraints } = this;
@@ -115,9 +113,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         if (applyConstraints !== null) {
           issues = applyConstraints(output as Record<K['output'], V['output']>, options, issues);
         }
-        raiseIfIssues(issues);
-
-        return output as Record<K['output'], V['output']>;
+        return returnOrRaiseIssues(output, issues);
       });
 
       resolve(promise);

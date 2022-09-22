@@ -12,9 +12,10 @@ import {
   captureIssues,
   createApplyConstraints,
   isDict,
+  isValidationError,
   parseAsync,
   raise,
-  raiseIfIssues,
+  returnOrRaiseIssues,
   raiseIssue,
 } from '../utils';
 import { CODE_NARROWING, MESSAGE_NARROWING } from './constants';
@@ -94,10 +95,14 @@ export abstract class Shape<I, O = I> {
    * @throws Error if the shape doesn't support the synchronous parsing.
    */
   validate(input: unknown, options?: ParserOptions): Issue[] | null {
+    let output;
     try {
-      this.parse(input, options);
+      output = this.parse(input, options);
     } catch (error) {
       return captureIssues(error);
+    }
+    if (isValidationError(output)) {
+      return output.issues;
     }
     return null;
   }
@@ -277,7 +282,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     const output = _transformer(shape.parse(input, options));
 
     if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(output, options, null));
+      return returnOrRaiseIssues(output, applyConstraints(output, options, null));
     }
     return output;
   }
@@ -291,10 +296,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     const promise = shape.parseAsync(input, options).then(_transformer);
 
     if (applyConstraints !== null) {
-      return promise.then(output => {
-        raiseIfIssues(applyConstraints(output, options, null));
-        return output;
-      });
+      return promise.then(output => returnOrRaiseIssues(output, applyConstraints(output, options, null)));
     }
     return promise;
   }

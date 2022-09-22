@@ -52,7 +52,7 @@ export type Constraint<T> = (value: T, parserOptions: ParserOptions | undefined)
 /**
  * Options that are applicable for the type constraint.
  */
-export interface InputConstraintOptions {
+export interface ShapeOptions {
   /**
    * The custom issue message.
    */
@@ -78,10 +78,10 @@ export interface ChainableConstraintOptions {
 /**
  * Options that are applicable for the built-in type-specific constraints.
  */
-export interface OutputConstraintOptions extends InputConstraintOptions, ChainableConstraintOptions {}
+export interface ConstraintOptions extends ShapeOptions, ChainableConstraintOptions {}
 
 /**
- * Options that are applicable for the custom constraints added via {@linkcode Shape.constrain}.
+ * Options that are applicable for the custom constraints added via {@linkcode Shape.constraint}.
  */
 export interface IdentifiableConstraintOptions extends ChainableConstraintOptions {
   /**
@@ -96,11 +96,11 @@ export interface IdentifiableConstraintOptions extends ChainableConstraintOption
 /**
  * Options for narrowing constraints that are added
  */
-export interface NarrowingConstraintOptions extends OutputConstraintOptions, IdentifiableConstraintOptions {}
+export interface NarrowingConstraintOptions extends ConstraintOptions, IdentifiableConstraintOptions {}
 
-export type InputConstraintOptionsOrMessage = InputConstraintOptions | ((param: any) => any) | string;
+export type InputConstraintOptionsOrMessage = ShapeOptions | ((param: any) => any) | string;
 
-export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | ((param: any) => any) | string;
+export type OutputConstraintOptionsOrMessage = ConstraintOptions | ((param: any) => any) | string;
 
 export type NarrowingConstraintOptionsOrMessage = NarrowingConstraintOptions | ((param: any) => any) | string;
 

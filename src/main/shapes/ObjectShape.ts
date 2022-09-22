@@ -14,7 +14,7 @@ import {
   isEqual,
   IssuesContext,
   parseAsync,
-  raiseIfIssues,
+  returnOrRaiseIssues,
   raiseIssue,
   raiseOrCaptureIssues,
   raiseOrCaptureIssuesForKey,
@@ -234,7 +234,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
   parse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> {
     if (!isDict(input)) {
-      raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
     }
 
     const { keys, _valueShapes, _applyKeys, _applyIndexer, applyConstraints } = this;
@@ -277,9 +277,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     if (applyConstraints !== null) {
       issues = applyConstraints(output, options, issues);
     }
-    raiseIfIssues(issues);
-
-    return output as InferObject<P, I, 'output'>;
+    return returnOrRaiseIssues(output, issues);
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<InferObject<P, I, 'output'>> {
@@ -289,7 +287,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
     return new Promise(resolve => {
       if (!isDict(input)) {
-        raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
+        return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
       }
 
       const { keys, _valueShapes, _applyKeys, indexerShape, applyConstraints } = this;
@@ -346,9 +344,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         if (applyConstraints !== null) {
           issues = applyConstraints(output, options, issues);
         }
-        raiseIfIssues(issues);
-
-        return output as InferObject<P, I, 'output'>;
+        return returnOrRaiseIssues(output, issues);
       });
 
       resolve(promise);
@@ -425,9 +421,7 @@ function createApplyIndexer(keys: readonly string[], indexerShape: AnyShape): Ap
     if (applyConstraints !== null) {
       issues = applyConstraints(output, options, issues);
     }
-    raiseIfIssues(issues);
-
-    return output;
+    return returnOrRaiseIssues(output, issues);
   };
 }
 

@@ -1,6 +1,6 @@
-import { InputConstraintOptionsOrMessage, Issue, ParserOptions, Tuple } from '../shared-types';
+import { InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions, Tuple } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { createIssue, isAsyncShapes, raiseIfIssues, raiseIfUnknownError } from '../utils';
+import { createIssue, isAsyncShapes, isValidationError, raiseIfUnknownError, returnOrRaiseIssues } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from './constants';
 
 type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
@@ -48,16 +48,23 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
     let issues: Issue[] | null = null;
 
     for (let i = 0; i < shapesLength; ++i) {
+      let output = INVALID;
       try {
-        return shapes[i].parse(input, options);
+        output = shapes[i].parse(input, options);
       } catch (error) {
         issues = captureOrMergeIssues(issues, error);
       }
+      if (isValidationError(output)) {
+        issues = captureOrMergeIssues(issues, output);
+        continue;
+      }
+      return output;
     }
 
     issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
 
-    raiseIfIssues(
+    return returnOrRaiseIssues(
+      input,
       (options !== undefined && options.fast) || applyConstraints === null
         ? issues
         : applyConstraints(input, options, issues)
@@ -89,7 +96,8 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
 
       issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
 
-      raiseIfIssues(
+      return returnOrRaiseIssues(
+        input,
         (options !== undefined && options.fast) || applyConstraints === null
           ? issues
           : applyConstraints(input, options, issues)

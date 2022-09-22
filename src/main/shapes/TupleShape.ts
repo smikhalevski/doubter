@@ -9,7 +9,7 @@ import {
   IssuesContext,
   isTupleIndex,
   parseAsync,
-  raiseIfIssues,
+  returnOrRaiseIssues,
   raiseIssue,
   raiseOrCaptureIssuesForKey,
 } from '../utils';
@@ -39,7 +39,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
 
   parse(input: unknown, options?: ParserOptions): InferTuple<U, 'output'> {
     if (!isArray(input)) {
-      raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
     }
 
     const { shapes, applyConstraints } = this;
@@ -73,9 +73,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
     if (applyConstraints !== null) {
       issues = applyConstraints(output as InferTuple<U, 'output'>, options, issues);
     }
-    raiseIfIssues(issues);
-
-    return output as InferTuple<U, 'output'>;
+    return returnOrRaiseIssues(output, issues);
   }
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<InferTuple<U, 'output'>> {
@@ -85,7 +83,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
+        return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
       }
 
       const { shapes, applyConstraints } = this;

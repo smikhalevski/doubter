@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { raiseIfIssues, raiseIssue } from '../utils';
+import { returnOrRaiseIssues, raiseIssue } from '../utils';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from './constants';
 
 export class BigIntShape extends Shape<bigint> {
@@ -9,13 +9,13 @@ export class BigIntShape extends Shape<bigint> {
   }
 
   parse(input: unknown, options?: ParserOptions): bigint {
-    if (typeof input !== 'bigint') {
-      raiseIssue(input, CODE_TYPE, TYPE_BIGINT, this.options, MESSAGE_BIGINT_TYPE);
-    }
-
     const { applyConstraints } = this;
+
+    if (typeof input !== 'bigint') {
+      return raiseIssue(input, CODE_TYPE, TYPE_BIGINT, this.options, MESSAGE_BIGINT_TYPE);
+    }
     if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+      return returnOrRaiseIssues(input, applyConstraints(input, options, null));
     }
     return input;
   }

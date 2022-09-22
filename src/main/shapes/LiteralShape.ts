@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions, Primitive } from '../shared-types';
-import { isEqual, raiseIfIssues, raiseIssue } from '../utils';
+import { isEqual, returnOrRaiseIssues, raiseIssue } from '../utils';
 import { CODE_LITERAL, MESSAGE_LITERAL } from './constants';
 
 /**
@@ -23,12 +23,11 @@ export class LiteralShape<T extends Primitive> extends Shape<T> {
     const { value, applyConstraints } = this;
 
     if (!isEqual(input, value)) {
-      raiseIssue(input, CODE_LITERAL, value, this.options, MESSAGE_LITERAL);
+      return raiseIssue(input, CODE_LITERAL, value, this.options, MESSAGE_LITERAL);
     }
-
     if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+      return returnOrRaiseIssues(input, applyConstraints(input, options, null));
     }
-    return input;
+    return input as T;
   }
 }
