@@ -1,5 +1,5 @@
 import { BigIntShape } from '../../main';
-import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../../main/shapes/constants';
+import { CODE_TYPE, TYPE_BIGINT } from '../../main/shapes/constants';
 
 describe('BigIntShape', () => {
   test('allows a bigint', () => {
@@ -13,7 +13,7 @@ describe('BigIntShape', () => {
         path: [],
         input: 'aaa',
         param: TYPE_BIGINT,
-        message: MESSAGE_BIGINT_TYPE,
+        message: 'Must be a bigint',
         meta: undefined,
       },
     ]);

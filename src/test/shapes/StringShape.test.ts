@@ -19,7 +19,7 @@ describe('StringShape', () => {
         path: [],
         input: 111,
         param: TYPE_STRING,
-        message: expect.any(String),
+        message: 'Must be a string',
         meta: undefined,
       },
     ]);
@@ -33,7 +33,7 @@ describe('StringShape', () => {
         path: [],
         input: 'a',
         param: 2,
-        message: expect.any(String),
+        message: 'Must have the minimum length of 2',
         meta: undefined,
       },
     ]);
@@ -47,7 +47,7 @@ describe('StringShape', () => {
         path: [],
         input: 'aaa',
         param: 2,
-        message: expect.any(String),
+        message: 'Must have the maximum length of 2',
         meta: undefined,
       },
     ]);
@@ -61,7 +61,7 @@ describe('StringShape', () => {
         path: [],
         input: 'bbb',
         param: /a+/,
-        message: expect.any(String),
+        message: 'Must match the pattern /a+/',
         meta: undefined,
       },
     ]);

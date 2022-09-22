@@ -21,7 +21,7 @@ describe('IntegerShape', () => {
         path: [],
         input: 111.222,
         param: TYPE_INTEGER,
-        message: expect.any(String),
+        message: 'Must be an integer',
         meta: undefined,
       },
     ]);

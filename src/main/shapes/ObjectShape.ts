@@ -10,8 +10,8 @@ import {
 import {
   createCatchForKey,
   isAsyncShapes,
+  isDict,
   isEqual,
-  isObjectLike,
   parseAsync,
   ParserContext,
   raiseIfIssues,
@@ -233,7 +233,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
   }
 
   parse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> {
-    if (!isObjectLike(input)) {
+    if (!isDict(input)) {
       raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
     }
 
@@ -288,7 +288,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     }
 
     return new Promise(resolve => {
-      if (!isObjectLike(input)) {
+      if (!isDict(input)) {
         raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
       }
 

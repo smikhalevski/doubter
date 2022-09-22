@@ -1,4 +1,5 @@
 import { ArrayShape, NumberShape, StringShape, UnionShape } from '../../main';
+import { CODE_TYPE, CODE_UNION, TYPE_NUMBER, TYPE_STRING } from '../../main/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
@@ -11,23 +12,23 @@ describe('UnionShape', () => {
   test('raises issues from all failures', () => {
     expect(new UnionShape([numberShape, stringShape]).validate(true)).toEqual([
       {
-        code: 'union',
+        code: CODE_UNION,
         path: [],
         input: true,
         param: [
           {
-            code: 'type',
+            code: CODE_TYPE,
             path: [],
             input: true,
-            param: 'number',
-            message: 'Must be a number',
+            param: TYPE_NUMBER,
+            message: expect.any(String),
             meta: undefined,
           },
           {
-            code: 'type',
+            code: CODE_TYPE,
             input: true,
-            message: 'Must be a string',
-            param: 'string',
+            message: expect.any(String),
+            param: TYPE_STRING,
             path: [],
           },
         ],
@@ -43,20 +44,20 @@ describe('UnionShape', () => {
 
     expect(await new UnionShape([elementShape1, elementShape2]).validateAsync(true)).toEqual([
       {
-        code: 'union',
+        code: CODE_UNION,
         path: [],
         input: true,
         param: [
           {
-            code: 'type',
+            code: CODE_TYPE,
             path: [],
             input: true,
-            param: 'number',
-            message: 'Must be a number',
+            param: TYPE_NUMBER,
+            message: expect.any(String),
             meta: undefined,
           },
         ],
-        message: 'Must conform a union',
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

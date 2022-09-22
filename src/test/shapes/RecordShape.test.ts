@@ -1,10 +1,9 @@
 import { NumberShape, RecordShape, StringShape } from '../../main';
-import { CODE_STRING_MAX, CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER } from '../../main/shapes/constants';
+import { CODE_STRING_MAX, CODE_TYPE, TYPE_NUMBER } from '../../main/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
 
-const asyncStringShape = stringShape.transformAsync(value => Promise.resolve(value));
 const asyncNumberShape = numberShape.transformAsync(value => Promise.resolve(value));
 
 describe('RecordShape', () => {
@@ -42,7 +41,7 @@ describe('RecordShape', () => {
         input: 'bbb',
         param: TYPE_NUMBER,
         path: ['aaa'],
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -68,7 +67,7 @@ describe('RecordShape', () => {
         input: 'bbb',
         param: TYPE_NUMBER,
         path: ['aaa'],
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

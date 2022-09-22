@@ -1,12 +1,5 @@
 import { ArrayShape, INVALID, NumberShape } from '../../main';
-import {
-  CODE_ARRAY_MAX,
-  CODE_ARRAY_MIN,
-  CODE_TYPE,
-  MESSAGE_NUMBER_TYPE,
-  TYPE_ARRAY,
-  TYPE_NUMBER,
-} from '../../main/shapes/constants';
+import { CODE_ARRAY_MAX, CODE_ARRAY_MIN, CODE_TYPE, TYPE_ARRAY, TYPE_NUMBER } from '../../main/shapes/constants';
 
 const numberShape = new NumberShape();
 
@@ -36,7 +29,7 @@ describe('ArrayShape', () => {
         path: [],
         input: 'aaa',
         param: TYPE_ARRAY,
-        message: expect.any(String),
+        message: 'Must be an array',
         meta: undefined,
       },
     ]);
@@ -51,7 +44,7 @@ describe('ArrayShape', () => {
         path: [],
         input: [1],
         param: 2,
-        message: expect.any(String),
+        message: 'Must have the minimum length of 2',
         meta: undefined,
       },
     ]);
@@ -66,7 +59,7 @@ describe('ArrayShape', () => {
         path: [],
         input: [1, 2, 3],
         param: 2,
-        message: expect.any(String),
+        message: 'Must have the maximum length of 2',
         meta: undefined,
       },
     ]);
@@ -120,7 +113,7 @@ describe('ArrayShape', () => {
         path: [0],
         input: 'aaa',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
       {
@@ -128,7 +121,7 @@ describe('ArrayShape', () => {
         path: [1],
         input: 'bbb',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
       {
@@ -152,7 +145,7 @@ describe('ArrayShape', () => {
         path: [0],
         input: 'aaa',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
       {
@@ -160,7 +153,7 @@ describe('ArrayShape', () => {
         path: [1],
         input: 'bbb',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
       {
@@ -179,7 +172,7 @@ describe('ArrayShape', () => {
       {
         code: CODE_TYPE,
         input: 'aaa',
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         param: TYPE_NUMBER,
         path: [0],
       },
@@ -208,7 +201,7 @@ describe('ArrayShape', () => {
         path: [0],
         input: 'aaa',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -223,7 +216,7 @@ describe('ArrayShape', () => {
         path: [0],
         input: 'aaa',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

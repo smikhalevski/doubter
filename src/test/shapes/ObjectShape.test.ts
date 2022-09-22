@@ -1,15 +1,5 @@
 import { KeysMode, NumberShape, ObjectShape, StringShape } from '../../main';
-import {
-  CODE_TYPE,
-  CODE_UNKNOWN_KEYS,
-  MESSAGE_NUMBER_TYPE,
-  MESSAGE_OBJECT_TYPE,
-  MESSAGE_STRING_TYPE,
-  MESSAGE_UNKNOWN_KEYS,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../../main/shapes/constants';
+import { CODE_TYPE, CODE_UNKNOWN_KEYS, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
@@ -32,7 +22,7 @@ describe('ObjectShape', () => {
         path: [],
         input: 'aaa',
         param: TYPE_OBJECT,
-        message: MESSAGE_OBJECT_TYPE,
+        message: 'Must be an object',
         meta: undefined,
       },
     ]);
@@ -45,7 +35,7 @@ describe('ObjectShape', () => {
         path: [],
         input: 'aaa',
         param: TYPE_OBJECT,
-        message: MESSAGE_OBJECT_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -64,7 +54,7 @@ describe('ObjectShape', () => {
           foo: 'aaa',
         },
         param: ['bar'],
-        message: MESSAGE_UNKNOWN_KEYS,
+        message: 'Must not have unknown keys bar',
         meta: undefined,
       },
     ]);
@@ -82,7 +72,7 @@ describe('ObjectShape', () => {
           foo: 'aaa',
         },
         param: ['bar'],
-        message: MESSAGE_UNKNOWN_KEYS,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -167,7 +157,7 @@ describe('ObjectShape', () => {
         path: ['bar'],
         input: undefined,
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -182,7 +172,7 @@ describe('ObjectShape', () => {
         path: ['bar'],
         input: undefined,
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -197,7 +187,7 @@ describe('ObjectShape', () => {
         path: ['bar'],
         input: 111,
         param: TYPE_STRING,
-        message: MESSAGE_STRING_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -212,7 +202,7 @@ describe('ObjectShape', () => {
         path: ['bar'],
         input: 111,
         param: TYPE_STRING,
-        message: MESSAGE_STRING_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -227,7 +217,7 @@ describe('ObjectShape', () => {
         path: ['foo'],
         input: 111,
         param: TYPE_STRING,
-        message: MESSAGE_STRING_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
       {
@@ -235,7 +225,7 @@ describe('ObjectShape', () => {
         path: ['bar'],
         input: 'aaa',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -250,7 +240,7 @@ describe('ObjectShape', () => {
         path: ['foo'],
         input: 111,
         param: TYPE_STRING,
-        message: MESSAGE_STRING_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
       {
@@ -258,7 +248,7 @@ describe('ObjectShape', () => {
         path: ['bar'],
         input: 'aaa',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -273,7 +263,7 @@ describe('ObjectShape', () => {
         path: ['foo'],
         input: 111,
         param: TYPE_STRING,
-        message: MESSAGE_STRING_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -288,7 +278,7 @@ describe('ObjectShape', () => {
         path: ['foo'],
         input: 111,
         param: TYPE_STRING,
-        message: MESSAGE_STRING_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

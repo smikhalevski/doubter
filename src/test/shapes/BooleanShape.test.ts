@@ -1,5 +1,5 @@
 import { BooleanShape } from '../../main';
-import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../../main/shapes/constants';
+import { CODE_TYPE, TYPE_BOOLEAN } from '../../main/shapes/constants';
 
 describe('BooleanShape', () => {
   test('allows a boolean', () => {
@@ -13,7 +13,7 @@ describe('BooleanShape', () => {
         path: [],
         input: 'aaa',
         param: TYPE_BOOLEAN,
-        message: MESSAGE_BOOLEAN_TYPE,
+        message: 'Must be a boolean',
         meta: undefined,
       },
     ]);

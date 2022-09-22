@@ -1,12 +1,5 @@
 import { NumberShape, StringShape, TupleShape } from '../../main';
-import {
-  CODE_TUPLE_LENGTH,
-  CODE_TYPE,
-  MESSAGE_ARRAY_TYPE,
-  MESSAGE_NUMBER_TYPE,
-  TYPE_ARRAY,
-  TYPE_NUMBER,
-} from '../../main/shapes/constants';
+import { CODE_TUPLE_LENGTH, CODE_TYPE, TYPE_ARRAY, TYPE_NUMBER } from '../../main/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
@@ -27,7 +20,7 @@ describe('TupleShape', () => {
         path: [],
         input: 'aaa',
         param: TYPE_ARRAY,
-        message: MESSAGE_ARRAY_TYPE,
+        message: 'Must be an array',
         meta: undefined,
       },
     ]);
@@ -40,7 +33,7 @@ describe('TupleShape', () => {
         path: [1],
         input: 'bbb',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -53,7 +46,7 @@ describe('TupleShape', () => {
         path: [],
         input: [111],
         param: 2,
-        message: expect.any(String),
+        message: 'Must have a length of 2',
         meta: undefined,
       },
     ]);
@@ -68,7 +61,7 @@ describe('TupleShape', () => {
         path: [1],
         input: 'bbb',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

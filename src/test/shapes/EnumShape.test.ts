@@ -13,7 +13,7 @@ describe('EnumShape', () => {
         path: [],
         input: 'ccc',
         param: ['aaa', 'bbb'],
-        message: expect.any(String),
+        message: 'Must be equal to one of aaa,bbb',
         meta: undefined,
       },
     ]);

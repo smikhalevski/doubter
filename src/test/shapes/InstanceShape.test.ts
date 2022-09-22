@@ -15,7 +15,7 @@ describe('InstanceShape', () => {
         path: [],
         input: {},
         param: Foo,
-        message: expect.any(String),
+        message: 'Must be a class instance',
         meta: undefined,
       },
     ]);

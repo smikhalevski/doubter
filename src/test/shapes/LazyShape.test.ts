@@ -1,5 +1,5 @@
 import { ArrayShape, LazyShape, NumberShape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING } from '../../main/shapes/constants';
+import { CODE_TYPE, TYPE_STRING } from '../../main/shapes/constants';
 
 describe('LazyShape', () => {
   test('uses the shape returned from provider to parse the input', () => {
@@ -13,7 +13,7 @@ describe('LazyShape', () => {
         path: [],
         input: 111,
         param: TYPE_STRING,
-        message: MESSAGE_STRING_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

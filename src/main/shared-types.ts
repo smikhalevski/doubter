@@ -49,10 +49,6 @@ export type Transformer<I, O> = (value: I) => O;
  */
 export type Constraint<T> = (value: T, parserOptions: ParserOptions | undefined) => Issue[] | null | undefined | void;
 
-export type InputConstraintOptionsOrMessage = InputConstraintOptions | string;
-
-export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | string;
-
 /**
  * Options that are applicable for the type constraint.
  */
@@ -69,11 +65,6 @@ export interface InputConstraintOptions {
 }
 
 /**
- * Options that are applicable for the built-in type-specific constraints.
- */
-export interface OutputConstraintOptions extends InputConstraintOptions, ChainableConstraintOptions {}
-
-/**
  * Options that follow in chain after the input constraint.
  */
 export interface ChainableConstraintOptions {
@@ -83,6 +74,11 @@ export interface ChainableConstraintOptions {
    */
   unsafe?: boolean;
 }
+
+/**
+ * Options that are applicable for the built-in type-specific constraints.
+ */
+export interface OutputConstraintOptions extends InputConstraintOptions, ChainableConstraintOptions {}
 
 /**
  * Options that are applicable for the custom constraints added via {@linkcode Shape.constrain}.
@@ -101,6 +97,12 @@ export interface IdentifiableConstraintOptions extends ChainableConstraintOption
  * Options for narrowing constraints that are added
  */
 export interface NarrowingConstraintOptions extends OutputConstraintOptions, IdentifiableConstraintOptions {}
+
+export type InputConstraintOptionsOrMessage = InputConstraintOptions | ((param: any) => any) | string;
+
+export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | ((param: any) => any) | string;
+
+export type NarrowingConstraintOptionsOrMessage = NarrowingConstraintOptions | ((param: any) => any) | string;
 
 /**
  * Options used by a shape to apply constraints and transformations.

@@ -1,5 +1,5 @@
 import { NeverShape } from '../../main';
-import { CODE_NEVER, MESSAGE_NEVER } from '../../main/shapes/constants';
+import { CODE_NEVER } from '../../main/shapes/constants';
 
 describe('NeverShape', () => {
   test('always raises', () => {
@@ -9,7 +9,7 @@ describe('NeverShape', () => {
         path: [],
         input: 111,
         param: undefined,
-        message: MESSAGE_NEVER,
+        message: 'Must not be used',
         meta: undefined,
       },
     ]);

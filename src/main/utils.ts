@@ -17,7 +17,10 @@ export function addConstraint<S extends Shape<any>>(
   options: OutputConstraintOptionsOrMessage | undefined,
   constraint: Constraint<S['output']>
 ): S {
-  return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
+  return shape.constrain(constraint, {
+    id,
+    unsafe: options !== null && typeof options === 'object' ? options.unsafe : false,
+  });
 }
 
 export function createResolveArray(
@@ -77,7 +80,7 @@ export function parseAsync<O>(shape: Shape<any, O>, input: unknown, options: Par
   return new Promise(resolve => resolve(shape.parse(input, options)));
 }
 
-export function isObjectLike(value: unknown): value is Dict {
+export function isDict(value: unknown): value is Dict {
   return value !== null && typeof value === 'object';
 }
 
@@ -240,13 +243,17 @@ export function createIssue(
 ): Issue {
   let meta;
 
-  if (isObjectLike(options)) {
+  if (options !== null && typeof options === 'object') {
     if (options.message !== undefined) {
       message = options.message;
     }
     meta = options.meta;
+  } else if (typeof options === 'function') {
+    message = options(param);
   } else if (typeof options === 'string') {
     message = options.replace('%s', String(param));
+  } else {
+    message = message.replace('%s', String(param));
   }
 
   return { code, path: [], input, param, message, meta };

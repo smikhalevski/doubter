@@ -13,7 +13,7 @@ describe('LiteralShape', () => {
         path: [],
         input: 'aaa',
         param: 111,
-        message: expect.any(String),
+        message: 'Must be exactly equal to 111',
         meta: undefined,
       },
     ]);

@@ -21,23 +21,36 @@ describe('NumberShape', () => {
         path: [],
         input: '111',
         param: TYPE_NUMBER,
-        message: expect.any(String),
+        message: 'Must be a number',
         meta: undefined,
       },
     ]);
 
-    expect(new NumberShape().gt(2).validate(2)).toEqual([
+    expect(new NumberShape().validate(NaN)).toEqual([
       {
-        code: CODE_NUMBER_GT,
+        code: CODE_TYPE,
         path: [],
-        input: 2,
-        param: 2,
+        input: NaN,
+        param: TYPE_NUMBER,
         message: expect.any(String),
         meta: undefined,
       },
     ]);
 
     expect(new NumberShape().gt(2).validate(3)).toBe(null);
+  });
+
+  test('raises if value is not an infinity', () => {
+    expect(new NumberShape().validate(Infinity)).toEqual([
+      {
+        code: CODE_TYPE,
+        path: [],
+        input: Infinity,
+        param: TYPE_NUMBER,
+        message: expect.any(String),
+        meta: undefined,
+      },
+    ]);
   });
 
   test('raises if value is not greater than or equal', () => {
@@ -47,7 +60,7 @@ describe('NumberShape', () => {
         path: [],
         input: 1,
         param: 2,
-        message: expect.any(String),
+        message: 'Must be greater than or equal to 2',
         meta: undefined,
       },
     ]);
@@ -62,7 +75,7 @@ describe('NumberShape', () => {
         path: [],
         input: 3,
         param: 2,
-        message: expect.any(String),
+        message: 'Must be less than 2',
         meta: undefined,
       },
     ]);
@@ -88,7 +101,7 @@ describe('NumberShape', () => {
         path: [],
         input: 3,
         param: 2,
-        message: expect.any(String),
+        message: 'Must be less than or equal to 2',
         meta: undefined,
       },
     ]);
@@ -103,7 +116,7 @@ describe('NumberShape', () => {
         path: [],
         input: 3,
         param: 2,
-        message: expect.any(String),
+        message: 'Must be a multiple of 2',
         meta: undefined,
       },
     ]);

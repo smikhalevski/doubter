@@ -3,7 +3,7 @@ import {
   Constraint,
   IdentifiableConstraintOptions,
   Issue,
-  NarrowingConstraintOptions,
+  NarrowingConstraintOptionsOrMessage,
   ParserOptions,
   Transformer,
 } from '../shared-types';
@@ -11,7 +11,7 @@ import {
   addConstraint,
   captureIssues,
   createApplyConstraints,
-  isObjectLike,
+  isDict,
   parseAsync,
   raise,
   raiseIfIssues,
@@ -157,7 +157,7 @@ export abstract class Shape<I, O = I> {
   constrain(constraint: Constraint<O>, options?: IdentifiableConstraintOptions): this {
     const constraints = this.constraints.slice(0);
 
-    if (isObjectLike(options)) {
+    if (isDict(options)) {
       const { id = null, unsafe = false } = options;
 
       if (id !== null) {
@@ -193,13 +193,18 @@ export abstract class Shape<I, O = I> {
    */
   narrow<T extends O>(
     predicate: (output: O) => output is T,
-    options?: NarrowingConstraintOptions | string
+    options?: NarrowingConstraintOptionsOrMessage
   ): Shape<I, T> {
-    return addConstraint(this, isObjectLike(options) ? options.id : undefined, options, output => {
-      if (!predicate(output)) {
-        raiseIssue(output, CODE_NARROWING, predicate, options, MESSAGE_NARROWING);
+    return addConstraint(
+      this,
+      options !== null && typeof options === 'object' ? options.id : undefined,
+      options,
+      output => {
+        if (!predicate(output)) {
+          raiseIssue(output, CODE_NARROWING, predicate, options, MESSAGE_NARROWING);
+        }
       }
-    }) as unknown as Shape<I, T>;
+    ) as unknown as Shape<I, T>;
   }
 
   /**

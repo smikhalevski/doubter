@@ -1,5 +1,5 @@
 import { ArrayShape, NumberShape, OptionalShape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING } from '../../main/shapes/constants';
+import { CODE_TYPE, TYPE_STRING } from '../../main/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
@@ -24,7 +24,7 @@ describe('OptionalShape', () => {
         path: [],
         input: 111,
         param: TYPE_STRING,
-        message: MESSAGE_STRING_TYPE,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
