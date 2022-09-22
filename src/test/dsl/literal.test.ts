@@ -1,7 +1,7 @@
-import { literal, LiteralType } from '../../main';
+import { literal, LiteralShape } from '../../main';
 
 describe('literal', () => {
-  test('returns an literal type', () => {
-    expect(literal(111)).toBeInstanceOf(LiteralType);
+  test('returns an literal shape', () => {
+    expect(literal(111)).toBeInstanceOf(LiteralShape);
   });
 });

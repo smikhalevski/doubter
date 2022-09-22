@@ -1,4 +1,4 @@
 export * from './dsl';
-export * from './types';
+export * from './shapes';
 export * from './shared-types';
 export * from './ValidationError';

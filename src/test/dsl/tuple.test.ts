@@ -1,7 +1,11 @@
-import { number, tuple, TupleType } from '../../main';
+import { number, string, tuple, TupleShape } from '../../main';
 
 describe('tuple', () => {
-  test('returns an tuple type', () => {
-    expect(tuple([number()])).toBeInstanceOf(TupleType);
+  test('infers type', () => {
+    const output: [string, number] = tuple([string(), number()]).parse(['aaa', 111]);
+  });
+
+  test('returns an tuple shape', () => {
+    expect(tuple([number()])).toBeInstanceOf(TupleShape);
   });
 });

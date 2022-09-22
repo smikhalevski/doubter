@@ -1,12 +1,12 @@
-import { AnyType, ArrayType } from '../types';
-import { ConstraintOptions } from '../shared-types';
+import { AnyShape, ArrayShape } from '../shapes';
+import { InputConstraintOptionsOrMessage } from '../shared-types';
 
 /**
- * Creates the array type definition.
+ * Creates the array shape.
  *
- * @param type The type definition of array elements.
- * @param options
+ * @param shape The shape of an array element.
+ * @param options The constraint options or an issue message.
  */
-export function array<X extends AnyType>(type: X, options?: ConstraintOptions): ArrayType<X> {
-  return new ArrayType(type, options);
+export function array<S extends AnyShape>(shape: S, options?: InputConstraintOptionsOrMessage): ArrayShape<S> {
+  return new ArrayShape(shape, options);
 }

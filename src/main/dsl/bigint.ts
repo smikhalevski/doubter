@@ -1,9 +1,9 @@
-import { BigIntType } from '../types';
-import { ConstraintOptions } from '../shared-types';
+import { BigIntShape } from '../shapes';
+import { InputConstraintOptionsOrMessage } from '../shared-types';
 
 /**
- * Creates the bigint type definition.
+ * Creates the bigint shape.
  */
-export function bigint(options?: ConstraintOptions): BigIntType {
-  return new BigIntType(options);
+export function bigint(options?: InputConstraintOptionsOrMessage): BigIntShape {
+  return new BigIntShape(options);
 }

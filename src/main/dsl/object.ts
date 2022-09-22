@@ -1,12 +1,12 @@
-import { ConstraintOptions, Dict } from '../shared-types';
-import { AnyType, ObjectType, Type } from '../types';
+import { Dict, InputConstraintOptionsOrMessage } from '../shared-types';
+import { AnyShape, ObjectShape } from '../shapes';
 
 /**
- * Creates the array type definition.
+ * Creates the array shape.
  *
- * @param props The mapping from an object key to a corresponding type definition.
- * @param options
+ * @param shapes The mapping from an object key to a corresponding shape.
+ * @param options The constraint options or an issue message.
  */
-export function object<P extends Dict<AnyType>>(props: P, options?: ConstraintOptions): ObjectType<P, Type<never>> {
-  return new ObjectType<P, Type<never>>(props, null, options);
+export function object<P extends Dict<AnyShape>>(shapes: P, options?: InputConstraintOptionsOrMessage): ObjectShape<P> {
+  return new ObjectShape<P>(shapes, null, options);
 }

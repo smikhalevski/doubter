@@ -1,7 +1,7 @@
-import { lazy, LazyType, number } from '../../main';
+import { lazy, LazyShape, number } from '../../main';
 
 describe('lazy', () => {
-  test('returns an lazy type', () => {
-    expect(lazy(() => number())).toBeInstanceOf(LazyType);
+  test('returns an lazy shape', () => {
+    expect(lazy(() => number())).toBeInstanceOf(LazyShape);
   });
 });
