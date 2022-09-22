@@ -259,7 +259,7 @@ Object.defineProperty(Shape.prototype, 'output', {
  * @template T The transformed value.
  */
 export class TransformedShape<I, O, T> extends Shape<I, T> {
-  private transformer: Transformer<any, any>;
+  private _transformer: Transformer<any, any>;
 
   /**
    * Creates the new {@linkcode TransformedShape}.
@@ -270,12 +270,12 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
    */
   constructor(protected shape: Shape<I, O>, async: boolean, transformer: Transformer<O, Promise<T> | T>) {
     super(shape.async || async);
-    this.transformer = transformer;
+    this._transformer = transformer;
   }
 
   parse(input: unknown, options?: ParserOptions): T {
-    const { shape, transformer, applyConstraints } = this;
-    const output = transformer(shape.parse(input, options)) as T;
+    const { shape, _transformer, applyConstraints } = this;
+    const output = _transformer(shape.parse(input, options));
 
     if (applyConstraints !== null) {
       raiseIfIssues(applyConstraints(output, options, null));
@@ -288,8 +288,8 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
       return parseAsync(this, input, options);
     }
 
-    const { shape, transformer, applyConstraints } = this;
-    const promise = shape.parseAsync(input, options).then(transformer);
+    const { shape, _transformer, applyConstraints } = this;
+    const promise = shape.parseAsync(input, options).then(_transformer);
 
     if (applyConstraints !== null) {
       return promise.then(output => {
