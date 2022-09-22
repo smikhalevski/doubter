@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { addConstraint, isFinite, raiseIfIssues, raiseIssue } from '../utils';
 import {
   CODE_NUMBER_GT,
@@ -18,7 +18,7 @@ import {
 } from './constants';
 
 export class NumberShape extends Shape<number> {
-  constructor(protected options?: InputConstraintOptions | string) {
+  constructor(protected options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -28,7 +28,7 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  positive(options?: OutputConstraintOptions | string): this {
+  positive(options?: OutputConstraintOptionsOrMessage): this {
     return this.gt(0, options);
   }
 
@@ -38,7 +38,7 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  negative(options?: OutputConstraintOptions | string): this {
+  negative(options?: OutputConstraintOptionsOrMessage): this {
     return this.lt(0, options);
   }
 
@@ -49,10 +49,10 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  gt(value: number, options?: OutputConstraintOptions | string): this {
+  gt(value: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_NUMBER_GT, options, output => {
       if (output <= value) {
-        raiseIssue(output, CODE_NUMBER_GT, value, options, MESSAGE_NUMBER_GT + value);
+        raiseIssue(output, CODE_NUMBER_GT, value, options, MESSAGE_NUMBER_GT);
       }
     });
   }
@@ -64,10 +64,10 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  lt(value: number, options?: OutputConstraintOptions | string): this {
+  lt(value: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_NUMBER_LT, options, output => {
       if (output >= value) {
-        raiseIssue(output, CODE_NUMBER_LT, value, options, MESSAGE_NUMBER_LT + value);
+        raiseIssue(output, CODE_NUMBER_LT, value, options, MESSAGE_NUMBER_LT);
       }
     });
   }
@@ -79,10 +79,10 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  gte(value: number, options?: OutputConstraintOptions | string): this {
+  gte(value: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_NUMBER_GTE, options, output => {
       if (output < value) {
-        raiseIssue(output, CODE_NUMBER_GTE, value, options, MESSAGE_NUMBER_GTE + value);
+        raiseIssue(output, CODE_NUMBER_GTE, value, options, MESSAGE_NUMBER_GTE);
       }
     });
   }
@@ -94,10 +94,10 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  lte(value: number, options?: OutputConstraintOptions | string): this {
+  lte(value: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_NUMBER_LTE, options, output => {
       if (output > value) {
-        raiseIssue(output, CODE_NUMBER_LTE, value, options, MESSAGE_NUMBER_LTE + value);
+        raiseIssue(output, CODE_NUMBER_LTE, value, options, MESSAGE_NUMBER_LTE);
       }
     });
   }
@@ -109,10 +109,10 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  multipleOf(divisor: number, options?: OutputConstraintOptions | string): this {
+  multipleOf(divisor: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
       if (output % divisor !== 0) {
-        raiseIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, MESSAGE_NUMBER_MULTIPLE_OF + divisor);
+        raiseIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, MESSAGE_NUMBER_MULTIPLE_OF);
       }
     });
   }

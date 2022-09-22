@@ -1,11 +1,11 @@
 import {
   ApplyConstraints,
   Constraint,
-  InputConstraintOptions,
+  InputConstraintOptionsOrMessage,
   INVALID,
   Issue,
   ObjectLike,
-  OutputConstraintOptions,
+  OutputConstraintOptionsOrMessage,
   ParserOptions,
 } from './shared-types';
 import { ValidationError } from './ValidationError';
@@ -14,7 +14,7 @@ import type { AnyShape, Shape } from './shapes/Shape';
 export function addConstraint<S extends Shape<any>>(
   shape: S,
   id: string | undefined | null,
-  options: OutputConstraintOptions | string | undefined,
+  options: OutputConstraintOptionsOrMessage | undefined,
   constraint: Constraint<S['output']>
 ): S {
   return shape.constrain(constraint, { id, unsafe: isObjectLike(options) ? options.unsafe : false });
@@ -24,16 +24,16 @@ export function createResolveArray(
   input: unknown[],
   options: ParserOptions | undefined,
   context: ParserContext,
-  applyConstraints: ApplyConstraints<any> | null
-): (output: unknown[]) => any {
-  return values => {
+  applyConstraints: ApplyConstraints | null
+): (elements: unknown[]) => any {
+  return elements => {
     const inputLength = input.length;
 
     let output = input;
 
     for (let i = 0; i < inputLength; ++i) {
-      if (!isEqual(input[i], values[i])) {
-        output = values;
+      if (!isEqual(input[i], elements[i])) {
+        output = elements;
       }
     }
 
@@ -42,6 +42,7 @@ export function createResolveArray(
       issues = applyConstraints(output, options, issues);
     }
     raiseIfIssues(issues);
+
     return output;
   };
 }
@@ -56,11 +57,13 @@ export function createCatchForKey(
   context: ParserContext
 ): (error: unknown) => any {
   return error => {
-    if (options !== undefined && options.fast && context.issues !== null) {
-      return;
+    const { issues } = context;
+
+    if (options !== undefined && options.fast && issues !== null) {
+      raiseIfIssues(issues);
     }
 
-    context.issues = raiseOrCaptureIssuesForKey(error, options, context.issues, key);
+    context.issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
     return INVALID;
   };
 }
@@ -78,14 +81,14 @@ export function isObjectLike(value: unknown): value is ObjectLike {
   return value !== null && typeof value === 'object';
 }
 
-const keyRegExp = /^[1-9]\d*$/;
+const positiveIntegerPattern = /^[1-9]\d*$/;
 
 export function isArrayIndex(key: any): boolean {
-  return (isInteger(key) && key >= 0) || key === '0' || keyRegExp.test(key);
+  return (isInteger(key) && key >= 0) || key === '0' || (typeof key === 'string' && positiveIntegerPattern.test(key));
 }
 
 export function isTupleIndex(key: any, length: number): boolean {
-  return isArrayIndex(key) && parseInt(key) < length;
+  return isArrayIndex(key) && parseInt(key, 10) < length;
 }
 
 export const isArray = Array.isArray;
@@ -105,7 +108,7 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   return async;
 }
 
-export function createApplyConstraints<T>(constraints: any[]): ApplyConstraints<T> | null {
+export function createApplyConstraints(constraints: any[]): ApplyConstraints | null {
   const constraintsLength = constraints.length;
 
   if (constraintsLength === 0) {
@@ -232,7 +235,7 @@ export function createIssue(
   input: unknown,
   code: string,
   param: unknown,
-  options: InputConstraintOptions | string | undefined,
+  options: InputConstraintOptionsOrMessage | undefined,
   message: string
 ): Issue {
   let meta;
@@ -243,7 +246,7 @@ export function createIssue(
     }
     meta = options.meta;
   } else if (typeof options === 'string') {
-    message = options;
+    message = options.replace('%s', String(param));
   }
 
   return { code, path: [], input, param, message, meta };
@@ -257,7 +260,7 @@ export function raiseIssue(
   input: unknown,
   code: string,
   param: unknown,
-  options: InputConstraintOptions | string | undefined,
+  options: InputConstraintOptionsOrMessage | undefined,
   message: string
 ): never {
   throw new ValidationError([createIssue(input, code, param, options, message)]);

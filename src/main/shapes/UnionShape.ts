@@ -1,4 +1,4 @@
-import { InputConstraintOptions, Issue, ParserOptions, Tuple } from '../shared-types';
+import { InputConstraintOptionsOrMessage, Issue, ParserOptions, Tuple } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
 import { createIssue, isAsyncShapes, raiseIfIssues, raiseIfUnknownError } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from './constants';
@@ -15,9 +15,9 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
    * Creates a new {@linkcode UnionShape} instance.
    *
    * @param shapes The list of united shapes.
-   * @param options The constraint options.
+   * @param options The constraint options or an issue message.
    */
-  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptions) {
+  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptionsOrMessage) {
     super(isAsyncShapes(shapes));
   }
 

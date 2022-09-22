@@ -1,11 +1,5 @@
 import { NumberShape, RecordShape, StringShape } from '../../main';
-import {
-  CODE_STRING_MAX,
-  CODE_TYPE,
-  MESSAGE_NUMBER_TYPE,
-  MESSAGE_STRING_MAX,
-  TYPE_NUMBER,
-} from '../../main/shapes/constants';
+import { CODE_STRING_MAX, CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER } from '../../main/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
@@ -25,33 +19,7 @@ describe('RecordShape', () => {
         path: ['aaa'],
         input: 'bbb',
         param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises if record value has an illegal type in an async mode', async () => {
-    expect(await new RecordShape(asyncStringShape, asyncNumberShape).validateAsync({ aaa: 'bbb' })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['aaa'],
-        input: 'bbb',
-        param: TYPE_NUMBER,
-        message: MESSAGE_NUMBER_TYPE,
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises if record key has an illegal type', () => {
-    expect(new RecordShape(stringShape.max(2), numberShape).validate({ aaa: 111 })).toEqual([
-      {
-        code: CODE_STRING_MAX,
-        path: ['aaa'],
-        input: 'aaa',
-        param: 2,
-        message: MESSAGE_STRING_MAX + 2,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -66,7 +34,7 @@ describe('RecordShape', () => {
         input: 'aaa',
         param: 2,
         path: ['aaa'],
-        message: MESSAGE_STRING_MAX + 2,
+        message: expect.any(String),
         meta: undefined,
       },
       {
@@ -92,7 +60,7 @@ describe('RecordShape', () => {
         input: 'aaa',
         param: 2,
         path: ['aaa'],
-        message: MESSAGE_STRING_MAX + 2,
+        message: expect.any(String),
         meta: undefined,
       },
       {

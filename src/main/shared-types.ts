@@ -49,6 +49,10 @@ export type Transformer<I, O> = (value: I) => O;
  */
 export type Constraint<T> = (value: T, parserOptions: ParserOptions | undefined) => Issue[] | null | undefined | void;
 
+export type InputConstraintOptionsOrMessage = InputConstraintOptions | string;
+
+export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | string;
+
 /**
  * Options that are applicable for the type constraint.
  */
@@ -126,7 +130,7 @@ export type ObjectLike<T = any> = Record<keyof any, any>;
  * @param issues The list of already captured issues.
  * @returns The list of captured issues, or `null` if there are no issues.
  */
-export type ApplyConstraints<T> = (
+export type ApplyConstraints = (
   value: any,
   parserOptions: ParserOptions | undefined,
   issues: Issue[] | null

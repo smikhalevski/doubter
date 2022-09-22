@@ -1,5 +1,5 @@
 import { InstanceShape } from '../shapes';
-import { InputConstraintOptions } from '../shared-types';
+import { InputConstraintOptionsOrMessage } from '../shared-types';
 
 /**
  * Creates the class instance shape.
@@ -8,7 +8,7 @@ import { InputConstraintOptions } from '../shared-types';
  */
 export function instance<F extends new (...args: any[]) => any>(
   ctor: F,
-  options?: InputConstraintOptions
+  options?: InputConstraintOptionsOrMessage
 ): InstanceShape<F> {
   return new InstanceShape(ctor, options);
 }

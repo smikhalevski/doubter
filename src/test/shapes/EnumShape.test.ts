@@ -1,5 +1,5 @@
 import { EnumShape } from '../../main';
-import { CODE_ENUM, MESSAGE_ENUM } from '../../main/shapes/constants';
+import { CODE_ENUM } from '../../main/shapes/constants';
 
 describe('EnumShape', () => {
   test('allows the value from the list', () => {
@@ -13,7 +13,7 @@ describe('EnumShape', () => {
         path: [],
         input: 'ccc',
         param: ['aaa', 'bbb'],
-        message: MESSAGE_ENUM + 'aaa, bbb',
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

@@ -18,7 +18,7 @@ import {
   raiseIfUnknownError,
   raiseIssue,
 } from '../utils';
-import { CODE_NARROWING } from './constants';
+import { CODE_NARROWING, MESSAGE_NARROWING } from './constants';
 
 /**
  * An arbitrary shape.
@@ -47,7 +47,7 @@ export abstract class Shape<I, O = I> {
   /**
    * Applies shape constraints to the output.
    */
-  protected applyConstraints: ApplyConstraints<O> | null = null;
+  protected applyConstraints: ApplyConstraints | null = null;
 
   private constraints: any[] = [];
 
@@ -151,7 +151,7 @@ export abstract class Shape<I, O = I> {
    * Adds a custom constraint.
    *
    * @param constraint The constraint to add.
-   * @param options The constraint options.
+   * @param options The constraint options or an issue message.
    * @returns The clone of this shape with the constraint added.
    */
   constrain(constraint: Constraint<O>, options?: IdentifiableConstraintOptions): this {
@@ -197,7 +197,7 @@ export abstract class Shape<I, O = I> {
   ): Shape<I, T> {
     return addConstraint(this, isObjectLike(options) ? options.id : undefined, options, output => {
       if (!predicate(output)) {
-        raiseIssue(output, CODE_NARROWING, predicate, options, 'Must conform the narrowing predicate');
+        raiseIssue(output, CODE_NARROWING, predicate, options, MESSAGE_NARROWING);
       }
     }) as unknown as Shape<I, T>;
   }
@@ -207,7 +207,7 @@ export abstract class Shape<I, O = I> {
    * of using an [assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions).
    *
    * @param predicate The assertion function that throws a {@linkcode ValidationError} or returns `undefined`.
-   * @param options The constraint options.
+   * @param options The constraint options or an issue message.
    * @returns The shape that has the narrowed output.
    * @template T The refined value.
    */

@@ -3,9 +3,6 @@ import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
   CODE_TYPE,
-  MESSAGE_ARRAY_MAX,
-  MESSAGE_ARRAY_MIN,
-  MESSAGE_ARRAY_TYPE,
   MESSAGE_NUMBER_TYPE,
   TYPE_ARRAY,
   TYPE_NUMBER,
@@ -39,33 +36,7 @@ describe('ArrayShape', () => {
         path: [],
         input: 'aaa',
         param: TYPE_ARRAY,
-        message: MESSAGE_ARRAY_TYPE,
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises if a value is not an array in an async mode', async () => {
-    expect(await new ArrayShape(numberShape).validateAsync('aaa')).toEqual([
-      {
-        code: CODE_TYPE,
-        path: [],
-        input: 'aaa',
-        param: TYPE_ARRAY,
-        message: MESSAGE_ARRAY_TYPE,
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises if an array has an invalid length', () => {
-    expect(new ArrayShape(numberShape).length(2).validate([1])).toEqual([
-      {
-        code: CODE_ARRAY_MIN,
-        path: [],
-        input: [1],
-        param: 2,
-        message: MESSAGE_ARRAY_MIN + 2,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -80,7 +51,7 @@ describe('ArrayShape', () => {
         path: [],
         input: [1],
         param: 2,
-        message: MESSAGE_ARRAY_MIN + 2,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -95,7 +66,7 @@ describe('ArrayShape', () => {
         path: [],
         input: [1, 2, 3],
         param: 2,
-        message: MESSAGE_ARRAY_MAX + 2,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -165,7 +136,7 @@ describe('ArrayShape', () => {
         path: [],
         input: [INVALID, INVALID],
         param: 3,
-        message: MESSAGE_ARRAY_MIN + 3,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -197,7 +168,7 @@ describe('ArrayShape', () => {
         path: [],
         input: [INVALID, INVALID],
         param: 3,
-        message: MESSAGE_ARRAY_MIN + 3,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -224,7 +195,7 @@ describe('ArrayShape', () => {
         path: [],
         input: ['aaa', 'bbb'],
         param: 3,
-        message: MESSAGE_ARRAY_MIN + 3,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
@@ -322,8 +293,6 @@ describe('ArrayShape', () => {
     const shape = new ArrayShape(numberShape);
 
     expect(shape.at('')).toBe(null);
-    expect(shape.at({ toString: () => 1 })).toBe(numberShape);
-    expect(shape.at({ toString: () => '1' })).toBe(numberShape);
     expect(shape.at('0')).toBe(numberShape);
     expect(shape.at('1')).toBe(numberShape);
     expect(shape.at('-1')).toBe(null);

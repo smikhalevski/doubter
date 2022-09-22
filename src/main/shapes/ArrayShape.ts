@@ -1,5 +1,11 @@
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, INVALID, Issue, OutputConstraintOptions, ParserOptions } from '../shared-types';
+import {
+  InputConstraintOptionsOrMessage,
+  INVALID,
+  Issue,
+  OutputConstraintOptionsOrMessage,
+  ParserOptions,
+} from '../shared-types';
 import {
   addConstraint,
   createCatchForKey,
@@ -35,7 +41,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param shape The shape of an array element.
    * @param options The constraint options or an issue message.
    */
-  constructor(readonly shape: S, protected options?: InputConstraintOptions | string) {
+  constructor(readonly shape: S, protected options?: InputConstraintOptionsOrMessage) {
     super(shape.async);
   }
 
@@ -50,7 +56,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  length(length: number, options?: OutputConstraintOptions | string): this {
+  length(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return this.min(length, options).max(length, options);
   }
 
@@ -61,10 +67,10 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  min(length: number, options?: OutputConstraintOptions | string): this {
+  min(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_ARRAY_MIN, options, output => {
       if (output.length < length) {
-        raiseIssue(output, CODE_ARRAY_MIN, length, options, MESSAGE_ARRAY_MIN + length);
+        raiseIssue(output, CODE_ARRAY_MIN, length, options, MESSAGE_ARRAY_MIN);
       }
     });
   }
@@ -76,10 +82,10 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  max(length: number, options?: OutputConstraintOptions | string): this {
+  max(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_ARRAY_MAX, options, output => {
       if (output.length > length) {
-        raiseIssue(output, CODE_ARRAY_MAX, length, options, MESSAGE_ARRAY_MAX + length);
+        raiseIssue(output, CODE_ARRAY_MAX, length, options, MESSAGE_ARRAY_MAX);
       }
     });
   }

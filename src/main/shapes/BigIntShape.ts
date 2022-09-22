@@ -1,10 +1,10 @@
 import { Shape } from './Shape';
-import { InputConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { raiseIfIssues, raiseIssue } from '../utils';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from './constants';
 
 export class BigIntShape extends Shape<bigint> {
-  constructor(protected options?: InputConstraintOptions | string) {
+  constructor(protected options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 

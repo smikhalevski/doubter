@@ -9,14 +9,14 @@ import {
   raiseOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, INVALID, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import { InputConstraintOptionsOrMessage, INVALID, Issue, ObjectLike, ParserOptions } from '../shared-types';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
   Record<K['input'], V['input']>,
   Record<K['output'], V['output']>
 > {
-  constructor(readonly keyShape: K, readonly valueShape: V, protected options?: InputConstraintOptions) {
+  constructor(readonly keyShape: K, readonly valueShape: V, protected options?: InputConstraintOptionsOrMessage) {
     super(keyShape.async || valueShape.async);
   }
 

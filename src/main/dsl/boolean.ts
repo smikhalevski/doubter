@@ -1,9 +1,9 @@
 import { BooleanShape } from '../shapes';
-import { InputConstraintOptions } from '../shared-types';
+import { InputConstraintOptionsOrMessage } from '../shared-types';
 
 /**
  * Creates the boolean shape.
  */
-export function boolean(options?: InputConstraintOptions): BooleanShape {
+export function boolean(options?: InputConstraintOptionsOrMessage): BooleanShape {
   return new BooleanShape(options);
 }

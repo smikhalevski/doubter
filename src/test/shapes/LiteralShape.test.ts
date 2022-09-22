@@ -1,5 +1,5 @@
 import { LiteralShape } from '../../main';
-import { CODE_LITERAL, MESSAGE_LITERAL } from '../../main/shapes/constants';
+import { CODE_LITERAL } from '../../main/shapes/constants';
 
 describe('LiteralShape', () => {
   test('allows a literal', () => {
@@ -13,7 +13,7 @@ describe('LiteralShape', () => {
         path: [],
         input: 'aaa',
         param: 111,
-        message: MESSAGE_LITERAL + 111,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

@@ -1,5 +1,12 @@
 import { AnyShape, Shape } from './Shape';
-import { ApplyConstraints, InputConstraintOptions, INVALID, Issue, ObjectLike, ParserOptions } from '../shared-types';
+import {
+  ApplyConstraints,
+  InputConstraintOptionsOrMessage,
+  INVALID,
+  Issue,
+  ObjectLike,
+  ParserOptions,
+} from '../shared-types';
 import {
   createCatchForKey,
   isAsyncShapes,
@@ -41,7 +48,7 @@ type ApplyIndexer = (
   output: ObjectLike,
   options: ParserOptions | undefined,
   issues: Issue[] | null,
-  applyConstraints: ApplyConstraints<any> | null
+  applyConstraints: ApplyConstraints | null
 ) => ObjectLike;
 
 export enum KeysMode {
@@ -83,7 +90,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
   constructor(
     readonly shapes: Readonly<P>,
     readonly indexerShape: I | null = null,
-    protected options?: InputConstraintOptions,
+    protected options?: InputConstraintOptionsOrMessage,
     readonly keysMode: KeysMode = KeysMode.PRESERVED
   ) {
     const keys = Object.keys(shapes);
@@ -108,7 +115,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * then it is overwritten. Indexer signature of this shape is preserved intact.
    *
    * @param shape The object shape which properties must be added to this object shape.
-   * @returns The modified object shape.
+   * @returns The new object shape.
    *
    * @template T The type of properties to add.
    */
@@ -121,7 +128,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * overwritten.
    *
    * @param shapes The properties to add.
-   * @returns The modified object shape.
+   * @returns The new object shape.
    *
    * @template T The shapes of properties to add.
    */
@@ -137,7 +144,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * Returns an object shape that only has properties with listed keys.
    *
    * @param keys The list of property keys to pick.
-   * @returns The modified object shape.
+   * @returns The new object shape.
    *
    * @template K The tuple of keys to pick.
    */
@@ -159,7 +166,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * Returns an object shape that doesn't have the listed keys.
    *
    * @param keys The list of property keys to omit.
-   * @returns The modified object shape.
+   * @returns The new object shape.
    *
    * @template K The tuple of keys to omit.
    */
@@ -181,10 +188,10 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * Returns an object shape that allows only known keys and has no index signature. The returned object shape would
    * have no custom constraints.
    *
-   * @param options The constraint options.
-   * @returns The modified object shape.
+   * @param options The constraint options or an issue message.
+   * @returns The new object shape.
    */
-  exact(options?: InputConstraintOptions): ObjectShape<P> {
+  exact(options?: InputConstraintOptionsOrMessage): ObjectShape<P> {
     const shape = new ObjectShape<P>(this.shapes, null, this.options, KeysMode.EXACT);
     shape._applyKeys = createApplyExactKeys(shape.keys, options);
     return shape;
@@ -194,7 +201,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * Returns an object shape that doesn't have indexer signature and all unknown keys are stripped. The returned object
    * shape would have no custom constraints.
    *
-   * @returns The modified object shape.
+   * @returns The new object shape.
    */
   strip(): ObjectShape<P> {
     const shape = new ObjectShape<P>(this.shapes, null, this.options, KeysMode.STRIPPED);
@@ -206,7 +213,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * Returns an object shape that has an indexer signature that doesn't constrain values. The returned object shape
    * would have no custom constraints.
    *
-   * @returns The modified object shape.
+   * @returns The new object shape.
    */
   preserve(): ObjectShape<P> {
     return new ObjectShape<P>(this.shapes, null, this.options);
@@ -217,7 +224,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
    * shape would have no custom constraints.
    *
    * @param indexerShape The shape of the indexer values.
-   * @returns The modified object shape.
+   * @returns The new object shape.
    *
    * @template T The indexer signature shape.
    */
@@ -268,7 +275,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
     }
 
     if (applyConstraints !== null) {
-      issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
+      issues = applyConstraints(output, options, issues);
     }
     raiseIfIssues(issues);
 
@@ -337,7 +344,7 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
         let { issues } = context;
 
         if (applyConstraints !== null) {
-          issues = applyConstraints(output as InferObject<P, I, 'output'>, options, issues);
+          issues = applyConstraints(output, options, issues);
         }
         raiseIfIssues(issues);
 
@@ -349,7 +356,10 @@ export class ObjectShape<P extends ObjectLike<AnyShape>, I extends AnyShape = Sh
   }
 }
 
-function createApplyExactKeys(keys: readonly PropertyKey[], options: InputConstraintOptions | undefined): ApplyKeys {
+function createApplyExactKeys(
+  keys: readonly PropertyKey[],
+  options: InputConstraintOptionsOrMessage | undefined
+): ApplyKeys {
   return input => {
     let unknownKeys: string[] | null = null;
 

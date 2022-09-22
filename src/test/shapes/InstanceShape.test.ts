@@ -1,5 +1,5 @@
 import { InstanceShape } from '../../main';
-import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../../main/shapes/constants';
+import { CODE_INSTANCE } from '../../main/shapes/constants';
 
 describe('InstanceShape', () => {
   class Foo {}
@@ -15,7 +15,7 @@ describe('InstanceShape', () => {
         path: [],
         input: {},
         param: Foo,
-        message: MESSAGE_INSTANCE + Foo.name,
+        message: expect.any(String),
         meta: undefined,
       },
     ]);

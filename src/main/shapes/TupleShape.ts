@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { InputConstraintOptions, INVALID, Issue, ParserOptions, Tuple } from '../shared-types';
+import { InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions, Tuple } from '../shared-types';
 import {
   createCatchForKey,
   createResolveArray,
@@ -27,9 +27,9 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
    * Creates a new {@linkcode TupleShape} instance.
    *
    * @param shapes The list of tuple element shapes.
-   * @param options The constraint options.
+   * @param options The constraint options or an issue message.
    */
-  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptions | string) {
+  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptionsOrMessage) {
     super(isAsyncShapes(shapes));
   }
 
@@ -46,7 +46,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
-      raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, MESSAGE_TUPLE_LENGTH + shapesLength);
+      raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, MESSAGE_TUPLE_LENGTH);
     }
 
     let issues: Issue[] | null = null;
@@ -94,7 +94,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
       const promises = [];
 
       if (input.length !== shapesLength) {
-        raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, MESSAGE_TUPLE_LENGTH + shapesLength);
+        raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, MESSAGE_TUPLE_LENGTH);
       }
 
       for (let i = 0; i < shapesLength; ++i) {

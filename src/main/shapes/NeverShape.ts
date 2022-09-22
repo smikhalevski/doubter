@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { InputConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { raiseIssue } from '../utils';
 import { CODE_NEVER, MESSAGE_NEVER } from './constants';
 
@@ -7,7 +7,7 @@ import { CODE_NEVER, MESSAGE_NEVER } from './constants';
  * The shape that always raises an issue.
  */
 export class NeverShape extends Shape<never> {
-  constructor(protected options?: InputConstraintOptions | string) {
+  constructor(protected options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 

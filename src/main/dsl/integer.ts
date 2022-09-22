@@ -1,9 +1,9 @@
 import { IntegerShape } from '../shapes';
-import { InputConstraintOptions } from '../shared-types';
+import { InputConstraintOptionsOrMessage } from '../shared-types';
 
 /**
  * Creates the integer shape.
  */
-export function integer(options?: InputConstraintOptions): IntegerShape {
+export function integer(options?: InputConstraintOptionsOrMessage): IntegerShape {
   return new IntegerShape(options);
 }

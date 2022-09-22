@@ -1,4 +1,4 @@
-import { InputConstraintOptions, OutputConstraintOptions, ParserOptions } from '../shared-types';
+import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
 import { addConstraint, raiseIfIssues, raiseIssue } from '../utils';
 import {
@@ -14,7 +14,7 @@ import {
 } from './constants';
 
 export class StringShape extends Shape<string> {
-  constructor(protected options?: InputConstraintOptions | string) {
+  constructor(protected options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -25,7 +25,7 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  length(length: number, options?: OutputConstraintOptions | string): this {
+  length(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return this.min(length, options).max(length, options);
   }
 
@@ -36,10 +36,10 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  min(length: number, options?: OutputConstraintOptions | string): this {
+  min(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_STRING_MIN, options, input => {
       if (input.length < length) {
-        raiseIssue(input, CODE_STRING_MIN, length, options, MESSAGE_STRING_MIN + length);
+        raiseIssue(input, CODE_STRING_MIN, length, options, MESSAGE_STRING_MIN);
       }
     });
   }
@@ -51,10 +51,10 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  max(length: number, options?: OutputConstraintOptions | string): this {
+  max(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_STRING_MAX, options, output => {
       if (output.length > length) {
-        raiseIssue(output, CODE_STRING_MAX, length, options, MESSAGE_STRING_MAX + length);
+        raiseIssue(output, CODE_STRING_MAX, length, options, MESSAGE_STRING_MAX);
       }
     });
   }
@@ -66,12 +66,12 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  regex(re: RegExp, options?: OutputConstraintOptions | string): this {
+  regex(re: RegExp, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_STRING_REGEX, options, output => {
       re.lastIndex = 0;
 
       if (!re.test(output)) {
-        raiseIssue(output, CODE_STRING_REGEX, re, options, MESSAGE_STRING_REGEX + re);
+        raiseIssue(output, CODE_STRING_REGEX, re, options, MESSAGE_STRING_REGEX);
       }
     });
   }

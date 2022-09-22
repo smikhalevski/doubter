@@ -53,7 +53,7 @@ describe('TupleShape', () => {
         path: [],
         input: [111],
         param: 2,
-        message: 'Must have a length of 2',
+        message: expect.any(String),
         meta: undefined,
       },
     ]);
