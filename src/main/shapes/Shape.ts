@@ -9,16 +9,16 @@ import {
 } from '../shared-types';
 import {
   addConstraint,
-  captureIssues,
   createApplyConstraints,
   isDict,
   isValidationError,
-  parseAsync,
-  raise,
-  returnOrRaiseIssues,
   raiseIssue,
+  returnOrRaiseIssues,
+  safeParseAsync,
+  throwError,
 } from '../utils';
 import { CODE_NARROWING, MESSAGE_NARROWING } from './constants';
+import { ValidationError } from '../ValidationError';
 
 /**
  * An arbitrary shape.
@@ -47,7 +47,7 @@ export abstract class Shape<I, O = I> {
   /**
    * Applies shape constraints to the output.
    */
-  protected applyConstraints: ApplyConstraints | null = null;
+  protected _applyConstraints: ApplyConstraints | null = null;
 
   private _constraints: any[] = [];
 
@@ -59,7 +59,7 @@ export abstract class Shape<I, O = I> {
    */
   constructor(readonly async: boolean) {
     if (async) {
-      this.parse = raiseParseIsUnsupported;
+      this.safeParse = throwSynchronousParseIsUnsupported;
     }
   }
 
@@ -68,11 +68,36 @@ export abstract class Shape<I, O = I> {
    *
    * @param input The value to parse.
    * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
+   * @returns The value that conforms the output type of the shape, or {@linkcode ValidationError} if any issues occur
+   * during parsing.
    * @throws Error if the shape doesn't support the synchronous parsing.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
-  abstract parse(input: unknown, options?: ParserOptions): O;
+  abstract safeParse(input: unknown, options?: ParserOptions): O | ValidationError;
+
+  /**
+   * Asynchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape, or {@linkcode ValidationError} if any issues occur
+   * during parsing.
+   */
+  safeParseAsync(input: unknown, options?: ParserOptions): Promise<O | ValidationError> {
+    return safeParseAsync(this, input, options);
+  }
+
+  /**
+   * Synchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   * @throws Error if the shape doesn't support the synchronous parsing.
+   */
+  parse(input: unknown, options?: ParserOptions): O {
+    return returnOrThrow(this.safeParse(input, options));
+  }
 
   /**
    * Asynchronously parses the value.
@@ -83,7 +108,7 @@ export abstract class Shape<I, O = I> {
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parseAsync(input: unknown, options?: ParserOptions): Promise<O> {
-    return parseAsync(this, input, options);
+    return safeParseAsync(this, input, options).then(returnOrThrow);
   }
 
   /**
@@ -95,16 +120,7 @@ export abstract class Shape<I, O = I> {
    * @throws Error if the shape doesn't support the synchronous parsing.
    */
   validate(input: unknown, options?: ParserOptions): Issue[] | null {
-    let output;
-    try {
-      output = this.parse(input, options);
-    } catch (error) {
-      return captureIssues(error);
-    }
-    if (isValidationError(output)) {
-      return output.issues;
-    }
-    return null;
+    return returnIssues(this.safeParse(input, options));
   }
 
   /**
@@ -115,7 +131,7 @@ export abstract class Shape<I, O = I> {
    * @returns The list of detected issues, or `null` if value is valid.
    */
   validateAsync(input: unknown, options?: ParserOptions): Promise<Issue[] | null> {
-    return this.parseAsync(input, options).then(returnNull, captureIssues);
+    return this.safeParseAsync(input, options).then(returnIssues);
   }
 
   /**
@@ -180,7 +196,7 @@ export abstract class Shape<I, O = I> {
     const shape = this.clone();
 
     shape._constraints = constraints;
-    shape.applyConstraints = createApplyConstraints(constraints);
+    shape._applyConstraints = createApplyConstraints(constraints);
 
     return shape;
   }
@@ -204,7 +220,7 @@ export abstract class Shape<I, O = I> {
       options,
       output => {
         if (!predicate(output)) {
-          raiseIssue(output, CODE_NARROWING, predicate, options, MESSAGE_NARROWING);
+          return raiseIssue(output, CODE_NARROWING, predicate, options, MESSAGE_NARROWING);
         }
       }
     ) as unknown as Shape<I, T>;
@@ -234,23 +250,30 @@ export abstract class Shape<I, O = I> {
   }
 }
 
-function raiseParseIsUnsupported(): never {
-  raise('Shape is asynchronous');
+function throwSynchronousParseIsUnsupported(): never {
+  throwError('Shape is asynchronous');
 }
 
-function returnNull(): null {
-  return null;
+function returnOrThrow<T>(value: T | ValidationError): T {
+  if (isValidationError(value)) {
+    throw value;
+  }
+  return value;
+}
+
+function returnIssues(value: unknown): Issue[] | null {
+  return isValidationError(value) ? value.issues : null;
 }
 
 Object.defineProperty(Shape.prototype, 'input', {
   get() {
-    raise('Cannot be used at runtime');
+    throwError('Cannot be used at runtime');
   },
 });
 
 Object.defineProperty(Shape.prototype, 'output', {
   get() {
-    raise('Cannot be used at runtime');
+    throwError('Cannot be used at runtime');
   },
 });
 
@@ -277,26 +300,26 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     this._transformer = transformer;
   }
 
-  parse(input: unknown, options?: ParserOptions): T {
-    const { shape, _transformer, applyConstraints } = this;
-    const output = _transformer(shape.parse(input, options));
+  safeParse(input: unknown, options?: ParserOptions): T | ValidationError {
+    const { shape, _transformer, _applyConstraints } = this;
+    const output = _transformer(shape.safeParse(input, options));
 
-    if (applyConstraints !== null) {
-      return returnOrRaiseIssues(output, applyConstraints(output, options, null));
+    if (_applyConstraints !== null) {
+      return returnOrRaiseIssues(output, _applyConstraints(output, options, null));
     }
     return output;
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<T> {
+  safeParseAsync(input: unknown, options?: ParserOptions): Promise<T | ValidationError> {
     if (!this.async) {
-      return parseAsync(this, input, options);
+      return safeParseAsync(this, input, options);
     }
 
-    const { shape, _transformer, applyConstraints } = this;
-    const promise = shape.parseAsync(input, options).then(_transformer);
+    const { shape, _transformer, _applyConstraints } = this;
+    const promise = shape.safeParseAsync(input, options).then(_transformer);
 
-    if (applyConstraints !== null) {
-      return promise.then(output => returnOrRaiseIssues(output, applyConstraints(output, options, null)));
+    if (_applyConstraints !== null) {
+      return promise.then(output => returnOrRaiseIssues(output, _applyConstraints(output, options, null)));
     }
     return promise;
   }

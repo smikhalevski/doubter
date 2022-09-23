@@ -1,7 +1,8 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions, Primitive } from '../shared-types';
-import { isEqual, returnOrRaiseIssues, raiseIssue } from '../utils';
+import { isEqual, raiseIssue, returnOrRaiseIssues } from '../utils';
 import { CODE_LITERAL, MESSAGE_LITERAL } from './constants';
+import { ValidationError } from '../ValidationError';
 
 /**
  * The shape that requires an input to be equal to the literal value
@@ -19,14 +20,14 @@ export class LiteralShape<T extends Primitive> extends Shape<T> {
     super(false);
   }
 
-  parse(input: unknown, options?: ParserOptions): T {
-    const { value, applyConstraints } = this;
+  safeParse(input: unknown, options?: ParserOptions): T | ValidationError {
+    const { value, _applyConstraints } = this;
 
     if (!isEqual(input, value)) {
       return raiseIssue(input, CODE_LITERAL, value, this.options, MESSAGE_LITERAL);
     }
-    if (applyConstraints !== null) {
-      return returnOrRaiseIssues(input, applyConstraints(input, options, null));
+    if (_applyConstraints !== null) {
+      return returnOrRaiseIssues(input as T, _applyConstraints(input, options, null));
     }
     return input as T;
   }

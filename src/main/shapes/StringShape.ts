@@ -1,6 +1,6 @@
 import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
-import { addConstraint, returnOrRaiseIssues, raiseIssue } from '../utils';
+import { addConstraint, raiseIssue, returnOrRaiseIssues } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -12,6 +12,7 @@ import {
   MESSAGE_STRING_TYPE,
   TYPE_STRING,
 } from './constants';
+import { ValidationError } from '../ValidationError';
 
 export class StringShape extends Shape<string> {
   constructor(private _options?: InputConstraintOptionsOrMessage) {
@@ -76,14 +77,14 @@ export class StringShape extends Shape<string> {
     });
   }
 
-  parse(input: unknown, options?: ParserOptions): string {
-    const { applyConstraints } = this;
+  safeParse(input: unknown, options?: ParserOptions): string | ValidationError {
+    const { _applyConstraints } = this;
 
     if (typeof input !== 'string') {
       return raiseIssue(input, CODE_TYPE, TYPE_STRING, this._options, MESSAGE_STRING_TYPE);
     }
-    if (applyConstraints !== null) {
-      return returnOrRaiseIssues(input, applyConstraints(input, options, null));
+    if (_applyConstraints !== null) {
+      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }

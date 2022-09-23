@@ -1,7 +1,8 @@
 import { InputConstraintOptionsOrMessage, ParserOptions, Primitive } from '../shared-types';
 import { Shape } from './Shape';
-import { returnOrRaiseIssues, raiseIssue } from '../utils';
+import { raiseIssue, returnOrRaiseIssues } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM } from './constants';
+import { ValidationError } from '../ValidationError';
 
 /**
  * The shape that constrains input to one of the primitive values.
@@ -19,14 +20,14 @@ export class EnumShape<T extends Primitive> extends Shape<T> {
     super(false);
   }
 
-  parse(input: any, options?: ParserOptions): T {
-    const { values, applyConstraints } = this;
+  safeParse(input: any, options?: ParserOptions): T | ValidationError {
+    const { values, _applyConstraints } = this;
 
     if (!values.includes(input)) {
       return raiseIssue(input, CODE_ENUM, values, this.options, MESSAGE_ENUM);
     }
-    if (applyConstraints !== null) {
-      return returnOrRaiseIssues(input, applyConstraints(input, options, null));
+    if (_applyConstraints !== null) {
+      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }

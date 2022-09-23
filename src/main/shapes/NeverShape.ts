@@ -2,6 +2,7 @@ import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { raiseIssue } from '../utils';
 import { CODE_NEVER, MESSAGE_NEVER } from './constants';
+import { ValidationError } from '../ValidationError';
 
 /**
  * The shape that always raises an issue.
@@ -11,7 +12,7 @@ export class NeverShape extends Shape<never> {
     super(false);
   }
 
-  parse(input: unknown, options?: ParserOptions): never {
-    return raiseIssue(input, CODE_NEVER, undefined, this.options, MESSAGE_NEVER) as never;
+  safeParse(input: unknown, options?: ParserOptions): ValidationError {
+    return raiseIssue(input, CODE_NEVER, undefined, this.options, MESSAGE_NEVER);
   }
 }

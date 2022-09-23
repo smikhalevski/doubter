@@ -13,13 +13,14 @@ import {
   isDict,
   isEqual,
   IssuesContext,
-  parseAsync,
-  returnOrRaiseIssues,
   raiseIssue,
-  raiseOrCaptureIssues,
-  raiseOrCaptureIssuesForKey,
+  returnOrRaiseIssues,
+  safeParseAsync,
+  throwOrCaptureIssues,
+  throwOrCaptureIssuesForKey,
 } from '../utils';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
+import { ValidationError } from '../ValidationError';
 
 type Channel = 'input' | 'output';
 
@@ -232,12 +233,12 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     return new ObjectShape(this.shapes, indexerShape, this.options);
   }
 
-  parse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> {
+  safeParse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> | ValidationError {
     if (!isDict(input)) {
       return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
     }
 
-    const { keys, _valueShapes, _applyKeys, _applyIndexer, applyConstraints } = this;
+    const { keys, _valueShapes, _applyKeys, _applyIndexer, _applyConstraints } = this;
     const keysLength = keys.length;
 
     let issues: Issue[] | null = null;
@@ -247,7 +248,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
       try {
         output = _applyKeys(input);
       } catch (error) {
-        issues = raiseOrCaptureIssues(error, options, null);
+        issues = throwOrCaptureIssues(error, options, null);
       }
     }
 
@@ -257,9 +258,9 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
       let outputValue = INVALID;
       try {
-        outputValue = _valueShapes[i].parse(inputValue, options);
+        outputValue = _valueShapes[i].safeParse(inputValue, options);
       } catch (error) {
-        issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
+        issues = throwOrCaptureIssuesForKey(error, options, issues, key);
       }
       if (isEqual(outputValue, inputValue)) {
         continue;
@@ -271,18 +272,18 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     }
 
     if (_applyIndexer !== null) {
-      return _applyIndexer(input, output, options, issues, applyConstraints) as InferObject<P, I, 'output'>;
+      return _applyIndexer(input, output, options, issues, _applyConstraints) as InferObject<P, I, 'output'>;
     }
 
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output, options, issues);
+    if (_applyConstraints !== null) {
+      issues = _applyConstraints(output, options, issues);
     }
-    return returnOrRaiseIssues(output, issues);
+    return returnOrRaiseIssues(output as InferObject<P, I, 'output'>, issues);
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<InferObject<P, I, 'output'>> {
+  safeParseAsync(input: unknown, options?: ParserOptions): Promise<InferObject<P, I, 'output'> | ValidationError> {
     if (!this.async) {
-      return parseAsync(this, input, options);
+      return safeParseAsync(this, input, options);
     }
 
     return new Promise(resolve => {
@@ -290,7 +291,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
       }
 
-      const { keys, _valueShapes, _applyKeys, indexerShape, applyConstraints } = this;
+      const { keys, _valueShapes, _applyKeys, indexerShape, _applyConstraints } = this;
 
       let context: IssuesContext = { issues: null };
       let output = input;
@@ -299,7 +300,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         try {
           output = _applyKeys(input);
         } catch (error) {
-          context.issues = raiseOrCaptureIssues(error, options, null);
+          context.issues = throwOrCaptureIssues(error, options, null);
         }
       }
 
@@ -309,7 +310,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         const key = keys[i];
         entryPromises.push(
           key,
-          _valueShapes[i].parseAsync(input[key], options).catch(createCatchForKey(key, options, context))
+          _valueShapes[i].safeParseAsync(input[key], options).catch(createCatchForKey(key, options, context))
         );
       }
 
@@ -341,10 +342,10 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
         let { issues } = context;
 
-        if (applyConstraints !== null) {
-          issues = applyConstraints(output, options, issues);
+        if (_applyConstraints !== null) {
+          issues = _applyConstraints(output, options, issues);
         }
-        return returnOrRaiseIssues(output, issues);
+        return returnOrRaiseIssues(output as InferObject<P, I, 'output'>, issues);
       });
 
       resolve(promise);
@@ -405,9 +406,9 @@ function createApplyIndexer(keys: readonly string[], indexerShape: AnyShape): Ap
 
       let outputValue = INVALID;
       try {
-        outputValue = indexerShape.parse(inputValue, options);
+        outputValue = indexerShape.safeParse(inputValue, options);
       } catch (error) {
-        issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
+        issues = throwOrCaptureIssuesForKey(error, options, issues, key);
       }
       if (isEqual(outputValue, inputValue)) {
         continue;

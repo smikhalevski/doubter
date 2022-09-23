@@ -1,7 +1,8 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { returnOrRaiseIssues, raiseIssue } from '../utils';
+import { raiseIssue, returnOrRaiseIssues } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from './constants';
+import { ValidationError } from '../ValidationError';
 
 type InferInstance<F> = F extends new (...args: any[]) => infer T ? T : never;
 
@@ -15,14 +16,14 @@ export class InstanceShape<F extends new (...args: any[]) => any> extends Shape<
     super(false);
   }
 
-  parse(input: unknown, options?: ParserOptions): InferInstance<F> {
-    const { ctor, applyConstraints } = this;
+  safeParse(input: unknown, options?: ParserOptions): InferInstance<F> | ValidationError {
+    const { ctor, _applyConstraints } = this;
 
     if (!(input instanceof ctor)) {
       return raiseIssue(input, CODE_INSTANCE, ctor, this.options, MESSAGE_INSTANCE);
     }
-    if (applyConstraints !== null) {
-      return returnOrRaiseIssues(input, applyConstraints(input, options, null));
+    if (_applyConstraints !== null) {
+      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }

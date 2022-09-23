@@ -16,6 +16,7 @@ import {
   MESSAGE_NUMBER_TYPE,
   TYPE_NUMBER,
 } from './constants';
+import { ValidationError } from '../ValidationError';
 
 export class NumberShape extends Shape<number> {
   constructor(protected options?: InputConstraintOptionsOrMessage) {
@@ -117,14 +118,14 @@ export class NumberShape extends Shape<number> {
     });
   }
 
-  parse(input: unknown, options?: ParserOptions): number {
-    const { applyConstraints } = this;
+  safeParse(input: unknown, options?: ParserOptions): number | ValidationError {
+    const { _applyConstraints } = this;
 
     if (!isFinite(input)) {
       return raiseIssue(input, CODE_TYPE, TYPE_NUMBER, this.options, MESSAGE_NUMBER_TYPE);
     }
-    if (applyConstraints !== null) {
-      return returnOrRaiseIssues(input, applyConstraints(input, options, null));
+    if (_applyConstraints !== null) {
+      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }
