@@ -1,7 +1,7 @@
 import {
   createCatchForKey,
-  isDict,
   isEqual,
+  isObjectLike,
   IssuesContext,
   raiseIssue,
   returnOrRaiseIssues,
@@ -26,7 +26,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
   }
 
   safeParse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> | ValidationError {
-    if (!isDict(input)) {
+    if (!isObjectLike(input)) {
       return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
     }
 
@@ -76,7 +76,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     }
 
     return new Promise(resolve => {
-      if (!isDict(input)) {
+      if (!isObjectLike(input)) {
         return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
       }
 

@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { INVALID, Issue, ParserOptions } from '../shared-types';
-import { captureIssues, returnOrRaiseIssues, safeParseAsync, throwOrCaptureIssues } from '../utils';
+import { captureIssues, isEarlyReturn, returnOrRaiseIssues, safeParseAsync, throwOrCaptureIssues } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export class OptionalShape<S extends AnyShape, O extends S['output'] | undefined = undefined> extends Shape<
@@ -50,7 +50,7 @@ export class OptionalShape<S extends AnyShape, O extends S['output'] | undefined
       return promise;
     }
 
-    if (options !== undefined && options.fast) {
+    if (isEarlyReturn(options)) {
       return promise.then(output => {
         _applyConstraints(output, options, null);
         return output;

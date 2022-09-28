@@ -257,7 +257,7 @@ describe('ObjectShape', () => {
   test('raises a single issue in fast mode', () => {
     const shape = new ObjectShape({ foo: stringShape }, numberShape);
 
-    expect(shape.validate({ foo: 111, bar: 'aaa' }, { fast: true })).toEqual([
+    expect(shape.validate({ foo: 111, bar: 'aaa' }, { verbose: true })).toEqual([
       {
         code: CODE_TYPE,
         path: ['foo'],
@@ -272,7 +272,7 @@ describe('ObjectShape', () => {
   test('raises multiple issues in fast async mode', async () => {
     const shape = new ObjectShape({ foo: asyncStringShape }, asyncNumberShape);
 
-    expect(await shape.validateAsync({ foo: 111, bar: 'aaa' }, { fast: true })).toEqual([
+    expect(await shape.validateAsync({ foo: 111, bar: 'aaa' }, { verbose: true })).toEqual([
       {
         code: CODE_TYPE,
         path: ['foo'],
@@ -365,6 +365,6 @@ describe('ObjectShape', () => {
       }),
     });
 
-    await expect(shape.validateAsync({ foo: '' }, { fast: true })).rejects.toEqual(new Error('Unknown'));
+    await expect(shape.validateAsync({ foo: '' }, { verbose: true })).rejects.toEqual(new Error('Unknown'));
   });
 });

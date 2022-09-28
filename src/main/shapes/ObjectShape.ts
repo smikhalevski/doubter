@@ -10,8 +10,8 @@ import {
 import {
   createCatchForKey,
   isAsyncShapes,
-  isDict,
   isEqual,
+  isObjectLike,
   IssuesContext,
   raiseIssue,
   returnOrRaiseIssues,
@@ -74,9 +74,9 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
    */
   readonly keys: readonly ObjectKeys<P>[];
 
-  private _valueShapes: AnyShape[] = [];
-  private _applyKeys: ApplyKeys | null = null;
-  private _applyIndexer: ApplyIndexer | null = null;
+  protected _valueShapes: AnyShape[] = [];
+  protected _applyKeys: ApplyKeys | null = null;
+  protected _applyIndexer: ApplyIndexer | null = null;
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.
@@ -234,7 +234,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
   }
 
   safeParse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> | ValidationError {
-    if (!isDict(input)) {
+    if (!isObjectLike(input)) {
       return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
     }
 
@@ -287,7 +287,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     }
 
     return new Promise(resolve => {
-      if (!isDict(input)) {
+      if (!isObjectLike(input)) {
         return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
       }
 

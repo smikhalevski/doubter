@@ -9,11 +9,11 @@ import { ValidationError } from '../ValidationError';
  * @template S The lazily loaded shape.
  */
 export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
-  constructor(async: boolean, private _provider: () => S) {
+  constructor(async: boolean, protected _provider: () => S) {
     super(async);
   }
 
-  private _shape: S | undefined;
+  protected _shape: S | undefined;
 
   get shape() {
     return (this._shape ||= this._provider());

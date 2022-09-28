@@ -168,7 +168,7 @@ describe('ArrayShape', () => {
   });
 
   test('raises a single issue in a fast mode', () => {
-    expect(new ArrayShape(numberShape).min(3).validate(['aaa', 'bbb'], { fast: true })).toEqual([
+    expect(new ArrayShape(numberShape).min(3).validate(['aaa', 'bbb'], { verbose: true })).toEqual([
       {
         code: CODE_TYPE,
         input: 'aaa',
@@ -183,7 +183,7 @@ describe('ArrayShape', () => {
   test.skip('raises a single issue for an array in a fast async mode', async () => {
     const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('a' + value))).min(3);
 
-    expect(await shape.validateAsync(['aaa', 'bbb'], { fast: true })).toEqual([
+    expect(await shape.validateAsync(['aaa', 'bbb'], { verbose: true })).toEqual([
       {
         code: CODE_ARRAY_MIN,
         path: [],
@@ -196,7 +196,7 @@ describe('ArrayShape', () => {
   });
 
   test('raises a single issue from an element in a fast mode', () => {
-    expect(new ArrayShape(numberShape).validate(['aaa', 'bbb'], { fast: true })).toEqual([
+    expect(new ArrayShape(numberShape).validate(['aaa', 'bbb'], { verbose: true })).toEqual([
       {
         code: CODE_TYPE,
         path: [0],
@@ -211,7 +211,7 @@ describe('ArrayShape', () => {
   test('raises a single issue for an array from an element in a fast async mode', async () => {
     const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('a' + value)));
 
-    expect(await shape.validateAsync(['aaa', 'bbb'], { fast: true })).toEqual([
+    expect(await shape.validateAsync(['aaa', 'bbb'], { verbose: true })).toEqual([
       {
         code: CODE_TYPE,
         path: [0],
@@ -260,7 +260,7 @@ describe('ArrayShape', () => {
   test('parses async array in fast async mode', async () => {
     const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('a' + value)));
 
-    expect(await shape.parseAsync([1, 2], { fast: true })).toEqual(['a1', 'a2']);
+    expect(await shape.parseAsync([1, 2], { verbose: true })).toEqual(['a1', 'a2']);
   });
 
   test('does not swallow non-validation errors', () => {

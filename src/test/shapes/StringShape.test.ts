@@ -129,7 +129,7 @@ describe('StringShape', () => {
   });
 
   test('raises a single issue in fast mode', () => {
-    expect(new StringShape().min(3).regex(/aaaa/).validate('aa', { fast: true })).toEqual([
+    expect(new StringShape().min(3).regex(/aaaa/).validate('aa', { verbose: true })).toEqual([
       {
         code: CODE_STRING_MIN,
         path: [],

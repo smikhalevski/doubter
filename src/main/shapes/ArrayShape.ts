@@ -9,15 +9,16 @@ import {
 import {
   addConstraint,
   captureIssuesForKey,
-  returnError,
   createCatchForKey,
   createResolveArray,
   isArray,
   isArrayIndex,
+  isEarlyReturn,
   isEqual,
   IssuesContext,
   isValidationError,
   raiseIssue,
+  returnError,
   returnOrRaiseIssues,
   safeParseAsync,
   throwOrCaptureIssuesForKey,
@@ -120,7 +121,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       if (isValidationError(outputValue)) {
         issues = captureIssuesForKey(outputValue, options, issues, i);
 
-        if (options !== undefined && options.fast) {
+        if (isEarlyReturn(options)) {
           return outputValue;
         }
         outputValue = INVALID;

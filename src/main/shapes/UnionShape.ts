@@ -1,6 +1,13 @@
 import { InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions, Tuple } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { createIssue, isAsyncShapes, isValidationError, returnOrRaiseIssues, throwIfUnknownError } from '../utils';
+import {
+  createIssue,
+  isAsyncShapes,
+  isEarlyReturn,
+  isValidationError,
+  returnOrRaiseIssues,
+  throwIfUnknownError,
+} from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from './constants';
 import { ValidationError } from '../ValidationError';
 
@@ -66,9 +73,7 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
 
     return returnOrRaiseIssues(
       input,
-      (options !== undefined && options.fast) || _applyConstraints === null
-        ? issues
-        : _applyConstraints(input, options, issues)
+      isEarlyReturn(options) || _applyConstraints === null ? issues : _applyConstraints(input, options, issues)
     );
   }
 
@@ -99,9 +104,7 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
 
       return returnOrRaiseIssues(
         input,
-        (options !== undefined && options.fast) || _applyConstraints === null
-          ? issues
-          : _applyConstraints(input, options, issues)
+        isEarlyReturn(options) || _applyConstraints === null ? issues : _applyConstraints(input, options, issues)
       );
     });
   }

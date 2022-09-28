@@ -1,3 +1,5 @@
+import type { ValidationError } from './ValidationError';
+
 /**
  * Symbol that denotes an invalid value.
  */
@@ -39,20 +41,21 @@ export interface Issue {
 }
 
 /**
- * Transforms the value from one type to another. Transformer may throw a {@linkcode ValidationError} if there are
- * issues that prevent the value from being properly transformed.
+ * Transforms the value from one type to another. Transformer may throw or return a {@linkcode ValidationError} if there
+ * are issues that prevent the value from being properly transformed.
  */
-export type Transformer<I, O> = (value: I) => O;
+export type Transformer<I, O> = (value: I) => ValidationError | O;
 
 /**
- * Constraint is a callback that takes an input and throws a {@linkcode ValidationError} if it has recognised issues.
+ * Constraint is a callback that takes an input and throws or return a {@linkcode ValidationError} if it has recognised
+ * issues, or returns `undefined` if value satisfies the constraint requirements.
  */
-export type Constraint<T> = (value: T, parserOptions: ParserOptions | undefined) => Issue[] | null | undefined | void;
+export type Constraint<T> = (value: T, parserOptions: ParserOptions | undefined) => ValidationError | undefined | void;
 
 /**
  * Options that are applicable for the type constraint.
  */
-export interface ShapeOptions {
+export interface InputConstraintOptions {
   /**
    * The custom issue message.
    */
@@ -78,7 +81,7 @@ export interface ChainableConstraintOptions {
 /**
  * Options that are applicable for the built-in type-specific constraints.
  */
-export interface ConstraintOptions extends ShapeOptions, ChainableConstraintOptions {}
+export interface OutputConstraintOptions extends InputConstraintOptions, ChainableConstraintOptions {}
 
 /**
  * Options that are applicable for the custom constraints added via {@linkcode Shape.constraint}.
@@ -88,33 +91,33 @@ export interface IdentifiableConstraintOptions extends ChainableConstraintOption
    * The unique ID of the constraint in scope of the shape.
    *
    * If there is a constraint with the same ID then it is replaced, otherwise it is appended to the list of constraints.
-   * If the ID is `null` then the constraint is always appended to the list of constraints.
+   * If the ID is `undefined` then the constraint is always appended to the list of constraints.
    */
-  id?: string | null;
+  id?: string;
 }
 
 /**
  * Options for narrowing constraints that are added
  */
-export interface NarrowingConstraintOptions extends ConstraintOptions, IdentifiableConstraintOptions {}
+export interface NarrowingOptions extends OutputConstraintOptions, IdentifiableConstraintOptions {}
 
-export type InputConstraintOptionsOrMessage = ShapeOptions | ((param: any) => any) | string;
+export type InputConstraintOptionsOrMessage = InputConstraintOptions | ((param: any) => any) | string;
 
-export type OutputConstraintOptionsOrMessage = ConstraintOptions | ((param: any) => any) | string;
+export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | ((param: any) => any) | string;
 
-export type NarrowingConstraintOptionsOrMessage = NarrowingConstraintOptions | ((param: any) => any) | string;
+export type RefinerOptionsOrMessage = NarrowingOptions | ((param: any) => any) | string;
 
 /**
  * Options used by a shape to apply constraints and transformations.
  */
 export interface ParserOptions {
   /**
-   * If `true` then parsing should end as soon as the first issue is captured, otherwise maximum number of issues should
-   * be collected before parsing is terminated.
+   * If `true` then parsing all issues are collected during parsing, otherwise parsing is aborted after the first issue
+   * is encountered.
    *
    * @default false
    */
-  fast?: boolean;
+  verbose?: boolean;
 }
 
 export type Tuple<T> = [T, ...T[]];

@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { OptionalShape } from './OptionalShape';
 import { INVALID, Issue, ParserOptions } from '../shared-types';
-import { captureIssues, returnOrRaiseIssues, safeParseAsync, throwOrCaptureIssues } from '../utils';
+import { captureIssues, isEarlyReturn, returnOrRaiseIssues, safeParseAsync, throwOrCaptureIssues } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, S['output'] | null> {
@@ -48,7 +48,7 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
       return promise;
     }
 
-    if (options !== undefined && options.fast) {
+    if (isEarlyReturn(options)) {
       return promise.then(output => {
         _applyConstraints(output, options, null);
         return output;

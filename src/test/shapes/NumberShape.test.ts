@@ -207,7 +207,7 @@ describe('NumberShape', () => {
   });
 
   test('raises a single issue in fast mode', () => {
-    expect(new NumberShape().gt(2).multipleOf(3).validate(1, { fast: true })).toEqual([
+    expect(new NumberShape().gt(2).multipleOf(3).validate(1, { verbose: true })).toEqual([
       {
         code: CODE_NUMBER_GT,
         path: [],

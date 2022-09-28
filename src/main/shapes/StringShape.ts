@@ -15,7 +15,7 @@ import {
 import { ValidationError } from '../ValidationError';
 
 export class StringShape extends Shape<string> {
-  constructor(private _options?: InputConstraintOptionsOrMessage) {
+  constructor(protected _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 

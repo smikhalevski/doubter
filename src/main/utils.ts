@@ -13,7 +13,7 @@ import type { AnyShape, Shape } from './shapes/Shape';
 
 export function addConstraint<S extends Shape<any>>(
   shape: S,
-  id: string | undefined | null,
+  id: string | undefined,
   options: OutputConstraintOptionsOrMessage | undefined,
   constraint: Constraint<S['output']>
 ): S {
@@ -41,7 +41,7 @@ export function createResolveArray(
       if (isValidationError(outputValue)) {
         issues = captureIssuesForKey(outputValue, options, issues, i);
 
-        if (options !== undefined && options.fast) {
+        if (isEarlyReturn(options)) {
           return outputValue;
         }
         output = elements;
@@ -77,7 +77,7 @@ export function createCatchForKey(
   return error => {
     const { issues } = context;
 
-    if (options !== undefined && options.fast && issues !== null) {
+    if (issues !== null && isEarlyReturn(options)) {
       throw new ValidationError(issues);
     }
 
@@ -104,12 +104,16 @@ export function safeParseAsync<O>(
   return new Promise(resolve => resolve(shape.safeParse(input, options)));
 }
 
-export function isDict(value: unknown): value is Dict {
+export function isObjectLike(value: unknown): value is Dict {
   return value !== null && typeof value === 'object';
 }
 
 export function isValidationError(value: any): value is ValidationError {
   return value instanceof ValidationError;
+}
+
+export function isEarlyReturn(options: ParserOptions | undefined): boolean {
+  return options === null || options === undefined || !options.verbose;
 }
 
 const positiveIntegerPattern = /^[1-9]\d*$/;
@@ -342,7 +346,7 @@ export function raiseIssue(
   param: unknown,
   options: InputConstraintOptionsOrMessage | undefined,
   message: string
-): any {
+): ValidationError {
   return new ValidationError([createIssue(input, code, param, options, message)]);
 }
 
@@ -369,7 +373,7 @@ export function throwOrCaptureIssues(
     issues.push(...errorIssues);
     return issues;
   }
-  if (options !== undefined && options.fast) {
+  if (isEarlyReturn(options)) {
     throw error;
   }
   return errorIssues;

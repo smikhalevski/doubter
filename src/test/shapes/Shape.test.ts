@@ -7,7 +7,7 @@ describe('Shape', () => {
 
   test('invokes parse when validated', () => {
     const parseMock = jest.fn();
-    const options: ParserOptions = { fast: true };
+    const options: ParserOptions = { verbose: true };
 
     class MockShape extends Shape<any> {
       parse = parseMock;
