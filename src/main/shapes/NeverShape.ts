@@ -8,11 +8,11 @@ import { ValidationError } from '../ValidationError';
  * The shape that always raises an issue.
  */
 export class NeverShape extends Shape<never> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
+  constructor(protected _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
   safeParse(input: unknown, options?: ParserOptions): ValidationError {
-    return raiseIssue(input, CODE_NEVER, undefined, this.options, MESSAGE_NEVER);
+    return raiseIssue(input, CODE_NEVER, undefined, this._options, MESSAGE_NEVER);
   }
 }

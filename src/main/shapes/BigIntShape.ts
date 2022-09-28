@@ -5,7 +5,7 @@ import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from './constants';
 import { ValidationError } from '../ValidationError';
 
 export class BigIntShape extends Shape<bigint> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
+  constructor(protected _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -13,7 +13,7 @@ export class BigIntShape extends Shape<bigint> {
     const { _applyConstraints } = this;
 
     if (typeof input !== 'bigint') {
-      return raiseIssue(input, CODE_TYPE, TYPE_BIGINT, this.options, MESSAGE_BIGINT_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_BIGINT, this._options, MESSAGE_BIGINT_TYPE);
     }
     if (_applyConstraints !== null) {
       return returnOrRaiseIssues(input, _applyConstraints(input, options, null));

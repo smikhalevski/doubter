@@ -8,6 +8,8 @@ import {
 } from '../shared-types';
 import {
   addConstraint,
+  captureIssuesForKey,
+  returnError,
   createCatchForKey,
   createResolveArray,
   isArray,
@@ -41,9 +43,9 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * Creates a new {@linkcode ArrayShape} instance.
    *
    * @param shape The shape of an array element.
-   * @param options The constraint options or an issue message.
+   * @param _options The constraint options or an issue message.
    */
-  constructor(readonly shape: S, protected options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly shape: S, protected _options?: InputConstraintOptionsOrMessage) {
     super(shape.async);
   }
 
@@ -72,7 +74,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
   min(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_ARRAY_MIN, options, output => {
       if (output.length < length) {
-        raiseIssue(output, CODE_ARRAY_MIN, length, options, MESSAGE_ARRAY_MIN);
+        return raiseIssue(output, CODE_ARRAY_MIN, length, options, MESSAGE_ARRAY_MIN);
       }
     });
   }
@@ -87,14 +89,14 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
   max(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return addConstraint(this, CODE_ARRAY_MAX, options, output => {
       if (output.length > length) {
-        raiseIssue(output, CODE_ARRAY_MAX, length, options, MESSAGE_ARRAY_MAX);
+        return raiseIssue(output, CODE_ARRAY_MAX, length, options, MESSAGE_ARRAY_MAX);
       }
     });
   }
 
   safeParse(input: unknown, options?: ParserOptions): S['output'][] | ValidationError {
     if (!isArray(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
     }
 
     const { shape, _applyConstraints } = this;
@@ -116,7 +118,11 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         continue;
       }
       if (isValidationError(outputValue)) {
-        issues = throwOrCaptureIssuesForKey(outputValue, options, issues, i);
+        issues = captureIssuesForKey(outputValue, options, issues, i);
+
+        if (options !== undefined && options.fast) {
+          return outputValue;
+        }
         outputValue = INVALID;
       }
       if (output === input) {
@@ -138,7 +144,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
+        return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
       }
 
       const { shape, _applyConstraints } = this;
@@ -150,7 +156,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         promises.push(shape.safeParseAsync(input[i], options).catch(createCatchForKey(i, options, context)));
       }
 
-      resolve(Promise.all(promises).then(createResolveArray(input, options, context, _applyConstraints)));
+      resolve(Promise.all(promises).then(createResolveArray(input, options, context, _applyConstraints), returnError));
     });
   }
 }

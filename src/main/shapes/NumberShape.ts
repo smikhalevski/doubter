@@ -19,7 +19,7 @@ import {
 import { ValidationError } from '../ValidationError';
 
 export class NumberShape extends Shape<number> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
+  constructor(protected _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -122,7 +122,7 @@ export class NumberShape extends Shape<number> {
     const { _applyConstraints } = this;
 
     if (!isFinite(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_NUMBER, this.options, MESSAGE_NUMBER_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_NUMBER, this._options, MESSAGE_NUMBER_TYPE);
     }
     if (_applyConstraints !== null) {
       return returnOrRaiseIssues(input, _applyConstraints(input, options, null));

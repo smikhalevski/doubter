@@ -13,6 +13,7 @@ import {
   isDict,
   isValidationError,
   raiseIssue,
+  returnError,
   returnOrRaiseIssues,
   safeParseAsync,
   throwError,
@@ -54,8 +55,8 @@ export abstract class Shape<I, O = I> {
   /**
    * Creates the new {@linkcode Shape}.
    *
-   * @param async If `true` then the shape would allow only {@linkcode parseAsync} and throw an error if
-   * {@linkcode parse} is called.
+   * @param async If `true` then the shape allows only asynchronous parsing and would throw an error if a synchronous
+   * alternative is called.
    */
   constructor(readonly async: boolean) {
     if (async) {
@@ -108,7 +109,7 @@ export abstract class Shape<I, O = I> {
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parseAsync(input: unknown, options?: ParserOptions): Promise<O> {
-    return safeParseAsync(this, input, options).then(returnOrThrow);
+    return this.safeParseAsync(input, options).then(returnOrThrow);
   }
 
   /**
@@ -316,7 +317,12 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     }
 
     const { shape, _transformer, _applyConstraints } = this;
-    const promise = shape.safeParseAsync(input, options).then(_transformer);
+    const promise = shape.safeParseAsync(input, options).then(output => {
+      if (isValidationError(output)) {
+        return output;
+      }
+      return _transformer(output);
+    }, returnError);
 
     if (_applyConstraints !== null) {
       return promise.then(output => returnOrRaiseIssues(output, _applyConstraints(output, options, null)));

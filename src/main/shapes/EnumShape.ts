@@ -14,9 +14,9 @@ export class EnumShape<T extends Primitive> extends Shape<T> {
    * Creates a new {@linkcode EnumShape} instance.
    *
    * @param values The list of values allowed for the input.
-   * @param options The constraint options or an issue message.
+   * @param _options The constraint options or an issue message.
    */
-  constructor(readonly values: readonly T[], protected options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly values: readonly T[], protected _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -24,7 +24,7 @@ export class EnumShape<T extends Primitive> extends Shape<T> {
     const { values, _applyConstraints } = this;
 
     if (!values.includes(input)) {
-      return raiseIssue(input, CODE_ENUM, values, this.options, MESSAGE_ENUM);
+      return raiseIssue(input, CODE_ENUM, values, this._options, MESSAGE_ENUM);
     }
     if (_applyConstraints !== null) {
       return returnOrRaiseIssues(input, _applyConstraints(input, options, null));

@@ -14,9 +14,9 @@ export class LiteralShape<T extends Primitive> extends Shape<T> {
    * Creates a new {@linkcode LiteralShape} instance.
    *
    * @param value The literal value that is compared with the input value.
-   * @param options The constraint options or an issue message.
+   * @param _options The constraint options or an issue message.
    */
-  constructor(readonly value: T, protected options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly value: T, protected _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -24,7 +24,7 @@ export class LiteralShape<T extends Primitive> extends Shape<T> {
     const { value, _applyConstraints } = this;
 
     if (!isEqual(input, value)) {
-      return raiseIssue(input, CODE_LITERAL, value, this.options, MESSAGE_LITERAL);
+      return raiseIssue(input, CODE_LITERAL, value, this._options, MESSAGE_LITERAL);
     }
     if (_applyConstraints !== null) {
       return returnOrRaiseIssues(input as T, _applyConstraints(input, options, null));

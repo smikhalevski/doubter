@@ -9,7 +9,7 @@ export class IntegerShape extends NumberShape {
     const { _applyConstraints } = this;
 
     if (!isInteger(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_INTEGER, this.options, MESSAGE_INTEGER_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_INTEGER, this._options, MESSAGE_INTEGER_TYPE);
     }
     if (_applyConstraints !== null) {
       return returnOrRaiseIssues(input, _applyConstraints(input, options, null));

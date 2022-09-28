@@ -5,7 +5,7 @@ import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from './constants';
 import { ValidationError } from '../ValidationError';
 
 export class BooleanShape extends Shape<boolean> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
+  constructor(protected _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -13,7 +13,7 @@ export class BooleanShape extends Shape<boolean> {
     const { _applyConstraints } = this;
 
     if (typeof input !== 'boolean') {
-      return raiseIssue(input, CODE_TYPE, TYPE_BOOLEAN, this.options, MESSAGE_BOOLEAN_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_BOOLEAN, this._options, MESSAGE_BOOLEAN_TYPE);
     }
     if (_applyConstraints !== null) {
       return returnOrRaiseIssues(input, _applyConstraints(input, options, null));

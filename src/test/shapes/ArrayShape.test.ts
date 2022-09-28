@@ -175,6 +175,7 @@ describe('ArrayShape', () => {
         message: expect.any(String),
         param: TYPE_NUMBER,
         path: [0],
+        meta: undefined,
       },
     ]);
   });

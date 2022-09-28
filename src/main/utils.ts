@@ -32,15 +32,28 @@ export function createResolveArray(
   return elements => {
     const inputLength = input.length;
 
+    let { issues } = context;
     let output = input;
 
     for (let i = 0; i < inputLength; ++i) {
-      if (!isEqual(input[i], elements[i])) {
+      let outputValue = elements[i];
+
+      if (isValidationError(outputValue)) {
+        issues = captureIssuesForKey(outputValue, options, issues, i);
+
+        if (options !== undefined && options.fast) {
+          return outputValue;
+        }
+        output = elements;
+        output[i] = INVALID;
+        continue;
+      }
+
+      if (!isEqual(input[i], outputValue)) {
         output = elements;
       }
     }
 
-    let { issues } = context;
     if (applyConstraints !== null) {
       issues = applyConstraints(output, options, issues);
     }
@@ -65,12 +78,17 @@ export function createCatchForKey(
     const { issues } = context;
 
     if (options !== undefined && options.fast && issues !== null) {
-      return returnOrRaiseIssues(INVALID, issues);
+      throw new ValidationError(issues);
     }
 
     context.issues = throwOrCaptureIssuesForKey(error, options, issues, key);
     return INVALID;
   };
+}
+
+export function returnError(error: unknown): any {
+  throwIfUnknownError(error);
+  return error;
 }
 
 export function captureIssues(error: unknown): Issue[] {
@@ -90,8 +108,8 @@ export function isDict(value: unknown): value is Dict {
   return value !== null && typeof value === 'object';
 }
 
-export function isValidationError(value: any): value is { issues: Issue[] } {
-  return value !== null && typeof value === 'object' && value[INVALID] === true;
+export function isValidationError(value: any): value is ValidationError {
+  return value instanceof ValidationError;
 }
 
 const positiveIntegerPattern = /^[1-9]\d*$/;
@@ -364,7 +382,15 @@ export function throwOrCaptureIssuesForKey(
   key: unknown
 ): Issue[] {
   throwIfUnknownError(error);
+  return captureIssuesForKey(error, options, issues, key);
+}
 
+export function captureIssuesForKey(
+  error: ValidationError,
+  options: ParserOptions | undefined,
+  issues: Issue[] | null,
+  key: unknown
+): Issue[] {
   const errorIssues = error.issues;
 
   for (const issue of errorIssues) {
@@ -373,9 +399,6 @@ export function throwOrCaptureIssuesForKey(
   if (issues !== null) {
     issues.push(...errorIssues);
     return issues;
-  }
-  if (options !== undefined && options.fast) {
-    throw error;
   }
   return errorIssues;
 }

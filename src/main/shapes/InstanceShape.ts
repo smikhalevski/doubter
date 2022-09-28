@@ -12,7 +12,7 @@ type InferInstance<F> = F extends new (...args: any[]) => infer T ? T : never;
  * @template F The class constructor.
  */
 export class InstanceShape<F extends new (...args: any[]) => any> extends Shape<InferInstance<F>> {
-  constructor(readonly ctor: F, protected options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly ctor: F, protected _options?: InputConstraintOptionsOrMessage) {
     super(false);
   }
 
@@ -20,7 +20,7 @@ export class InstanceShape<F extends new (...args: any[]) => any> extends Shape<
     const { ctor, _applyConstraints } = this;
 
     if (!(input instanceof ctor)) {
-      return raiseIssue(input, CODE_INSTANCE, ctor, this.options, MESSAGE_INSTANCE);
+      return raiseIssue(input, CODE_INSTANCE, ctor, this._options, MESSAGE_INSTANCE);
     }
     if (_applyConstraints !== null) {
       return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
