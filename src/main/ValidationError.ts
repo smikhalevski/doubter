@@ -1,4 +1,5 @@
 import { INVALID, Issue } from './shared-types';
+import { restoreIssue } from './utils';
 
 /**
  * The validation error that is thrown to indicate a set of issues detected in the input value.
@@ -21,10 +22,7 @@ export class ValidationError extends Error {
 
     Error.captureStackTrace?.(this, ValidationError);
 
-    for (const issue of issues) {
-      issue.code ??= 'unknown';
-      issue.path ??= [];
-    }
+    issues.forEach(restoreIssue);
 
     this.issues = issues as Issue[];
   }

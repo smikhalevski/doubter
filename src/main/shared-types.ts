@@ -40,17 +40,20 @@ export interface Issue {
   meta: any;
 }
 
+export type IssueLike = ValidationError | Partial<Issue>[] | Partial<Issue>;
+
+/**
+ * A callback that takes an input and returns `undefined` if value satisfies the constraint requirements. If values
+ * doesn't satisfy the constraint requirements then a {@linkcode ValidationError} can be thrown, or detected issues can
+ * be returned.
+ */
+export type Constraint<T> = (value: T, options: ParserOptions | undefined) => IssueLike | undefined | void;
+
 /**
  * Transforms the value from one type to another. Transformer may throw or return a {@linkcode ValidationError} if there
  * are issues that prevent the value from being properly transformed.
  */
 export type Transformer<I, O> = (value: I) => ValidationError | O;
-
-/**
- * Constraint is a callback that takes an input and throws or return a {@linkcode ValidationError} if it has recognised
- * issues, or returns `undefined` if value satisfies the constraint requirements.
- */
-export type Constraint<T> = (value: T, parserOptions: ParserOptions | undefined) => ValidationError | undefined | void;
 
 /**
  * Options that are applicable for the type constraint.
@@ -133,12 +136,12 @@ export interface Dict<T = any> {
  * {@linkcode ParserOptions.fast fast} parsing is enabled, or returns an error otherwise.
  *
  * @param value The value to which constraints are applied.
- * @param parserOptions Parsing options.
+ * @param options Parsing options.
  * @param issues The list of already captured issues.
  * @returns The list of captured issues, or `null` if there are no issues.
  */
 export type ApplyConstraints = (
   value: any,
-  parserOptions: ParserOptions | undefined,
+  options: ParserOptions | undefined,
   issues: Issue[] | null
 ) => Issue[] | null;

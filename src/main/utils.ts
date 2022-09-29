@@ -5,6 +5,7 @@ import {
   InputConstraintOptionsOrMessage,
   INVALID,
   Issue,
+  IssueLike,
   OutputConstraintOptionsOrMessage,
   ParserOptions,
 } from './shared-types';
@@ -105,15 +106,15 @@ export function applySafeParseAsync<O>(
 }
 
 export function isObjectLike(value: unknown): value is Dict {
-  return value !== null && typeof value === 'object';
+  return value != null && typeof value === 'object';
 }
 
 export function isValidationError(value: any): value is ValidationError {
-  return value !== undefined && value !== null && value instanceof ValidationError;
+  return value != null && value instanceof ValidationError;
 }
 
 export function isEarlyReturn(options: ParserOptions | undefined): boolean {
-  return options === null || options === undefined || !options.verbose;
+  return options == null || !options.verbose;
 }
 
 const positiveIntegerPattern = /^[1-9]\d*$/;
@@ -146,94 +147,103 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
 export function createApplyConstraints(constraints: any[]): ApplyConstraints | null {
   const constraintsLength = constraints.length;
 
-  // if (constraintsLength === 0) {
-  //   return null;
-  // }
-  //
-  // if (constraintsLength === 3) {
-  //   const [, unsafe0, callback0] = constraints;
-  //
-  //   return (input, parserOptions, issues) => {
-  //     if (issues === null || unsafe0) {
-  //       let error;
-  //       try {
-  //         error = callback0(input, parserOptions);
-  //       } catch (error) {
-  //         return throwOrCaptureIssues(error, parserOptions, issues);
-  //       }
-  //       if (error !== undefined) {
-  //         return error.issues;
-  //       }
-  //     }
-  //     return issues;
-  //   };
-  // }
-  //
-  // if (constraintsLength === 6) {
-  //   const [, unsafe0, callback0, , unsafe1, callback1] = constraints;
-  //
-  //   return (input, parserOptions, issues) => {
-  //     if (issues === null || unsafe0) {
-  //       let error;
-  //       try {
-  //         error = callback0(input, parserOptions);
-  //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
-  //       }
-  //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
-  //       }
-  //     }
-  //     if (issues === null || unsafe1) {
-  //       let error;
-  //       try {
-  //         error = callback1(input, parserOptions);
-  //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
-  //       }
-  //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
-  //       }
-  //     }
-  //     return issues;
-  //   };
-  // }
-  //
+  if (constraintsLength === 0) {
+    return null;
+  }
+
+  if (constraintsLength === 3) {
+    const [, unsafe0, callback0] = constraints;
+
+    return (input, options, issues) => {
+      if (issues === null || unsafe0) {
+        let result: IssueLike | null = null;
+        try {
+          result = callback0(input, options);
+        } catch (error) {
+          return throwOrCaptureIssues(error, options, issues);
+        }
+        if (result != null) {
+          issues = captureIssues(result, options, issues);
+          if (issues !== null && isEarlyReturn(options)) {
+            return issues;
+          }
+        }
+      }
+      return issues;
+    };
+  }
+
+  if (constraintsLength === 6) {
+    const [, unsafe0, callback0, , unsafe1, callback1] = constraints;
+
+    return (input, options, issues) => {
+      if (issues === null || unsafe0) {
+        let result: IssueLike | null = null;
+        try {
+          result = callback0(input, options);
+        } catch (error) {
+          return throwOrCaptureIssues(error, options, issues);
+        }
+        if (result != null) {
+          issues = captureIssues(result, options, issues);
+          if (issues !== null && isEarlyReturn(options)) {
+            return issues;
+          }
+        }
+      }
+      if (issues === null || unsafe1) {
+        let result: IssueLike | null = null;
+        try {
+          result = callback1(input, options);
+        } catch (error) {
+          return throwOrCaptureIssues(error, options, issues);
+        }
+        if (result != null) {
+          issues = captureIssues(result, options, issues);
+          if (issues !== null && isEarlyReturn(options)) {
+            return issues;
+          }
+        }
+      }
+      return issues;
+    };
+  }
+
   // if (constraintsLength === 3) {
   //   const [, unsafe0, callback0, , unsafe1, callback1, , unsafe2, callback2] = constraints;
   //
-  //   return (input, parserOptions, issues) => {
+  //   return (input, options, issues) => {
   //     if (issues === null || unsafe0) {
   //       let error;
   //       try {
-  //         error = callback0(input, parserOptions);
+  //         error = callback0(input, options);
   //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //     }
   //     if (issues === null || unsafe1) {
   //       let error;
   //       try {
-  //         error = callback1(input, parserOptions);
+  //         error = callback1(input, options);
   //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //     }
   //     if (issues === null || unsafe2) {
   //       let error;
   //       try {
-  //         error = callback2(input, parserOptions);
+  //         error = callback2(input, options);
   //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //     }
   //     return issues;
@@ -243,49 +253,49 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
   // if (constraintsLength === 4) {
   //   const [, unsafe0, callback0, , unsafe1, callback1, , unsafe2, callback2, , unsafe3, callback3] = constraints;
   //
-  //   return (input, parserOptions, issues) => {
+  //   return (input, options, issues) => {
   //     if (issues === null || unsafe0) {
   //       let error;
   //       try {
-  //         error = callback0(input, parserOptions);
+  //         error = callback0(input, options);
   //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //     }
   //     if (issues === null || unsafe1) {
   //       let error;
   //       try {
-  //         error = callback1(input, parserOptions);
+  //         error = callback1(input, options);
   //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //     }
   //     if (issues === null || unsafe2) {
   //       let error;
   //       try {
-  //         error = callback2(input, parserOptions);
+  //         error = callback2(input, options);
   //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //     }
   //     if (issues === null || unsafe3) {
   //       let error;
   //       try {
-  //         error = callback3(input, parserOptions);
+  //         error = callback3(input, options);
   //       } catch (error) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //       if (error !== undefined) {
-  //         issues = throwOrCaptureIssues(error, parserOptions, issues);
+  //         issues = throwOrCaptureIssues(error, options, issues);
   //       }
   //     }
   //     return issues;
@@ -295,17 +305,17 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
   return (input, options, issues) => {
     for (let i = 1; i < constraintsLength; i += 3) {
       if (issues === null || constraints[i]) {
-        let result;
+        let result: IssueLike | null = null;
         try {
           result = constraints[i + 1](input, options);
         } catch (error) {
-          issues = throwOrCaptureIssues(error, options, issues);
+          return throwOrCaptureIssues(error, options, issues);
         }
-        if (isValidationError(result)) {
-          if (isEarlyReturn(options)) {
-            return result.issues;
-          }
+        if (result != null) {
           issues = captureIssues(result, options, issues);
+          if (issues !== null && isEarlyReturn(options)) {
+            return issues;
+          }
         }
       }
     }
@@ -367,23 +377,51 @@ export function throwOrCaptureIssues(
   error: unknown,
   options: ParserOptions | undefined,
   issues: Issue[] | null
-): Issue[] {
+): Issue[] | null {
   throwIfUnknownError(error);
   return captureIssues(error, options, issues);
 }
 
 export function captureIssues(
-  error: ValidationError,
+  error: IssueLike,
   options: ParserOptions | undefined,
   issues: Issue[] | null
-): Issue[] {
-  const errorIssues = error.issues;
+): Issue[] | null {
+  if (typeof error !== 'object') {
+    return null;
+  }
+
+  if (isArray(error)) {
+    if (error.length === 0) {
+      return issues;
+    }
+
+    error.forEach(restoreIssue);
+
+    if (issues !== null) {
+      issues.push(...(error as Issue[]));
+      return issues;
+    }
+    return error as Issue[];
+  }
+
+  if (isValidationError(error)) {
+    const errorIssues = error.issues;
+
+    if (issues !== null) {
+      issues.push(...errorIssues);
+      return issues;
+    }
+    return errorIssues;
+  }
+
+  const issue = restoreIssue(error);
 
   if (issues !== null) {
-    issues.push(...errorIssues);
+    issues.push(issue);
     return issues;
   }
-  return errorIssues;
+  return [issue];
 }
 
 export function throwOrCaptureIssuesForKey(
@@ -412,4 +450,11 @@ export function captureIssuesForKey(
     return issues;
   }
   return errorIssues;
+}
+
+export function restoreIssue(issue: Partial<Issue>): Issue {
+  issue.code ??= 'unknown';
+  issue.path ??= [];
+
+  return issue as Issue;
 }
