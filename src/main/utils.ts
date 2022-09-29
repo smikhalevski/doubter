@@ -272,13 +272,12 @@ export function canonizeIssue(issue: Partial<Issue>): Issue {
 export function createResolveArray(
   input: unknown[],
   options: ParserOptions | undefined,
-  context: IssuesContext,
   applyConstraints: ApplyConstraints | null
 ): (elements: unknown[]) => any {
   return elements => {
     const inputLength = input.length;
 
-    let { issues } = context;
+    let issues: Issue[] | null = null;
     let output = input;
 
     for (let i = 0; i < inputLength; ++i) {

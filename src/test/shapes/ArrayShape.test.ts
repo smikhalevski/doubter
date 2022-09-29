@@ -106,8 +106,8 @@ describe('ArrayShape', () => {
     ]);
   });
 
-  test('raises multiple issues', () => {
-    expect(new ArrayShape(numberShape).min(3, { unsafe: true }).validate(['aaa', 'bbb'])).toEqual([
+  test('raises multiple issues in the verbose mode', () => {
+    expect(new ArrayShape(numberShape).min(3, { unsafe: true }).validate(['aaa', 'bbb'], { verbose: true })).toEqual([
       {
         code: CODE_TYPE,
         path: [0],
@@ -135,11 +135,11 @@ describe('ArrayShape', () => {
     ]);
   });
 
-  test('raises multiple issues for an array in an async mode', async () => {
-    const elementShape = numberShape.transformAsync(value => Promise.resolve('a' + value));
+  test('raises multiple issues in the verbose async mode', async () => {
+    const elementShape = numberShape.transformAsync(value => Promise.resolve('' + value));
     const shape = new ArrayShape(elementShape).min(3, { unsafe: true });
 
-    expect(await shape.validateAsync(['aaa', 'bbb'])).toEqual([
+    expect(await shape.validateAsync(['aaa', 'bbb'], { verbose: true })).toEqual([
       {
         code: CODE_TYPE,
         path: [0],
@@ -167,8 +167,8 @@ describe('ArrayShape', () => {
     ]);
   });
 
-  test('raises a single issue in a fast mode', () => {
-    expect(new ArrayShape(numberShape).min(3).validate(['aaa', 'bbb'], { verbose: true })).toEqual([
+  test('raises a single issue', () => {
+    expect(new ArrayShape(numberShape).min(3).validate(['aaa', 'bbb'])).toEqual([
       {
         code: CODE_TYPE,
         input: 'aaa',
@@ -180,14 +180,14 @@ describe('ArrayShape', () => {
     ]);
   });
 
-  test.skip('raises a single issue for an array in a fast async mode', async () => {
-    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('a' + value))).min(3);
+  test('raises a single issue for an array in an async mode', async () => {
+    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve(value))).min(3);
 
-    expect(await shape.validateAsync(['aaa', 'bbb'], { verbose: true })).toEqual([
+    expect(await shape.validateAsync([111, 222])).toEqual([
       {
         code: CODE_ARRAY_MIN,
         path: [],
-        input: ['aaa', 'bbb'],
+        input: [111, 222],
         param: 3,
         message: expect.any(String),
         meta: undefined,
@@ -195,8 +195,8 @@ describe('ArrayShape', () => {
     ]);
   });
 
-  test('raises a single issue from an element in a fast mode', () => {
-    expect(new ArrayShape(numberShape).validate(['aaa', 'bbb'], { verbose: true })).toEqual([
+  test('raises a single issue from an element', () => {
+    expect(new ArrayShape(numberShape).validate(['aaa', 'bbb'])).toEqual([
       {
         code: CODE_TYPE,
         path: [0],
@@ -208,10 +208,10 @@ describe('ArrayShape', () => {
     ]);
   });
 
-  test('raises a single issue for an array from an element in a fast async mode', async () => {
-    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('a' + value)));
+  test('raises a single issue for an array from an element in an async mode', async () => {
+    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('' + value)));
 
-    expect(await shape.validateAsync(['aaa', 'bbb'], { verbose: true })).toEqual([
+    expect(await shape.validateAsync(['aaa', 'bbb'])).toEqual([
       {
         code: CODE_TYPE,
         path: [0],
@@ -257,10 +257,10 @@ describe('ArrayShape', () => {
     expect(output).toEqual([2, 4]);
   });
 
-  test('parses async array in fast async mode', async () => {
-    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('a' + value)));
+  test('parses async array in async mode', async () => {
+    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('' + value)));
 
-    expect(await shape.parseAsync([1, 2], { verbose: true })).toEqual(['a1', 'a2']);
+    expect(await shape.parseAsync([1, 2])).toEqual(['1', '2']);
   });
 
   test('does not swallow non-validation errors', () => {

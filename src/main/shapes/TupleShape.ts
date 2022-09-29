@@ -2,16 +2,16 @@ import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions, Tuple } from '../shared-types';
 import {
   applySafeParseAsync,
-  createCatchForKey,
+  captureIssuesForKey,
   createResolveArray,
   isArray,
   isAsyncShapes,
+  isEarlyReturn,
   isEqual,
-  IssuesContext,
   isTupleIndex,
+  isValidationError,
   raiseIssue,
   returnValueOrRaiseIssues,
-  throwOrCaptureIssuesForKey,
 } from '../utils';
 import { CODE_TUPLE_LENGTH, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE_LENGTH, TYPE_ARRAY } from './constants';
 import { ValidationError } from '../ValidationError';
@@ -28,9 +28,9 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
    * Creates a new {@linkcode TupleShape} instance.
    *
    * @param shapes The list of tuple element shapes.
-   * @param options The constraint options or an issue message.
+   * @param _options The constraint options or an issue message.
    */
-  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly shapes: Readonly<U>, protected _options?: InputConstraintOptionsOrMessage) {
     super(isAsyncShapes(shapes));
   }
 
@@ -40,14 +40,14 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
 
   safeParse(input: unknown, options?: ParserOptions): InferTuple<U, 'output'> | ValidationError {
     if (!isArray(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
     }
 
     const { shapes, _applyConstraints } = this;
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
-      raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, MESSAGE_TUPLE_LENGTH);
+      return raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this._options, MESSAGE_TUPLE_LENGTH);
     }
 
     let issues: Issue[] | null = null;
@@ -56,15 +56,21 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
     for (let i = 0; i < shapesLength; ++i) {
       const inputValue = input[i];
 
-      let outputValue = INVALID;
-      try {
-        outputValue = shapes[i].parse(inputValue);
-      } catch (error) {
-        issues = throwOrCaptureIssuesForKey(error, options, issues, i);
-      }
+      let outputValue = shapes[i].safeParse(inputValue);
+
       if (isEqual(outputValue, inputValue)) {
         continue;
       }
+
+      if (isValidationError(outputValue)) {
+        issues = captureIssuesForKey(outputValue, options, issues, i);
+
+        if (isEarlyReturn(options)) {
+          return outputValue;
+        }
+        outputValue = INVALID;
+      }
+
       if (output === input) {
         output = input.slice(0);
       }
@@ -72,8 +78,9 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
     }
 
     if (_applyConstraints !== null) {
-      issues = _applyConstraints(output as InferTuple<U, 'output'>, options, issues);
+      issues = _applyConstraints(output, options, issues);
     }
+
     return returnValueOrRaiseIssues(output as InferTuple<U, 'output'>, issues);
   }
 
@@ -84,23 +91,22 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this.options, MESSAGE_ARRAY_TYPE);
+        return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
       }
 
       const { shapes, _applyConstraints } = this;
       const shapesLength = shapes.length;
-      const context: IssuesContext = { issues: null };
       const promises = [];
 
       if (input.length !== shapesLength) {
-        raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this.options, MESSAGE_TUPLE_LENGTH);
+        return raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this._options, MESSAGE_TUPLE_LENGTH);
       }
 
       for (let i = 0; i < shapesLength; ++i) {
-        promises.push(shapes[i].parseAsync(input[i], options).catch(createCatchForKey(i, options, context)));
+        promises.push(shapes[i].safeParseAsync(input[i], options));
       }
 
-      resolve(Promise.all(promises).then(createResolveArray(input, options, context, _applyConstraints)));
+      resolve(Promise.all(promises).then(createResolveArray(input, options, _applyConstraints)));
     });
   }
 }

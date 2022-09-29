@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { appendConstraint, isFinite, raiseIssue, returnValueOrRaiseIssues } from '../utils';
+import { appendConstraint, createIssue, isFinite, raiseIssue, returnValueOrRaiseIssues } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -53,7 +53,7 @@ export class NumberShape extends Shape<number> {
   gt(value: number, options?: OutputConstraintOptionsOrMessage): this {
     return appendConstraint(this, CODE_NUMBER_GT, options, output => {
       if (output <= value) {
-        return raiseIssue(output, CODE_NUMBER_GT, value, options, MESSAGE_NUMBER_GT);
+        return createIssue(output, CODE_NUMBER_GT, value, options, MESSAGE_NUMBER_GT);
       }
     });
   }
@@ -68,7 +68,7 @@ export class NumberShape extends Shape<number> {
   lt(value: number, options?: OutputConstraintOptionsOrMessage): this {
     return appendConstraint(this, CODE_NUMBER_LT, options, output => {
       if (output >= value) {
-        return raiseIssue(output, CODE_NUMBER_LT, value, options, MESSAGE_NUMBER_LT);
+        return createIssue(output, CODE_NUMBER_LT, value, options, MESSAGE_NUMBER_LT);
       }
     });
   }
@@ -83,7 +83,7 @@ export class NumberShape extends Shape<number> {
   gte(value: number, options?: OutputConstraintOptionsOrMessage): this {
     return appendConstraint(this, CODE_NUMBER_GTE, options, output => {
       if (output < value) {
-        return raiseIssue(output, CODE_NUMBER_GTE, value, options, MESSAGE_NUMBER_GTE);
+        return createIssue(output, CODE_NUMBER_GTE, value, options, MESSAGE_NUMBER_GTE);
       }
     });
   }
@@ -98,7 +98,7 @@ export class NumberShape extends Shape<number> {
   lte(value: number, options?: OutputConstraintOptionsOrMessage): this {
     return appendConstraint(this, CODE_NUMBER_LTE, options, output => {
       if (output > value) {
-        return raiseIssue(output, CODE_NUMBER_LTE, value, options, MESSAGE_NUMBER_LTE);
+        return createIssue(output, CODE_NUMBER_LTE, value, options, MESSAGE_NUMBER_LTE);
       }
     });
   }
@@ -113,7 +113,7 @@ export class NumberShape extends Shape<number> {
   multipleOf(divisor: number, options?: OutputConstraintOptionsOrMessage): this {
     return appendConstraint(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
       if (output % divisor !== 0) {
-        return raiseIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, MESSAGE_NUMBER_MULTIPLE_OF);
+        return createIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, MESSAGE_NUMBER_MULTIPLE_OF);
       }
     });
   }

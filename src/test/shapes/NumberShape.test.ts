@@ -185,8 +185,8 @@ describe('NumberShape', () => {
     ]);
   });
 
-  test('raises multiple issues', () => {
-    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).validate(1)).toEqual([
+  test('raises multiple issues in verbose mode', () => {
+    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).validate(1, { verbose: true })).toEqual([
       {
         code: CODE_NUMBER_GT,
         path: [],
@@ -206,8 +206,8 @@ describe('NumberShape', () => {
     ]);
   });
 
-  test('raises a single issue in fast mode', () => {
-    expect(new NumberShape().gt(2).multipleOf(3).validate(1, { verbose: true })).toEqual([
+  test('raises a single issue', () => {
+    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).validate(1)).toEqual([
       {
         code: CODE_NUMBER_GT,
         path: [],

@@ -10,19 +10,15 @@ import {
   appendConstraint,
   applySafeParseAsync,
   captureIssuesForKey,
-  createCatchForKey,
   createIssue,
   createResolveArray,
   isArray,
   isArrayIndex,
   isEarlyReturn,
   isEqual,
-  IssuesContext,
   isValidationError,
   raiseIssue,
-  returnError,
   returnValueOrRaiseIssues,
-  throwOrCaptureIssuesForKey,
 } from '../utils';
 import {
   CODE_ARRAY_MAX,
@@ -110,15 +106,12 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     for (let i = 0; i < inputLength; ++i) {
       const inputValue = input[i];
 
-      let outputValue = INVALID;
-      try {
-        outputValue = shape.safeParse(inputValue);
-      } catch (error) {
-        issues = throwOrCaptureIssuesForKey(error, options, issues, i);
-      }
+      let outputValue = shape.safeParse(inputValue);
+
       if (isEqual(outputValue, inputValue)) {
         continue;
       }
+
       if (isValidationError(outputValue)) {
         issues = captureIssuesForKey(outputValue, options, issues, i);
 
@@ -127,6 +120,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         }
         outputValue = INVALID;
       }
+
       if (output === input) {
         output = input.slice(0);
       }
@@ -136,6 +130,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     if (_applyConstraints !== null) {
       issues = _applyConstraints(output, options, issues);
     }
+
     return returnValueOrRaiseIssues(output, issues);
   }
 
@@ -151,14 +146,13 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
       const { shape, _applyConstraints } = this;
       const inputLength = input.length;
-      const context: IssuesContext = { issues: null };
       const promises = [];
 
       for (let i = 0; i < inputLength; ++i) {
         promises.push(shape.safeParseAsync(input[i], options));
       }
 
-      resolve(Promise.all(promises).then(createResolveArray(input, options, context, _applyConstraints)));
+      resolve(Promise.all(promises).then(createResolveArray(input, options, _applyConstraints)));
     });
   }
 }

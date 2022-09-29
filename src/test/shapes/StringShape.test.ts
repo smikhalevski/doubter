@@ -107,8 +107,8 @@ describe('StringShape', () => {
     ]);
   });
 
-  test('raises multiple issues', () => {
-    expect(new StringShape({}).min(3).regex(/aaaa/, { unsafe: true }).validate('aa')).toEqual([
+  test('raises multiple issues in verbose mode', () => {
+    expect(new StringShape({}).min(3).regex(/aaaa/, { unsafe: true }).validate('aa', { verbose: true })).toEqual([
       {
         code: CODE_STRING_MIN,
         path: [],
@@ -128,8 +128,8 @@ describe('StringShape', () => {
     ]);
   });
 
-  test('raises a single issue in fast mode', () => {
-    expect(new StringShape().min(3).regex(/aaaa/).validate('aa', { verbose: true })).toEqual([
+  test('raises a single issue', () => {
+    expect(new StringShape().min(3).regex(/aaaa/, { unsafe: true }).validate('aa')).toEqual([
       {
         code: CODE_STRING_MIN,
         path: [],

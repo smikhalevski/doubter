@@ -85,13 +85,13 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
    * @param indexerShape The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
    * then values thea fall under the indexer signature are unconstrained.
-   * @param options The type constraint options.
+   * @param _options The type constraint options.
    * @param keysMode
    */
   constructor(
     readonly shapes: Readonly<P>,
     readonly indexerShape: I | null = null,
-    protected options?: InputConstraintOptionsOrMessage,
+    protected _options?: InputConstraintOptionsOrMessage,
     readonly keysMode: KeysMode = KeysMode.PRESERVED
   ) {
     const keys = Object.keys(shapes);
@@ -138,7 +138,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
   extend(shape: ObjectShape<any, AnyShape> | Dict<AnyShape>): ObjectShape<any, I> {
     const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
-    return new ObjectShape(shapes, this.indexerShape, this.options);
+    return new ObjectShape(shapes, this.indexerShape, this._options);
   }
 
   /**
@@ -160,7 +160,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
       }
     }
 
-    return new ObjectShape<any, I>(shapes, this.indexerShape, this.options);
+    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options);
   }
 
   /**
@@ -182,7 +182,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
       }
     }
 
-    return new ObjectShape<any, I>(shapes, this.indexerShape, this.options);
+    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options);
   }
 
   /**
@@ -193,7 +193,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
    * @returns The new object shape.
    */
   exact(options?: InputConstraintOptionsOrMessage): ObjectShape<P> {
-    const shape = new ObjectShape<P>(this.shapes, null, this.options, KeysMode.EXACT);
+    const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
     shape._applyKeys = createApplyExactKeys(shape.keys, options);
     return shape;
   }
@@ -205,7 +205,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
    * @returns The new object shape.
    */
   strip(): ObjectShape<P> {
-    const shape = new ObjectShape<P>(this.shapes, null, this.options, KeysMode.STRIPPED);
+    const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
     shape._applyKeys = createApplyStripKeys(shape.keys);
     return shape;
   }
@@ -217,7 +217,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
    * @returns The new object shape.
    */
   preserve(): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, this.options);
+    return new ObjectShape<P>(this.shapes, null, this._options);
   }
 
   /**
@@ -230,12 +230,12 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
    * @template T The indexer signature shape.
    */
   index<T extends AnyShape>(indexerShape: T): ObjectShape<P, T> {
-    return new ObjectShape(this.shapes, indexerShape, this.options);
+    return new ObjectShape(this.shapes, indexerShape, this._options);
   }
 
   safeParse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> | ValidationError {
     if (!isObjectLike(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE);
     }
 
     const { keys, _valueShapes, _applyKeys, _applyIndexer, _applyConstraints } = this;
@@ -288,7 +288,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
+        return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE);
       }
 
       const { keys, _valueShapes, _applyKeys, indexerShape, _applyConstraints } = this;

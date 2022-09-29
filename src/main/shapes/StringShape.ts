@@ -1,6 +1,6 @@
 import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
-import { appendConstraint, raiseIssue, returnValueOrRaiseIssues } from '../utils';
+import { appendConstraint, createIssue, raiseIssue, returnValueOrRaiseIssues } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -40,7 +40,7 @@ export class StringShape extends Shape<string> {
   min(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return appendConstraint(this, CODE_STRING_MIN, options, input => {
       if (input.length < length) {
-        return raiseIssue(input, CODE_STRING_MIN, length, options, MESSAGE_STRING_MIN);
+        return createIssue(input, CODE_STRING_MIN, length, options, MESSAGE_STRING_MIN);
       }
     });
   }
@@ -55,7 +55,7 @@ export class StringShape extends Shape<string> {
   max(length: number, options?: OutputConstraintOptionsOrMessage): this {
     return appendConstraint(this, CODE_STRING_MAX, options, output => {
       if (output.length > length) {
-        return raiseIssue(output, CODE_STRING_MAX, length, options, MESSAGE_STRING_MAX);
+        return createIssue(output, CODE_STRING_MAX, length, options, MESSAGE_STRING_MAX);
       }
     });
   }
@@ -72,7 +72,7 @@ export class StringShape extends Shape<string> {
       re.lastIndex = 0;
 
       if (!re.test(output)) {
-        return raiseIssue(output, CODE_STRING_REGEX, re, options, MESSAGE_STRING_REGEX);
+        return createIssue(output, CODE_STRING_REGEX, re, options, MESSAGE_STRING_REGEX);
       }
     });
   }
