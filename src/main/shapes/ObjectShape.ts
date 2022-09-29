@@ -9,15 +9,14 @@ import {
 } from '../shared-types';
 import {
   applySafeParseAsync,
-  createCatchForKey,
+  captureIssuesForKey,
   isAsyncShapes,
+  isEarlyReturn,
   isEqual,
   isObjectLike,
-  IssuesContext,
+  isValidationError,
   raiseIssue,
   returnValueOrRaiseIssues,
-  throwOrCaptureIssues,
-  throwOrCaptureIssuesForKey,
 } from '../utils';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
 import { ValidationError } from '../ValidationError';
@@ -50,7 +49,7 @@ type ApplyIndexer = (
   options: ParserOptions | undefined,
   issues: Issue[] | null,
   applyConstraints: ApplyConstraints | null
-) => Dict;
+) => any;
 
 export enum KeysMode {
   PRESERVED = 'preserved',
@@ -245,10 +244,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     let output = input;
 
     if (_applyKeys !== null) {
-      try {
-        output = _applyKeys(input);
-      } catch (error) {
-        issues = throwOrCaptureIssues(error, options, null);
+      output = _applyKeys(input);
+
+      if (isValidationError(output)) {
+        if (isEarlyReturn(options)) {
+          return output;
+        }
+        issues = output.issues;
+        output = input;
       }
     }
 
@@ -256,15 +259,21 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
       const key = keys[i];
       const inputValue = input[key];
 
-      let outputValue = INVALID;
-      try {
-        outputValue = _valueShapes[i].safeParse(inputValue, options);
-      } catch (error) {
-        issues = throwOrCaptureIssuesForKey(error, options, issues, key);
-      }
+      let outputValue = _valueShapes[i].safeParse(inputValue, options);
+
       if (isEqual(outputValue, inputValue)) {
         continue;
       }
+
+      if (isValidationError(outputValue)) {
+        issues = captureIssuesForKey(outputValue, options, issues, key);
+
+        if (isEarlyReturn(options)) {
+          return outputValue;
+        }
+        outputValue = INVALID;
+      }
+
       if (output === input) {
         output = cloneDict(input);
       }
@@ -272,7 +281,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     }
 
     if (_applyIndexer !== null) {
-      return _applyIndexer(input, output, options, issues, _applyConstraints) as InferObject<P, I, 'output'>;
+      return _applyIndexer(input, output, options, issues, _applyConstraints);
     }
 
     if (_applyConstraints !== null) {
@@ -288,19 +297,25 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE);
+        resolve(raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE));
+        return;
       }
 
       const { keys, _valueShapes, _applyKeys, indexerShape, _applyConstraints } = this;
 
-      let context: IssuesContext = { issues: null };
+      let issues: Issue[] | null = null;
       let output = input;
 
       if (_applyKeys !== null) {
-        try {
-          output = _applyKeys(input);
-        } catch (error) {
-          context.issues = throwOrCaptureIssues(error, options, null);
+        output = _applyKeys(input);
+
+        if (isValidationError(output)) {
+          if (isEarlyReturn(options)) {
+            resolve(output);
+            return;
+          }
+          issues = output.issues;
+          output = input;
         }
       }
 
@@ -308,19 +323,13 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
       for (let i = 0; i < keys.length; ++i) {
         const key = keys[i];
-        entryPromises.push(
-          key,
-          _valueShapes[i].safeParseAsync(input[key], options).catch(createCatchForKey(key, options, context))
-        );
+        entryPromises.push(key, _valueShapes[i].safeParseAsync(input[key], options));
       }
 
       if (indexerShape !== null) {
         for (const key in input) {
           if (!keys.includes(key as ObjectKeys<P>)) {
-            entryPromises.push(
-              key,
-              indexerShape.parseAsync(input[key], options).catch(createCatchForKey(key, options, context))
-            );
+            entryPromises.push(key, indexerShape.safeParseAsync(input[key], options));
           }
         }
       }
@@ -329,18 +338,27 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         for (let i = 0; i < entries.length; i += 2) {
           const key = entries[i];
           const inputValue = input[key];
-          const outputValue = entries[i + 1];
+
+          let outputValue = entries[i + 1];
 
           if (isEqual(outputValue, inputValue)) {
             continue;
           }
+
+          if (isValidationError(outputValue)) {
+            issues = captureIssuesForKey(outputValue, options, issues, key);
+
+            if (isEarlyReturn(options)) {
+              return outputValue;
+            }
+            outputValue = INVALID;
+          }
+
           if (output === input) {
             output = cloneDict(input);
           }
           output[key] = outputValue;
         }
-
-        let { issues } = context;
 
         if (_applyConstraints !== null) {
           issues = _applyConstraints(output, options, issues);
@@ -366,7 +384,7 @@ function createApplyExactKeys(
       }
     }
     if (unknownKeys !== null) {
-      raiseIssue(input, CODE_UNKNOWN_KEYS, unknownKeys, options, MESSAGE_UNKNOWN_KEYS);
+      return raiseIssue(input, CODE_UNKNOWN_KEYS, unknownKeys, options, MESSAGE_UNKNOWN_KEYS);
     }
     return input;
   };
@@ -404,15 +422,21 @@ function createApplyIndexer(keys: readonly string[], indexerShape: AnyShape): Ap
 
       const inputValue = input[key];
 
-      let outputValue = INVALID;
-      try {
-        outputValue = indexerShape.safeParse(inputValue, options);
-      } catch (error) {
-        issues = throwOrCaptureIssuesForKey(error, options, issues, key);
-      }
+      let outputValue = indexerShape.safeParse(inputValue, options);
+
       if (isEqual(outputValue, inputValue)) {
         continue;
       }
+
+      if (isValidationError(outputValue)) {
+        issues = captureIssuesForKey(outputValue, options, issues, key);
+
+        if (isEarlyReturn(options)) {
+          return outputValue;
+        }
+        outputValue = INVALID;
+      }
+
       if (output === input) {
         output = cloneDict(input);
       }

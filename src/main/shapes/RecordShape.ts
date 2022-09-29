@@ -1,12 +1,12 @@
 import {
   applySafeParseAsync,
-  createCatchForKey,
+  captureIssuesForKey,
+  isEarlyReturn,
   isEqual,
   isObjectLike,
-  IssuesContext,
+  isValidationError,
   raiseIssue,
   returnValueOrRaiseIssues,
-  throwOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions } from '../shared-types';
@@ -17,7 +17,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
   Record<K['input'], V['input']>,
   Record<K['output'], V['output']>
 > {
-  constructor(readonly keyShape: K, readonly valueShape: V, protected options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly keyShape: K, readonly valueShape: V, protected _options?: InputConstraintOptionsOrMessage) {
     super(keyShape.async || valueShape.async);
   }
 
@@ -27,7 +27,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
   safeParse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> | ValidationError {
     if (!isObjectLike(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
+      return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE);
     }
 
     const { keyShape, valueShape, _applyConstraints } = this;
@@ -41,23 +41,31 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
       const inputValue = input[inputKey];
 
-      let outputKey: any = inputKey;
-      let outputValue = INVALID;
-
-      try {
-        outputKey = keyShape.safeParse(inputKey, options);
-      } catch (error) {
-        issues = throwOrCaptureIssuesForKey(error, options, issues, inputKey);
-      }
-      try {
-        outputValue = valueShape.safeParse(inputValue, options);
-      } catch (error) {
-        issues = throwOrCaptureIssuesForKey(error, options, issues, inputKey);
-      }
+      let outputKey = keyShape.safeParse(inputKey, options);
+      let outputValue = valueShape.safeParse(inputValue, options);
 
       if (output === input && inputKey === outputKey && isEqual(inputValue, outputValue)) {
         continue;
       }
+
+      if (isValidationError(outputKey)) {
+        issues = captureIssuesForKey(outputKey, options, issues, inputKey);
+
+        if (isEarlyReturn(options)) {
+          return outputKey;
+        }
+        outputKey = inputKey;
+      }
+
+      if (isValidationError(outputValue)) {
+        issues = captureIssuesForKey(outputValue, options, issues, inputKey);
+
+        if (isEarlyReturn(options)) {
+          return outputValue;
+        }
+        outputValue = INVALID;
+      }
+
       if (output === input) {
         output = sliceDict(input, keyIndex);
       }
@@ -65,7 +73,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     }
 
     if (_applyConstraints !== null) {
-      issues = _applyConstraints(output as Record<K['output'], V['output']>, options, issues);
+      issues = _applyConstraints(output, options, issues);
     }
     return returnValueOrRaiseIssues(output as Record<K['output'], V['output']>, issues);
   }
@@ -77,42 +85,57 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this.options, MESSAGE_OBJECT_TYPE);
+        resolve(raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE));
+        return;
       }
 
       const { keyShape, valueShape, _applyConstraints } = this;
-      const context: IssuesContext = { issues: null };
       const entryPromises = [];
 
       for (const key in input) {
-        entryPromises.push(
-          key,
-          keyShape.safeParseAsync(key, options).catch(createCatchForKey(key, options, context)),
-          valueShape.safeParseAsync(input[key], options).catch(createCatchForKey(key, options, context))
-        );
+        entryPromises.push(key, keyShape.safeParseAsync(key, options), valueShape.safeParseAsync(input[key], options));
       }
 
       const promise = Promise.all(entryPromises).then(entries => {
+        let issues: Issue[] | null = null;
         let output = input;
 
         for (let i = 0; i < entries.length; i += 3) {
           const inputKey = entries[i];
-          const outputKey = entries[i + 1];
-          const outputValue = entries[i + 2];
+
+          let outputKey = entries[i + 1];
+          let outputValue = entries[i + 2];
 
           if (output === input && inputKey === outputKey && isEqual(outputValue, input[inputKey])) {
             continue;
           }
+
+          if (isValidationError(outputKey)) {
+            issues = captureIssuesForKey(outputKey, options, issues, inputKey);
+
+            if (isEarlyReturn(options)) {
+              return outputKey;
+            }
+            outputKey = inputKey;
+          }
+
+          if (isValidationError(outputValue)) {
+            issues = captureIssuesForKey(outputValue, options, issues, inputKey);
+
+            if (isEarlyReturn(options)) {
+              return outputValue;
+            }
+            outputValue = INVALID;
+          }
+
           if (output === input) {
             output = sliceDict(input, i / 3);
           }
           output[outputKey] = outputValue;
         }
 
-        let { issues } = context;
-
         if (_applyConstraints !== null) {
-          issues = _applyConstraints(output as Record<K['output'], V['output']>, options, issues);
+          issues = _applyConstraints(output, options, issues);
         }
         return returnValueOrRaiseIssues(output as Record<K['output'], V['output']>, issues);
       });

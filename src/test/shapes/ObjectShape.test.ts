@@ -208,53 +208,7 @@ describe('ObjectShape', () => {
     ]);
   });
 
-  test('raises multiple issues', () => {
-    const shape = new ObjectShape({ foo: stringShape }, numberShape);
-
-    expect(shape.validate({ foo: 111, bar: 'aaa' })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['foo'],
-        input: 111,
-        param: TYPE_STRING,
-        message: expect.any(String),
-        meta: undefined,
-      },
-      {
-        code: CODE_TYPE,
-        path: ['bar'],
-        input: 'aaa',
-        param: TYPE_NUMBER,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises multiple issues in async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape }, asyncNumberShape);
-
-    expect(await shape.validateAsync({ foo: 111, bar: 'aaa' })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['foo'],
-        input: 111,
-        param: TYPE_STRING,
-        message: expect.any(String),
-        meta: undefined,
-      },
-      {
-        code: CODE_TYPE,
-        path: ['bar'],
-        input: 'aaa',
-        param: TYPE_NUMBER,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises a single issue in fast mode', () => {
+  test('raises multiple issues in the verbose mode', () => {
     const shape = new ObjectShape({ foo: stringShape }, numberShape);
 
     expect(shape.validate({ foo: 111, bar: 'aaa' }, { verbose: true })).toEqual([
@@ -266,13 +220,59 @@ describe('ObjectShape', () => {
         message: expect.any(String),
         meta: undefined,
       },
+      {
+        code: CODE_TYPE,
+        path: ['bar'],
+        input: 'aaa',
+        param: TYPE_NUMBER,
+        message: expect.any(String),
+        meta: undefined,
+      },
     ]);
   });
 
-  test('raises multiple issues in fast async mode', async () => {
+  test('raises multiple issues in the async verbose mode', async () => {
     const shape = new ObjectShape({ foo: asyncStringShape }, asyncNumberShape);
 
     expect(await shape.validateAsync({ foo: 111, bar: 'aaa' }, { verbose: true })).toEqual([
+      {
+        code: CODE_TYPE,
+        path: ['foo'],
+        input: 111,
+        param: TYPE_STRING,
+        message: expect.any(String),
+        meta: undefined,
+      },
+      {
+        code: CODE_TYPE,
+        path: ['bar'],
+        input: 'aaa',
+        param: TYPE_NUMBER,
+        message: expect.any(String),
+        meta: undefined,
+      },
+    ]);
+  });
+
+  test('raises a single issue', () => {
+    const shape = new ObjectShape({ foo: stringShape }, numberShape);
+
+    expect(shape.validate({ foo: 111, bar: 'aaa' })).toEqual([
+      {
+        code: CODE_TYPE,
+        path: ['foo'],
+        input: 111,
+        param: TYPE_STRING,
+        message: expect.any(String),
+        meta: undefined,
+      },
+    ]);
+  });
+
+  test('raises multiple issues in the async mode', async () => {
+    const shape = new ObjectShape({ foo: asyncStringShape }, asyncNumberShape);
+
+    expect(await shape.validateAsync({ foo: 111, bar: 'aaa' })).toEqual([
       {
         code: CODE_TYPE,
         path: ['foo'],
@@ -348,7 +348,7 @@ describe('ObjectShape', () => {
     expect(() => shape.validate({ foo: '' })).toThrow(new Error('Unknown'));
   });
 
-  test('does not swallow unknown errors in async mode', async () => {
+  test('does not swallow unknown errors in the async mode', async () => {
     const shape = new ObjectShape({
       foo: asyncStringShape.constrain(() => {
         throw new Error('Unknown');
@@ -356,15 +356,5 @@ describe('ObjectShape', () => {
     });
 
     await expect(shape.validateAsync({ foo: '' })).rejects.toEqual(new Error('Unknown'));
-  });
-
-  test('does not swallow unknown errors in fast async mode', async () => {
-    const shape = new ObjectShape({
-      foo: asyncStringShape.constrain(() => {
-        throw new Error('Unknown');
-      }),
-    });
-
-    await expect(shape.validateAsync({ foo: '' }, { verbose: true })).rejects.toEqual(new Error('Unknown'));
   });
 });

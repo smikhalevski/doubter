@@ -141,7 +141,8 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
+        resolve(raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE));
+        return;
       }
 
       const { shape, _applyConstraints } = this;

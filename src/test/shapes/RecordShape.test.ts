@@ -27,7 +27,7 @@ describe('RecordShape', () => {
   test('applies constrains to properties', () => {
     const shape = new RecordShape(stringShape.max(2), numberShape);
 
-    expect(shape.validate({ aaa: 'bbb' })).toEqual([
+    expect(shape.validate({ aaa: 'bbb' }, { verbose: true })).toEqual([
       {
         code: CODE_STRING_MAX,
         input: 'aaa',
@@ -53,7 +53,7 @@ describe('RecordShape', () => {
       asyncNumberShape
     );
 
-    expect(await shape.validateAsync({ aaa: 'bbb' })).toEqual([
+    expect(await shape.validateAsync({ aaa: 'bbb' }, { verbose: true })).toEqual([
       {
         code: CODE_STRING_MAX,
         input: 'aaa',

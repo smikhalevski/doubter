@@ -91,7 +91,8 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
 
     return new Promise(resolve => {
       if (!isArray(input)) {
-        return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
+        resolve(raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE));
+        return;
       }
 
       const { shapes, _applyConstraints } = this;
