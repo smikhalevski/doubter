@@ -1,33 +1,27 @@
-import { ParserOptions, Shape } from '../../main';
+import { ParserOptions, Shape, ValidationError } from '../../main';
 
 describe('Shape', () => {
-  class MockShape extends Shape<any> {
-    parse(input: unknown, options?: ParserOptions): any {}
-  }
-
-  test('invokes parse when validated', () => {
-    const parseMock = jest.fn();
-    const options: ParserOptions = { verbose: true };
-
-    class MockShape extends Shape<any> {
-      parse = parseMock;
-    }
-
-    new MockShape(false).validate('aaa', options);
-
-    expect(parseMock).toHaveBeenCalledTimes(1);
-    expect(parseMock).toHaveBeenNthCalledWith(1, 'aaa', options);
+  test('async shapes throw when used in sync context', () => {
+    expect(() => new Shape(true).parse('')).toThrow();
   });
 
-  test('returns null if no errors were thrown', () => {
-    expect(new MockShape(false).validate('')).toBe(null);
+  test('validate returns null if no errors was returned', () => {
+    expect(new Shape(false).validate('')).toBe(null);
+  });
+
+  test('invokes constraints', () => {
+    const shape = new Shape(false).constrain(() => {
+      throw new ValidationError([{ code: 'foo' }]);
+    });
+
+    expect(shape.validate('')).toEqual([{ code: 'foo', path: [] }]);
   });
 
   test('passes parsed value to transform', () => {
     const transformerMock = jest.fn(value => value + '_ccc');
 
     class MockShape extends Shape<any> {
-      parse(input: unknown, options?: ParserOptions): any {
+      safeParse(input: unknown, options?: ParserOptions): any {
         return input + '_bbb';
       }
     }
@@ -38,12 +32,12 @@ describe('Shape', () => {
   });
 
   test('marks type as async', () => {
-    expect(new MockShape(false).transform(() => undefined).async).toBe(false);
-    expect(new MockShape(false).transformAsync(Promise.resolve).async).toBe(true);
+    expect(new Shape(false).async).toBe(false);
+    expect(new Shape(false).transformAsync(Promise.resolve).async).toBe(true);
   });
 
   test('inherits async status', () => {
-    const shape = new MockShape(false).transformAsync(Promise.resolve).transform(() => undefined);
+    const shape = new Shape(false).transformAsync(Promise.resolve).transform(() => undefined);
 
     expect(shape.async).toBe(true);
   });

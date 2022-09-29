@@ -91,12 +91,12 @@ export function returnError(error: unknown): any {
   return error;
 }
 
-export function captureIssues(error: unknown): Issue[] {
+export function throwOrReturnIssues(error: unknown): Issue[] {
   throwIfUnknownError(error);
   return error.issues;
 }
 
-export function safeParseAsync<O>(
+export function applySafeParseAsync<O>(
   shape: Shape<any, O>,
   input: unknown,
   options: ParserOptions | undefined
@@ -109,7 +109,7 @@ export function isObjectLike(value: unknown): value is Dict {
 }
 
 export function isValidationError(value: any): value is ValidationError {
-  return value instanceof ValidationError;
+  return value !== undefined && value !== null && value instanceof ValidationError;
 }
 
 export function isEarlyReturn(options: ParserOptions | undefined): boolean {
@@ -292,17 +292,20 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
   //   };
   // }
 
-  return (input, parserOptions, issues) => {
+  return (input, options, issues) => {
     for (let i = 1; i < constraintsLength; i += 3) {
       if (issues === null || constraints[i]) {
-        let error;
+        let result;
         try {
-          error = constraints[i + 1](input, parserOptions);
+          result = constraints[i + 1](input, options);
         } catch (error) {
-          issues = throwOrCaptureIssues(error, parserOptions, issues);
+          issues = throwOrCaptureIssues(error, options, issues);
         }
-        if (error !== undefined) {
-          issues = throwOrCaptureIssues(error, parserOptions, issues);
+        if (isValidationError(result)) {
+          if (isEarlyReturn(options)) {
+            return result.issues;
+          }
+          issues = captureIssues(result, options, issues);
         }
       }
     }
@@ -366,15 +369,19 @@ export function throwOrCaptureIssues(
   issues: Issue[] | null
 ): Issue[] {
   throwIfUnknownError(error);
+  return captureIssues(error, options, issues);
+}
 
+export function captureIssues(
+  error: ValidationError,
+  options: ParserOptions | undefined,
+  issues: Issue[] | null
+): Issue[] {
   const errorIssues = error.issues;
 
   if (issues !== null) {
     issues.push(...errorIssues);
     return issues;
-  }
-  if (isEarlyReturn(options)) {
-    throw error;
   }
   return errorIssues;
 }

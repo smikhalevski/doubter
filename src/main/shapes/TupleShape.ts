@@ -1,6 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions, Tuple } from '../shared-types';
 import {
+  applySafeParseAsync,
   createCatchForKey,
   createResolveArray,
   isArray,
@@ -10,7 +11,6 @@ import {
   isTupleIndex,
   raiseIssue,
   returnOrRaiseIssues,
-  safeParseAsync,
   throwOrCaptureIssuesForKey,
 } from '../utils';
 import { CODE_TUPLE_LENGTH, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE_LENGTH, TYPE_ARRAY } from './constants';
@@ -79,7 +79,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<InferTuple<U, 'output'> | ValidationError> {
     if (!this.async) {
-      return safeParseAsync(this, input, options);
+      return applySafeParseAsync(this, input, options);
     }
 
     return new Promise(resolve => {

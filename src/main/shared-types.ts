@@ -105,7 +105,7 @@ export type InputConstraintOptionsOrMessage = InputConstraintOptions | ((param: 
 
 export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | ((param: any) => any) | string;
 
-export type RefinerOptionsOrMessage = NarrowingOptions | ((param: any) => any) | string;
+export type NarrowingOptionsOrMessage = NarrowingOptions | ((param: any) => any) | string;
 
 /**
  * Options used by a shape to apply constraints and transformations.

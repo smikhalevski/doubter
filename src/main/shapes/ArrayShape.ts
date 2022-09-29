@@ -8,6 +8,7 @@ import {
 } from '../shared-types';
 import {
   addConstraint,
+  applySafeParseAsync,
   captureIssuesForKey,
   createCatchForKey,
   createResolveArray,
@@ -20,7 +21,6 @@ import {
   raiseIssue,
   returnError,
   returnOrRaiseIssues,
-  safeParseAsync,
   throwOrCaptureIssuesForKey,
 } from '../utils';
 import {
@@ -140,7 +140,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<S['output'][] | ValidationError> {
     if (!this.async) {
-      return safeParseAsync(this, input, options);
+      return applySafeParseAsync(this, input, options);
     }
 
     return new Promise(resolve => {

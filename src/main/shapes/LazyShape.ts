@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ParserOptions } from '../shared-types';
-import { returnOrRaiseIssues, safeParseAsync } from '../utils';
+import { applySafeParseAsync, returnOrRaiseIssues } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 /**
@@ -35,7 +35,7 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | ValidationError> {
     if (!this.async) {
-      return safeParseAsync(this, input, options);
+      return applySafeParseAsync(this, input, options);
     }
 
     const { _applyConstraints } = this;

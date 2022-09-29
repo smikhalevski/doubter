@@ -18,4 +18,3 @@ export * from './or';
 export * from './record';
 export * from './string';
 export * from './tuple';
-export * from './unknown';

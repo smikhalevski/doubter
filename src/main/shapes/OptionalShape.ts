@@ -1,6 +1,12 @@
 import { AnyShape, Shape } from './Shape';
 import { INVALID, Issue, ParserOptions } from '../shared-types';
-import { captureIssues, isEarlyReturn, returnOrRaiseIssues, safeParseAsync, throwOrCaptureIssues } from '../utils';
+import {
+  applySafeParseAsync,
+  isEarlyReturn,
+  returnOrRaiseIssues,
+  throwOrCaptureIssues,
+  throwOrReturnIssues,
+} from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export class OptionalShape<S extends AnyShape, O extends S['output'] | undefined = undefined> extends Shape<
@@ -38,7 +44,7 @@ export class OptionalShape<S extends AnyShape, O extends S['output'] | undefined
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | O | ValidationError> {
     if (!this.async) {
-      return safeParseAsync(this, input, options);
+      return applySafeParseAsync(this, input, options);
     }
 
     const { _applyConstraints } = this;
@@ -59,7 +65,7 @@ export class OptionalShape<S extends AnyShape, O extends S['output'] | undefined
 
     return promise.then(
       output => returnOrRaiseIssues(output, _applyConstraints(output, options, null)),
-      error => returnOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, captureIssues(error)))
+      error => returnOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, throwOrReturnIssues(error)))
     );
   }
 }

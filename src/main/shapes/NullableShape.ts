@@ -1,7 +1,13 @@
 import { AnyShape, Shape } from './Shape';
 import { OptionalShape } from './OptionalShape';
 import { INVALID, Issue, ParserOptions } from '../shared-types';
-import { captureIssues, isEarlyReturn, returnOrRaiseIssues, safeParseAsync, throwOrCaptureIssues } from '../utils';
+import {
+  applySafeParseAsync,
+  isEarlyReturn,
+  returnOrRaiseIssues,
+  throwOrCaptureIssues,
+  throwOrReturnIssues,
+} from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, S['output'] | null> {
@@ -37,7 +43,7 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | null | ValidationError> {
     if (!this.async) {
-      return safeParseAsync(this, input, options);
+      return applySafeParseAsync(this, input, options);
     }
 
     const { _applyConstraints } = this;
@@ -57,7 +63,7 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
 
     return promise.then(
       output => returnOrRaiseIssues(output, _applyConstraints(output, options, null)),
-      error => returnOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, captureIssues(error)))
+      error => returnOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, throwOrReturnIssues(error)))
     );
   }
 }

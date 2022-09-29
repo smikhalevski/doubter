@@ -4,19 +4,19 @@ import {
   IdentifiableConstraintOptions,
   INVALID,
   Issue,
+  NarrowingOptionsOrMessage,
   ParserOptions,
-  RefinerOptionsOrMessage,
   Transformer,
 } from '../shared-types';
 import {
   addConstraint,
+  applySafeParseAsync,
   createApplyConstraints,
   isEarlyReturn,
   isValidationError,
   raiseIssue,
   returnError,
   returnOrRaiseIssues,
-  safeParseAsync,
   throwError,
   throwIfUnknownError,
 } from '../utils';
@@ -41,12 +41,12 @@ export interface Shape<I, O> {
 }
 
 /**
- * The abstract shape.
+ * The most basic shape that just applies constraints to the input without any additional checks.
  *
  * @template I The input value.
  * @template O The output value.
  */
-export abstract class Shape<I, O = I> {
+export class Shape<I, O = I> {
   /**
    * Applies shape constraints to the output.
    */
@@ -65,7 +65,7 @@ export abstract class Shape<I, O = I> {
    */
   constructor(readonly async: boolean) {
     if (async) {
-      this.safeParse = this.parse = this.validate = throwSynchronousParseIsUnsupported;
+      this.safeParse = throwSynchronousParsingIsUnsupported;
     }
   }
 
@@ -78,7 +78,14 @@ export abstract class Shape<I, O = I> {
    * during parsing.
    * @throws Error if the shape doesn't support the synchronous parsing.
    */
-  abstract safeParse(input: unknown, options?: ParserOptions): O | ValidationError;
+  safeParse(input: any, options?: ParserOptions): O | ValidationError {
+    const { _applyConstraints } = this;
+
+    if (_applyConstraints !== null) {
+      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
+    }
+    return input;
+  }
 
   /**
    * Asynchronously parses the value.
@@ -89,7 +96,7 @@ export abstract class Shape<I, O = I> {
    * during parsing.
    */
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<O | ValidationError> {
-    return safeParseAsync(this, input, options);
+    return applySafeParseAsync(this, input, options);
   }
 
   /**
@@ -141,9 +148,10 @@ export abstract class Shape<I, O = I> {
   }
 
   /**
-   * Synchronously transforms the output value of the shape with a transformer callback.
+   * Synchronously transforms the output value of the shape with a transformer callback. The callback may throw
+   * {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
    *
-   * @param transformer The value transformer callback.
+   * @param transformer The transformation callback.
    * @return The transformed shape.
    * @template T The transformed value.
    */
@@ -152,7 +160,8 @@ export abstract class Shape<I, O = I> {
   }
 
   /**
-   * Asynchronously transforms the output value of the shape with a transformer callback.
+   * Asynchronously transforms the output value of the shape with a transformer callback. The callback may throw
+   * {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
    *
    * @param transformer The value transformer callback.
    * @return The transformed shape.
@@ -185,12 +194,12 @@ export abstract class Shape<I, O = I> {
     let id;
     let unsafe = false;
 
-    if (options !== undefined) {
+    if (options != null) {
       id = options.id;
-      unsafe = Boolean(options.unsafe);
+      unsafe = options.unsafe == true;
     }
 
-    if (id !== undefined) {
+    if (id != null) {
       for (let i = 0; i < constraints.length; i += 3) {
         if (constraints[i] === id) {
           constraints.splice(i, 3);
@@ -218,7 +227,7 @@ export abstract class Shape<I, O = I> {
    * @returns The shape that has the narrowed output.
    * @template T The narrowed value.
    */
-  refine<T extends O>(predicate: (output: O) => output is T, options?: RefinerOptionsOrMessage): Shape<I, T>;
+  narrow<T extends O>(predicate: (output: O) => output is T, options?: NarrowingOptionsOrMessage): Shape<I, T>;
 
   /**
    * Adds a constraint that checks that value conforms the predicate.
@@ -228,9 +237,9 @@ export abstract class Shape<I, O = I> {
    * @returns The clone of this shape with the constraint added.
    * @template T The narrowed value.
    */
-  refine(predicate: (output: O) => boolean, options?: RefinerOptionsOrMessage): this;
+  narrow(predicate: (output: O) => boolean, options?: NarrowingOptionsOrMessage): this;
 
-  refine(predicate: (output: O) => boolean, options?: RefinerOptionsOrMessage): this {
+  narrow(predicate: (output: O) => boolean, options?: NarrowingOptionsOrMessage): this {
     return addConstraint(
       this,
       options !== null && typeof options === 'object' ? options.id : undefined,
@@ -261,32 +270,29 @@ export abstract class Shape<I, O = I> {
   }
 }
 
-function throwSynchronousParseIsUnsupported(): never {
-  throwError('Shape is asynchronous');
+Object.defineProperties(Shape.prototype, {
+  input: { get: throwRuntimeUsageProhibited },
+  output: { get: throwRuntimeUsageProhibited },
+});
+
+function throwSynchronousParsingIsUnsupported(): never {
+  throwError('Shape cannot be used in a synchronous context');
 }
 
-function returnOrThrow<T>(value: T | ValidationError): T {
-  if (isValidationError(value)) {
-    throw value;
+function throwRuntimeUsageProhibited() {
+  throwError('Cannot be used at runtime');
+}
+
+function returnOrThrow<T>(result: T | ValidationError): T {
+  if (isValidationError(result)) {
+    throw result;
   }
-  return value;
+  return result;
 }
 
-function returnIssues(value: unknown): Issue[] | null {
-  return isValidationError(value) ? value.issues : null;
+function returnIssues(result: unknown): Issue[] | null {
+  return isValidationError(result) ? result.issues : null;
 }
-
-Object.defineProperty(Shape.prototype, 'input', {
-  get() {
-    throwError('Cannot be used at runtime');
-  },
-});
-
-Object.defineProperty(Shape.prototype, 'output', {
-  get() {
-    throwError('Cannot be used at runtime');
-  },
-});
 
 /**
  * The shape that applies a transformer to the output of the base shape.
@@ -296,7 +302,7 @@ Object.defineProperty(Shape.prototype, 'output', {
  * @template T The transformed value.
  */
 export class TransformedShape<I, O, T> extends Shape<I, T> {
-  // Prevents type parameters from becoming invariant
+  // Prevents class type parameters from becoming invariant
   protected _transformer: Transformer<any, any>;
 
   /**
@@ -304,7 +310,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
    *
    * @param shape The base shape.
    * @param async If `true` then transformer must return a promise.
-   * @param transformer The transformed callback.
+   * @param transformer The transformation callback.
    */
   constructor(protected shape: Shape<I, O>, async: boolean, transformer: Transformer<O, Promise<T> | T>) {
     super(shape.async || async);
@@ -339,14 +345,15 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     }
 
     if (_applyConstraints !== null) {
-      return returnOrRaiseIssues(output, _applyConstraints(output, options, issues));
+      issues = _applyConstraints(output, options, issues);
     }
-    return output;
+
+    return returnOrRaiseIssues(output, issues);
   }
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<T | ValidationError> {
     if (!this.async) {
-      return safeParseAsync(this, input, options);
+      return applySafeParseAsync(this, input, options);
     }
 
     let issues: Issue[] | null = null;

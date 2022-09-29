@@ -1,11 +1,11 @@
 import {
+  applySafeParseAsync,
   createCatchForKey,
   isEqual,
   isObjectLike,
   IssuesContext,
   raiseIssue,
   returnOrRaiseIssues,
-  safeParseAsync,
   throwOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
@@ -72,7 +72,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<Record<K['output'], V['output']> | ValidationError> {
     if (!this.async) {
-      return safeParseAsync(this, input, options);
+      return applySafeParseAsync(this, input, options);
     }
 
     return new Promise(resolve => {

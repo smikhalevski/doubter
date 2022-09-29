@@ -15,5 +15,4 @@ export * from './RecordShape';
 export * from './StringShape';
 export * from './TupleShape';
 export * from './Shape';
-export * from './UnconstrainedShape';
 export * from './UnionShape';

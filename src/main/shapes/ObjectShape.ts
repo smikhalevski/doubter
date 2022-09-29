@@ -8,6 +8,7 @@ import {
   ParserOptions,
 } from '../shared-types';
 import {
+  applySafeParseAsync,
   createCatchForKey,
   isAsyncShapes,
   isEqual,
@@ -15,7 +16,6 @@ import {
   IssuesContext,
   raiseIssue,
   returnOrRaiseIssues,
-  safeParseAsync,
   throwOrCaptureIssues,
   throwOrCaptureIssuesForKey,
 } from '../utils';
@@ -283,7 +283,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<InferObject<P, I, 'output'> | ValidationError> {
     if (!this.async) {
-      return safeParseAsync(this, input, options);
+      return applySafeParseAsync(this, input, options);
     }
 
     return new Promise(resolve => {
