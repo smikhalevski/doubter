@@ -156,7 +156,7 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
 
     return (input, options, issues) => {
       if (issues === null || unsafe0) {
-        let result: IssueLike | null = null;
+        let result = null;
         try {
           result = callback0(input, options);
         } catch (error) {
@@ -178,7 +178,7 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
 
     return (input, options, issues) => {
       if (issues === null || unsafe0) {
-        let result: IssueLike | null = null;
+        let result = null;
         try {
           result = callback0(input, options);
         } catch (error) {
@@ -192,7 +192,7 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
         }
       }
       if (issues === null || unsafe1) {
-        let result: IssueLike | null = null;
+        let result = null;
         try {
           result = callback1(input, options);
         } catch (error) {
@@ -305,7 +305,7 @@ export function createApplyConstraints(constraints: any[]): ApplyConstraints | n
   return (input, options, issues) => {
     for (let i = 1; i < constraintsLength; i += 3) {
       if (issues === null || constraints[i]) {
-        let result: IssueLike | null = null;
+        let result = null;
         try {
           result = constraints[i + 1](input, options);
         } catch (error) {
@@ -377,9 +377,9 @@ export function throwOrCaptureIssues(
   error: unknown,
   options: ParserOptions | undefined,
   issues: Issue[] | null
-): Issue[] | null {
+): Issue[] {
   throwIfUnknownError(error);
-  return captureIssues(error, options, issues);
+  return captureIssues(error.issues, options, issues) || [];
 }
 
 export function captureIssues(
@@ -403,16 +403,6 @@ export function captureIssues(
       return issues;
     }
     return error as Issue[];
-  }
-
-  if (isValidationError(error)) {
-    const errorIssues = error.issues;
-
-    if (issues !== null) {
-      issues.push(...errorIssues);
-      return issues;
-    }
-    return errorIssues;
   }
 
   const issue = restoreIssue(error);

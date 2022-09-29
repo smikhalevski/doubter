@@ -1,5 +1,3 @@
-import type { ValidationError } from './ValidationError';
-
 /**
  * Symbol that denotes an invalid value.
  */
@@ -40,7 +38,7 @@ export interface Issue {
   meta: any;
 }
 
-export type IssueLike = ValidationError | Partial<Issue>[] | Partial<Issue>;
+export type IssueLike = Partial<Issue>[] | Partial<Issue>;
 
 /**
  * A callback that takes an input and returns `undefined` if value satisfies the constraint requirements. If values
@@ -53,7 +51,7 @@ export type Constraint<T> = (value: T, options: ParserOptions | undefined) => Is
  * Transforms the value from one type to another. Transformer may throw or return a {@linkcode ValidationError} if there
  * are issues that prevent the value from being properly transformed.
  */
-export type Transformer<I, O> = (value: I) => ValidationError | O;
+export type Transformer<I, O> = (value: I) => O;
 
 /**
  * Options that are applicable for the type constraint.
