@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { addConstraint, isFinite, raiseIssue, returnOrRaiseIssues } from '../utils';
+import { appendConstraint, isFinite, raiseIssue, returnValueOrRaiseIssues } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -51,7 +51,7 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   gt(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_GT, options, output => {
+    return appendConstraint(this, CODE_NUMBER_GT, options, output => {
       if (output <= value) {
         return raiseIssue(output, CODE_NUMBER_GT, value, options, MESSAGE_NUMBER_GT);
       }
@@ -66,7 +66,7 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   lt(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_LT, options, output => {
+    return appendConstraint(this, CODE_NUMBER_LT, options, output => {
       if (output >= value) {
         return raiseIssue(output, CODE_NUMBER_LT, value, options, MESSAGE_NUMBER_LT);
       }
@@ -81,7 +81,7 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   gte(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_GTE, options, output => {
+    return appendConstraint(this, CODE_NUMBER_GTE, options, output => {
       if (output < value) {
         return raiseIssue(output, CODE_NUMBER_GTE, value, options, MESSAGE_NUMBER_GTE);
       }
@@ -96,7 +96,7 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   lte(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_LTE, options, output => {
+    return appendConstraint(this, CODE_NUMBER_LTE, options, output => {
       if (output > value) {
         return raiseIssue(output, CODE_NUMBER_LTE, value, options, MESSAGE_NUMBER_LTE);
       }
@@ -111,7 +111,7 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   multipleOf(divisor: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
+    return appendConstraint(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
       if (output % divisor !== 0) {
         return raiseIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, MESSAGE_NUMBER_MULTIPLE_OF);
       }
@@ -125,7 +125,7 @@ export class NumberShape extends Shape<number> {
       return raiseIssue(input, CODE_TYPE, TYPE_NUMBER, this._options, MESSAGE_NUMBER_TYPE);
     }
     if (_applyConstraints !== null) {
-      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
+      return returnValueOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }

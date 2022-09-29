@@ -10,7 +10,7 @@ import {
   IssuesContext,
   isTupleIndex,
   raiseIssue,
-  returnOrRaiseIssues,
+  returnValueOrRaiseIssues,
   throwOrCaptureIssuesForKey,
 } from '../utils';
 import { CODE_TUPLE_LENGTH, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE_LENGTH, TYPE_ARRAY } from './constants';
@@ -74,7 +74,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
     if (_applyConstraints !== null) {
       issues = _applyConstraints(output as InferTuple<U, 'output'>, options, issues);
     }
-    return returnOrRaiseIssues(output as InferTuple<U, 'output'>, issues);
+    return returnValueOrRaiseIssues(output as InferTuple<U, 'output'>, issues);
   }
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<InferTuple<U, 'output'> | ValidationError> {

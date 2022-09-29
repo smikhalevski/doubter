@@ -1,6 +1,6 @@
 import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
-import { addConstraint, raiseIssue, returnOrRaiseIssues } from '../utils';
+import { appendConstraint, raiseIssue, returnValueOrRaiseIssues } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -38,7 +38,7 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   min(length: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_STRING_MIN, options, input => {
+    return appendConstraint(this, CODE_STRING_MIN, options, input => {
       if (input.length < length) {
         return raiseIssue(input, CODE_STRING_MIN, length, options, MESSAGE_STRING_MIN);
       }
@@ -53,7 +53,7 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   max(length: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_STRING_MAX, options, output => {
+    return appendConstraint(this, CODE_STRING_MAX, options, output => {
       if (output.length > length) {
         return raiseIssue(output, CODE_STRING_MAX, length, options, MESSAGE_STRING_MAX);
       }
@@ -68,7 +68,7 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   regex(re: RegExp, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_STRING_REGEX, options, output => {
+    return appendConstraint(this, CODE_STRING_REGEX, options, output => {
       re.lastIndex = 0;
 
       if (!re.test(output)) {
@@ -84,7 +84,7 @@ export class StringShape extends Shape<string> {
       return raiseIssue(input, CODE_TYPE, TYPE_STRING, this._options, MESSAGE_STRING_TYPE);
     }
     if (_applyConstraints !== null) {
-      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
+      return returnValueOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }

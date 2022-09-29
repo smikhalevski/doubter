@@ -5,7 +5,7 @@ import {
   isAsyncShapes,
   isEarlyReturn,
   isValidationError,
-  returnOrRaiseIssues,
+  returnValueOrRaiseIssues,
   throwIfUnknownError,
 } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from './constants';
@@ -71,7 +71,7 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
 
     issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
 
-    return returnOrRaiseIssues(
+    return returnValueOrRaiseIssues(
       input,
       isEarlyReturn(options) || _applyConstraints === null ? issues : _applyConstraints(input, options, issues)
     );
@@ -102,7 +102,7 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
 
       issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
 
-      return returnOrRaiseIssues(
+      return returnValueOrRaiseIssues(
         input,
         isEarlyReturn(options) || _applyConstraints === null ? issues : _applyConstraints(input, options, issues)
       );

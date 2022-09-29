@@ -3,7 +3,7 @@ import { INVALID, Issue, ParserOptions } from '../shared-types';
 import {
   applySafeParseAsync,
   isEarlyReturn,
-  returnOrRaiseIssues,
+  returnValueOrRaiseIssues,
   throwOrCaptureIssues,
   throwOrReturnIssues,
 } from '../utils';
@@ -39,7 +39,7 @@ export class OptionalShape<S extends AnyShape, O extends S['output'] | undefined
     if (_applyConstraints !== null) {
       issues = _applyConstraints(output, options, issues);
     }
-    return returnOrRaiseIssues(output, issues);
+    return returnValueOrRaiseIssues(output, issues);
   }
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | O | ValidationError> {
@@ -64,8 +64,8 @@ export class OptionalShape<S extends AnyShape, O extends S['output'] | undefined
     }
 
     return promise.then(
-      output => returnOrRaiseIssues(output, _applyConstraints(output, options, null)),
-      error => returnOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, throwOrReturnIssues(error)))
+      output => returnValueOrRaiseIssues(output, _applyConstraints(output, options, null)),
+      error => returnValueOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, throwOrReturnIssues(error)))
     );
   }
 }

@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { raiseIssue, returnOrRaiseIssues } from '../utils';
+import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from './constants';
 import { ValidationError } from '../ValidationError';
 
@@ -16,7 +16,7 @@ export class BigIntShape extends Shape<bigint> {
       return raiseIssue(input, CODE_TYPE, TYPE_BIGINT, this._options, MESSAGE_BIGINT_TYPE);
     }
     if (_applyConstraints !== null) {
-      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
+      return returnValueOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }

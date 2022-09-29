@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ParserOptions } from '../shared-types';
-import { applySafeParseAsync, returnOrRaiseIssues } from '../utils';
+import { applySafeParseAsync, returnValueOrRaiseIssues } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 /**
@@ -28,7 +28,7 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     const output = this.shape.safeParse(input, options);
 
     if (_applyConstraints !== null) {
-      return returnOrRaiseIssues(output, _applyConstraints(input, options, null));
+      return returnValueOrRaiseIssues(output, _applyConstraints(input, options, null));
     }
     return output;
   }
@@ -42,7 +42,7 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     const promise = this.shape.safeParseAsync(input, options);
 
     if (_applyConstraints !== null) {
-      return promise.then(output => returnOrRaiseIssues(output, _applyConstraints(output, options, null)));
+      return promise.then(output => returnValueOrRaiseIssues(output, _applyConstraints(output, options, null)));
     }
 
     return promise;

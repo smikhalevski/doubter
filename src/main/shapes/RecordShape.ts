@@ -5,7 +5,7 @@ import {
   isObjectLike,
   IssuesContext,
   raiseIssue,
-  returnOrRaiseIssues,
+  returnValueOrRaiseIssues,
   throwOrCaptureIssuesForKey,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
@@ -67,7 +67,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
     if (_applyConstraints !== null) {
       issues = _applyConstraints(output as Record<K['output'], V['output']>, options, issues);
     }
-    return returnOrRaiseIssues(output as Record<K['output'], V['output']>, issues);
+    return returnValueOrRaiseIssues(output as Record<K['output'], V['output']>, issues);
   }
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<Record<K['output'], V['output']> | ValidationError> {
@@ -114,7 +114,7 @@ export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Sh
         if (_applyConstraints !== null) {
           issues = _applyConstraints(output as Record<K['output'], V['output']>, options, issues);
         }
-        return returnOrRaiseIssues(output as Record<K['output'], V['output']>, issues);
+        return returnValueOrRaiseIssues(output as Record<K['output'], V['output']>, issues);
       });
 
       resolve(promise);

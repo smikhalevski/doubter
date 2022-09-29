@@ -8,13 +8,13 @@ import {
   Transformer,
 } from '../shared-types';
 import {
-  addConstraint,
+  appendConstraint,
   applySafeParseAsync,
   createApplyConstraints,
   createIssue,
   isValidationError,
   returnError,
-  returnOrRaiseIssues,
+  returnValueOrRaiseIssues,
   throwError,
   throwIfUnknownError,
 } from '../utils';
@@ -24,7 +24,7 @@ import { ValidationError } from '../ValidationError';
 /**
  * An arbitrary shape.
  */
-export type AnyShape = Shape<any> | Shape<never>;
+export type AnyShape = Shape | Shape<never>;
 
 export interface Shape<I, O> {
   /**
@@ -39,12 +39,12 @@ export interface Shape<I, O> {
 }
 
 /**
- * The most basic shape that just applies constraints to the input without any additional checks.
+ * The most basic shape that applies constraints to the input without any additional checks.
  *
  * @template I The input value.
  * @template O The output value.
  */
-export class Shape<I, O = I> {
+export class Shape<I = any, O = I> {
   /**
    * Applies shape constraints to the output.
    */
@@ -79,7 +79,7 @@ export class Shape<I, O = I> {
   safeParse(input: any, options?: ParserOptions): O | ValidationError {
     const { _applyConstraints } = this;
     if (_applyConstraints !== null) {
-      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
+      return returnValueOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }
@@ -106,7 +106,7 @@ export class Shape<I, O = I> {
    * @throws Error if the shape doesn't support the synchronous parsing.
    */
   parse(input: unknown, options?: ParserOptions): O {
-    return returnOrThrow(this.safeParse(input, options));
+    return returnValueOrThrow(this.safeParse(input, options));
   }
 
   /**
@@ -118,7 +118,7 @@ export class Shape<I, O = I> {
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parseAsync(input: unknown, options?: ParserOptions): Promise<O> {
-    return this.safeParseAsync(input, options).then(returnOrThrow);
+    return this.safeParseAsync(input, options).then(returnValueOrThrow);
   }
 
   /**
@@ -237,7 +237,7 @@ export class Shape<I, O = I> {
   narrow(predicate: (output: O) => boolean, options?: NarrowingOptionsOrMessage): this;
 
   narrow(predicate: (output: O) => boolean, options?: NarrowingOptionsOrMessage): this {
-    return addConstraint(
+    return appendConstraint(
       this,
       options != null && typeof options === 'object' ? options.id : undefined,
       options,
@@ -279,7 +279,7 @@ function throwSynchronousParsingIsUnsupported(): never {
   throwError('Shape cannot be used in a synchronous context');
 }
 
-function returnOrThrow<T>(result: T | ValidationError): T {
+function returnValueOrThrow<T>(result: T | ValidationError): T {
   if (isValidationError(result)) {
     throw result;
   }
@@ -298,7 +298,10 @@ function extractIssues(result: unknown): Issue[] | null {
  * @template T The transformed value.
  */
 export class TransformedShape<I, O, T> extends Shape<I, T> {
-  // Prevents class type parameters from becoming invariant
+  // Prevent Shape class type parameters from becoming invariant by using any here
+  /**
+   * The transformer callback.
+   */
   protected _transformer: Transformer<any, any>;
 
   /**
@@ -310,6 +313,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
    */
   constructor(protected shape: Shape<I, O>, async: boolean, transformer: Transformer<O, Promise<T> | T>) {
     super(shape.async || async);
+
     this._transformer = transformer;
   }
 
@@ -317,12 +321,12 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     const { shape, _transformer, _applyConstraints } = this;
 
     let issues: Issue[] | null = null;
-    let output = input;
+    let output;
 
-    output = shape.safeParse(output, options);
+    input = shape.safeParse(input, options);
 
-    if (isValidationError(output)) {
-      return output;
+    if (isValidationError(input)) {
+      return input;
     }
     try {
       output = _transformer(input);
@@ -335,7 +339,7 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
       issues = _applyConstraints(output, options, issues);
     }
 
-    return returnOrRaiseIssues(output, issues);
+    return returnValueOrRaiseIssues(output, issues);
   }
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<T | ValidationError> {
@@ -344,16 +348,12 @@ export class TransformedShape<I, O, T> extends Shape<I, T> {
     }
 
     const { shape, _transformer, _applyConstraints } = this;
-    const promise = shape
-      .safeParseAsync(input, options)
-      .then(output => (isValidationError(output) ? output : _transformer(output)))
-      .catch(returnError);
+    const promise = shape.parseAsync(input, options).then(_transformer);
 
     if (_applyConstraints !== null) {
-      return promise.then(output =>
-        isValidationError(output) ? output : returnOrRaiseIssues(output, _applyConstraints(output, options, null))
-      );
+      return promise.then(output => returnValueOrRaiseIssues(output, _applyConstraints(output, options, null)));
     }
-    return promise;
+
+    return promise.catch(returnError);
   }
 }

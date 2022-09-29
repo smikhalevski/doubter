@@ -7,10 +7,11 @@ import {
   ParserOptions,
 } from '../shared-types';
 import {
-  addConstraint,
+  appendConstraint,
   applySafeParseAsync,
   captureIssuesForKey,
   createCatchForKey,
+  createIssue,
   createResolveArray,
   isArray,
   isArrayIndex,
@@ -20,7 +21,7 @@ import {
   isValidationError,
   raiseIssue,
   returnError,
-  returnOrRaiseIssues,
+  returnValueOrRaiseIssues,
   throwOrCaptureIssuesForKey,
 } from '../utils';
 import {
@@ -73,9 +74,9 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @returns The clone of the shape.
    */
   min(length: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_ARRAY_MIN, options, output => {
+    return appendConstraint(this, CODE_ARRAY_MIN, options, output => {
       if (output.length < length) {
-        return raiseIssue(output, CODE_ARRAY_MIN, length, options, MESSAGE_ARRAY_MIN);
+        return createIssue(output, CODE_ARRAY_MIN, length, options, MESSAGE_ARRAY_MIN);
       }
     });
   }
@@ -88,9 +89,9 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @returns The clone of the shape.
    */
   max(length: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_ARRAY_MAX, options, output => {
+    return appendConstraint(this, CODE_ARRAY_MAX, options, output => {
       if (output.length > length) {
-        return raiseIssue(output, CODE_ARRAY_MAX, length, options, MESSAGE_ARRAY_MAX);
+        return createIssue(output, CODE_ARRAY_MAX, length, options, MESSAGE_ARRAY_MAX);
       }
     });
   }
@@ -135,7 +136,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     if (_applyConstraints !== null) {
       issues = _applyConstraints(output, options, issues);
     }
-    return returnOrRaiseIssues(output, issues);
+    return returnValueOrRaiseIssues(output, issues);
   }
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<S['output'][] | ValidationError> {
@@ -154,10 +155,10 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       const promises = [];
 
       for (let i = 0; i < inputLength; ++i) {
-        promises.push(shape.safeParseAsync(input[i], options).catch(createCatchForKey(i, options, context)));
+        promises.push(shape.safeParseAsync(input[i], options));
       }
 
-      resolve(Promise.all(promises).then(createResolveArray(input, options, context, _applyConstraints), returnError));
+      resolve(Promise.all(promises).then(createResolveArray(input, options, context, _applyConstraints)));
     });
   }
 }

@@ -15,7 +15,7 @@ import {
   isObjectLike,
   IssuesContext,
   raiseIssue,
-  returnOrRaiseIssues,
+  returnValueOrRaiseIssues,
   throwOrCaptureIssues,
   throwOrCaptureIssuesForKey,
 } from '../utils';
@@ -28,7 +28,7 @@ type InferObject<P extends Dict<AnyShape>, I extends AnyShape, C extends Channel
   UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<I, C>
 >;
 
-type InferIndexer<I extends AnyShape, C extends Channel> = I extends Shape<any> ? { [indexer: string]: I[C] } : unknown;
+type InferIndexer<I extends AnyShape, C extends Channel> = I extends Shape ? { [indexer: string]: I[C] } : unknown;
 
 type ObjectKeys<T extends object> = StringPropertyKey<keyof T>;
 
@@ -278,7 +278,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     if (_applyConstraints !== null) {
       issues = _applyConstraints(output, options, issues);
     }
-    return returnOrRaiseIssues(output as InferObject<P, I, 'output'>, issues);
+    return returnValueOrRaiseIssues(output as InferObject<P, I, 'output'>, issues);
   }
 
   safeParseAsync(input: unknown, options?: ParserOptions): Promise<InferObject<P, I, 'output'> | ValidationError> {
@@ -345,7 +345,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         if (_applyConstraints !== null) {
           issues = _applyConstraints(output, options, issues);
         }
-        return returnOrRaiseIssues(output as InferObject<P, I, 'output'>, issues);
+        return returnValueOrRaiseIssues(output as InferObject<P, I, 'output'>, issues);
       });
 
       resolve(promise);
@@ -422,7 +422,7 @@ function createApplyIndexer(keys: readonly string[], indexerShape: AnyShape): Ap
     if (applyConstraints !== null) {
       issues = applyConstraints(output, options, issues);
     }
-    return returnOrRaiseIssues(output, issues);
+    return returnValueOrRaiseIssues(output, issues);
   };
 }
 

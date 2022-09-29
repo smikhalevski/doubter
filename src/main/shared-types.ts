@@ -102,11 +102,11 @@ export interface IdentifiableConstraintOptions extends ChainableConstraintOption
  */
 export interface NarrowingOptions extends OutputConstraintOptions, IdentifiableConstraintOptions {}
 
-export type InputConstraintOptionsOrMessage = InputConstraintOptions | ((param: any) => any) | string;
+export type InputConstraintOptionsOrMessage = InputConstraintOptions | ((param: any, value: any) => any) | string;
 
-export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | ((param: any) => any) | string;
+export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | ((param: any, value: any) => any) | string;
 
-export type NarrowingOptionsOrMessage = NarrowingOptions | ((param: any) => any) | string;
+export type NarrowingOptionsOrMessage = NarrowingOptions | ((param: any, value: any) => any) | string;
 
 /**
  * Options used by a shape to apply constraints and transformations.

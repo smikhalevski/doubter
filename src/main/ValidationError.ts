@@ -1,5 +1,5 @@
 import { INVALID, Issue } from './shared-types';
-import { restoreIssue } from './utils';
+import { canonizeIssue } from './utils';
 
 /**
  * The validation error that is thrown to indicate a set of issues detected in the input value.
@@ -22,7 +22,7 @@ export class ValidationError extends Error {
 
     Error.captureStackTrace?.(this, ValidationError);
 
-    issues.forEach(restoreIssue);
+    issues.forEach(canonizeIssue);
 
     this.issues = issues as Issue[];
   }

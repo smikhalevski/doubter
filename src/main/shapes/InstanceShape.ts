@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { raiseIssue, returnOrRaiseIssues } from '../utils';
+import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from './constants';
 import { ValidationError } from '../ValidationError';
 
@@ -23,7 +23,7 @@ export class InstanceShape<F extends new (...args: any[]) => any> extends Shape<
       return raiseIssue(input, CODE_INSTANCE, ctor, this._options, MESSAGE_INSTANCE);
     }
     if (_applyConstraints !== null) {
-      return returnOrRaiseIssues(input, _applyConstraints(input, options, null));
+      return returnValueOrRaiseIssues(input, _applyConstraints(input, options, null));
     }
     return input;
   }
