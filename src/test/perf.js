@@ -46,11 +46,42 @@ describe(
     });
 
     describe('invalid input', () => {
+      const value = 111;
+
+      test('Ajv', measure => {
+        const validate = new Ajv().compile({
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'string',
+        });
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = z.string();
+
+        measure(() => {
+          try {
+            type.parse(value);
+          } catch {}
+        });
+      });
+
+      test('valita', measure => {
+        const type = v.string();
+
+        measure(() => {
+          type.try(value).issues;
+        });
+      });
+
       test('doubter', measure => {
         const type = d.string();
 
         measure(() => {
-          type.safeParse(111);
+          type.safeParse(value);
         });
       });
     });
@@ -78,6 +109,14 @@ describe(
 
     test('myzod', measure => {
       const type = z.string().min(1).max(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.string().assert(v => v.length >= 1 && v.length <= 5);
 
       measure(() => {
         type.parse(value);
@@ -676,5 +715,5 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  { warmupIterationCount: 1000, targetRme: 0.002 }
 );
