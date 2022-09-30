@@ -41,7 +41,17 @@ describe(
       const type = d.string();
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
+      });
+    });
+
+    describe('invalid input', () => {
+      test('doubter', measure => {
+        const type = d.string();
+
+        measure(() => {
+          type.safeParse(111);
+        });
       });
     });
   },
@@ -78,7 +88,7 @@ describe(
       const type = d.string().length(3);
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -105,7 +115,7 @@ describe(
       const type = d.integer();
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -148,7 +158,7 @@ describe(
       const type = d.number();
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -185,7 +195,7 @@ describe(
       const type = d.number().gte(1).lte(5);
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -229,7 +239,7 @@ describe(
       const type = d.array(d.number());
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -267,7 +277,7 @@ describe(
       const type = d.array(d.number()).length(3);
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -308,7 +318,7 @@ describe(
       const type = d.array(d.number().gte(0).lte(10)).length(3);
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -354,7 +364,7 @@ describe(
       const type = d.tuple([d.number(), d.number()]);
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -399,7 +409,7 @@ describe(
       const type = d.record(d.string(), d.number());
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -468,7 +478,7 @@ describe(
       });
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },
@@ -476,32 +486,32 @@ describe(
 );
 
 describe(
-  'union([string(), number()])',
+  'or([string(), number()])',
   () => {
     const createTests = value => {
-      test('Ajv', measure => {
-        const ajv = new Ajv({ allowUnionTypes: true });
-
-        const schema = {
-          $id: 'AjvTest',
-          $schema: 'http://json-schema.org/draft-07/schema#',
-          type: ['string', 'number'],
-        };
-
-        const validate = ajv.compile(schema);
-
-        measure(() => {
-          validate(value);
-        });
-      });
-
-      test('myzod', measure => {
-        const type = z.union([z.string(), z.number()]);
-
-        measure(() => {
-          type.parse(value);
-        });
-      });
+      // test('Ajv', measure => {
+      //   const ajv = new Ajv({ allowUnionTypes: true });
+      //
+      //   const schema = {
+      //     $id: 'AjvTest',
+      //     $schema: 'http://json-schema.org/draft-07/schema#',
+      //     type: ['string', 'number'],
+      //   };
+      //
+      //   const validate = ajv.compile(schema);
+      //
+      //   measure(() => {
+      //     validate(value);
+      //   });
+      // });
+      //
+      // test('myzod', measure => {
+      //   const type = z.union([z.string(), z.number()]);
+      //
+      //   measure(() => {
+      //     type.parse(value);
+      //   });
+      // });
 
       test('valita', measure => {
         const type = v.union(v.string(), v.number());
@@ -513,10 +523,9 @@ describe(
 
       test('doubter', measure => {
         const type = d.or([d.string(), d.number()]);
-        const options = { fast: true };
 
         measure(() => {
-          type.parse(value, options);
+          type.safeParse(value);
         });
       });
     };
@@ -663,7 +672,7 @@ describe(
       });
 
       measure(() => {
-        type.parse(value);
+        type.safeParse(value);
       });
     });
   },

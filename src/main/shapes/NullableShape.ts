@@ -1,14 +1,8 @@
 import { AnyShape, Shape } from './Shape';
 import { OptionalShape } from './OptionalShape';
 import { INVALID, Issue, ParserOptions } from '../shared-types';
-import {
-  applySafeParseAsync,
-  isEarlyReturn,
-  returnValueOrRaiseIssues,
-  throwOrCaptureIssues,
-  throwOrReturnIssues,
-} from '../utils';
-import { ValidationError } from '../ValidationError';
+import { applySafeParseAsync, isEarlyReturn, returnIssues, returnValueOrRaiseIssues } from '../utils';
+import { isValidationError, ValidationError } from '../ValidationError';
 
 export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, S['output'] | null> {
   constructor(readonly shape: S) {
@@ -25,10 +19,13 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
     let output = null;
 
     if (input !== null) {
-      try {
-        output = this.shape.safeParse(input, options);
-      } catch (error) {
-        issues = throwOrCaptureIssues(error, options, null);
+      output = this.shape.safeParse(input, options);
+
+      if (isValidationError(output)) {
+        if (isEarlyReturn(options)) {
+          return output;
+        }
+        issues = output.issues;
         output = INVALID;
       }
     }
@@ -48,22 +45,19 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
 
     const { _applyConstraints } = this;
 
-    const promise = input === null ? Promise.resolve(null) : this.shape.safeParseAsync(input, options);
+    const promise = input === null ? Promise.resolve(null) : this.shape.parseAsync(input, options);
 
     if (_applyConstraints === null) {
       return promise;
     }
 
     if (isEarlyReturn(options)) {
-      return promise.then(output => {
-        _applyConstraints(output, options, null);
-        return output;
-      });
+      return promise.then(output => returnValueOrRaiseIssues(output, _applyConstraints(output, options, null)));
     }
 
     return promise.then(
       output => returnValueOrRaiseIssues(output, _applyConstraints(output, options, null)),
-      error => returnValueOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, throwOrReturnIssues(error)))
+      error => returnValueOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, returnIssues(error)))
     );
   }
 }

@@ -1,6 +1,10 @@
 import { ValidationError } from '../main';
 
 describe('ValidationError', () => {
+  test('instance of Error', () => {
+    expect(new ValidationError([])).toBeInstanceOf(Error);
+  });
+
   test('populates code and path', () => {
     const issue = {};
     const issues = new ValidationError([issue]).issues;

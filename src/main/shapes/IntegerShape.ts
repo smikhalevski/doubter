@@ -1,8 +1,9 @@
 import { NumberShape } from './NumberShape';
 import { ParserOptions } from '../shared-types';
-import { isInteger, raiseIssue, returnValueOrRaiseIssues } from '../utils';
+import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
 import { CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER } from './constants';
 import { ValidationError } from '../ValidationError';
+import { isInteger } from '../lang-utils';
 
 export class IntegerShape extends NumberShape {
   safeParse(input: unknown, options?: ParserOptions): number | ValidationError {

@@ -1,6 +1,6 @@
 import { InputConstraintOptionsOrMessage, Primitive, Tuple } from '../shared-types';
 import { EnumShape } from '../shapes';
-import { isArray } from '../utils';
+import { isArray, isFinite } from '../lang-utils';
 
 /**
  * The shape that constrains input with the list of primitive values.
@@ -35,7 +35,7 @@ function _enum(
   const enumValues = [];
 
   for (const value of Object.values(values)) {
-    if (typeof values[value] !== 'number') {
+    if (!isFinite(values[value])) {
       enumValues.push(value);
     }
   }

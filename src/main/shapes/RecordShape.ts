@@ -2,16 +2,14 @@ import {
   applySafeParseAsync,
   captureIssuesForKey,
   isEarlyReturn,
-  isEqual,
-  isObjectLike,
-  isValidationError,
   raiseIssue,
   returnValueOrRaiseIssues,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions } from '../shared-types';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
-import { ValidationError } from '../ValidationError';
+import { isValidationError, ValidationError } from '../ValidationError';
+import { isEqual, isObjectLike } from '../lang-utils';
 
 export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
   Record<K['input'], V['input']>,

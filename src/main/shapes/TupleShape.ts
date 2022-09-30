@@ -4,17 +4,15 @@ import {
   applySafeParseAsync,
   captureIssuesForKey,
   createResolveArray,
-  isArray,
   isAsyncShapes,
   isEarlyReturn,
-  isEqual,
   isTupleIndex,
-  isValidationError,
   raiseIssue,
   returnValueOrRaiseIssues,
 } from '../utils';
 import { CODE_TUPLE_LENGTH, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE_LENGTH, TYPE_ARRAY } from './constants';
-import { ValidationError } from '../ValidationError';
+import { isValidationError, ValidationError } from '../ValidationError';
+import { isArray, isEqual } from '../lang-utils';
 
 type InferTuple<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] };
 

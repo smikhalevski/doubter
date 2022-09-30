@@ -1,15 +1,15 @@
 import {
   ApplyConstraints,
   Constraint,
-  Dict,
   InputConstraintOptionsOrMessage,
   INVALID,
   Issue,
   OutputConstraintOptionsOrMessage,
   ParserOptions,
 } from './shared-types';
-import { ValidationError } from './ValidationError';
+import { createValidationError, inflateIssue, isValidationError, ValidationError } from './ValidationError';
 import type { AnyShape, Shape } from './shapes/Shape';
+import { isArray, isEqual, isInteger } from './lang-utils';
 
 /**
  * Returns `true` if parsing should be aborted after the first issue was encountered.
@@ -198,7 +198,7 @@ function captureConstraintIssues(
       return issues;
     }
 
-    result.forEach(canonizeIssue);
+    result.forEach(inflateIssue);
 
     if (issues !== null) {
       issues.push(...result);
@@ -207,7 +207,7 @@ function captureConstraintIssues(
     return result;
   }
 
-  const issue = canonizeIssue(result);
+  const issue = inflateIssue(result);
 
   if (issues !== null) {
     issues.push(issue);
@@ -234,40 +234,6 @@ export function throwOrCaptureIssues(
   }
   return errorIssues;
 }
-
-/**
- * Makes issue non-partial by adding missing fields.
- */
-export function canonizeIssue(issue: Partial<Issue>): Issue {
-  issue.code ??= 'unknown';
-  issue.path ??= [];
-
-  return issue as Issue;
-}
-
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
-// ------------------------------------------------------------------------------------------------------------------------
 
 export function createResolveArray(
   input: unknown[],
@@ -307,36 +273,12 @@ export function createResolveArray(
   };
 }
 
-/**
- * An internal context that is used during async parsing to share issues among parallel parser executions.
- */
-export interface IssuesContext {
-  issues: Issue[] | null;
-}
-
-export function createCatchForKey(
-  key: unknown,
-  options: ParserOptions | undefined,
-  context: IssuesContext
-): (error: unknown) => any {
-  return error => {
-    const { issues } = context;
-
-    if (issues !== null && isEarlyReturn(options)) {
-      throw new ValidationError(issues);
-    }
-
-    context.issues = throwOrCaptureIssuesForKey(error, options, issues, key);
-    return INVALID;
-  };
-}
-
 export function returnError(error: unknown): any {
   throwIfUnknownError(error);
   return error;
 }
 
-export function throwOrReturnIssues(error: unknown): Issue[] {
+export function returnIssues(error: unknown): Issue[] {
   throwIfUnknownError(error);
   return error.issues;
 }
@@ -349,14 +291,6 @@ export function applySafeParseAsync<O>(
   return new Promise(resolve => resolve(shape.safeParse(input, options)));
 }
 
-export function isObjectLike(value: unknown): value is Dict {
-  return value != null && typeof value === 'object';
-}
-
-export function isValidationError(value: any): value is ValidationError {
-  return value != null && value instanceof ValidationError;
-}
-
 const positiveIntegerPattern = /^[1-9]\d*$/;
 
 export function isArrayIndex(key: any): boolean {
@@ -366,14 +300,6 @@ export function isArrayIndex(key: any): boolean {
 export function isTupleIndex(key: any, length: number): boolean {
   return isArrayIndex(key) && parseInt(key, 10) < length;
 }
-
-export const isArray = Array.isArray;
-
-export const isEqual = Object.is;
-
-export const isInteger = Number.isInteger as (value: unknown) => value is number;
-
-export const isFinite = Number.isFinite as (value: unknown) => value is number;
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   let async = false;
@@ -400,11 +326,8 @@ export function createIssue(
     meta = options.meta;
   } else if (typeof options === 'function') {
     message = options(param, input);
-  } else {
-    if (typeof options === 'string') {
-      message = options;
-    }
-    message = message.replace('%s', param === undefined ? '' : String(param));
+  } else if (typeof options === 'string') {
+    message = options; //.indexOf('%') === -1 ? options : options.replace('%s', param === undefined ? '' : String(param));
   }
 
   return { code, path: [], input, param, message, meta };
@@ -421,7 +344,7 @@ export function raiseIssue(
   options: InputConstraintOptionsOrMessage | undefined,
   message: string
 ): ValidationError {
-  return new ValidationError([createIssue(input, code, param, options, message)]);
+  return createValidationError([createIssue(input, code, param, options, message)]);
 }
 
 export function throwIfUnknownError(error: unknown): asserts error is ValidationError {
@@ -431,17 +354,7 @@ export function throwIfUnknownError(error: unknown): asserts error is Validation
 }
 
 export function returnValueOrRaiseIssues<T>(output: T, issues: Issue[] | null): T | ValidationError {
-  return issues === null ? output : new ValidationError(issues);
-}
-
-export function throwOrCaptureIssuesForKey(
-  error: unknown,
-  options: ParserOptions | undefined,
-  issues: Issue[] | null,
-  key: unknown
-): Issue[] {
-  throwIfUnknownError(error);
-  return captureIssuesForKey(error, options, issues, key);
+  return issues === null ? output : createValidationError(issues);
 }
 
 export function captureIssuesForKey(

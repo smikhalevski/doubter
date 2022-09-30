@@ -12,14 +12,14 @@ import {
   applySafeParseAsync,
   createApplyConstraints,
   createIssue,
-  isValidationError,
   returnError,
   returnValueOrRaiseIssues,
   throwError,
   throwIfUnknownError,
 } from '../utils';
 import { CODE_NARROWING, MESSAGE_NARROWING } from './constants';
-import { ValidationError } from '../ValidationError';
+import { isValidationError, ValidationError } from '../ValidationError';
+import { assignObject, createObject, defineProperty } from '../lang-utils';
 
 /**
  * An arbitrary shape.
@@ -263,9 +263,11 @@ export class Shape<I = any, O = I> {
    * Returns the shape clone.
    */
   clone(): this {
-    return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    return assignObject(createObject(Object.getPrototypeOf(this)), this);
   }
 }
+
+const prototype = Shape.prototype;
 
 const typingPropertyDescriptor: PropertyDescriptor = {
   get() {
@@ -273,7 +275,9 @@ const typingPropertyDescriptor: PropertyDescriptor = {
   },
 };
 
-Object.defineProperties(Shape.prototype, { input: typingPropertyDescriptor, output: typingPropertyDescriptor });
+defineProperty(prototype, 'input', typingPropertyDescriptor);
+
+defineProperty(prototype, 'output', typingPropertyDescriptor);
 
 function throwSynchronousParsingIsUnsupported(): never {
   throwError('Shape cannot be used in a synchronous context');

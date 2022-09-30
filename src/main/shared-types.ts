@@ -10,7 +10,7 @@ export interface Issue {
   /**
    * The unique code of the validation issue.
    */
-  code: string;
+  code: any;
 
   /**
    * The object path where an issue has occurred.

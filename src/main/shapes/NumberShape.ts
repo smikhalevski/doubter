@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { appendConstraint, createIssue, isFinite, raiseIssue, returnValueOrRaiseIssues } from '../utils';
+import { appendConstraint, createIssue, raiseIssue, returnValueOrRaiseIssues } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -17,6 +17,7 @@ import {
   TYPE_NUMBER,
 } from './constants';
 import { ValidationError } from '../ValidationError';
+import { isFinite } from '../lang-utils';
 
 export class NumberShape extends Shape<number> {
   constructor(protected _options?: InputConstraintOptionsOrMessage) {

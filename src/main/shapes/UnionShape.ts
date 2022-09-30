@@ -1,15 +1,8 @@
-import { InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions, Tuple } from '../shared-types';
+import { InputConstraintOptionsOrMessage, Issue, ParserOptions, Tuple } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import {
-  createIssue,
-  isAsyncShapes,
-  isEarlyReturn,
-  isValidationError,
-  returnValueOrRaiseIssues,
-  throwIfUnknownError,
-} from '../utils';
+import { createIssue, isAsyncShapes, isEarlyReturn, returnValueOrRaiseIssues, throwIfUnknownError } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from './constants';
-import { ValidationError } from '../ValidationError';
+import { isValidationError, ValidationError } from '../ValidationError';
 
 type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
 
@@ -54,20 +47,32 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
     const shapesLength = shapes.length;
 
     let issues: Issue[] | null = null;
+    let output;
 
-    for (let i = 0; i < shapesLength; ++i) {
-      let output = INVALID;
-      try {
-        output = shapes[i].parse(input, options);
-      } catch (error) {
-        issues = captureOrMergeIssues(issues, error);
-      }
-      if (isValidationError(output)) {
-        issues = captureOrMergeIssues(issues, output);
-        continue;
-      }
+    output = shapes[0].safeParse(input, options);
+
+    if (!isValidationError(output)) {
       return output;
     }
+
+    issues = captureOrMergeIssues(output, issues);
+
+    output = shapes[1].safeParse(input, options);
+
+    if (!isValidationError(output)) {
+      return output;
+    }
+
+    issues = captureOrMergeIssues(output, issues);
+
+    // for (let i = 0; i < shapesLength; ++i) {
+    //   // if (output == null) {
+    //   //   break;
+    //   // }
+    //   // issues = captureOrMergeIssues(output, issues);
+    // }
+
+    // return input;
 
     issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
 
@@ -91,7 +96,7 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
 
     for (let i = 1; i < shapesLength; ++i) {
       promise = promise.catch(error => {
-        issues = captureOrMergeIssues(issues, error);
+        issues = captureOrMergeIssues(error, issues);
 
         return shapes[i].parseAsync(input, options);
       });
@@ -110,9 +115,7 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
   }
 }
 
-function captureOrMergeIssues(issues: Issue[] | null, error: unknown): Issue[] {
-  throwIfUnknownError(error);
-
+function captureOrMergeIssues(error: ValidationError, issues: Issue[] | null): Issue[] {
   const errorIssues = error.issues;
 
   if (issues !== null) {

@@ -12,11 +12,8 @@ import {
   captureIssuesForKey,
   createIssue,
   createResolveArray,
-  isArray,
   isArrayIndex,
   isEarlyReturn,
-  isEqual,
-  isValidationError,
   raiseIssue,
   returnValueOrRaiseIssues,
 } from '../utils';
@@ -29,7 +26,8 @@ import {
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
 } from './constants';
-import { ValidationError } from '../ValidationError';
+import { isValidationError, ValidationError } from '../ValidationError';
+import { isArray, isEqual } from '../lang-utils';
 
 /**
  * The shape that constrains every element of an array with the element shape.
