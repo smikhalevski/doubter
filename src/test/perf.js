@@ -38,10 +38,18 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.string();
+      const shape = d.string();
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
+      });
+    });
+
+    test('doubter.StringShape2', measure => {
+      const shape = new d.StringShape2();
+
+      measure(() => {
+        shape.parse(value);
       });
     });
 
@@ -78,10 +86,10 @@ describe(
       });
 
       test('doubter', measure => {
-        const type = d.string();
+        const shape = d.string();
 
         measure(() => {
-          type.safeParse(value);
+          shape.safeParse(value);
         });
       });
     });
@@ -124,10 +132,10 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.string().length(3);
+      const shape = d.string().length(3);
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -151,10 +159,10 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.integer();
+      const shape = d.integer();
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -194,10 +202,18 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.number();
+      const shape = d.number();
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
+      });
+    });
+
+    test('doubter.NumberShape2', measure => {
+      const shape = new d.NumberShape2();
+
+      measure(() => {
+        shape.parse(value);
       });
     });
   },
@@ -231,10 +247,10 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.number().gte(1).lte(5);
+      const shape = d.number().gte(1).lte(5);
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -275,10 +291,10 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.array(d.number());
+      const shape = d.array(d.number());
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -313,10 +329,10 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.array(d.number()).length(3);
+      const shape = d.array(d.number()).length(3);
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -354,10 +370,10 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.array(d.number().gte(0).lte(10)).length(3);
+      const shape = d.array(d.number().gte(0).lte(10)).length(3);
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -400,10 +416,10 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.tuple([d.number(), d.number()]);
+      const shape = d.tuple([d.number(), d.number()]);
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -445,10 +461,10 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.record(d.string(), d.number());
+      const shape = d.record(d.string(), d.number());
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -511,13 +527,13 @@ describe(
     });
 
     test('doubter', measure => {
-      const type = d.object({
+      const shape = d.object({
         foo: d.string(),
         bar: d.number(),
       });
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
       });
     });
   },
@@ -561,10 +577,10 @@ describe(
       });
 
       test('doubter', measure => {
-        const type = d.or([d.string(), d.number()]);
+        const shape = d.or([d.string(), d.number()]);
 
         measure(() => {
-          type.safeParse(value);
+          shape.safeParse(value);
         });
       });
     };
@@ -577,7 +593,7 @@ describe(
 );
 
 describe(
-  'huge object',
+  'monomorphic object',
   () => {
     const value = {
       a1: 1,
@@ -593,110 +609,110 @@ describe(
       },
     };
 
-    test('Ajv', measure => {
-      const ajv = new Ajv();
-
-      const schema = {
-        $id: 'AjvTest',
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'object',
-        properties: {
-          a1: {
-            type: 'number',
-          },
-          a2: {
-            type: 'number',
-          },
-          a3: {
-            type: 'number',
-          },
-          a4: {
-            type: 'string',
-          },
-          a5: {
-            type: 'string',
-          },
-          a6: {
-            type: 'boolean',
-          },
-          a7: {
-            type: 'object',
-            properties: {
-              a71: {
-                type: 'string',
-              },
-              a72: {
-                type: 'number',
-              },
-              a73: {
-                type: 'boolean',
-              },
-            },
-            required: ['a71', 'a72', 'a73'],
-          },
-        },
-        required: ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'],
-      };
-
-      const validate = ajv.compile(schema);
-
-      measure(() => {
-        validate(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = z.object(
-        {
-          a1: z.number(),
-          a2: z.number(),
-          a3: z.number(),
-          a4: z.string(),
-          a5: z.string(),
-          a6: z.boolean(),
-          a7: z.object(
-            {
-              a71: z.string(),
-              a72: z.number(),
-              a73: z.boolean(),
-            },
-            {
-              allowUnknown: true,
-            }
-          ),
-        },
-        {
-          allowUnknown: true,
-        }
-      );
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('valita', measure => {
-      const type = v.object({
-        a1: v.number(),
-        a2: v.number(),
-        a3: v.number(),
-        a4: v.string(),
-        a5: v.string(),
-        a6: v.boolean(),
-        a7: v.object({
-          a71: v.string(),
-          a72: v.number(),
-          a73: v.boolean(),
-        }),
-      });
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
+    // test('Ajv', measure => {
+    //   const ajv = new Ajv();
+    //
+    //   const schema = {
+    //     $id: 'AjvTest',
+    //     $schema: 'http://json-schema.org/draft-07/schema#',
+    //     type: 'object',
+    //     properties: {
+    //       a1: {
+    //         type: 'number',
+    //       },
+    //       a2: {
+    //         type: 'number',
+    //       },
+    //       a3: {
+    //         type: 'number',
+    //       },
+    //       a4: {
+    //         type: 'string',
+    //       },
+    //       a5: {
+    //         type: 'string',
+    //       },
+    //       a6: {
+    //         type: 'boolean',
+    //       },
+    //       a7: {
+    //         type: 'object',
+    //         properties: {
+    //           a71: {
+    //             type: 'string',
+    //           },
+    //           a72: {
+    //             type: 'number',
+    //           },
+    //           a73: {
+    //             type: 'boolean',
+    //           },
+    //         },
+    //         required: ['a71', 'a72', 'a73'],
+    //       },
+    //     },
+    //     required: ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'],
+    //   };
+    //
+    //   const validate = ajv.compile(schema);
+    //
+    //   measure(() => {
+    //     validate(value);
+    //   });
+    // });
+    //
+    // test('myzod', measure => {
+    //   const type = z.object(
+    //     {
+    //       a1: z.number(),
+    //       a2: z.number(),
+    //       a3: z.number(),
+    //       a4: z.string(),
+    //       a5: z.string(),
+    //       a6: z.boolean(),
+    //       a7: z.object(
+    //         {
+    //           a71: z.string(),
+    //           a72: z.number(),
+    //           a73: z.boolean(),
+    //         },
+    //         {
+    //           allowUnknown: true,
+    //         }
+    //       ),
+    //     },
+    //     {
+    //       allowUnknown: true,
+    //     }
+    //   );
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
+    //
+    // test('valita', measure => {
+    //   const type = v.object({
+    //     a1: v.number(),
+    //     a2: v.number(),
+    //     a3: v.number(),
+    //     a4: v.string(),
+    //     a5: v.string(),
+    //     a6: v.boolean(),
+    //     a7: v.object({
+    //       a71: v.string(),
+    //       a72: v.number(),
+    //       a73: v.boolean(),
+    //     }),
+    //   });
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
 
     test('doubter', measure => {
-      const type = d.object({
+      const shape = d.object({
         a1: d.number(),
         a2: d.number(),
         a3: d.number(),
@@ -711,7 +727,142 @@ describe(
       });
 
       measure(() => {
-        type.safeParse(value);
+        shape.safeParse(value);
+      });
+    });
+
+    test('doubter.ObjectShape2', measure => {
+      const shape = new d.ObjectShape2({
+        a1: new d.NumberShape2(),
+        a2: new d.NumberShape2(),
+        a3: new d.NumberShape2(),
+        a4: new d.StringShape2(),
+        a5: new d.StringShape2(),
+        a6: new d.BooleanShape2(),
+        a7: new d.ObjectShape2({
+          a71: new d.StringShape2(),
+          a72: new d.NumberShape2(),
+          a73: new d.BooleanShape2(),
+        }),
+      });
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 1000, targetRme: 0.002 }
+);
+
+describe(
+  'polymorphic objects',
+  () => {
+    const valueA = {
+      a1: 111,
+      a2: true,
+      a3: 'aaa',
+      a4: {
+        a41: true,
+        a42: 'bbb',
+        a43: 222,
+      },
+    };
+
+    const valueB = {
+      b1: 'aaa',
+      b2: 111,
+      b3: {
+        b31: 'bbb',
+        b32: 222,
+      },
+      b4: 'ccc',
+      b5: true,
+    };
+
+    test('valita', measure => {
+      const typeA = v.object({
+        a1: v.number(),
+        a2: v.boolean(),
+        a3: v.string(),
+        a4: v.object({
+          a41: v.boolean(),
+          a42: v.string(),
+          a43: v.number(),
+        }),
+      });
+
+      const typeB = v.object({
+        b1: v.string(),
+        b2: v.number(),
+        b3: v.object({
+          b31: v.string(),
+          b32: v.number(),
+        }),
+        b4: v.string(),
+        b5: v.boolean(),
+      });
+
+      measure(() => {
+        typeA.parse(valueA);
+        typeB.parse(valueB);
+      });
+    });
+
+    test('doubter', measure => {
+      const shapeA = d.object({
+        a1: d.number(),
+        a2: d.boolean(),
+        a3: d.string(),
+        a4: d.object({
+          a41: d.boolean(),
+          a42: d.string(),
+          a43: d.number(),
+        }),
+      });
+
+      const shapeB = d.object({
+        b1: d.string(),
+        b2: d.number(),
+        b3: d.object({
+          b31: d.string(),
+          b32: d.number(),
+        }),
+        b4: d.string(),
+        b5: d.boolean(),
+      });
+
+      measure(() => {
+        shapeA.safeParse(valueA);
+        shapeB.safeParse(valueB);
+      });
+    });
+
+    test('doubter.ObjectShape2', measure => {
+      const shapeA = new d.ObjectShape2({
+        a1: new d.NumberShape2(),
+        a2: new d.BooleanShape2(),
+        a3: new d.StringShape2(),
+        a4: new d.ObjectShape2({
+          a41: new d.BooleanShape2(),
+          a42: new d.StringShape2(),
+          a43: new d.NumberShape2(),
+        }),
+      });
+
+      const shapeB = new d.ObjectShape2({
+        b1: new d.StringShape2(),
+        b2: new d.NumberShape2(),
+        b3: new d.ObjectShape2({
+          b31: new d.StringShape2(),
+          b32: new d.NumberShape2(),
+        }),
+        b4: new d.StringShape2(),
+        b5: new d.BooleanShape2(),
+      });
+
+      measure(() => {
+        shapeA.parse(valueA);
+        shapeB.parse(valueB);
       });
     });
   },
