@@ -92,6 +92,14 @@ describe(
           shape.safeParse(value);
         });
       });
+
+      test('doubter.StringShape2', measure => {
+        const shape = new d.StringShape2();
+
+        measure(() => {
+          shape.try(value);
+        });
+      });
     });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
@@ -116,7 +124,7 @@ describe(
     });
 
     test('myzod', measure => {
-      const type = z.string().min(1).max(5);
+      const type = z.string().min(3).max(3);
 
       measure(() => {
         type.parse(value);
@@ -124,7 +132,7 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.string().assert(v => v.length >= 1 && v.length <= 5);
+      const type = v.string().assert(v => v.length === 3);
 
       measure(() => {
         type.parse(value);
@@ -136,6 +144,65 @@ describe(
 
       measure(() => {
         shape.safeParse(value);
+      });
+    });
+
+    test('doubter.StringShape2', measure => {
+      const shape = new d.StringShape2().length(3);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+
+    describe('invalid input', () => {
+      const value = 'aaaa';
+
+      test('Ajv', measure => {
+        const validate = new Ajv().compile({
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'string',
+          minLength: 3,
+          maxLength: 3,
+        });
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = z.string().min(3).max(3);
+
+        measure(() => {
+          try {
+            type.parse(value);
+          } catch {}
+        });
+      });
+
+      test('valita', measure => {
+        const type = v.string().assert(v => v.length === 3);
+
+        measure(() => {
+          type.try(value).issues;
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = d.string().length(3);
+
+        measure(() => {
+          shape.safeParse(value);
+        });
+      });
+
+      test('doubter.StringShape2', measure => {
+        const shape = new d.StringShape2().length(3);
+
+        measure(() => {
+          shape.try(value);
+        });
       });
     });
   },
