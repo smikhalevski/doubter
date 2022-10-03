@@ -1,6 +1,7 @@
 /**
  * Symbol that denotes an invalid value.
  */
+
 export const INVALID: any = Symbol('invalid');
 
 /**
@@ -38,14 +39,12 @@ export interface Issue {
   meta: any;
 }
 
-export type IssueLike = Partial<Issue>[] | Partial<Issue>;
-
 /**
  * A callback that takes an input and returns `undefined` if value satisfies the constraint requirements. If values
  * doesn't satisfy the constraint requirements then a {@linkcode ValidationError} can be thrown, or detected issues can
  * be returned.
  */
-export type Check<T> = (value: T, options: ParserOptions | undefined) => IssueLike | undefined | void;
+export type Check<T> = (value: T) => Issue[] | Issue | undefined | void;
 
 /**
  * Transforms the value from one type to another. Transformer may throw or return a {@linkcode ValidationError} if there
@@ -128,5 +127,3 @@ export type Primitive = string | number | bigint | boolean | null | undefined;
 export interface Dict<T = any> {
   [key: string]: T;
 }
-
-export type ApplyChecks = (value: any, issues: Issue[] | null) => Issue[] | true;

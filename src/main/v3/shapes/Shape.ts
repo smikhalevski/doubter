@@ -11,9 +11,14 @@ import {
   objectKeys,
   objectValues,
 } from '../lang-utils';
-import { ApplyChecks, Check, Dict, InputConstraintOptionsOrMessage, Issue } from '../shared-types';
-import { isAsyncShapes, raiseIssue, throwError } from '../shape-utils';
+import { Check, Dict, InputConstraintOptionsOrMessage, Issue } from '../shared-types';
+import { isAsyncShapes, raiseIssue } from '../shape-utils';
 import { CODE_TYPE } from './constants';
+import { ApplyChecks, createApplyChecks } from './createApplyChecks';
+
+export const INVALID: any = Symbol('invalid');
+
+// ---------------------------------------------------------------------------------------------------------------------
 
 export class ValidationError {
   constructor(public issues: Issue[]) {}
@@ -39,11 +44,15 @@ export interface Err {
   issues: Issue[];
 }
 
-const ok: Ok<any> = { ok: true, value: null };
+const internalOk: Ok<any> = { ok: true, value: null };
 
 export function syncOk<T>(value: T): Ok<T> {
-  ok.value = value;
-  return ok;
+  internalOk.value = value;
+  return internalOk;
+}
+
+export function ok<T>(value: T): Ok<T> {
+  return { ok: true, value };
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -62,7 +71,9 @@ export interface Shape<I, O> {
 
   check(check: Check<O>): this;
 
-  _apply(input: unknown, issues: Issue[] | null): Ok<O> | Issue[] | true;
+  clone(): this;
+
+  _apply(input: unknown, issues: Issue[] | null, earlyReturn: boolean): Ok<O> | Issue[] | null;
 }
 
 export class Shape<I = any, O = I> {
@@ -74,13 +85,7 @@ const shapePrototype = Shape.prototype;
 
 const typingPropertyDescriptor: PropertyDescriptor = {
   get() {
-    throwError('Cannot be used at runtime');
-  },
-};
-
-const forbiddenPropertyDescriptor: PropertyDescriptor = {
-  value: () => {
-    throwError('Shape cannot be used in a synchronous context');
+    throw new Error('Cannot be used at runtime');
   },
 };
 
@@ -92,21 +97,21 @@ defineProperty(shapePrototype, 'try', {
   get() {
     const shape = this;
 
-    const value: Shape['try'] = function (this: Shape, input) {
-      const result = shape._apply(input, null);
+    const _try: Shape['try'] = function (this: Shape, input) {
+      const result = shape._apply(input, null, false);
 
-      if (result === true) {
-        return syncOk(input);
+      if (result === null) {
+        return ok(input);
       }
       if (isArray(result)) {
         return { ok: false, issues: result };
       }
-      return result;
+      return ok(result.value);
     };
 
-    defineProperty(this, 'try', { value });
+    defineProperty(this, 'try', { value: _try });
 
-    return value;
+    return _try;
   },
 });
 
@@ -114,10 +119,10 @@ defineProperty(shapePrototype, 'parse', {
   get() {
     const shape = this;
 
-    const value: Shape['parse'] = function (this: Shape, input) {
-      const result = shape._apply(input, null);
+    const _parse: Shape['parse'] = function (this: Shape, input) {
+      const result = shape._apply(input, null, false);
 
-      if (result === true) {
+      if (result === null) {
         return input;
       }
       if (isArray(result)) {
@@ -126,11 +131,41 @@ defineProperty(shapePrototype, 'parse', {
       return result.value;
     };
 
-    defineProperty(this, 'parse', { value });
+    defineProperty(this, 'parse', { value: _parse });
 
-    return value;
+    return _parse;
   },
 });
+
+shapePrototype.check = function (this: Shape, check) {
+  const checks = this._checks.slice(0);
+
+  let id;
+  let unsafe = false;
+
+  // if (options != null) {
+  //   id = options.id;
+  //   unsafe = options.unsafe == true;
+  // }
+
+  if (id != null) {
+    for (let i = 0; i < checks.length; i += 3) {
+      if (checks[i] === id) {
+        checks.splice(i, 3);
+        break;
+      }
+    }
+  }
+
+  checks.push(id, unsafe, check);
+
+  const shape = this.clone();
+
+  shape._checks = checks;
+  shape._applyChecks = createApplyChecks(checks);
+
+  return shape;
+};
 
 // ---------------------------------------------------------------------------------------------------------------------
 
@@ -146,16 +181,16 @@ const stringShapePrototype = extendClass(StringShape2, Shape);
 
 stringShapePrototype.async = false;
 
-stringShapePrototype._apply = function (this: Shape, input, issues) {
+stringShapePrototype._apply = function (this: Shape, input, issues, earlyReturn) {
   const { _applyChecks } = this;
 
   if (!isString(input)) {
     return raiseIssue(issues, CODE_TYPE);
   }
   if (_applyChecks !== null) {
-    return _applyChecks(input, issues);
+    return _applyChecks(input, issues, false, true, earlyReturn);
   }
-  return true;
+  return issues;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -172,16 +207,16 @@ const numberShapePrototype = extendClass(NumberShape2, Shape);
 
 numberShapePrototype.async = false;
 
-numberShapePrototype._apply = function (this: Shape, input, issues) {
+numberShapePrototype._apply = function (this: Shape, input, issues, earlyReturn) {
   const { _applyChecks } = this;
 
   if (!isFinite(input)) {
     return raiseIssue(issues, CODE_TYPE);
   }
   if (_applyChecks !== null) {
-    return _applyChecks(input, issues);
+    return _applyChecks(input, issues, false, true, earlyReturn);
   }
-  return true;
+  return issues;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -198,16 +233,16 @@ const booleanShapePrototype = extendClass(BooleanShape2, Shape);
 
 booleanShapePrototype.async = false;
 
-booleanShapePrototype._apply = function (this: Shape, input, issues) {
+booleanShapePrototype._apply = function (this: Shape, input, issues, earlyReturn) {
   const { _applyChecks } = this;
 
   if (typeof input !== 'boolean') {
     return raiseIssue(issues, CODE_TYPE);
   }
   if (_applyChecks !== null) {
-    return _applyChecks(input, issues);
+    return _applyChecks(input, issues, false, true, earlyReturn);
   }
-  return true;
+  return issues;
 };
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -234,14 +269,16 @@ type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : n
 
 type AnyProperties = Dict<AnyShape>;
 
-type ApplyKeys = (input: Dict, issues: Issue[] | null) => true | Ok<any> | Issue[];
+type ApplyKeys = (input: Dict, issues: Issue[] | null, earlyReturn: boolean) => Ok<any> | Issue[] | null;
 
 type ApplyIndexer = (
   input: Dict,
   output: Dict,
   issues: Issue[] | null,
+  valid: boolean,
+  earlyReturn: boolean,
   applyChecks: ApplyChecks | null
-) => true | Ok<any> | Issue[];
+) => Ok<any> | Issue[] | null;
 
 export enum KeysMode {
   PRESERVED = 'preserved',
@@ -286,6 +323,7 @@ export class ObjectShape2<P, I = Shape<never>> {
 
     this.async = (indexerShape !== null && indexerShape.async) || isAsyncShapes(objectValues(shapes));
     this.keys = objectKeys(shapes) as ObjectKey<P>[];
+
     this._valueShapes = objectValues(shapes);
   }
 }
@@ -336,7 +374,7 @@ objectShapePrototype.index = function (indexerShape) {
   return new ObjectShape2(this.shapes, indexerShape, KeysMode.PRESERVED);
 };
 
-objectShapePrototype._apply = function (this: ObjectShape2<AnyProperties>, input, issues) {
+objectShapePrototype._apply = function (this: ObjectShape2<AnyProperties>, input, issues, earlyReturn) {
   if (!isObjectLike(input)) {
     return raiseIssue(issues, CODE_TYPE);
   }
@@ -344,13 +382,18 @@ objectShapePrototype._apply = function (this: ObjectShape2<AnyProperties>, input
   const { keys, _valueShapes, _applyKeys, _applyIndexer, _applyChecks } = this;
   const keysLength = keys.length;
 
+  let valid = true;
   let output = input;
 
   if (_applyKeys !== null) {
-    const result = _applyKeys(input, issues);
+    const result = _applyKeys(input, issues, earlyReturn);
 
-    if (result !== true) {
+    if (result !== null) {
       if (isArray(result)) {
+        if (earlyReturn) {
+          return result;
+        }
+        valid = false;
         issues = result;
       } else {
         output = result.value;
@@ -361,34 +404,37 @@ objectShapePrototype._apply = function (this: ObjectShape2<AnyProperties>, input
   for (let i = 0; i < keysLength; ++i) {
     const key = keys[i];
     const inputValue = input[key];
-    const result = _valueShapes[i]._apply(inputValue, issues);
+    const result = _valueShapes[i]._apply(inputValue, issues, earlyReturn);
 
-    if (result === true) {
+    if (result === null) {
       continue;
     }
+
+    let outputValue = INVALID;
+
     if (isArray(result)) {
+      if (earlyReturn) {
+        return result;
+      }
+      valid = false;
       issues = result;
-      continue;
+    } else {
+      outputValue = result.value;
     }
     if (output === input) {
       output = cloneDict(input);
     }
-    output[key] = result.value;
+    output[key] = outputValue;
   }
 
   if (_applyIndexer !== null) {
-    return _applyIndexer(input, output, issues, _applyChecks);
+    return _applyIndexer(input, output, issues, valid, earlyReturn, _applyChecks);
   }
   if (_applyChecks !== null) {
-    return _applyChecks(output, issues);
+    return _applyChecks(output, issues, output !== input, valid, earlyReturn);
   }
-  if (issues !== null) {
-    return issues;
-  }
-  if (output !== input) {
-    return syncOk(output);
-  }
-  return true;
+
+  return issues === null && output !== input ? syncOk(output) : issues;
 };
 
 function cloneDict(input: Dict): Dict {

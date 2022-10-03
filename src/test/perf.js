@@ -690,26 +690,26 @@ describe(
     //     type.parse(value);
     //   });
     // });
-    //
-    // test('valita', measure => {
-    //   const type = v.object({
-    //     a1: v.number(),
-    //     a2: v.number(),
-    //     a3: v.number(),
-    //     a4: v.string(),
-    //     a5: v.string(),
-    //     a6: v.boolean(),
-    //     a7: v.object({
-    //       a71: v.string(),
-    //       a72: v.number(),
-    //       a73: v.boolean(),
-    //     }),
-    //   });
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
+
+    test('valita', measure => {
+      const type = v.object({
+        a1: v.number(),
+        a2: v.number(),
+        a3: v.number(),
+        a4: v.string(),
+        a5: v.string(),
+        a6: v.boolean(),
+        a7: v.object({
+          a71: v.string(),
+          a72: v.number(),
+          a73: v.boolean(),
+        }),
+      });
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
 
     test('doubter', measure => {
       const shape = d.object({

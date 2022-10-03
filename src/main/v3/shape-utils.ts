@@ -17,7 +17,3 @@ export function raiseIssue(issues: Issue[] | null, code: string): Issue[] {
   issues.push({ code, path: [], input: null, message: null, param: null, meta: null });
   return issues;
 }
-
-export function throwError(message: string): never {
-  throw new Error(message);
-}
