@@ -1,11 +1,11 @@
-import { Ok, okSync, ValidationError } from './Shape';
+import { Ok, internalOk, ValidationError } from './Shape';
 import { Check, Issue } from '../shared-types';
 import { isArray } from '../lang-utils';
 
 export type ApplyChecks = (
   output: any,
   issues: Issue[] | null,
-  deviated: boolean,
+  transformed: boolean,
   valid: boolean,
   earlyReturn: boolean
 ) => Ok<any> | Issue[] | null;
@@ -20,20 +20,20 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
   if (checksLength === 3) {
     const [, unsafe0, check0] = checks;
 
-    return (output, issues, deviated, valid, earlyReturn) => {
+    return (output, issues, transformed, valid, earlyReturn) => {
       if (valid || unsafe0) {
         let result: ReturnType<Check<unknown>>;
 
         try {
           result = check0(output);
         } catch (error) {
-          return pushIssue(issues, getErrorIssues(error));
+          return addIssue(issues, getErrorIssues(error));
         }
         if (result != null) {
-          return pushIssue(issues, result);
+          return addIssue(issues, result);
         }
       }
-      return issues === null && deviated ? okSync(output) : issues;
+      return issues === null && transformed ? internalOk(output) : issues;
     };
   }
 
@@ -48,7 +48,7 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
           result = check0(output);
         } catch (error) {
           valid = false;
-          issues = pushIssue(issues, getErrorIssues(error));
+          issues = addIssue(issues, getErrorIssues(error));
 
           if (earlyReturn) {
             return issues;
@@ -56,7 +56,7 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
         }
         if (result != null) {
           valid = false;
-          issues = pushIssue(issues, result);
+          issues = addIssue(issues, result);
 
           if (earlyReturn) {
             return issues;
@@ -70,14 +70,14 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
         try {
           result = check1(output);
         } catch (error) {
-          issues = pushIssue(issues, getErrorIssues(error));
+          issues = addIssue(issues, getErrorIssues(error));
         }
         if (result != null) {
-          issues = pushIssue(issues, result);
+          issues = addIssue(issues, result);
         }
       }
 
-      return issues === null && deviated ? okSync(output) : issues;
+      return issues === null && deviated ? internalOk(output) : issues;
     };
   }
 
@@ -95,7 +95,7 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
         result = check(output);
       } catch (error) {
         valid = false;
-        issues = pushIssue(issues, getErrorIssues(error));
+        issues = addIssue(issues, getErrorIssues(error));
 
         if (earlyReturn) {
           return issues;
@@ -104,7 +104,7 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
 
       if (result != null) {
         valid = false;
-        issues = pushIssue(issues, result);
+        issues = addIssue(issues, result);
 
         if (earlyReturn) {
           return issues;
@@ -112,33 +112,29 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
       }
     }
 
-    return issues === null && deviated ? okSync(output) : issues;
+    return issues === null && deviated ? internalOk(output) : issues;
   };
 }
 
-function isValidationError(error: unknown): error is ValidationError {
-  return error instanceof ValidationError;
-}
-
 function getErrorIssues(error: unknown): Issue[] {
-  if (!isValidationError(error)) {
-    throw error;
+  if (error instanceof ValidationError) {
+    return error.issues;
   }
-  return error.issues;
+  throw error;
 }
 
-function pushIssue(issues: Issue[] | null, result: Issue[] | Issue): Issue[] {
-  if (isArray(result)) {
+function addIssue(issues: Issue[] | null, issue: Issue[] | Issue): Issue[] {
+  if (isArray(issue)) {
     if (issues === null) {
-      issues = result;
+      issues = issue;
     } else {
-      issues.push(...result);
+      issues.push(...issue);
     }
   } else {
     if (issues === null) {
-      issues = [result];
+      issues = [issue];
     } else {
-      issues.push(result);
+      issues.push(issue);
     }
   }
   return issues;

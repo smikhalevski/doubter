@@ -70,7 +70,7 @@ export interface Err {
 
 const globalOk: Ok<any> = { ok: true, value: null };
 
-export function okSync<T>(value: T): Ok<T> {
+export function internalOk<T>(value: T): Ok<T> {
   globalOk.value = value;
   return globalOk;
 }
@@ -486,6 +486,10 @@ objectShapePrototype._apply = function (this: ObjectShape2<AnyProperties>, input
   if (keysMode !== KeysMode.PRESERVED) {
     if (keysMode === KeysMode.EXACT) {
       issues = this._exactKeys(input, issues);
+
+      if (earlyReturn && issues !== null) {
+        return issues;
+      }
     } else {
       output = this._stripKeys(input);
     }
@@ -528,7 +532,7 @@ objectShapePrototype._apply = function (this: ObjectShape2<AnyProperties>, input
     return _applyChecks(output, issues, output !== input, valid, earlyReturn);
   }
 
-  return issues === null && output !== input ? okSync(output) : issues;
+  return issues === null && output !== input ? internalOk(output) : issues;
 };
 
 objectShapePrototype._exactKeys = function (this: ObjectShape2<AnyProperties>, input, issues) {
@@ -620,7 +624,7 @@ objectShapePrototype._applyIndexer = function (
     return _applyChecks(output, issues, output !== input, valid, earlyReturn);
   }
 
-  return issues === null && output !== input ? okSync(output) : issues;
+  return issues === null && output !== input ? internalOk(output) : issues;
 };
 
 function cloneDict(input: Dict): Dict {
