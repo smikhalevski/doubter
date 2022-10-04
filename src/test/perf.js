@@ -589,7 +589,7 @@ describe(
       });
 
       measure(() => {
-        type.parse(value);
+        type.parse(value, { mode: 'passthrough' });
       });
     });
 
@@ -601,6 +601,194 @@ describe(
 
       measure(() => {
         shape.safeParse(value);
+      });
+    });
+
+    test('doubter.ObjectShape2', measure => {
+      const shape = new d.ObjectShape2({
+        foo: new d.StringShape2(),
+        bar: new d.NumberShape2(),
+      });
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'object({}).index(string())',
+  () => {
+    const value = {
+      foo: 'aaa',
+      bar: 'bbb',
+    };
+
+    test('Ajv', measure => {
+      const ajv = new Ajv();
+
+      const schema = {
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        additionalProperties: { type: 'string' },
+      };
+
+      const validate = ajv.compile(schema);
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.object({}).rest(v.string());
+
+      measure(() => {
+        type.parse(value, { mode: 'passthrough' });
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = d.object({}).index(d.string());
+
+      measure(() => {
+        shape.safeParse(value);
+      });
+    });
+
+    test('doubter.ObjectShape2', measure => {
+      const shape = new d.ObjectShape2({}).index(new d.StringShape2());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'object({ foo: string() }).index(string())',
+  () => {
+    const value = {
+      foo: 'aaa',
+      bar: 'bbb',
+    };
+
+    test('Ajv', measure => {
+      const ajv = new Ajv();
+
+      const schema = {
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          foo: { type: 'string' },
+        },
+        additionalProperties: { type: 'string' },
+      };
+
+      const validate = ajv.compile(schema);
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.object({ foo: v.string() }).rest(v.string());
+
+      measure(() => {
+        type.parse(value, { mode: 'passthrough' });
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = d.object({ foo: d.string() }).index(d.string());
+
+      measure(() => {
+        shape.safeParse(value);
+      });
+    });
+
+    test('doubter.ObjectShape2', measure => {
+      const shape = new d.ObjectShape2({ foo: new d.StringShape2() }).index(new d.StringShape2());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'object({ foo: string(), bar: number() }).exact()',
+  () => {
+    const value = {
+      foo: 'aaa',
+      bar: 111,
+    };
+
+    test('Ajv', measure => {
+      const ajv = new Ajv();
+
+      const schema = {
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          foo: { type: 'string' },
+          bar: { type: 'number' },
+        },
+        additionalProperties: false,
+      };
+
+      const validate = ajv.compile(schema);
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = z.object({
+        foo: z.string(),
+        bar: z.number(),
+      });
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = v.object({
+        foo: v.string(),
+        bar: v.number(),
+      });
+
+      measure(() => {
+        type.parse(value, { mode: 'strict' });
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = d.object({ foo: d.string(), bar: d.number() }).exact();
+
+      measure(() => {
+        shape.safeParse(value);
+      });
+    });
+
+    test('doubter.ObjectShape2', measure => {
+      const shape = new d.ObjectShape2({
+        foo: new d.StringShape2(),
+        bar: new d.NumberShape2(),
+      }).exact();
+
+      measure(() => {
+        shape.parse(value);
       });
     });
   },

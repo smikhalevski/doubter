@@ -75,9 +75,10 @@ export function raiseIssue(
   return issues;
 }
 
-export function unshiftKey(issues: Issue[], offset: number, key: unknown): Issue[] {
-  for (let i = offset; i < issues.length; ++i) {
+export function unshiftKey(issues: Issue[], offset: number, key: unknown): number {
+  let issuesLength = issues.length;
+  for (let i = offset; i < issuesLength; ++i) {
     issues[i].path.unshift(key);
   }
-  return issues;
+  return issuesLength - offset;
 }
