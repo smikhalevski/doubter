@@ -81,6 +81,10 @@ export function ok<T>(value: T): Ok<T> {
 
 export type AnyShape = Shape | Shape<never>;
 
+export interface ShapeLike<O = any> {
+  _apply: Shape<unknown, O>['_apply'];
+}
+
 export interface Shape<I, O> {
   readonly input: I;
   readonly output: O;
@@ -457,7 +461,7 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
       for (let i = 0; i < keysLength; ++i) {
         const key = _keys[i];
         const value = input[key];
-        const result = (_valueShapes[i] as any)._apply(value, issues, earlyReturn);
+        const result = (_valueShapes[i] as unknown as ShapeLike)._apply(value, issues, earlyReturn);
 
         if (result === null) {
           continue;
@@ -544,7 +548,7 @@ function applyIndexer(
       continue;
     }
 
-    const result = (indexerShape as any)._apply(input[key], issues, earlyReturn);
+    const result = (indexerShape as unknown as ShapeLike)._apply(input[key], issues, earlyReturn);
 
     if (result === null) {
       continue;
