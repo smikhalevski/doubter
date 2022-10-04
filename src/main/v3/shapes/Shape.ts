@@ -335,7 +335,6 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
   readonly keys;
 
   protected _options;
-  protected _keys: string[] | null;
   protected _valueShapes: Shape[];
   protected _exactMessage: unknown;
   protected _exactMeta: unknown;
@@ -355,7 +354,6 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
     this.keys = keys as ObjectKey<P>[];
 
     this._options = options;
-    this._keys = keys.length === 0 ? null : keys;
     this._valueShapes = valueShapes;
     this._exactMessage = null;
     this._exactMeta = null;
@@ -432,7 +430,7 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
       return raiseIssue(issues, CODE_TYPE, input, this._typeIssue.message, TYPE_OBJECT, this._typeIssue.meta);
     }
 
-    const { _keys, _valueShapes, keysMode, indexerShape, _applyChecks } = this;
+    const { keys, _valueShapes, keysMode, indexerShape, _applyChecks } = this;
 
     let output = input;
 
@@ -440,50 +438,47 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
 
     let lastOffset = offset;
 
-    if (keysMode !== KeysMode.PRESERVED) {
-      if (keysMode === KeysMode.EXACT) {
-        issues = exactKeys(input, issues, _keys);
+    if (keysMode === KeysMode.EXACT) {
+      issues = exactKeys(input, issues, keys);
 
-        if (issues !== null) {
-          if (earlyReturn) {
-            return issues;
-          }
-          lastOffset = issues.length;
+      if (issues !== null) {
+        if (earlyReturn) {
+          return issues;
         }
-      } else {
-        output = stripKeys(input, _keys);
+        lastOffset = issues.length;
       }
     }
+    if (keysMode === KeysMode.STRIPPED) {
+      output = stripKeys(input, keys);
+    }
 
-    if (_keys !== null) {
-      const keysLength = _keys.length;
+    const keysLength = keys.length;
 
-      for (let i = 0; i < keysLength; ++i) {
-        const key = _keys[i];
-        const value = input[key];
-        const result = (_valueShapes[i] as unknown as ShapeLike)._apply(value, issues, earlyReturn);
+    for (let i = 0; i < keysLength; ++i) {
+      const key = keys[i];
+      const value = input[key];
+      const result = (_valueShapes[i] as unknown as ShapeLike)._apply(value, issues, earlyReturn);
 
-        if (result === null) {
-          continue;
+      if (result === null) {
+        continue;
+      }
+
+      if (output === input) {
+        output = cloneDict(input);
+      }
+      if (isArray(result)) {
+        if (earlyReturn) {
+          return result;
         }
-
-        if (output === input) {
-          output = cloneDict(input);
-        }
-        if (isArray(result)) {
-          if (earlyReturn) {
-            return result;
-          }
-          lastOffset += unshiftKey(result, offset, key);
-          output[key] = INVALID;
-        } else {
-          output[key] = result.value;
-        }
+        lastOffset += unshiftKey(result, offset, key);
+        output[key] = INVALID;
+      } else {
+        output[key] = result.value;
       }
     }
 
     if (indexerShape !== null) {
-      return applyIndexer(input, output, issues, offset, earlyReturn, _keys, indexerShape, _applyChecks);
+      return applyIndexer(input, output, issues, offset, earlyReturn, keys, indexerShape, _applyChecks);
     }
     if (_applyChecks !== null) {
       return _applyChecks(output, issues, output !== input, lastOffset === offset, earlyReturn);
@@ -493,11 +488,8 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
   }
 }
 
-function stripKeys(input: Dict, keys: string[] | null): Dict {
+function stripKeys(input: Dict, keys: string[]): Dict {
   for (const key in input) {
-    if (keys === null) {
-      return {};
-    }
     if (keys.includes(key)) {
       continue;
     }
@@ -517,11 +509,11 @@ function stripKeys(input: Dict, keys: string[] | null): Dict {
   return input;
 }
 
-function exactKeys(input: Dict, issues: Issue[] | null, keys: string[] | null): Issue[] | null {
+function exactKeys(input: Dict, issues: Issue[] | null, keys: string[]): Issue[] | null {
   let unknownKeys: string[] | null = null;
 
   for (const key in input) {
-    if (keys === null || !keys.includes(key)) {
+    if (!keys.includes(key)) {
       (unknownKeys ||= []).push(key);
     }
   }
@@ -537,14 +529,14 @@ function applyIndexer(
   issues: Issue[] | null,
   offset: number,
   earlyReturn: boolean,
-  keys: string[] | null,
+  keys: string[],
   indexerShape: AnyShape,
   applyChecks: ApplyChecks | null
 ): Ok<any> | Issue[] | null {
   let lastOffset = offset;
 
   for (const key in input) {
-    if (keys !== null && keys.includes(key)) {
+    if (keys.includes(key)) {
       continue;
     }
 
