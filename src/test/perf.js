@@ -45,8 +45,8 @@ describe(
       });
     });
 
-    test('doubter.StringShape2', measure => {
-      const shape = new d.StringShape2();
+    test('doubter.v3.StringShape', measure => {
+      const shape = new d.v3.StringShape();
 
       measure(() => {
         shape.parse(value);
@@ -93,8 +93,8 @@ describe(
         });
       });
 
-      test('doubter.StringShape2', measure => {
-        const shape = new d.StringShape2();
+      test('doubter.v3.StringShape', measure => {
+        const shape = new d.v3.StringShape();
 
         measure(() => {
           shape.try(value);
@@ -147,8 +147,8 @@ describe(
       });
     });
 
-    test('doubter.StringShape2', measure => {
-      const shape = new d.StringShape2().length(3);
+    test('doubter.v3.StringShape', measure => {
+      const shape = new d.v3.StringShape().length(3);
 
       measure(() => {
         shape.parse(value);
@@ -197,8 +197,8 @@ describe(
         });
       });
 
-      test('doubter.StringShape2', measure => {
-        const shape = new d.StringShape2().length(3);
+      test('doubter.v3.StringShape', measure => {
+        const shape = new d.v3.StringShape().length(3);
 
         measure(() => {
           shape.try(value);
@@ -276,8 +276,8 @@ describe(
       });
     });
 
-    test('doubter.NumberShape2', measure => {
-      const shape = new d.NumberShape2();
+    test('doubter.v3.NumberShape', measure => {
+      const shape = new d.v3.NumberShape();
 
       measure(() => {
         shape.parse(value);
@@ -606,10 +606,10 @@ describe(
       });
     });
 
-    test('doubter.ObjectShape2', measure => {
-      const shape = new d.ObjectShape2({
-        foo: new d.StringShape2(),
-        bar: new d.NumberShape2(),
+    test('doubter.v3.ObjectShape', measure => {
+      const shape = new d.v3.ObjectShape({
+        foo: new d.v3.StringShape(),
+        bar: new d.v3.NumberShape(),
       });
 
       measure(() => {
@@ -664,8 +664,8 @@ describe(
       });
     });
 
-    test('doubter.ObjectShape2', measure => {
-      const shape = new d.ObjectShape2({ foo: new d.StringShape2() }).index(new d.StringShape2());
+    test('doubter.v3.ObjectShape', measure => {
+      const shape = new d.v3.ObjectShape({ foo: new d.v3.StringShape() }).index(new d.v3.StringShape());
 
       measure(() => {
         shape.parse(value);
@@ -734,10 +734,10 @@ describe(
       });
     });
 
-    test('doubter.ObjectShape2', measure => {
-      const shape = new d.ObjectShape2({
-        foo: new d.StringShape2(),
-        bar: new d.NumberShape2(),
+    test('doubter.v3.ObjectShape', measure => {
+      const shape = new d.v3.ObjectShape({
+        foo: new d.v3.StringShape(),
+        bar: new d.v3.NumberShape(),
       }).exact();
 
       measure(() => {
@@ -940,18 +940,18 @@ describe(
       });
     });
 
-    test('doubter.ObjectShape2', measure => {
-      const shape = new d.ObjectShape2({
-        a1: new d.NumberShape2(),
-        a2: new d.NumberShape2(),
-        a3: new d.NumberShape2(),
-        a4: new d.StringShape2(),
-        a5: new d.StringShape2(),
-        a6: new d.BooleanShape2(),
-        a7: new d.ObjectShape2({
-          a71: new d.StringShape2(),
-          a72: new d.NumberShape2(),
-          a73: new d.BooleanShape2(),
+    test('doubter.v3.ObjectShape', measure => {
+      const shape = new d.v3.ObjectShape({
+        a1: new d.v3.NumberShape(),
+        a2: new d.v3.NumberShape(),
+        a3: new d.v3.NumberShape(),
+        a4: new d.v3.StringShape(),
+        a5: new d.v3.StringShape(),
+        a6: new d.v3.BooleanShape(),
+        a7: new d.v3.ObjectShape({
+          a71: new d.v3.StringShape(),
+          a72: new d.v3.NumberShape(),
+          a73: new d.v3.BooleanShape(),
         }),
       });
 
@@ -1047,27 +1047,27 @@ describe(
       });
     });
 
-    test('doubter.ObjectShape2', measure => {
-      const shapeA = new d.ObjectShape2({
-        a1: new d.NumberShape2(),
-        a2: new d.BooleanShape2(),
-        a3: new d.StringShape2(),
-        a4: new d.ObjectShape2({
-          a41: new d.BooleanShape2(),
-          a42: new d.StringShape2(),
-          a43: new d.NumberShape2(),
+    test('doubter.v3.ObjectShape', measure => {
+      const shapeA = new d.v3.ObjectShape({
+        a1: new d.v3.NumberShape(),
+        a2: new d.v3.BooleanShape(),
+        a3: new d.v3.StringShape(),
+        a4: new d.v3.ObjectShape({
+          a41: new d.v3.BooleanShape(),
+          a42: new d.v3.StringShape(),
+          a43: new d.v3.NumberShape(),
         }),
       });
 
-      const shapeB = new d.ObjectShape2({
-        b1: new d.StringShape2(),
-        b2: new d.NumberShape2(),
-        b3: new d.ObjectShape2({
-          b31: new d.StringShape2(),
-          b32: new d.NumberShape2(),
+      const shapeB = new d.v3.ObjectShape({
+        b1: new d.v3.StringShape(),
+        b2: new d.v3.NumberShape(),
+        b3: new d.v3.ObjectShape({
+          b31: new d.v3.StringShape(),
+          b32: new d.v3.NumberShape(),
         }),
-        b4: new d.StringShape2(),
-        b5: new d.BooleanShape2(),
+        b4: new d.v3.StringShape(),
+        b5: new d.v3.BooleanShape(),
       });
 
       measure(() => {
@@ -1170,27 +1170,27 @@ describe(
       });
     });
 
-    test('doubter.ObjectShape2', measure => {
-      const shapeA = new d.ObjectShape2({
-        a1: new d.NumberShape2(),
-        a2: new d.BooleanShape2(),
-        a3: new d.StringShape2(),
-        a4: new d.ObjectShape2({
-          a41: new d.BooleanShape2(),
-          a42: new d.StringShape2(),
-          a43: new d.NumberShape2(),
+    test('doubter.v3.ObjectShape', measure => {
+      const shapeA = new d.v3.ObjectShape({
+        a1: new d.v3.NumberShape(),
+        a2: new d.v3.BooleanShape(),
+        a3: new d.v3.StringShape(),
+        a4: new d.v3.ObjectShape({
+          a41: new d.v3.BooleanShape(),
+          a42: new d.v3.StringShape(),
+          a43: new d.v3.NumberShape(),
         }).exact(),
       }).exact();
 
-      const shapeB = new d.ObjectShape2({
-        b1: new d.StringShape2(),
-        b2: new d.NumberShape2(),
-        b3: new d.ObjectShape2({
-          b31: new d.StringShape2(),
-          b32: new d.NumberShape2(),
+      const shapeB = new d.v3.ObjectShape({
+        b1: new d.v3.StringShape(),
+        b2: new d.v3.NumberShape(),
+        b3: new d.v3.ObjectShape({
+          b31: new d.v3.StringShape(),
+          b32: new d.v3.NumberShape(),
         }).exact(),
-        b4: new d.StringShape2(),
-        b5: new d.BooleanShape2(),
+        b4: new d.v3.StringShape(),
+        b5: new d.v3.BooleanShape(),
       }).exact();
 
       measure(() => {

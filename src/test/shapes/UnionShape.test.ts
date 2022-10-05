@@ -40,9 +40,9 @@ describe('UnionShape', () => {
 
   test('raises issues from the first failure in the async mode', async () => {
     const childShape1 = numberShape.transformAsync(value => Promise.resolve(value + ''));
-    const childShape2 = stringShape.transformAsync(value => Promise.resolve(value + ''));
+    const childShape = stringShape.transformAsync(value => Promise.resolve(value + ''));
 
-    expect(await new UnionShape([childShape1, childShape2]).validateAsync(true, { verbose: true })).toEqual([
+    expect(await new UnionShape([childShape1, childShape]).validateAsync(true, { verbose: true })).toEqual([
       {
         code: CODE_UNION,
         path: [],

@@ -1,29 +1,29 @@
-import { BooleanShape2, NumberShape2, ObjectShape2, StringShape2 } from '../../../main/v3/shapes/Shape';
+import { BooleanShape, NumberShape, ObjectShape, StringShape } from '../../../main/v3/shapes/Shape';
 import { CODE_TYPE } from '../../../main/shapes/constants';
 
-describe('StringShape2', () => {
+describe('StringShape', () => {
   test('returns ok', () => {
-    expect(new StringShape2().try('aaa')).toEqual({ ok: true, value: 'aaa' });
+    expect(new StringShape().try('aaa')).toEqual({ ok: true, value: 'aaa' });
   });
 
   test('returns err', () => {
-    expect(new StringShape2().try(111)).toEqual({ ok: false, issues: [{ code: CODE_TYPE, path: [] }] });
+    expect(new StringShape().try(111)).toEqual({ ok: false, issues: [{ code: CODE_TYPE, path: [] }] });
   });
 
   test('applies checks', () => {
-    expect(new StringShape2().min(3).try('aa')).toEqual({ ok: false, issues: [{ code: CODE_TYPE, path: [] }] });
+    expect(new StringShape().min(3).try('aa')).toEqual({ ok: false, issues: [{ code: CODE_TYPE, path: [] }] });
   });
 });
 
-describe('ObjectShape2', () => {
+describe('ObjectShape', () => {
   test('returns ok', () => {
-    const shape = new ObjectShape2({ foo: new StringShape2() });
+    const shape = new ObjectShape({ foo: new StringShape() });
     shape.try({ foo: 'aaa' });
     expect(shape.try({ foo: 'aaa' })).toEqual({ ok: true, value: { foo: 'aaa' } });
   });
 
   test('returns err', () => {
-    const shape = new ObjectShape2({ foo: new StringShape2() });
+    const shape = new ObjectShape({ foo: new StringShape() });
 
     expect(shape.try({ foo: 111 })).toEqual({ ok: true, value: { foo: 'aaa' } });
   });
@@ -43,17 +43,17 @@ describe('ObjectShape2', () => {
       },
     };
 
-    const shape = new ObjectShape2({
-      a1: new NumberShape2(),
-      a2: new NumberShape2(),
-      a3: new NumberShape2(),
-      a4: new StringShape2(),
-      a5: new StringShape2(),
-      a6: new BooleanShape2(),
-      a7: new ObjectShape2({
-        a71: new StringShape2(),
-        a72: new NumberShape2(),
-        a73: new BooleanShape2(),
+    const shape = new ObjectShape({
+      a1: new NumberShape(),
+      a2: new NumberShape(),
+      a3: new NumberShape(),
+      a4: new StringShape(),
+      a5: new StringShape(),
+      a6: new BooleanShape(),
+      a7: new ObjectShape({
+        a71: new StringShape(),
+        a72: new NumberShape(),
+        a73: new BooleanShape(),
       }),
     });
 
@@ -61,7 +61,7 @@ describe('ObjectShape2', () => {
   });
 
   test('qqq', () => {
-    const shape = new ObjectShape2({ foo: new StringShape2() }).index(new StringShape2());
+    const shape = new ObjectShape({ foo: new StringShape() }).index(new StringShape());
 
     shape.parse({
       foo: 'aaa',

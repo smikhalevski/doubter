@@ -1,1 +1,1 @@
-export * from './shapes';
+export * as v3 from './shapes';

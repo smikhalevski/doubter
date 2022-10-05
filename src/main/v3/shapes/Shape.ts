@@ -201,7 +201,7 @@ defineProperty(shapePrototype, 'parse', {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-export class StringShape2 extends Shape<string> {
+export class StringShape extends Shape<string> {
   protected _typeMessage;
   protected _typeMeta;
 
@@ -252,7 +252,7 @@ export class StringShape2 extends Shape<string> {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-export class NumberShape2 extends Shape<number> {
+export class NumberShape extends Shape<number> {
   protected _typeIssue;
 
   constructor(options?: InputConstraintOptionsOrMessage) {
@@ -276,7 +276,7 @@ export class NumberShape2 extends Shape<number> {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-export class BooleanShape2 extends Shape<boolean> {
+export class BooleanShape extends Shape<boolean> {
   protected _typeIssue;
 
   constructor(options?: InputConstraintOptionsOrMessage) {
@@ -328,7 +328,7 @@ export const enum KeysMode {
   EXACT,
 }
 
-export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<never>> extends Shape<
+export class ObjectShape<P extends AnyProperties, I extends AnyShape = Shape<never>> extends Shape<
   InferObject<P, I, 'input'>,
   InferObject<P, I, 'output'>
 > {
@@ -361,18 +361,18 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
   }
 
   extend<T extends Dict<AnyShape>>(
-    shape: ObjectShape2<T, AnyShape>
-  ): ObjectShape2<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
+    shape: ObjectShape<T, AnyShape>
+  ): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
 
-  extend<T extends Dict<AnyShape>>(shapes: T): ObjectShape2<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
+  extend<T extends Dict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
 
-  extend(shape: ObjectShape2<any, AnyShape> | Dict<AnyShape>): ObjectShape2<any, I> {
-    const shapes = objectAssign({}, this.shapes, shape instanceof ObjectShape2 ? shape.shapes : shape);
+  extend(shape: ObjectShape<any, AnyShape> | Dict<AnyShape>): ObjectShape<any, I> {
+    const shapes = objectAssign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
-    return new ObjectShape2(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
+    return new ObjectShape(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
   }
 
-  pick<K extends ObjectKey<P>[]>(...keys: K): ObjectShape2<Pick<P, K[number]>, I> {
+  pick<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
     const shapes: AnyProperties = {};
 
     for (let i = 0; i < this.keys.length; ++i) {
@@ -383,10 +383,10 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
       }
     }
 
-    return new ObjectShape2<any, I>(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
+    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
   }
 
-  omit<K extends ObjectKey<P>[]>(...keys: K): ObjectShape2<Omit<P, K[number]>, I> {
+  omit<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Omit<P, K[number]>, I> {
     const shapes: AnyProperties = {};
 
     for (let i = 0; i < this.keys.length; ++i) {
@@ -396,12 +396,12 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
         shapes[key] = this._valueShapes[i];
       }
     }
-    return new ObjectShape2<any, I>(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
+    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
   }
 
-  exact(options?: InputConstraintOptionsOrMessage): ObjectShape2<P> {
+  exact(options?: InputConstraintOptionsOrMessage): ObjectShape<P> {
     const issue = toPartialIssue(MESSAGE_UNKNOWN_KEYS, options);
-    const shape = new ObjectShape2<P>(this.shapes, null, this._options, KeysMode.EXACT);
+    const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
 
     shape._exactMessage = issue.message;
     shape._exactMeta = issue.meta;
@@ -409,16 +409,16 @@ export class ObjectShape2<P extends AnyProperties, I extends AnyShape = Shape<ne
     return shape;
   }
 
-  strip(): ObjectShape2<P> {
-    return new ObjectShape2<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
+  strip(): ObjectShape<P> {
+    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
   }
 
-  preserve(): ObjectShape2<P> {
-    return new ObjectShape2<P>(this.shapes, null, this._options, KeysMode.PRESERVED);
+  preserve(): ObjectShape<P> {
+    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.PRESERVED);
   }
 
-  index<I extends AnyShape>(indexerShape: I): ObjectShape2<P, I> {
-    return new ObjectShape2(this.shapes, indexerShape, this._options, KeysMode.PRESERVED);
+  index<I extends AnyShape>(indexerShape: I): ObjectShape<P, I> {
+    return new ObjectShape(this.shapes, indexerShape, this._options, KeysMode.PRESERVED);
   }
 
   protected _apply(
