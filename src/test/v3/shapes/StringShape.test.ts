@@ -10,9 +10,9 @@ describe('StringShape', () => {
     expect(new StringShape().try(111)).toEqual({ ok: false, issues: [{ code: CODE_TYPE, path: [] }] });
   });
 
-  test('applies checks', () => {
-    expect(new StringShape().min(3).try('aa')).toEqual({ ok: false, issues: [{ code: CODE_TYPE, path: [] }] });
-  });
+  // test('applies checks', () => {
+  //   expect(new StringShape().min(3).try('aa')).toEqual({ ok: false, issues: [{ code: CODE_TYPE, path: [] }] });
+  // });
 });
 
 describe('ObjectShape', () => {
@@ -61,7 +61,7 @@ describe('ObjectShape', () => {
   });
 
   test('qqq', () => {
-    const shape = new ObjectShape({ foo: new StringShape() }).index(new StringShape());
+    const shape = new ObjectShape({ foo: new StringShape(), bar: new StringShape() }).index(new StringShape());
 
     shape.parse({
       foo: 'aaa',

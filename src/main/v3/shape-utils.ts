@@ -1,6 +1,7 @@
 import type { AnyShape, Shape } from './shapes/Shape';
 import { Check, InputConstraintOptionsOrMessage, Issue, OutputConstraintOptionsOrMessage } from './shared-types';
 import { isString } from './lang-utils';
+import { IParserContext } from './shapes/Shape';
 
 /**
  * The convenient shortcut to add built-in constraints to shapes.
@@ -54,31 +55,25 @@ export function createIssue(code: string, input: unknown, message: unknown, para
 }
 
 export function raiseIssue(
-  issues: Issue[] | null,
+  context: IParserContext,
   code: string,
   input: unknown,
   message: unknown,
   param: unknown,
   meta: unknown
-): Issue[] {
+): boolean {
   if (typeof message === 'function') {
     message = message(param, input);
   }
-
-  const issue = createIssue(code, input, message, param, meta);
-
-  if (issues === null) {
-    issues = [issue];
-  } else {
-    issues.push(issue);
-  }
-  return issues;
+  context.issues.push(createIssue(code, input, message, param, meta));
+  return false;
 }
 
-export function unshiftKey(issues: Issue[], offset: number, key: unknown): number {
+export function unshiftKey(context: IParserContext, offset: number, key: unknown): number {
+  const { issues } = context;
   let issuesLength = issues.length;
   for (let i = offset; i < issuesLength; ++i) {
     issues[i].path.unshift(key);
   }
-  return issuesLength - offset;
+  return issuesLength;
 }

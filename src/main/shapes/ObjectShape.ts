@@ -17,7 +17,7 @@ import {
 } from '../utils';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
 import { isValidationError, ValidationError } from '../ValidationError';
-import { assignObject, isEqual, isObjectLike } from '../lang-utils';
+import { objectAssign, isEqual, isObjectLike } from '../lang-utils';
 
 type Channel = 'input' | 'output';
 
@@ -133,7 +133,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
   extend<T extends Dict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
 
   extend(shape: ObjectShape<any, AnyShape> | Dict<AnyShape>): ObjectShape<any, I> {
-    const shapes = assignObject({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
+    const shapes = objectAssign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
     return new ObjectShape(shapes, this.indexerShape, this._options);
   }

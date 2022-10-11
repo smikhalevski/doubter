@@ -13,7 +13,7 @@ export type Constructor<T = any> = new (...args: any[]) => T;
 
 export const createObject: <T>(prototype: T) => T = Object.create;
 
-export const assignObject = Object.assign;
+export const objectAssign = Object.assign;
 
 export const defineProperty: <T, P extends keyof T>(object: T, key: P, descriptor: PropertyDescriptor<T, T[P]>) => T =
   Object.defineProperty;

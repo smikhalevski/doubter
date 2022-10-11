@@ -1,5 +1,3 @@
-export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
-
 export interface PropertyDescriptor<T, V> {
   configurable?: boolean;
   enumerable?: boolean;
@@ -13,7 +11,7 @@ export interface PropertyDescriptor<T, V> {
 
 export type Constructor<T = any> = abstract new (...args: any[]) => T;
 
-export const createObject: <T>(prototype: T) => T = Object.create;
+export const createObject: { <T>(prototype: T): T; (prototype: null): any } = Object.create;
 
 export const objectAssign = Object.assign;
 

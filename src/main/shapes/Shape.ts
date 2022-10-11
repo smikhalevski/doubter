@@ -19,7 +19,7 @@ import {
 } from '../utils';
 import { CODE_NARROWING, MESSAGE_NARROWING } from './constants';
 import { isValidationError, ValidationError } from '../ValidationError';
-import { assignObject, createObject, defineProperty } from '../lang-utils';
+import { objectAssign, createObject, defineProperty } from '../lang-utils';
 
 /**
  * An arbitrary shape.
@@ -263,7 +263,7 @@ export class Shape<I = any, O = I> {
    * Returns the shape clone.
    */
   clone(): this {
-    return assignObject(createObject(Object.getPrototypeOf(this)), this);
+    return objectAssign(createObject(Object.getPrototypeOf(this)), this);
   }
 }
 
