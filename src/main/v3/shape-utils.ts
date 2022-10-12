@@ -1,7 +1,6 @@
 import type { AnyShape, Shape } from './shapes/Shape';
 import { Check, InputConstraintOptionsOrMessage, Issue, OutputConstraintOptionsOrMessage } from './shared-types';
 import { isString } from './lang-utils';
-import { IParserContext } from './shapes/Shape';
 
 /**
  * The convenient shortcut to add built-in constraints to shapes.
@@ -54,26 +53,32 @@ export function createIssue(code: string, input: unknown, message: unknown, para
   return { code, path: [], input, message, param, meta };
 }
 
-export function raiseIssue(
-  context: IParserContext,
-  code: string,
-  input: unknown,
-  message: unknown,
-  param: unknown,
-  meta: unknown
-): boolean {
+export function raiseIssue(code: string, input: unknown, message: unknown, param: unknown, meta: unknown): Issue[] {
   if (typeof message === 'function') {
     message = message(param, input);
   }
-  context.issues.push(createIssue(code, input, message, param, meta));
-  return false;
+  return [createIssue(code, input, message, param, meta)];
 }
 
-export function unshiftKey(context: IParserContext, offset: number, key: unknown): number {
-  const { issues } = context;
+export function prependKey(issues: Issue[], key: unknown): void {
   let issuesLength = issues.length;
-  for (let i = offset; i < issuesLength; ++i) {
+  for (let i = 0; i < issuesLength; ++i) {
     issues[i].path.unshift(key);
   }
-  return issuesLength;
+}
+
+export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
+  if (issues !== null) {
+    issues.push(...result);
+    return issues;
+  }
+  return result;
+}
+
+export function pushIssue(issues: Issue[] | null, result: Issue): Issue[] {
+  if (issues !== null) {
+    issues.push(result);
+    return issues;
+  }
+  return [result];
 }

@@ -1,9 +1,7 @@
-import { IParserContext, Ok, ok } from './Shape';
-import { Check, Issue } from '../shared-types';
-import { isArray } from '../lang-utils';
-import { ValidationError } from './ValidationError';
+import { Ok } from './Shape';
+import { Issue } from '../shared-types';
 
-export type ApplyChecks = (output: any, context: IParserContext) => Ok<any> | boolean;
+export type ApplyChecks = (output: any, issues: Issue[] | null, earlyReturn: boolean) => Issue[] | null;
 
 // export function createApplyChecks(checks: any[]): ApplyChecks | null {
 //   const checksLength = checks.length;

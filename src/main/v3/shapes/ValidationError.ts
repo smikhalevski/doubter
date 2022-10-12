@@ -1,6 +1,6 @@
 import { __extends } from 'tslib';
 import { Issue } from '../shared-types';
-import { createObject, defineProperty } from '../lang-utils';
+import { objectCreate, defineProperty } from '../lang-utils';
 
 export interface ValidationError extends Error {}
 
@@ -37,7 +37,7 @@ defineProperty(prototype, 'message', {
 });
 
 export function createValidationError(issues: Issue[]): ValidationError {
-  const error = createObject(prototype);
+  const error = objectCreate(prototype);
   error.issues = issues;
   return error;
 }

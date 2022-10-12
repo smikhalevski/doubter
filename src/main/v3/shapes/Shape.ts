@@ -1,14 +1,15 @@
 import {
-  createObject,
   defineProperty,
+  isArray,
   isFinite,
   isObjectLike,
   isString,
   objectAssign,
+  objectCreate,
   objectKeys,
   objectValues,
 } from '../lang-utils';
-import { Check, Dict, IdentifiableConstraintOptions, InputConstraintOptionsOrMessage, Issue } from '../shared-types';
+import { Check, Dict, IdentifiableConstraintOptions, Issue } from '../shared-types';
 import { ApplyChecks } from './createApplyChecks';
 import {
   CODE_TYPE,
@@ -19,20 +20,8 @@ import {
   TYPE_OBJECT,
   TYPE_STRING,
 } from '../../shapes/constants';
-import { isAsyncShapes, raiseIssue, unshiftKey } from '../shape-utils';
+import { concatIssues, createIssue, isAsyncShapes, prependKey, pushIssue, raiseIssue } from '../shape-utils';
 import { createValidationError } from './ValidationError';
-
-export const INVALID: any = Symbol('invalid');
-
-// ---------------------------------------------------------------------------------------------------------------------
-
-export interface IParserContext {
-  issues: Issue[];
-  keyBits: number;
-  earlyReturn: boolean;
-}
-
-// ---------------------------------------------------------------------------------------------------------------------
 
 export interface Ok<T> {
   ok: true;
@@ -69,79 +58,33 @@ export class Shape<I = any, O = I> {
 
   constructor(readonly async: boolean) {}
 
-  // check(check: Check<O>, options?: IdentifiableConstraintOptions): this {
-  //   const checks = this._checks.slice(0);
-  //
-  //   let id;
-  //   let unsafe = false;
-  //
-  //   if (options != null) {
-  //     id = options.id;
-  //     unsafe = options.unsafe == true;
-  //   }
-  //
-  //   if (id != null) {
-  //     for (let i = 0; i < checks.length; i += 3) {
-  //       if (checks[i] === id) {
-  //         checks.splice(i, 3);
-  //         break;
-  //       }
-  //     }
-  //   }
-  //
-  //   checks.push(id, unsafe, check);
-  //
-  //   const shape = this.clone();
-  //
-  //   shape._checks = checks;
-  //   shape._applyChecks = createApplyChecks(checks);
-  //
-  //   return shape;
-  // }
-
   clone(): this {
-    return objectAssign(createObject(Object.getPrototypeOf(this)), this);
+    return objectAssign(objectCreate(Object.getPrototypeOf(this)), this);
   }
 
-  _apply(input: unknown, context: IParserContext): Ok<O> | boolean {
+  _apply(input: unknown, earlyReturn: boolean): Ok<O> | Issue[] | null {
     const { _applyChecks } = this;
     if (_applyChecks !== null) {
-      return _applyChecks(input, context);
+      return _applyChecks(input, null, earlyReturn);
     }
-    return true;
+    return null;
   }
 }
 
 const shapePrototype = Shape.prototype;
 
-const typingPropertyDescriptor: PropertyDescriptor = {
-  get() {
-    throw new Error('Cannot be used at runtime');
-  },
-};
-
-defineProperty(shapePrototype, 'input', typingPropertyDescriptor);
-
-defineProperty(shapePrototype, 'output', typingPropertyDescriptor);
-
 defineProperty(shapePrototype, 'try', {
   get() {
-    const boundShape = this;
-
-    let globalContext: IParserContext = { issues: [], keyBits: 0, earlyReturn: false };
+    const shape = this;
 
     const value: Shape['try'] = function (this: Shape, input) {
-      const context = globalContext || { issues: [], keyBits: 0, earlyReturn: false };
+      const result = shape._apply(input, false);
 
-      const result = boundShape._apply(input, context);
-
-      globalContext = context;
-
-      if (result === true) {
+      if (result === null) {
         return ok(input);
       }
-      if (result === false) {
-        return { ok: false, issues: context.issues };
+      if (isArray(result)) {
+        return { ok: false, issues: result };
       }
       return ok(result.value);
     };
@@ -154,22 +97,16 @@ defineProperty(shapePrototype, 'try', {
 
 defineProperty(shapePrototype, 'parse', {
   get() {
-    const boundShape = this;
-
-    let globalContext: IParserContext = { issues: [], keyBits: 0, earlyReturn: false };
+    const shape = this;
 
     const value: Shape['parse'] = function (this: Shape, input) {
-      const context = globalContext || { issues: [], keyBits: 0, earlyReturn: false };
+      const result = shape._apply(input, false);
 
-      const result = boundShape._apply(input, context);
-
-      globalContext = context;
-
-      if (result === true) {
+      if (result === null) {
         return input;
       }
-      if (result === false) {
-        throw createValidationError(context.issues);
+      if (isArray(result)) {
+        throw createValidationError(result);
       }
       return result.value;
     };
@@ -183,80 +120,48 @@ defineProperty(shapePrototype, 'parse', {
 // ---------------------------------------------------------------------------------------------------------------------
 
 export class StringShape extends Shape<string> {
-  constructor(options?: InputConstraintOptionsOrMessage) {
-    super(false);
-  }
-
-  // length(length: number, options?: OutputConstraintOptionsOrMessage): this {
-  //   return this.min(length, options).max(length, options);
-  // }
-  //
-  // min(length: number, options?: OutputConstraintOptionsOrMessage): this {
-  //   return addCheck(this, CODE_STRING_MIN, options, input => {
-  //     if (input.length < length) {
-  //       return createIssue(CODE_STRING_MIN, input, undefined, length, undefined);
-  //     }
-  //   });
-  // }
-  //
-  // max(length: number, options?: OutputConstraintOptionsOrMessage): this {
-  //   return addCheck(this, CODE_STRING_MAX, options, input => {
-  //     if (input.length > length) {
-  //       return createIssue(CODE_STRING_MAX, input, undefined, length, undefined);
-  //     }
-  //   });
-  // }
-
-  _apply(input: unknown, context: IParserContext): Ok<string> | boolean {
+  _apply(input: unknown, earlyReturn: boolean): Ok<string> | Issue[] | null {
     const { _applyChecks } = this;
 
     if (!isString(input)) {
-      return raiseIssue(context, CODE_TYPE, input, undefined, TYPE_STRING, undefined);
+      return raiseIssue(CODE_TYPE, input, undefined, TYPE_STRING, undefined);
     }
     if (_applyChecks !== null) {
-      return _applyChecks(input, context);
+      return _applyChecks(input, null, earlyReturn);
     }
-    return true;
+    return null;
   }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 
 export class NumberShape extends Shape<number> {
-  constructor(options?: InputConstraintOptionsOrMessage) {
-    super(false);
-  }
-
-  _apply(input: unknown, context: IParserContext): Ok<number> | boolean {
+  _apply(input: unknown, earlyReturn: boolean): Ok<number> | Issue[] | null {
     const { _applyChecks } = this;
 
     if (!isFinite(input)) {
-      return raiseIssue(context, CODE_TYPE, input, undefined, TYPE_NUMBER, undefined);
+      return raiseIssue(CODE_TYPE, input, undefined, TYPE_NUMBER, undefined);
     }
     if (_applyChecks !== null) {
-      return _applyChecks(input, context);
+      return _applyChecks(input, null, earlyReturn);
     }
-    return true;
+    return null;
   }
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
 
 export class BooleanShape extends Shape<boolean> {
-  constructor(options?: InputConstraintOptionsOrMessage) {
-    super(false);
-  }
-
-  _apply(input: unknown, context: IParserContext): Ok<boolean> | boolean {
+  _apply(input: unknown, earlyReturn: boolean): Ok<boolean> | Issue[] | null {
     const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {
-      return raiseIssue(context, CODE_TYPE, input, undefined, TYPE_BOOLEAN, undefined);
+      return raiseIssue(CODE_TYPE, input, undefined, TYPE_BOOLEAN, undefined);
     }
     if (_applyChecks !== null) {
-      return _applyChecks(input, context);
+      return _applyChecks(input, null, earlyReturn);
     }
-    return true;
+    return null;
   }
 }
 
@@ -282,6 +187,8 @@ type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : n
 
 type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
+type Bits = number[] | number;
+
 export const enum KeysMode {
   PRESERVED,
   STRIPPED,
@@ -292,15 +199,13 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
   InferObject<P, I, 'input'>,
   InferObject<P, I, 'output'>
 > {
-  readonly keys;
+  readonly keys: readonly ObjectKey<P>[];
 
-  protected _options;
-  protected _valueShapes: Shape[];
+  protected readonly _valueShapes: Shape[];
 
   constructor(
     readonly shapes: Readonly<P>,
     readonly indexerShape: I | null = null,
-    readonly options?: InputConstraintOptionsOrMessage,
     readonly keysMode: KeysMode = KeysMode.PRESERVED
   ) {
     const keys = objectKeys(shapes);
@@ -310,7 +215,6 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 
     this.keys = keys as ObjectKey<P>[];
 
-    this._options = options;
     this._valueShapes = valueShapes;
   }
 
@@ -321,7 +225,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
   extend(shape: ObjectShape<any> | Dict): ObjectShape<any, I> {
     const shapes = objectAssign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
-    return new ObjectShape(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
+    return new ObjectShape(shapes, this.indexerShape, KeysMode.PRESERVED);
   }
 
   pick<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
@@ -335,7 +239,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
       }
     }
 
-    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
+    return new ObjectShape<any, I>(shapes, this.indexerShape, KeysMode.PRESERVED);
   }
 
   omit<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Omit<P, K[number]>, I> {
@@ -348,181 +252,232 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         shapes[key] = this._valueShapes[i];
       }
     }
-    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options, KeysMode.PRESERVED);
+    return new ObjectShape<any, I>(shapes, this.indexerShape, KeysMode.PRESERVED);
   }
 
-  exact(options?: InputConstraintOptionsOrMessage): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
+  exact(): ObjectShape<P> {
+    return new ObjectShape<P>(this.shapes, null, KeysMode.EXACT);
   }
 
   strip(): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
+    return new ObjectShape<P>(this.shapes, null, KeysMode.STRIPPED);
   }
 
   preserve(): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.PRESERVED);
+    return new ObjectShape<P>(this.shapes, null, KeysMode.PRESERVED);
   }
 
   index<I extends AnyShape>(indexerShape: I): ObjectShape<P, I> {
-    return new ObjectShape(this.shapes, indexerShape, this._options, KeysMode.PRESERVED);
+    return new ObjectShape(this.shapes, indexerShape, KeysMode.PRESERVED);
   }
 
-  _apply(input: unknown, context: IParserContext): Ok<InferObject<P, I, 'output'>> | boolean {
+  _apply(input: unknown, earlyReturn: boolean): Ok<InferObject<P, I, 'output'>> | Issue[] | null {
     if (!isObjectLike(input)) {
-      return raiseIssue(context, CODE_TYPE, input, undefined, TYPE_OBJECT, undefined);
+      return raiseIssue(CODE_TYPE, input, undefined, TYPE_OBJECT, undefined);
     }
 
-    const { keys, keysMode, indexerShape, _valueShapes, _applyChecks } = this;
+    if (this.keysMode !== KeysMode.PRESERVED || this.indexerShape !== null) {
+      return this._applyStrict(input, earlyReturn);
+    }
+
+    return this._applyLoose(input, earlyReturn);
+  }
+
+  private _applyLoose(input: Dict, earlyReturn: boolean): Ok<any> | Issue[] | null {
+    const { keys, _valueShapes, _applyChecks } = this;
 
     const keysLength = keys.length;
 
+    let issues: Issue[] | null = null;
     let output = input;
 
-    let { issues } = context;
-    let issuesOffset = issues.length;
-    let valid = true;
-    let keyCount = 0;
-    let seenBits = 0;
-    let unknownKeys: string[] | null = null;
-
-    for (const key in input) {
+    for (let i = 0; i < keysLength; ++i) {
+      const key = keys[i];
       const value = input[key];
-      const i = keys.indexOf(key as ObjectKey<P>);
+      const result = _valueShapes[i]._apply(value, earlyReturn);
 
-      if (i === -1) {
-        if (keysMode === KeysMode.PRESERVED) {
-          if (indexerShape !== null) {
-            const result = indexerShape._apply(value, context);
-
-            if (result === true) {
-              continue;
-            }
-            if (result === false) {
-              if (context.earlyReturn) {
-                return false;
-              }
-              valid = false;
-              issuesOffset = unshiftKey(context, issuesOffset, key);
-              continue;
-            }
-            if (!valid) {
-              continue;
-            }
-            if (input === output) {
-              output = cloneKeys(input);
-            }
-            output[key] = result.value;
-          }
-          continue;
-        }
-        if (keysMode === KeysMode.STRIPPED) {
-          if (input === output) {
-            output = cloneKnownKeys(input, keys);
-          }
-          continue;
-        }
-        if (keysMode === KeysMode.EXACT) {
-          (unknownKeys ||= []).push(key);
-          continue;
-        }
-      }
-
-      seenBits = seenBits | (1 << i);
-
-      ++keyCount;
-
-      const result = _valueShapes[i]._apply(value, context);
-
-      if (result === true) {
+      if (result === null) {
         continue;
       }
-      if (result === false) {
-        if (context.earlyReturn) {
-          return false;
+      if (isArray(result)) {
+        prependKey(result, key);
+
+        if (earlyReturn) {
+          return result;
         }
-        valid = false;
-        issuesOffset = unshiftKey(context, issuesOffset, key);
-        continue;
-      }
-      if (!valid) {
+        issues = concatIssues(issues, result);
         continue;
       }
       if (input === output) {
-        output = keysMode === KeysMode.STRIPPED ? cloneKnownKeys(input, keys) : cloneKeys(input);
+        output = cloneDict(input);
       }
       output[key] = result.value;
     }
 
-    if (unknownKeys !== null) {
-      raiseIssue(context, CODE_UNKNOWN_KEYS, input, MESSAGE_UNKNOWN_KEYS, unknownKeys, undefined);
-      if (context.earlyReturn) {
-        return false;
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, issues, earlyReturn);
+    }
+    if (input === output || issues !== null) {
+      return issues;
+    }
+    return ok(output);
+  }
+
+  private _applyStrict(input: Dict, earlyReturn: boolean): Ok<any> | Issue[] | null {
+    const { keys, keysMode, indexerShape, _valueShapes, _applyChecks } = this;
+
+    const keysLength = keys.length;
+
+    let issues: Issue[] | null = null;
+    let output = input;
+
+    let seenCount = 0;
+    let seenBits: Bits = 0;
+
+    let unknownKeys: string[] | null = null;
+
+    for (const key in input) {
+      const value = input[key];
+      const index = keys.indexOf(key as ObjectKey<P>);
+
+      let valueShape: AnyShape | null = indexerShape;
+
+      if (index !== -1) {
+        seenCount++;
+        seenBits = setBit(seenBits, index);
+
+        valueShape = _valueShapes[index];
+      }
+
+      if (valueShape !== null) {
+        const result = valueShape._apply(value, earlyReturn);
+
+        if (result === null) {
+          continue;
+        }
+        if (isArray(result)) {
+          prependKey(result, key);
+
+          if (earlyReturn) {
+            return result;
+          }
+          issues = concatIssues(issues, result);
+          continue;
+        }
+        if (input === output) {
+          output = keysMode === KeysMode.STRIPPED ? pickKeys(input, keys) : cloneDict(input);
+        }
+        output[key] = result.value;
+        continue;
+      }
+
+      if (keysMode === KeysMode.EXACT) {
+        if (unknownKeys !== null) {
+          unknownKeys.push(key);
+          continue;
+        }
+
+        unknownKeys = [key];
+        const issue = createIssue(CODE_UNKNOWN_KEYS, input, MESSAGE_UNKNOWN_KEYS, unknownKeys, undefined);
+
+        if (earlyReturn) {
+          return [issue];
+        }
+        issues = pushIssue(issues, issue);
+        continue;
+      }
+
+      if (input === output) {
+        output = pickKeys(input, keys);
       }
     }
 
-    if (keyCount !== keysLength) {
+    if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
-        if (((seenBits >>> i) & 1) === 1) {
+        if (getBit(seenBits, i) === 1) {
           continue;
         }
 
         const key = keys[i];
         const value = input[key];
-        const result = _valueShapes[i]._apply(value, context);
+        const result = _valueShapes[i]._apply(value, earlyReturn);
 
-        if (result === true) {
+        if (result === null) {
           continue;
         }
-        if (result === false) {
-          valid = false;
+        if (isArray(result)) {
+          prependKey(result, key);
+
+          if (earlyReturn) {
+            return result;
+          }
+          issues = concatIssues(issues, result);
           continue;
         }
         if (input === output) {
-          output = cloneKnownKeys(input, keys);
+          output = keysMode === KeysMode.STRIPPED ? pickKeys(input, keys) : cloneDict(input);
         }
         output[key] = result.value;
       }
     }
 
-    if (input === output) {
-      if (_applyChecks !== null) {
-        return _applyChecks(output, context);
-      }
-      return valid;
-    }
-
     if (_applyChecks !== null) {
-      if (_applyChecks(output, context)) {
-        return ok(output as any);
-      }
-      return false;
+      issues = _applyChecks(output, issues, earlyReturn);
     }
-    return valid;
+    if (input === output || issues !== null) {
+      return issues;
+    }
+    return ok(output);
   }
 }
 
-function markBit(keyBits: number, index: number): number {
-  // const i = index >> 5;
-  // keyBits[i] |= 1 << (index - (i << 5));
-  return keyBits | (1 << index);
+function setBit(bits: Bits, index: number): Bits {
+  if (typeof bits === 'number') {
+    if (index < 32) {
+      return bits | (1 << index);
+    }
+    bits = [bits, 0, 0];
+  }
+
+  bits[index >> 5] |= 1 << index % 32;
+  return bits;
 }
 
-function cloneKeys(input: Dict): Dict {
+function getBit(bits: Bits, index: number): number {
+  if (typeof bits === 'number') {
+    return (bits >>> index) & 1;
+  } else {
+    return (bits[index >> 5] >>> index % 32) & 1;
+  }
+}
+
+function safeSet(obj: Dict, key: string, value: unknown): void {
+  if (key === '__proto__') {
+    defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
+  } else {
+    obj[key] = value;
+  }
+}
+
+function cloneDict(input: Dict): Dict {
   const output: Dict = {};
 
   for (const key in input) {
-    output[key] = input[key];
+    safeSet(output, key, input[key]);
   }
   return output;
 }
 
-function cloneKnownKeys(input: Dict, keys: string[]): Dict {
-  const keysLength = keys.length;
+function pickKeys(input: Dict, keys: readonly string[]): Dict {
   const output: Dict = {};
+  const keysLength = keys.length;
 
   for (let i = 0; i < keysLength; ++i) {
     const key = keys[i];
-    output[key] = input[key];
+
+    if (key in input) {
+      safeSet(output, key, input[key]);
+    }
   }
   return output;
 }

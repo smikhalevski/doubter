@@ -11,7 +11,7 @@ export interface PropertyDescriptor<T, V> {
 
 export type Constructor<T = any> = abstract new (...args: any[]) => T;
 
-export const createObject: { <T>(prototype: T): T; (prototype: null): any } = Object.create;
+export const objectCreate: { <T>(prototype: T): T; (prototype: null): any } = Object.create;
 
 export const objectAssign = Object.assign;
 
@@ -28,7 +28,7 @@ export const defineProperty: <T, P extends keyof T>(object: T, key: P, descripto
   unsafeDefineProperty;
 
 export function extendClass<T>(constructor: Constructor<T>, baseConstructor: Constructor): T {
-  const prototype = createObject(baseConstructor.prototype);
+  const prototype = objectCreate(baseConstructor.prototype);
   constructor.prototype = prototype;
   prototype.constructor = constructor;
   return prototype;
