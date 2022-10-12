@@ -55,6 +55,7 @@ export interface Shape<I, O> {
 export class Shape<I = any, O = I> {
   protected _applyChecks: ApplyChecks | null = null;
   protected _checks: any[] = [];
+  protected _unsafe = false;
 
   constructor(readonly async: boolean) {}
 
@@ -276,15 +277,15 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
       return raiseIssue(CODE_TYPE, input, undefined, TYPE_OBJECT, undefined);
     }
 
-    if (this.keysMode !== KeysMode.PRESERVED || this.indexerShape !== null) {
-      return this._applyStrict(input, earlyReturn);
+    if (this.keysMode === KeysMode.PRESERVED && this.indexerShape === null) {
+      return this._applyLoose(input, earlyReturn);
     }
 
-    return this._applyLoose(input, earlyReturn);
+    return this._applyStrict(input, earlyReturn);
   }
 
   private _applyLoose(input: Dict, earlyReturn: boolean): Ok<any> | Issue[] | null {
-    const { keys, _valueShapes, _applyChecks } = this;
+    const { keys, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
 
@@ -308,23 +309,25 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         issues = concatIssues(issues, result);
         continue;
       }
-      if (input === output) {
-        output = cloneDict(input);
+      if (_unsafe || issues === null) {
+        if (input === output) {
+          output = cloneDict(input);
+        }
+        output[key] = result.value;
       }
-      output[key] = result.value;
     }
 
-    if (_applyChecks !== null) {
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
       issues = _applyChecks(output, issues, earlyReturn);
     }
-    if (input === output || issues !== null) {
-      return issues;
+    if (issues === null && input !== output) {
+      return ok(output);
     }
-    return ok(output);
+    return issues;
   }
 
   private _applyStrict(input: Dict, earlyReturn: boolean): Ok<any> | Issue[] | null {
-    const { keys, keysMode, indexerShape, _valueShapes, _applyChecks } = this;
+    const { keys, keysMode, indexerShape, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
 
@@ -364,10 +367,12 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
           issues = concatIssues(issues, result);
           continue;
         }
-        if (input === output) {
-          output = keysMode === KeysMode.STRIPPED ? pickKeys(input, keys) : cloneDict(input);
+        if (_unsafe || issues === null) {
+          if (input === output) {
+            output = keysMode === KeysMode.STRIPPED ? pickKeys(input, keys) : cloneDict(input);
+          }
+          output[key] = result.value;
         }
-        output[key] = result.value;
         continue;
       }
 
@@ -387,7 +392,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         continue;
       }
 
-      if (input === output) {
+      if (input === output && (_unsafe || issues === null)) {
         output = pickKeys(input, keys);
       }
     }
@@ -414,14 +419,16 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
           issues = concatIssues(issues, result);
           continue;
         }
-        if (input === output) {
-          output = keysMode === KeysMode.STRIPPED ? pickKeys(input, keys) : cloneDict(input);
+        if (_unsafe || issues === null) {
+          if (input === output) {
+            output = keysMode === KeysMode.STRIPPED ? pickKeys(input, keys) : cloneDict(input);
+          }
+          output[key] = result.value;
         }
-        output[key] = result.value;
       }
     }
 
-    if (_applyChecks !== null) {
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
       issues = _applyChecks(output, issues, earlyReturn);
     }
     if (input === output || issues !== null) {
