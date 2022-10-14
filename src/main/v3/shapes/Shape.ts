@@ -9,11 +9,15 @@ import {
   objectKeys,
   objectValues,
 } from '../lang-utils';
-import { Check, Dict, IdentifiableConstraintOptions, Issue } from '../shared-types';
+import { Check, Dict, IdentifiableConstraintOptions, InputConstraintOptionsOrMessage, Issue } from '../shared-types';
 import { ApplyChecks } from './createApplyChecks';
 import {
   CODE_TYPE,
   CODE_UNKNOWN_KEYS,
+  MESSAGE_BOOLEAN_TYPE,
+  MESSAGE_NUMBER_TYPE,
+  MESSAGE_OBJECT_TYPE,
+  MESSAGE_STRING_TYPE,
   MESSAGE_UNKNOWN_KEYS,
   TYPE_BOOLEAN,
   TYPE_NUMBER,
@@ -210,12 +214,59 @@ defineProperty(shapePrototype, 'parseAsync', {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
+export interface CheckConfig {
+  message: unknown;
+  meta: unknown;
+  interpolated: boolean;
+}
+
+export function createCheckConfig(
+  defaultMessage: unknown,
+  options: InputConstraintOptionsOrMessage | undefined,
+  param: unknown,
+  deferred = false
+): CheckConfig {
+  let message: unknown = defaultMessage;
+  let meta;
+  let interpolated = false;
+
+  if (options !== null && typeof options === 'object') {
+    if (options.message !== undefined) {
+      message = options.message;
+    }
+    meta = options.meta;
+  } else if (typeof options === 'function') {
+    message = options;
+  } else if (options != null) {
+    message = String(options);
+  }
+
+  if (isString(message)) {
+    if (!deferred) {
+      message = message.replace('%p', param === undefined ? '' : String(param));
+    } else {
+      interpolated = message.indexOf('%') !== -1;
+    }
+  }
+
+  return { message, meta, interpolated };
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+
 export class StringShape extends Shape<string> {
+  private _typeCheckConfig;
+
+  constructor(options?: InputConstraintOptionsOrMessage) {
+    super(false);
+    this._typeCheckConfig = createCheckConfig(MESSAGE_STRING_TYPE, options, TYPE_STRING);
+  }
+
   _apply(input: unknown, earlyReturn: boolean): ApplyResult<string> {
     const { _applyChecks } = this;
 
     if (!isString(input)) {
-      return raiseIssue(CODE_TYPE, input, undefined, TYPE_STRING, undefined);
+      return raiseIssue(CODE_TYPE, input, TYPE_STRING, this._typeCheckConfig);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, earlyReturn);
@@ -227,11 +278,18 @@ export class StringShape extends Shape<string> {
 // ---------------------------------------------------------------------------------------------------------------------
 
 export class NumberShape extends Shape<number> {
+  private _typeCheckConfig;
+
+  constructor(options?: InputConstraintOptionsOrMessage) {
+    super(false);
+    this._typeCheckConfig = createCheckConfig(MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
+  }
+
   _apply(input: unknown, earlyReturn: boolean): ApplyResult<number> {
     const { _applyChecks } = this;
 
     if (!isFinite(input)) {
-      return raiseIssue(CODE_TYPE, input, undefined, TYPE_NUMBER, undefined);
+      return raiseIssue(CODE_TYPE, input, TYPE_NUMBER, this._typeCheckConfig);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, earlyReturn);
@@ -243,11 +301,18 @@ export class NumberShape extends Shape<number> {
 // ---------------------------------------------------------------------------------------------------------------------
 
 export class BooleanShape extends Shape<boolean> {
+  private _typeCheckConfig;
+
+  constructor(options?: InputConstraintOptionsOrMessage) {
+    super(false);
+    this._typeCheckConfig = createCheckConfig(MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
+  }
+
   _apply(input: unknown, earlyReturn: boolean): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {
-      return raiseIssue(CODE_TYPE, input, undefined, TYPE_BOOLEAN, undefined);
+      return raiseIssue(CODE_TYPE, input, TYPE_BOOLEAN, this._typeCheckConfig);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, earlyReturn);
@@ -292,11 +357,14 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
 > {
   readonly keys: readonly ObjectKey<P>[];
 
-  protected readonly _valueShapes: Shape[];
+  private _valueShapes: Shape[];
+  private _typeCheckConfig;
+  private _exactCheckConfig: CheckConfig | null = null;
 
   constructor(
     readonly shapes: Readonly<P>,
     readonly restShape: I | null = null,
+    private _options?: InputConstraintOptionsOrMessage,
     readonly keysMode: KeysMode = KeysMode.PRESERVED
   ) {
     const keys = objectKeys(shapes);
@@ -307,6 +375,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     this.keys = keys as ObjectKey<P>[];
 
     this._valueShapes = valueShapes;
+    this._typeCheckConfig = createCheckConfig(MESSAGE_OBJECT_TYPE, _options, TYPE_OBJECT);
   }
 
   extend<T extends Dict<AnyShape>>(shape: ObjectShape<T, any>): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
@@ -316,7 +385,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
   extend(shape: ObjectShape<any> | Dict): ObjectShape<any, I> {
     const shapes = objectAssign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
-    return new ObjectShape(shapes, this.restShape, KeysMode.PRESERVED);
+    return new ObjectShape(shapes, this.restShape, this._options, KeysMode.PRESERVED);
   }
 
   pick<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
@@ -330,7 +399,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
       }
     }
 
-    return new ObjectShape<any, I>(shapes, this.restShape, KeysMode.PRESERVED);
+    return new ObjectShape<any, I>(shapes, this.restShape, this._options, KeysMode.PRESERVED);
   }
 
   omit<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Omit<P, K[number]>, I> {
@@ -343,34 +412,38 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         shapes[key] = this._valueShapes[i];
       }
     }
-    return new ObjectShape<any, I>(shapes, this.restShape, KeysMode.PRESERVED);
+    return new ObjectShape<any, I>(shapes, this.restShape, this._options, KeysMode.PRESERVED);
   }
 
-  exact(): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, KeysMode.EXACT);
+  exact(options?: InputConstraintOptionsOrMessage): ObjectShape<P> {
+    const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
+
+    shape._exactCheckConfig = createCheckConfig(MESSAGE_UNKNOWN_KEYS, options, undefined, true);
+
+    return shape;
   }
 
   strip(): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, KeysMode.STRIPPED);
+    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
   }
 
   preserve(): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, KeysMode.PRESERVED);
+    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.PRESERVED);
   }
 
   rest<I extends AnyShape>(restShape: I): ObjectShape<P, I> {
-    return new ObjectShape(this.shapes, restShape, KeysMode.PRESERVED);
+    return new ObjectShape(this.shapes, restShape, this._options, KeysMode.PRESERVED);
   }
 
   _apply(input: unknown, earlyReturn: boolean): ApplyResult<InferObject<P, I, 'output'>> {
     if (!isObjectLike(input)) {
-      return raiseIssue(CODE_TYPE, input, undefined, TYPE_OBJECT, undefined);
+      return raiseIssue(CODE_TYPE, input, TYPE_OBJECT, this._typeCheckConfig);
     }
     if (this.keysMode !== KeysMode.PRESERVED) {
       return this._applyStrictKeys(input, earlyReturn);
     }
     if (this.restShape !== null) {
-      return this._applyRestKeys(input, earlyReturn);
+      return this._applyPreservedRestKeys(input, earlyReturn);
     }
     return this._applyPreservedKeys(input, earlyReturn);
   }
@@ -417,7 +490,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     return issues;
   }
 
-  private _applyRestKeys(input: Dict, earlyReturn: boolean): ApplyResult {
+  private _applyPreservedRestKeys(input: Dict, earlyReturn: boolean): ApplyResult {
     const { keys, restShape, _valueShapes, _applyChecks, _unsafe } = this;
 
     let issues: Issue[] | null = null;
@@ -522,7 +595,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     }
 
     if (unknownKeys !== null) {
-      const issue = createIssue(CODE_UNKNOWN_KEYS, input, MESSAGE_UNKNOWN_KEYS, unknownKeys, undefined);
+      const issue = createIssue(CODE_UNKNOWN_KEYS, input, unknownKeys, this._exactCheckConfig!);
 
       if (earlyReturn) {
         return issues;
@@ -573,7 +646,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
   _applyAsync(input: unknown, earlyReturn: boolean): Promise<ApplyResult<InferObject<P, I, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        return raiseIssue(CODE_TYPE, input, undefined, TYPE_OBJECT, undefined);
+        return raiseIssue(CODE_TYPE, input, TYPE_OBJECT, this._typeCheckConfig);
       }
 
       const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
@@ -627,7 +700,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
       }
 
       if (unknownKeys !== null) {
-        const issue = createIssue(CODE_UNKNOWN_KEYS, input, MESSAGE_UNKNOWN_KEYS, unknownKeys, undefined);
+        const issue = createIssue(CODE_UNKNOWN_KEYS, input, unknownKeys, this._exactCheckConfig!);
 
         if (earlyReturn) {
           return issues;

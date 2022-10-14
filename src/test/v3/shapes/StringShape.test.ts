@@ -61,7 +61,7 @@ describe('ObjectShape', () => {
   });
 
   test('qqq', () => {
-    const shape = new ObjectShape({ foo: new StringShape(), bar: new StringShape() }).index(new StringShape());
+    const shape = new ObjectShape({ foo: new StringShape(), bar: new StringShape() }).rest(new StringShape());
 
     shape.parse({
       foo: 'aaa',

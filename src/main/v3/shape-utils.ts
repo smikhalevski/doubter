@@ -1,6 +1,5 @@
-import type { AnyShape, Shape } from './shapes/Shape';
-import { Check, InputConstraintOptionsOrMessage, Issue, OutputConstraintOptionsOrMessage } from './shared-types';
-import { isString } from './lang-utils';
+import type { AnyShape, CheckConfig, Shape } from './shapes/Shape';
+import { Check, Issue, OutputConstraintOptionsOrMessage } from './shared-types';
 
 /**
  * The convenient shortcut to add built-in constraints to shapes.
@@ -25,39 +24,16 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   return async;
 }
 
-export function toPartialIssue(
-  message: unknown,
-  options: InputConstraintOptionsOrMessage | undefined,
-  param?: unknown
-): { message: unknown; meta: unknown } {
-  let meta;
-
-  if (options !== null && typeof options === 'object') {
-    if (options.message !== undefined) {
-      message = options.message;
-    }
-    meta = options.meta;
-  } else if (typeof options === 'function') {
-    message = options;
-  } else if (options != null) {
-    message = String(options);
-  }
-  if (isString(message)) {
-    message = message.replace('%s', param === undefined ? '' : String(param));
-  }
-
-  return { message, meta };
-}
-
-export function createIssue(code: string, input: unknown, message: unknown, param: unknown, meta: unknown): Issue {
-  return { code, path: [], input, message, param, meta };
-}
-
-export function raiseIssue(code: string, input: unknown, message: unknown, param: unknown, meta: unknown): Issue[] {
+export function createIssue(code: string, input: unknown, param: unknown, config: CheckConfig): Issue {
+  let { message, meta } = config;
   if (typeof message === 'function') {
     message = message(param, input);
   }
-  return [createIssue(code, input, message, param, meta)];
+  return { code, path: [], input, message, param, meta };
+}
+
+export function raiseIssue(code: string, input: unknown, param: unknown, config: CheckConfig): Issue[] {
+  return [createIssue(code, input, param, config)];
 }
 
 export function prependKey(issues: Issue[], key: unknown): void {
