@@ -621,7 +621,7 @@ describe(
 );
 
 describe(
-  'object({ foo: string() }).index(string())',
+  'object({ foo: string() }).rest(string())',
   () => {
     const value = {
       foo: 'aaa',
@@ -665,7 +665,7 @@ describe(
     });
 
     test('doubter.v3.ObjectShape', measure => {
-      const shape = new d.v3.ObjectShape({ foo: new d.v3.StringShape() }).index(new d.v3.StringShape());
+      const shape = new d.v3.ObjectShape({ foo: new d.v3.StringShape() }).rest(new d.v3.StringShape());
 
       measure(() => {
         shape.parse(value);
@@ -756,7 +756,7 @@ describe(
       //   const ajv = new Ajv({ allowUnionTypes: true });
       //
       //   const schema = {
-      //     $id: 'AjvTest',
+      //     $id: 'test',
       //     $schema: 'http://json-schema.org/draft-07/schema#',
       //     type: ['string', 'number'],
       //   };
@@ -801,7 +801,7 @@ describe(
 );
 
 describe(
-  'monomorphic object',
+  'nested objects',
   () => {
     const value = {
       a1: 1,
@@ -817,87 +817,87 @@ describe(
       },
     };
 
-    // test('Ajv', measure => {
-    //   const ajv = new Ajv();
-    //
-    //   const schema = {
-    //     $id: 'AjvTest',
-    //     $schema: 'http://json-schema.org/draft-07/schema#',
-    //     type: 'object',
-    //     properties: {
-    //       a1: {
-    //         type: 'number',
-    //       },
-    //       a2: {
-    //         type: 'number',
-    //       },
-    //       a3: {
-    //         type: 'number',
-    //       },
-    //       a4: {
-    //         type: 'string',
-    //       },
-    //       a5: {
-    //         type: 'string',
-    //       },
-    //       a6: {
-    //         type: 'boolean',
-    //       },
-    //       a7: {
-    //         type: 'object',
-    //         properties: {
-    //           a71: {
-    //             type: 'string',
-    //           },
-    //           a72: {
-    //             type: 'number',
-    //           },
-    //           a73: {
-    //             type: 'boolean',
-    //           },
-    //         },
-    //         required: ['a71', 'a72', 'a73'],
-    //       },
-    //     },
-    //     required: ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'],
-    //   };
-    //
-    //   const validate = ajv.compile(schema);
-    //
-    //   measure(() => {
-    //     validate(value);
-    //   });
-    // });
-    //
-    // test('myzod', measure => {
-    //   const type = z.object(
-    //     {
-    //       a1: z.number(),
-    //       a2: z.number(),
-    //       a3: z.number(),
-    //       a4: z.string(),
-    //       a5: z.string(),
-    //       a6: z.boolean(),
-    //       a7: z.object(
-    //         {
-    //           a71: z.string(),
-    //           a72: z.number(),
-    //           a73: z.boolean(),
-    //         },
-    //         {
-    //           allowUnknown: true,
-    //         }
-    //       ),
-    //     },
-    //     {
-    //       allowUnknown: true,
-    //     }
-    //   );
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
+    test('Ajv', measure => {
+      const ajv = new Ajv();
+
+      const schema = {
+        $id: 'test',
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          a1: {
+            type: 'number',
+          },
+          a2: {
+            type: 'number',
+          },
+          a3: {
+            type: 'number',
+          },
+          a4: {
+            type: 'string',
+          },
+          a5: {
+            type: 'string',
+          },
+          a6: {
+            type: 'boolean',
+          },
+          a7: {
+            type: 'object',
+            properties: {
+              a71: {
+                type: 'string',
+              },
+              a72: {
+                type: 'number',
+              },
+              a73: {
+                type: 'boolean',
+              },
+            },
+            required: ['a71', 'a72', 'a73'],
+          },
+        },
+        required: ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'],
+      };
+
+      const validate = ajv.compile(schema);
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = z.object(
+        {
+          a1: z.number(),
+          a2: z.number(),
+          a3: z.number(),
+          a4: z.string(),
+          a5: z.string(),
+          a6: z.boolean(),
+          a7: z.object(
+            {
+              a71: z.string(),
+              a72: z.number(),
+              a73: z.boolean(),
+            },
+            {
+              allowUnknown: true,
+            }
+          ),
+        },
+        {
+          allowUnknown: true,
+        }
+      );
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
 
     test('valita', measure => {
       const type = v.object({
@@ -964,7 +964,7 @@ describe(
 );
 
 describe(
-  'polymorphic objects',
+  'exact nested objects',
   () => {
     const valueA = {
       a1: 111,
@@ -988,121 +988,87 @@ describe(
       b5: true,
     };
 
-    test('valita', measure => {
-      const typeA = v.object({
-        a1: v.number(),
-        a2: v.boolean(),
-        a3: v.string(),
-        a4: v.object({
-          a41: v.boolean(),
-          a42: v.string(),
-          a43: v.number(),
-        }),
-      });
+    test('Ajv', measure => {
+      const ajv = new Ajv();
 
-      const typeB = v.object({
-        b1: v.string(),
-        b2: v.number(),
-        b3: v.object({
-          b31: v.string(),
-          b32: v.number(),
-        }),
-        b4: v.string(),
-        b5: v.boolean(),
-      });
-      const options = { mode: 'passthrough' };
+      const schemaA = {
+        $id: 'testA',
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          a1: {
+            type: 'number',
+          },
+          a2: {
+            type: 'boolean',
+          },
+          a3: {
+            type: 'string',
+          },
+          a4: {
+            type: 'object',
+            properties: {
+              a41: {
+                type: 'boolean',
+              },
+              a42: {
+                type: 'string',
+              },
+              a43: {
+                type: 'number',
+              },
+            },
+            additionalProperties: false,
+            required: ['a41', 'a42', 'a43'],
+          },
+        },
+        additionalProperties: false,
+        required: ['a1', 'a2', 'a3', 'a4'],
+      };
 
-      measure(() => {
-        typeA.parse(valueA, options);
-        typeB.parse(valueB, options);
-      });
-    });
+      const schemaB = {
+        $id: 'testB',
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          b1: {
+            type: 'string',
+          },
+          b2: {
+            type: 'number',
+          },
+          b3: {
+            type: 'object',
+            properties: {
+              b31: {
+                type: 'string',
+              },
+              b32: {
+                type: 'number',
+              },
+            },
+            additionalProperties: false,
+            required: ['b31', 'b32'],
+          },
+          b4: {
+            type: 'string',
+          },
+          b5: {
+            type: 'boolean',
+          },
+        },
+        additionalProperties: false,
+        required: ['b1', 'b2', 'b3', 'b4', 'b5'],
+      };
 
-    test('doubter', measure => {
-      const shapeA = d.object({
-        a1: d.number(),
-        a2: d.boolean(),
-        a3: d.string(),
-        a4: d.object({
-          a41: d.boolean(),
-          a42: d.string(),
-          a43: d.number(),
-        }),
-      });
-
-      const shapeB = d.object({
-        b1: d.string(),
-        b2: d.number(),
-        b3: d.object({
-          b31: d.string(),
-          b32: d.number(),
-        }),
-        b4: d.string(),
-        b5: d.boolean(),
-      });
-
-      measure(() => {
-        shapeA.safeParse(valueA);
-        shapeB.safeParse(valueB);
-      });
-    });
-
-    test('doubter.v3.ObjectShape', measure => {
-      const shapeA = new d.v3.ObjectShape({
-        a1: new d.v3.NumberShape(),
-        a2: new d.v3.BooleanShape(),
-        a3: new d.v3.StringShape(),
-        a4: new d.v3.ObjectShape({
-          a41: new d.v3.BooleanShape(),
-          a42: new d.v3.StringShape(),
-          a43: new d.v3.NumberShape(),
-        }),
-      });
-
-      const shapeB = new d.v3.ObjectShape({
-        b1: new d.v3.StringShape(),
-        b2: new d.v3.NumberShape(),
-        b3: new d.v3.ObjectShape({
-          b31: new d.v3.StringShape(),
-          b32: new d.v3.NumberShape(),
-        }),
-        b4: new d.v3.StringShape(),
-        b5: new d.v3.BooleanShape(),
-      });
+      const validateA = ajv.compile(schemaA);
+      const validateB = ajv.compile(schemaB);
 
       measure(() => {
-        shapeA.parse(valueA);
-        shapeB.parse(valueB);
+        validateA(valueA);
+        validateB(valueB);
       });
     });
-  },
-  { warmupIterationCount: 1000, targetRme: 0.002 }
-);
-
-describe(
-  'exact polymorphic objects',
-  () => {
-    const valueA = {
-      a1: 111,
-      a2: true,
-      a3: 'aaa',
-      a4: {
-        a41: true,
-        a42: 'bbb',
-        a43: 222,
-      },
-    };
-
-    const valueB = {
-      b1: 'aaa',
-      b2: 111,
-      b3: {
-        b31: 'bbb',
-        b32: 222,
-      },
-      b4: 'ccc',
-      b5: true,
-    };
 
     test('valita', measure => {
       const typeA = v.object({
