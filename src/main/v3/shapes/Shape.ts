@@ -51,6 +51,10 @@ export interface Shape<I, O> {
 
   parse(input: unknown): O;
 
+  tryAsync(input: unknown): Promise<Ok<O> | Err>;
+
+  parseAsync(input: unknown): Promise<O>;
+
   check(check: Check<O>, options?: IdentifiableConstraintOptions): this;
 }
 
@@ -72,6 +76,10 @@ export class Shape<I = any, O = I> {
     }
     return null;
   }
+
+  _applyAsync(input: unknown, earlyReturn: boolean): Promise<ApplyResult<O>> {
+    return new Promise(resolve => resolve(this._apply(input, earlyReturn)));
+  }
 }
 
 const shapePrototype = Shape.prototype;
@@ -80,7 +88,7 @@ defineProperty(shapePrototype, 'try', {
   get() {
     const shape = this;
 
-    const value: Shape['try'] = function (this: Shape, input) {
+    const value: Shape['try'] = input => {
       const result = shape._apply(input, false);
 
       if (result === null) {
@@ -102,7 +110,7 @@ defineProperty(shapePrototype, 'parse', {
   get() {
     const shape = this;
 
-    const value: Shape['parse'] = function (this: Shape, input) {
+    const value: Shape['parse'] = input => {
       const result = shape._apply(input, false);
 
       if (result === null) {
@@ -115,6 +123,86 @@ defineProperty(shapePrototype, 'parse', {
     };
 
     defineProperty(this, 'parse', { value });
+
+    return value;
+  },
+});
+
+defineProperty(shapePrototype, 'tryAsync', {
+  get() {
+    const shape = this;
+
+    let value: Shape['tryAsync'];
+
+    if (this.async) {
+      value = input =>
+        shape._applyAsync(input, false).then(result => {
+          if (result === null) {
+            return ok(input);
+          }
+          if (isArray(result)) {
+            return { ok: false, issues: result };
+          }
+          return result;
+        });
+    } else {
+      value = input =>
+        new Promise((resolve, reject) => {
+          const result = shape._apply(input, false);
+
+          if (result === null) {
+            resolve(ok(input));
+            return;
+          }
+          if (isArray(result)) {
+            reject({ ok: false, issues: result });
+            return;
+          }
+          resolve(result);
+        });
+    }
+
+    defineProperty(this, 'tryAsync', { value });
+
+    return value;
+  },
+});
+
+defineProperty(shapePrototype, 'parseAsync', {
+  get() {
+    const shape = this;
+
+    let value: Shape['parseAsync'];
+
+    if (this.async) {
+      value = input =>
+        shape._applyAsync(input, false).then(result => {
+          if (result === null) {
+            return input;
+          }
+          if (isArray(result)) {
+            throw createValidationError(result);
+          }
+          return result.value;
+        });
+    } else {
+      value = input =>
+        new Promise((resolve, reject) => {
+          const result = shape._apply(input, false);
+
+          if (result === null) {
+            resolve(input);
+            return;
+          }
+          if (isArray(result)) {
+            reject(createValidationError(result));
+            return;
+          }
+          resolve(result.value);
+        });
+    }
+
+    defineProperty(this, 'parseAsync', { value });
 
     return value;
   },
@@ -170,27 +258,27 @@ export class BooleanShape extends Shape<boolean> {
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-type Channel = 'input' | 'output';
+export type Channel = 'input' | 'output';
 
-type InferObject<P extends Dict<AnyShape>, I extends AnyShape, C extends Channel> = Squash<
+export type InferObject<P extends Dict<AnyShape>, I extends AnyShape, C extends Channel> = Squash<
   UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferRest<I, C>
 >;
 
-type InferRest<I extends AnyShape, C extends Channel> = I extends Shape ? { [rest: string]: I[C] } : unknown;
+export type InferRest<I extends AnyShape, C extends Channel> = I extends Shape ? { [rest: string]: I[C] } : unknown;
 
-type ObjectKey<T extends object> = StringifyPropertyKey<keyof T>;
+export type ObjectKey<T extends object> = StringifyPropertyKey<keyof T>;
 
-type StringifyPropertyKey<K extends PropertyKey> = K extends symbol ? never : K extends number ? `${K}` : K;
+export type StringifyPropertyKey<K extends PropertyKey> = K extends symbol ? never : K extends number ? `${K}` : K;
 
-type Squash<T> = T extends never ? never : { [K in keyof T]: T[K] };
+export type Squash<T> = T extends never ? never : { [K in keyof T]: T[K] };
 
-type UndefinedAsOptional<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
+export type UndefinedAsOptional<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
 
-type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
+export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
+export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-type Flags = number[] | number;
+export type Flags = number[] | number;
 
 export const enum KeysMode {
   PRESERVED,
@@ -237,7 +325,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
 
-      if (keys.includes(key)) {
+      if (keys.indexOf(key) !== -1) {
         shapes[key] = this._valueShapes[i];
       }
     }
@@ -251,7 +339,7 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
 
-      if (!keys.includes(key)) {
+      if (keys.indexOf(key) === -1) {
         shapes[key] = this._valueShapes[i];
       }
     }
@@ -421,18 +509,25 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
         }
 
         unknownKeys = [key];
-        const issue = createIssue(CODE_UNKNOWN_KEYS, input, MESSAGE_UNKNOWN_KEYS, unknownKeys, undefined);
 
         if (earlyReturn) {
-          return [issue];
+          break;
         }
-        issues = pushIssue(issues, issue);
         continue;
       }
 
       if (input === output && (_unsafe || issues === null)) {
         output = cloneKnownKeys(input, keys);
       }
+    }
+
+    if (unknownKeys !== null) {
+      const issue = createIssue(CODE_UNKNOWN_KEYS, input, MESSAGE_UNKNOWN_KEYS, unknownKeys, undefined);
+
+      if (earlyReturn) {
+        return issues;
+      }
+      issues = pushIssue(issues, issue);
     }
 
     if (seenCount !== keysLength) {
@@ -474,9 +569,127 @@ export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<ne
     }
     return issues;
   }
+
+  _applyAsync(input: unknown, earlyReturn: boolean): Promise<ApplyResult<InferObject<P, I, 'output'>>> {
+    return new Promise(resolve => {
+      if (!isObjectLike(input)) {
+        return raiseIssue(CODE_TYPE, input, undefined, TYPE_OBJECT, undefined);
+      }
+
+      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
+
+      const keysLength = keys.length;
+      const promises: any[] = [];
+
+      let issues: Issue[] | null = null;
+      let output = input;
+
+      let seenCount = 0;
+      let seenFlags: Flags = 0;
+
+      let unknownKeys: string[] | null = null;
+
+      for (const key in input) {
+        const value = input[key];
+        const index = keys.indexOf(key as ObjectKey<P>);
+
+        let valueShape: AnyShape | null = restShape;
+
+        if (index !== -1) {
+          seenCount++;
+          seenFlags = setFlag(seenFlags, index);
+
+          valueShape = _valueShapes[index];
+        }
+
+        if (valueShape !== null) {
+          promises.push(key, valueShape._applyAsync(value, earlyReturn));
+          continue;
+        }
+
+        if (keysMode === KeysMode.EXACT) {
+          if (unknownKeys !== null) {
+            unknownKeys.push(key);
+            continue;
+          }
+
+          unknownKeys = [key];
+
+          if (earlyReturn) {
+            break;
+          }
+          continue;
+        }
+
+        if (input === output) {
+          output = cloneKnownKeys(input, keys);
+        }
+      }
+
+      if (unknownKeys !== null) {
+        const issue = createIssue(CODE_UNKNOWN_KEYS, input, MESSAGE_UNKNOWN_KEYS, unknownKeys, undefined);
+
+        if (earlyReturn) {
+          return issues;
+        }
+        issues = pushIssue(issues, issue);
+      }
+
+      if (seenCount !== keysLength) {
+        for (let i = 0; i < keysLength; ++i) {
+          if (isFlagSet(seenFlags, i)) {
+            continue;
+          }
+
+          const key = keys[i];
+          const value = input[key];
+
+          promises.push(key, _valueShapes[i]._applyAsync(value, earlyReturn));
+        }
+      }
+
+      const promise = Promise.all(promises).then(entries => {
+        const entriesLength = 0;
+
+        for (let i = 0; i < entriesLength; i += 2) {
+          const key = entries[i];
+          const result = entries[i + 1];
+
+          if (result === null) {
+            continue;
+          }
+          if (isArray(result)) {
+            prependKey(result, key);
+
+            if (earlyReturn) {
+              return result;
+            }
+            issues = concatIssues(issues, result);
+            continue;
+          }
+          if (_unsafe || issues === null) {
+            if (input === output) {
+              output = cloneEnumerableKeys(input);
+            }
+            output[key] = result.value;
+          }
+        }
+
+        if (_applyChecks !== null && (_unsafe || issues === null)) {
+          issues = _applyChecks(output, issues, earlyReturn);
+        }
+        if (issues === null && input !== output) {
+          return ok(output as InferObject<P, I, 'output'>);
+        }
+        return issues;
+      });
+
+      resolve(promise);
+    });
+  }
 }
 
-function setFlag(flags: Flags, index: number): Flags {
+export function setFlag(flags: Flags, index: number): Flags {
   if (typeof flags === 'number') {
     if (index < 32) {
       return flags | (1 << index);
@@ -488,7 +701,7 @@ function setFlag(flags: Flags, index: number): Flags {
   return flags;
 }
 
-function isFlagSet(flag: Flags, index: number): boolean {
+export function isFlagSet(flag: Flags, index: number): boolean {
   if (typeof flag === 'number') {
     return 0 !== flag >>> index;
   } else {
@@ -496,7 +709,7 @@ function isFlagSet(flag: Flags, index: number): boolean {
   }
 }
 
-function assignProperty(obj: Dict, key: string, value: unknown): void {
+export function assignProperty(obj: Dict, key: string, value: unknown): void {
   if (key === '__proto__') {
     defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
   } else {
@@ -504,7 +717,7 @@ function assignProperty(obj: Dict, key: string, value: unknown): void {
   }
 }
 
-function cloneEnumerableKeys(input: Dict): Dict {
+export function cloneEnumerableKeys(input: Dict): Dict {
   const output: Dict = {};
 
   for (const key in input) {
@@ -513,7 +726,7 @@ function cloneEnumerableKeys(input: Dict): Dict {
   return output;
 }
 
-function cloneKnownKeys(input: Dict, keys: readonly string[]): Dict {
+export function cloneKnownKeys(input: Dict, keys: readonly string[]): Dict {
   const output: Dict = {};
   const keysLength = keys.length;
 
