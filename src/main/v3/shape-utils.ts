@@ -1,18 +1,18 @@
 import type { AnyShape, CheckConfig, Shape } from './shapes/Shape';
-import { Check, Issue, OutputConstraintOptionsOrMessage } from './shared-types';
+import { Check, CheckOptions, Issue, Message } from './shared-types';
 
 /**
- * The convenient shortcut to add built-in constraints to shapes.
+ * The convenient shortcut to add built-in checks to shapes.
  */
 export function addCheck<S extends Shape>(
   shape: S,
   id: string | undefined,
-  options: OutputConstraintOptionsOrMessage | undefined,
-  constraint: Check<S['output']>
+  options: CheckOptions | Message | undefined,
+  check: Check<S['output']>
 ): S {
   const unsafe = options != null && typeof options === 'object' ? options.unsafe : false;
 
-  return shape.check(constraint, { id, unsafe });
+  return shape.check(check, { id, unsafe });
 }
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
