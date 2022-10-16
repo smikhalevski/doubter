@@ -24,16 +24,16 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   return async;
 }
 
-export function createIssue(code: string, input: unknown, param: unknown, config: CheckConfig): Issue {
-  let { message, meta } = config;
+export function createIssue(config: CheckConfig, input: unknown, param: unknown): Issue {
+  let { code, message, meta } = config;
   if (typeof message === 'function') {
     message = message(param, input);
   }
   return { code, path: [], input, message, param, meta };
 }
 
-export function raiseIssue(code: string, input: unknown, param: unknown, config: CheckConfig): Issue[] {
-  return [createIssue(code, input, param, config)];
+export function raiseIssue(config: CheckConfig, input: unknown): Issue[] {
+  return [createIssue(config, input, config.param)];
 }
 
 export function prependKey(issues: Issue[], key: unknown): void {
