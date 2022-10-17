@@ -1,5 +1,4 @@
-import { Ok } from './Shape';
-import { Issue } from '../shared-types';
+import { Issue, Ok } from '../shared-types';
 
 export type ApplyChecks = (output: any, issues: Issue[] | null, earlyReturn: boolean) => Issue[] | null;
 

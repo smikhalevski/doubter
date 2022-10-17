@@ -1,1 +1,4 @@
-export { StringShape, NumberShape, BooleanShape, ObjectShape } from './Shape';
+export { ObjectShape } from './ObjectShape';
+export { StringShape } from './StringShape';
+export { NumberShape } from './NumberShape';
+export { BooleanShape } from './BooleanShape';

@@ -12,7 +12,7 @@ export class ValidationError {
   }
 }
 
-// Avoid the super constructor call to prevent the redundant stack trace population.
+// Avoid the super constructor call to prevent the stack trace population.
 __extends(ValidationError, Error);
 
 const prototype = ValidationError.prototype;

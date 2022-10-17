@@ -1,3 +1,15 @@
+export interface Ok<T> {
+  ok: true;
+  value: T;
+}
+
+export interface Err {
+  ok: false;
+  issues: Issue[];
+}
+
+export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
+
 /**
  * A validation issue raised during input parsing.
  */
@@ -46,6 +58,9 @@ export type Check<T> = (value: T) => Issue[] | Issue | undefined | void;
  */
 export type Transformer<I, O> = (value: I) => O;
 
+/**
+ * The message callback or a string.
+ */
 export type Message = ((param: any, value: any) => any) | string;
 
 /**
@@ -113,8 +128,8 @@ export interface NarrowingOptions extends CheckOptions, CustomCheckOptions {}
  */
 export interface ParserOptions {
   /**
-   * If `true` then parsing all issues are collected during parsing, otherwise parsing is aborted after the first issue
-   * is encountered.
+   * If `true` then all issues are collected during parsing, otherwise parsing is aborted after the first issue is
+   * encountered.
    *
    * @default false
    */
@@ -123,7 +138,7 @@ export interface ParserOptions {
 
 export type Tuple<T> = [T, ...T[]];
 
-export type Primitive = string | number | bigint | boolean | null | undefined;
+export type Literal = string | number | bigint | boolean | null | undefined;
 
 export interface Dict<T = any> {
   [key: string]: T;
