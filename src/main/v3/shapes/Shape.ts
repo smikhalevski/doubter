@@ -1,7 +1,7 @@
 import { ApplyResult, Check, CustomCheckOptions, Err, Ok, ParserOptions } from '../shared-types';
-import { ApplyChecks } from './createApplyChecks';
+import { ApplyChecks, createApplyChecks } from './createApplyChecks';
 import { defineProperty, isArray, objectAssign, objectCreate } from '../lang-utils';
-import { err, ok } from '../shape-utils';
+import { ok } from '../shape-utils';
 import { createValidationError } from './ValidationError';
 
 export type AnyShape = Shape | Shape<never>;
@@ -17,8 +17,6 @@ export interface Shape<I, O> {
   tryAsync(input: unknown, options?: ParserOptions): Promise<Ok<O> | Err>;
 
   parseAsync(input: unknown, options?: ParserOptions): Promise<O>;
-
-  check(check: Check<O>, options?: CustomCheckOptions): this;
 }
 
 export class Shape<I = any, O = I> {
@@ -27,6 +25,36 @@ export class Shape<I = any, O = I> {
   protected _unsafe = false;
 
   constructor(readonly async: boolean) {}
+
+  /**
+   * Adds a custom check.
+   *
+   * @param check The check to add.
+   * @param options The check options or an issue message.
+   * @returns The clone of this shape with the check added.
+   */
+  check(check: Check<O>, options?: CustomCheckOptions): this {
+    const id = options?.id;
+    const unsafe = options?.unsafe;
+    const checks = this._checks.slice(0);
+
+    if (id != null) {
+      for (let i = 0; i < checks.length; i += 3) {
+        if (checks[i] === id) {
+          checks.splice(i, 3);
+          break;
+        }
+      }
+    }
+
+    checks.push(id, Boolean(unsafe), check);
+
+    const shape = this.clone();
+    shape._checks = checks;
+    shape._applyChecks = createApplyChecks(checks);
+
+    return shape;
+  }
 
   clone(): this {
     return objectAssign(objectCreate(Object.getPrototypeOf(this)), this);
@@ -58,7 +86,7 @@ defineProperty(prototype, 'try', {
         return ok(input);
       }
       if (isArray(result)) {
-        return err(result);
+        return { ok: false, issues: result };
       }
       return ok(result.value);
     };

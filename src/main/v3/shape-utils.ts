@@ -1,13 +1,9 @@
-import { Check, CheckOptions, Dict, Err, Issue, Message, Ok } from './shared-types';
+import { Check, CheckOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { defineProperty, isString } from './lang-utils';
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
-}
-
-export function err(issues: Issue[]): Err {
-  return { ok: false, issues };
 }
 
 /**
@@ -19,9 +15,7 @@ export function addCheck<S extends Shape>(
   options: CheckOptions | Message | undefined,
   check: Check<S['output']>
 ): S {
-  const unsafe = options != null && typeof options === 'object' ? options.unsafe : false;
-
-  return shape.check(check, { id, unsafe });
+  return shape.check(check, { id, unsafe: options != null && typeof options === 'object' ? options.unsafe : false });
 }
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
