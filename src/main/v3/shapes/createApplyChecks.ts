@@ -1,7 +1,5 @@
-import { isArray } from '../lang-utils';
 import { Check, Issue } from '../shared-types';
-import { ValidationError } from './ValidationError';
-import { concatIssues } from '../shape-utils';
+import { addIssue, concatIssues, getErrorIssues } from '../shape-utils';
 
 export type ApplyChecks = (output: any, issues: Issue[] | null, earlyReturn: boolean) => Issue[] | null;
 
@@ -105,28 +103,4 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
 
     return issues;
   };
-}
-
-function getErrorIssues(error: unknown): Issue[] {
-  if (error instanceof ValidationError) {
-    return error.issues;
-  }
-  throw error;
-}
-
-function addIssue(issues: Issue[] | null, issue: Issue[] | Issue): Issue[] {
-  if (isArray(issue)) {
-    if (issues === null) {
-      issues = issue;
-    } else {
-      issues.push(...issue);
-    }
-  } else {
-    if (issues === null) {
-      issues = [issue];
-    } else {
-      issues.push(issue);
-    }
-  }
-  return issues;
 }

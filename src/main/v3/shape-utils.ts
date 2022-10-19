@@ -1,6 +1,7 @@
 import { Check, CheckOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
-import { defineProperty, isString } from './lang-utils';
+import { defineProperty, isArray, isString } from './lang-utils';
+import { ValidationError } from './shapes/ValidationError';
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
@@ -146,4 +147,28 @@ export function cloneKnownKeys(input: Dict, keys: readonly string[]): Dict {
     }
   }
   return output;
+}
+
+export function getErrorIssues(error: unknown): Issue[] {
+  if (error instanceof ValidationError) {
+    return error.issues;
+  }
+  throw error;
+}
+
+export function addIssue(issues: Issue[] | null, issue: Issue[] | Issue): Issue[] {
+  if (isArray(issue)) {
+    if (issues === null) {
+      issues = issue;
+    } else {
+      issues.push(...issue);
+    }
+  } else {
+    if (issues === null) {
+      issues = [issue];
+    } else {
+      issues.push(issue);
+    }
+  }
+  return issues;
 }

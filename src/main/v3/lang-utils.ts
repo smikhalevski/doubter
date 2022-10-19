@@ -19,8 +19,6 @@ export const objectKeys = Object.keys;
 
 export const objectValues = Object.values;
 
-export const objectEntries = Object.entries;
-
 export const unsafeDefineProperty: <T>(object: T, key: PropertyKey, descriptor: PropertyDescriptor<T, unknown>) => T =
   Object.defineProperty;
 
