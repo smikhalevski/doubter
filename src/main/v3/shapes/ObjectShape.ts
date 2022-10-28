@@ -148,208 +148,13 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return this._applyPreservedKeys(input, earlyReturn);
   }
 
-  private _applyPreservedKeys(input: Dict, earlyReturn: boolean): ApplyResult {
-    const { keys, _valueShapes, _applyChecks, _unsafe } = this;
-
-    const keysLength = keys.length;
-
-    let issues: Issue[] | null = null;
-    let output = input;
-
-    for (let i = 0; i < keysLength; ++i) {
-      const key = keys[i];
-      const value = input[key];
-      const result = _valueShapes[i]._apply(value, earlyReturn);
-
-      if (result === null) {
-        continue;
-      }
-      if (isArray(result)) {
-        prependKey(result, key);
-
-        if (earlyReturn) {
-          return result;
-        }
-        issues = concatIssues(issues, result);
-        continue;
-      }
-      if (_unsafe || issues === null) {
-        if (input === output) {
-          output = cloneEnumerableKeys(input);
-        }
-        output[key] = result.value;
-      }
-    }
-
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, earlyReturn);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
-  }
-
-  private _applyPreservedRestKeys(input: Dict, earlyReturn: boolean): ApplyResult {
-    const { keys, restShape, _valueShapes, _applyChecks, _unsafe } = this;
-
-    let issues: Issue[] | null = null;
-    let output = input;
-
-    for (const key in input) {
-      const value = input[key];
-      const index = keys.indexOf(key as ObjectKey<P>);
-      const valueShape = index !== -1 ? _valueShapes[index] : restShape!;
-      const result = valueShape._apply(value, earlyReturn);
-
-      if (result === null) {
-        continue;
-      }
-      if (isArray(result)) {
-        prependKey(result, key);
-
-        if (earlyReturn) {
-          return result;
-        }
-        issues = concatIssues(issues, result);
-        continue;
-      }
-      if (_unsafe || issues === null) {
-        if (input === output) {
-          output = cloneEnumerableKeys(input);
-        }
-        output[key] = result.value;
-      }
-    }
-
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, earlyReturn);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
-  }
-
-  private _applyStrictKeys(input: Dict, earlyReturn: boolean): ApplyResult {
-    const { keys, keysMode, _valueShapes, _applyChecks, _unsafe } = this;
-
-    const keysLength = keys.length;
-
-    let issues: Issue[] | null = null;
-    let output = input;
-
-    let seenCount = 0;
-    let seenFlags: Flags = 0;
-
-    let unknownKeys: string[] | null = null;
-
-    for (const key in input) {
-      const value = input[key];
-      const index = keys.indexOf(key as ObjectKey<P>);
-
-      if (index !== -1) {
-        seenCount++;
-        seenFlags = setFlag(seenFlags, index);
-
-        const result = _valueShapes[index]._apply(value, earlyReturn);
-
-        if (result === null) {
-          continue;
-        }
-        if (isArray(result)) {
-          prependKey(result, key);
-
-          if (earlyReturn) {
-            return result;
-          }
-          issues = concatIssues(issues, result);
-          continue;
-        }
-        if (_unsafe || issues === null) {
-          if (input === output) {
-            output = cloneKnownKeys(input, keys);
-          }
-          output[key] = result.value;
-        }
-        continue;
-      }
-
-      if (keysMode === KeysMode.EXACT) {
-        if (unknownKeys !== null) {
-          unknownKeys.push(key);
-          continue;
-        }
-
-        unknownKeys = [key];
-
-        if (earlyReturn) {
-          break;
-        }
-        continue;
-      }
-
-      if (input === output && (_unsafe || issues === null)) {
-        output = cloneKnownKeys(input, keys);
-      }
-    }
-
-    if (unknownKeys !== null) {
-      const issue = createIssue(this._exactCheckConfig!, input, unknownKeys);
-
-      if (earlyReturn) {
-        return [issue];
-      }
-      issues = pushIssue(issues, issue);
-    }
-
-    if (seenCount !== keysLength) {
-      for (let i = 0; i < keysLength; ++i) {
-        if (isFlagSet(seenFlags, i)) {
-          continue;
-        }
-
-        const key = keys[i];
-        const value = input[key];
-        const result = _valueShapes[i]._apply(value, earlyReturn);
-
-        if (result === null) {
-          continue;
-        }
-        if (isArray(result)) {
-          prependKey(result, key);
-
-          if (earlyReturn) {
-            return result;
-          }
-          issues = concatIssues(issues, result);
-          continue;
-        }
-        if (_unsafe || issues === null) {
-          if (input === output) {
-            output = cloneKnownKeys(input, keys);
-          }
-          output[key] = result.value;
-        }
-      }
-    }
-
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, earlyReturn);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
-  }
-
   _applyAsync(input: unknown, earlyReturn: boolean): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         return raiseIssue(this._typeCheckConfig, input);
       }
 
-      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
+      const { keys, keysMode, restShape, _valueShapes, applyChecks, unsafe } = this;
 
       const keysLength = keys.length;
       const promises: any[] = [];
@@ -440,7 +245,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
             issues = concatIssues(issues, result);
             continue;
           }
-          if (_unsafe || issues === null) {
+          if (unsafe || issues === null) {
             if (input === output) {
               output = cloneEnumerableKeys(input);
             }
@@ -448,8 +253,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           }
         }
 
-        if (_applyChecks !== null && (_unsafe || issues === null)) {
-          issues = _applyChecks(output, issues, earlyReturn);
+        if (applyChecks !== null && (unsafe || issues === null)) {
+          issues = applyChecks(output, issues, earlyReturn);
         }
         if (issues === null && input !== output) {
           return ok(output as InferObject<P, R, 'output'>);
@@ -459,5 +264,200 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
 
       resolve(promise);
     });
+  }
+
+  private _applyPreservedKeys(input: Dict, earlyReturn: boolean): ApplyResult {
+    const { keys, _valueShapes, applyChecks, unsafe } = this;
+
+    const keysLength = keys.length;
+
+    let issues: Issue[] | null = null;
+    let output = input;
+
+    for (let i = 0; i < keysLength; ++i) {
+      const key = keys[i];
+      const value = input[key];
+      const result = _valueShapes[i]._apply(value, earlyReturn);
+
+      if (result === null) {
+        continue;
+      }
+      if (isArray(result)) {
+        prependKey(result, key);
+
+        if (earlyReturn) {
+          return result;
+        }
+        issues = concatIssues(issues, result);
+        continue;
+      }
+      if (unsafe || issues === null) {
+        if (input === output) {
+          output = cloneEnumerableKeys(input);
+        }
+        output[key] = result.value;
+      }
+    }
+
+    if (applyChecks !== null && (unsafe || issues === null)) {
+      issues = applyChecks(output, issues, earlyReturn);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
+  }
+
+  private _applyPreservedRestKeys(input: Dict, earlyReturn: boolean): ApplyResult {
+    const { keys, restShape, _valueShapes, applyChecks, unsafe } = this;
+
+    let issues: Issue[] | null = null;
+    let output = input;
+
+    for (const key in input) {
+      const value = input[key];
+      const index = keys.indexOf(key as ObjectKey<P>);
+      const valueShape = index !== -1 ? _valueShapes[index] : restShape!;
+      const result = valueShape._apply(value, earlyReturn);
+
+      if (result === null) {
+        continue;
+      }
+      if (isArray(result)) {
+        prependKey(result, key);
+
+        if (earlyReturn) {
+          return result;
+        }
+        issues = concatIssues(issues, result);
+        continue;
+      }
+      if (unsafe || issues === null) {
+        if (input === output) {
+          output = cloneEnumerableKeys(input);
+        }
+        output[key] = result.value;
+      }
+    }
+
+    if (applyChecks !== null && (unsafe || issues === null)) {
+      issues = applyChecks(output, issues, earlyReturn);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
+  }
+
+  private _applyStrictKeys(input: Dict, earlyReturn: boolean): ApplyResult {
+    const { keys, keysMode, _valueShapes, applyChecks, unsafe } = this;
+
+    const keysLength = keys.length;
+
+    let issues: Issue[] | null = null;
+    let output = input;
+
+    let seenCount = 0;
+    let seenFlags: Flags = 0;
+
+    let unknownKeys: string[] | null = null;
+
+    for (const key in input) {
+      const value = input[key];
+      const index = keys.indexOf(key as ObjectKey<P>);
+
+      if (index !== -1) {
+        seenCount++;
+        seenFlags = setFlag(seenFlags, index);
+
+        const result = _valueShapes[index]._apply(value, earlyReturn);
+
+        if (result === null) {
+          continue;
+        }
+        if (isArray(result)) {
+          prependKey(result, key);
+
+          if (earlyReturn) {
+            return result;
+          }
+          issues = concatIssues(issues, result);
+          continue;
+        }
+        if (unsafe || issues === null) {
+          if (input === output) {
+            output = cloneKnownKeys(input, keys);
+          }
+          output[key] = result.value;
+        }
+        continue;
+      }
+
+      if (keysMode === KeysMode.EXACT) {
+        if (unknownKeys !== null) {
+          unknownKeys.push(key);
+          continue;
+        }
+
+        unknownKeys = [key];
+
+        if (earlyReturn) {
+          break;
+        }
+        continue;
+      }
+
+      if (input === output && (unsafe || issues === null)) {
+        output = cloneKnownKeys(input, keys);
+      }
+    }
+
+    if (unknownKeys !== null) {
+      const issue = createIssue(this._exactCheckConfig!, input, unknownKeys);
+
+      if (earlyReturn) {
+        return [issue];
+      }
+      issues = pushIssue(issues, issue);
+    }
+
+    if (seenCount !== keysLength) {
+      for (let i = 0; i < keysLength; ++i) {
+        if (isFlagSet(seenFlags, i)) {
+          continue;
+        }
+
+        const key = keys[i];
+        const value = input[key];
+        const result = _valueShapes[i]._apply(value, earlyReturn);
+
+        if (result === null) {
+          continue;
+        }
+        if (isArray(result)) {
+          prependKey(result, key);
+
+          if (earlyReturn) {
+            return result;
+          }
+          issues = concatIssues(issues, result);
+          continue;
+        }
+        if (unsafe || issues === null) {
+          if (input === output) {
+            output = cloneKnownKeys(input, keys);
+          }
+          output[key] = result.value;
+        }
+      }
+    }
+
+    if (applyChecks !== null && (unsafe || issues === null)) {
+      issues = applyChecks(output, issues, earlyReturn);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
   }
 }

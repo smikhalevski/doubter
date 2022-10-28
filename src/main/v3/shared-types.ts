@@ -50,13 +50,13 @@ export interface Issue {
  * doesn't satisfy the check requirements then a {@linkcode ValidationError} can be thrown, or detected issues can
  * be returned.
  */
-export type Check<T> = (value: T) => Issue[] | Issue | null | undefined | void;
+export type CheckCallback<T> = (value: T) => Issue[] | Issue | null | undefined | void;
 
 /**
  * Transforms the value from one type to another. Transformer may throw or return a {@linkcode ValidationError} if there
  * are issues that prevent the value from being properly transformed.
  */
-export type Transformer<I, O> = (value: I) => O;
+export type TransformCallback<I, O> = (value: I) => O;
 
 /**
  * The message callback or a string.

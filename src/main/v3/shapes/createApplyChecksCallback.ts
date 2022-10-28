@@ -1,24 +1,30 @@
-import { Check, Issue } from '../shared-types';
+import { CheckCallback, Issue } from '../shared-types';
 import { addIssue, concatIssues, getErrorIssues } from '../shape-utils';
 
-export type ApplyChecks = (output: any, issues: Issue[] | null, earlyReturn: boolean) => Issue[] | null;
+export type ApplyChecksCallback = (output: any, issues: Issue[] | null, earlyReturn: boolean) => Issue[] | null;
 
-export function createApplyChecks(checks: any[]): ApplyChecks | null {
+export interface Check {
+  id: string | undefined;
+  cb: CheckCallback<any>;
+  unsafe: boolean;
+}
+
+export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback | null {
   const checksLength = checks.length;
 
   if (checksLength === 0) {
     return null;
   }
 
-  if (checksLength === 3) {
-    const [, unsafe0, check0] = checks;
+  if (checksLength === 1) {
+    const [{ unsafe, cb }] = checks;
 
     return (output, issues, earlyReturn) => {
-      if (issues === null || unsafe0) {
-        let result: ReturnType<Check<unknown>> = null;
+      if (issues === null || unsafe) {
+        let result: ReturnType<CheckCallback<unknown>> = null;
 
         try {
-          result = check0(output);
+          result = cb(output);
         } catch (error) {
           return concatIssues(issues, getErrorIssues(error));
         }
@@ -30,15 +36,15 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
     };
   }
 
-  if (checksLength === 6) {
-    const [, unsafe0, check0, , unsafe1, check1] = checks;
+  if (checksLength === 2) {
+    const [{ unsafe: unsafe0, cb: cb0 }, { unsafe: unsafe1, cb: cb1 }] = checks;
 
     return (output, issues, earlyReturn) => {
       if (issues === null || unsafe0) {
-        let result: ReturnType<Check<unknown>> = null;
+        let result: ReturnType<CheckCallback<unknown>> = null;
 
         try {
-          result = check0(output);
+          result = cb0(output);
         } catch (error) {
           issues = concatIssues(issues, getErrorIssues(error));
 
@@ -56,10 +62,10 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
       }
 
       if (issues === null || unsafe1) {
-        let result: ReturnType<Check<unknown>> = null;
+        let result: ReturnType<CheckCallback<unknown>> = null;
 
         try {
-          result = check1(output);
+          result = cb1(output);
         } catch (error) {
           issues = concatIssues(issues, getErrorIssues(error));
         }
@@ -73,17 +79,17 @@ export function createApplyChecks(checks: any[]): ApplyChecks | null {
   }
 
   return (output, issues, earlyReturn) => {
-    for (let i = 1; i < checksLength; i += 3) {
-      let result: ReturnType<Check<unknown>> = null;
+    for (let i = 1; i < checksLength; ++i) {
+      const { unsafe, cb } = checks[i];
 
-      if (issues !== null && !checks[i]) {
+      let result: ReturnType<CheckCallback<unknown>> = null;
+
+      if (issues !== null && !unsafe) {
         continue;
       }
 
-      const check: Check<any> = checks[i + 1];
-
       try {
-        result = check(output);
+        result = cb(output);
       } catch (error) {
         issues = concatIssues(issues, getErrorIssues(error));
 

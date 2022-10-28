@@ -1,5 +1,5 @@
-import { ApplyResult, Check, CustomCheckOptions, Err, Issue, Ok, ParserOptions } from '../shared-types';
-import { ApplyChecks, createApplyChecks } from './createApplyChecks';
+import { ApplyResult, CheckCallback, CustomCheckOptions, Err, Ok, ParserOptions } from '../shared-types';
+import { ApplyChecksCallback, Check, createApplyChecksCallback } from './createApplyChecksCallback';
 import { defineProperty, isArray, objectAssign, objectCreate } from '../lang-utils';
 import { getErrorIssues, ok } from '../shape-utils';
 import { ValidationError } from './ValidationError';
@@ -21,38 +21,28 @@ export interface Shape<I, O> {
 }
 
 export class Shape<I = any, O = I> {
-  protected _applyChecks: ApplyChecks | null = null;
-  protected _checks: any[] = [];
-  protected _unsafe = false;
+  protected applyChecks: ApplyChecksCallback | null = null;
+  protected checks: Check[] = [];
+  protected unsafe = false;
 
   constructor(readonly async: boolean) {}
 
   /**
    * Adds a custom check.
    *
-   * @param check The check to add.
-   * @param options The check options or an issue message.
+   * @param cb The callback that checks the shape output.
+   * @param options The check options.
    * @returns The clone of this shape with the check added.
    */
-  check(check: Check<O>, options?: CustomCheckOptions): this {
+  check(cb: CheckCallback<O>, options?: CustomCheckOptions): this {
     const id = options?.id;
-    const unsafe = options?.unsafe;
-    const checks = this._checks.slice(0);
-
-    if (id != null) {
-      for (let i = 0; i < checks.length; i += 3) {
-        if (checks[i] === id) {
-          checks.splice(i, 3);
-          break;
-        }
-      }
-    }
-
-    checks.push(id, Boolean(unsafe), check);
-
+    const unsafe = Boolean(options?.unsafe);
+    const checks = id == null ? this.checks : this.checks.filter(check => check.id !== id);
     const shape = this.clone();
-    shape._checks = checks;
-    shape._applyChecks = createApplyChecks(checks);
+
+    shape.applyChecks = createApplyChecksCallback(checks);
+    shape.checks = checks.concat({ id, cb, unsafe });
+    shape.unsafe ||= unsafe;
 
     return shape;
   }
@@ -61,69 +51,28 @@ export class Shape<I = any, O = I> {
    * Synchronously transforms the output value of the shape with a transformer callback. The callback may throw
    * {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
    *
-   * @param transformer The transformation callback.
+   * @param cb The transformation callback.
    * @return The transformed shape.
    * @template T The transformed value.
    */
-  transform<T>(transformer: (value: I) => T): Shape<I, T> {
-    return new TransformedShape(this, false, input => {
-      let value;
-      try {
-        value = transformer(input);
-      } catch (error) {
-        return getErrorIssues(error);
-      }
-      return isEqual(input, value) ? null : ok(value);
-    });
+  transform<T>(cb: (value: I) => T): Shape<I, T> {
+    return new TransformedShape(this, false, cb);
   }
 
   /**
    * Asynchronously transforms the output value of the shape with a transformer callback. The callback may throw
    * {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
    *
-   * @param transformer The value transformer callback.
+   * @param cb The value transformer callback.
    * @return The transformed shape.
    * @template T The transformed value.
    */
-  transformAsync<T>(transformer: (value: I) => Promise<T>): Shape<I, T> {
-    return new TransformedShape(this, true, input => {
-      return Promise.resolve(transformer(input)).then(
-        value => (isEqual(input, value) ? null : ok(value)),
-        getErrorIssues
-      );
-    });
+  transformAsync<T>(cb: (value: I) => Promise<T>): Shape<I, T> {
+    return new TransformedShape(this, true, cb);
   }
 
-  pipe<T>(to: Shape<O, T>): Shape<I, T>;
-
-  pipe<S extends Shape<O, any>>(to: (input: unknown) => S): Shape<I, S['output']>;
-
-  pipe(to: ((input: unknown) => AnyShape) | AnyShape): AnyShape {
-    if (typeof to !== 'function' && to.async) {
-      throw new Error('Cannot synchronously pipe to the asynchronous shape, use pipeAsync instead');
-    }
-    return new TransformedShape(
-      this,
-      false,
-      typeof to === 'function' ? input => to(input)._apply(input, false) : input => to._apply(input, false)
-    );
-  }
-
-  pipeAsync<T>(to: Shape<O, T>): Shape<I, T>;
-
-  pipeAsync<S extends Shape<O, any>>(to: (input: unknown) => Promise<S> | S): Shape<I, S['output']>;
-
-  pipeAsync(to: ((input: unknown) => AnyShape) | AnyShape): AnyShape {
-    if (typeof to !== 'function' && !to.async) {
-      return this.pipe(to);
-    }
-    return new TransformedShape(
-      this,
-      true,
-      typeof to === 'function'
-        ? input => Promise.resolve(to(input)).then(shape => shape._applyAsync(input, false))
-        : input => to._applyAsync(input, false)
-    );
+  pipe<T>(to: Shape<O, T>): Shape<I, T> {
+    return new PipedShape(this, to);
   }
 
   clone(): this {
@@ -131,9 +80,9 @@ export class Shape<I = any, O = I> {
   }
 
   _apply(input: unknown, earlyReturn: boolean): ApplyResult<O> {
-    const { _applyChecks } = this;
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, earlyReturn);
+    const { applyChecks } = this;
+    if (applyChecks !== null) {
+      return applyChecks(input, null, earlyReturn);
     }
     return null;
   }
@@ -269,101 +218,138 @@ defineProperty(prototype, 'parseAsync', {
   },
 });
 
-/**
- * The shape that applies a transformer to the output of the base shape.
- *
- * @template I The base shape input value.
- * @template O The base shape output value.
- * @template T The transformed value.
- */
 export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T> {
-  /**
-   * Creates the new {@linkcode TransformedShape}.
-   *
-   * @param shape The base shape.
-   * @param async If `true` then transformer must return a promise.
-   * @param _transformer The transformation callback.
-   */
-  constructor(
-    protected shape: S,
-    async: boolean,
-    protected _transformer: (input: S['input']) => Promise<ApplyResult<T>> | ApplyResult<T>
-  ) {
+  constructor(readonly shape: S, async: boolean, readonly callback: (input: S['input']) => Promise<T> | T) {
     super(shape.async || async);
   }
 
   _apply(input: unknown, earlyReturn: boolean): ApplyResult<T> {
-    const { shape, _transformer, _applyChecks, _unsafe } = this;
+    const { shape, callback, applyChecks } = this;
 
-    let issues: Issue[] | null = null;
     let output = input;
 
-    const result1 = shape._apply(input, earlyReturn);
+    const result = shape._apply(input, earlyReturn);
 
-    if (result1 !== null) {
-      if (isArray(result1)) {
-        return result1;
+    if (result !== null) {
+      if (isArray(result)) {
+        return result;
       }
-      output = result1.value;
+      output = result.value;
     }
 
-    const result2 = _transformer(input) as ApplyResult<T>;
+    try {
+      output = callback(output);
+    } catch (error) {
+      return getErrorIssues(error);
+    }
 
-    if (result2 !== null) {
-      if (isArray(result2)) {
-        issues = result2;
+    if (applyChecks !== null) {
+      const issues = applyChecks(output, null, earlyReturn);
 
-        if (earlyReturn) {
-          return issues;
-        }
-      } else {
-        output = result2.value;
+      if (issues !== null) {
+        return issues;
       }
     }
-
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, earlyReturn);
-    }
-    if (issues !== null) {
-      return issues;
-    }
-    return ok(output as T);
+    return isEqual(input, output) ? null : ok(output as T);
   }
 
   _applyAsync(input: unknown, earlyReturn: boolean): Promise<ApplyResult<T>> {
-    const { shape, _transformer, _applyChecks, _unsafe } = this;
+    const { shape, callback, applyChecks } = this;
 
-    return shape
-      ._applyAsync(input, earlyReturn)
-      .then(result1 => {
-        if (result1 !== null) {
-          return isArray(result1) ? result1 : _transformer(result1.value);
+    return shape._applyAsync(input, earlyReturn).then(result => {
+      let output = input;
+
+      if (result !== null) {
+        if (isArray(result)) {
+          return result;
         }
-        return _transformer(input);
-      })
-      .then(result2 => {
-        let issues: Issue[] | null = null;
-        let output = input;
+        output = result.value;
+      }
 
-        if (result2 !== null) {
-          if (isArray(result2)) {
-            issues = result2;
+      return new Promise<T>(resolve => resolve(callback(output))).then(
+        output => {
+          if (applyChecks !== null) {
+            const issues = applyChecks(output, null, earlyReturn);
 
-            if (earlyReturn) {
+            if (issues !== null) {
               return issues;
             }
-          } else {
-            output = result2.value;
           }
+          return isEqual(input, output) ? null : ok(output);
+        },
+        error => getErrorIssues(error)
+      );
+    });
+  }
+}
+
+export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
+  constructor(readonly inputShape: I, readonly outputShape: O) {
+    super(inputShape.async || outputShape.async);
+  }
+
+  _apply(input: unknown, earlyReturn: boolean): ApplyResult<O['output']> {
+    const { inputShape, outputShape, applyChecks } = this;
+
+    let output = input;
+
+    const inputResult = inputShape._apply(input, earlyReturn);
+
+    if (inputResult !== null) {
+      if (isArray(inputResult)) {
+        return inputResult;
+      }
+      output = inputResult.value;
+    }
+
+    const outputResult = outputShape._apply(output, earlyReturn);
+
+    if (outputResult !== null) {
+      if (isArray(outputResult)) {
+        return outputResult;
+      }
+      output = outputResult.value;
+    }
+
+    if (applyChecks !== null) {
+      const issues = applyChecks(output, null, earlyReturn);
+
+      if (issues !== null) {
+        return issues;
+      }
+    }
+    return isEqual(input, output) ? null : ok(output);
+  }
+
+  _applyAsync(input: unknown, earlyReturn: boolean): Promise<ApplyResult<O['output']>> {
+    const { inputShape, outputShape, applyChecks } = this;
+
+    return inputShape
+      ._applyAsync(input, earlyReturn)
+      .then(inputResult => {
+        if (inputResult !== null) {
+          return isArray(inputResult) ? inputResult : outputShape._applyAsync(inputResult.value, earlyReturn);
+        }
+        return outputShape._applyAsync(input, earlyReturn);
+      })
+      .then(outputResult => {
+        let output = input;
+
+        if (outputResult !== null) {
+          if (isArray(outputResult)) {
+            return outputResult;
+          }
+          output = outputResult.value;
         }
 
-        if (_applyChecks !== null && (_unsafe || issues === null)) {
-          issues = _applyChecks(output, issues, earlyReturn);
+        if (applyChecks !== null) {
+          const issues = applyChecks(output, null, earlyReturn);
+
+          if (issues !== null) {
+            return issues;
+          }
         }
-        if (issues !== null) {
-          return issues;
-        }
-        return ok(output as T);
+        return isEqual(input, output) ? null : ok(output);
       });
   }
 }
