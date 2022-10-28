@@ -98,17 +98,25 @@ defineProperty(prototype, 'try', {
   get() {
     const shape = this;
 
-    const value: Shape['try'] = (input, options) => {
-      const result = shape._apply(input, options != null && !options.verbose);
+    let value: Shape['try'];
 
-      if (result === null) {
-        return ok(input);
-      }
-      if (isArray(result)) {
-        return { ok: false, issues: result };
-      }
-      return ok(result.value);
-    };
+    if (this.async) {
+      value = () => {
+        throw new Error('Shape is async');
+      };
+    } else {
+      value = (input, options) => {
+        const result = shape._apply(input, options != null && !options.verbose);
+
+        if (result === null) {
+          return ok(input);
+        }
+        if (isArray(result)) {
+          return { ok: false, issues: result };
+        }
+        return ok(result.value);
+      };
+    }
 
     defineProperty(this, 'try', { value });
 
@@ -120,17 +128,25 @@ defineProperty(prototype, 'parse', {
   get() {
     const shape = this;
 
-    const value: Shape['parse'] = (input, options) => {
-      const result = shape._apply(input, options != null && !options.verbose);
+    let value: Shape['parse'];
 
-      if (result === null) {
-        return input;
-      }
-      if (isArray(result)) {
-        throw new ValidationError(result);
-      }
-      return result.value;
-    };
+    if (this.async) {
+      value = () => {
+        throw new Error('Shape is async');
+      };
+    } else {
+      value = (input, options) => {
+        const result = shape._apply(input, options != null && !options.verbose);
+
+        if (result === null) {
+          return input;
+        }
+        if (isArray(result)) {
+          throw new ValidationError(result);
+        }
+        return result.value;
+      };
+    }
 
     defineProperty(this, 'parse', { value });
 
@@ -145,8 +161,8 @@ defineProperty(prototype, 'tryAsync', {
     let value: Shape['tryAsync'];
 
     if (this.async) {
-      value = (input, options) =>
-        shape._applyAsync(input, options != null && !options.verbose).then(result => {
+      value = (input, options) => {
+        return shape._applyAsync(input, options != null && !options.verbose).then(result => {
           if (result === null) {
             return ok(input);
           }
@@ -155,9 +171,10 @@ defineProperty(prototype, 'tryAsync', {
           }
           return result;
         });
+      };
     } else {
-      value = (input, options) =>
-        new Promise((resolve, reject) => {
+      value = (input, options) => {
+        return new Promise((resolve, reject) => {
           const result = shape._apply(input, options != null && !options.verbose);
 
           if (result === null) {
@@ -170,6 +187,7 @@ defineProperty(prototype, 'tryAsync', {
           }
           resolve(result);
         });
+      };
     }
 
     defineProperty(this, 'tryAsync', { value });
@@ -185,8 +203,8 @@ defineProperty(prototype, 'parseAsync', {
     let value: Shape['parseAsync'];
 
     if (this.async) {
-      value = (input, options) =>
-        shape._applyAsync(input, options != null && !options.verbose).then(result => {
+      value = (input, options) => {
+        return shape._applyAsync(input, options != null && !options.verbose).then(result => {
           if (result === null) {
             return input;
           }
@@ -195,9 +213,10 @@ defineProperty(prototype, 'parseAsync', {
           }
           return result.value;
         });
+      };
     } else {
-      value = (input, options) =>
-        new Promise((resolve, reject) => {
+      value = (input, options) => {
+        return new Promise((resolve, reject) => {
           const result = shape._apply(input, options != null && !options.verbose);
 
           if (result === null) {
@@ -210,6 +229,7 @@ defineProperty(prototype, 'parseAsync', {
           }
           resolve(result.value);
         });
+      };
     }
 
     defineProperty(this, 'parseAsync', { value });
