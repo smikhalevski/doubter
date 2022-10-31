@@ -86,7 +86,7 @@ export class StringShape extends Shape<string> {
     });
   }
 
-  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<string> {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
     if (!isString(input)) {

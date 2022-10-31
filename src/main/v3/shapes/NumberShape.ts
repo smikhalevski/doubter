@@ -131,7 +131,7 @@ export class NumberShape extends Shape<number> {
     });
   }
 
-  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<number> {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<number> {
     const { _applyChecks } = this;
 
     if (!isFinite(input)) {

@@ -1,5 +1,5 @@
 import { CheckCallback, Issue, ParserOptions } from '../shared-types';
-import { addIssue, concatIssues, getErrorIssues } from '../shape-utils';
+import { addIssue, concatIssues, captureIssues } from '../shape-utils';
 
 export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParserOptions) => Issue[] | null;
 
@@ -26,7 +26,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         try {
           result = cb(output);
         } catch (error) {
-          return concatIssues(issues, getErrorIssues(error));
+          return concatIssues(issues, captureIssues(error));
         }
         if (result != null) {
           return addIssue(issues, result);
@@ -46,7 +46,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         try {
           result = cb0(output);
         } catch (error) {
-          issues = concatIssues(issues, getErrorIssues(error));
+          issues = concatIssues(issues, captureIssues(error));
 
           if (!options.verbose) {
             return issues;
@@ -67,7 +67,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         try {
           result = cb1(output);
         } catch (error) {
-          issues = concatIssues(issues, getErrorIssues(error));
+          issues = concatIssues(issues, captureIssues(error));
         }
         if (result != null) {
           issues = addIssue(issues, result);
@@ -91,7 +91,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       try {
         result = cb(output);
       } catch (error) {
-        issues = concatIssues(issues, getErrorIssues(error));
+        issues = concatIssues(issues, captureIssues(error));
 
         if (!options.verbose) {
           return issues;

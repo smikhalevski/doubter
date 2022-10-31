@@ -11,7 +11,7 @@ export class BooleanShape extends Shape<boolean> {
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN);
   }
 
-  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<boolean> {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {

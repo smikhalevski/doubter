@@ -6,12 +6,44 @@ const d = require('../../lib/index-cjs');
 beforeBatch(gc);
 
 describe(
+  'optional(string())',
+  () => {
+    const value = 'aaa';
+
+    test('doubter.v3.OptionalShape', measure => {
+      const shape = new d.v3.OptionalShape(new d.v3.StringShape());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
   'string().pipe(string())',
   () => {
     const value = 'aaa';
 
     test('doubter.v3.StringShape', measure => {
       const shape = new d.v3.StringShape().pipe(new d.v3.StringShape());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'string().transform(() => 111)',
+  () => {
+    const value = 'aaa';
+
+    test('doubter.v3.StringShape', measure => {
+      const shape = new d.v3.StringShape().transform(() => 111);
 
       measure(() => {
         shape.parse(value);

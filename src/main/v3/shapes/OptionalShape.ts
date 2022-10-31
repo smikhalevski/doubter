@@ -20,19 +20,23 @@ export class OptionalShape<S extends AnyShape, T extends S['output'] | undefined
     }
   }
 
-  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<S['output'] | T> {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<S['output'] | T> {
     const { shape, _applyChecks } = this;
 
     let issues;
+    let output = input;
 
     const result = input === undefined ? this._defaultResult : shape._apply(input, options);
 
-    if (result !== null && isArray(result)) {
-      return result;
+    if (result !== null) {
+      if (isArray(result)) {
+        return result;
+      }
+      output = result.value;
     }
 
     if (_applyChecks !== null) {
-      issues = _applyChecks(result === null ? input : result.value, null, options);
+      issues = _applyChecks(output, null, options);
 
       if (issues !== null) {
         return issues;
@@ -41,7 +45,7 @@ export class OptionalShape<S extends AnyShape, T extends S['output'] | undefined
     return result;
   }
 
-  _applyAsync(input: unknown, options: Readonly<ParserOptions>): Promise<ApplyResult<S['output'] | T>> {
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<S['output'] | T>> {
     const { shape, _applyChecks } = this;
 
     let issues;
@@ -58,12 +62,18 @@ export class OptionalShape<S extends AnyShape, T extends S['output'] | undefined
     }
 
     return shape._applyAsync(input, options).then(result => {
-      if (result !== null && isArray(result)) {
-        return result;
+      let issues;
+      let output = input;
+
+      if (result !== null) {
+        if (isArray(result)) {
+          return result;
+        }
+        output = result.value;
       }
 
       if (_applyChecks !== null) {
-        issues = _applyChecks(result === null ? input : result.value, null, options);
+        issues = _applyChecks(output, null, options);
 
         if (issues !== null) {
           return issues;

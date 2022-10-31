@@ -135,7 +135,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return new ObjectShape(this.shapes, restShape, this._options);
   }
 
-  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<InferObject<P, R, 'output'>> {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<InferObject<P, R, 'output'>> {
     if (!isObjectLike(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
@@ -148,7 +148,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return this._applyPreservedKeys(input, options);
   }
 
-  _applyAsync(input: unknown, options: Readonly<ParserOptions>): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         return raiseIssue(this._typeCheckConfig, input);

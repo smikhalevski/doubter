@@ -149,7 +149,7 @@ export function cloneKnownKeys(input: Dict, keys: readonly string[]): Dict {
   return output;
 }
 
-export function getErrorIssues(error: unknown): Issue[] {
+export function captureIssues(error: unknown): Issue[] {
   if (error instanceof ValidationError) {
     return error.issues;
   }

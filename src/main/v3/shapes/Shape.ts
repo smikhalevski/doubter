@@ -1,7 +1,7 @@
 import { ApplyResult, CheckCallback, CustomCheckOptions, Err, Ok, ParserOptions } from '../shared-types';
 import { ApplyChecksCallback, Check, createApplyChecksCallback } from './createApplyChecksCallback';
 import { isArray, objectAssign, objectCreate } from '../lang-utils';
-import { getErrorIssues, ok } from '../shape-utils';
+import { captureIssues, ok } from '../shape-utils';
 import { ValidationError } from './ValidationError';
 import { isEqual } from '../../lang-utils';
 
@@ -86,12 +86,12 @@ export class Shape<I = any, O = I> {
     return objectAssign(objectCreate(Object.getPrototypeOf(this)), this);
   }
 
-  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<O> {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<O> {
     const { _applyChecks } = this;
     return _applyChecks !== null ? _applyChecks(input, null, options) : null;
   }
 
-  _applyAsync(input: unknown, options: Readonly<ParserOptions>): Promise<ApplyResult<O>> {
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
   }
 }
@@ -240,12 +240,12 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
   constructor(
     readonly shape: S,
     async: boolean,
-    readonly transformer: (input: S['input'], options: Readonly<ParserOptions>) => Promise<T> | T
+    readonly transformer: (input: S['input'], options: ParserOptions) => Promise<T> | T
   ) {
     super(shape.async || async);
   }
 
-  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<T> {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<T> {
     const { shape, transformer, _applyChecks } = this;
 
     let issues;
@@ -263,7 +263,7 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
     try {
       output = transformer(output, options);
     } catch (error) {
-      return getErrorIssues(error);
+      return captureIssues(error);
     }
 
     if (_applyChecks !== null) {
@@ -279,7 +279,7 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
     return ok(output as T);
   }
 
-  _applyAsync(input: unknown, options: Readonly<ParserOptions>): Promise<ApplyResult<T>> {
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<T>> {
     const { shape, transformer, _applyChecks } = this;
 
     return shape._applyAsync(input, options).then(result => {
@@ -306,7 +306,7 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
           return null;
         }
         return ok(output);
-      }, getErrorIssues);
+      }, captureIssues);
     });
   }
 }
@@ -316,7 +316,7 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
     super(inputShape.async || outputShape.async);
   }
 
-  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<O['output']> {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<O['output']> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let issues;
@@ -351,7 +351,7 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
     return result;
   }
 
-  _applyAsync(input: unknown, options: Readonly<ParserOptions>): Promise<ApplyResult<O['output']>> {
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<O['output']>> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let result: ApplyResult = null;
