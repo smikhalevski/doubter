@@ -6,6 +6,22 @@ const d = require('../../lib/index-cjs');
 beforeBatch(gc);
 
 describe(
+  'string().pipe(string())',
+  () => {
+    const value = 'aaa';
+
+    test('doubter.v3.StringShape', measure => {
+      const shape = new d.v3.StringShape().pipe(new d.v3.StringShape());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
   'string()',
   () => {
     const value = 'aaa';

@@ -322,13 +322,13 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
     let issues;
     let output = input;
 
-    const inputResult = inputShape._apply(input, options);
+    let result = inputShape._apply(input, options);
 
-    if (inputResult !== null) {
-      if (isArray(inputResult)) {
-        return inputResult;
+    if (result !== null) {
+      if (isArray(result)) {
+        return result;
       }
-      output = inputResult.value;
+      output = result.value;
     }
 
     const outputResult = outputShape._apply(output, options);
@@ -337,6 +337,7 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
       if (isArray(outputResult)) {
         return outputResult;
       }
+      result = outputResult;
       output = outputResult.value;
     }
 
@@ -347,28 +348,36 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
         return issues;
       }
     }
-    return outputResult;
+    return result;
   }
 
   _applyAsync(input: unknown, options: Readonly<ParserOptions>): Promise<ApplyResult<O['output']>> {
     const { inputShape, outputShape, _applyChecks } = this;
 
+    let result: ApplyResult = null;
+    let output = input;
+
     return inputShape
       ._applyAsync(input, options)
       .then(inputResult => {
         if (inputResult !== null) {
-          return isArray(inputResult) ? inputResult : outputShape._applyAsync(inputResult.value, options);
+          if (isArray(inputResult)) {
+            return inputResult;
+          }
+          result = inputResult;
+          output = inputResult.value;
         }
-        return outputShape._applyAsync(input, options);
+
+        return outputShape._applyAsync(output, options);
       })
       .then(outputResult => {
         let issues;
-        let output = input;
 
         if (outputResult !== null) {
           if (isArray(outputResult)) {
             return outputResult;
           }
+          result = outputResult;
           output = outputResult.value;
         }
 
@@ -379,7 +388,7 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
             return issues;
           }
         }
-        return outputResult;
+        return result;
       });
   }
 }
