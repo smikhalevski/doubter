@@ -1,4 +1,4 @@
-import { CheckCallback, CheckOptions, Dict, Issue, Message, Ok } from './shared-types';
+import { CheckCallback, CheckOptions, Dict, Issue, Message, Ok, ParserOptions } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { isArray, isString } from './lang-utils';
 import { ValidationError } from './shapes/ValidationError';

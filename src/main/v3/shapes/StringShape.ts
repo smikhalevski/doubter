@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { ApplyResult, CheckOptions, Message, TypeCheckOptions } from '../shared-types';
+import { ApplyResult, CheckOptions, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
 import { addCheck, createCheckConfig, raiseIssue } from '../shape-utils';
 import {
   CODE_STRING_MAX,
@@ -86,14 +86,14 @@ export class StringShape extends Shape<string> {
     });
   }
 
-  _apply(input: unknown, earlyReturn: boolean): ApplyResult<string> {
+  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<string> {
     const { _applyChecks } = this;
 
     if (!isString(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
     if (_applyChecks !== null) {
-      return _applyChecks(input, null, earlyReturn);
+      return _applyChecks(input, null, options);
     }
     return null;
   }

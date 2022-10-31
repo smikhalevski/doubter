@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { ApplyResult, CheckOptions, Message, TypeCheckOptions } from '../shared-types';
+import { ApplyResult, CheckOptions, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
 import { addCheck, createCheckConfig, raiseIssue } from '../shape-utils';
 import {
   CODE_NUMBER_GT,
@@ -131,14 +131,14 @@ export class NumberShape extends Shape<number> {
     });
   }
 
-  _apply(input: unknown, earlyReturn: boolean): ApplyResult<number> {
+  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<number> {
     const { _applyChecks } = this;
 
     if (!isFinite(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
     if (_applyChecks !== null) {
-      return _applyChecks(input, null, earlyReturn);
+      return _applyChecks(input, null, options);
     }
     return null;
   }

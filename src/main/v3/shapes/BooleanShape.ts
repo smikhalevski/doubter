@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { ApplyResult, Message, TypeCheckOptions } from '../shared-types';
+import { ApplyResult, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
 import { createCheckConfig, raiseIssue } from '../shape-utils';
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../../shapes/constants';
 
@@ -11,14 +11,14 @@ export class BooleanShape extends Shape<boolean> {
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN);
   }
 
-  _apply(input: unknown, earlyReturn: boolean): ApplyResult<boolean> {
+  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {
       return raiseIssue(this._typeCheckConfig, input);
     }
     if (_applyChecks !== null) {
-      return _applyChecks(input, null, earlyReturn);
+      return _applyChecks(input, null, options);
     }
     return null;
   }

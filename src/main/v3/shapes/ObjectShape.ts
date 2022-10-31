@@ -1,5 +1,5 @@
 import { isArray, isObjectLike, objectAssign, objectKeys, objectValues } from '../lang-utils';
-import { ApplyResult, Dict, Issue, Message, TypeCheckOptions } from '../shared-types';
+import { ApplyResult, Dict, Issue, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
 import {
   CODE_TYPE,
   CODE_UNKNOWN_KEYS,
@@ -135,20 +135,20 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return new ObjectShape(this.shapes, restShape, this._options);
   }
 
-  _apply(input: unknown, earlyReturn: boolean): ApplyResult<InferObject<P, R, 'output'>> {
+  _apply(input: unknown, options: Readonly<ParserOptions>): ApplyResult<InferObject<P, R, 'output'>> {
     if (!isObjectLike(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
     if (this.keysMode !== KeysMode.PRESERVED) {
-      return this._applyStrictKeys(input, earlyReturn);
+      return this._applyStrictKeys(input, options);
     }
     if (this.restShape !== null) {
-      return this._applyPreservedRestKeys(input, earlyReturn);
+      return this._applyPreservedRestKeys(input, options);
     }
-    return this._applyPreservedKeys(input, earlyReturn);
+    return this._applyPreservedKeys(input, options);
   }
 
-  _applyAsync(input: unknown, earlyReturn: boolean): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
+  _applyAsync(input: unknown, options: Readonly<ParserOptions>): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         return raiseIssue(this._typeCheckConfig, input);
@@ -181,7 +181,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         }
 
         if (valueShape !== null) {
-          promises.push(key, valueShape._applyAsync(value, earlyReturn));
+          promises.push(key, valueShape._applyAsync(value, options));
           continue;
         }
 
@@ -193,7 +193,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
 
           unknownKeys = [key];
 
-          if (earlyReturn) {
+          if (!options.verbose) {
             break;
           }
           continue;
@@ -207,7 +207,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       if (unknownKeys !== null) {
         const issue = createIssue(this._exactCheckConfig!, input, unknownKeys);
 
-        if (earlyReturn) {
+        if (!options.verbose) {
           return [issue];
         }
         issues = pushIssue(issues, issue);
@@ -222,7 +222,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           const key = keys[i];
           const value = input[key];
 
-          promises.push(key, _valueShapes[i]._applyAsync(value, earlyReturn));
+          promises.push(key, _valueShapes[i]._applyAsync(value, options));
         }
       }
 
@@ -239,7 +239,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           if (isArray(result)) {
             prependKey(result, key);
 
-            if (earlyReturn) {
+            if (!options.verbose) {
               return result;
             }
             issues = concatIssues(issues, result);
@@ -254,7 +254,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         }
 
         if (_applyChecks !== null && (_unsafe || issues === null)) {
-          issues = _applyChecks(output, issues, earlyReturn);
+          issues = _applyChecks(output, issues, options);
         }
         if (issues === null && input !== output) {
           return ok(output as InferObject<P, R, 'output'>);
@@ -266,7 +266,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     });
   }
 
-  private _applyPreservedKeys(input: Dict, earlyReturn: boolean): ApplyResult {
+  private _applyPreservedKeys(input: Dict, options: ParserOptions): ApplyResult {
     const { keys, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
@@ -277,7 +277,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     for (let i = 0; i < keysLength; ++i) {
       const key = keys[i];
       const value = input[key];
-      const result = _valueShapes[i]._apply(value, earlyReturn);
+      const result = _valueShapes[i]._apply(value, options);
 
       if (result === null) {
         continue;
@@ -285,7 +285,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       if (isArray(result)) {
         prependKey(result, key);
 
-        if (earlyReturn) {
+        if (!options.verbose) {
           return result;
         }
         issues = concatIssues(issues, result);
@@ -300,7 +300,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     }
 
     if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, earlyReturn);
+      issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -308,7 +308,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return issues;
   }
 
-  private _applyPreservedRestKeys(input: Dict, earlyReturn: boolean): ApplyResult {
+  private _applyPreservedRestKeys(input: Dict, options: ParserOptions): ApplyResult {
     const { keys, restShape, _valueShapes, _applyChecks, _unsafe } = this;
 
     let issues: Issue[] | null = null;
@@ -318,7 +318,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       const value = input[key];
       const index = keys.indexOf(key as ObjectKey<P>);
       const valueShape = index !== -1 ? _valueShapes[index] : restShape!;
-      const result = valueShape._apply(value, earlyReturn);
+      const result = valueShape._apply(value, options);
 
       if (result === null) {
         continue;
@@ -326,7 +326,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       if (isArray(result)) {
         prependKey(result, key);
 
-        if (earlyReturn) {
+        if (!options.verbose) {
           return result;
         }
         issues = concatIssues(issues, result);
@@ -341,7 +341,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     }
 
     if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, earlyReturn);
+      issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -349,7 +349,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return issues;
   }
 
-  private _applyStrictKeys(input: Dict, earlyReturn: boolean): ApplyResult {
+  private _applyStrictKeys(input: Dict, options: ParserOptions): ApplyResult {
     const { keys, keysMode, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
@@ -370,7 +370,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         seenCount++;
         seenFlags = setFlag(seenFlags, index);
 
-        const result = _valueShapes[index]._apply(value, earlyReturn);
+        const result = _valueShapes[index]._apply(value, options);
 
         if (result === null) {
           continue;
@@ -378,7 +378,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         if (isArray(result)) {
           prependKey(result, key);
 
-          if (earlyReturn) {
+          if (!options.verbose) {
             return result;
           }
           issues = concatIssues(issues, result);
@@ -401,7 +401,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
 
         unknownKeys = [key];
 
-        if (earlyReturn) {
+        if (!options.verbose) {
           break;
         }
         continue;
@@ -415,7 +415,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     if (unknownKeys !== null) {
       const issue = createIssue(this._exactCheckConfig!, input, unknownKeys);
 
-      if (earlyReturn) {
+      if (!options.verbose) {
         return [issue];
       }
       issues = pushIssue(issues, issue);
@@ -429,7 +429,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
 
         const key = keys[i];
         const value = input[key];
-        const result = _valueShapes[i]._apply(value, earlyReturn);
+        const result = _valueShapes[i]._apply(value, options);
 
         if (result === null) {
           continue;
@@ -437,7 +437,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         if (isArray(result)) {
           prependKey(result, key);
 
-          if (earlyReturn) {
+          if (!options.verbose) {
             return result;
           }
           issues = concatIssues(issues, result);
@@ -453,7 +453,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     }
 
     if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, earlyReturn);
+      issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output);

@@ -1,7 +1,7 @@
-import { CheckCallback, Issue } from '../shared-types';
+import { CheckCallback, Issue, ParserOptions } from '../shared-types';
 import { addIssue, concatIssues, getErrorIssues } from '../shape-utils';
 
-export type ApplyChecksCallback = (output: any, issues: Issue[] | null, earlyReturn: boolean) => Issue[] | null;
+export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParserOptions) => Issue[] | null;
 
 export interface Check {
   id: string | undefined;
@@ -19,7 +19,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   if (checksLength === 1) {
     const [{ unsafe, cb }] = checks;
 
-    return (output, issues, earlyReturn) => {
+    return (output, issues, options) => {
       if (issues === null || unsafe) {
         let result: ReturnType<CheckCallback<unknown>> = null;
 
@@ -39,7 +39,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   if (checksLength === 2) {
     const [{ unsafe: unsafe0, cb: cb0 }, { unsafe: unsafe1, cb: cb1 }] = checks;
 
-    return (output, issues, earlyReturn) => {
+    return (output, issues, options) => {
       if (issues === null || unsafe0) {
         let result: ReturnType<CheckCallback<unknown>> = null;
 
@@ -48,14 +48,14 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         } catch (error) {
           issues = concatIssues(issues, getErrorIssues(error));
 
-          if (earlyReturn) {
+          if (!options.verbose) {
             return issues;
           }
         }
         if (result != null) {
           issues = addIssue(issues, result);
 
-          if (earlyReturn) {
+          if (!options.verbose) {
             return issues;
           }
         }
@@ -78,7 +78,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
     };
   }
 
-  return (output, issues, earlyReturn) => {
+  return (output, issues, options) => {
     for (let i = 1; i < checksLength; ++i) {
       const { unsafe, cb } = checks[i];
 
@@ -93,7 +93,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       } catch (error) {
         issues = concatIssues(issues, getErrorIssues(error));
 
-        if (earlyReturn) {
+        if (!options.verbose) {
           return issues;
         }
       }
@@ -101,7 +101,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       if (result != null) {
         issues = addIssue(issues, result);
 
-        if (earlyReturn) {
+        if (!options.verbose) {
           return issues;
         }
       }
