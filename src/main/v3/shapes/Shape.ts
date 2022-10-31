@@ -347,10 +347,7 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
         return issues;
       }
     }
-    if (isEqual(input, output)) {
-      return null;
-    }
-    return ok(output);
+    return outputResult;
   }
 
   _applyAsync(input: unknown, options: Readonly<ParserOptions>): Promise<ApplyResult<O['output']>> {
@@ -382,10 +379,7 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
             return issues;
           }
         }
-        if (isEqual(input, output)) {
-          return null;
-        }
-        return ok(output);
+        return outputResult;
       });
   }
 }
