@@ -1,9 +1,8 @@
 import { ApplyResult, CheckCallback, CustomCheckOptions, Err, Ok, ParserOptions } from '../shared-types';
 import { ApplyChecksCallback, Check, createApplyChecksCallback } from './createApplyChecksCallback';
-import { isArray, objectAssign, objectCreate } from '../lang-utils';
+import { isArray, isEqual, objectAssign, objectCreate } from '../lang-utils';
 import { captureIssues, ok } from '../shape-utils';
 import { ValidationError } from './ValidationError';
-import { isEqual } from '../../lang-utils';
 
 export type AnyShape = Shape | Shape<never>;
 

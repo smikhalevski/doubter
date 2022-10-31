@@ -412,6 +412,14 @@ describe(
         shape.safeParse(value);
       });
     });
+
+    test('doubter.v3.ArrayShape', measure => {
+      const shape = new d.v3.ArrayShape(new d.v3.NumberShape());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );

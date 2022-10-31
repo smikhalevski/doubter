@@ -19,6 +19,8 @@ export const objectKeys = Object.keys;
 
 export const objectValues = Object.values;
 
+export const isEqual = Object.is;
+
 export function isObjectLike(value: unknown): value is Record<any, any> {
   return value !== null && typeof value === 'object';
 }

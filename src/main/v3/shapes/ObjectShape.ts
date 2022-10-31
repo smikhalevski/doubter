@@ -18,10 +18,10 @@ import {
   isAsyncShapes,
   isFlagSet,
   ok,
-  prependKey,
   pushIssue,
   raiseIssue,
   setFlag,
+  unshiftPath,
 } from '../shape-utils';
 import { AnyShape, Shape } from './Shape';
 
@@ -237,7 +237,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
             continue;
           }
           if (isArray(result)) {
-            prependKey(result, key);
+            unshiftPath(result, key);
 
             if (!options.verbose) {
               return result;
@@ -283,7 +283,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         continue;
       }
       if (isArray(result)) {
-        prependKey(result, key);
+        unshiftPath(result, key);
 
         if (!options.verbose) {
           return result;
@@ -324,7 +324,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         continue;
       }
       if (isArray(result)) {
-        prependKey(result, key);
+        unshiftPath(result, key);
 
         if (!options.verbose) {
           return result;
@@ -376,7 +376,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           continue;
         }
         if (isArray(result)) {
-          prependKey(result, key);
+          unshiftPath(result, key);
 
           if (!options.verbose) {
             return result;
@@ -435,7 +435,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           continue;
         }
         if (isArray(result)) {
-          prependKey(result, key);
+          unshiftPath(result, key);
 
           if (!options.verbose) {
             return result;

@@ -1,4 +1,4 @@
-import { CheckCallback, CheckOptions, Dict, Issue, Message, Ok, ParserOptions } from './shared-types';
+import { CheckCallback, CheckOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { isArray, isString } from './lang-utils';
 import { ValidationError } from './shapes/ValidationError';
@@ -73,7 +73,7 @@ export function raiseIssue(config: CheckConfig, input: unknown): Issue[] {
   return [createIssue(config, input, config.param)];
 }
 
-export function prependKey(issues: Issue[], key: unknown): void {
+export function unshiftPath(issues: Issue[], key: unknown): void {
   let issuesLength = issues.length;
   for (let i = 0; i < issuesLength; ++i) {
     issues[i].path.unshift(key);
