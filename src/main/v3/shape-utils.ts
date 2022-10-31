@@ -1,6 +1,6 @@
 import { CheckCallback, CheckOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
-import { defineProperty, isArray, isString } from './lang-utils';
+import { isArray, isString } from './lang-utils';
 import { ValidationError } from './shapes/ValidationError';
 
 export function ok<T>(value: T): Ok<T> {
@@ -120,7 +120,7 @@ export function isFlagSet(flag: Flags, index: number): boolean {
 
 export function assignProperty(obj: Dict, key: string, value: unknown): void {
   if (key === '__proto__') {
-    defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
+    Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
   } else {
     obj[key] = value;
   }

@@ -87,13 +87,13 @@ export class StringShape extends Shape<string> {
   }
 
   _apply(input: unknown, earlyReturn: boolean): ApplyResult<string> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (!isString(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, earlyReturn);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, earlyReturn);
     }
     return null;
   }

@@ -19,19 +19,6 @@ export const objectKeys = Object.keys;
 
 export const objectValues = Object.values;
 
-export const unsafeDefineProperty: <T>(object: T, key: PropertyKey, descriptor: PropertyDescriptor<T, unknown>) => T =
-  Object.defineProperty;
-
-export const defineProperty: <T, P extends keyof T>(object: T, key: P, descriptor: PropertyDescriptor<T, T[P]>) => T =
-  unsafeDefineProperty;
-
-export function extendClass<T>(constructor: Constructor<T>, baseConstructor: Constructor): T {
-  const prototype = objectCreate(baseConstructor.prototype);
-  constructor.prototype = prototype;
-  prototype.constructor = constructor;
-  return prototype;
-}
-
 export function isObjectLike(value: unknown): value is Record<any, any> {
   return value !== null && typeof value === 'object';
 }

@@ -132,13 +132,13 @@ export class NumberShape extends Shape<number> {
   }
 
   _apply(input: unknown, earlyReturn: boolean): ApplyResult<number> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (!isFinite(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, earlyReturn);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, earlyReturn);
     }
     return null;
   }
