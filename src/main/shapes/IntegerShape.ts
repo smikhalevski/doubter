@@ -5,7 +5,7 @@ import { CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER } from './constants';
 import { isInteger } from '../lang-utils';
 
 export class IntegerShape extends Shape<number> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   constructor(options?: TypeCheckOptions | Message) {
     super(false);

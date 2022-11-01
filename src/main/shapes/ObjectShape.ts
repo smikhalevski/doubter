@@ -52,7 +52,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   readonly keys: readonly ObjectKey<P>[];
 
   private _valueShapes: Shape[];
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
   private _exactCheckConfig: CheckConfig | null = null;
 
   constructor(

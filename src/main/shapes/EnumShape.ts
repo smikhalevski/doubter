@@ -9,7 +9,7 @@ import { CODE_ENUM, MESSAGE_ENUM } from './constants';
  * @template T The type of the allowed values.
  */
 export class EnumShape<T extends Primitive> extends Shape<T> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   /**
    * Creates a new {@linkcode EnumShape} instance.

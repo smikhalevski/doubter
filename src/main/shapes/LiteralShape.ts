@@ -10,7 +10,7 @@ import { isEqual } from '../lang-utils';
  * @template T The literal value.
  */
 export class LiteralShape<T extends Primitive> extends Shape<T> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   /**
    * Creates a new {@linkcode LiteralShape} instance.

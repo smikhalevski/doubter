@@ -11,7 +11,7 @@ export type InferInstance<C> = C extends new (...args: any[]) => infer T ? T : n
  * @template C The class constructor.
  */
 export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<InferInstance<C>> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   constructor(readonly ctor: C, options?: TypeCheckOptions | Message) {
     super(false);

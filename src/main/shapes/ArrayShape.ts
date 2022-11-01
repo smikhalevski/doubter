@@ -12,9 +12,20 @@ import {
 } from './constants';
 import { isArray, isEqual } from '../lang-utils';
 
+/**
+ * The shape that constrains every element of an array with the element shape.
+ *
+ * @template S The element shape.
+ */
 export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['output'][]> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
+  /**
+   * Creates a new {@linkcode ArrayShape} instance.
+   *
+   * @param shape The shape of an array element.
+   * @param options The type constraint options or the type issue message.
+   */
   constructor(readonly shape: S, options?: TypeCheckOptions | Message) {
     super(false);
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_ARRAY_TYPE, TYPE_ARRAY);

@@ -12,7 +12,7 @@ export type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> 
  * @template U The list of united type definitions.
  */
 export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.

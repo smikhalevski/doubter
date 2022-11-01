@@ -1,6 +1,7 @@
 export { ArrayShape } from './ArrayShape';
 export { BigIntShape } from './BigIntShape';
 export { BooleanShape } from './BooleanShape';
+export { EmailShape } from './EmailShape';
 export { EnumShape } from './EnumShape';
 export { InstanceShape } from './InstanceShape';
 export { IntegerShape } from './IntegerShape';
@@ -15,3 +16,4 @@ export { Shape, AnyShape, PipedShape, TransformedShape } from './Shape';
 export { StringShape } from './StringShape';
 export { TupleShape } from './TupleShape';
 export { UnionShape } from './UnionShape';
+export { UuidShape } from './UuidShape';

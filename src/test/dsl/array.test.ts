@@ -1,7 +1,7 @@
-import { array, ArrayShape, number } from '../../main';
+import * as d from '../../main';
 
 describe('array', () => {
   test('returns an array shape', () => {
-    expect(array(number())).toBeInstanceOf(ArrayShape);
+    expect(d.array(d.number())).toBeInstanceOf(d.ArrayShape);
   });
 });

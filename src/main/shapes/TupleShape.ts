@@ -7,7 +7,7 @@ import { isArray, isEqual } from '../lang-utils';
 export type InferTuple<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] };
 
 export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, 'input'>, InferTuple<U, 'output'>> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   constructor(readonly shapes: Readonly<U>, options?: TypeCheckOptions | Message) {
     super(false);

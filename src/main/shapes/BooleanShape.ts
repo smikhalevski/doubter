@@ -4,7 +4,7 @@ import { createCheckConfig, raiseIssue } from '../shape-utils';
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from './constants';
 
 export class BooleanShape extends Shape<boolean> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   constructor(options?: TypeCheckOptions | Message) {
     super(false);

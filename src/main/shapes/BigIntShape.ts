@@ -4,7 +4,7 @@ import { createCheckConfig, raiseIssue } from '../shape-utils';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from './constants';
 
 export class BigIntShape extends Shape<bigint> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   constructor(options?: TypeCheckOptions | Message) {
     super(false);

@@ -12,7 +12,7 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
   InferRecord<K['input'], V['input']>,
   InferRecord<K['output'], V['output']>
 > {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   constructor(readonly keyShape: K, readonly valueShape: V, options?: TypeCheckOptions | Message) {
     super(false);

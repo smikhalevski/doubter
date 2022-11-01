@@ -12,11 +12,18 @@ import {
   MESSAGE_STRING_TYPE,
   TYPE_STRING,
 } from './constants';
-import { isString } from '../lang-utils';
 
+/**
+ * The shape that constrains the input as a string.
+ */
 export class StringShape extends Shape<string> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
+  /**
+   * Creates a new {@linkcode StringShape} instance.
+   *
+   * @param options The type constraint options or the type issue message.
+   */
   constructor(options?: TypeCheckOptions | Message) {
     super(false);
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING);
@@ -89,7 +96,7 @@ export class StringShape extends Shape<string> {
   _apply(input: unknown, options: ParserOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
-    if (!isString(input)) {
+    if (typeof input !== 'string') {
       return raiseIssue(this._typeCheckConfig, input);
     }
     if (_applyChecks !== null) {

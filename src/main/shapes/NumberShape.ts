@@ -19,7 +19,7 @@ import {
 import { isFinite } from '../lang-utils';
 
 export class NumberShape extends Shape<number> {
-  private _typeCheckConfig;
+  protected _typeCheckConfig;
 
   constructor(options?: TypeCheckOptions | Message) {
     super(false);
