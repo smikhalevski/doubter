@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParserOptions, Tuple, TypeCheckOptions } from '../shared-types';
 import { concatIssues, createCheckConfig, ok, raiseIssue, unshiftPath } from '../shape-utils';
-import { CODE_TUPLE, MESSAGE_TUPLE } from '../../shapes/constants';
+import { CODE_TUPLE, MESSAGE_TUPLE } from './constants';
 import { isArray, isEqual } from '../lang-utils';
 
 export type InferTuple<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] };

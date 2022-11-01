@@ -15,7 +15,7 @@ import {
   MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
   TYPE_NUMBER,
-} from './constants';
+} from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 import { isFinite } from '../lang-utils';
 

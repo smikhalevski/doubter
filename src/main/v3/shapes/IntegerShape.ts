@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
 import { createCheckConfig, raiseIssue } from '../shape-utils';
-import { CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER } from '../../shapes/constants';
+import { CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER } from './constants';
 import { isInteger } from '../lang-utils';
 
 export class IntegerShape extends Shape<number> {

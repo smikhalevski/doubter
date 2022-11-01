@@ -15,7 +15,13 @@ import {
   raiseIssue,
   returnValueOrRaiseIssues,
 } from '../utils';
-import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
+import {
+  CODE_TYPE,
+  CODE_UNKNOWN_KEYS,
+  MESSAGE_OBJECT_TYPE,
+  MESSAGE_UNKNOWN_KEYS,
+  TYPE_OBJECT,
+} from '../v3/shapes/constants';
 import { isValidationError, ValidationError } from '../ValidationError';
 import { objectAssign, isEqual, isObjectLike } from '../lang-utils';
 

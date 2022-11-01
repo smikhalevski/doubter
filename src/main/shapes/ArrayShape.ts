@@ -25,7 +25,7 @@ import {
   MESSAGE_ARRAY_MIN,
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
-} from './constants';
+} from '../v3/shapes/constants';
 import { isValidationError, ValidationError } from '../ValidationError';
 import { isArray, isEqual } from '../lang-utils';
 

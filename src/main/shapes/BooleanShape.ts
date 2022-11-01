@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from './constants';
+import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 
 export class BooleanShape extends Shape<boolean> {

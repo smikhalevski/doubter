@@ -17,7 +17,7 @@ import {
   throwError,
   throwIfUnknownError,
 } from '../utils';
-import { CODE_NARROWING, MESSAGE_NARROWING } from './constants';
+import { CODE_NARROWING, MESSAGE_NARROWING } from '../v3/shapes/constants';
 import { isValidationError, ValidationError } from '../ValidationError';
 import { objectAssign, createObject, defineProperty } from '../lang-utils';
 

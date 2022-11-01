@@ -1,4 +1,4 @@
-import { Issue } from '../shared-types';
+import { Issue } from './shared-types';
 
 export class ValidationError extends Error {
   issues: Issue[];

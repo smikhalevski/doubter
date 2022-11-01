@@ -1,5 +1,5 @@
 import { LiteralShape } from '../../main';
-import { CODE_LITERAL } from '../../main/shapes/constants';
+import { CODE_LITERAL } from '../../main/v3/shapes/constants';
 
 describe('LiteralShape', () => {
   test('allows a literal', () => {

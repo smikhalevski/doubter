@@ -15,7 +15,7 @@ import {
   MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
   TYPE_NUMBER,
-} from '../../shapes/constants';
+} from './constants';
 import { isFinite } from '../lang-utils';
 
 export class NumberShape extends Shape<number> {

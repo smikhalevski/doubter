@@ -1,7 +1,7 @@
 import { InputConstraintOptionsOrMessage, ParserOptions, Primitive } from '../shared-types';
 import { Shape } from './Shape';
 import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_ENUM, MESSAGE_ENUM } from './constants';
+import { CODE_ENUM, MESSAGE_ENUM } from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 
 /**

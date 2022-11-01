@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParserOptions, Primitive, TypeCheckOptions } from '../shared-types';
 import { createCheckConfig, raiseIssue } from '../shape-utils';
-import { CODE_ENUM, MESSAGE_ENUM } from '../../shapes/constants';
+import { CODE_ENUM, MESSAGE_ENUM } from './constants';
 
 /**
  * The shape that constrains input to one of the primitive values.

@@ -2,7 +2,7 @@ import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParserOptions, Tuple, TypeCheckOptions } from '../shared-types';
 import { concatIssues, createCheckConfig, createIssue, isAsyncShapes } from '../shape-utils';
 import { isArray } from '../lang-utils';
-import { CODE_UNION, MESSAGE_UNION } from '../../shapes/constants';
+import { CODE_UNION, MESSAGE_UNION } from './constants';
 
 export type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
 

@@ -1,5 +1,5 @@
 import { NumberShape, RecordShape, StringShape } from '../../main';
-import { CODE_STRING_MAX, CODE_TYPE, TYPE_NUMBER } from '../../main/shapes/constants';
+import { CODE_STRING_MAX, CODE_TYPE, TYPE_NUMBER } from '../../main/v3/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();

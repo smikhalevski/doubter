@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
 import { createCheckConfig, raiseIssue } from '../shape-utils';
-import { CODE_NEVER, MESSAGE_NEVER } from '../../shapes/constants';
+import { CODE_NEVER, MESSAGE_NEVER } from './constants';
 
 export class NeverShape extends Shape<never> {
   private _typeCheckConfig;

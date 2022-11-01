@@ -11,7 +11,7 @@ import {
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_TYPE,
   TYPE_STRING,
-} from './constants';
+} from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 
 export class StringShape extends Shape<string> {

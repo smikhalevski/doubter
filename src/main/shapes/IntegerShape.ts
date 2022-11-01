@@ -1,7 +1,7 @@
 import { NumberShape } from './NumberShape';
 import { ParserOptions } from '../shared-types';
 import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER } from './constants';
+import { CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER } from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 import { isInteger } from '../lang-utils';
 

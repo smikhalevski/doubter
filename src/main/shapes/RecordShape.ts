@@ -7,7 +7,7 @@ import {
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
 import { Dict, InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions } from '../shared-types';
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../v3/shapes/constants';
 import { isValidationError, ValidationError } from '../ValidationError';
 import { isEqual, isObjectLike } from '../lang-utils';
 

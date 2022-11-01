@@ -7,7 +7,7 @@ import {
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
   TYPE_INTEGER,
-} from '../../main/shapes/constants';
+} from '../../main/v3/shapes/constants';
 
 describe('IntegerShape', () => {
   test('allows an integer', () => {

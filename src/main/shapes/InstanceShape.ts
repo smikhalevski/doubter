@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_INSTANCE, MESSAGE_INSTANCE } from './constants';
+import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 
 type InferInstance<F> = F extends new (...args: any[]) => infer T ? T : never;

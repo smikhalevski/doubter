@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions, Primitive } from '../shared-types';
 import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_LITERAL, MESSAGE_LITERAL } from './constants';
+import { CODE_LITERAL, MESSAGE_LITERAL } from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 import { isEqual } from '../lang-utils';
 

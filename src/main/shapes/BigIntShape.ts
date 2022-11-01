@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from './constants';
+import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 
 export class BigIntShape extends Shape<bigint> {

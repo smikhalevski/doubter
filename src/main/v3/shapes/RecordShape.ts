@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
 import { cloneEnumerableKeys, concatIssues, createCheckConfig, ok, raiseIssue, unshiftPath } from '../shape-utils';
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../../shapes/constants';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
 import { isArray, isEqual, isObjectLike } from '../lang-utils';
 
 export type InferRecord<K extends PropertyKey, V> = undefined extends V

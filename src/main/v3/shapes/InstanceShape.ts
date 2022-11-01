@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
 import { createCheckConfig, raiseIssue } from '../shape-utils';
-import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../../shapes/constants';
+import { CODE_INSTANCE, MESSAGE_INSTANCE } from './constants';
 
 export type InferInstance<C> = C extends new (...args: any[]) => infer T ? T : never;
 

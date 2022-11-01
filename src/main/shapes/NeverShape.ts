@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { raiseIssue } from '../utils';
-import { CODE_NEVER, MESSAGE_NEVER } from './constants';
+import { CODE_NEVER, MESSAGE_NEVER } from '../v3/shapes/constants';
 import { ValidationError } from '../ValidationError';
 
 /**

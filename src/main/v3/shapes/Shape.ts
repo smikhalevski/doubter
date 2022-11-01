@@ -2,7 +2,7 @@ import { ApplyResult, CheckCallback, CustomCheckOptions, Err, Ok, ParserOptions 
 import { ApplyChecksCallback, Check, createApplyChecksCallback } from './createApplyChecksCallback';
 import { isArray, isEqual, objectAssign, objectCreate } from '../lang-utils';
 import { captureIssues, ok } from '../shape-utils';
-import { ValidationError } from './ValidationError';
+import { ValidationError } from '../ValidationError';
 
 export type AnyShape = Shape | Shape<never>;
 

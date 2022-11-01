@@ -1,12 +1,6 @@
 import { isArray, isObjectLike, objectAssign, objectKeys, objectValues } from '../lang-utils';
 import { ApplyResult, Dict, Issue, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
-import {
-  CODE_TYPE,
-  CODE_UNKNOWN_KEYS,
-  MESSAGE_OBJECT_TYPE,
-  MESSAGE_UNKNOWN_KEYS,
-  TYPE_OBJECT,
-} from '../../shapes/constants';
+import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
 import {
   CheckConfig,
   cloneEnumerableKeys,

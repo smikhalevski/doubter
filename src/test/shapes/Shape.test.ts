@@ -1,5 +1,5 @@
 import { ParserOptions, Shape, ValidationError } from '../../main';
-import { CODE_NARROWING, MESSAGE_NARROWING } from '../../main/shapes/constants';
+import { CODE_NARROWING, MESSAGE_NARROWING } from '../../main/v3/shapes/constants';
 
 describe('Shape', () => {
   class MockShape extends Shape {

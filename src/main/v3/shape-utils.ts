@@ -1,7 +1,7 @@
 import { CheckCallback, CheckOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { isArray, isString } from './lang-utils';
-import { ValidationError } from './shapes/ValidationError';
+import { ValidationError } from './ValidationError';
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };

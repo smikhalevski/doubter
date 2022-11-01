@@ -9,7 +9,7 @@ import {
   MESSAGE_ARRAY_MIN,
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
-} from '../../shapes/constants';
+} from './constants';
 import { isArray, isEqual } from '../lang-utils';
 
 export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['output'][]> {

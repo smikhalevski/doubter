@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParserOptions, Primitive, TypeCheckOptions } from '../shared-types';
 import { createCheckConfig, raiseIssue } from '../shape-utils';
-import { CODE_LITERAL, MESSAGE_LITERAL } from '../../shapes/constants';
+import { CODE_LITERAL, MESSAGE_LITERAL } from './constants';
 import { isEqual } from '../../lang-utils';
 
 /**

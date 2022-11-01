@@ -1,5 +1,5 @@
 import { ObjectShape } from '../../../main/v3/shapes/ObjectShape';
-import { CODE_TYPE } from '../../../main/shapes/constants';
+import { CODE_TYPE } from '../../../main/v3/shapes/constants';
 import { BooleanShape, NumberShape, StringShape } from '../../../main/v3/shapes';
 
 describe('StringShape', () => {

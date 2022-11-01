@@ -10,7 +10,7 @@ import {
   raiseIssue,
   returnValueOrRaiseIssues,
 } from '../utils';
-import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE, TYPE_ARRAY } from './constants';
+import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE, TYPE_ARRAY } from '../v3/shapes/constants';
 import { isValidationError, ValidationError } from '../ValidationError';
 import { isArray, isEqual } from '../lang-utils';
 

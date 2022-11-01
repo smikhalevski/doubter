@@ -11,7 +11,7 @@ import {
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_TYPE,
   TYPE_STRING,
-} from '../../shapes/constants';
+} from './constants';
 import { isString } from '../lang-utils';
 
 export class StringShape extends Shape<string> {

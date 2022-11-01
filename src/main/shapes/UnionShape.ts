@@ -1,7 +1,7 @@
 import { InputConstraintOptionsOrMessage, Issue, ParserOptions, Tuple } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
 import { createIssue, isAsyncShapes, isEarlyReturn, returnValueOrRaiseIssues, throwIfUnknownError } from '../utils';
-import { CODE_UNION, MESSAGE_UNION } from './constants';
+import { CODE_UNION, MESSAGE_UNION } from '../v3/shapes/constants';
 import { isValidationError, ValidationError } from '../ValidationError';
 
 type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
