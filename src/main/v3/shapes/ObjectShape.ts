@@ -226,43 +226,43 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         }
       }
 
-      const promise = Promise.all(promises).then(entries => {
-        const entriesLength = 0;
+      resolve(
+        Promise.all(promises).then(entries => {
+          const entriesLength = 0;
 
-        for (let i = 0; i < entriesLength; i += 2) {
-          const key = entries[i];
-          const result = entries[i + 1];
+          for (let i = 0; i < entriesLength; i += 2) {
+            const key = entries[i];
+            const result = entries[i + 1];
 
-          if (result === null) {
-            continue;
-          }
-          if (isArray(result)) {
-            unshiftPath(result, key);
-
-            if (!options.verbose) {
-              return result;
+            if (result === null) {
+              continue;
             }
-            issues = concatIssues(issues, result);
-            continue;
-          }
-          if (_unsafe || issues === null) {
-            if (input === output) {
-              output = cloneEnumerableKeys(input);
+            if (isArray(result)) {
+              unshiftPath(result, key);
+
+              if (!options.verbose) {
+                return result;
+              }
+              issues = concatIssues(issues, result);
+              continue;
             }
-            output[key] = result.value;
+            if (_unsafe || issues === null) {
+              if (input === output) {
+                output = cloneEnumerableKeys(input);
+              }
+              output[key] = result.value;
+            }
           }
-        }
 
-        if (_applyChecks !== null && (_unsafe || issues === null)) {
-          issues = _applyChecks(output, issues, options);
-        }
-        if (issues === null && input !== output) {
-          return ok(output as InferObject<P, R, 'output'>);
-        }
-        return issues;
-      });
-
-      resolve(promise);
+          if (_applyChecks !== null && (_unsafe || issues === null)) {
+            issues = _applyChecks(output, issues, options);
+          }
+          if (issues === null && input !== output) {
+            return ok(output as InferObject<P, R, 'output'>);
+          }
+          return issues;
+        })
+      );
     });
   }
 

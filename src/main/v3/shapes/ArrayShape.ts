@@ -126,43 +126,43 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         promises.push(shape._applyAsync(value, options));
       }
 
-      const promise = Promise.all(promises).then(results => {
-        let issues: Issue[] | null = null;
-        let output = input;
+      resolve(
+        Promise.all(promises).then(results => {
+          let issues: Issue[] | null = null;
+          let output = input;
 
-        for (let i = 0; i < arrayLength; ++i) {
-          const result = results[i];
+          for (let i = 0; i < arrayLength; ++i) {
+            const result = results[i];
 
-          if (result === null) {
-            continue;
-          }
-          if (isArray(result)) {
-            unshiftPath(result, i);
-
-            if (!options.verbose) {
-              return result;
+            if (result === null) {
+              continue;
             }
-            issues = concatIssues(issues, result);
-            continue;
-          }
-          if ((_unsafe || issues === null) && !isEqual(input[i], result.value)) {
-            if (input === output) {
-              output = input.slice(0);
+            if (isArray(result)) {
+              unshiftPath(result, i);
+
+              if (!options.verbose) {
+                return result;
+              }
+              issues = concatIssues(issues, result);
+              continue;
             }
-            output[i] = result.value;
+            if ((_unsafe || issues === null) && !isEqual(input[i], result.value)) {
+              if (input === output) {
+                output = input.slice(0);
+              }
+              output[i] = result.value;
+            }
           }
-        }
 
-        if (_applyChecks !== null && (_unsafe || issues === null)) {
-          issues = _applyChecks(output, issues, options);
-        }
-        if (issues === null && input !== output) {
-          return ok(output);
-        }
-        return issues;
-      });
-
-      resolve(promise);
+          if (_applyChecks !== null && (_unsafe || issues === null)) {
+            issues = _applyChecks(output, issues, options);
+          }
+          if (issues === null && input !== output) {
+            return ok(output);
+          }
+          return issues;
+        })
+      );
     });
   }
 }

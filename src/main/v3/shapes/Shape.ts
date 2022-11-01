@@ -81,10 +81,6 @@ export class Shape<I = any, O = I> {
     return new PipedShape(this, shape);
   }
 
-  protected _clone(): this {
-    return objectAssign(objectCreate(Object.getPrototypeOf(this)), this);
-  }
-
   _apply(input: unknown, options: ParserOptions): ApplyResult<O> {
     const { _applyChecks } = this;
     return _applyChecks !== null ? _applyChecks(input, null, options) : null;
@@ -92,6 +88,10 @@ export class Shape<I = any, O = I> {
 
   _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
+  }
+
+  protected _clone(): this {
+    return objectAssign(objectCreate(Object.getPrototypeOf(this)), this);
   }
 }
 

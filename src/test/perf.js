@@ -590,6 +590,22 @@ describe(
         shape.safeParse(value);
       });
     });
+
+    test('doubter.v3.RecordShape', measure => {
+      const shape = new d.v3.RecordShape(new d.v3.StringShape(), new d.v3.NumberShape());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+
+    test('doubter.v3.RecordShape null', measure => {
+      const shape = new d.v3.RecordShape(null, new d.v3.NumberShape());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );

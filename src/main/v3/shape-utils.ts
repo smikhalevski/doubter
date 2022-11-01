@@ -126,11 +126,24 @@ export function assignProperty(obj: Dict, key: string, value: unknown): void {
   }
 }
 
-export function cloneEnumerableKeys(input: Dict): Dict {
+export function cloneEnumerableKeys(input: Dict, keyCount = -1): Dict {
   const output: Dict = {};
 
-  for (const key in input) {
-    assignProperty(output, key, input[key]);
+  if (keyCount < 0) {
+    for (const key in input) {
+      assignProperty(output, key, input[key]);
+    }
+  }
+  if (keyCount > 0) {
+    let index = 0;
+
+    for (const key in input) {
+      if (index === keyCount) {
+        break;
+      }
+      assignProperty(output, key, input[key]);
+      ++index;
+    }
   }
   return output;
 }
