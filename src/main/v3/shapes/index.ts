@@ -2,6 +2,7 @@ export { ArrayShape } from './ArrayShape';
 export { BigIntShape } from './BigIntShape';
 export { BooleanShape } from './BooleanShape';
 export { EnumShape } from './EnumShape';
+export { InstanceShape } from './InstanceShape';
 export { ObjectShape } from './ObjectShape';
 export { StringShape } from './StringShape';
 export { NumberShape } from './NumberShape';
