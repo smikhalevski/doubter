@@ -13,3 +13,4 @@ export { RecordShape } from './RecordShape';
 export { Shape } from './Shape';
 export { StringShape } from './StringShape';
 export { TupleShape } from './TupleShape';
+export { UnionShape } from './UnionShape';

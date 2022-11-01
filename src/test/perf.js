@@ -821,35 +821,35 @@ describe(
 );
 
 describe(
-  'or([string(), number()])',
+  'or([string(), number(), boolean()])',
   () => {
     const createTests = value => {
-      // test('Ajv', measure => {
-      //   const ajv = new Ajv({ allowUnionTypes: true });
-      //
-      //   const schema = {
-      //     $id: 'test',
-      //     $schema: 'http://json-schema.org/draft-07/schema#',
-      //     type: ['string', 'number'],
-      //   };
-      //
-      //   const validate = ajv.compile(schema);
-      //
-      //   measure(() => {
-      //     validate(value);
-      //   });
-      // });
-      //
-      // test('myzod', measure => {
-      //   const type = z.union([z.string(), z.number()]);
-      //
-      //   measure(() => {
-      //     type.parse(value);
-      //   });
-      // });
+      test('Ajv', measure => {
+        const ajv = new Ajv({ allowUnionTypes: true });
+
+        const schema = {
+          $id: 'test',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: ['string', 'number', 'boolean'],
+        };
+
+        const validate = ajv.compile(schema);
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = z.union([z.string(), z.number(), z.boolean()]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
 
       test('valita', measure => {
-        const type = v.union(v.string(), v.number());
+        const type = v.union(v.string(), v.number(), v.boolean());
 
         measure(() => {
           type.parse(value);
@@ -857,10 +857,18 @@ describe(
       });
 
       test('doubter', measure => {
-        const shape = d.or([d.string(), d.number()]);
+        const shape = d.or([d.string(), d.number(), d.boolean()]);
 
         measure(() => {
           shape.safeParse(value);
+        });
+      });
+
+      test('doubter.v3.UnionShape', measure => {
+        const shape = new d.v3.UnionShape([new d.v3.StringShape(), new d.v3.NumberShape(), new d.v3.BooleanShape()]);
+
+        measure(() => {
+          shape.parse(value);
         });
       });
     };
@@ -868,6 +876,86 @@ describe(
     describe('string input', () => createTests('aaa'));
 
     describe('number input', () => createTests(111));
+
+    describe('boolean input', () => createTests(true));
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'or([object({ foo: string() }), object({ bar: number() })])',
+  () => {
+    const createTests = value => {
+      test('Ajv', measure => {
+        const ajv = new Ajv({ allowUnionTypes: true });
+
+        const schema = {
+          $id: 'test',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          anyOf: [
+            {
+              type: 'object',
+              properties: {
+                foo: { type: 'string' },
+              },
+              required: ['foo'],
+            },
+            {
+              type: 'object',
+              properties: {
+                bar: { type: 'number' },
+              },
+              required: ['bar'],
+            },
+          ],
+        };
+
+        const validate = ajv.compile(schema);
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = z.union([z.object({ foo: z.string() }), z.object({ bar: z.number() })]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('valita', measure => {
+        const type = v.union(v.object({ foo: v.string() }), v.object({ bar: v.number() }));
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = d.or([d.object({ foo: d.string() }), d.object({ bar: d.number() })]);
+
+        measure(() => {
+          shape.safeParse(value);
+        });
+      });
+
+      test('doubter.v3.UnionShape', measure => {
+        const shape = new d.v3.UnionShape([
+          new d.v3.ObjectShape({ foo: new d.v3.StringShape() }),
+          new d.v3.ObjectShape({ bar: new d.v3.NumberShape() }),
+        ]);
+
+        measure(() => {
+          shape.parse(value);
+        });
+      });
+    };
+
+    describe('{ foo: "aaa" }', () => createTests({ foo: 'aaa' }));
+
+    describe('{ bar: 123 }', () => createTests({ bar: 123 }));
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
