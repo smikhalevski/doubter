@@ -5,6 +5,7 @@ export { EnumShape } from './EnumShape';
 export { InstanceShape } from './InstanceShape';
 export { IntegerShape } from './IntegerShape';
 export { LiteralShape } from './LiteralShape';
+export { NeverShape } from './NeverShape';
 export { ObjectShape } from './ObjectShape';
 export { StringShape } from './StringShape';
 export { NumberShape } from './NumberShape';
