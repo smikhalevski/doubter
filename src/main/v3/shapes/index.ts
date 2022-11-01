@@ -6,6 +6,7 @@ export { InstanceShape } from './InstanceShape';
 export { IntegerShape } from './IntegerShape';
 export { LiteralShape } from './LiteralShape';
 export { NeverShape } from './NeverShape';
+export { NullableShape } from './NullableShape';
 export { NumberShape } from './NumberShape';
 export { ObjectShape } from './ObjectShape';
 export { OptionalShape } from './OptionalShape';

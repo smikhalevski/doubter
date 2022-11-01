@@ -21,12 +21,12 @@ export class OptionalShape<S extends AnyShape, T extends S['output'] | undefined
   }
 
   _apply(input: unknown, options: ParserOptions): ApplyResult<S['output'] | T> {
-    const { shape, _applyChecks } = this;
+    const { _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    const result = input === undefined ? this._defaultResult : shape._apply(input, options);
+    const result = input === undefined ? this._defaultResult : this.shape._apply(input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -46,22 +46,22 @@ export class OptionalShape<S extends AnyShape, T extends S['output'] | undefined
   }
 
   _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<S['output'] | T>> {
-    const { shape, _applyChecks } = this;
+    const { _applyChecks } = this;
 
     let issues;
 
     if (input === undefined) {
       if (_applyChecks !== null) {
-        issues = _applyChecks(this.defaultValue, null, options);
+        return new Promise(resolve => {
+          issues = _applyChecks(this.defaultValue, null, options);
 
-        if (issues !== null) {
-          return Promise.resolve(issues);
-        }
+          resolve(issues !== null ? issues : this._defaultResult);
+        });
       }
       return this._defaultAsyncResult!;
     }
 
-    return shape._applyAsync(input, options).then(result => {
+    return this.shape._applyAsync(input, options).then(result => {
       let issues;
       let output = input;
 
