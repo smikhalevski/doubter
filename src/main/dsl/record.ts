@@ -1,10 +1,10 @@
 import { AnyShape, RecordShape, Shape } from '../shapes';
-import { InputConstraintOptionsOrMessage } from '../shared-types';
+import { Message, TypeCheckOptions } from '../shared-types';
 
-export function record<K extends Shape<string>, V extends AnyShape>(
+export function record<K extends Shape<string, PropertyKey>, V extends AnyShape>(
   keyShape: K,
   valueShape: V,
-  options?: InputConstraintOptionsOrMessage
+  options?: TypeCheckOptions | Message
 ): RecordShape<K, V> {
   return new RecordShape(keyShape, valueShape, options);
 }

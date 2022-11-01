@@ -1,6 +1,6 @@
 import { StringShape } from '../shapes';
-import { InputConstraintOptionsOrMessage } from '../shared-types';
+import { Message, TypeCheckOptions } from '../shared-types';
 
-export function string(options?: InputConstraintOptionsOrMessage): StringShape {
+export function string(options?: TypeCheckOptions | Message): StringShape {
   return new StringShape(options);
 }

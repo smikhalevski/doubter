@@ -1,5 +1,5 @@
 import { enum as _enum } from '../../main';
-import { CODE_ENUM } from '../../main/v3/shapes/constants';
+import { CODE_ENUM } from '../../main/shapes/constants';
 
 describe('enum', () => {
   test('infers type', () => {

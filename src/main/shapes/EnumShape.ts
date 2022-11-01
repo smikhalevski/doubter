@@ -1,8 +1,7 @@
-import { InputConstraintOptionsOrMessage, ParserOptions, Primitive } from '../shared-types';
 import { Shape } from './Shape';
-import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_ENUM, MESSAGE_ENUM } from '../v3/shapes/constants';
-import { ValidationError } from '../ValidationError';
+import { ApplyResult, Message, ParserOptions, Primitive, TypeCheckOptions } from '../shared-types';
+import { createCheckConfig, raiseIssue } from '../shape-utils';
+import { CODE_ENUM, MESSAGE_ENUM } from './constants';
 
 /**
  * The shape that constrains input to one of the primitive values.
@@ -10,25 +9,28 @@ import { ValidationError } from '../ValidationError';
  * @template T The type of the allowed values.
  */
 export class EnumShape<T extends Primitive> extends Shape<T> {
+  private _typeCheckConfig;
+
   /**
    * Creates a new {@linkcode EnumShape} instance.
    *
    * @param values The list of values allowed for the input.
-   * @param _options The constraint options or an issue message.
+   * @param options The type constraint options or an issue message.
    */
-  constructor(readonly values: readonly T[], protected _options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly values: readonly T[], options?: TypeCheckOptions | Message) {
     super(false);
+    this._typeCheckConfig = createCheckConfig(options, CODE_ENUM, MESSAGE_ENUM, values);
   }
 
-  safeParse(input: any, options?: ParserOptions): T | ValidationError {
-    const { values, _applyConstraints } = this;
+  _apply(input: any, options: ParserOptions): ApplyResult<T> {
+    const { _applyChecks } = this;
 
-    if (!values.includes(input)) {
-      return raiseIssue(input, CODE_ENUM, values, this._options, MESSAGE_ENUM);
+    if (!this.values.includes(input)) {
+      return raiseIssue(this._typeCheckConfig, input);
     }
-    if (_applyConstraints !== null) {
-      return returnValueOrRaiseIssues(input, _applyConstraints(input, options, null));
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
-    return input;
+    return null;
   }
 }

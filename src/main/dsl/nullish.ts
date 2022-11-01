@@ -8,9 +8,9 @@ import { optional } from './optional';
  * @param shape The underlying shape.
  * @param defaultValue The value that should be used if input is `undefined`.
  */
-export function nullish<S extends AnyShape, O extends S['output'] | undefined = undefined>(
+export function nullish<S extends AnyShape, T extends S['output'] | undefined = undefined>(
   shape: S,
-  defaultValue?: O
-): OptionalShape<NullableShape<S>, O> {
+  defaultValue?: T
+): OptionalShape<NullableShape<S>, T> {
   return optional(nullable(shape), defaultValue);
 }

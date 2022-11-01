@@ -1,5 +1,5 @@
 import { NeverShape } from '../../main';
-import { CODE_NEVER } from '../../main/v3/shapes/constants';
+import { CODE_NEVER } from '../../main/shapes/constants';
 
 describe('NeverShape', () => {
   test('always raises', () => {

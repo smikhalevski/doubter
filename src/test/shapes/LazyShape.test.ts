@@ -1,5 +1,5 @@
 import { ArrayShape, LazyShape, NumberShape, StringShape } from '../../main';
-import { CODE_TYPE, TYPE_STRING } from '../../main/v3/shapes/constants';
+import { CODE_TYPE, TYPE_STRING } from '../../main/shapes/constants';
 
 describe('LazyShape', () => {
   test('uses the shape returned from provider to parse the input', () => {

@@ -1,22 +1,6 @@
 import { AnyShape, Shape } from './Shape';
-import {
-  InputConstraintOptionsOrMessage,
-  INVALID,
-  Issue,
-  OutputConstraintOptionsOrMessage,
-  ParserOptions,
-} from '../shared-types';
-import {
-  appendConstraint,
-  applySafeParseAsync,
-  captureIssuesForKey,
-  createIssue,
-  createResolveArray,
-  isArrayIndex,
-  isEarlyReturn,
-  raiseIssue,
-  returnValueOrRaiseIssues,
-} from '../utils';
+import { ApplyResult, CheckOptions, Issue, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
+import { addCheck, concatIssues, createCheckConfig, isArrayIndex, ok, raiseIssue, unshiftPath } from '../shape-utils';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -25,24 +9,15 @@ import {
   MESSAGE_ARRAY_MIN,
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
-} from '../v3/shapes/constants';
-import { isValidationError, ValidationError } from '../ValidationError';
+} from './constants';
 import { isArray, isEqual } from '../lang-utils';
 
-/**
- * The shape that constrains every element of an array with the element shape.
- *
- * @template S The element shape.
- */
 export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['output'][]> {
-  /**
-   * Creates a new {@linkcode ArrayShape} instance.
-   *
-   * @param shape The shape of an array element.
-   * @param _options The constraint options or an issue message.
-   */
-  constructor(readonly shape: S, protected _options?: InputConstraintOptionsOrMessage) {
-    super(shape.async);
+  private _typeCheckConfig;
+
+  constructor(readonly shape: S, options?: TypeCheckOptions | Message) {
+    super(false);
+    this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_ARRAY_TYPE, TYPE_ARRAY);
   }
 
   at(key: unknown): AnyShape | null {
@@ -56,7 +31,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  length(length: number, options?: OutputConstraintOptionsOrMessage): this {
+  length(length: number, options?: CheckOptions | Message): this {
     return this.min(length, options).max(length, options);
   }
 
@@ -67,10 +42,12 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  min(length: number, options?: OutputConstraintOptionsOrMessage): this {
-    return appendConstraint(this, CODE_ARRAY_MIN, options, output => {
-      if (output.length < length) {
-        return createIssue(output, CODE_ARRAY_MIN, length, options, MESSAGE_ARRAY_MIN);
+  min(length: number, options?: CheckOptions | Message): this {
+    const checkConfig = createCheckConfig(options, CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, length);
+
+    return addCheck(this, CODE_ARRAY_MIN, options, input => {
+      if (input.length < length) {
+        return raiseIssue(checkConfig, input);
       }
     });
   }
@@ -82,76 +59,114 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  max(length: number, options?: OutputConstraintOptionsOrMessage): this {
-    return appendConstraint(this, CODE_ARRAY_MAX, options, output => {
-      if (output.length > length) {
-        return createIssue(output, CODE_ARRAY_MAX, length, options, MESSAGE_ARRAY_MAX);
+  max(length: number, options?: CheckOptions | Message): this {
+    const checkConfig = createCheckConfig(options, CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, length);
+
+    return addCheck(this, CODE_ARRAY_MAX, options, input => {
+      if (input.length < length) {
+        return raiseIssue(checkConfig, input);
       }
     });
   }
 
-  safeParse(input: unknown, options?: ParserOptions): S['output'][] | ValidationError {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<S['output'][]> {
     if (!isArray(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE);
+      return raiseIssue(this._typeCheckConfig, input);
     }
 
-    const { shape, _applyConstraints } = this;
-    const inputLength = input.length;
+    const { shape, _applyChecks, _unsafe } = this;
+
+    const arrayLength = input.length;
 
     let issues: Issue[] | null = null;
     let output = input;
 
-    for (let i = 0; i < inputLength; ++i) {
-      const inputValue = input[i];
+    for (let i = 0; i < arrayLength; ++i) {
+      const value = input[i];
+      const result = shape._apply(value, options);
 
-      let outputValue = shape.safeParse(inputValue);
-
-      if (isEqual(outputValue, inputValue)) {
+      if (result === null) {
         continue;
       }
+      if (isArray(result)) {
+        unshiftPath(result, i);
 
-      if (isValidationError(outputValue)) {
-        issues = captureIssuesForKey(outputValue, options, issues, i);
-
-        if (isEarlyReturn(options)) {
-          return outputValue;
+        if (!options.verbose) {
+          return result;
         }
-        outputValue = INVALID;
+        issues = concatIssues(issues, result);
+        continue;
       }
-
-      if (output === input) {
-        output = input.slice(0);
+      if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
+        if (input === output) {
+          output = input.slice(0);
+        }
+        output[i] = result.value;
       }
-      output[i] = outputValue;
     }
 
-    if (_applyConstraints !== null) {
-      issues = _applyConstraints(output, options, issues);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
-
-    return returnValueOrRaiseIssues(output, issues);
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
   }
 
-  safeParseAsync(input: unknown, options?: ParserOptions): Promise<S['output'][] | ValidationError> {
-    if (!this.async) {
-      return applySafeParseAsync(this, input, options);
-    }
-
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<S['output'][]>> {
     return new Promise(resolve => {
       if (!isArray(input)) {
-        resolve(raiseIssue(input, CODE_TYPE, TYPE_ARRAY, this._options, MESSAGE_ARRAY_TYPE));
-        return;
+        return raiseIssue(this._typeCheckConfig, input);
       }
 
-      const { shape, _applyConstraints } = this;
-      const inputLength = input.length;
-      const promises = [];
+      const { shape, _applyChecks, _unsafe } = this;
 
-      for (let i = 0; i < inputLength; ++i) {
-        promises.push(shape.safeParseAsync(input[i], options));
+      const arrayLength = input.length;
+      const promises: Promise<ApplyResult<S['output']>>[] = [];
+
+      for (let i = 0; i < arrayLength; ++i) {
+        const value = input[i];
+        promises.push(shape._applyAsync(value, options));
       }
 
-      resolve(Promise.all(promises).then(createResolveArray(input, options, _applyConstraints)));
+      resolve(
+        Promise.all(promises).then(results => {
+          let issues: Issue[] | null = null;
+          let output = input;
+
+          for (let i = 0; i < arrayLength; ++i) {
+            const result = results[i];
+
+            if (result === null) {
+              continue;
+            }
+            if (isArray(result)) {
+              unshiftPath(result, i);
+
+              if (!options.verbose) {
+                return result;
+              }
+              issues = concatIssues(issues, result);
+              continue;
+            }
+            if ((_unsafe || issues === null) && !isEqual(input[i], result.value)) {
+              if (input === output) {
+                output = input.slice(0);
+              }
+              output[i] = result.value;
+            }
+          }
+
+          if (_applyChecks !== null && (_unsafe || issues === null)) {
+            issues = _applyChecks(output, issues, options);
+          }
+          if (issues === null && input !== output) {
+            return ok(output);
+          }
+          return issues;
+        })
+      );
     });
   }
 }

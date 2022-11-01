@@ -1,4 +1,4 @@
-import { InputConstraintOptionsOrMessage, Primitive, Tuple } from '../shared-types';
+import { Message, Primitive, Tuple, TypeCheckOptions } from '../shared-types';
 import { EnumShape } from '../shapes';
 import { isArray, isFinite } from '../lang-utils';
 
@@ -10,7 +10,7 @@ import { isArray, isFinite } from '../lang-utils';
  */
 function _enum<T extends Primitive, U extends Tuple<T>>(
   values: U,
-  options?: InputConstraintOptionsOrMessage
+  options?: TypeCheckOptions | Message
 ): EnumShape<U[number]>;
 
 /**
@@ -21,12 +21,12 @@ function _enum<T extends Primitive, U extends Tuple<T>>(
  */
 function _enum<U extends { [name: string]: string | number }>(
   values: U,
-  options?: InputConstraintOptionsOrMessage
+  options?: TypeCheckOptions | Message
 ): EnumShape<U[keyof U]>;
 
 function _enum(
   values: Tuple<Primitive> | { [name: string]: string | number },
-  options?: InputConstraintOptionsOrMessage
+  options?: TypeCheckOptions | Message
 ): EnumShape<any> {
   if (isArray(values)) {
     return new EnumShape(values, options);

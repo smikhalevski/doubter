@@ -1,5 +1,5 @@
 import { ArrayShape, INVALID, NumberShape } from '../../main';
-import { CODE_ARRAY_MAX, CODE_ARRAY_MIN, CODE_TYPE, TYPE_ARRAY, TYPE_NUMBER } from '../../main/v3/shapes/constants';
+import { CODE_ARRAY_MAX, CODE_ARRAY_MIN, CODE_TYPE, TYPE_ARRAY, TYPE_NUMBER } from '../../main/shapes/constants';
 
 const numberShape = new NumberShape();
 

@@ -1,7 +1,14 @@
-/**
- * Symbol that denotes an invalid value.
- */
-export const INVALID: any = Symbol('invalid');
+export interface Ok<T> {
+  ok: true;
+  value: T;
+}
+
+export interface Err {
+  ok: false;
+  issues: Issue[];
+}
+
+export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
 
 /**
  * A validation issue raised during input parsing.
@@ -38,25 +45,28 @@ export interface Issue {
   meta: any;
 }
 
-export type IssueLike = Partial<Issue>[] | Partial<Issue>;
-
 /**
- * A callback that takes an input and returns `undefined` if value satisfies the constraint requirements. If values
- * doesn't satisfy the constraint requirements then a {@linkcode ValidationError} can be thrown, or detected issues can
+ * A callback that takes an input and returns `undefined` if value satisfies the check requirements. If values
+ * doesn't satisfy the check requirements then a {@linkcode ValidationError} can be thrown, or detected issues can
  * be returned.
  */
-export type Constraint<T> = (value: T, options: ParserOptions | undefined) => IssueLike | undefined | void;
+export type CheckCallback<T> = (value: T) => Issue[] | Issue | null | undefined | void;
 
 /**
  * Transforms the value from one type to another. Transformer may throw or return a {@linkcode ValidationError} if there
  * are issues that prevent the value from being properly transformed.
  */
-export type Transformer<I, O> = (value: I) => O;
+export type TransformCallback<I, O> = (value: I) => O;
 
 /**
- * Options that are applicable for the type constraint.
+ * The message callback or a string.
  */
-export interface InputConstraintOptions {
+export type Message = ((param: any, value: any) => any) | string;
+
+/**
+ * Options that are applicable for the type check.
+ */
+export interface TypeCheckOptions {
   /**
    * The custom issue message.
    */
@@ -69,52 +79,57 @@ export interface InputConstraintOptions {
 }
 
 /**
- * Options that follow in chain after the input constraint.
+ * Options that are applicable for the built-in type-specific checks.
  */
-export interface ChainableConstraintOptions {
+export interface CheckOptions {
   /**
-   * If `true` then the constraint would be executed even if the preceding constraint failed, otherwise constraint is
+   * The custom issue message.
+   */
+  message?: any;
+
+  /**
+   * An arbitrary metadata that is added to an issue.
+   */
+  meta?: any;
+
+  /**
+   * If `true` then the check would be executed even if the preceding check failed, otherwise check is
    * ignored.
    */
   unsafe?: boolean;
 }
 
 /**
- * Options that are applicable for the built-in type-specific constraints.
+ * Options that are applicable for the custom checks added via {@linkcode Shape.check}.
  */
-export interface OutputConstraintOptions extends InputConstraintOptions, ChainableConstraintOptions {}
-
-/**
- * Options that are applicable for the custom constraints added via {@linkcode Shape.constraint}.
- */
-export interface IdentifiableConstraintOptions extends ChainableConstraintOptions {
+export interface CustomCheckOptions {
   /**
-   * The unique ID of the constraint in scope of the shape.
+   * The unique ID of the check in scope of the shape.
    *
-   * If there is a constraint with the same ID then it is replaced, otherwise it is appended to the list of constraints.
-   * If the ID is `undefined` then the constraint is always appended to the list of constraints.
+   * If there is a check with the same ID then it is replaced, otherwise it is appended to the list of checks.
+   * If the ID is `undefined` then the check is always appended to the list of checks.
    */
   id?: string;
+
+  /**
+   * If `true` then the check would be executed even if the preceding check failed, otherwise check is
+   * ignored.
+   */
+  unsafe?: boolean;
 }
 
 /**
- * Options for narrowing constraints that are added
+ * Options for narrowing checks that are added
  */
-export interface NarrowingOptions extends OutputConstraintOptions, IdentifiableConstraintOptions {}
-
-export type InputConstraintOptionsOrMessage = InputConstraintOptions | ((param: any, value: any) => any) | string;
-
-export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | ((param: any, value: any) => any) | string;
-
-export type NarrowingOptionsOrMessage = NarrowingOptions | ((param: any, value: any) => any) | string;
+export interface NarrowingOptions extends CheckOptions, CustomCheckOptions {}
 
 /**
- * Options used by a shape to apply constraints and transformations.
+ * Options used by a shape to apply checks and transformations.
  */
 export interface ParserOptions {
   /**
-   * If `true` then parsing all issues are collected during parsing, otherwise parsing is aborted after the first issue
-   * is encountered.
+   * If `true` then all issues are collected during parsing, otherwise parsing is aborted after the first issue is
+   * encountered.
    *
    * @default false
    */
@@ -128,18 +143,3 @@ export type Primitive = string | number | bigint | boolean | null | undefined;
 export interface Dict<T = any> {
   [key: string]: T;
 }
-
-/**
- * The closure that applies constraints to the input value and throws a validation error if
- * {@linkcode ParserOptions.fast fast} parsing is enabled, or returns an error otherwise.
- *
- * @param value The value to which constraints are applied.
- * @param options Parsing options.
- * @param issues The list of already captured issues.
- * @returns The list of captured issues, or `null` if there are no issues.
- */
-export type ApplyConstraints = (
-  value: any,
-  options: ParserOptions | undefined,
-  issues: Issue[] | null
-) => Issue[] | null;

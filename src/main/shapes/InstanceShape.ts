@@ -1,30 +1,32 @@
 import { Shape } from './Shape';
-import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../v3/shapes/constants';
-import { ValidationError } from '../ValidationError';
+import { ApplyResult, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
+import { createCheckConfig, raiseIssue } from '../shape-utils';
+import { CODE_INSTANCE, MESSAGE_INSTANCE } from './constants';
 
-type InferInstance<F> = F extends new (...args: any[]) => infer T ? T : never;
+export type InferInstance<C> = C extends new (...args: any[]) => infer T ? T : never;
 
 /**
  * The class instance shape.
  *
- * @template F The class constructor.
+ * @template C The class constructor.
  */
-export class InstanceShape<F extends new (...args: any[]) => any> extends Shape<InferInstance<F>> {
-  constructor(readonly ctor: F, protected _options?: InputConstraintOptionsOrMessage) {
+export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<InferInstance<C>> {
+  private _typeCheckConfig;
+
+  constructor(readonly ctor: C, options?: TypeCheckOptions | Message) {
     super(false);
+    this._typeCheckConfig = createCheckConfig(options, CODE_INSTANCE, MESSAGE_INSTANCE, ctor);
   }
 
-  safeParse(input: unknown, options?: ParserOptions): InferInstance<F> | ValidationError {
-    const { ctor, _applyConstraints } = this;
+  _apply(input: unknown, options: ParserOptions): ApplyResult<InferInstance<C>> {
+    const { _applyChecks } = this;
 
-    if (!(input instanceof ctor)) {
-      return raiseIssue(input, CODE_INSTANCE, ctor, this._options, MESSAGE_INSTANCE);
+    if (!(input instanceof this.ctor)) {
+      return raiseIssue(this._typeCheckConfig, input);
     }
-    if (_applyConstraints !== null) {
-      return returnValueOrRaiseIssues(input, _applyConstraints(input, options, null));
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
-    return input;
+    return null;
   }
 }

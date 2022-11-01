@@ -1,18 +1,17 @@
 import { Shape } from './Shape';
-import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { raiseIssue } from '../utils';
-import { CODE_NEVER, MESSAGE_NEVER } from '../v3/shapes/constants';
-import { ValidationError } from '../ValidationError';
+import { ApplyResult, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
+import { createCheckConfig, raiseIssue } from '../shape-utils';
+import { CODE_NEVER, MESSAGE_NEVER } from './constants';
 
-/**
- * The shape that always raises an issue.
- */
 export class NeverShape extends Shape<never> {
-  constructor(protected _options?: InputConstraintOptionsOrMessage) {
+  private _typeCheckConfig;
+
+  constructor(options?: TypeCheckOptions | Message) {
     super(false);
+    this._typeCheckConfig = createCheckConfig(options, CODE_NEVER, MESSAGE_NEVER, undefined);
   }
 
-  safeParse(input: unknown, options?: ParserOptions): ValidationError {
-    return raiseIssue(input, CODE_NEVER, undefined, this._options, MESSAGE_NEVER);
+  _apply(input: unknown, options: ParserOptions): ApplyResult<never> {
+    return raiseIssue(this._typeCheckConfig, input);
   }
 }

@@ -1,10 +1,10 @@
-import { InputConstraintOptionsOrMessage, Issue, ParserOptions, Tuple } from '../shared-types';
 import { AnyShape, Shape } from './Shape';
-import { createIssue, isAsyncShapes, isEarlyReturn, returnValueOrRaiseIssues, throwIfUnknownError } from '../utils';
-import { CODE_UNION, MESSAGE_UNION } from '../v3/shapes/constants';
-import { isValidationError, ValidationError } from '../ValidationError';
+import { ApplyResult, Issue, Message, ParserOptions, Tuple, TypeCheckOptions } from '../shared-types';
+import { concatIssues, createCheckConfig, createIssue, isAsyncShapes } from '../shape-utils';
+import { isArray } from '../lang-utils';
+import { CODE_UNION, MESSAGE_UNION } from './constants';
 
-type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
+export type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
 
 /**
  * The shape that requires an input to conform at least one of the united shapes.
@@ -12,14 +12,18 @@ type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K 
  * @template U The list of united type definitions.
  */
 export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
+  private _typeCheckConfig;
+
   /**
    * Creates a new {@linkcode UnionShape} instance.
    *
    * @param shapes The list of united shapes.
-   * @param options The constraint options or an issue message.
+   * @param options The union constraint options or an issue message.
    */
-  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly shapes: Readonly<U>, options?: TypeCheckOptions | Message) {
     super(isAsyncShapes(shapes));
+
+    this._typeCheckConfig = createCheckConfig(options, CODE_UNION, MESSAGE_UNION, undefined);
   }
 
   at(key: unknown): AnyShape | null {
@@ -41,86 +45,65 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
     return new UnionShape(childShapes as U);
   }
 
-  safeParse(input: unknown, options?: ParserOptions): InferUnion<U, 'output'> | ValidationError {
-    const { shapes, _applyConstraints } = this;
+  _apply(input: unknown, options: ParserOptions): ApplyResult<InferUnion<U, 'output'>> {
+    const { shapes, _applyChecks, _unsafe } = this;
 
     const shapesLength = shapes.length;
 
     let issues: Issue[] | null = null;
-    let output;
 
-    output = shapes[0].safeParse(input, options);
+    for (let i = 0; i < shapesLength; ++i) {
+      const result = shapes[i]._apply(input, options);
 
-    if (!isValidationError(output)) {
-      return output;
+      if (result === null) {
+        return null;
+      }
+      if (isArray(result)) {
+        issues = concatIssues(issues, result);
+        continue;
+      }
+      return result;
     }
 
-    issues = captureOrMergeIssues(output, issues);
-
-    output = shapes[1].safeParse(input, options);
-
-    if (!isValidationError(output)) {
-      return output;
+    if (_applyChecks !== null && _unsafe) {
+      issues = _applyChecks(input, issues, options);
     }
-
-    issues = captureOrMergeIssues(output, issues);
-
-    // for (let i = 0; i < shapesLength; ++i) {
-    //   // if (output == null) {
-    //   //   break;
-    //   // }
-    //   // issues = captureOrMergeIssues(output, issues);
-    // }
-
-    // return input;
-
-    issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
-
-    return returnValueOrRaiseIssues(
-      input,
-      isEarlyReturn(options) || _applyConstraints === null ? issues : _applyConstraints(input, options, issues)
-    );
+    return [createIssue(this._typeCheckConfig, input, issues)];
   }
 
-  safeParseAsync(input: unknown, options?: ParserOptions): Promise<InferUnion<U, 'output'> | ValidationError> {
-    if (!this.async) {
-      return super.safeParseAsync(input, options);
-    }
-
-    const { shapes, _applyConstraints } = this;
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
+    const { shapes, _applyChecks, _unsafe } = this;
 
     const shapesLength = shapes.length;
 
     let issues: Issue[] | null = null;
-    let promise = shapes[0].safeParseAsync(input, options);
+    let index = 0;
 
-    for (let i = 1; i < shapesLength; ++i) {
-      promise = promise.catch(error => {
-        issues = captureOrMergeIssues(error, issues);
+    const nextShape = (): Promise<ApplyResult<InferUnion<U, 'output'>>> => {
+      return shapes[index]._applyAsync(input, options).then(result => {
+        ++index;
 
-        return shapes[i].parseAsync(input, options);
+        if (result === null) {
+          return null;
+        }
+
+        if (isArray(result)) {
+          issues = concatIssues(issues, result);
+
+          if (index < shapesLength) {
+            return nextShape();
+          }
+
+          if (_applyChecks !== null && _unsafe) {
+            issues = _applyChecks(input, issues, options);
+          }
+          return [createIssue(this._typeCheckConfig, input, issues)];
+        }
+
+        return result;
       });
-    }
+    };
 
-    return promise.catch(error => {
-      throwIfUnknownError(error);
-
-      issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
-
-      return returnValueOrRaiseIssues(
-        input,
-        isEarlyReturn(options) || _applyConstraints === null ? issues : _applyConstraints(input, options, issues)
-      );
-    });
+    return nextShape();
   }
-}
-
-function captureOrMergeIssues(error: ValidationError, issues: Issue[] | null): Issue[] {
-  const errorIssues = error.issues;
-
-  if (issues !== null) {
-    issues.push(...errorIssues);
-    return issues;
-  }
-  return errorIssues;
 }

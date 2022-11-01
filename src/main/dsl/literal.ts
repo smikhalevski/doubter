@@ -1,4 +1,4 @@
-import { InputConstraintOptionsOrMessage, Primitive } from '../shared-types';
+import { Message, Primitive, TypeCheckOptions } from '../shared-types';
 import { LiteralShape, Shape } from '../shapes';
 
 /**
@@ -9,6 +9,6 @@ import { LiteralShape, Shape } from '../shapes';
  *
  * @template T The type of the literal value.
  */
-export function literal<T extends Primitive>(value: T, options?: InputConstraintOptionsOrMessage): Shape<T> {
+export function literal<T extends Primitive>(value: T, options?: TypeCheckOptions | Message): Shape<T> {
   return new LiteralShape(value, options);
 }

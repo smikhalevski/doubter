@@ -1,63 +1,68 @@
+import { ApplyResult, ParserOptions } from '../shared-types';
+import { isArray } from '../lang-utils';
 import { AnyShape, Shape } from './Shape';
-import { OptionalShape } from './OptionalShape';
-import { INVALID, Issue, ParserOptions } from '../shared-types';
-import { applySafeParseAsync, isEarlyReturn, returnIssues, returnValueOrRaiseIssues } from '../utils';
-import { isValidationError, ValidationError } from '../ValidationError';
+
+const nullResult: Promise<ApplyResult<null>> = Promise.resolve(null);
 
 export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, S['output'] | null> {
   constructor(readonly shape: S) {
     super(shape.async);
   }
 
-  at(key: unknown): AnyShape | null {
-    const shape = this.shape.at(key);
-    return shape === null ? null : new OptionalShape(shape);
-  }
+  _apply(input: unknown, options: ParserOptions): ApplyResult<S['output'] | null> {
+    const { _applyChecks } = this;
 
-  safeParse(input: unknown, options?: ParserOptions): S['output'] | null | ValidationError {
-    let issues: Issue[] | null = null;
-    let output = null;
+    let issues;
+    let output = input;
 
-    if (input !== null) {
-      output = this.shape.safeParse(input, options);
+    const result = input === null ? null : this.shape._apply(input, options);
 
-      if (isValidationError(output)) {
-        if (isEarlyReturn(options)) {
-          return output;
-        }
-        issues = output.issues;
-        output = INVALID;
+    if (result !== null) {
+      if (isArray(result)) {
+        return result;
+      }
+      output = result.value;
+    }
+
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
+
+      if (issues !== null) {
+        return issues;
       }
     }
-
-    const { _applyConstraints } = this;
-    if (_applyConstraints !== null) {
-      issues = _applyConstraints(output, options, issues);
-    }
-
-    return returnValueOrRaiseIssues(output, issues);
+    return result;
   }
 
-  safeParseAsync(input: unknown, options?: ParserOptions): Promise<S['output'] | null | ValidationError> {
-    if (!this.async) {
-      return applySafeParseAsync(this, input, options);
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<S['output'] | null>> {
+    const { _applyChecks } = this;
+
+    if (input === null) {
+      if (_applyChecks !== null) {
+        return new Promise(resolve => resolve(_applyChecks(null, null, options)));
+      }
+      return nullResult;
     }
 
-    const { _applyConstraints } = this;
+    return this.shape._applyAsync(input, options).then(result => {
+      let issues;
+      let output = input;
 
-    const promise = input === null ? Promise.resolve(null) : this.shape.parseAsync(input, options);
+      if (result !== null) {
+        if (isArray(result)) {
+          return result;
+        }
+        output = result.value;
+      }
 
-    if (_applyConstraints === null) {
-      return promise;
-    }
+      if (_applyChecks !== null) {
+        issues = _applyChecks(output, null, options);
 
-    if (isEarlyReturn(options)) {
-      return promise.then(output => returnValueOrRaiseIssues(output, _applyConstraints(output, options, null)));
-    }
-
-    return promise.then(
-      output => returnValueOrRaiseIssues(output, _applyConstraints(output, options, null)),
-      error => returnValueOrRaiseIssues(INVALID, _applyConstraints(INVALID, options, returnIssues(error)))
-    );
+        if (issues !== null) {
+          return issues;
+        }
+      }
+      return result;
+    });
   }
 }

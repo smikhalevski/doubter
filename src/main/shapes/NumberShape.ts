@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
-import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { appendConstraint, createIssue, raiseIssue, returnValueOrRaiseIssues } from '../utils';
+import { ApplyResult, CheckOptions, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
+import { addCheck, createCheckConfig, raiseIssue } from '../shape-utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -15,13 +15,15 @@ import {
   MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
   TYPE_NUMBER,
-} from '../v3/shapes/constants';
-import { ValidationError } from '../ValidationError';
+} from './constants';
 import { isFinite } from '../lang-utils';
 
 export class NumberShape extends Shape<number> {
-  constructor(protected _options?: InputConstraintOptionsOrMessage) {
+  private _typeCheckConfig;
+
+  constructor(options?: TypeCheckOptions | Message) {
     super(false);
+    this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER);
   }
 
   /**
@@ -30,7 +32,7 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  positive(options?: OutputConstraintOptionsOrMessage): this {
+  positive(options?: CheckOptions | Message): this {
     return this.gt(0, options);
   }
 
@@ -40,7 +42,7 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  negative(options?: OutputConstraintOptionsOrMessage): this {
+  negative(options?: CheckOptions | Message): this {
     return this.lt(0, options);
   }
 
@@ -51,10 +53,12 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  gt(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return appendConstraint(this, CODE_NUMBER_GT, options, output => {
-      if (output <= value) {
-        return createIssue(output, CODE_NUMBER_GT, value, options, MESSAGE_NUMBER_GT);
+  gt(value: number, options?: CheckOptions | Message): this {
+    const checkConfig = createCheckConfig(options, CODE_NUMBER_GT, MESSAGE_NUMBER_GT, value);
+
+    return addCheck(this, CODE_NUMBER_GT, options, input => {
+      if (input <= value) {
+        return raiseIssue(checkConfig, input);
       }
     });
   }
@@ -66,10 +70,12 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  lt(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return appendConstraint(this, CODE_NUMBER_LT, options, output => {
-      if (output >= value) {
-        return createIssue(output, CODE_NUMBER_LT, value, options, MESSAGE_NUMBER_LT);
+  lt(value: number, options?: CheckOptions | Message): this {
+    const checkConfig = createCheckConfig(options, CODE_NUMBER_LT, MESSAGE_NUMBER_LT, value);
+
+    return addCheck(this, CODE_NUMBER_LT, options, input => {
+      if (input >= value) {
+        return raiseIssue(checkConfig, input);
       }
     });
   }
@@ -81,10 +87,12 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  gte(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return appendConstraint(this, CODE_NUMBER_GTE, options, output => {
-      if (output < value) {
-        return createIssue(output, CODE_NUMBER_GTE, value, options, MESSAGE_NUMBER_GTE);
+  gte(value: number, options?: CheckOptions | Message): this {
+    const checkConfig = createCheckConfig(options, CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, value);
+
+    return addCheck(this, CODE_NUMBER_GTE, options, input => {
+      if (input < value) {
+        return raiseIssue(checkConfig, input);
       }
     });
   }
@@ -96,10 +104,12 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  lte(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return appendConstraint(this, CODE_NUMBER_LTE, options, output => {
-      if (output > value) {
-        return createIssue(output, CODE_NUMBER_LTE, value, options, MESSAGE_NUMBER_LTE);
+  lte(value: number, options?: CheckOptions | Message): this {
+    const checkConfig = createCheckConfig(options, CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, value);
+
+    return addCheck(this, CODE_NUMBER_LTE, options, input => {
+      if (input > value) {
+        return raiseIssue(checkConfig, input);
       }
     });
   }
@@ -111,23 +121,25 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  multipleOf(divisor: number, options?: OutputConstraintOptionsOrMessage): this {
-    return appendConstraint(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
-      if (output % divisor !== 0) {
-        return createIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, MESSAGE_NUMBER_MULTIPLE_OF);
+  multipleOf(divisor: number, options?: CheckOptions | Message): this {
+    const checkConfig = createCheckConfig(options, CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, divisor);
+
+    return addCheck(this, CODE_NUMBER_MULTIPLE_OF, options, input => {
+      if (input % divisor !== 0) {
+        return raiseIssue(checkConfig, input);
       }
     });
   }
 
-  safeParse(input: unknown, options?: ParserOptions): number | ValidationError {
-    const { _applyConstraints } = this;
+  _apply(input: unknown, options: ParserOptions): ApplyResult<number> {
+    const { _applyChecks } = this;
 
     if (!isFinite(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_NUMBER, this._options, MESSAGE_NUMBER_TYPE);
+      return raiseIssue(this._typeCheckConfig, input);
     }
-    if (_applyConstraints !== null) {
-      return returnValueOrRaiseIssues(input, _applyConstraints(input, options, null));
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
-    return input;
+    return null;
   }
 }

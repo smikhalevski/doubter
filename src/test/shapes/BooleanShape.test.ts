@@ -1,5 +1,5 @@
 import { BooleanShape } from '../../main';
-import { CODE_TYPE, TYPE_BOOLEAN } from '../../main/v3/shapes/constants';
+import { CODE_TYPE, TYPE_BOOLEAN } from '../../main/shapes/constants';
 
 describe('BooleanShape', () => {
   test('allows a boolean', () => {

@@ -1,5 +1,5 @@
 import { KeysMode, NumberShape, ObjectShape, StringShape } from '../../main';
-import { CODE_TYPE, CODE_UNKNOWN_KEYS, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/v3/shapes/constants';
+import { CODE_TYPE, CODE_UNKNOWN_KEYS, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();

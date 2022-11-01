@@ -1,464 +1,461 @@
-import { AnyShape, Shape } from './Shape';
+import { isArray, isObjectLike, objectAssign, objectKeys, objectValues } from '../lang-utils';
+import { ApplyResult, Dict, Issue, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
+import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
 import {
-  ApplyConstraints,
-  Dict,
-  InputConstraintOptionsOrMessage,
-  INVALID,
-  Issue,
-  ParserOptions,
-} from '../shared-types';
-import {
-  applySafeParseAsync,
-  captureIssuesForKey,
+  CheckConfig,
+  cloneEnumerableKeys,
+  cloneKnownKeys,
+  concatIssues,
+  createCheckConfig,
+  createIssue,
+  Flags,
   isAsyncShapes,
-  isEarlyReturn,
+  isFlagSet,
+  ok,
+  pushIssue,
   raiseIssue,
-  returnValueOrRaiseIssues,
-} from '../utils';
-import {
-  CODE_TYPE,
-  CODE_UNKNOWN_KEYS,
-  MESSAGE_OBJECT_TYPE,
-  MESSAGE_UNKNOWN_KEYS,
-  TYPE_OBJECT,
-} from '../v3/shapes/constants';
-import { isValidationError, ValidationError } from '../ValidationError';
-import { objectAssign, isEqual, isObjectLike } from '../lang-utils';
+  setFlag,
+  unshiftPath,
+} from '../shape-utils';
+import { AnyShape, Shape } from './Shape';
 
-type Channel = 'input' | 'output';
+export type Channel = 'input' | 'output';
 
-type InferObject<P extends Dict<AnyShape>, I extends AnyShape, C extends Channel> = Squash<
-  UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<I, C>
+export type InferObject<P extends Dict<AnyShape>, R extends AnyShape, C extends Channel> = Squash<
+  UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferRest<R, C>
 >;
 
-type InferIndexer<I extends AnyShape, C extends Channel> = I extends Shape ? { [indexer: string]: I[C] } : unknown;
+export type InferRest<R extends AnyShape, C extends Channel> = R extends Shape ? { [key: string]: R[C] } : unknown;
 
-type ObjectKeys<T extends object> = StringPropertyKey<keyof T>;
+export type ObjectKey<T extends object> = StringifyPropertyKey<keyof T>;
 
-type StringPropertyKey<K extends PropertyKey> = K extends symbol ? never : K extends number ? `${K}` : K;
+export type StringifyPropertyKey<K extends PropertyKey> = K extends symbol ? never : K extends number ? `${K}` : K;
 
-type Squash<T> = T extends never ? never : { [K in keyof T]: T[K] };
+export type Squash<T> = T extends never ? never : { [K in keyof T]: T[K] };
 
-type UndefinedAsOptional<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
+export type UndefinedAsOptional<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
 
-type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
+export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
+export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-type ApplyKeys = (input: Dict) => Dict;
-
-type ApplyIndexer = (
-  input: Dict,
-  output: Dict,
-  options: ParserOptions | undefined,
-  issues: Issue[] | null,
-  applyConstraints: ApplyConstraints | null
-) => any;
-
-export enum KeysMode {
-  PRESERVED = 'preserved',
-  STRIPPED = 'stripped',
-  EXACT = 'exact',
+export const enum KeysMode {
+  PRESERVED,
+  STRIPPED,
+  EXACT,
 }
 
-/**
- * The shape of an object.
- *
- * @template P The mapping from an object key to a corresponding value shape.
- * @template I The shape that constrains values of
- * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
- */
-export class ObjectShape<P extends Dict<AnyShape>, I extends AnyShape = Shape<never>> extends Shape<
-  InferObject<P, I, 'input'>,
-  InferObject<P, I, 'output'>
+export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<never>> extends Shape<
+  InferObject<P, R, 'input'>,
+  InferObject<P, R, 'output'>
 > {
-  /**
-   * The array of known object keys.
-   */
-  readonly keys: readonly ObjectKeys<P>[];
+  readonly keys: readonly ObjectKey<P>[];
 
-  protected _valueShapes: AnyShape[] = [];
-  protected _applyKeys: ApplyKeys | null = null;
-  protected _applyIndexer: ApplyIndexer | null = null;
+  private _valueShapes: Shape[];
+  private _typeCheckConfig;
+  private _exactCheckConfig: CheckConfig | null = null;
 
-  /**
-   * Creates a new {@linkcode ObjectShape} instance.
-   *
-   * @param shapes The mapping from an object key to a corresponding value shape.
-   * @param indexerShape The shape that constrains values of
-   * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
-   * then values thea fall under the indexer signature are unconstrained.
-   * @param _options The type constraint options.
-   * @param keysMode
-   */
   constructor(
     readonly shapes: Readonly<P>,
-    readonly indexerShape: I | null = null,
-    protected _options?: InputConstraintOptionsOrMessage,
+    readonly restShape: R | null = null,
+    private _options?: TypeCheckOptions | Message,
     readonly keysMode: KeysMode = KeysMode.PRESERVED
   ) {
-    const keys = Object.keys(shapes);
-    const valueShapes = Object.values(shapes);
+    const keys = objectKeys(shapes);
+    const valueShapes = objectValues(shapes);
 
-    super((indexerShape !== null && indexerShape.async) || isAsyncShapes(valueShapes));
+    super((restShape !== null && restShape.async) || isAsyncShapes(valueShapes));
 
-    this.keys = keys as ObjectKeys<P>[];
+    this.keys = keys as ObjectKey<P>[];
+
     this._valueShapes = valueShapes;
-
-    if (indexerShape !== null) {
-      this._applyIndexer = createApplyIndexer(keys, indexerShape);
-    }
+    this._typeCheckConfig = createCheckConfig(_options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
   }
 
   at(key: any): AnyShape | null {
-    return this.shapes.hasOwnProperty(key) ? this.shapes[key] : this.indexerShape;
+    return this.shapes.hasOwnProperty(key) ? this.shapes[key] : this.restShape;
   }
 
-  /**
-   * Merge properties from the other object shape. If a property with the same key already exists on this object shape
-   * then it is overwritten. Indexer signature of this shape is preserved intact.
-   *
-   * @param shape The object shape which properties must be added to this object shape.
-   * @returns The new object shape.
-   *
-   * @template T The type of properties to add.
-   */
-  extend<T extends Dict<AnyShape>>(
-    shape: ObjectShape<T, AnyShape>
-  ): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
+  extend<T extends Dict<AnyShape>>(shape: ObjectShape<T, any>): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
 
-  /**
-   * Add properties to an object shape. If a property with the same key already exists on this object shape then it is
-   * overwritten.
-   *
-   * @param shapes The properties to add.
-   * @returns The new object shape.
-   *
-   * @template T The shapes of properties to add.
-   */
-  extend<T extends Dict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, I>;
+  extend<T extends Dict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
 
-  extend(shape: ObjectShape<any, AnyShape> | Dict<AnyShape>): ObjectShape<any, I> {
+  extend(shape: ObjectShape<any> | Dict): ObjectShape<any, R> {
     const shapes = objectAssign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
-    return new ObjectShape(shapes, this.indexerShape, this._options);
+    return new ObjectShape(shapes, this.restShape, this._options);
   }
 
-  /**
-   * Returns an object shape that only has properties with listed keys.
-   *
-   * @param keys The list of property keys to pick.
-   * @returns The new object shape.
-   *
-   * @template K The tuple of keys to pick.
-   */
-  pick<K extends ObjectKeys<P>[]>(...keys: K): ObjectShape<Pick<P, K[number]>, I> {
+  pick<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Pick<P, K[number]>, R> {
     const shapes: Dict<AnyShape> = {};
 
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
 
-      if (keys.includes(key)) {
+      if (keys.indexOf(key) !== -1) {
         shapes[key] = this._valueShapes[i];
       }
     }
 
-    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options);
+    return new ObjectShape<any, R>(shapes, this.restShape, this._options);
   }
 
-  /**
-   * Returns an object shape that doesn't have the listed keys.
-   *
-   * @param keys The list of property keys to omit.
-   * @returns The new object shape.
-   *
-   * @template K The tuple of keys to omit.
-   */
-  omit<K extends ObjectKeys<P>[]>(...keys: K): ObjectShape<Omit<P, K[number]>, I> {
+  omit<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Omit<P, K[number]>, R> {
     const shapes: Dict<AnyShape> = {};
 
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
 
-      if (!keys.includes(key)) {
+      if (keys.indexOf(key) === -1) {
         shapes[key] = this._valueShapes[i];
       }
     }
-
-    return new ObjectShape<any, I>(shapes, this.indexerShape, this._options);
+    return new ObjectShape<any, R>(shapes, this.restShape, this._options);
   }
 
-  /**
-   * Returns an object shape that allows only known keys and has no index signature. The returned object shape would
-   * have no custom constraints.
-   *
-   * @param options The constraint options or an issue message.
-   * @returns The new object shape.
-   */
-  exact(options?: InputConstraintOptionsOrMessage): ObjectShape<P> {
+  exact(options?: TypeCheckOptions | Message): ObjectShape<P> {
     const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
-    shape._applyKeys = createApplyExactKeys(shape.keys, options);
+
+    shape._exactCheckConfig = createCheckConfig(options, CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, undefined);
+
     return shape;
   }
 
-  /**
-   * Returns an object shape that doesn't have indexer signature and all unknown keys are stripped. The returned object
-   * shape would have no custom constraints.
-   *
-   * @returns The new object shape.
-   */
   strip(): ObjectShape<P> {
-    const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
-    shape._applyKeys = createApplyStripKeys(shape.keys);
-    return shape;
+    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
   }
 
-  /**
-   * Returns an object shape that has an indexer signature that doesn't constrain values. The returned object shape
-   * would have no custom constraints.
-   *
-   * @returns The new object shape.
-   */
   preserve(): ObjectShape<P> {
     return new ObjectShape<P>(this.shapes, null, this._options);
   }
 
-  /**
-   * Returns an object shape that has an indexer signature that is constrained by the given shape. The returned object
-   * shape would have no custom constraints.
-   *
-   * @param indexerShape The shape of the indexer values.
-   * @returns The new object shape.
-   *
-   * @template T The indexer signature shape.
-   */
-  index<T extends AnyShape>(indexerShape: T): ObjectShape<P, T> {
-    return new ObjectShape(this.shapes, indexerShape, this._options);
+  rest<T extends AnyShape>(restShape: T): ObjectShape<P, T> {
+    return new ObjectShape(this.shapes, restShape, this._options);
   }
 
-  safeParse(input: unknown, options?: ParserOptions): InferObject<P, I, 'output'> | ValidationError {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<InferObject<P, R, 'output'>> {
     if (!isObjectLike(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE);
+      return raiseIssue(this._typeCheckConfig, input);
     }
+    if (this.keysMode !== KeysMode.PRESERVED) {
+      return this._applyStrictKeys(input, options);
+    }
+    if (this.restShape !== null) {
+      return this._applyPreservedRestKeys(input, options);
+    }
+    return this._applyPreservedKeys(input, options);
+  }
 
-    const { keys, _valueShapes, _applyKeys, _applyIndexer, _applyConstraints } = this;
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
+    return new Promise(resolve => {
+      if (!isObjectLike(input)) {
+        return raiseIssue(this._typeCheckConfig, input);
+      }
+
+      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
+
+      const keysLength = keys.length;
+      const promises: any[] = [];
+
+      let issues: Issue[] | null = null;
+      let output = input;
+
+      let seenCount = 0;
+      let seenFlags: Flags = 0;
+
+      let unknownKeys: string[] | null = null;
+
+      for (const key in input) {
+        const value = input[key];
+        const index = keys.indexOf(key as ObjectKey<P>);
+
+        let valueShape: AnyShape | null = restShape;
+
+        if (index !== -1) {
+          seenCount++;
+          seenFlags = setFlag(seenFlags, index);
+
+          valueShape = _valueShapes[index];
+        }
+
+        if (valueShape !== null) {
+          promises.push(key, valueShape._applyAsync(value, options));
+          continue;
+        }
+
+        if (keysMode === KeysMode.EXACT) {
+          if (unknownKeys !== null) {
+            unknownKeys.push(key);
+            continue;
+          }
+
+          unknownKeys = [key];
+
+          if (!options.verbose) {
+            break;
+          }
+          continue;
+        }
+
+        if (keysMode === KeysMode.STRIPPED && input === output) {
+          output = cloneKnownKeys(input, keys);
+        }
+      }
+
+      if (unknownKeys !== null) {
+        const issue = createIssue(this._exactCheckConfig!, input, unknownKeys);
+
+        if (!options.verbose) {
+          return [issue];
+        }
+        issues = pushIssue(issues, issue);
+      }
+
+      if (seenCount !== keysLength) {
+        for (let i = 0; i < keysLength; ++i) {
+          if (isFlagSet(seenFlags, i)) {
+            continue;
+          }
+
+          const key = keys[i];
+          const value = input[key];
+
+          promises.push(key, _valueShapes[i]._applyAsync(value, options));
+        }
+      }
+
+      resolve(
+        Promise.all(promises).then(entries => {
+          const entriesLength = 0;
+
+          for (let i = 0; i < entriesLength; i += 2) {
+            const key = entries[i];
+            const result = entries[i + 1];
+
+            if (result === null) {
+              continue;
+            }
+            if (isArray(result)) {
+              unshiftPath(result, key);
+
+              if (!options.verbose) {
+                return result;
+              }
+              issues = concatIssues(issues, result);
+              continue;
+            }
+            if (_unsafe || issues === null) {
+              if (input === output) {
+                output = cloneEnumerableKeys(input);
+              }
+              output[key] = result.value;
+            }
+          }
+
+          if (_applyChecks !== null && (_unsafe || issues === null)) {
+            issues = _applyChecks(output, issues, options);
+          }
+          if (issues === null && input !== output) {
+            return ok(output as InferObject<P, R, 'output'>);
+          }
+          return issues;
+        })
+      );
+    });
+  }
+
+  private _applyPreservedKeys(input: Dict, options: ParserOptions): ApplyResult {
+    const { keys, _valueShapes, _applyChecks, _unsafe } = this;
+
     const keysLength = keys.length;
 
     let issues: Issue[] | null = null;
     let output = input;
 
-    if (_applyKeys !== null) {
-      output = _applyKeys(input);
-
-      if (isValidationError(output)) {
-        if (isEarlyReturn(options)) {
-          return output;
-        }
-        issues = output.issues;
-        output = input;
-      }
-    }
-
     for (let i = 0; i < keysLength; ++i) {
       const key = keys[i];
-      const inputValue = input[key];
+      const value = input[key];
+      const result = _valueShapes[i]._apply(value, options);
 
-      let outputValue = _valueShapes[i].safeParse(inputValue, options);
-
-      if (isEqual(outputValue, inputValue)) {
+      if (result === null) {
         continue;
       }
+      if (isArray(result)) {
+        unshiftPath(result, key);
 
-      if (isValidationError(outputValue)) {
-        issues = captureIssuesForKey(outputValue, options, issues, key);
-
-        if (isEarlyReturn(options)) {
-          return outputValue;
+        if (!options.verbose) {
+          return result;
         }
-        outputValue = INVALID;
+        issues = concatIssues(issues, result);
+        continue;
       }
-
-      if (output === input) {
-        output = cloneDict(input);
+      if (_unsafe || issues === null) {
+        if (input === output) {
+          output = cloneEnumerableKeys(input);
+        }
+        output[key] = result.value;
       }
-      output[key] = outputValue;
     }
 
-    if (_applyIndexer !== null) {
-      return _applyIndexer(input, output, options, issues, _applyConstraints);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
-
-    if (_applyConstraints !== null) {
-      issues = _applyConstraints(output, options, issues);
+    if (issues === null && input !== output) {
+      return ok(output);
     }
-    return returnValueOrRaiseIssues(output as InferObject<P, I, 'output'>, issues);
+    return issues;
   }
 
-  safeParseAsync(input: unknown, options?: ParserOptions): Promise<InferObject<P, I, 'output'> | ValidationError> {
-    if (!this.async) {
-      return applySafeParseAsync(this, input, options);
+  private _applyPreservedRestKeys(input: Dict, options: ParserOptions): ApplyResult {
+    const { keys, restShape, _valueShapes, _applyChecks, _unsafe } = this;
+
+    let issues: Issue[] | null = null;
+    let output = input;
+
+    for (const key in input) {
+      const value = input[key];
+      const index = keys.indexOf(key as ObjectKey<P>);
+      const valueShape = index !== -1 ? _valueShapes[index] : restShape!;
+      const result = valueShape._apply(value, options);
+
+      if (result === null) {
+        continue;
+      }
+      if (isArray(result)) {
+        unshiftPath(result, key);
+
+        if (!options.verbose) {
+          return result;
+        }
+        issues = concatIssues(issues, result);
+        continue;
+      }
+      if (_unsafe || issues === null) {
+        if (input === output) {
+          output = cloneEnumerableKeys(input);
+        }
+        output[key] = result.value;
+      }
     }
 
-    return new Promise(resolve => {
-      if (!isObjectLike(input)) {
-        resolve(raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE));
-        return;
-      }
-
-      const { keys, _valueShapes, _applyKeys, indexerShape, _applyConstraints } = this;
-
-      let issues: Issue[] | null = null;
-      let output = input;
-
-      if (_applyKeys !== null) {
-        output = _applyKeys(input);
-
-        if (isValidationError(output)) {
-          if (isEarlyReturn(options)) {
-            resolve(output);
-            return;
-          }
-          issues = output.issues;
-          output = input;
-        }
-      }
-
-      const entryPromises: any[] = [];
-
-      for (let i = 0; i < keys.length; ++i) {
-        const key = keys[i];
-        entryPromises.push(key, _valueShapes[i].safeParseAsync(input[key], options));
-      }
-
-      if (indexerShape !== null) {
-        for (const key in input) {
-          if (!keys.includes(key as ObjectKeys<P>)) {
-            entryPromises.push(key, indexerShape.safeParseAsync(input[key], options));
-          }
-        }
-      }
-
-      const promise = Promise.all(entryPromises).then(entries => {
-        for (let i = 0; i < entries.length; i += 2) {
-          const key = entries[i];
-          const inputValue = input[key];
-
-          let outputValue = entries[i + 1];
-
-          if (isEqual(outputValue, inputValue)) {
-            continue;
-          }
-
-          if (isValidationError(outputValue)) {
-            issues = captureIssuesForKey(outputValue, options, issues, key);
-
-            if (isEarlyReturn(options)) {
-              return outputValue;
-            }
-            outputValue = INVALID;
-          }
-
-          if (output === input) {
-            output = cloneDict(input);
-          }
-          output[key] = outputValue;
-        }
-
-        if (_applyConstraints !== null) {
-          issues = _applyConstraints(output, options, issues);
-        }
-        return returnValueOrRaiseIssues(output as InferObject<P, I, 'output'>, issues);
-      });
-
-      resolve(promise);
-    });
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
   }
-}
 
-function createApplyExactKeys(
-  keys: readonly string[],
-  options: InputConstraintOptionsOrMessage | undefined
-): ApplyKeys {
-  return input => {
+  private _applyStrictKeys(input: Dict, options: ParserOptions): ApplyResult {
+    const { keys, keysMode, _valueShapes, _applyChecks, _unsafe } = this;
+
+    const keysLength = keys.length;
+
+    let issues: Issue[] | null = null;
+    let output = input;
+
+    let seenCount = 0;
+    let seenFlags: Flags = 0;
+
     let unknownKeys: string[] | null = null;
 
     for (const key in input) {
-      if (!keys.includes(key)) {
-        (unknownKeys ||= []).push(key);
+      const value = input[key];
+      const index = keys.indexOf(key as ObjectKey<P>);
+
+      if (index !== -1) {
+        seenCount++;
+        seenFlags = setFlag(seenFlags, index);
+
+        const result = _valueShapes[index]._apply(value, options);
+
+        if (result === null) {
+          continue;
+        }
+        if (isArray(result)) {
+          unshiftPath(result, key);
+
+          if (!options.verbose) {
+            return result;
+          }
+          issues = concatIssues(issues, result);
+          continue;
+        }
+        if (_unsafe || issues === null) {
+          if (input === output) {
+            output = cloneKnownKeys(input, keys);
+          }
+          output[key] = result.value;
+        }
+        continue;
+      }
+
+      if (keysMode === KeysMode.EXACT) {
+        if (unknownKeys !== null) {
+          unknownKeys.push(key);
+          continue;
+        }
+
+        unknownKeys = [key];
+
+        if (!options.verbose) {
+          break;
+        }
+        continue;
+      }
+
+      if (input === output && (_unsafe || issues === null)) {
+        output = cloneKnownKeys(input, keys);
       }
     }
+
     if (unknownKeys !== null) {
-      return raiseIssue(input, CODE_UNKNOWN_KEYS, unknownKeys, options, MESSAGE_UNKNOWN_KEYS);
-    }
-    return input;
-  };
-}
+      const issue = createIssue(this._exactCheckConfig!, input, unknownKeys);
 
-function createApplyStripKeys(keys: readonly string[]): ApplyKeys {
-  const keysLength = keys.length;
-
-  return input => {
-    for (const key in input) {
-      if (keys.includes(key)) {
-        continue;
+      if (!options.verbose) {
+        return [issue];
       }
-      const output: Dict = {};
+      issues = pushIssue(issues, issue);
+    }
 
+    if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
+        if (isFlagSet(seenFlags, i)) {
+          continue;
+        }
+
         const key = keys[i];
+        const value = input[key];
+        const result = _valueShapes[i]._apply(value, options);
 
-        if (key in input) {
-          output[key] = input[key];
+        if (result === null) {
+          continue;
+        }
+        if (isArray(result)) {
+          unshiftPath(result, key);
+
+          if (!options.verbose) {
+            return result;
+          }
+          issues = concatIssues(issues, result);
+          continue;
+        }
+        if (_unsafe || issues === null) {
+          if (input === output) {
+            output = cloneKnownKeys(input, keys);
+          }
+          output[key] = result.value;
         }
       }
-      return output;
-    }
-    return input;
-  };
-}
-
-function createApplyIndexer(keys: readonly string[], indexerShape: AnyShape): ApplyIndexer {
-  return (input, output, options, issues, applyConstraints) => {
-    for (const key in input) {
-      if (keys.includes(key)) {
-        continue;
-      }
-
-      const inputValue = input[key];
-
-      let outputValue = indexerShape.safeParse(inputValue, options);
-
-      if (isEqual(outputValue, inputValue)) {
-        continue;
-      }
-
-      if (isValidationError(outputValue)) {
-        issues = captureIssuesForKey(outputValue, options, issues, key);
-
-        if (isEarlyReturn(options)) {
-          return outputValue;
-        }
-        outputValue = INVALID;
-      }
-
-      if (output === input) {
-        output = cloneDict(input);
-      }
-      output[key] = outputValue;
     }
 
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output, options, issues);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
-    return returnValueOrRaiseIssues(output, issues);
-  };
-}
-
-function cloneDict(input: Dict): Dict {
-  const output: Dict = {};
-
-  for (const key in input) {
-    output[key] = input[key];
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
   }
-  return output;
 }

@@ -1,158 +1,168 @@
-import {
-  applySafeParseAsync,
-  captureIssuesForKey,
-  isEarlyReturn,
-  raiseIssue,
-  returnValueOrRaiseIssues,
-} from '../utils';
 import { AnyShape, Shape } from './Shape';
-import { Dict, InputConstraintOptionsOrMessage, INVALID, Issue, ParserOptions } from '../shared-types';
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../v3/shapes/constants';
-import { isValidationError, ValidationError } from '../ValidationError';
-import { isEqual, isObjectLike } from '../lang-utils';
+import { ApplyResult, Issue, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
+import { cloneEnumerableKeys, concatIssues, createCheckConfig, ok, raiseIssue, unshiftPath } from '../shape-utils';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
+import { isArray, isEqual, isObjectLike } from '../lang-utils';
 
-export class RecordShape<K extends Shape<string>, V extends AnyShape> extends Shape<
-  Record<K['input'], V['input']>,
-  Record<K['output'], V['output']>
+export type InferRecord<K extends PropertyKey, V> = undefined extends V
+  ? Partial<Record<NonNullable<K>, V>>
+  : Record<NonNullable<K>, V>;
+
+export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShape> extends Shape<
+  InferRecord<K['input'], V['input']>,
+  InferRecord<K['output'], V['output']>
 > {
-  constructor(readonly keyShape: K, readonly valueShape: V, protected _options?: InputConstraintOptionsOrMessage) {
-    super(keyShape.async || valueShape.async);
+  private _typeCheckConfig;
+
+  constructor(readonly keyShape: K, readonly valueShape: V, options?: TypeCheckOptions | Message) {
+    super(false);
+    this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
     return typeof key === 'string' ? this.valueShape : null;
   }
 
-  safeParse(input: unknown, options?: ParserOptions): Record<K['output'], V['output']> | ValidationError {
+  _apply(input: unknown, options: ParserOptions): ApplyResult<InferRecord<K['output'], V['output']>> {
     if (!isObjectLike(input)) {
-      return raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE);
+      return raiseIssue(this._typeCheckConfig, input);
     }
 
-    const { keyShape, valueShape, _applyConstraints } = this;
+    const { keyShape, valueShape, _applyChecks, _unsafe } = this;
 
+    let keyCount = 0;
     let issues: Issue[] | null = null;
     let output = input;
-    let keyIndex = 0;
 
-    for (const inputKey in input) {
-      ++keyIndex;
+    for (const key in input) {
+      const value = input[key];
 
-      const inputValue = input[inputKey];
+      let outputKey: PropertyKey = key;
+      let outputValue = value;
 
-      let outputKey = keyShape.safeParse(inputKey, options);
-      let outputValue = valueShape.safeParse(inputValue, options);
+      const keyResult = keyShape._apply(key, options);
+      const valueResult = valueShape._apply(value, options);
 
-      if (output === input && inputKey === outputKey && isEqual(inputValue, outputValue)) {
-        continue;
-      }
+      if (keyResult !== null) {
+        if (isArray(keyResult)) {
+          unshiftPath(keyResult, key);
 
-      if (isValidationError(outputKey)) {
-        issues = captureIssuesForKey(outputKey, options, issues, inputKey);
-
-        if (isEarlyReturn(options)) {
-          return outputKey;
+          if (!options.verbose) {
+            return keyResult;
+          }
+          issues = concatIssues(issues, keyResult);
+        } else {
+          outputKey = keyResult.value;
         }
-        outputKey = inputKey;
       }
 
-      if (isValidationError(outputValue)) {
-        issues = captureIssuesForKey(outputValue, options, issues, inputKey);
+      if (valueResult !== null) {
+        if (isArray(valueResult)) {
+          unshiftPath(valueResult, key);
 
-        if (isEarlyReturn(options)) {
-          return outputValue;
+          if (!options.verbose) {
+            return valueResult;
+          }
+          issues = concatIssues(issues, valueResult);
+        } else {
+          outputValue = valueResult.value;
         }
-        outputValue = INVALID;
       }
 
-      if (output === input) {
-        output = sliceDict(input, keyIndex);
+      if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+        if (input === output) {
+          output = cloneEnumerableKeys(input, keyCount);
+        }
+
+        output[outputKey as string] = outputValue;
       }
-      output[outputKey] = outputValue;
     }
 
-    if (_applyConstraints !== null) {
-      issues = _applyConstraints(output, options, issues);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
-    return returnValueOrRaiseIssues(output as Record<K['output'], V['output']>, issues);
+    if (issues === null && input !== output) {
+      return ok(output as InferRecord<K['output'], V['output']>);
+    }
+    return issues;
   }
 
-  safeParseAsync(input: unknown, options?: ParserOptions): Promise<Record<K['output'], V['output']> | ValidationError> {
-    if (!this.async) {
-      return applySafeParseAsync(this, input, options);
-    }
-
+  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<InferRecord<K['output'], V['output']>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        resolve(raiseIssue(input, CODE_TYPE, TYPE_OBJECT, this._options, MESSAGE_OBJECT_TYPE));
-        return;
+        return raiseIssue(this._typeCheckConfig, input);
       }
 
-      const { keyShape, valueShape, _applyConstraints } = this;
-      const entryPromises = [];
+      const { keyShape, valueShape, _applyChecks, _unsafe } = this;
+
+      const promises: any[] = [];
 
       for (const key in input) {
-        entryPromises.push(key, keyShape.safeParseAsync(key, options), valueShape.safeParseAsync(input[key], options));
+        promises.push(key, keyShape._applyAsync(key, options), valueShape._applyAsync(key, options));
       }
 
-      const promise = Promise.all(entryPromises).then(entries => {
-        let issues: Issue[] | null = null;
-        let output = input;
+      resolve(
+        Promise.all(promises).then(results => {
+          const resultsLength = results.length;
 
-        for (let i = 0; i < entries.length; i += 3) {
-          const inputKey = entries[i];
+          let keyCount = 0;
+          let issues: Issue[] | null = null;
+          let output = input;
 
-          let outputKey = entries[i + 1];
-          let outputValue = entries[i + 2];
+          for (let i = 0; i < resultsLength; i += 3) {
+            const key = results[i];
+            const value = input[key];
 
-          if (output === input && inputKey === outputKey && isEqual(outputValue, input[inputKey])) {
-            continue;
-          }
+            let outputKey: PropertyKey = key;
+            let outputValue = value;
 
-          if (isValidationError(outputKey)) {
-            issues = captureIssuesForKey(outputKey, options, issues, inputKey);
+            const keyResult = results[i + 1];
+            const valueResult = results[i + 2];
 
-            if (isEarlyReturn(options)) {
-              return outputKey;
+            if (keyResult !== null) {
+              if (isArray(keyResult)) {
+                unshiftPath(keyResult, key);
+
+                if (!options.verbose) {
+                  return keyResult;
+                }
+                issues = concatIssues(issues, keyResult);
+              } else {
+                outputKey = keyResult.value;
+              }
             }
-            outputKey = inputKey;
-          }
 
-          if (isValidationError(outputValue)) {
-            issues = captureIssuesForKey(outputValue, options, issues, inputKey);
+            if (valueResult !== null) {
+              if (isArray(valueResult)) {
+                unshiftPath(valueResult, key);
 
-            if (isEarlyReturn(options)) {
-              return outputValue;
+                if (!options.verbose) {
+                  return valueResult;
+                }
+                issues = concatIssues(issues, valueResult);
+              } else {
+                outputValue = valueResult.value;
+              }
             }
-            outputValue = INVALID;
+
+            if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+              if (input === output) {
+                output = cloneEnumerableKeys(input, keyCount);
+              }
+
+              output[outputKey as string] = outputValue;
+            }
           }
 
-          if (output === input) {
-            output = sliceDict(input, i / 3);
+          if (_applyChecks !== null && (_unsafe || issues === null)) {
+            issues = _applyChecks(output, issues, options);
           }
-          output[outputKey] = outputValue;
-        }
-
-        if (_applyConstraints !== null) {
-          issues = _applyConstraints(output, options, issues);
-        }
-        return returnValueOrRaiseIssues(output as Record<K['output'], V['output']>, issues);
-      });
-
-      resolve(promise);
+          if (issues === null && input !== output) {
+            return ok(output as InferRecord<K['output'], V['output']>);
+          }
+          return issues;
+        })
+      );
     });
   }
-}
-
-function sliceDict(input: Dict, keyCount: number): Dict {
-  const output: Dict = {};
-  let i = 0;
-
-  for (const key in input) {
-    if (i === keyCount) {
-      break;
-    }
-    output[key] = input[key];
-    i++;
-  }
-  return output;
 }

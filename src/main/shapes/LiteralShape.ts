@@ -1,8 +1,7 @@
 import { Shape } from './Shape';
-import { InputConstraintOptionsOrMessage, ParserOptions, Primitive } from '../shared-types';
-import { raiseIssue, returnValueOrRaiseIssues } from '../utils';
-import { CODE_LITERAL, MESSAGE_LITERAL } from '../v3/shapes/constants';
-import { ValidationError } from '../ValidationError';
+import { ApplyResult, Message, ParserOptions, Primitive, TypeCheckOptions } from '../shared-types';
+import { createCheckConfig, raiseIssue } from '../shape-utils';
+import { CODE_LITERAL, MESSAGE_LITERAL } from './constants';
 import { isEqual } from '../lang-utils';
 
 /**
@@ -11,25 +10,28 @@ import { isEqual } from '../lang-utils';
  * @template T The literal value.
  */
 export class LiteralShape<T extends Primitive> extends Shape<T> {
+  private _typeCheckConfig;
+
   /**
    * Creates a new {@linkcode LiteralShape} instance.
    *
    * @param value The literal value that is compared with the input value.
-   * @param _options The constraint options or an issue message.
+   * @param options The type constraint options or an issue message.
    */
-  constructor(readonly value: T, protected _options?: InputConstraintOptionsOrMessage) {
+  constructor(readonly value: T, options?: TypeCheckOptions | Message) {
     super(false);
+    this._typeCheckConfig = createCheckConfig(options, CODE_LITERAL, MESSAGE_LITERAL, value);
   }
 
-  safeParse(input: unknown, options?: ParserOptions): T | ValidationError {
-    const { value, _applyConstraints } = this;
+  _apply(input: unknown, options: ParserOptions): ApplyResult<T> {
+    const { _applyChecks } = this;
 
-    if (!isEqual(input, value)) {
-      return raiseIssue(input, CODE_LITERAL, value, this._options, MESSAGE_LITERAL);
+    if (!isEqual(input, this.value)) {
+      return raiseIssue(this._typeCheckConfig, input);
     }
-    if (_applyConstraints !== null) {
-      return returnValueOrRaiseIssues(input as T, _applyConstraints(input, options, null));
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
-    return input as T;
+    return null;
   }
 }

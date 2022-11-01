@@ -1,6 +1,6 @@
 import { CheckCallback, CheckOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
-import { isArray, isString } from './lang-utils';
+import { isArray, isInteger, isString } from './lang-utils';
 import { ValidationError } from './ValidationError';
 
 export function ok<T>(value: T): Ok<T> {
@@ -184,4 +184,14 @@ export function addIssue(issues: Issue[] | null, issue: Issue[] | Issue): Issue[
     }
   }
   return issues;
+}
+
+const positiveIntegerPattern = /^[1-9]\d*$/;
+
+export function isArrayIndex(key: any): boolean {
+  return (isInteger(key) && key >= 0) || key === '0' || (typeof key === 'string' && positiveIntegerPattern.test(key));
+}
+
+export function isTupleIndex(key: any, length: number): boolean {
+  return isArrayIndex(key) && parseInt(key, 10) < length;
 }

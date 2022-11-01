@@ -5,7 +5,7 @@ import {
   CODE_STRING_REGEX,
   CODE_TYPE,
   TYPE_STRING,
-} from '../../main/v3/shapes/constants';
+} from '../../main/shapes/constants';
 
 describe('StringShape', () => {
   test('allows a string', () => {

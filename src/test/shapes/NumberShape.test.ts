@@ -7,7 +7,7 @@ import {
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
   TYPE_NUMBER,
-} from '../../main/v3/shapes/constants';
+} from '../../main/shapes/constants';
 
 describe('NumberShape', () => {
   test('allows a number', () => {
