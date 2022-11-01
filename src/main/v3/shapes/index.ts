@@ -4,6 +4,7 @@ export { BooleanShape } from './BooleanShape';
 export { EnumShape } from './EnumShape';
 export { InstanceShape } from './InstanceShape';
 export { IntegerShape } from './IntegerShape';
+export { LiteralShape } from './LiteralShape';
 export { ObjectShape } from './ObjectShape';
 export { StringShape } from './StringShape';
 export { NumberShape } from './NumberShape';
