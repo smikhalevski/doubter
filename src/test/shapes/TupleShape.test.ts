@@ -1,5 +1,5 @@
 import { NumberShape, StringShape, TupleShape } from '../../main';
-import { CODE_TUPLE_LENGTH, CODE_TYPE, TYPE_ARRAY, TYPE_NUMBER } from '../../main/shapes/constants';
+import { CODE_TUPLE, CODE_TYPE, TYPE_ARRAY, TYPE_NUMBER } from '../../main/shapes/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
@@ -42,7 +42,7 @@ describe('TupleShape', () => {
   test('raises if tuple has an invalid length', () => {
     expect(new TupleShape([stringShape, numberShape]).validate([111])).toEqual([
       {
-        code: CODE_TUPLE_LENGTH,
+        code: CODE_TUPLE,
         path: [],
         input: [111],
         param: 2,

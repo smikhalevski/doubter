@@ -10,7 +10,7 @@ import {
   raiseIssue,
   returnValueOrRaiseIssues,
 } from '../utils';
-import { CODE_TUPLE_LENGTH, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE_LENGTH, TYPE_ARRAY } from './constants';
+import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE, TYPE_ARRAY } from './constants';
 import { isValidationError, ValidationError } from '../ValidationError';
 import { isArray, isEqual } from '../lang-utils';
 
@@ -45,7 +45,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
     const shapesLength = shapes.length;
 
     if (input.length !== shapesLength) {
-      return raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this._options, MESSAGE_TUPLE_LENGTH);
+      return raiseIssue(input, CODE_TUPLE, shapesLength, this._options, MESSAGE_TUPLE);
     }
 
     let issues: Issue[] | null = null;
@@ -98,7 +98,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
       const promises = [];
 
       if (input.length !== shapesLength) {
-        return raiseIssue(input, CODE_TUPLE_LENGTH, shapesLength, this._options, MESSAGE_TUPLE_LENGTH);
+        return raiseIssue(input, CODE_TUPLE, shapesLength, this._options, MESSAGE_TUPLE);
       }
 
       for (let i = 0; i < shapesLength; ++i) {
