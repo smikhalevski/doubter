@@ -138,7 +138,7 @@ export interface ParserOptions {
 
 export type Tuple<T> = [T, ...T[]];
 
-export type Literal = string | number | bigint | boolean | null | undefined;
+export type Primitive = string | number | bigint | boolean | null | undefined;
 
 export interface Dict<T = any> {
   [key: string]: T;
