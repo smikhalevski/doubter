@@ -1,7 +1,8 @@
 const Ajv = require('ajv');
 const z = require('myzod');
 const v = require('@badrap/valita');
-const d = require('../../lib/index-cjs');
+const d = require('doubter');
+const next = require('../../lib/index-cjs');
 
 beforeBatch(gc);
 
@@ -10,8 +11,8 @@ describe(
   () => {
     const value = 'aaa';
 
-    test('doubter.v3.OptionalShape', measure => {
-      const shape = new d.v3.OptionalShape(new d.v3.StringShape());
+    test('next', measure => {
+      const shape = next.optional(next.string());
 
       measure(() => {
         shape.parse(value);
@@ -26,8 +27,8 @@ describe(
   () => {
     const value = 'aaa';
 
-    test('doubter.v3.StringShape', measure => {
-      const shape = new d.v3.StringShape().pipe(new d.v3.StringShape());
+    test('next', measure => {
+      const shape = next.string().pipe(next.string());
 
       measure(() => {
         shape.parse(value);
@@ -42,8 +43,8 @@ describe(
   () => {
     const value = 'aaa';
 
-    test('doubter.v3.StringShape', measure => {
-      const shape = new d.v3.StringShape().transform(() => 111);
+    test('next', measure => {
+      const shape = next.string().transform(() => 111);
 
       measure(() => {
         shape.parse(value);
@@ -89,12 +90,12 @@ describe(
       const shape = d.string();
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.StringShape', measure => {
-      const shape = new d.v3.StringShape();
+    test('next', measure => {
+      const shape = next.string();
 
       measure(() => {
         shape.parse(value);
@@ -137,12 +138,12 @@ describe(
         const shape = d.string();
 
         measure(() => {
-          shape.safeParse(value);
+          shape.parse(value);
         });
       });
 
-      test('doubter.v3.StringShape', measure => {
-        const shape = new d.v3.StringShape();
+      test('next', measure => {
+        const shape = next.string();
 
         measure(() => {
           shape.try(value);
@@ -191,12 +192,12 @@ describe(
       const shape = d.string().length(3);
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.StringShape', measure => {
-      const shape = new d.v3.StringShape().length(3);
+    test('next', measure => {
+      const shape = next.string().length(3);
 
       measure(() => {
         shape.parse(value);
@@ -241,12 +242,12 @@ describe(
         const shape = d.string().length(3);
 
         measure(() => {
-          shape.safeParse(value);
+          shape.parse(value);
         });
       });
 
-      test('doubter.v3.StringShape', measure => {
-        const shape = new d.v3.StringShape().length(3);
+      test('next', measure => {
+        const shape = next.string().length(3);
 
         measure(() => {
           shape.try(value);
@@ -277,7 +278,7 @@ describe(
       const shape = d.integer();
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
   },
@@ -320,12 +321,12 @@ describe(
       const shape = d.number();
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.NumberShape', measure => {
-      const shape = new d.v3.NumberShape();
+    test('next', measure => {
+      const shape = next.number();
 
       measure(() => {
         shape.parse(value);
@@ -365,7 +366,7 @@ describe(
       const shape = d.number().gte(1).lte(5);
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
   },
@@ -409,12 +410,12 @@ describe(
       const shape = d.array(d.number());
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.ArrayShape', measure => {
-      const shape = new d.v3.ArrayShape(new d.v3.NumberShape());
+    test('next', measure => {
+      const shape = next.array(next.number());
 
       measure(() => {
         shape.parse(value);
@@ -455,7 +456,7 @@ describe(
       const shape = d.array(d.number()).length(3);
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
   },
@@ -496,7 +497,7 @@ describe(
       const shape = d.array(d.number().gte(0).lte(10)).length(3);
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
   },
@@ -542,7 +543,7 @@ describe(
       const shape = d.tuple([d.number(), d.number()]);
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
   },
@@ -587,12 +588,12 @@ describe(
       const shape = d.record(d.string(), d.number());
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.RecordShape', measure => {
-      const shape = new d.v3.RecordShape(new d.v3.StringShape(), new d.v3.NumberShape());
+    test('next', measure => {
+      const shape = next.record(next.string(), next.number());
 
       measure(() => {
         shape.parse(value);
@@ -600,7 +601,7 @@ describe(
     });
 
     test('doubter.v3.RecordShape null', measure => {
-      const shape = new d.v3.RecordShape(null, new d.v3.NumberShape());
+      const shape = next.record(null, next.number());
 
       measure(() => {
         shape.parse(value);
@@ -674,14 +675,14 @@ describe(
       });
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.ObjectShape', measure => {
-      const shape = new d.v3.ObjectShape({
-        foo: new d.v3.StringShape(),
-        bar: new d.v3.NumberShape(),
+    test('next', measure => {
+      const shape = next.object({
+        foo: next.string(),
+        bar: next.number(),
       });
 
       measure(() => {
@@ -732,12 +733,12 @@ describe(
       const shape = d.object({ foo: d.string() }).index(d.string());
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.ObjectShape', measure => {
-      const shape = new d.v3.ObjectShape({ foo: new d.v3.StringShape() }).rest(new d.v3.StringShape());
+    test('next', measure => {
+      const shape = next.object({ foo: next.string() }).rest(next.string());
 
       measure(() => {
         shape.parse(value);
@@ -802,15 +803,17 @@ describe(
       const shape = d.object({ foo: d.string(), bar: d.number() }).exact();
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.ObjectShape', measure => {
-      const shape = new d.v3.ObjectShape({
-        foo: new d.v3.StringShape(),
-        bar: new d.v3.NumberShape(),
-      }).exact();
+    test('next', measure => {
+      const shape = next
+        .object({
+          foo: next.string(),
+          bar: next.number(),
+        })
+        .exact();
 
       measure(() => {
         shape.parse(value);
@@ -860,12 +863,12 @@ describe(
         const shape = d.or([d.string(), d.number(), d.boolean()]);
 
         measure(() => {
-          shape.safeParse(value);
+          shape.parse(value);
         });
       });
 
-      test('doubter.v3.UnionShape', measure => {
-        const shape = new d.v3.UnionShape([new d.v3.StringShape(), new d.v3.NumberShape(), new d.v3.BooleanShape()]);
+      test('next', measure => {
+        const shape = next.or([next.string(), next.number(), next.boolean()]);
 
         measure(() => {
           shape.parse(value);
@@ -937,15 +940,12 @@ describe(
         const shape = d.or([d.object({ foo: d.string() }), d.object({ bar: d.number() })]);
 
         measure(() => {
-          shape.safeParse(value);
+          shape.parse(value);
         });
       });
 
-      test('doubter.v3.UnionShape', measure => {
-        const shape = new d.v3.UnionShape([
-          new d.v3.ObjectShape({ foo: new d.v3.StringShape() }),
-          new d.v3.ObjectShape({ bar: new d.v3.NumberShape() }),
-        ]);
+      test('next', measure => {
+        const shape = next.or([next.object({ foo: next.string() }), next.object({ bar: next.number() })]);
 
         measure(() => {
           shape.parse(value);
@@ -1096,22 +1096,22 @@ describe(
       });
 
       measure(() => {
-        shape.safeParse(value);
+        shape.parse(value);
       });
     });
 
-    test('doubter.v3.ObjectShape', measure => {
-      const shape = new d.v3.ObjectShape({
-        a1: new d.v3.NumberShape(),
-        a2: new d.v3.NumberShape(),
-        a3: new d.v3.NumberShape(),
-        a4: new d.v3.StringShape(),
-        a5: new d.v3.StringShape(),
-        a6: new d.v3.BooleanShape(),
-        a7: new d.v3.ObjectShape({
-          a71: new d.v3.StringShape(),
-          a72: new d.v3.NumberShape(),
-          a73: new d.v3.BooleanShape(),
+    test('next', measure => {
+      const shape = next.object({
+        a1: next.number(),
+        a2: next.number(),
+        a3: next.number(),
+        a4: next.string(),
+        a5: next.string(),
+        a6: next.boolean(),
+        a7: next.object({
+          a71: next.string(),
+          a72: next.number(),
+          a73: next.boolean(),
         }),
       });
 
@@ -1291,33 +1291,41 @@ describe(
         .exact();
 
       measure(() => {
-        shapeA.safeParse(valueA);
-        shapeB.safeParse(valueB);
+        shapeA.parse(valueA);
+        shapeB.parse(valueB);
       });
     });
 
-    test('doubter.v3.ObjectShape', measure => {
-      const shapeA = new d.v3.ObjectShape({
-        a1: new d.v3.NumberShape(),
-        a2: new d.v3.BooleanShape(),
-        a3: new d.v3.StringShape(),
-        a4: new d.v3.ObjectShape({
-          a41: new d.v3.BooleanShape(),
-          a42: new d.v3.StringShape(),
-          a43: new d.v3.NumberShape(),
-        }).exact(),
-      }).exact();
+    test('next', measure => {
+      const shapeA = next
+        .object({
+          a1: next.number(),
+          a2: next.boolean(),
+          a3: next.string(),
+          a4: next
+            .object({
+              a41: next.boolean(),
+              a42: next.string(),
+              a43: next.number(),
+            })
+            .exact(),
+        })
+        .exact();
 
-      const shapeB = new d.v3.ObjectShape({
-        b1: new d.v3.StringShape(),
-        b2: new d.v3.NumberShape(),
-        b3: new d.v3.ObjectShape({
-          b31: new d.v3.StringShape(),
-          b32: new d.v3.NumberShape(),
-        }).exact(),
-        b4: new d.v3.StringShape(),
-        b5: new d.v3.BooleanShape(),
-      }).exact();
+      const shapeB = next
+        .object({
+          b1: next.string(),
+          b2: next.number(),
+          b3: next
+            .object({
+              b31: next.string(),
+              b32: next.number(),
+            })
+            .exact(),
+          b4: next.string(),
+          b5: next.boolean(),
+        })
+        .exact();
 
       measure(() => {
         shapeA.parse(valueA);

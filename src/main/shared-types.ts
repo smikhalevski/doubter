@@ -53,12 +53,6 @@ export interface Issue {
 export type CheckCallback<T> = (value: T) => Issue[] | Issue | null | undefined | void;
 
 /**
- * Transforms the value from one type to another. Transformer may throw or return a {@linkcode ValidationError} if there
- * are issues that prevent the value from being properly transformed.
- */
-export type TransformCallback<I, O> = (value: I) => O;
-
-/**
  * The message callback or a string.
  */
 export type Message = ((param: any, value: any) => any) | string;
