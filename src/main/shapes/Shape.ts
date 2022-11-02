@@ -21,28 +21,6 @@ const defaultParseOptions: ParseOptions = Object.freeze({ verbose: false });
  */
 export type AnyShape = Shape | Shape<never>;
 
-export interface Shape<I, O> {
-  /**
-   * The shape input type. Accessible only at compile time and should be used for type inference.
-   */
-  readonly input: I;
-
-  /**
-   * The shape output type. Accessible only at compile time and should be used for type inference.
-   */
-  readonly output: O;
-
-  /**
-   * `true` if `undefined` is the valid value for this shape, `false` otherwise.
-   */
-  readonly optional: boolean;
-
-  /**
-   * `true` if `null` is the valid value for this shape, `false` otherwise.
-   */
-  readonly nullable: boolean;
-}
-
 /**
  * The base shape.
  *
@@ -50,6 +28,26 @@ export interface Shape<I, O> {
  * @template O The output value.
  */
 export class Shape<I = any, O = I> {
+  /**
+   * The shape input type. Accessible only at compile time and should be used for type inference.
+   */
+  declare readonly input: I;
+
+  /**
+   * The shape output type. Accessible only at compile time and should be used for type inference.
+   */
+  declare readonly output: O;
+
+  /**
+   * `true` if `undefined` is the valid value for this shape, `false` otherwise.
+   */
+  declare readonly optional: boolean;
+
+  /**
+   * `true` if `null` is the valid value for this shape, `false` otherwise.
+   */
+  declare readonly nullable: boolean;
+
   /**
    * Applies checks to the output.
    */
