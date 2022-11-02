@@ -1,4 +1,4 @@
-import { ApplyResult, ParserOptions } from '../shared-types';
+import { ApplyResult, ParseOptions } from '../shared-types';
 import { isArray } from '../lang-utils';
 import { AnyShape, Shape } from './Shape';
 
@@ -9,13 +9,13 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
     super(shape.async);
   }
 
-  _apply(input: unknown, options: ParserOptions): ApplyResult<S['output'] | null> {
-    const { _applyChecks } = this;
+  apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | null> {
+    const { applyChecks } = this;
 
     let issues;
     let output = input;
 
-    const result = input === null ? null : this.shape._apply(input, options);
+    const result = input === null ? null : this.shape.apply(input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -24,8 +24,8 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
       output = result.value;
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
+    if (applyChecks !== null) {
+      issues = applyChecks(output, null, options);
 
       if (issues !== null) {
         return issues;
@@ -34,17 +34,17 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
     return result;
   }
 
-  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<S['output'] | null>> {
-    const { _applyChecks } = this;
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | null>> {
+    const { applyChecks } = this;
 
     if (input === null) {
-      if (_applyChecks !== null) {
-        return new Promise(resolve => resolve(_applyChecks(null, null, options)));
+      if (applyChecks !== null) {
+        return new Promise(resolve => resolve(applyChecks(null, null, options)));
       }
       return nullResult;
     }
 
-    return this.shape._applyAsync(input, options).then(result => {
+    return this.shape.applyAsync(input, options).then(result => {
       let issues;
       let output = input;
 
@@ -55,8 +55,8 @@ export class NullableShape<S extends AnyShape> extends Shape<S['input'] | null, 
         output = result.value;
       }
 
-      if (_applyChecks !== null) {
-        issues = _applyChecks(output, null, options);
+      if (applyChecks !== null) {
+        issues = applyChecks(output, null, options);
 
         if (issues !== null) {
           return issues;

@@ -1,5 +1,5 @@
 import { AnyShape, TupleShape } from '../shapes';
-import { Message, Tuple, TypeCheckOptions } from '../shared-types';
+import { Message, Tuple, TypeConstraintOptions } from '../shared-types';
 
 /**
  * Creates the tuple shape.
@@ -7,6 +7,6 @@ import { Message, Tuple, TypeCheckOptions } from '../shared-types';
  * @param types The list of tuple elements.
  * @param options The constraint options or an issue message.
  */
-export function tuple<U extends Tuple<AnyShape>>(types: U, options?: TypeCheckOptions | Message): TupleShape<U> {
+export function tuple<U extends Tuple<AnyShape>>(types: U, options?: TypeConstraintOptions | Message): TupleShape<U> {
   return new TupleShape<U>(types, options);
 }

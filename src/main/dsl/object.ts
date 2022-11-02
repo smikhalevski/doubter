@@ -1,4 +1,4 @@
-import { Dict, Message, TypeCheckOptions } from '../shared-types';
+import { Dict, Message, TypeConstraintOptions } from '../shared-types';
 import { AnyShape, ObjectShape } from '../shapes';
 
 /**
@@ -7,6 +7,6 @@ import { AnyShape, ObjectShape } from '../shapes';
  * @param shapes The mapping from an object key to a corresponding shape.
  * @param options The constraint options or an issue message.
  */
-export function object<P extends Dict<AnyShape>>(shapes: P, options?: TypeCheckOptions | Message): ObjectShape<P> {
+export function object<P extends Dict<AnyShape>>(shapes: P, options?: TypeConstraintOptions | Message): ObjectShape<P> {
   return new ObjectShape<P>(shapes, null, options);
 }

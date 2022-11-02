@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from '../shapes';
-import { Message, NarrowingOptions } from '../shared-types';
+import { Message, RefineOptions } from '../shared-types';
 
 /**
  * Creates the unconstrained shape. You can specify compile-time type to enhance type inference.
@@ -17,7 +17,10 @@ export function any<T = any>(): Shape<T>;
  * @template I The input value.
  * @template O The output value.
  */
-export function any<I, O>(predicate: (value: any) => value is O, options?: NarrowingOptions | Message): Shape<I, O>;
+export function any<I = any, O extends I = I>(
+  predicate: (value: I) => value is O,
+  options?: RefineOptions | Message
+): Shape<I, O>;
 
 /**
  * Creates a shape that is constrained with a predicate.
@@ -27,13 +30,10 @@ export function any<I, O>(predicate: (value: any) => value is O, options?: Narro
  * @template I The input value.
  * @template O The output value.
  */
-export function any<I = any, O = I>(
-  predicate: (value: any) => boolean,
-  options?: NarrowingOptions | Message
-): Shape<I, O>;
+export function any<I = any, O = I>(predicate: (value: I) => boolean, options?: RefineOptions | Message): Shape<I, O>;
 
-export function any(predicate?: (value: unknown) => boolean, options?: NarrowingOptions | Message): AnyShape {
+export function any(predicate?: (value: unknown) => boolean, options?: RefineOptions | Message): AnyShape {
   const shape = new Shape(false);
 
-  return predicate != null ? shape.narrow(predicate, options) : shape;
+  return predicate != null ? shape.refine(predicate, options) : shape;
 }

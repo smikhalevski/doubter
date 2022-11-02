@@ -1,5 +1,5 @@
 import { InstanceShape } from '../shapes';
-import { Message, TypeCheckOptions } from '../shared-types';
+import { Message, TypeConstraintOptions } from '../shared-types';
 
 /**
  * Creates the class instance shape.
@@ -8,7 +8,7 @@ import { Message, TypeCheckOptions } from '../shared-types';
  */
 export function instance<C extends new (...args: any[]) => any>(
   ctor: C,
-  options?: TypeCheckOptions | Message
+  options?: TypeConstraintOptions | Message
 ): InstanceShape<C> {
   return new InstanceShape(ctor, options);
 }

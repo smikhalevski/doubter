@@ -1,6 +1,6 @@
-import { Message, TypeCheckOptions } from '../shared-types';
+import { Message, TypeConstraintOptions } from '../shared-types';
 import { EmailShape } from '../shapes';
 
-export function email(options?: TypeCheckOptions | Message): EmailShape {
+export function email(options?: TypeConstraintOptions | Message): EmailShape {
   return new EmailShape(options);
 }

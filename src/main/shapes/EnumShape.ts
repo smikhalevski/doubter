@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { ApplyResult, Message, ParserOptions, Primitive, TypeCheckOptions } from '../shared-types';
+import { ApplyResult, Message, ParseOptions, Primitive, TypeConstraintOptions } from '../shared-types';
 import { createCheckConfig, raiseIssue } from '../shape-utils';
 import { CODE_ENUM, MESSAGE_ENUM } from './constants';
 
@@ -17,19 +17,19 @@ export class EnumShape<T extends Primitive> extends Shape<T> {
    * @param values The list of values allowed for the input.
    * @param options The type constraint options or an issue message.
    */
-  constructor(readonly values: readonly T[], options?: TypeCheckOptions | Message) {
+  constructor(readonly values: readonly T[], options?: TypeConstraintOptions | Message) {
     super(false);
     this._typeCheckConfig = createCheckConfig(options, CODE_ENUM, MESSAGE_ENUM, values);
   }
 
-  _apply(input: any, options: ParserOptions): ApplyResult<T> {
-    const { _applyChecks } = this;
+  apply(input: any, options: ParseOptions): ApplyResult<T> {
+    const { applyChecks } = this;
 
     if (!this.values.includes(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
+    if (applyChecks !== null) {
+      return applyChecks(input, null, options);
     }
     return null;
   }

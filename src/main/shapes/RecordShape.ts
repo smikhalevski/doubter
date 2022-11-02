@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ApplyResult, Issue, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
+import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { cloneEnumerableKeys, concatIssues, createCheckConfig, ok, raiseIssue, unshiftPath } from '../shape-utils';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
 import { isArray, isEqual, isObjectLike } from '../lang-utils';
@@ -14,7 +14,7 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
 > {
   protected _typeCheckConfig;
 
-  constructor(readonly keyShape: K, readonly valueShape: V, options?: TypeCheckOptions | Message) {
+  constructor(readonly keyShape: K, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
     super(false);
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
   }
@@ -23,12 +23,12 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
     return typeof key === 'string' ? this.valueShape : null;
   }
 
-  _apply(input: unknown, options: ParserOptions): ApplyResult<InferRecord<K['output'], V['output']>> {
+  apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K['output'], V['output']>> {
     if (!isObjectLike(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
 
-    const { keyShape, valueShape, _applyChecks, _unsafe } = this;
+    const { keyShape, valueShape, applyChecks, unsafe } = this;
 
     let keyCount = 0;
     let issues: Issue[] | null = null;
@@ -40,8 +40,8 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
       let outputKey: PropertyKey = key;
       let outputValue = value;
 
-      const keyResult = keyShape._apply(key, options);
-      const valueResult = valueShape._apply(value, options);
+      const keyResult = keyShape.apply(key, options);
+      const valueResult = valueShape.apply(value, options);
 
       if (keyResult !== null) {
         if (isArray(keyResult)) {
@@ -69,7 +69,7 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
         }
       }
 
-      if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+      if ((unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
         if (input === output) {
           output = cloneEnumerableKeys(input, keyCount);
         }
@@ -78,8 +78,8 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
       }
     }
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (applyChecks !== null && (unsafe || issues === null)) {
+      issues = applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output as InferRecord<K['output'], V['output']>);
@@ -87,18 +87,18 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
     return issues;
   }
 
-  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<InferRecord<K['output'], V['output']>>> {
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K['output'], V['output']>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         return raiseIssue(this._typeCheckConfig, input);
       }
 
-      const { keyShape, valueShape, _applyChecks, _unsafe } = this;
+      const { keyShape, valueShape, applyChecks, unsafe } = this;
 
       const promises: any[] = [];
 
       for (const key in input) {
-        promises.push(key, keyShape._applyAsync(key, options), valueShape._applyAsync(key, options));
+        promises.push(key, keyShape.applyAsync(key, options), valueShape.applyAsync(key, options));
       }
 
       resolve(
@@ -145,7 +145,7 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
               }
             }
 
-            if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+            if ((unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
               if (input === output) {
                 output = cloneEnumerableKeys(input, keyCount);
               }
@@ -154,8 +154,8 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
             }
           }
 
-          if (_applyChecks !== null && (_unsafe || issues === null)) {
-            issues = _applyChecks(output, issues, options);
+          if (applyChecks !== null && (unsafe || issues === null)) {
+            issues = applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
             return ok(output as InferRecord<K['output'], V['output']>);

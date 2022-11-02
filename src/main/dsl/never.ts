@@ -1,9 +1,9 @@
 import { NeverShape } from '../shapes';
-import { Message, TypeCheckOptions } from '../shared-types';
+import { Message, TypeConstraintOptions } from '../shared-types';
 
 /**
  * Creates the shape that always raises an issue.
  */
-export function never(options?: TypeCheckOptions | Message): NeverShape {
+export function never(options?: TypeConstraintOptions | Message): NeverShape {
   return new NeverShape(options);
 }

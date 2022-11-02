@@ -60,7 +60,7 @@ export type Message = ((param: any, value: any) => any) | string;
 /**
  * Options that are applicable for the type check.
  */
-export interface TypeCheckOptions {
+export interface TypeConstraintOptions {
   /**
    * The custom issue message.
    */
@@ -75,7 +75,7 @@ export interface TypeCheckOptions {
 /**
  * Options that are applicable for the built-in type-specific checks.
  */
-export interface CheckOptions {
+export interface ConstraintOptions {
   /**
    * The custom issue message.
    */
@@ -96,7 +96,7 @@ export interface CheckOptions {
 /**
  * Options that are applicable for the custom checks added via {@linkcode Shape.check}.
  */
-export interface CustomCheckOptions {
+export interface CheckOptions {
   /**
    * The unique ID of the check in scope of the shape.
    *
@@ -115,12 +115,12 @@ export interface CustomCheckOptions {
 /**
  * Options for narrowing checks that are added
  */
-export interface NarrowingOptions extends CheckOptions, CustomCheckOptions {}
+export interface RefineOptions extends ConstraintOptions, CheckOptions {}
 
 /**
  * Options used by a shape to apply checks and transformations.
  */
-export interface ParserOptions {
+export interface ParseOptions {
   /**
    * If `true` then all issues are collected during parsing, otherwise parsing is aborted after the first issue is
    * encountered.

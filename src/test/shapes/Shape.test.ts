@@ -1,5 +1,5 @@
-import { ParserOptions, Shape, ValidationError } from '../../main';
-import { CODE_NARROWING, MESSAGE_NARROWING } from '../../main/shapes/constants';
+import { ParseOptions, Shape, ValidationError } from '../../main';
+import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/shapes/constants';
 
 describe('Shape', () => {
   class MockShape extends Shape {
@@ -46,17 +46,17 @@ describe('Shape', () => {
 
   test('adds the narrowing constraint', () => {
     const predicate = (value: unknown) => value === 'aaa';
-    const shape = new Shape(false).narrow(predicate);
+    const shape = new Shape(false).refine(predicate);
     const result = shape.safeParse('');
 
     expect(result).toBeInstanceOf(ValidationError);
     expect(result.issues).toEqual([
-      { code: CODE_NARROWING, input: '', message: MESSAGE_NARROWING, path: [], param: predicate },
+      { code: CODE_PREDICATE, input: '', message: MESSAGE_PREDICATE, path: [], param: predicate },
     ]);
   });
 
   test('returns true if the value matches the shape', () => {
-    const shape = new Shape(false).narrow(value => value === 'aaa');
+    const shape = new Shape(false).refine(value => value === 'aaa');
 
     expect(shape.is('')).toBe(false);
     expect(shape.is('aaa')).toBe(true);
@@ -68,7 +68,7 @@ describe('Shape', () => {
     });
 
     class MockShape extends Shape {
-      safeParse(input: unknown, options?: ParserOptions): any {
+      safeParse(input: unknown, options?: ParseOptions): any {
         return input + '_bbb';
       }
     }
@@ -95,7 +95,7 @@ describe('Shape', () => {
     });
 
     class MockShape extends Shape {
-      safeParse(input: unknown, options?: ParserOptions): any {
+      safeParse(input: unknown, options?: ParseOptions): any {
         return input + '_bbb';
       }
     }

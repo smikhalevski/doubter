@@ -1,7 +1,3 @@
-export const objectCreate: { <T>(prototype: T): T; (prototype: null): any } = Object.create;
-
-export const objectAssign = Object.assign;
-
 export const objectKeys = Object.keys;
 
 export const objectValues = Object.values;

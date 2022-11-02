@@ -1,4 +1,4 @@
-import { CheckCallback, CheckOptions, Dict, Issue, Message, Ok } from './shared-types';
+import { CheckCallback, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { isArray, isInteger, isString } from './lang-utils';
 import { ValidationError } from './ValidationError';
@@ -13,7 +13,7 @@ export function ok<T>(value: T): Ok<T> {
 export function addCheck<S extends Shape>(
   shape: S,
   id: string | undefined,
-  options: CheckOptions | Message | undefined,
+  options: ConstraintOptions | Message | undefined,
   check: CheckCallback<S['output']>
 ): S {
   return shape.check(check, { id, unsafe: options != null && typeof options === 'object' ? options.unsafe : false });
@@ -36,7 +36,7 @@ export interface CheckConfig {
 }
 
 export function createCheckConfig(
-  options: CheckOptions | Message | undefined,
+  options: ConstraintOptions | Message | undefined,
   code: unknown,
   message: unknown,
   param: unknown

@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ApplyResult, Issue, Message, ParserOptions, Tuple, TypeCheckOptions } from '../shared-types';
+import { ApplyResult, Issue, Message, ParseOptions, Tuple, TypeConstraintOptions } from '../shared-types';
 import { concatIssues, createCheckConfig, createIssue, isAsyncShapes } from '../shape-utils';
 import { isArray } from '../lang-utils';
 import { CODE_UNION, MESSAGE_UNION } from './constants';
@@ -20,7 +20,7 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
    * @param shapes The list of united shapes.
    * @param options The union constraint options or an issue message.
    */
-  constructor(readonly shapes: Readonly<U>, options?: TypeCheckOptions | Message) {
+  constructor(readonly shapes: Readonly<U>, options?: TypeConstraintOptions | Message) {
     super(isAsyncShapes(shapes));
 
     this._typeCheckConfig = createCheckConfig(options, CODE_UNION, MESSAGE_UNION, undefined);
@@ -45,15 +45,15 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
     return new UnionShape(childShapes as U);
   }
 
-  _apply(input: unknown, options: ParserOptions): ApplyResult<InferUnion<U, 'output'>> {
-    const { shapes, _applyChecks, _unsafe } = this;
+  apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
+    const { shapes, applyChecks, unsafe } = this;
 
     const shapesLength = shapes.length;
 
     let issues: Issue[] | null = null;
 
     for (let i = 0; i < shapesLength; ++i) {
-      const result = shapes[i]._apply(input, options);
+      const result = shapes[i].apply(input, options);
 
       if (result === null) {
         return null;
@@ -65,14 +65,14 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
       return result;
     }
 
-    if (_applyChecks !== null && _unsafe) {
-      issues = _applyChecks(input, issues, options);
+    if (applyChecks !== null && unsafe) {
+      issues = applyChecks(input, issues, options);
     }
     return [createIssue(this._typeCheckConfig, input, issues)];
   }
 
-  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
-    const { shapes, _applyChecks, _unsafe } = this;
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
+    const { shapes, applyChecks, unsafe } = this;
 
     const shapesLength = shapes.length;
 
@@ -80,7 +80,7 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
     let index = 0;
 
     const nextShape = (): Promise<ApplyResult<InferUnion<U, 'output'>>> => {
-      return shapes[index]._applyAsync(input, options).then(result => {
+      return shapes[index].applyAsync(input, options).then(result => {
         ++index;
 
         if (result === null) {
@@ -94,8 +94,8 @@ export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, '
             return nextShape();
           }
 
-          if (_applyChecks !== null && _unsafe) {
-            issues = _applyChecks(input, issues, options);
+          if (applyChecks !== null && unsafe) {
+            issues = applyChecks(input, issues, options);
           }
           return [createIssue(this._typeCheckConfig, input, issues)];
         }

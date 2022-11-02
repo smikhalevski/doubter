@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from './Shape';
-import { ApplyResult, CheckOptions, Issue, Message, ParserOptions, TypeCheckOptions } from '../shared-types';
+import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { addCheck, concatIssues, createCheckConfig, isArrayIndex, ok, raiseIssue, unshiftPath } from '../shape-utils';
 import {
   CODE_ARRAY_MAX,
@@ -26,7 +26,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param shape The shape of an array element.
    * @param options The type constraint options or the type issue message.
    */
-  constructor(readonly shape: S, options?: TypeCheckOptions | Message) {
+  constructor(readonly shape: S, options?: TypeConstraintOptions | Message) {
     super(false);
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_ARRAY_TYPE, TYPE_ARRAY);
   }
@@ -42,7 +42,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  length(length: number, options?: CheckOptions | Message): this {
+  length(length: number, options?: ConstraintOptions | Message): this {
     return this.min(length, options).max(length, options);
   }
 
@@ -53,7 +53,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  min(length: number, options?: CheckOptions | Message): this {
+  min(length: number, options?: ConstraintOptions | Message): this {
     const checkConfig = createCheckConfig(options, CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, length);
 
     return addCheck(this, CODE_ARRAY_MIN, options, input => {
@@ -70,7 +70,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  max(length: number, options?: CheckOptions | Message): this {
+  max(length: number, options?: ConstraintOptions | Message): this {
     const checkConfig = createCheckConfig(options, CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, length);
 
     return addCheck(this, CODE_ARRAY_MAX, options, input => {
@@ -80,12 +80,12 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     });
   }
 
-  _apply(input: unknown, options: ParserOptions): ApplyResult<S['output'][]> {
+  apply(input: unknown, options: ParseOptions): ApplyResult<S['output'][]> {
     if (!isArray(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
 
-    const { shape, _applyChecks, _unsafe } = this;
+    const { shape, applyChecks, unsafe } = this;
 
     const arrayLength = input.length;
 
@@ -94,7 +94,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
 
     for (let i = 0; i < arrayLength; ++i) {
       const value = input[i];
-      const result = shape._apply(value, options);
+      const result = shape.apply(value, options);
 
       if (result === null) {
         continue;
@@ -108,7 +108,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
         issues = concatIssues(issues, result);
         continue;
       }
-      if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
+      if ((unsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
           output = input.slice(0);
         }
@@ -116,8 +116,8 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       }
     }
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (applyChecks !== null && (unsafe || issues === null)) {
+      issues = applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -125,20 +125,20 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     return issues;
   }
 
-  _applyAsync(input: unknown, options: ParserOptions): Promise<ApplyResult<S['output'][]>> {
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'][]>> {
     return new Promise(resolve => {
       if (!isArray(input)) {
         return raiseIssue(this._typeCheckConfig, input);
       }
 
-      const { shape, _applyChecks, _unsafe } = this;
+      const { shape, applyChecks, unsafe } = this;
 
       const arrayLength = input.length;
       const promises: Promise<ApplyResult<S['output']>>[] = [];
 
       for (let i = 0; i < arrayLength; ++i) {
         const value = input[i];
-        promises.push(shape._applyAsync(value, options));
+        promises.push(shape.applyAsync(value, options));
       }
 
       resolve(
@@ -161,7 +161,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
               issues = concatIssues(issues, result);
               continue;
             }
-            if ((_unsafe || issues === null) && !isEqual(input[i], result.value)) {
+            if ((unsafe || issues === null) && !isEqual(input[i], result.value)) {
               if (input === output) {
                 output = input.slice(0);
               }
@@ -169,8 +169,8 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
             }
           }
 
-          if (_applyChecks !== null && (_unsafe || issues === null)) {
-            issues = _applyChecks(output, issues, options);
+          if (applyChecks !== null && (unsafe || issues === null)) {
+            issues = applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
             return ok(output);
