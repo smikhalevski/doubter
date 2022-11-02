@@ -31,6 +31,16 @@ export interface Shape<I, O> {
    * The shape output type. Accessible only at compile time and should be used for type inference.
    */
   readonly output: O;
+
+  /**
+   * `true` if `undefined` is the valid value for this shape, `false` otherwise.
+   */
+  readonly optional: boolean;
+
+  /**
+   * `true` if `null` is the valid value for this shape, `false` otherwise.
+   */
+  readonly nullable: boolean;
 }
 
 /**
@@ -64,7 +74,13 @@ export class Shape<I = any, O = I> {
    * @template I The input value.
    * @template O The output value.
    */
-  constructor(readonly async: boolean) {}
+  constructor(readonly async: boolean) {
+    if (async) {
+      this.try = this.parse = () => {
+        throw new Error('Shape is async and cannot be used in a sync context');
+      };
+    }
+  }
 
   /**
    * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
@@ -302,6 +318,18 @@ export class Shape<I = any, O = I> {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
   }
 }
+
+Object.defineProperty(Shape.prototype, 'optional', {
+  get() {
+    return Object.defineProperty(this, 'optional', { value: this.try(undefined).ok }).optional;
+  },
+});
+
+Object.defineProperty(Shape.prototype, 'nullable', {
+  get() {
+    return Object.defineProperty(this, 'nullable', { value: this.try(null).ok }).nullable;
+  },
+});
 
 export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T> {
   constructor(
