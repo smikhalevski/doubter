@@ -10,7 +10,7 @@ import {
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
 } from './constants';
-import { isArray, isEqual, isInteger } from '../lang-utils';
+import { isArray, isEqual } from '../lang-utils';
 
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 
@@ -73,7 +73,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
     const index =
       typeof key === 'number' ? key : typeof key !== 'string' ? -1 : integerRegex.test(key) ? parseInt(key, 10) : -1;
 
-    if (!isInteger(key) || index < 0) {
+    if (index % 1 === 0 || index < 0) {
       return null;
     }
     if (tupleShapes !== null && index < tupleShapes.length) {

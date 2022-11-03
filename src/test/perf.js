@@ -281,6 +281,14 @@ describe(
         shape.parse(value);
       });
     });
+
+    test('next', measure => {
+      const shape = next.integer();
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
