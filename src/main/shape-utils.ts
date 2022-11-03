@@ -185,13 +185,3 @@ export function addIssue(issues: Issue[] | null, issue: Issue[] | Issue): Issue[
   }
   return issues;
 }
-
-const positiveIntegerRegex = /^[1-9]\d*$/;
-
-export function isArrayIndex(key: any): boolean {
-  return (isInteger(key) && key >= 0) || key === '0' || (typeof key === 'string' && positiveIntegerRegex.test(key));
-}
-
-export function isTupleIndex(key: any, length: number): boolean {
-  return isArrayIndex(key) && parseInt(key, 10) < length;
-}

@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, concatIssues, createCheckConfig, isArrayIndex, ok, raiseIssue, unshiftPath } from '../shape-utils';
+import { addCheck, concatIssues, createCheckConfig, ok, raiseIssue, unshiftPath } from '../shape-utils';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -10,29 +10,76 @@ import {
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
 } from './constants';
-import { isArray, isEqual } from '../lang-utils';
+import { isArray, isEqual, isInteger } from '../lang-utils';
+
+const integerRegex = /^(?:0|[1-9]\d*)$/;
+
+export type Channel = 'input' | 'output';
+
+export type InferTuple<U extends AnyShape[], C extends Channel> = { [K in keyof U]: U[K][C] };
+
+export type InferArray<U extends AnyShape[], R extends AnyShape | null, C extends Channel> = R extends AnyShape
+  ? [...InferTuple<U, C>, ...R[C][]]
+  : InferTuple<U, C>;
 
 /**
- * The shape that constrains every element of an array with the element shape.
+ * The shape that describes an array.
  *
- * @template S The element shape.
+ * @template U The list of tuple element shapes.
+ * @template R The shape of rest elements.
  */
-export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['output'][]> {
+export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = null> extends Shape<
+  InferArray<U, R, 'input'>,
+  InferArray<U, R, 'output'>
+> {
   protected _typeCheckConfig;
 
   /**
    * Creates a new {@linkcode ArrayShape} instance.
    *
-   * @param shape The shape of an array element.
+   * @param tupleShapes The list of tuple element shapes.
+   * @param restShape The shape of rest elements.
    * @param options The type constraint options or the type issue message.
    */
-  constructor(readonly shape: S, options?: TypeConstraintOptions | Message) {
+  constructor(tupleShapes: U, restShape?: R | null, options?: TypeConstraintOptions | Message);
+
+  /**
+   * Creates a new {@linkcode ArrayShape} instance.
+   *
+   * @param tupleShapes The list of tuple element shapes.
+   * @param restShape The shape of rest elements.
+   * @param options The type constraint options or the type issue message.
+   */
+  constructor(tupleShapes: null, restShape: R, options?: TypeConstraintOptions | Message);
+
+  constructor(
+    /**
+     * The list of tuple element shapes.
+     */
+    readonly tupleShapes: U | null = null,
+    /**
+     * The shape of rest elements.
+     */
+    readonly restShape: R | null = null,
+    options?: TypeConstraintOptions | Message
+  ) {
     super();
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_ARRAY_TYPE, TYPE_ARRAY);
   }
 
   at(key: unknown): AnyShape | null {
-    return isArrayIndex(key) ? this.shape : null;
+    const { tupleShapes, restShape } = this;
+
+    const index =
+      typeof key === 'number' ? key : typeof key !== 'string' ? -1 : integerRegex.test(key) ? parseInt(key, 10) : -1;
+
+    if (!isInteger(key) || index < 0) {
+      return null;
+    }
+    if (tupleShapes !== null && index < tupleShapes.length) {
+      return tupleShapes[index];
+    }
+    return restShape;
   }
 
   /**
@@ -80,21 +127,28 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
     });
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<S['output'][]> {
-    if (!isArray(input)) {
+  apply(input: unknown, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
+    const { tupleShapes, restShape, applyChecks, unsafe } = this;
+
+    let inputLength;
+    let tupleLength = 0;
+
+    // noinspection CommaExpressionJS
+    if (
+      !isArray(input) ||
+      ((inputLength = input.length),
+      restShape === null && tupleShapes !== null && inputLength !== (tupleLength = tupleShapes.length))
+    ) {
       return raiseIssue(this._typeCheckConfig, input);
     }
-
-    const { shape, applyChecks, unsafe } = this;
-
-    const arrayLength = input.length;
 
     let issues: Issue[] | null = null;
     let output = input;
 
-    for (let i = 0; i < arrayLength; ++i) {
+    for (let i = 0; i < inputLength; ++i) {
       const value = input[i];
-      const result = shape.apply(value, options);
+      const valueShape = i < tupleLength ? tupleShapes![i] : restShape!;
+      const result = valueShape.apply(value, options);
 
       if (result === null) {
         continue;
@@ -120,25 +174,34 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
       issues = applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
-      return ok(output);
+      return ok(output as InferArray<U, R, 'output'>);
     }
     return issues;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'][]>> {
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
-      if (!isArray(input)) {
+      const { tupleShapes, restShape, applyChecks, unsafe } = this;
+
+      let inputLength: number;
+      let tupleLength = 0;
+
+      // noinspection CommaExpressionJS
+      if (
+        !isArray(input) ||
+        ((inputLength = input.length),
+        restShape === null && tupleShapes !== null && inputLength !== (tupleLength = tupleShapes.length))
+      ) {
         return raiseIssue(this._typeCheckConfig, input);
       }
 
-      const { shape, applyChecks, unsafe } = this;
+      const promises: Promise<ApplyResult>[] = [];
 
-      const arrayLength = input.length;
-      const promises: Promise<ApplyResult<S['output']>>[] = [];
-
-      for (let i = 0; i < arrayLength; ++i) {
+      for (let i = 0; i < inputLength; ++i) {
         const value = input[i];
-        promises.push(shape.applyAsync(value, options));
+        const valueShape = i < tupleLength ? tupleShapes![i] : restShape!;
+
+        promises.push(valueShape.applyAsync(value, options));
       }
 
       resolve(
@@ -146,7 +209,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
           let issues: Issue[] | null = null;
           let output = input;
 
-          for (let i = 0; i < arrayLength; ++i) {
+          for (let i = 0; i < inputLength; ++i) {
             const result = results[i];
 
             if (result === null) {
@@ -173,7 +236,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
             issues = applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
-            return ok(output);
+            return ok(output as InferArray<U, R, 'output'>);
           }
           return issues;
         })

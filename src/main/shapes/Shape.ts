@@ -21,6 +21,58 @@ const defaultParseOptions: ParseOptions = Object.freeze({ verbose: false });
  */
 export type AnyShape = Shape | Shape<never>;
 
+export interface Shape<I, O> {
+  /**
+   * The shape input type. Accessible only at compile time and should be used for type inference.
+   */
+  readonly input: I;
+
+  /**
+   * The shape output type. Accessible only at compile time and should be used for type inference.
+   */
+  readonly output: O;
+
+  /**
+   * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
+   * @throws `Error` if the shape doesn't support the synchronous parsing, see {@linkcode async}.
+   */
+  try(input: unknown, options?: ParseOptions): Ok<O> | Err;
+
+  /**
+   * Synchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws `Error` if the shape doesn't support the synchronous parsing, see {@linkcode async}.
+   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   */
+  parse(input: unknown, options?: ParseOptions): O;
+
+  /**
+   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
+   */
+  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err>;
+
+  /**
+   * Asynchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   */
+  parseAsync(input: unknown, options?: ParseOptions): Promise<O>;
+}
+
 /**
  * The base shape.
  *
@@ -28,26 +80,6 @@ export type AnyShape = Shape | Shape<never>;
  * @template O The output value.
  */
 export class Shape<I = any, O = I> {
-  /**
-   * The shape input type. Accessible only at compile time and should be used for type inference.
-   */
-  declare readonly input: I;
-
-  /**
-   * The shape output type. Accessible only at compile time and should be used for type inference.
-   */
-  declare readonly output: O;
-
-  /**
-   * `true` if `undefined` is the valid value for this shape, `false` otherwise.
-   */
-  declare readonly optional: boolean;
-
-  /**
-   * `true` if `null` is the valid value for this shape, `false` otherwise.
-   */
-  declare readonly nullable: boolean;
-
   /**
    * Applies checks to the output.
    */
@@ -87,86 +119,6 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the synchronous parsing, see {@linkcode async}.
-   */
-  try(input: unknown, options?: ParseOptions): Ok<O> | Err {
-    const result = this.apply(input, options || defaultParseOptions);
-
-    if (result === null) {
-      return ok(input as O);
-    }
-    if (isArray(result)) {
-      return { ok: false, issues: result };
-    }
-    return ok(result.value);
-  }
-
-  /**
-   * Synchronously parses the value.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the synchronous parsing, see {@linkcode async}.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
-   */
-  parse(input: unknown, options?: ParseOptions): O {
-    const result = this.apply(input, options || defaultParseOptions);
-
-    if (result === null) {
-      return input as O;
-    }
-    if (isArray(result)) {
-      throw new ValidationError(result);
-    }
-    return result.value;
-  }
-
-  /**
-   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   */
-  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err> {
-    return this.applyAsync(input, options || defaultParseOptions).then(result => {
-      if (result === null) {
-        return ok(input as O);
-      }
-      if (isArray(result)) {
-        return { ok: false, issues: result };
-      }
-      return result;
-    });
-  }
-
-  /**
-   * Asynchronously parses the value.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
-   */
-  parseAsync(input: unknown, options?: ParseOptions): Promise<O> {
-    return this.applyAsync(input, options || defaultParseOptions).then(result => {
-      if (result === null) {
-        return input as O;
-      }
-      if (isArray(result)) {
-        throw new ValidationError(result);
-      }
-      return result.value;
-    });
-  }
-
-  /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
    * sub-shape.
    *
@@ -202,17 +154,17 @@ export class Shape<I = any, O = I> {
    *
    * @param cb The transformation callback.
    * @returns The {@linkcode TransformedShape} instance.
-   * @template R The transformed value.
+   * @template T The transformed value.
    */
-  transform<R>(
+  transform<T>(
     /**
      * @param output The shape output value.
      * @param options Parsing options.
      * @return The transformation result.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    cb: (output: O, options: Readonly<ParseOptions>) => R
-  ): Shape<I, R> {
+    cb: (output: O, options: Readonly<ParseOptions>) => T
+  ): Shape<I, T> {
     return new TransformedShape(this, false, cb);
   }
 
@@ -221,17 +173,17 @@ export class Shape<I = any, O = I> {
    *
    * @param cb The value transformer callback.
    * @returns The {@linkcode TransformedShape} instance.
-   * @template R The transformed value.
+   * @template T The transformed value.
    */
-  transformAsync<R>(
+  transformAsync<T>(
     /**
      * @param output The shape output value.
      * @param options Parsing options.
      * @return The transformation result.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    cb: (output: O, options: Readonly<ParseOptions>) => Promise<R>
-  ): Shape<I, R> {
+    cb: (output: O, options: Readonly<ParseOptions>) => Promise<T>
+  ): Shape<I, T> {
     return new TransformedShape(this, true, cb);
   }
 
@@ -242,7 +194,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode PipedShape} instance.
    * @template R The pipe output value.
    */
-  pipe<R>(shape: Shape<O, R>): Shape<I, R> {
+  pipe<T>(shape: Shape<O, T>): Shape<I, T> {
     return new PipedShape(this, shape);
   }
 
@@ -254,13 +206,13 @@ export class Shape<I = any, O = I> {
    * @returns The shape that has the narrowed output.
    * @template R The narrowed output value.
    */
-  refine<R extends O>(
+  refine<T extends O>(
     /**
      * @param output The shape output value.
      */
-    predicate: (output: O) => output is R,
+    predicate: (output: O) => output is T,
     options?: RefineOptions | Message
-  ): Shape<I, R>;
+  ): Shape<I, T>;
 
   /**
    * Checks that the output value conforms the predicate.
@@ -323,15 +275,83 @@ export class Shape<I = any, O = I> {
   }
 }
 
-Object.defineProperty(Shape.prototype, 'optional', {
+Object.defineProperty(Shape.prototype, 'try', {
   get() {
-    return Object.defineProperty(this, 'optional', { value: this.try(undefined).ok }).optional;
+    const cb: Shape['try'] = (input, options) => {
+      const result = this.apply(input, options || defaultParseOptions);
+
+      if (result === null) {
+        return ok(input);
+      }
+      if (isArray(result)) {
+        return { ok: false, issues: result };
+      }
+      return ok(result.value);
+    };
+
+    Object.defineProperty(this, 'try', { value: cb });
+
+    return cb;
   },
 });
 
-Object.defineProperty(Shape.prototype, 'nullable', {
+Object.defineProperty(Shape.prototype, 'parse', {
   get() {
-    return Object.defineProperty(this, 'nullable', { value: this.try(null).ok }).nullable;
+    const cb: Shape['parse'] = (input, options) => {
+      const result = this.apply(input, options || defaultParseOptions);
+
+      if (result === null) {
+        return input;
+      }
+      if (isArray(result)) {
+        throw new ValidationError(result);
+      }
+      return result.value;
+    };
+
+    Object.defineProperty(this, 'parse', { value: cb });
+
+    return cb;
+  },
+});
+
+Object.defineProperty(Shape.prototype, 'tryAsync', {
+  get() {
+    const cb: Shape['tryAsync'] = (input, options) => {
+      return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+        if (result === null) {
+          return ok(input);
+        }
+        if (isArray(result)) {
+          return { ok: false, issues: result };
+        }
+        return result;
+      });
+    };
+
+    Object.defineProperty(this, 'tryAsync', { value: cb });
+
+    return cb;
+  },
+});
+
+Object.defineProperty(Shape.prototype, 'parseAsync', {
+  get() {
+    const cb: Shape['parseAsync'] = (input, options) => {
+      return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+        if (result === null) {
+          return input;
+        }
+        if (isArray(result)) {
+          throw new ValidationError(result);
+        }
+        return result.value;
+      });
+    };
+
+    Object.defineProperty(this, 'parseAsync', { value: cb });
+
+    return cb;
   },
 });
 

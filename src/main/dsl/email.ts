@@ -1,6 +1,9 @@
 import { Message, TypeConstraintOptions } from '../shared-types';
-import { EmailShape } from '../shapes';
+import { StringShape } from '../shapes';
 
-export function email(options?: TypeConstraintOptions | Message): EmailShape {
-  return new EmailShape(options);
+const emailRegex =
+  /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/i;
+
+export function email(options?: TypeConstraintOptions | Message): StringShape {
+  return new StringShape(options).regex(emailRegex);
 }

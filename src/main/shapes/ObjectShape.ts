@@ -23,10 +23,10 @@ import { AnyShape, Shape } from './Shape';
 export type Channel = 'input' | 'output';
 
 export type InferObject<P extends Dict<AnyShape>, R extends AnyShape, C extends Channel> = Squash<
-  UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferRest<R, C>
+  UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>
 >;
 
-export type InferRest<R extends AnyShape, C extends Channel> = R extends Shape ? { [key: string]: R[C] } : unknown;
+export type InferIndexer<R extends AnyShape, C extends Channel> = R extends Shape ? { [key: string]: R[C] } : unknown;
 
 export type ObjectKey<T extends object> = StringifyPropertyKey<keyof T>;
 
