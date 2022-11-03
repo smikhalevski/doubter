@@ -8,7 +8,7 @@ export class IntegerShape extends Shape<number> {
   protected _typeCheckConfig;
 
   constructor(options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER);
   }
 

@@ -7,7 +7,7 @@ export class NeverShape extends Shape<never> {
   protected _typeCheckConfig;
 
   constructor(options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_NEVER, MESSAGE_NEVER, undefined);
   }
 

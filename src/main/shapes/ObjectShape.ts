@@ -51,9 +51,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   InferObject<P, R, 'output'>
 > {
   readonly keys: readonly ObjectKey<P>[];
-
-  private _valueShapes: Shape[];
   protected _typeCheckConfig;
+  private _valueShapes: Shape[];
   private _exactCheckConfig: CheckConfig | null = null;
 
   constructor(

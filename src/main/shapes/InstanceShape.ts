@@ -14,7 +14,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
   protected _typeCheckConfig;
 
   constructor(readonly ctor: C, options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_INSTANCE, MESSAGE_INSTANCE, ctor);
   }
 

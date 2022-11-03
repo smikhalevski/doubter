@@ -22,7 +22,7 @@ export class NumberShape extends Shape<number> {
   protected _typeCheckConfig;
 
   constructor(options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER);
   }
 

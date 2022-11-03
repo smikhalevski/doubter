@@ -7,7 +7,7 @@ export class BigIntShape extends Shape<bigint> {
   protected _typeCheckConfig;
 
   constructor(options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT);
   }
 

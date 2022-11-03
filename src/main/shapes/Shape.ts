@@ -72,9 +72,15 @@ export class Shape<I = any, O = I> {
    * @template I The input value.
    * @template O The output value.
    */
-  constructor(readonly async: boolean) {
+  constructor(
+    /**
+     * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
+     * Otherwise, shape can be used in both sync and async contexts.
+     */
+    readonly async = false
+  ) {
     if (async) {
-      this.try = this.parse = () => {
+      this.apply = () => {
         throw new Error('Shape is async and cannot be used in a sync context');
       };
     }
@@ -268,16 +274,16 @@ export class Shape<I = any, O = I> {
     /**
      * @param output The shape output value.
      */
-    predicate: (value: O) => any,
+    predicate: (output: O) => any,
     options?: RefineOptions | Message
   ): this;
 
-  refine(predicate: (value: any) => unknown, options?: RefineOptions | Message): this {
+  refine(predicate: (output: any) => unknown, options?: RefineOptions | Message): this {
     const checkConfig = createCheckConfig(options, CODE_PREDICATE, MESSAGE_PREDICATE, predicate);
 
-    return addCheck(this, undefined, options, input => {
-      if (!predicate(input)) {
-        return raiseIssue(checkConfig, input);
+    return addCheck(this, undefined, options, output => {
+      if (!predicate(output)) {
+        return raiseIssue(checkConfig, output);
       }
     });
   }
@@ -329,16 +335,44 @@ Object.defineProperty(Shape.prototype, 'nullable', {
   },
 });
 
-export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T> {
+/**
+ * The shape that applies a transformer to the output of the base shape.
+ *
+ * @template S The base shape.
+ * @template O The transformed output value.
+ */
+export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O> {
+  /**
+   * Creates the new {@linkcode TransformedShape} instance.
+   *
+   * @param shape The base shape.
+   * @param async If `true` then the transformed shape would await for transformer to finish its transformation and use
+   * the resolved value as an output. Otherwise, the value that is synchronously returned from the transformer is used
+   * as an output.
+   * @param transformer The transformation callback.
+   * @template S The base shape.
+   * @template O The transformed output value.
+   */
   constructor(
+    /**
+     * The base shape which output value is transformed.
+     */
     readonly shape: S,
     async: boolean,
-    readonly transformer: (output: S['output'], options: ParseOptions) => Promise<T> | T
+    /**
+     * The transformation callback.
+     *
+     * @param output The {@linkcode shape} output value that must be transformed.
+     * @param options Parsing options.
+     * @return The transformation result.
+     * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
+     */
+    readonly transformer: (output: S['output'], options: ParseOptions) => Promise<O> | O
   ) {
     super(shape.async || async);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<T> {
+  apply(input: unknown, options: ParseOptions): ApplyResult<O> {
     const { shape, transformer, applyChecks } = this;
 
     let issues;
@@ -369,10 +403,10 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
     if (isEqual(input, output)) {
       return null;
     }
-    return ok(output as T);
+    return ok(output as O);
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<T>> {
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     const { shape, transformer, applyChecks } = this;
 
     return shape.applyAsync(input, options).then(result => {
@@ -385,7 +419,7 @@ export class TransformedShape<S extends AnyShape, T> extends Shape<S['input'], T
         output = result.value;
       }
 
-      return new Promise<T>(resolve => resolve(transformer(output, options))).then(output => {
+      return new Promise<O>(resolve => resolve(transformer(output, options))).then(output => {
         let issues;
 
         if (applyChecks !== null) {

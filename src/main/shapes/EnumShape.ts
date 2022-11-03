@@ -18,7 +18,7 @@ export class EnumShape<T extends Primitive> extends Shape<T> {
    * @param options The type constraint options or an issue message.
    */
   constructor(readonly values: readonly T[], options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_ENUM, MESSAGE_ENUM, values);
   }
 

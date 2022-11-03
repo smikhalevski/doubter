@@ -27,7 +27,7 @@ export class ArrayShape<S extends AnyShape> extends Shape<S['input'][], S['outpu
    * @param options The type constraint options or the type issue message.
    */
   constructor(readonly shape: S, options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_ARRAY_TYPE, TYPE_ARRAY);
   }
 

@@ -25,7 +25,7 @@ export class StringShape extends Shape<string> {
    * @param options The type constraint options or the type issue message.
    */
   constructor(options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING);
   }
 

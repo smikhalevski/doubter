@@ -7,7 +7,7 @@ export class BooleanShape extends Shape<boolean> {
   protected _typeCheckConfig;
 
   constructor(options?: TypeConstraintOptions | Message) {
-    super(false);
+    super();
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN);
   }
 
