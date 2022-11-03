@@ -1,6 +1,7 @@
 export { ArrayShape } from './ArrayShape';
 export { BigIntShape } from './BigIntShape';
 export { BooleanShape } from './BooleanShape';
+export { DefaultableShape } from './DefaultableShape';
 export { EmailShape } from './EmailShape';
 export { EnumShape } from './EnumShape';
 export { InstanceShape } from './InstanceShape';
