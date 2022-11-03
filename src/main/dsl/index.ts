@@ -2,6 +2,7 @@ export * from './any';
 export * from './array';
 export * from './bigint';
 export * from './boolean';
+export * from './cuid';
 export * from './enum';
 export * from './email';
 export * from './instance';
