@@ -16,14 +16,14 @@ export type InferRecord<K extends PropertyKey, V> = undefined extends V
   ? Partial<Record<NonNullable<K>, V>>
   : Record<NonNullable<K>, V>;
 
-export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShape> extends Shape<
-  InferRecord<K['input'], V['input']>,
-  InferRecord<K['output'], V['output']>
-> {
+export class RecordShape<
+  K extends Shape<string, PropertyKey> = Shape<string>,
+  V extends AnyShape = AnyShape
+> extends Shape<InferRecord<K['input'], V['input']>, InferRecord<K['output'], V['output']>> {
   protected _typeCheckConfig;
 
-  constructor(readonly keyShape: K, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
-    super(keyShape.async || valueShape.async);
+  constructor(readonly keyShape: K | null, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
+    super((keyShape != null && keyShape.async) || valueShape.async);
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
   }
 
@@ -48,21 +48,24 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
       let outputKey: PropertyKey = key;
       let outputValue = value;
 
-      const keyResult = keyShape.apply(key, options);
-      const valueResult = valueShape.apply(value, options);
+      if (keyShape !== null) {
+        const keyResult = keyShape.apply(key, options);
 
-      if (keyResult !== null) {
-        if (isArray(keyResult)) {
-          unshiftPath(keyResult, key);
+        if (keyResult !== null) {
+          if (isArray(keyResult)) {
+            unshiftPath(keyResult, key);
 
-          if (!options.verbose) {
-            return keyResult;
+            if (!options.verbose) {
+              return keyResult;
+            }
+            issues = concatIssues(issues, keyResult);
+          } else {
+            outputKey = keyResult.value;
           }
-          issues = concatIssues(issues, keyResult);
-        } else {
-          outputKey = keyResult.value;
         }
       }
+
+      const valueResult = valueShape.apply(value, options);
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
@@ -105,7 +108,11 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
       const promises: any[] = [];
 
       for (const key in input) {
-        promises.push(key, keyShape.applyAsync(key, options), valueShape.applyAsync(key, options));
+        promises.push(
+          key,
+          keyShape !== null ? keyShape.applyAsync(key, options) : null,
+          valueShape.applyAsync(key, options)
+        );
       }
 
       resolve(

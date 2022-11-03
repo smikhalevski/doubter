@@ -601,7 +601,7 @@ describe(
     });
 
     test('doubter.v3.RecordShape null', measure => {
-      const shape = next.record(null, next.number());
+      const shape = next.record(next.number());
 
       measure(() => {
         shape.parse(value);
