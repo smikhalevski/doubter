@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, concatIssues, createCheckConfig, ok, raiseIssue, unshiftPath } from '../shape-utils';
+import { addCheck, concatIssues, createCheckConfig, isArray, isEqual, ok, raiseIssue, unshiftPath } from '../utils';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -10,7 +10,6 @@ import {
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
 } from './constants';
-import { isArray, isEqual } from '../lang-utils';
 
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 

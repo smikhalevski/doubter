@@ -1,8 +1,7 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, Primitive, TypeConstraintOptions } from '../shared-types';
-import { createCheckConfig, raiseIssue } from '../shape-utils';
+import { createCheckConfig, isEqual, raiseIssue } from '../utils';
 import { CODE_LITERAL, MESSAGE_LITERAL } from './constants';
-import { isEqual } from '../lang-utils';
 
 /**
  * The shape that requires an input to be equal to the literal value

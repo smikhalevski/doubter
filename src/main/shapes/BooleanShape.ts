@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createCheckConfig, raiseIssue } from '../shape-utils';
+import { createCheckConfig, raiseIssue } from '../utils';
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from './constants';
 
 export class BooleanShape extends Shape<boolean> {

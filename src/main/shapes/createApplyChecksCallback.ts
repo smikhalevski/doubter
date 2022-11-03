@@ -1,5 +1,5 @@
 import { CheckCallback, Issue, ParseOptions } from '../shared-types';
-import { addIssue, captureIssues, concatIssues } from '../shape-utils';
+import { addIssue, captureIssues, concatIssues } from '../utils';
 
 export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
 

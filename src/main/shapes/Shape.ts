@@ -9,8 +9,7 @@ import {
   RefineOptions,
 } from '../shared-types';
 import { ApplyChecksCallback, Check, createApplyChecksCallback } from './createApplyChecksCallback';
-import { isArray, isEqual } from '../lang-utils';
-import { addCheck, captureIssues, createCheckConfig, ok, raiseIssue } from '../shape-utils';
+import { addCheck, captureIssues, createCheckConfig, isArray, isEqual, ok, raiseIssue } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { CODE_PREDICATE, MESSAGE_PREDICATE } from './constants';
 

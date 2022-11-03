@@ -1,7 +1,14 @@
 import { CheckCallback, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
-import { isArray, isInteger, isString } from './lang-utils';
 import { ValidationError } from './ValidationError';
+
+export const isEqual = Object.is;
+
+export function isObjectLike(value: unknown): value is Record<any, any> {
+  return value !== null && typeof value === 'object';
+}
+
+export const isArray = Array.isArray;
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
@@ -54,7 +61,7 @@ export function createCheckConfig(
     message = String(options);
   }
 
-  if (isString(message)) {
+  if (typeof message === 'string') {
     message = message.replace('%s', String(param));
   }
 

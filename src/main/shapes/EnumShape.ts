@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, Primitive, TypeConstraintOptions } from '../shared-types';
-import { createCheckConfig, raiseIssue } from '../shape-utils';
+import { createCheckConfig, raiseIssue } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM } from './constants';
 
 /**

@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, createCheckConfig, raiseIssue } from '../shape-utils';
+import { addCheck, createCheckConfig, raiseIssue } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -16,7 +16,6 @@ import {
   MESSAGE_NUMBER_TYPE,
   TYPE_NUMBER,
 } from './constants';
-import { isFinite } from '../lang-utils';
 
 export class NumberShape extends Shape<number> {
   protected _typeCheckConfig;
@@ -134,7 +133,7 @@ export class NumberShape extends Shape<number> {
   apply(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { applyChecks } = this;
 
-    if (!isFinite(input)) {
+    if (typeof input === 'number') {
       return raiseIssue(this._typeCheckConfig, input);
     }
     if (applyChecks !== null) {

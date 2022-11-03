@@ -1,6 +1,5 @@
 import { ApplyResult, ParseOptions } from '../shared-types';
-import { ok } from '../shape-utils';
-import { isArray } from '../lang-utils';
+import { isArray, ok } from '../utils';
 import { AnyShape, Shape } from './Shape';
 
 export class DefaultableShape<S extends AnyShape, I, O> extends Shape<I, O> {

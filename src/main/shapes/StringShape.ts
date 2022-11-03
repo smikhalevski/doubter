@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, createCheckConfig, raiseIssue } from '../shape-utils';
+import { addCheck, createCheckConfig, raiseIssue } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,

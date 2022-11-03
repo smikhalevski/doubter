@@ -1,4 +1,3 @@
-import { isArray, isEqual, isObjectLike, objectKeys, objectValues } from '../lang-utils';
 import { ApplyResult, Dict, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
 import {
@@ -10,14 +9,17 @@ import {
   createCheckConfig,
   createIssue,
   Flags,
+  isArray,
   isAsyncShapes,
+  isEqual,
   isFlagSet,
+  isObjectLike,
   ok,
   pushIssue,
   raiseIssue,
   setFlag,
   unshiftPath,
-} from '../shape-utils';
+} from '../utils';
 import { AnyShape, Shape } from './Shape';
 
 export type Channel = 'input' | 'output';
@@ -61,8 +63,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     private _options?: TypeConstraintOptions | Message,
     readonly keysMode: KeysMode = KeysMode.PRESERVED
   ) {
-    const keys = objectKeys(shapes);
-    const valueShapes = objectValues(shapes);
+    const keys = Object.keys(shapes);
+    const valueShapes = Object.values(shapes);
 
     super((restShape !== null && restShape.async) || isAsyncShapes(valueShapes));
 
