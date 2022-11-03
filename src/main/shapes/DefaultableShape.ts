@@ -2,7 +2,7 @@ import { ApplyResult, ParseOptions } from '../shared-types';
 import { isArray, ok } from '../utils';
 import { AnyShape, Shape } from './Shape';
 
-export class DefaultableShape<S extends AnyShape, I, O> extends Shape<I, O> {
+export class DefaultableShape<S extends AnyShape, I, O> extends Shape<S['input'] | I, S['output'] | O> {
   private _defaultResult: ApplyResult<O>;
   private _defaultAsyncResult: Promise<ApplyResult<O>> | undefined;
 
@@ -16,7 +16,7 @@ export class DefaultableShape<S extends AnyShape, I, O> extends Shape<I, O> {
     }
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<O> {
+  apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | O> {
     const { applyChecks } = this;
 
     let issues;
@@ -41,7 +41,7 @@ export class DefaultableShape<S extends AnyShape, I, O> extends Shape<I, O> {
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | O>> {
     const { applyChecks } = this;
 
     let issues;

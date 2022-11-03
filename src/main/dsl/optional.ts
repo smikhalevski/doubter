@@ -6,9 +6,9 @@ import { AnyShape, DefaultableShape } from '../shapes';
  * @param shape The shape that must be optional.
  * @param defaultValue The value that should be used if input is `undefined`.
  */
-export function optional<S extends AnyShape, O extends S['output'] | undefined = S['output'] | undefined>(
+export function optional<S extends AnyShape, O = undefined>(
   shape: S,
   defaultValue?: O
-): DefaultableShape<S, S['input'] | undefined, O> {
+): DefaultableShape<S, undefined, O> {
   return new DefaultableShape(shape, undefined, defaultValue);
 }
