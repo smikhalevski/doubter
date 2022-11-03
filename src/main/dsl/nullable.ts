@@ -1,4 +1,4 @@
-import { AnyShape, NullableShape } from '../shapes';
+import { AnyShape, DefaultableShape } from '../shapes';
 
 /**
  * Creates the nullable shape.
@@ -6,9 +6,9 @@ import { AnyShape, NullableShape } from '../shapes';
  * @param shape The underlying shape.
  * @param defaultValue The value that should be used if input is `undefined`.
  */
-export function nullable<S extends AnyShape, T extends S['output'] | null = S['output'] | null>(
+export function nullable<S extends AnyShape, O extends S['output'] | null = S['output'] | null>(
   shape: S,
-  defaultValue?: T
-): NullableShape<S, T> {
-  return new NullableShape(shape, defaultValue);
+  defaultValue?: O
+): DefaultableShape<S, S['input'] | null, O> {
+  return new DefaultableShape(shape, null, defaultValue);
 }

@@ -6,10 +6,10 @@ export class DefaultableShape<S extends AnyShape, I, O> extends Shape<I, O> {
   private _defaultResult: ApplyResult<O>;
   private _defaultAsyncResult: Promise<ApplyResult<O>> | undefined;
 
-  constructor(readonly shape: S, private _replacedValue: I, readonly defaultValue?: O) {
+  constructor(readonly shape: S, readonly replacedValue: I, readonly defaultValue?: O) {
     super(shape.async);
 
-    this._defaultResult = defaultValue === undefined || defaultValue === _replacedValue ? null : ok(defaultValue);
+    this._defaultResult = defaultValue === undefined || defaultValue === replacedValue ? null : ok(defaultValue);
 
     if (shape.async) {
       this._defaultAsyncResult = Promise.resolve(this._defaultResult);
@@ -22,7 +22,7 @@ export class DefaultableShape<S extends AnyShape, I, O> extends Shape<I, O> {
     let issues;
     let output = input;
 
-    const result = input === this._replacedValue ? this._defaultResult : this.shape.apply(input, options);
+    const result = input === this.replacedValue ? this._defaultResult : this.shape.apply(input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -46,7 +46,7 @@ export class DefaultableShape<S extends AnyShape, I, O> extends Shape<I, O> {
 
     let issues;
 
-    if (input === this._replacedValue) {
+    if (input === this.replacedValue) {
       if (applyChecks !== null) {
         return new Promise(resolve => {
           issues = applyChecks(this.defaultValue, null, options);
