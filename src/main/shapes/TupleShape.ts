@@ -1,6 +1,14 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, Tuple, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createCheckConfig, isTupleIndex, ok, raiseIssue, unshiftPath } from '../shape-utils';
+import {
+  concatIssues,
+  createCheckConfig,
+  isAsyncShapes,
+  isTupleIndex,
+  ok,
+  raiseIssue,
+  unshiftPath,
+} from '../shape-utils';
 import { CODE_TUPLE, MESSAGE_TUPLE } from './constants';
 import { isArray, isEqual } from '../lang-utils';
 
@@ -10,7 +18,7 @@ export class TupleShape<U extends Tuple<AnyShape>> extends Shape<InferTuple<U, '
   protected _typeCheckConfig;
 
   constructor(readonly shapes: Readonly<U>, options?: TypeConstraintOptions | Message) {
-    super(false);
+    super(isAsyncShapes(shapes));
     this._typeCheckConfig = createCheckConfig(options, CODE_TUPLE, MESSAGE_TUPLE, shapes.length);
   }
 

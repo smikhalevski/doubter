@@ -1,7 +1,8 @@
-import { isArray, isObjectLike, objectKeys, objectValues } from '../lang-utils';
+import { isArray, isEqual, isObjectLike, objectKeys, objectValues } from '../lang-utils';
 import { ApplyResult, Dict, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
 import {
+  assignProperty,
   CheckConfig,
   cloneEnumerableKeys,
   cloneKnownKeys,
@@ -138,12 +139,12 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       return raiseIssue(this._typeCheckConfig, input);
     }
     if (this.keysMode !== KeysMode.PRESERVED) {
-      return this.applyStrictKeys(input, options);
+      return this._applyStrictKeysSync(input, options);
     }
     if (this.restShape !== null) {
-      return this.applyPreservedRestKeys(input, options);
+      return this._applyPreservedRestKeysSync(input, options);
     }
-    return this.applyPreservedKeys(input, options);
+    return this._applyPreservedKeysSync(input, options);
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
@@ -230,7 +231,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
 
           for (let i = 0; i < entriesLength; i += 2) {
             const key = entries[i];
-            const result = entries[i + 1];
+            const result: ApplyResult = entries[i + 1];
 
             if (result === null) {
               continue;
@@ -244,11 +245,11 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
               issues = concatIssues(issues, result);
               continue;
             }
-            if (unsafe || issues === null) {
+            if ((unsafe || issues === null) && !isEqual(input[key], result.value)) {
               if (input === output) {
                 output = cloneEnumerableKeys(input);
               }
-              output[key] = result.value;
+              assignProperty(output, key, result.value);
             }
           }
 
@@ -264,7 +265,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     });
   }
 
-  private applyPreservedKeys(input: Dict, options: ParseOptions): ApplyResult {
+  private _applyPreservedKeysSync(input: Dict, options: ParseOptions): ApplyResult {
     const { keys, _valueShapes, applyChecks, unsafe } = this;
 
     const keysLength = keys.length;
@@ -289,11 +290,11 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         issues = concatIssues(issues, result);
         continue;
       }
-      if (unsafe || issues === null) {
+      if ((unsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
           output = cloneEnumerableKeys(input);
         }
-        output[key] = result.value;
+        assignProperty(output, key, result.value);
       }
     }
 
@@ -306,7 +307,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return issues;
   }
 
-  private applyPreservedRestKeys(input: Dict, options: ParseOptions): ApplyResult {
+  private _applyPreservedRestKeysSync(input: Dict, options: ParseOptions): ApplyResult {
     const { keys, restShape, _valueShapes, applyChecks, unsafe } = this;
 
     let issues: Issue[] | null = null;
@@ -330,11 +331,11 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         issues = concatIssues(issues, result);
         continue;
       }
-      if (unsafe || issues === null) {
+      if ((unsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
           output = cloneEnumerableKeys(input);
         }
-        output[key] = result.value;
+        assignProperty(output, key, result.value);
       }
     }
 
@@ -347,7 +348,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return issues;
   }
 
-  private applyStrictKeys(input: Dict, options: ParseOptions): ApplyResult {
+  private _applyStrictKeysSync(input: Dict, options: ParseOptions): ApplyResult {
     const { keys, keysMode, _valueShapes, applyChecks, unsafe } = this;
 
     const keysLength = keys.length;
@@ -382,11 +383,11 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           issues = concatIssues(issues, result);
           continue;
         }
-        if (unsafe || issues === null) {
+        if ((unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
             output = cloneKnownKeys(input, keys);
           }
-          output[key] = result.value;
+          assignProperty(output, key, result.value);
         }
         continue;
       }
@@ -441,11 +442,11 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           issues = concatIssues(issues, result);
           continue;
         }
-        if (unsafe || issues === null) {
+        if ((unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
             output = cloneKnownKeys(input, keys);
           }
-          output[key] = result.value;
+          assignProperty(output, key, result.value);
         }
       }
     }

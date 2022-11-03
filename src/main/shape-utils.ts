@@ -118,11 +118,11 @@ export function isFlagSet(flag: Flags, index: number): boolean {
   }
 }
 
-export function assignProperty(obj: Dict, key: string, value: unknown): void {
+export function assignProperty(obj: Record<any, any>, key: PropertyKey, value: unknown): void {
   if (key === '__proto__') {
     Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
   } else {
-    obj[key] = value;
+    obj[key as string] = value;
   }
 }
 

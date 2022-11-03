@@ -1,6 +1,14 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { cloneEnumerableKeys, concatIssues, createCheckConfig, ok, raiseIssue, unshiftPath } from '../shape-utils';
+import {
+  assignProperty,
+  cloneEnumerableKeys,
+  concatIssues,
+  createCheckConfig,
+  ok,
+  raiseIssue,
+  unshiftPath,
+} from '../shape-utils';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
 import { isArray, isEqual, isObjectLike } from '../lang-utils';
 
@@ -15,7 +23,7 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
   protected _typeCheckConfig;
 
   constructor(readonly keyShape: K, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
-    super(false);
+    super(keyShape.async || valueShape.async);
     this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
   }
 
@@ -73,8 +81,7 @@ export class RecordShape<K extends Shape<string, PropertyKey>, V extends AnyShap
         if (input === output) {
           output = cloneEnumerableKeys(input, keyCount);
         }
-
-        output[outputKey as string] = outputValue;
+        assignProperty(output, outputKey, outputValue);
       }
     }
 
