@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { ApplyResult, Message, ParseOptions, Primitive, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createCheckConfig, isEqual, raiseIssue } from '../utils';
 import { CODE_LITERAL, MESSAGE_LITERAL } from './constants';
 
@@ -8,7 +8,7 @@ import { CODE_LITERAL, MESSAGE_LITERAL } from './constants';
  *
  * @template T The literal value.
  */
-export class LiteralShape<T extends Primitive> extends Shape<T> {
+export class LiteralShape<T> extends Shape<T> {
   protected _typeCheckConfig;
 
   /**

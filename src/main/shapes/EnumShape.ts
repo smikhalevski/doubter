@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { ApplyResult, Message, ParseOptions, Primitive, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createCheckConfig, raiseIssue } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM } from './constants';
 
@@ -8,7 +8,7 @@ import { CODE_ENUM, MESSAGE_ENUM } from './constants';
  *
  * @template T The type of the allowed values.
  */
-export class EnumShape<T extends Primitive> extends Shape<T> {
+export class EnumShape<T> extends Shape<T> {
   protected _typeCheckConfig;
 
   /**

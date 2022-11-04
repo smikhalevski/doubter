@@ -1,16 +1,16 @@
 import { AnyShape, Shape } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, Tuple, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { concatIssues, createCheckConfig, createIssue, isArray, isAsyncShapes } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from './constants';
 
-export type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
+export type InferUnion<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
 
 /**
  * The shape that requires an input to conform at least one of the united shapes.
  *
  * @template U The list of united type definitions.
  */
-export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
+export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
   protected _typeCheckConfig;
 
   /**

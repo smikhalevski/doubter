@@ -130,9 +130,7 @@ export interface ParseOptions {
   verbose?: boolean;
 }
 
-export type Tuple<T> = [T, ...T[]];
-
-export type Primitive = string | number | bigint | boolean | null | undefined;
+export type Any = object | string | number | bigint | boolean | null | undefined;
 
 export interface Dict<T = any> {
   [key: string]: T;
