@@ -203,7 +203,7 @@ export class Shape<I = any, O = I> {
    * @param predicate The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The constraint options or an issue message.
    * @returns The shape that has the narrowed output.
-   * @template R The narrowed output value.
+   * @template T The narrowed output value.
    */
   refine<T extends O>(
     /**
@@ -237,6 +237,36 @@ export class Shape<I = any, O = I> {
         return raiseIssue(checkConfig, output);
       }
     });
+  }
+
+  /**
+   * Marks the type as optional.
+   *
+   * @param defaultValue The value that should be used if input is `undefined`.
+   * @returns The {@linkcode DefaultableShape} instance.
+   */
+  optional<T = undefined>(defaultValue?: T): Shape<I | undefined, O | T> {
+    return new DefaultableShape(this, undefined, defaultValue);
+  }
+
+  /**
+   * Creates the nullable shape.
+   *
+   * @param defaultValue The value that should be used if input is `undefined`.
+   * @returns The {@linkcode DefaultableShape} instance.
+   */
+  nullable<T = null>(defaultValue?: T): Shape<I | null, O | T> {
+    return new DefaultableShape(this, null, defaultValue);
+  }
+
+  /**
+   * Creates the shape that allows both `undefined` and `null` values.
+   *
+   * @param defaultValue The value that should be used if input is `undefined` or `null`.
+   * @returns The {@linkcode DefaultableShape} instance.
+   */
+  nullish<T = null | undefined>(defaultValue?: T): Shape<I | null | undefined, O | T> {
+    return this.nullable(defaultValue).optional(defaultValue);
   }
 
   /**
@@ -536,5 +566,83 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
         }
         return result;
       });
+  }
+}
+
+export class DefaultableShape<S extends AnyShape, I, O = I> extends Shape<S['input'] | I, S['output'] | O> {
+  private _defaultResult: ApplyResult<O>;
+  private _defaultAsyncResult: Promise<ApplyResult<O>> | undefined;
+
+  constructor(readonly shape: S, readonly replacedValue: I, readonly defaultValue?: O) {
+    super(shape.async);
+
+    this._defaultResult = defaultValue === undefined || defaultValue === replacedValue ? null : ok(defaultValue);
+
+    if (shape.async) {
+      this._defaultAsyncResult = Promise.resolve(this._defaultResult);
+    }
+  }
+
+  apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | O> {
+    const { applyChecks } = this;
+
+    let issues;
+    let output = input;
+
+    const result = input === this.replacedValue ? this._defaultResult : this.shape.apply(input, options);
+
+    if (result !== null) {
+      if (isArray(result)) {
+        return result;
+      }
+      output = result.value;
+    }
+
+    if (applyChecks !== null) {
+      issues = applyChecks(output, null, options);
+
+      if (issues !== null) {
+        return issues;
+      }
+    }
+    return result;
+  }
+
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | O>> {
+    const { applyChecks } = this;
+
+    let issues;
+
+    if (input === this.replacedValue) {
+      if (applyChecks !== null) {
+        return new Promise(resolve => {
+          issues = applyChecks(this.defaultValue, null, options);
+
+          resolve(issues !== null ? issues : this._defaultResult);
+        });
+      }
+      return this._defaultAsyncResult!;
+    }
+
+    return this.shape.applyAsync(input, options).then(result => {
+      let issues;
+      let output = input;
+
+      if (result !== null) {
+        if (isArray(result)) {
+          return result;
+        }
+        output = result.value;
+      }
+
+      if (applyChecks !== null) {
+        issues = applyChecks(output, null, options);
+
+        if (issues !== null) {
+          return issues;
+        }
+      }
+      return result;
+    });
   }
 }
