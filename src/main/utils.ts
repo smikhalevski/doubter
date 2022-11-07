@@ -1,29 +1,13 @@
-import { CheckCallback, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
+import { Checker, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { ValidationError } from './ValidationError';
 
 export const isEqual = Object.is;
 
-export function isObjectLike(value: unknown): value is Record<any, any> {
-  return value !== null && typeof value === 'object';
-}
-
 export const isArray = Array.isArray;
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
-}
-
-/**
- * The convenient shortcut to add built-in checks to shapes.
- */
-export function addCheck<S extends Shape>(
-  shape: S,
-  id: string | undefined,
-  options: ConstraintOptions | Message | undefined,
-  check: CheckCallback<S['output']>
-): S {
-  return shape.check(check, { id, unsafe: options != null && typeof options === 'object' ? options.unsafe : false });
 }
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
@@ -33,6 +17,38 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
     async = shapes[i].async;
   }
   return async;
+}
+
+/**
+ * The convenient shortcut to add built-in checks to shapes.
+ */
+export function addCheck<S extends Shape>(
+  shape: S,
+  key: string | undefined,
+  options: ConstraintOptions | Message | undefined,
+  checker: Checker<S['output']>,
+  param?: unknown
+): S {
+  return shape.check(checker, {
+    key,
+    unsafe: options !== null && typeof options === 'object' ? options.unsafe : false,
+    param,
+  });
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------
+
+export function isObjectLike(value: unknown): value is Record<any, any> {
+  return value !== null && typeof value === 'object';
 }
 
 export interface CheckConfig {

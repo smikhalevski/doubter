@@ -12,13 +12,13 @@ export class BigIntShape extends Shape<bigint> {
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (typeof input !== 'bigint') {
       return raiseIssue(this._typeCheckConfig, input);
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, options);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
     return null;
   }

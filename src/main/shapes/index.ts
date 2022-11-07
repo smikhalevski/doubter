@@ -8,6 +8,6 @@ export { NeverShape } from './NeverShape';
 export { NumberShape } from './NumberShape';
 export { ObjectShape } from './ObjectShape';
 export { RecordShape } from './RecordShape';
-export { Shape, AnyShape, TunnelShape, ConverterShape, ReplacerShape } from './Shape';
+export { Shape, AnyShape, PipeShape, ConverterShape, ReplacerShape } from './Shape';
 export { StringShape } from './StringShape';
 export { UnionShape } from './UnionShape';

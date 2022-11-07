@@ -1,13 +1,7 @@
-import { CheckCallback, Issue, ParseOptions } from '../shared-types';
+import { Check, Issue, ParseOptions } from '../shared-types';
 import { addIssue, captureIssues, concatIssues } from '../utils';
 
 export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
-
-export interface Check {
-  id: string | undefined;
-  cb: CheckCallback<any>;
-  unsafe: boolean;
-}
 
 export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback | null {
   const checksLength = checks.length;
@@ -17,14 +11,14 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   }
 
   if (checksLength === 1) {
-    const [{ unsafe, cb }] = checks;
+    const [{ unsafe, checker }] = checks;
 
     return (output, issues, options) => {
       if (issues === null || unsafe) {
         let result;
 
         try {
-          result = cb(output);
+          result = checker(output);
         } catch (error) {
           return concatIssues(issues, captureIssues(error));
         }
@@ -37,7 +31,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   }
 
   if (checksLength === 2) {
-    const [{ unsafe: unsafe0, cb: cb0 }, { unsafe: unsafe1, cb: cb1 }] = checks;
+    const [{ unsafe: unsafe0, checker: cb0 }, { unsafe: unsafe1, checker: cb1 }] = checks;
 
     return (output, issues, options) => {
       if (issues === null || unsafe0) {
@@ -80,7 +74,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
 
   return (output, issues, options) => {
     for (let i = 1; i < checksLength; ++i) {
-      const { unsafe, cb } = checks[i];
+      const { unsafe, checker } = checks[i];
 
       let result;
 
@@ -89,7 +83,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       }
 
       try {
-        result = cb(output);
+        result = checker(output);
       } catch (error) {
         issues = concatIssues(issues, captureIssues(error));
 

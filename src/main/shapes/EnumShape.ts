@@ -23,13 +23,13 @@ export class EnumShape<T> extends Shape<T> {
   }
 
   apply(input: any, options: ParseOptions): ApplyResult<T> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (!this.values.includes(input)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, options);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
     return null;
   }

@@ -4,7 +4,7 @@ import {
   CODE_NUMBER_GTE,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
-  CODE_NUMBER_DIVISOR,
+  CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
   TYPE_NUMBER,
 } from '../../main/shapes/constants';
@@ -110,9 +110,9 @@ describe('NumberShape', () => {
   });
 
   test('raises if value is not a multiple of', () => {
-    expect(new NumberShape().divisor(2).validate(3)).toEqual([
+    expect(new NumberShape().multipleOf(2).validate(3)).toEqual([
       {
-        code: CODE_NUMBER_DIVISOR,
+        code: CODE_NUMBER_MULTIPLE_OF,
         path: [],
         input: 3,
         param: 2,
@@ -121,7 +121,7 @@ describe('NumberShape', () => {
       },
     ]);
 
-    expect(new NumberShape().divisor(2).validate(4)).toBe(null);
+    expect(new NumberShape().multipleOf(2).validate(4)).toBe(null);
   });
 
   test('overrides message for type issue', () => {
@@ -186,7 +186,7 @@ describe('NumberShape', () => {
   });
 
   test('raises multiple issues in verbose mode', () => {
-    expect(new NumberShape().gt(2).divisor(3, { unsafe: true }).validate(1, { verbose: true })).toEqual([
+    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).validate(1, { verbose: true })).toEqual([
       {
         code: CODE_NUMBER_GT,
         path: [],
@@ -196,7 +196,7 @@ describe('NumberShape', () => {
         meta: undefined,
       },
       {
-        code: CODE_NUMBER_DIVISOR,
+        code: CODE_NUMBER_MULTIPLE_OF,
         path: [],
         input: 1,
         param: 3,
@@ -207,7 +207,7 @@ describe('NumberShape', () => {
   });
 
   test('raises a single issue', () => {
-    expect(new NumberShape().gt(2).divisor(3, { unsafe: true }).validate(1)).toEqual([
+    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).validate(1)).toEqual([
       {
         code: CODE_NUMBER_GT,
         path: [],

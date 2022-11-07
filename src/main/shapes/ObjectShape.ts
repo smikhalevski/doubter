@@ -154,7 +154,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         return raiseIssue(this._typeCheckConfig, input);
       }
 
-      const { keys, keysMode, restShape, _valueShapes, applyChecks, unsafe } = this;
+      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
 
       const keysLength = keys.length;
       const promises: any[] = [];
@@ -246,7 +246,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
               issues = concatIssues(issues, result);
               continue;
             }
-            if ((unsafe || issues === null) && !isEqual(input[key], result.value)) {
+            if ((_unsafe || issues === null) && !isEqual(input[key], result.value)) {
               if (input === output) {
                 output = cloneEnumerableKeys(input);
               }
@@ -254,8 +254,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
             }
           }
 
-          if (applyChecks !== null && (unsafe || issues === null)) {
-            issues = applyChecks(output, issues, options);
+          if (_applyChecks !== null && (_unsafe || issues === null)) {
+            issues = _applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
             return ok(output as InferObject<P, R, 'output'>);
@@ -267,7 +267,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   }
 
   private _applyPreservedKeysSync(input: Dict, options: ParseOptions): ApplyResult {
-    const { keys, _valueShapes, applyChecks, unsafe } = this;
+    const { keys, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
 
@@ -291,7 +291,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         issues = concatIssues(issues, result);
         continue;
       }
-      if ((unsafe || issues === null) && !isEqual(value, result.value)) {
+      if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
           output = cloneEnumerableKeys(input);
         }
@@ -299,8 +299,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       }
     }
 
-    if (applyChecks !== null && (unsafe || issues === null)) {
-      issues = applyChecks(output, issues, options);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -309,7 +309,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   }
 
   private _applyPreservedRestKeysSync(input: Dict, options: ParseOptions): ApplyResult {
-    const { keys, restShape, _valueShapes, applyChecks, unsafe } = this;
+    const { keys, restShape, _valueShapes, _applyChecks, _unsafe } = this;
 
     let issues: Issue[] | null = null;
     let output = input;
@@ -332,7 +332,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         issues = concatIssues(issues, result);
         continue;
       }
-      if ((unsafe || issues === null) && !isEqual(value, result.value)) {
+      if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
           output = cloneEnumerableKeys(input);
         }
@@ -340,8 +340,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       }
     }
 
-    if (applyChecks !== null && (unsafe || issues === null)) {
-      issues = applyChecks(output, issues, options);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -350,7 +350,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   }
 
   private _applyStrictKeysSync(input: Dict, options: ParseOptions): ApplyResult {
-    const { keys, keysMode, _valueShapes, applyChecks, unsafe } = this;
+    const { keys, keysMode, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
 
@@ -384,7 +384,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           issues = concatIssues(issues, result);
           continue;
         }
-        if ((unsafe || issues === null) && !isEqual(value, result.value)) {
+        if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
             output = cloneKnownKeys(input, keys);
           }
@@ -407,7 +407,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         continue;
       }
 
-      if (input === output && (unsafe || issues === null)) {
+      if (input === output && (_unsafe || issues === null)) {
         output = cloneKnownKeys(input, keys);
       }
     }
@@ -443,7 +443,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           issues = concatIssues(issues, result);
           continue;
         }
-        if ((unsafe || issues === null) && !isEqual(value, result.value)) {
+        if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
             output = cloneKnownKeys(input, keys);
           }
@@ -452,8 +452,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       }
     }
 
-    if (applyChecks !== null && (unsafe || issues === null)) {
-      issues = applyChecks(output, issues, options);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output);

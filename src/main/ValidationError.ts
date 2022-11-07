@@ -4,24 +4,29 @@ export class ValidationError extends Error {
   issues: Issue[];
 
   constructor(issues: Partial<Issue>[]) {
-    let message = '';
+    super();
 
-    for (let i = 0; i < issues.length; ++i) {
-      const issue = inflateIssue(issues[i]);
-      issues[i] = issue;
-      message +=
-        '\n' + issue.code + ' at /' + issue.path.join('/') + (issue.message != null ? ': ' + issue.message : '');
+    for (const issue of issues) {
+      issue.code ??= 'unknown';
+      issue.path ??= [];
     }
 
-    super(message);
-
     this.name = 'ValidationError';
-    this.issues = issues.map(inflateIssue);
+    this.issues = issues as Issue[];
   }
 }
 
-export function inflateIssue(issue: Partial<Issue>): Issue {
-  issue.code ??= 'unknown';
-  issue.path ??= [];
-  return issue as Issue;
-}
+Object.defineProperty(ValidationError.prototype, 'message', {
+  get() {
+    let value = '';
+
+    for (const issue of this.issues) {
+      value += '\n' + issue.code + ' at /' + issue.path.join('/') + (issue.message != null ? ': ' + issue.message : '');
+    }
+    return value;
+  },
+
+  set(value) {
+    Object.defineProperty(this, 'message', { value, writable: true, configurable: true });
+  },
+});

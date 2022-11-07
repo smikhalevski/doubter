@@ -10,6 +10,28 @@ export interface Err {
 
 export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
 
+export interface Check {
+  /**
+   * The unique key of the check in scope of the shape.
+   */
+  key: string | undefined;
+
+  /**
+   * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
+   */
+  checker: Checker;
+
+  /**
+   * `true` if the check callback is invoked even if previous checks have failed.
+   */
+  unsafe: boolean;
+
+  /**
+   * The optional parameter used by the callback.
+   */
+  param: any;
+}
+
 /**
  * A validation issue raised during input parsing.
  */
@@ -50,7 +72,7 @@ export interface Issue {
  * doesn't satisfy the check requirements then a {@linkcode ValidationError} can be thrown, or detected issues can
  * be returned.
  */
-export type CheckCallback<T> = (value: T) => Issue[] | Issue | null | undefined | void;
+export type Checker<T = any> = (value: T) => Issue[] | Issue | null | undefined | void;
 
 /**
  * The message callback or a string.
@@ -98,22 +120,28 @@ export interface ConstraintOptions {
  */
 export interface CheckOptions {
   /**
-   * The unique ID of the check in scope of the shape.
+   * The unique key of the check in scope of the shape.
    *
-   * If there is a check with the same ID then it is replaced, otherwise it is appended to the list of checks.
-   * If the ID is `undefined` then the check is always appended to the list of checks.
+   * If there is a check with the same key then it is replaced, otherwise it is appended to the list of checks.
+   * If the key is `undefined` then the check is always appended to the list of checks.
    */
-  id?: string;
+  key?: string;
 
   /**
    * If `true` then the check would be executed even if the preceding check failed, otherwise check is
    * ignored.
    */
   unsafe?: boolean;
+
+  /**
+   * An optional param that would be associated with the checker and can be accessed at {@linkcode Shape.checks} using
+   * {@linkcode Check.param}. This can be used for shape introspection.
+   */
+  param?: any;
 }
 
 /**
- * Options for narrowing checks that are added
+ * Options for type narrowing checks.
  */
 export interface RefineOptions extends ConstraintOptions, CheckOptions {}
 

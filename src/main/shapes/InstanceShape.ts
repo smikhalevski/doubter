@@ -19,13 +19,13 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferInstance<C>> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, options);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
     return null;
   }

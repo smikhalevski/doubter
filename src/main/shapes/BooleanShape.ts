@@ -12,13 +12,13 @@ export class BooleanShape extends Shape<boolean> {
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {
       return raiseIssue(this._typeCheckConfig, input);
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, options);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
     return null;
   }

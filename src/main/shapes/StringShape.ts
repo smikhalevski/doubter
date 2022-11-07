@@ -94,13 +94,13 @@ export class StringShape extends Shape<string> {
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<string> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (typeof input !== 'string') {
       return [this._issueFactory(input)];
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, options);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
     return null;
   }

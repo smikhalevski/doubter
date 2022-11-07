@@ -2,19 +2,19 @@ import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { addCheck, createIssueFactory } from '../utils';
 import {
-  CODE_NUMBER_DIVISOR,
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
+  CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
-  MESSAGE_NUMBER_DIVISOR,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
+  MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
   TYPE_NUMBER,
 } from './constants';
@@ -122,10 +122,10 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  divisor(value: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(options, CODE_NUMBER_DIVISOR, MESSAGE_NUMBER_DIVISOR, value);
+  multipleOf(value: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(options, CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, value);
 
-    return addCheck(this, CODE_NUMBER_DIVISOR, options, output => {
+    return addCheck(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
       if (output % value !== 0) {
         return issueFactory(output);
       }
@@ -155,17 +155,17 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   integer(options?: ConstraintOptions | Message): this {
-    return this.divisor(1, options);
+    return this.multipleOf(1, options);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<number> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (typeof input !== 'number') {
       return [this._issueFactory(input)];
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, options);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
     return null;
   }

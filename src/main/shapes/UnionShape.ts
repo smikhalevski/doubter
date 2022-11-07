@@ -45,7 +45,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
-    const { shapes, applyChecks, unsafe } = this;
+    const { shapes, _applyChecks, _unsafe } = this;
 
     const shapesLength = shapes.length;
 
@@ -64,14 +64,14 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
       return result;
     }
 
-    if (applyChecks !== null && unsafe) {
-      issues = applyChecks(input, issues, options);
+    if (_applyChecks !== null && _unsafe) {
+      issues = _applyChecks(input, issues, options);
     }
     return [createIssue(this._typeCheckConfig, input, issues)];
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
-    const { shapes, applyChecks, unsafe } = this;
+    const { shapes, _applyChecks, _unsafe } = this;
 
     const shapesLength = shapes.length;
 
@@ -93,8 +93,8 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
             return nextShape();
           }
 
-          if (applyChecks !== null && unsafe) {
-            issues = applyChecks(input, issues, options);
+          if (_applyChecks !== null && _unsafe) {
+            issues = _applyChecks(input, issues, options);
           }
           return [createIssue(this._typeCheckConfig, input, issues)];
         }

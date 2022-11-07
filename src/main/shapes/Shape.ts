@@ -1,5 +1,15 @@
-import { ApplyResult, CheckOptions, Err, Issue, Message, Ok, ParseOptions, RefineOptions } from '../shared-types';
-import { ApplyChecksCallback, Check, createApplyChecksCallback } from './createApplyChecksCallback';
+import {
+  ApplyResult,
+  Check,
+  Checker,
+  CheckOptions,
+  Err,
+  Message,
+  Ok,
+  ParseOptions,
+  RefineOptions,
+} from '../shared-types';
+import { ApplyChecksCallback, createApplyChecksCallback } from './createApplyChecksCallback';
 import { addCheck, captureIssues, createIssueFactory, isArray, isEqual, ok } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { CODE_PREDICATE, MESSAGE_PREDICATE } from './constants';
@@ -71,19 +81,19 @@ export interface Shape<I, O> {
  */
 export class Shape<I = any, O = I> {
   /**
-   * Applies checks to the output.
+   * The list of checks applied to the shape output.
    */
-  protected applyChecks: ApplyChecksCallback | null = null;
+  checks: readonly Check[] = [];
 
   /**
-   * The list of checks added to the shape.
+   * Applies checks to the output.
    */
-  protected checks: Check[] = [];
+  protected _applyChecks: ApplyChecksCallback | null = null;
 
   /**
    * `true` if some checks from {@linkcode checks} were marked as unsafe, `false` otherwise.
    */
-  protected unsafe = false;
+  protected _unsafe = false;
 
   /**
    * Creates the new {@linkcode Shape} instance.
@@ -126,15 +136,18 @@ export class Shape<I = any, O = I> {
    * @param options The check options.
    * @returns The clone of this shape with the check added.
    */
-  check(checker: (output: O) => Issue[] | Issue | null | undefined | void, options?: CheckOptions): this {
-    const id = options?.id;
-    const unsafe = Boolean(options?.unsafe);
-    const checks = id == null ? this.checks : this.checks.filter(check => check.id !== id);
-    const shape = this.clone();
+  check(checker: Checker<O>, options: CheckOptions = {}): this {
+    const { key, unsafe = false, param } = options;
 
-    shape.applyChecks = createApplyChecksCallback(checks);
-    shape.checks = checks.concat({ id, cb: checker, unsafe });
-    shape.unsafe ||= unsafe;
+    const checks = key !== undefined ? this.checks.filter(check => check.key !== key) : this.checks.slice(0);
+
+    checks.push({ key, checker, unsafe, param });
+
+    const shape = this._clone();
+
+    shape.checks = checks;
+    shape._applyChecks = createApplyChecksCallback(checks);
+    shape._unsafe ||= unsafe;
 
     return shape;
   }
@@ -143,11 +156,11 @@ export class Shape<I = any, O = I> {
    * Parses the shape output using another shape.
    *
    * @param shape The shape that validates the output if this shape.
-   * @returns The {@linkcode TunnelShape} instance.
+   * @returns The {@linkcode PipeShape} instance.
    * @template T The output value.
    */
-  to<T>(shape: Shape<O, T>): Shape<I, T> {
-    return new TunnelShape(this, shape);
+  pipe<T>(shape: Shape<O, T>): Shape<I, T> {
+    return new PipeShape(this, shape);
   }
 
   /**
@@ -270,8 +283,8 @@ export class Shape<I = any, O = I> {
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
   apply(input: unknown, options: ParseOptions): ApplyResult<O> {
-    const { applyChecks } = this;
-    return applyChecks !== null ? applyChecks(input, null, options) : null;
+    const { _applyChecks } = this;
+    return _applyChecks !== null ? _applyChecks(input, null, options) : null;
   }
 
   /**
@@ -291,7 +304,7 @@ export class Shape<I = any, O = I> {
   /**
    * Returns the shallow clone of this shape.
    */
-  protected clone(): this {
+  protected _clone(): this {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
   }
 }
@@ -413,7 +426,7 @@ export class ConverterShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<O> {
-    const { shape, converter, applyChecks } = this;
+    const { shape, converter, _applyChecks } = this;
 
     let issues;
     let output = input;
@@ -433,8 +446,8 @@ export class ConverterShape<S extends AnyShape, O> extends Shape<S['input'], O> 
       return captureIssues(error);
     }
 
-    if (applyChecks !== null) {
-      issues = applyChecks(output, null, options);
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
 
       if (issues !== null) {
         return issues;
@@ -447,7 +460,7 @@ export class ConverterShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
-    const { shape, converter, applyChecks } = this;
+    const { shape, converter, _applyChecks } = this;
 
     return shape.applyAsync(input, options).then(result => {
       let output = input;
@@ -462,8 +475,8 @@ export class ConverterShape<S extends AnyShape, O> extends Shape<S['input'], O> 
       return new Promise<O>(resolve => resolve(converter(output, options))).then(output => {
         let issues;
 
-        if (applyChecks !== null) {
-          issues = applyChecks(output, null, options);
+        if (_applyChecks !== null) {
+          issues = _applyChecks(output, null, options);
 
           if (issues !== null) {
             return issues;
@@ -478,13 +491,13 @@ export class ConverterShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   }
 }
 
-export class TunnelShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
+export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
   constructor(readonly inputShape: I, readonly outputShape: O) {
     super(inputShape.async || outputShape.async);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
-    const { inputShape, outputShape, applyChecks } = this;
+    const { inputShape, outputShape, _applyChecks } = this;
 
     let issues;
     let output = input;
@@ -508,8 +521,8 @@ export class TunnelShape<I extends AnyShape, O extends Shape<I['output'], any>> 
       output = outputResult.value;
     }
 
-    if (applyChecks !== null) {
-      issues = applyChecks(output, null, options);
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
 
       if (issues !== null) {
         return issues;
@@ -519,7 +532,7 @@ export class TunnelShape<I extends AnyShape, O extends Shape<I['output'], any>> 
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O['output']>> {
-    const { inputShape, outputShape, applyChecks } = this;
+    const { inputShape, outputShape, _applyChecks } = this;
 
     let result: ApplyResult = null;
     let output = input;
@@ -548,8 +561,8 @@ export class TunnelShape<I extends AnyShape, O extends Shape<I['output'], any>> 
           output = outputResult.value;
         }
 
-        if (applyChecks !== null) {
-          issues = applyChecks(output, null, options);
+        if (_applyChecks !== null) {
+          issues = _applyChecks(output, null, options);
 
           if (issues !== null) {
             return issues;
@@ -570,7 +583,7 @@ export class ReplacerShape<S extends AnyShape, I, O = I> extends Shape<S['input'
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | O> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     let issues;
     let output = input;
@@ -584,8 +597,8 @@ export class ReplacerShape<S extends AnyShape, I, O = I> extends Shape<S['input'
       output = result.value;
     }
 
-    if (applyChecks !== null) {
-      issues = applyChecks(output, null, options);
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
 
       if (issues !== null) {
         return issues;
@@ -595,14 +608,14 @@ export class ReplacerShape<S extends AnyShape, I, O = I> extends Shape<S['input'
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | O>> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     let issues;
 
     if (input === this.replacedValue) {
-      if (applyChecks !== null) {
+      if (_applyChecks !== null) {
         return new Promise(resolve => {
-          issues = applyChecks(this.value, null, options);
+          issues = _applyChecks(this.value, null, options);
 
           resolve(issues !== null ? issues : this._result);
         });
@@ -621,8 +634,8 @@ export class ReplacerShape<S extends AnyShape, I, O = I> extends Shape<S['input'
         output = result.value;
       }
 
-      if (applyChecks !== null) {
-        issues = applyChecks(output, null, options);
+      if (_applyChecks !== null) {
+        issues = _applyChecks(output, null, options);
 
         if (issues !== null) {
           return issues;

@@ -127,7 +127,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
-    const { tupleShapes, restShape, applyChecks, unsafe } = this;
+    const { tupleShapes, restShape, _applyChecks, _unsafe } = this;
 
     let inputLength;
     let tupleLength = 0;
@@ -161,7 +161,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
         issues = concatIssues(issues, result);
         continue;
       }
-      if ((unsafe || issues === null) && !isEqual(value, result.value)) {
+      if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
           output = input.slice(0);
         }
@@ -169,8 +169,8 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
       }
     }
 
-    if (applyChecks !== null && (unsafe || issues === null)) {
-      issues = applyChecks(output, issues, options);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output as InferArray<U, R, 'output'>);
@@ -180,7 +180,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
-      const { tupleShapes, restShape, applyChecks, unsafe } = this;
+      const { tupleShapes, restShape, _applyChecks, _unsafe } = this;
 
       let inputLength: number;
       let tupleLength = 0;
@@ -223,7 +223,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
               issues = concatIssues(issues, result);
               continue;
             }
-            if ((unsafe || issues === null) && !isEqual(input[i], result.value)) {
+            if ((_unsafe || issues === null) && !isEqual(input[i], result.value)) {
               if (input === output) {
                 output = input.slice(0);
               }
@@ -231,8 +231,8 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
             }
           }
 
-          if (applyChecks !== null && (unsafe || issues === null)) {
-            issues = applyChecks(output, issues, options);
+          if (_applyChecks !== null && (_unsafe || issues === null)) {
+            issues = _applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
             return ok(output as InferArray<U, R, 'output'>);

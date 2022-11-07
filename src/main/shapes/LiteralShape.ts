@@ -23,13 +23,13 @@ export class LiteralShape<T> extends Shape<T> {
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<T> {
-    const { applyChecks } = this;
+    const { _applyChecks } = this;
 
     if (!isEqual(input, this.value)) {
       return raiseIssue(this._typeCheckConfig, input);
     }
-    if (applyChecks !== null) {
-      return applyChecks(input, null, options);
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
     }
     return null;
   }

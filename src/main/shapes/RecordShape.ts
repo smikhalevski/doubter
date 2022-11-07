@@ -38,7 +38,7 @@ export class RecordShape<
       return raiseIssue(this._typeCheckConfig, input);
     }
 
-    const { keyShape, valueShape, applyChecks, unsafe } = this;
+    const { keyShape, valueShape, _applyChecks, _unsafe } = this;
 
     let keyCount = 0;
     let issues: Issue[] | null = null;
@@ -82,7 +82,7 @@ export class RecordShape<
         }
       }
 
-      if ((unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+      if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
         if (input === output) {
           output = cloneEnumerableKeys(input, keyCount);
         }
@@ -90,8 +90,8 @@ export class RecordShape<
       }
     }
 
-    if (applyChecks !== null && (unsafe || issues === null)) {
-      issues = applyChecks(output, issues, options);
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
       return ok(output as InferRecord<K['output'], V['output']>);
@@ -105,7 +105,7 @@ export class RecordShape<
         return raiseIssue(this._typeCheckConfig, input);
       }
 
-      const { keyShape, valueShape, applyChecks, unsafe } = this;
+      const { keyShape, valueShape, _applyChecks, _unsafe } = this;
 
       const promises: any[] = [];
 
@@ -161,7 +161,7 @@ export class RecordShape<
               }
             }
 
-            if ((unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+            if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
               if (input === output) {
                 output = cloneEnumerableKeys(input, keyCount);
               }
@@ -170,8 +170,8 @@ export class RecordShape<
             }
           }
 
-          if (applyChecks !== null && (unsafe || issues === null)) {
-            issues = applyChecks(output, issues, options);
+          if (_applyChecks !== null && (_unsafe || issues === null)) {
+            issues = _applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
             return ok(output as InferRecord<K['output'], V['output']>);
