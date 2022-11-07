@@ -1,15 +1,6 @@
-import {
-  ApplyResult,
-  CheckCallback,
-  CheckOptions,
-  Err,
-  Message,
-  Ok,
-  ParseOptions,
-  RefineOptions,
-} from '../shared-types';
+import { ApplyResult, CheckOptions, Err, Issue, Message, Ok, ParseOptions, RefineOptions } from '../shared-types';
 import { ApplyChecksCallback, Check, createApplyChecksCallback } from './createApplyChecksCallback';
-import { addCheck, captureIssues, createCheckConfig, isArray, isEqual, ok, raiseIssue } from '../utils';
+import { addCheck, captureIssues, createIssueFactory, isArray, isEqual, ok } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { CODE_PREDICATE, MESSAGE_PREDICATE } from './constants';
 
@@ -42,6 +33,15 @@ export interface Shape<I, O> {
   try(input: unknown, options?: ParseOptions): Ok<O> | Err;
 
   /**
+   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
+   */
+  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err>;
+
+  /**
    * Synchronously parses the value.
    *
    * @param input The value to parse.
@@ -51,15 +51,6 @@ export interface Shape<I, O> {
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parse(input: unknown, options?: ParseOptions): O;
-
-  /**
-   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   */
-  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err>;
 
   /**
    * Asynchronously parses the value.
@@ -106,7 +97,7 @@ export class Shape<I = any, O = I> {
   constructor(
     /**
      * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
-     * Otherwise, shape can be used in both sync and async contexts.
+     * `false` if the shape can be used in both sync and async contexts.
      */
     readonly async = false
   ) {
@@ -131,70 +122,70 @@ export class Shape<I = any, O = I> {
   /**
    * Adds a check that is applied to the shape output.
    *
-   * @param cb The callback that checks the shape output.
+   * @param checker The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of this shape with the check added.
    */
-  check(cb: CheckCallback<O>, options?: CheckOptions): this {
+  check(checker: (output: O) => Issue[] | Issue | null | undefined | void, options?: CheckOptions): this {
     const id = options?.id;
     const unsafe = Boolean(options?.unsafe);
     const checks = id == null ? this.checks : this.checks.filter(check => check.id !== id);
     const shape = this.clone();
 
     shape.applyChecks = createApplyChecksCallback(checks);
-    shape.checks = checks.concat({ id, cb: cb, unsafe });
+    shape.checks = checks.concat({ id, cb: checker, unsafe });
     shape.unsafe ||= unsafe;
 
     return shape;
   }
 
   /**
-   * Synchronously transforms the output value of the shape with a transformer callback.
-   *
-   * @param cb The transformation callback.
-   * @returns The {@linkcode TransformedShape} instance.
-   * @template T The transformed value.
-   */
-  transform<T>(
-    /**
-     * @param output The shape output value.
-     * @param options Parsing options.
-     * @return The transformation result.
-     * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
-     */
-    cb: (output: O, options: Readonly<ParseOptions>) => T
-  ): Shape<I, T> {
-    return new TransformedShape(this, false, cb);
-  }
-
-  /**
-   * Asynchronously transforms the output value of the shape with a transformer callback.
-   *
-   * @param cb The value transformer callback.
-   * @returns The {@linkcode TransformedShape} instance.
-   * @template T The transformed value.
-   */
-  transformAsync<T>(
-    /**
-     * @param output The shape output value.
-     * @param options Parsing options.
-     * @return The transformation result.
-     * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
-     */
-    cb: (output: O, options: Readonly<ParseOptions>) => Promise<T>
-  ): Shape<I, T> {
-    return new TransformedShape(this, true, cb);
-  }
-
-  /**
-   * Parses the output of this shape using another shape.
+   * Parses the shape output using another shape.
    *
    * @param shape The shape that validates the output if this shape.
-   * @returns The {@linkcode PipedShape} instance.
-   * @template R The pipe output value.
+   * @returns The {@linkcode TunnelShape} instance.
+   * @template T The output value.
    */
-  pipe<T>(shape: Shape<O, T>): Shape<I, T> {
-    return new PipedShape(this, shape);
+  to<T>(shape: Shape<O, T>): Shape<I, T> {
+    return new TunnelShape(this, shape);
+  }
+
+  /**
+   * Synchronously converts the output value of the shape with a converter callback.
+   *
+   * @param converter The callback that converts the shape output value.
+   * @returns The {@linkcode ConvertedShape} instance.
+   * @template T The output value.
+   */
+  convert<T>(
+    /**
+     * @param output The shape output value.
+     * @param options Parsing options.
+     * @return The conversion result.
+     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
+     */
+    converter: (output: O, options: Readonly<ParseOptions>) => T
+  ): Shape<I, T> {
+    return new ConverterShape(this, false, converter);
+  }
+
+  /**
+   * Asynchronously converts the output value of the shape with a conversion callback.
+   *
+   * @param converter The callback that converts the shape output value.
+   * @returns The {@linkcode ConvertedShape} instance.
+   * @template T The converted value.
+   */
+  convertAsync<T>(
+    /**
+     * @param output The shape output value.
+     * @param options Parsing options.
+     * @return The conversion result.
+     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
+     */
+    converter: (output: O, options: Readonly<ParseOptions>) => Promise<T>
+  ): Shape<I, T> {
+    return new ConverterShape(this, true, converter);
   }
 
   /**
@@ -202,7 +193,7 @@ export class Shape<I = any, O = I> {
    *
    * @param predicate The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The constraint options or an issue message.
-   * @returns The shape that has the narrowed output.
+   * @returns The shape with the narrowed output.
    * @template T The narrowed output value.
    */
   refine<T extends O>(
@@ -218,23 +209,22 @@ export class Shape<I = any, O = I> {
    *
    * @param predicate The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The constraint options or an issue message.
-   * @returns The clone of this shape with the constraint added.
-   * @template T The narrowed value.
+   * @returns The clone of this shape.
    */
   refine(
     /**
      * @param output The shape output value.
      */
-    predicate: (output: O) => any,
+    predicate: (output: O) => boolean,
     options?: RefineOptions | Message
   ): this;
 
-  refine(predicate: (output: any) => unknown, options?: RefineOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_PREDICATE, MESSAGE_PREDICATE, predicate);
+  refine(predicate: (output: O) => unknown, options?: RefineOptions | Message): this {
+    const issueFactory = createIssueFactory(options, CODE_PREDICATE, MESSAGE_PREDICATE, predicate);
 
     return addCheck(this, undefined, options, output => {
       if (!predicate(output)) {
-        return raiseIssue(checkConfig, output);
+        return issueFactory(output);
       }
     });
   }
@@ -242,28 +232,28 @@ export class Shape<I = any, O = I> {
   /**
    * Marks the type as optional.
    *
-   * @param defaultValue The value that should be used if input is `undefined`.
-   * @returns The {@linkcode DefaultableShape} instance.
+   * @param defaultValue The value that should be used if an input value is `undefined`.
+   * @returns The {@linkcode ReplacerShape} instance.
    */
   optional<T = undefined>(defaultValue?: T): Shape<I | undefined, O | T> {
-    return new DefaultableShape(this, undefined, defaultValue);
+    return new ReplacerShape(this, undefined, defaultValue);
   }
 
   /**
    * Creates the nullable shape.
    *
-   * @param defaultValue The value that should be used if input is `undefined`.
-   * @returns The {@linkcode DefaultableShape} instance.
+   * @param defaultValue The value that should be used if an input value is `undefined`.
+   * @returns The {@linkcode ReplacerShape} instance.
    */
   nullable<T = null>(defaultValue?: T): Shape<I | null, O | T> {
-    return new DefaultableShape(this, null, defaultValue);
+    return new ReplacerShape(this, null, defaultValue);
   }
 
   /**
    * Creates the shape that allows both `undefined` and `null` values.
    *
-   * @param defaultValue The value that should be used if input is `undefined` or `null`.
-   * @returns The {@linkcode DefaultableShape} instance.
+   * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
+   * @returns The {@linkcode ReplacerShape} instance.
    */
   nullish<T = null | undefined>(defaultValue?: T): Shape<I | null | undefined, O | T> {
     return this.nullable(defaultValue).optional(defaultValue);
@@ -272,7 +262,8 @@ export class Shape<I = any, O = I> {
   /**
    * Synchronously parses the input.
    *
-   * This method is the part of the internal parsing mechanism that should be overridden in custom shapes.
+   * Use {@linkcode parse} or {@linkcode try} instead of this method whenever possible. Override this method to
+   * implement custom shape.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -286,7 +277,8 @@ export class Shape<I = any, O = I> {
   /**
    * Asynchronously parses the input.
    *
-   * This method is the part of the internal parsing mechanism that should be overridden in custom shapes.
+   * Use {@linkcode parseAsync} or {@linkcode tryAsync} instead of this method whenever possible. Override this method
+   * to implement custom shape that requires an async context.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -299,14 +291,14 @@ export class Shape<I = any, O = I> {
   /**
    * Returns the shallow clone of this shape.
    */
-  clone(): this {
+  protected clone(): this {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
   }
 }
 
 Object.defineProperty(Shape.prototype, 'try', {
   get() {
-    const cb: Shape['try'] = (input, options) => {
+    const callback: Shape['try'] = (input, options) => {
       const result = this.apply(input, options || defaultParseOptions);
 
       if (result === null) {
@@ -318,15 +310,15 @@ Object.defineProperty(Shape.prototype, 'try', {
       return ok(result.value);
     };
 
-    Object.defineProperty(this, 'try', { value: cb });
+    Object.defineProperty(this, 'try', { value: callback });
 
-    return cb;
+    return callback;
   },
 });
 
 Object.defineProperty(Shape.prototype, 'parse', {
   get() {
-    const cb: Shape['parse'] = (input, options) => {
+    const callback: Shape['parse'] = (input, options) => {
       const result = this.apply(input, options || defaultParseOptions);
 
       if (result === null) {
@@ -338,15 +330,15 @@ Object.defineProperty(Shape.prototype, 'parse', {
       return result.value;
     };
 
-    Object.defineProperty(this, 'parse', { value: cb });
+    Object.defineProperty(this, 'parse', { value: callback });
 
-    return cb;
+    return callback;
   },
 });
 
 Object.defineProperty(Shape.prototype, 'tryAsync', {
   get() {
-    const cb: Shape['tryAsync'] = (input, options) => {
+    const callback: Shape['tryAsync'] = (input, options) => {
       return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
         if (result === null) {
           return ok(input);
@@ -358,15 +350,15 @@ Object.defineProperty(Shape.prototype, 'tryAsync', {
       });
     };
 
-    Object.defineProperty(this, 'tryAsync', { value: cb });
+    Object.defineProperty(this, 'tryAsync', { value: callback });
 
-    return cb;
+    return callback;
   },
 });
 
 Object.defineProperty(Shape.prototype, 'parseAsync', {
   get() {
-    const cb: Shape['parseAsync'] = (input, options) => {
+    const callback: Shape['parseAsync'] = (input, options) => {
       return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
         if (result === null) {
           return input;
@@ -378,51 +370,50 @@ Object.defineProperty(Shape.prototype, 'parseAsync', {
       });
     };
 
-    Object.defineProperty(this, 'parseAsync', { value: cb });
+    Object.defineProperty(this, 'parseAsync', { value: callback });
 
-    return cb;
+    return callback;
   },
 });
 
 /**
- * The shape that applies a transformer to the output of the base shape.
+ * The shape that applies a converter to the base shape output.
  *
  * @template S The base shape.
- * @template O The transformed output value.
+ * @template O The converted output value.
  */
-export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O> {
+export class ConverterShape<S extends AnyShape, O> extends Shape<S['input'], O> {
   /**
-   * Creates the new {@linkcode TransformedShape} instance.
+   * Creates the new {@linkcode ConvertedShape} instance.
    *
    * @param shape The base shape.
-   * @param async If `true` then the transformed shape would await for transformer to finish its transformation and use
-   * the resolved value as an output. Otherwise, the value that is synchronously returned from the transformer is used
-   * as an output.
-   * @param transformer The transformation callback.
+   * @param async If `true` then the converted shape would await for the converter to finish and use the resolved value
+   * as an output. Otherwise, the value that is synchronously returned from the converter is used as an output.
+   * @param converter The callback that converts the shape output value.
    * @template S The base shape.
-   * @template O The transformed output value.
+   * @template O The converted output value.
    */
   constructor(
     /**
-     * The base shape which output value is transformed.
+     * The base shape which output value is converted.
      */
     readonly shape: S,
     async: boolean,
     /**
-     * The transformation callback.
+     * The callback that converts the shape output value.
      *
-     * @param output The {@linkcode shape} output value that must be transformed.
+     * @param output The {@linkcode shape} output value that must be converted.
      * @param options Parsing options.
-     * @return The transformation result.
-     * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
+     * @return The conversion result.
+     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
-    readonly transformer: (output: S['output'], options: ParseOptions) => Promise<O> | O
+    readonly converter: (output: S['output'], options: ParseOptions) => Promise<O> | O
   ) {
     super(shape.async || async);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<O> {
-    const { shape, transformer, applyChecks } = this;
+    const { shape, converter, applyChecks } = this;
 
     let issues;
     let output = input;
@@ -437,7 +428,7 @@ export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O
     }
 
     try {
-      output = transformer(output, options);
+      output = converter(output, options);
     } catch (error) {
       return captureIssues(error);
     }
@@ -456,7 +447,7 @@ export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
-    const { shape, transformer, applyChecks } = this;
+    const { shape, converter, applyChecks } = this;
 
     return shape.applyAsync(input, options).then(result => {
       let output = input;
@@ -468,7 +459,7 @@ export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O
         output = result.value;
       }
 
-      return new Promise<O>(resolve => resolve(transformer(output, options))).then(output => {
+      return new Promise<O>(resolve => resolve(converter(output, options))).then(output => {
         let issues;
 
         if (applyChecks !== null) {
@@ -487,7 +478,7 @@ export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O
   }
 }
 
-export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
+export class TunnelShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
   constructor(readonly inputShape: I, readonly outputShape: O) {
     super(inputShape.async || outputShape.async);
   }
@@ -569,18 +560,13 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
   }
 }
 
-export class DefaultableShape<S extends AnyShape, I, O = I> extends Shape<S['input'] | I, S['output'] | O> {
-  private _defaultResult: ApplyResult<O>;
-  private _defaultAsyncResult: Promise<ApplyResult<O>> | undefined;
+export class ReplacerShape<S extends AnyShape, I, O = I> extends Shape<S['input'] | I, S['output'] | O> {
+  private _result: ApplyResult<O>;
 
-  constructor(readonly shape: S, readonly replacedValue: I, readonly defaultValue?: O) {
+  constructor(readonly shape: S, readonly replacedValue: I, readonly value?: O) {
     super(shape.async);
 
-    this._defaultResult = defaultValue === undefined || defaultValue === replacedValue ? null : ok(defaultValue);
-
-    if (shape.async) {
-      this._defaultAsyncResult = Promise.resolve(this._defaultResult);
-    }
+    this._result = value === undefined || value === replacedValue ? null : ok(value);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | O> {
@@ -589,7 +575,7 @@ export class DefaultableShape<S extends AnyShape, I, O = I> extends Shape<S['inp
     let issues;
     let output = input;
 
-    const result = input === this.replacedValue ? this._defaultResult : this.shape.apply(input, options);
+    const result = input === this.replacedValue ? this._result : this.shape.apply(input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -616,12 +602,12 @@ export class DefaultableShape<S extends AnyShape, I, O = I> extends Shape<S['inp
     if (input === this.replacedValue) {
       if (applyChecks !== null) {
         return new Promise(resolve => {
-          issues = applyChecks(this.defaultValue, null, options);
+          issues = applyChecks(this.value, null, options);
 
-          resolve(issues !== null ? issues : this._defaultResult);
+          resolve(issues !== null ? issues : this._result);
         });
       }
-      return this._defaultAsyncResult!;
+      return Promise.resolve(this._result);
     }
 
     return this.shape.applyAsync(input, options).then(result => {

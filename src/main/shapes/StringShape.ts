@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, createCheckConfig, raiseIssue } from '../utils';
+import { addCheck, createIssueFactory } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -17,7 +17,7 @@ import {
  * The shape that constrains the input as a string.
  */
 export class StringShape extends Shape<string> {
-  protected _typeCheckConfig;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode StringShape} instance.
@@ -26,7 +26,7 @@ export class StringShape extends Shape<string> {
    */
   constructor(options?: TypeConstraintOptions | Message) {
     super();
-    this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING);
+    this._issueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING);
   }
 
   /**
@@ -48,11 +48,11 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   min(length: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_STRING_MIN, MESSAGE_STRING_MIN, length);
+    const issueFactory = createIssueFactory(options, CODE_STRING_MIN, MESSAGE_STRING_MIN, length);
 
-    return addCheck(this, CODE_STRING_MIN, options, input => {
-      if (input.length < length) {
-        return raiseIssue(checkConfig, input);
+    return addCheck(this, CODE_STRING_MIN, options, output => {
+      if (output.length < length) {
+        return issueFactory(output);
       }
     });
   }
@@ -65,11 +65,11 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   max(length: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_STRING_MAX, MESSAGE_STRING_MAX, length);
+    const issueFactory = createIssueFactory(options, CODE_STRING_MAX, MESSAGE_STRING_MAX, length);
 
-    return addCheck(this, CODE_STRING_MAX, options, input => {
-      if (input.length > length) {
-        return raiseIssue(checkConfig, input);
+    return addCheck(this, CODE_STRING_MAX, options, output => {
+      if (output.length > length) {
+        return issueFactory(output);
       }
     });
   }
@@ -82,13 +82,13 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   regex(re: RegExp, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_STRING_REGEX, MESSAGE_STRING_REGEX, re);
+    const issueFactory = createIssueFactory(options, CODE_STRING_REGEX, MESSAGE_STRING_REGEX, re);
 
-    return addCheck(this, CODE_STRING_REGEX, options, input => {
+    return addCheck(this, undefined, options, output => {
       re.lastIndex = 0;
 
-      if (!re.test(input)) {
-        return raiseIssue(checkConfig, input);
+      if (!re.test(output)) {
+        return issueFactory(output);
       }
     });
   }
@@ -97,7 +97,7 @@ export class StringShape extends Shape<string> {
     const { applyChecks } = this;
 
     if (typeof input !== 'string') {
-      return raiseIssue(this._typeCheckConfig, input);
+      return [this._issueFactory(input)];
     }
     if (applyChecks !== null) {
       return applyChecks(input, null, options);

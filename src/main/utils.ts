@@ -68,6 +68,41 @@ export function createCheckConfig(
   return { code, message, meta, param };
 }
 
+export function createIssueFactory(
+  options: ConstraintOptions | Message | undefined,
+  code: unknown,
+  message: unknown,
+  param?: unknown
+): (input: unknown, p?: unknown) => Issue {
+  let meta: unknown;
+
+  if (options !== null && typeof options === 'object') {
+    if (options.message !== undefined) {
+      message = options.message;
+    }
+    meta = options.meta;
+  } else if (typeof options === 'function') {
+    message = options;
+  } else if (options != null) {
+    message = String(options);
+  }
+
+  if (typeof message === 'string') {
+    message = message.replace('%s', String(param));
+  }
+
+  return (input, p) => {
+    return {
+      code,
+      path: [],
+      input,
+      message,
+      param: p === undefined ? param : p,
+      meta,
+    };
+  };
+}
+
 export function createIssue(config: CheckConfig, input: unknown, param: unknown): Issue {
   let { code, message, meta } = config;
   if (typeof message === 'function') {

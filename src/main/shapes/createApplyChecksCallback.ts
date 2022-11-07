@@ -21,7 +21,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
 
     return (output, issues, options) => {
       if (issues === null || unsafe) {
-        let result: ReturnType<CheckCallback<unknown>> = null;
+        let result;
 
         try {
           result = cb(output);
@@ -41,7 +41,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
 
     return (output, issues, options) => {
       if (issues === null || unsafe0) {
-        let result: ReturnType<CheckCallback<unknown>> = null;
+        let result;
 
         try {
           result = cb0(output);
@@ -62,7 +62,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       }
 
       if (issues === null || unsafe1) {
-        let result: ReturnType<CheckCallback<unknown>> = null;
+        let result;
 
         try {
           result = cb1(output);
@@ -82,7 +82,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
     for (let i = 1; i < checksLength; ++i) {
       const { unsafe, cb } = checks[i];
 
-      let result: ReturnType<CheckCallback<unknown>> = null;
+      let result;
 
       if (issues !== null && !unsafe) {
         continue;

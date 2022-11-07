@@ -4,7 +4,7 @@ import { CODE_STRING_MAX, CODE_TYPE, TYPE_NUMBER } from '../../main/shapes/const
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
 
-const asyncNumberShape = numberShape.transformAsync(value => Promise.resolve(value));
+const asyncNumberShape = numberShape.convertAsync(value => Promise.resolve(value));
 
 describe('RecordShape', () => {
   test('allows a record', () => {
@@ -49,7 +49,7 @@ describe('RecordShape', () => {
 
   test('applies constrains to properties in async mode', async () => {
     const shape = new RecordShape(
-      stringShape.max(2).transformAsync(value => Promise.resolve(value)),
+      stringShape.max(2).convertAsync(value => Promise.resolve(value)),
       asyncNumberShape
     );
 

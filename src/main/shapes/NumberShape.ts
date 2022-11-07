@@ -1,28 +1,30 @@
 import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, createCheckConfig, raiseIssue } from '../utils';
+import { addCheck, createIssueFactory } from '../utils';
 import {
+  CODE_NUMBER_DIVISOR,
+  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
-  CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
+  MESSAGE_NUMBER_DIVISOR,
+  MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
-  MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
   TYPE_NUMBER,
 } from './constants';
 
 export class NumberShape extends Shape<number> {
-  protected _typeCheckConfig;
+  protected _issueFactory;
 
   constructor(options?: TypeConstraintOptions | Message) {
     super();
-    this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER);
+    this._issueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER);
   }
 
   /**
@@ -53,11 +55,11 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   gt(value: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_NUMBER_GT, MESSAGE_NUMBER_GT, value);
+    const issueFactory = createIssueFactory(options, CODE_NUMBER_GT, MESSAGE_NUMBER_GT, value);
 
-    return addCheck(this, CODE_NUMBER_GT, options, input => {
-      if (input <= value) {
-        return raiseIssue(checkConfig, input);
+    return addCheck(this, CODE_NUMBER_GT, options, output => {
+      if (output <= value) {
+        return issueFactory(output);
       }
     });
   }
@@ -70,11 +72,11 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   lt(value: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_NUMBER_LT, MESSAGE_NUMBER_LT, value);
+    const issueFactory = createIssueFactory(options, CODE_NUMBER_LT, MESSAGE_NUMBER_LT, value);
 
-    return addCheck(this, CODE_NUMBER_LT, options, input => {
-      if (input >= value) {
-        return raiseIssue(checkConfig, input);
+    return addCheck(this, CODE_NUMBER_LT, options, output => {
+      if (output >= value) {
+        return issueFactory(output);
       }
     });
   }
@@ -87,11 +89,11 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   gte(value: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, value);
+    const issueFactory = createIssueFactory(options, CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, value);
 
-    return addCheck(this, CODE_NUMBER_GTE, options, input => {
-      if (input < value) {
-        return raiseIssue(checkConfig, input);
+    return addCheck(this, CODE_NUMBER_GTE, options, output => {
+      if (output < value) {
+        return issueFactory(output);
       }
     });
   }
@@ -104,11 +106,11 @@ export class NumberShape extends Shape<number> {
    * @returns The clone of the shape.
    */
   lte(value: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, value);
+    const issueFactory = createIssueFactory(options, CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, value);
 
-    return addCheck(this, CODE_NUMBER_LTE, options, input => {
-      if (input > value) {
-        return raiseIssue(checkConfig, input);
+    return addCheck(this, CODE_NUMBER_LTE, options, output => {
+      if (output > value) {
+        return issueFactory(output);
       }
     });
   }
@@ -116,25 +118,51 @@ export class NumberShape extends Shape<number> {
   /**
    * Constrains the number to be a multiple of the divisor.
    *
-   * @param divisor The number by which the input should be divisible without a remainder.
+   * @param value The number by which the input should be divisible without a remainder.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  multipleOf(divisor: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, divisor);
+  divisor(value: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(options, CODE_NUMBER_DIVISOR, MESSAGE_NUMBER_DIVISOR, value);
 
-    return addCheck(this, CODE_NUMBER_MULTIPLE_OF, options, input => {
-      if (input % divisor !== 0) {
-        return raiseIssue(checkConfig, input);
+    return addCheck(this, CODE_NUMBER_DIVISOR, options, output => {
+      if (output % value !== 0) {
+        return issueFactory(output);
       }
     });
+  }
+
+  /**
+   * Constrains the number to be finite and rejects `Infinity` and `NaN` values.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  finite(options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(options, CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE);
+
+    return addCheck(this, CODE_NUMBER_FINITE, options, output => {
+      if (output !== output || output === Infinity || output === -Infinity) {
+        return issueFactory(output);
+      }
+    });
+  }
+
+  /**
+   * Constrains the number to be an integer and rejects `Infinity` and `NaN` values.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  integer(options?: ConstraintOptions | Message): this {
+    return this.divisor(1, options);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { applyChecks } = this;
 
-    if (typeof input === 'number') {
-      return raiseIssue(this._typeCheckConfig, input);
+    if (typeof input !== 'number') {
+      return [this._issueFactory(input)];
     }
     if (applyChecks !== null) {
       return applyChecks(input, null, options);

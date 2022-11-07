@@ -3,7 +3,7 @@ import { number, record, RecordShape, string } from '../../main';
 describe('record', () => {
   test('infers type', () => {
     const output: { bbb: number } = record(
-      string().transform((): 'bbb' => 'bbb'),
+      string().convert((): 'bbb' => 'bbb'),
       number()
     ).parse({ aaa: 111 });
   });

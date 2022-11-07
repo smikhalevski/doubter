@@ -4,8 +4,8 @@ import { CODE_TYPE, CODE_UNKNOWN_KEYS, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } f
 const stringShape = new StringShape();
 const numberShape = new NumberShape();
 
-const asyncStringShape = stringShape.transformAsync(value => Promise.resolve(value));
-const asyncNumberShape = numberShape.transformAsync(value => Promise.resolve(value));
+const asyncStringShape = stringShape.convertAsync(value => Promise.resolve(value));
+const asyncNumberShape = numberShape.convertAsync(value => Promise.resolve(value));
 
 describe('ObjectShape', () => {
   test('allows an empty object', () => {
@@ -303,7 +303,7 @@ describe('ObjectShape', () => {
   });
 
   test('returns the object clone if changed', () => {
-    const shape = new ObjectShape({ foo: numberShape.transform(() => 'aaa') });
+    const shape = new ObjectShape({ foo: numberShape.convert(() => 'aaa') });
     const input = { foo: 111 };
     const output = shape.parse(input);
 
@@ -313,7 +313,7 @@ describe('ObjectShape', () => {
   });
 
   test('returns the object clone if changed in async mode', async () => {
-    const shape = new ObjectShape({ foo: numberShape.transform(() => 'aaa') });
+    const shape = new ObjectShape({ foo: numberShape.convert(() => 'aaa') });
     const input = { foo: 111 };
     const output = await shape.parseAsync(input);
 

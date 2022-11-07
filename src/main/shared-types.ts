@@ -118,7 +118,7 @@ export interface CheckOptions {
 export interface RefineOptions extends ConstraintOptions, CheckOptions {}
 
 /**
- * Options used by a shape to apply checks and transformations.
+ * Options applied during parsing.
  */
 export interface ParseOptions {
   /**

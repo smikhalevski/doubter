@@ -234,7 +234,8 @@ describe(
         const type = v.string().assert(v => v.length === 3);
 
         measure(() => {
-          type.try(value).issues;
+          // type.try(value).issues;
+          type.try(value);
         });
       });
 
@@ -284,6 +285,41 @@ describe(
 
     test('next', measure => {
       const shape = next.integer();
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'finite()',
+  () => {
+    const value = 4;
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'number',
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = d.number();
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+
+    test('next', measure => {
+      const shape = next.finite();
 
       measure(() => {
         shape.parse(value);
