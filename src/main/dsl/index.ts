@@ -11,6 +11,7 @@ export * from './const';
 export * from './never';
 export * from './number';
 export * from './object';
+export * from './preprocess';
 export * from './record';
 export * from './string';
 export * from './tuple';
