@@ -8,7 +8,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  * @param options The constraint options or an issue message.
  * @template C The instance constructor.
  */
-export function instance<C extends new (...args: any[]) => any>(
+export function instanceOf<C extends new (...args: any[]) => any>(
   ctor: C,
   options?: TypeConstraintOptions | Message
 ): InstanceShape<C> {

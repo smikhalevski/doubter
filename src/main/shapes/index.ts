@@ -5,7 +5,7 @@ export { EnumShape } from './EnumShape';
 export { InstanceShape } from './InstanceShape';
 export { NeverShape } from './NeverShape';
 export { NumberShape } from './NumberShape';
-export { ObjectShape } from './ObjectShape';
+export { ObjectShape, KeysMode } from './ObjectShape';
 export { RecordShape } from './RecordShape';
 export { AnyShape, PipedShape, ReplacementShape, Shape, TransformedShape } from './Shape';
 export { StringShape } from './StringShape';

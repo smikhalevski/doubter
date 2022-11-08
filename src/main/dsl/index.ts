@@ -5,7 +5,7 @@ export * from './boolean';
 export * from './cuid';
 export * from './enum';
 export * from './email';
-export * from './instance';
+export * from './instanceOf';
 export * from './integer';
 export * from './const';
 export * from './never';

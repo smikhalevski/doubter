@@ -1,13 +1,13 @@
-import { instance, InstanceShape } from '../../main';
+import { instanceOf, InstanceShape } from '../../main';
 
 describe('instanceOf', () => {
   class Foo {}
 
   test('infers type', () => {
-    const output: Foo = instance(Foo).parse(new Foo());
+    const output: Foo = instanceOf(Foo).parse(new Foo());
   });
 
   test('returns an instanceOf shape', () => {
-    expect(instance(Foo)).toBeInstanceOf(InstanceShape);
+    expect(instanceOf(Foo)).toBeInstanceOf(InstanceShape);
   });
 });
