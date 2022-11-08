@@ -1,5 +1,5 @@
 import { EnumShape } from '../../main';
-import { CODE_ENUM } from '../../main/shapes/constants';
+import { CODE_ENUM } from '../../main/constants';
 
 describe('EnumShape', () => {
   test('allows the value from the list', () => {

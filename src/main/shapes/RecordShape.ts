@@ -1,7 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
-  assignProperty,
   cloneEnumerableKeys,
   concatIssues,
   createIssueFactory,
@@ -9,9 +8,10 @@ import {
   isEqual,
   isObjectLike,
   ok,
+  setKeyValue,
   unshiftPath,
 } from '../utils';
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
 
 export type InferRecord<K extends PropertyKey, V> = undefined extends V
   ? Partial<Record<NonNullable<K>, V>>
@@ -26,7 +26,7 @@ export class RecordShape<
   constructor(readonly keyShape: K | null, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
     super((keyShape != null && keyShape.async) || valueShape.async);
 
-    this._typeIssueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
@@ -86,7 +86,7 @@ export class RecordShape<
         if (input === output) {
           output = cloneEnumerableKeys(input, keyCount);
         }
-        assignProperty(output, outputKey, outputValue);
+        setKeyValue(output, outputKey, outputValue);
       }
     }
 

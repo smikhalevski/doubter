@@ -21,13 +21,15 @@ export interface Err {
  */
 export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
 
+export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
+
 /**
  * A callback that takes a value and returns `undefined` if it satisfies the requirements. If a value doesn't satisfy
  * the check requirements then issues can be returned or a {@linkcode ValidationError} can be thrown.
  *
  * @type T The value type.
  */
-export type CheckCallback<T = any> = (value: T) => Issue[] | Issue | null | undefined | void;
+export type CheckCallback<T = any> = (value: T) => Partial<Issue>[] | Partial<Issue> | null | undefined | void;
 
 /**
  * The shape output value check.

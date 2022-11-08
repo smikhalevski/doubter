@@ -1,13 +1,19 @@
-import { CheckCallback, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
+import { ApplyChecksCallback, Check, CheckCallback, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
-import { ValidationError } from './ValidationError';
-
-export const isEqual = Object.is;
-
-export const isArray = Array.isArray;
+import { inflateIssue, inflateIssues, ValidationError } from './ValidationError';
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
+}
+
+export const isArray = Array.isArray;
+
+export function isEqual(a: unknown, b: unknown): boolean {
+  return a === b || (a !== a && b !== b);
+}
+
+export function isObjectLike(value: unknown): value is Record<any, any> {
+  return value !== null && typeof value === 'object';
 }
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
@@ -22,7 +28,7 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
 /**
  * The convenient shortcut to add built-in checks to shapes.
  */
-export function addCheck<S extends Shape>(
+export function appendCheck<S extends Shape>(
   shape: S,
   key: string | undefined,
   options: ConstraintOptions | Message | undefined,
@@ -36,16 +42,14 @@ export function addCheck<S extends Shape>(
   });
 }
 
-export function isObjectLike(value: unknown): value is Record<any, any> {
-  return value !== null && typeof value === 'object';
-}
+export type IssueFactory = (input: unknown) => Issue;
 
 export function createIssueFactory(
-  options: ConstraintOptions | Message | undefined,
   code: unknown,
   message: unknown,
+  options: ConstraintOptions | Message | undefined,
   param?: unknown
-): (input: unknown, p?: unknown) => Issue {
+): IssueFactory {
   let meta: unknown;
 
   if (options !== null && typeof options === 'object') {
@@ -63,13 +67,13 @@ export function createIssueFactory(
     message = message.replace('%s', String(param));
   }
 
-  return (input, p) => {
+  return input => {
     return {
       code,
       path: [],
       input,
       message,
-      param: p === undefined ? param : p,
+      param,
       meta,
     };
   };
@@ -98,6 +102,30 @@ export function pushIssue(issues: Issue[] | null, result: Issue): Issue[] {
   return [result];
 }
 
+export function captureIssues(error: unknown): Issue[] {
+  if (error instanceof ValidationError) {
+    return error.issues;
+  }
+  throw error;
+}
+
+export function appendPartialIssue(issues: Issue[] | null, issue: Partial<Issue>[] | Partial<Issue>): Issue[] {
+  if (isArray(issue)) {
+    if (issues === null) {
+      issues = inflateIssues(issue);
+    } else {
+      issues.push(...inflateIssues(issue));
+    }
+  } else {
+    if (issues === null) {
+      issues = [inflateIssue(issue)];
+    } else {
+      issues.push(inflateIssue(issue));
+    }
+  }
+  return issues;
+}
+
 export type Flags = number[] | number;
 
 export function setFlag(flags: Flags, index: number): Flags {
@@ -120,7 +148,7 @@ export function isFlagSet(flag: Flags, index: number): boolean {
   }
 }
 
-export function assignProperty(obj: Record<any, any>, key: PropertyKey, value: unknown): void {
+export function setKeyValue(obj: Record<any, any>, key: PropertyKey, value: unknown): void {
   if (key === '__proto__') {
     Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
   } else {
@@ -133,7 +161,7 @@ export function cloneEnumerableKeys(input: Dict, keyCount = -1): Dict {
 
   if (keyCount < 0) {
     for (const key in input) {
-      assignProperty(output, key, input[key]);
+      setKeyValue(output, key, input[key]);
     }
   }
   if (keyCount > 0) {
@@ -143,7 +171,7 @@ export function cloneEnumerableKeys(input: Dict, keyCount = -1): Dict {
       if (index === keyCount) {
         break;
       }
-      assignProperty(output, key, input[key]);
+      setKeyValue(output, key, input[key]);
       ++index;
     }
   }
@@ -158,32 +186,110 @@ export function cloneKnownKeys(input: Dict, keys: readonly string[]): Dict {
     const key = keys[i];
 
     if (key in input) {
-      assignProperty(output, key, input[key]);
+      setKeyValue(output, key, input[key]);
     }
   }
   return output;
 }
 
-export function captureIssues(error: unknown): Issue[] {
-  if (error instanceof ValidationError) {
-    return error.issues;
-  }
-  throw error;
-}
+export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback | null {
+  const checksLength = checks.length;
 
-export function addIssue(issues: Issue[] | null, issue: Issue[] | Issue): Issue[] {
-  if (isArray(issue)) {
-    if (issues === null) {
-      issues = issue;
-    } else {
-      issues.push(...issue);
-    }
-  } else {
-    if (issues === null) {
-      issues = [issue];
-    } else {
-      issues.push(issue);
-    }
+  if (checksLength === 0) {
+    return null;
   }
-  return issues;
+
+  if (checksLength === 1) {
+    const [{ unsafe: unsafe0, callback: cb0 }] = checks;
+
+    return (output, issues, options) => {
+      if (issues === null || unsafe0) {
+        let result;
+
+        try {
+          result = cb0(output);
+        } catch (error) {
+          return concatIssues(issues, captureIssues(error));
+        }
+        if (result != null) {
+          return appendPartialIssue(issues, result);
+        }
+      }
+      return issues;
+    };
+  }
+
+  if (checksLength === 2) {
+    const [{ unsafe: unsafe0, callback: cb0 }, { unsafe: unsafe1, callback: cb1 }] = checks;
+
+    return (output, issues, options) => {
+      if (issues === null || unsafe0) {
+        let result;
+
+        try {
+          result = cb0(output);
+        } catch (error) {
+          issues = concatIssues(issues, captureIssues(error));
+
+          if (!options.verbose) {
+            return issues;
+          }
+        }
+        if (result != null) {
+          issues = appendPartialIssue(issues, result);
+
+          if (!options.verbose) {
+            return issues;
+          }
+        }
+      }
+
+      if (issues === null || unsafe1) {
+        let result;
+
+        try {
+          result = cb1(output);
+        } catch (error) {
+          issues = concatIssues(issues, captureIssues(error));
+        }
+        if (result != null) {
+          issues = appendPartialIssue(issues, result);
+        }
+      }
+
+      return issues;
+    };
+  }
+
+  return (output, issues, options) => {
+    for (let i = 1; i < checksLength; ++i) {
+      const { unsafe, callback: cb } = checks[i];
+
+      let result;
+
+      if (issues !== null && !unsafe) {
+        continue;
+      }
+
+      try {
+        result = cb(output);
+      } catch (error) {
+        issues = concatIssues(issues, captureIssues(error));
+
+        if (!options.verbose) {
+          return issues;
+        }
+      }
+
+      if (result != null) {
+        issues = appendPartialIssue(issues, result);
+
+        if (!options.verbose) {
+          return issues;
+        }
+      }
+    }
+
+    return issues;
+  };
 }

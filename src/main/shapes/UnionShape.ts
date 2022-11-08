@@ -1,7 +1,7 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { concatIssues, createIssueFactory, isArray, isAsyncShapes } from '../utils';
-import { CODE_UNION, MESSAGE_UNION } from './constants';
+import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
 export type InferUnion<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
 
@@ -22,7 +22,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
   constructor(readonly shapes: Readonly<U>, options?: TypeConstraintOptions | Message) {
     super(isAsyncShapes(shapes));
 
-    this._typeIssueFactory = createIssueFactory(options, CODE_UNION, MESSAGE_UNION, undefined);
+    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options, undefined);
   }
 
   at(key: unknown): AnyShape | null {
@@ -67,7 +67,10 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
     if (_applyChecks !== null && _unsafe) {
       issues = _applyChecks(input, issues, options);
     }
-    return [this._typeIssueFactory(input, issues)];
+    const issue = this._typeIssueFactory(input);
+    issue.param = issues;
+
+    return [issue];
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
@@ -100,7 +103,10 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
           if (_applyChecks !== null && _unsafe) {
             issues = _applyChecks(input, issues, options);
           }
-          return [this._typeIssueFactory(input, issues)];
+          const issue = this._typeIssueFactory(input);
+          issue.param = issues;
+
+          return [issue];
         }
 
         return result;

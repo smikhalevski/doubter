@@ -1,5 +1,5 @@
 import { ArrayShape, NumberShape, StringShape, UnionShape } from '../../main';
-import { CODE_TYPE, CODE_UNION, TYPE_NUMBER, TYPE_STRING } from '../../main/shapes/constants';
+import { CODE_TYPE, CODE_UNION, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
 
 const stringShape = new StringShape();
 const numberShape = new NumberShape();

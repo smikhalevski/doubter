@@ -1,11 +1,5 @@
 import { StringShape, ValidationError } from '../../main';
-import {
-  CODE_STRING_MAX,
-  CODE_STRING_MIN,
-  CODE_STRING_REGEX,
-  CODE_TYPE,
-  TYPE_STRING,
-} from '../../main/shapes/constants';
+import { CODE_STRING_MAX, CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE, TYPE_STRING } from '../../main/constants';
 
 describe('StringShape', () => {
   test('allows a string', () => {

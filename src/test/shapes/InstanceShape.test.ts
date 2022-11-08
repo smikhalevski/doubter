@@ -1,5 +1,5 @@
 import { InstanceShape } from '../../main';
-import { CODE_INSTANCE } from '../../main/shapes/constants';
+import { CODE_INSTANCE } from '../../main/constants';
 
 describe('InstanceShape', () => {
   class Foo {}

@@ -1,14 +1,14 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory } from '../utils';
-import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from './constants';
+import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../constants';
 
 export class BigIntShape extends Shape<bigint> {
   protected _typeIssueFactory;
 
   constructor(options?: TypeConstraintOptions | Message) {
     super();
-    this._typeIssueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {

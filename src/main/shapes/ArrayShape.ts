@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, concatIssues, createIssueFactory, isArray, isEqual, ok, unshiftPath } from '../utils';
+import { appendCheck, concatIssues, createIssueFactory, isArray, isEqual, ok, unshiftPath } from '../utils';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -9,7 +9,7 @@ import {
   MESSAGE_ARRAY_MIN,
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
-} from './constants';
+} from '../constants';
 
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 
@@ -63,7 +63,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
     options?: TypeConstraintOptions | Message
   ) {
     super();
-    this._typeIssueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_ARRAY_TYPE, TYPE_ARRAY);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
   }
 
   at(key: unknown): AnyShape | null {
@@ -100,9 +100,9 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
    * @returns The clone of the shape.
    */
   min(length: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(options, CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, length);
+    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-    return addCheck(this, CODE_ARRAY_MIN, options, length, input => {
+    return appendCheck(this, CODE_ARRAY_MIN, options, length, input => {
       if (input.length < length) {
         return issueFactory(input);
       }
@@ -117,9 +117,9 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
    * @returns The clone of the shape.
    */
   max(length: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(options, CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, length);
+    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-    return addCheck(this, CODE_ARRAY_MAX, options, length, input => {
+    return appendCheck(this, CODE_ARRAY_MAX, options, length, input => {
       if (input.length < length) {
         return issueFactory(input);
       }

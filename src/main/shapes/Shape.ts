@@ -1,4 +1,5 @@
 import {
+  ApplyChecksCallback,
   ApplyResult,
   Check,
   CheckCallback,
@@ -9,10 +10,17 @@ import {
   ParseOptions,
   RefineOptions,
 } from '../shared-types';
-import { ApplyChecksCallback, createApplyChecksCallback } from './createApplyChecksCallback';
-import { addCheck, captureIssues, createIssueFactory, isArray, isEqual, ok } from '../utils';
+import {
+  appendCheck,
+  captureIssues,
+  createApplyChecksCallback,
+  createIssueFactory,
+  isArray,
+  isEqual,
+  ok,
+} from '../utils';
 import { ValidationError } from '../ValidationError';
-import { CODE_PREDICATE, MESSAGE_PREDICATE } from './constants';
+import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../constants';
 
 const defaultParseOptions: ParseOptions = Object.freeze({ verbose: false });
 
@@ -156,7 +164,7 @@ export class Shape<I = any, O = I> {
    * Parses the shape output using another shape.
    *
    * @param shape The shape that validates the output if this shape.
-   * @returns The {@linkcode PipeShape} instance.
+   * @returns The {@linkcode PipedShape} instance.
    * @template T The output value.
    */
   pipe<T>(shape: Shape<O, T>): Shape<I, T> {
@@ -233,9 +241,9 @@ export class Shape<I = any, O = I> {
   ): this;
 
   refine(cb: (output: O) => unknown, options?: RefineOptions | Message): this {
-    const issueFactory = createIssueFactory(options, CODE_PREDICATE, MESSAGE_PREDICATE, cb);
+    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
-    return addCheck(this, undefined, options, cb, output => {
+    return appendCheck(this, undefined, options, cb, output => {
       if (!cb(output)) {
         return issueFactory(output);
       }
@@ -246,7 +254,7 @@ export class Shape<I = any, O = I> {
    * Marks the type as optional.
    *
    * @param defaultValue The value that should be used if an input value is `undefined`.
-   * @returns The {@linkcode ReplacerShape} instance.
+   * @returns The {@linkcode ReplacementShape} instance.
    */
   optional<T = undefined>(defaultValue?: T): Shape<I | undefined, O | T> {
     return new ReplacementShape(this, undefined, defaultValue);
@@ -255,8 +263,8 @@ export class Shape<I = any, O = I> {
   /**
    * Creates the nullable shape.
    *
-   * @param defaultValue The value that should be used if an input value is `undefined`.
-   * @returns The {@linkcode ReplacerShape} instance.
+   * @param defaultValue The value that should be used if an input value is `null`.
+   * @returns The {@linkcode ReplacementShape} instance.
    */
   nullable<T = null>(defaultValue?: T): Shape<I | null, O | T> {
     return new ReplacementShape(this, null, defaultValue);
@@ -266,7 +274,7 @@ export class Shape<I = any, O = I> {
    * Creates the shape that allows both `undefined` and `null` values.
    *
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
-   * @returns The {@linkcode ReplacerShape} instance.
+   * @returns The {@linkcode ReplacementShape} instance.
    */
   nullish<T = null | undefined>(defaultValue?: T): Shape<I | null | undefined, O | T> {
     return this.nullable(defaultValue).optional(defaultValue);

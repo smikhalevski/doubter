@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory } from '../utils';
-import { CODE_INSTANCE, MESSAGE_INSTANCE } from './constants';
+import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
 
 export type InferInstance<C> = C extends new (...args: any[]) => infer T ? T : never;
 
@@ -15,7 +15,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
 
   constructor(readonly ctor: C, options?: TypeConstraintOptions | Message) {
     super();
-    this._typeIssueFactory = createIssueFactory(options, CODE_INSTANCE, MESSAGE_INSTANCE, ctor);
+    this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferInstance<C>> {

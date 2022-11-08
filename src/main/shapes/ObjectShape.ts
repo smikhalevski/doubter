@@ -1,7 +1,6 @@
 import { ApplyResult, Dict, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
+import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
-  assignProperty,
   cloneEnumerableKeys,
   cloneKnownKeys,
   concatIssues,
@@ -12,9 +11,11 @@ import {
   isEqual,
   isFlagSet,
   isObjectLike,
+  IssueFactory,
   ok,
   pushIssue,
   setFlag,
+  setKeyValue,
   unshiftPath,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
@@ -51,9 +52,10 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   InferObject<P, R, 'output'>
 > {
   readonly keys: readonly ObjectKey<P>[];
+
   protected _valueShapes: Shape[];
   protected _typeIssueFactory;
-  protected _exactIssueFactory: ((input: unknown, param: unknown) => Issue) | null = null;
+  protected _exactIssueFactory: IssueFactory | null = null;
 
   constructor(
     readonly shapes: Readonly<P>,
@@ -69,7 +71,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     this.keys = keys as ObjectKey<P>[];
 
     this._valueShapes = valueShapes;
-    this._typeIssueFactory = createIssueFactory(_options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, _options, TYPE_OBJECT);
   }
 
   at(key: any): AnyShape | null {
@@ -116,7 +118,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   exact(options?: TypeConstraintOptions | Message): ObjectShape<P> {
     const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
 
-    shape._exactIssueFactory = createIssueFactory(options, CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, undefined);
+    shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options, undefined);
 
     return shape;
   }
@@ -211,7 +213,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       }
 
       if (unknownKeys !== null) {
-        const issue = this._exactIssueFactory!(input, unknownKeys);
+        const issue = this._exactIssueFactory!(input);
+        issue.param = unknownKeys;
 
         if (!options.verbose) {
           return [issue];
@@ -256,7 +259,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
               if (input === output) {
                 output = cloneEnumerableKeys(input);
               }
-              assignProperty(output, key, result.value);
+              setKeyValue(output, key, result.value);
             }
           }
 
@@ -301,7 +304,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         if (input === output) {
           output = cloneEnumerableKeys(input);
         }
-        assignProperty(output, key, result.value);
+        setKeyValue(output, key, result.value);
       }
     }
 
@@ -342,7 +345,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
         if (input === output) {
           output = cloneEnumerableKeys(input);
         }
-        assignProperty(output, key, result.value);
+        setKeyValue(output, key, result.value);
       }
     }
 
@@ -394,7 +397,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           if (input === output) {
             output = cloneKnownKeys(input, keys);
           }
-          assignProperty(output, key, result.value);
+          setKeyValue(output, key, result.value);
         }
         continue;
       }
@@ -419,7 +422,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     }
 
     if (unknownKeys !== null) {
-      const issue = this._exactIssueFactory!(input, unknownKeys);
+      const issue = this._exactIssueFactory!(input);
+      issue.param = unknownKeys;
 
       if (!options.verbose) {
         return [issue];
@@ -453,7 +457,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
           if (input === output) {
             output = cloneKnownKeys(input, keys);
           }
-          assignProperty(output, key, result.value);
+          setKeyValue(output, key, result.value);
         }
       }
     }

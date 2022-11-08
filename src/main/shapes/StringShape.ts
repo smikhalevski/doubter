@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, createIssueFactory } from '../utils';
+import { appendCheck, createIssueFactory } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -11,7 +11,7 @@ import {
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_TYPE,
   TYPE_STRING,
-} from './constants';
+} from '../constants';
 
 /**
  * The shape that constrains the input as a string.
@@ -26,7 +26,7 @@ export class StringShape extends Shape<string> {
    */
   constructor(options?: TypeConstraintOptions | Message) {
     super();
-    this._typeIssueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
   }
 
   /**
@@ -48,9 +48,9 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   min(length: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(options, CODE_STRING_MIN, MESSAGE_STRING_MIN, length);
+    const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-    return addCheck(this, CODE_STRING_MIN, options, length, output => {
+    return appendCheck(this, CODE_STRING_MIN, options, length, output => {
       if (output.length < length) {
         return issueFactory(output);
       }
@@ -65,9 +65,9 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   max(length: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(options, CODE_STRING_MAX, MESSAGE_STRING_MAX, length);
+    const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-    return addCheck(this, CODE_STRING_MAX, options, length, output => {
+    return appendCheck(this, CODE_STRING_MAX, options, length, output => {
       if (output.length > length) {
         return issueFactory(output);
       }
@@ -82,9 +82,9 @@ export class StringShape extends Shape<string> {
    * @returns The clone of the shape.
    */
   match(re: RegExp, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(options, CODE_STRING_REGEX, MESSAGE_STRING_REGEX, re);
+    const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-    return addCheck(this, CODE_STRING_REGEX, options, re, output => {
+    return appendCheck(this, CODE_STRING_REGEX, options, re, output => {
       re.lastIndex = 0;
 
       if (!re.test(output)) {

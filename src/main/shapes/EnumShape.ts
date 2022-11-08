@@ -1,7 +1,7 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory } from '../utils';
-import { CODE_ENUM, MESSAGE_ENUM } from './constants';
+import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
 
 /**
  * The shape that constrains input to one of values.
@@ -19,7 +19,7 @@ export class EnumShape<T> extends Shape<T> {
    */
   constructor(readonly values: readonly T[], options?: TypeConstraintOptions | Message) {
     super();
-    this._typeIssueFactory = createIssueFactory(options, CODE_ENUM, MESSAGE_ENUM, values);
+    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
   apply(input: any, options: ParseOptions): ApplyResult<T> {
