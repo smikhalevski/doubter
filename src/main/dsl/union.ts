@@ -6,6 +6,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  *
  * @param shapes The list of shapes to try.
  * @param options The constraint options or an issue message.
+ * @template U The tuple of united shapes.
  */
 export function union<U extends [AnyShape, ...AnyShape[]]>(
   shapes: U,

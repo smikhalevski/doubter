@@ -38,7 +38,7 @@ export interface Check {
   /**
    * The unique key of the check in scope of the shape.
    */
-  key: string | undefined;
+  key: unknown;
 
   /**
    * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
@@ -62,11 +62,8 @@ export interface Check {
 export interface CheckOptions {
   /**
    * The unique key of the check in scope of the shape.
-   *
-   * If there is a check with the same key then it is replaced, otherwise it is appended to the list of checks.
-   * If the key is `undefined` then the check is always appended to the list of checks.
    */
-  key?: string;
+  key?: unknown;
 
   /**
    * If `true` then the check would be executed even if the preceding check failed, otherwise check is

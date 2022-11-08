@@ -89,9 +89,15 @@ export interface Shape<I, O> {
  */
 export class Shape<I = any, O = I> {
   /**
+   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
+   * `false` if the shape can be used in both sync and async contexts.
+   */
+  readonly async;
+
+  /**
    * The list of checks applied to the shape output.
    */
-  checks: readonly Readonly<Check>[] = [];
+  checks: readonly Check[] = [];
 
   /**
    * Applies checks to the output.
@@ -112,13 +118,9 @@ export class Shape<I = any, O = I> {
    * @template I The input value.
    * @template O The output value.
    */
-  constructor(
-    /**
-     * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
-     * `false` if the shape can be used in both sync and async contexts.
-     */
-    readonly async = false
-  ) {
+  constructor(async = false) {
+    this.async = async;
+
     if (async) {
       this.apply = () => {
         throw new Error('Shape is async and cannot be used in a sync context');
@@ -138,16 +140,20 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Adds a check that is applied to the shape output.
+   * Appends the check that is applied to the shape output.
+   *
+   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then, it is removed
+   * and a new check is appended to the list of shape checks. If the key is `undefined` then the `cb` identity is used
+   * as a key.
    *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of this shape with the check added.
    */
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
-    const { key, unsafe = false, param } = options;
+    const { key = cb, unsafe = false, param } = options;
 
-    const checks = key !== undefined ? this.checks.filter(check => check.key !== key) : this.checks.slice(0);
+    const checks = this.checks.filter(check => check.key !== key);
 
     checks.push({ key, callback: cb, unsafe, param });
 
@@ -284,7 +290,7 @@ export class Shape<I = any, O = I> {
    * Synchronously parses the input.
    *
    * Use {@linkcode parse} or {@linkcode try} instead of this method whenever possible. Override this method to
-   * implement custom shape.
+   * implement a custom shape.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -299,7 +305,7 @@ export class Shape<I = any, O = I> {
    * Asynchronously parses the input.
    *
    * Use {@linkcode parseAsync} or {@linkcode tryAsync} instead of this method whenever possible. Override this method
-   * to implement custom shape that requires an async context.
+   * to implement a custom shape that requires an async context.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -468,6 +474,10 @@ export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
+    if (!this.async) {
+      return super.applyAsync(input, options);
+    }
+
     const { shape, callback, _applyChecks } = this;
 
     return shape.applyAsync(input, options).then(result => {
@@ -563,6 +573,10 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O['output']>> {
+    if (!this.async) {
+      return super.applyAsync(input, options);
+    }
+
     const { inputShape, outputShape, _applyChecks } = this;
 
     let result: ApplyResult = null;
@@ -612,7 +626,8 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
  * @template O The replacement value.
  */
 export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['input'] | I, S['output'] | O> {
-  private _result: ApplyResult<O>;
+  private _replacedResult: ApplyResult<O>;
+  private _replacedResultPromise?: Promise<ApplyResult<O>>;
 
   /**
    * Creates the new {@linkcode ReplacementShape} instance.
@@ -640,7 +655,7 @@ export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['inp
   ) {
     super(shape.async);
 
-    this._result = value === undefined || value === replacedValue ? null : ok(value);
+    this._replacedResult = value === undefined || value === replacedValue ? null : ok(value);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | O> {
@@ -649,7 +664,7 @@ export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['inp
     let issues;
     let output = input;
 
-    const result = input === this.replacedValue ? this._result : this.shape.apply(input, options);
+    const result = input === this.replacedValue ? this._replacedResult : this.shape.apply(input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -669,6 +684,10 @@ export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['inp
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | O>> {
+    if (!this.async) {
+      return super.applyAsync(input, options);
+    }
+
     const { _applyChecks } = this;
 
     let issues;
@@ -678,10 +697,10 @@ export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['inp
         return new Promise(resolve => {
           issues = _applyChecks(this.value, null, options);
 
-          resolve(issues !== null ? issues : this._result);
+          resolve(issues !== null ? issues : this._replacedResult);
         });
       }
-      return Promise.resolve(this._result);
+      return (this._replacedResultPromise ||= Promise.resolve(this._replacedResult));
     }
 
     return this.shape.applyAsync(input, options).then(result => {

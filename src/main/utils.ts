@@ -221,7 +221,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         if (result != null) {
           issues = appendIssue(issues, result);
 
-          if (!options.verbose) {
+          if (issues !== null && !options.verbose) {
             return issues;
           }
         }
@@ -267,7 +267,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       if (result != null) {
         issues = appendIssue(issues, result);
 
-        if (!options.verbose) {
+        if (issues !== null && !options.verbose) {
           return issues;
         }
       }
@@ -277,11 +277,18 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   };
 }
 
-function appendIssue(issues: Issue[] | null, result: any): Issue[] {
+function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
   if (isArray(result)) {
-    for (const issue of result) {
-      inflateIssue(issue);
+    const resultLength = result.length;
+
+    if (resultLength === 0) {
+      return issues;
     }
+
+    for (let i = 0; i < resultLength; ++i) {
+      inflateIssue(result[i]);
+    }
+
     if (issues === null) {
       issues = result;
     } else {

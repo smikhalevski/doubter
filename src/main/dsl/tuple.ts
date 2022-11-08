@@ -6,6 +6,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  *
  * @param shapes The list of tuple element shapes.
  * @param options The constraint options or an issue message.
+ * @template U The tuple elements.
  */
 export function tuple<U extends [AnyShape, ...AnyShape[]]>(
   shapes: U,
@@ -18,6 +19,8 @@ export function tuple<U extends [AnyShape, ...AnyShape[]]>(
  * @param shapes The list of tuple element shapes.
  * @param restShape The shape of rest elements.
  * @param options The constraint options or an issue message.
+ * @template U The head tuple elements.
+ * @template R The rest tuple elements.
  */
 export function tuple<U extends [AnyShape, ...AnyShape[]], R extends AnyShape | null = null>(
   shapes: U,

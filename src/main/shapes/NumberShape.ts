@@ -2,25 +2,26 @@ import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { appendCheck, createIssueFactory } from '../utils';
 import {
-  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
-  MESSAGE_NUMBER_FINITE,
+  MESSAGE_INTEGER_TYPE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
+  TYPE_INTEGER,
   TYPE_NUMBER,
 } from '../constants';
 
 export class NumberShape extends Shape<number> {
   protected _typeIssueFactory;
+  protected _typePredicate = Number.isFinite;
 
   constructor(options?: TypeConstraintOptions | Message) {
     super();
@@ -133,35 +134,24 @@ export class NumberShape extends Shape<number> {
   }
 
   /**
-   * Constrains the number to be finite and rejects `Infinity` and `NaN` values.
-   *
-   * @param options The constraint options or an issue message.
-   * @returns The clone of the shape.
-   */
-  finite(options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options);
-
-    return appendCheck(this, CODE_NUMBER_FINITE, options, undefined, output => {
-      if (output !== output || output === Infinity || output === -Infinity) {
-        return issueFactory(output);
-      }
-    });
-  }
-
-  /**
    * Constrains the number to be an integer and rejects `Infinity` and `NaN` values.
    *
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
   integer(options?: ConstraintOptions | Message): this {
-    return this.multipleOf(1, options);
+    const shape = this._clone();
+
+    shape._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
+    shape._typePredicate = Number.isInteger;
+
+    return shape;
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<number> {
-    const { _applyChecks } = this;
+    const { _typePredicate, _applyChecks } = this;
 
-    if (typeof input !== 'number') {
+    if (!_typePredicate(input)) {
       return [this._typeIssueFactory(input)];
     }
     if (_applyChecks !== null) {
