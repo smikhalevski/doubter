@@ -8,7 +8,7 @@ import { Shape } from '../shapes';
  * @template I The input value.
  * @template O The output value.
  */
-export function preprocess<I, O>(cb: (input: I, options: Readonly<ParseOptions>) => O): Shape<I, O> {
+export function preprocess<I = any, O = any>(cb: (input: I, options: Readonly<ParseOptions>) => O): Shape<I, O> {
   return new Shape().transform(cb);
 }
 
@@ -19,6 +19,8 @@ export function preprocess<I, O>(cb: (input: I, options: Readonly<ParseOptions>)
  * @template I The input value.
  * @template O The output value.
  */
-export function preprocessAsync<I, O>(cb: (input: I, options: Readonly<ParseOptions>) => Promise<O>): Shape<I, O> {
+export function preprocessAsync<I = any, O = any>(
+  cb: (input: I, options: Readonly<ParseOptions>) => Promise<O>
+): Shape<I, O> {
   return new Shape().transformAsync(cb);
 }

@@ -13,13 +13,13 @@ import {
 
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 
-export type Channel = 'input' | 'output';
+export type InferTuple<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] };
 
-export type InferTuple<U extends AnyShape[], C extends Channel> = { [K in keyof U]: U[K][C] };
-
-export type InferArray<U extends AnyShape[], R extends AnyShape | null, C extends Channel> = R extends AnyShape
-  ? [...InferTuple<U, C>, ...R[C][]]
-  : InferTuple<U, C>;
+export type InferArray<
+  U extends AnyShape[],
+  R extends AnyShape | null,
+  C extends 'input' | 'output'
+> = R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>;
 
 /**
  * The shape that describes an array.

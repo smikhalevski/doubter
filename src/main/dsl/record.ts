@@ -11,7 +11,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
 export function record<V extends AnyShape>(
   valueShape: V,
   options?: TypeConstraintOptions | Message
-): RecordShape<Shape<string>, V>;
+): RecordShape<null, V>;
 
 /**
  * Creates a shape that describes an object with string keys and values that conform the given shape.

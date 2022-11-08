@@ -13,17 +13,21 @@ import {
 } from '../utils';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
 
-export type InferRecord<K extends PropertyKey, V> = undefined extends V
-  ? Partial<Record<NonNullable<K>, V>>
-  : Record<NonNullable<K>, V>;
+export type InferRecord<
+  K extends Shape<string, PropertyKey> | null,
+  V extends AnyShape,
+  C extends 'input' | 'output'
+> = undefined extends V[C]
+  ? Partial<Record<K extends Shape ? K[C] : string, V[C]>>
+  : Record<K extends Shape ? K[C] : string, V[C]>;
 
-export class RecordShape<
-  K extends Shape<string, PropertyKey> = Shape<string>,
-  V extends AnyShape = AnyShape
-> extends Shape<InferRecord<K['input'], V['input']>, InferRecord<K['output'], V['output']>> {
+export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends AnyShape> extends Shape<
+  InferRecord<K, V, 'input'>,
+  InferRecord<K, V, 'output'>
+> {
   protected _typeIssueFactory;
 
-  constructor(readonly keyShape: K | null, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
+  constructor(readonly keyShape: K, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
     super((keyShape != null && keyShape.async) || valueShape.async);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
@@ -33,7 +37,7 @@ export class RecordShape<
     return typeof key === 'string' ? this.valueShape : null;
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K['output'], V['output']>> {
+  apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
       return [this._typeIssueFactory(input)];
     }
@@ -94,12 +98,12 @@ export class RecordShape<
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
-      return ok(output as InferRecord<K['output'], V['output']>);
+      return ok(output as InferRecord<K, V, 'output'>);
     }
     return issues;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K['output'], V['output']>>> {
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
     if (!this.async) {
       return super.applyAsync(input, options);
     }
@@ -178,7 +182,7 @@ export class RecordShape<
             issues = _applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
-            return ok(output as InferRecord<K['output'], V['output']>);
+            return ok(output as InferRecord<K, V, 'output'>);
           }
           return issues;
         })

@@ -21,13 +21,13 @@ import {
 import { AnyShape, Shape } from './Shape';
 import { EnumShape } from './EnumShape';
 
-export type Channel = 'input' | 'output';
-
-export type InferObject<P extends Dict<AnyShape>, R extends AnyShape, C extends Channel> = Squash<
+export type InferObject<P extends Dict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> = Squash<
   UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>
 >;
 
-export type InferIndexer<R extends AnyShape, C extends Channel> = R extends Shape ? { [key: string]: R[C] } : unknown;
+export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> = R extends Shape
+  ? { [key: string]: R[C] }
+  : unknown;
 
 export type ObjectKey<T extends object> = StringifyPropertyKey<keyof T>;
 
@@ -47,20 +47,53 @@ export const enum KeysMode {
   EXACT,
 }
 
-export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<never>> extends Shape<
+/**
+ * The shape of an object.
+ *
+ * @template P The mapping from an object key to a corresponding value shape.
+ * @template R The shape that constrains values of
+ * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
+ */
+export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = null> extends Shape<
   InferObject<P, R, 'input'>,
   InferObject<P, R, 'output'>
 > {
+  /**
+   * The array of known object keys.
+   */
   readonly keys: readonly ObjectKey<P>[];
 
   protected _valueShapes: Shape[];
   protected _typeIssueFactory;
   protected _exactIssueFactory: IssueFactory | null = null;
 
+  /**
+   * Creates a new {@linkcode ObjectShape} instance.
+   *
+   * @param shapes The mapping from an object key to a corresponding value shape.
+   * @param restShape The shape that constrains values of
+   * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
+   * then values thea fall under the indexer signature are unconstrained.
+   * @param _options The type constraint options or an issue message.
+   * @param keysMode The mode of unknown keys handling.
+   * @template P The mapping from an object key to a corresponding value shape.
+   * @template R The shape that constrains values of
+   * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
+   */
   constructor(
+    /**
+     * The mapping from an object key to a corresponding value shape.
+     */
     readonly shapes: Readonly<P>,
+    /**
+     * The shape that constrains values of
+     * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
+     */
     readonly restShape: R | null = null,
     protected _options?: TypeConstraintOptions | Message,
+    /**
+     * The mode of unknown keys handling.
+     */
     readonly keysMode: KeysMode = KeysMode.PRESERVED
   ) {
     const keys = Object.keys(shapes);
@@ -78,8 +111,24 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return this.shapes.hasOwnProperty(key) ? this.shapes[key] : this.restShape;
   }
 
+  /**
+   * Merge properties from the other object shape. If a property with the same key already exists on this object shape
+   * then it is overwritten. Indexer signature of this shape is preserved intact.
+   *
+   * @param shape The object shape which properties must be added to this object shape.
+   * @returns The new object shape.
+   * @template T The type of properties to add.
+   */
   extend<T extends Dict<AnyShape>>(shape: ObjectShape<T, any>): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
 
+  /**
+   * Add properties to an object shape. If a property with the same key already exists on this object shape then it is
+   * overwritten.
+   *
+   * @param shapes The properties to add.
+   * @returns The new object shape.
+   * @template T The shapes of properties to add.
+   */
   extend<T extends Dict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
 
   extend(shape: ObjectShape<any> | Dict): ObjectShape<any, R> {
@@ -88,6 +137,15 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return new ObjectShape(shapes, this.restShape, this._options);
   }
 
+  /**
+   * Returns an object shape that only has properties with listed keys.
+   *
+   * The returned object shape would have no custom checks.
+   *
+   * @param keys The list of property keys to pick.
+   * @returns The new object shape.
+   * @template K The tuple of keys to pick.
+   */
   pick<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Pick<P, K[number]>, R> {
     const shapes: Dict<AnyShape> = {};
 
@@ -102,6 +160,15 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return new ObjectShape<any, R>(shapes, this.restShape, this._options);
   }
 
+  /**
+   * Returns an object shape that doesn't have the listed keys.
+   *
+   * The returned object shape would have no custom checks.
+   *
+   * @param keys The list of property keys to omit.
+   * @returns The new object shape.
+   * @template K The tuple of keys to omit.
+   */
   omit<K extends ObjectKey<P>[]>(...keys: K): ObjectShape<Omit<P, K[number]>, R> {
     const shapes: Dict<AnyShape> = {};
 
@@ -115,6 +182,14 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return new ObjectShape<any, R>(shapes, this.restShape, this._options);
   }
 
+  /**
+   * Returns an object shape that allows only known keys and has no index signature.
+   *
+   * The returned object shape would have no custom checks.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The new object shape.
+   */
   exact(options?: TypeConstraintOptions | Message): ObjectShape<P> {
     const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
 
@@ -123,18 +198,44 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return shape;
   }
 
+  /**
+   * Returns an object shape that doesn't have indexer signature and all unknown keys are stripped.
+   *
+   * The returned object shape would have no custom checks.
+   *
+   * @returns The new object shape.
+   */
   strip(): ObjectShape<P> {
     return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
   }
 
+  /**
+   * Returns an object shape that has an indexer signature that doesn't constrain values.
+   *
+   * The returned object shape would have no custom checks.
+   *
+   * @returns The new object shape.
+   */
   preserve(): ObjectShape<P> {
     return new ObjectShape<P>(this.shapes, null, this._options);
   }
 
+  /**
+   * Returns an object shape that has an indexer signature that is constrained by the given shape.
+   *
+   * The returned object shape would have no custom checks.
+   *
+   * @param restShape The shape of the indexer values.
+   * @returns The new object shape.
+   * @template T The indexer signature shape.
+   */
   rest<T extends AnyShape>(restShape: T): ObjectShape<P, T> {
     return new ObjectShape(this.shapes, restShape, this._options);
   }
 
+  /**
+   * Returns the enum shape of keys of this object.
+   */
   keyof(): EnumShape<ObjectKey<P>> {
     return new EnumShape(this.keys);
   }
