@@ -1,6 +1,6 @@
 import { ApplyChecksCallback, Check, CheckCallback, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
-import { inflateIssue, inflateIssues, ValidationError } from './ValidationError';
+import { inflateIssue, ValidationError } from './ValidationError';
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
@@ -109,23 +109,6 @@ export function captureIssues(error: unknown): Issue[] {
   throw error;
 }
 
-export function appendPartialIssue(issues: Issue[] | null, issue: Partial<Issue>[] | Partial<Issue>): Issue[] {
-  if (isArray(issue)) {
-    if (issues === null) {
-      issues = inflateIssues(issue);
-    } else {
-      issues.push(...inflateIssues(issue));
-    }
-  } else {
-    if (issues === null) {
-      issues = [inflateIssue(issue)];
-    } else {
-      issues.push(inflateIssue(issue));
-    }
-  }
-  return issues;
-}
-
 export type Flags = number[] | number;
 
 export function setFlag(flags: Flags, index: number): Flags {
@@ -212,7 +195,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
           return concatIssues(issues, captureIssues(error));
         }
         if (result != null) {
-          return appendPartialIssue(issues, result);
+          return appendIssue(issues, result);
         }
       }
       return issues;
@@ -236,7 +219,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
           }
         }
         if (result != null) {
-          issues = appendPartialIssue(issues, result);
+          issues = appendIssue(issues, result);
 
           if (!options.verbose) {
             return issues;
@@ -253,7 +236,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
           issues = concatIssues(issues, captureIssues(error));
         }
         if (result != null) {
-          issues = appendPartialIssue(issues, result);
+          issues = appendIssue(issues, result);
         }
       }
 
@@ -263,7 +246,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
 
   return (output, issues, options) => {
     for (let i = 1; i < checksLength; ++i) {
-      const { unsafe, callback: cb } = checks[i];
+      const { unsafe, callback } = checks[i];
 
       let result;
 
@@ -272,7 +255,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       }
 
       try {
-        result = cb(output);
+        result = callback(output);
       } catch (error) {
         issues = concatIssues(issues, captureIssues(error));
 
@@ -282,7 +265,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       }
 
       if (result != null) {
-        issues = appendPartialIssue(issues, result);
+        issues = appendIssue(issues, result);
 
         if (!options.verbose) {
           return issues;
@@ -292,4 +275,26 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
 
     return issues;
   };
+}
+
+function appendIssue(issues: Issue[] | null, result: any): Issue[] {
+  if (isArray(result)) {
+    for (const issue of result) {
+      inflateIssue(issue);
+    }
+    if (issues === null) {
+      issues = result;
+    } else {
+      issues.push(...result);
+    }
+  } else {
+    inflateIssue(result);
+
+    if (issues === null) {
+      issues = [result];
+    } else {
+      issues.push(result);
+    }
+  }
+  return issues;
 }

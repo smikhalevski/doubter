@@ -6,8 +6,12 @@ export class ValidationError extends Error {
   constructor(issues: Partial<Issue>[]) {
     super();
 
+    for (const issue of issues) {
+      inflateIssue(issue);
+    }
+
     this.name = 'ValidationError';
-    this.issues = inflateIssues(issues);
+    this.issues = issues as Issue[];
   }
 }
 
@@ -26,21 +30,11 @@ Object.defineProperty(ValidationError.prototype, 'message', {
   },
 });
 
-export function inflateIssues(issues: Partial<Issue>[]): Issue[] {
-  const issuesLength = issues.length;
-
-  for (let i = 0; i < issuesLength; ++i) {
-    inflateIssue(issues[i]);
-  }
-  return issues as Issue[];
-}
-
-export function inflateIssue(issue: Partial<Issue>): Issue {
+export function inflateIssue(issue: Partial<Issue>): void {
   if (issue.code == null) {
     issue.code = 'unknown';
   }
   if (issue.path == null) {
     issue.path = [];
   }
-  return issue as Issue;
 }

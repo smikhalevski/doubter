@@ -25,7 +25,7 @@ export class EnumShape<T> extends Shape<T> {
   apply(input: any, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 
-    if (!this.values.includes(input)) {
+    if (this.values.indexOf(input) === -1) {
       return [this._typeIssueFactory(input)];
     }
     if (_applyChecks !== null) {

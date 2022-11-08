@@ -1,18 +1,43 @@
 const Ajv = require('ajv');
-const z = require('myzod');
-const v = require('@badrap/valita');
-const d = require('doubter');
+const zod = require('zod');
+const myzod = require('myzod');
+const valita = require('@badrap/valita');
+const doubter = require('doubter');
 const next = require('../../lib/index-cjs');
 
 beforeBatch(gc);
 
 describe(
-  'optional(string())',
+  'string().optional()',
   () => {
     const value = 'aaa';
 
+    test('zod', measure => {
+      const type = zod.string().optional();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.string().optional();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = valita.string().optional();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('next', measure => {
-      const shape = next.optional(next.string());
+      const shape = next.string().optional();
 
       measure(() => {
         shape.parse(value);
@@ -43,6 +68,30 @@ describe(
   () => {
     const value = 'aaa';
 
+    test('zod', measure => {
+      const type = zod.string().transform(() => 111);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.string().map(() => 111);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = valita.string().map(() => 111);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('next', measure => {
       const shape = next.string().transform(() => 111);
 
@@ -70,8 +119,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.string();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.string();
+      const type = myzod.string();
 
       measure(() => {
         type.parse(value);
@@ -79,7 +136,7 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.string();
+      const type = valita.string();
 
       measure(() => {
         type.parse(value);
@@ -87,7 +144,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.string();
+      const shape = doubter.string();
 
       measure(() => {
         shape.parse(value);
@@ -116,8 +173,16 @@ describe(
         });
       });
 
+      test('zod', measure => {
+        const type = zod.string();
+
+        measure(() => {
+          type.safeParse(value);
+        });
+      });
+
       test('myzod', measure => {
-        const type = z.string();
+        const type = myzod.string();
 
         measure(() => {
           try {
@@ -127,18 +192,18 @@ describe(
       });
 
       test('valita', measure => {
-        const type = v.string();
+        const type = valita.string();
 
         measure(() => {
-          type.try(value).issues;
+          type.try(value);
         });
       });
 
       test('doubter', measure => {
-        const shape = d.string();
+        const shape = doubter.string();
 
         measure(() => {
-          shape.parse(value);
+          shape.validate(value);
         });
       });
 
@@ -172,8 +237,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.string().length(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.string().min(3).max(3);
+      const type = myzod.string().min(3).max(3);
 
       measure(() => {
         type.parse(value);
@@ -181,7 +254,7 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.string().assert(v => v.length === 3);
+      const type = valita.string().assert(v => v.length === 3);
 
       measure(() => {
         type.parse(value);
@@ -189,7 +262,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.string().length(3);
+      const shape = doubter.string().length(3);
 
       measure(() => {
         shape.parse(value);
@@ -220,8 +293,16 @@ describe(
         });
       });
 
+      test('zod', measure => {
+        const type = zod.string().length(3);
+
+        measure(() => {
+          type.safeParse(value);
+        });
+      });
+
       test('myzod', measure => {
-        const type = z.string().min(3).max(3);
+        const type = myzod.string().min(3).max(3);
 
         measure(() => {
           try {
@@ -231,19 +312,18 @@ describe(
       });
 
       test('valita', measure => {
-        const type = v.string().assert(v => v.length === 3);
+        const type = valita.string().assert(v => v.length === 3);
 
         measure(() => {
-          // type.try(value).issues;
           type.try(value);
         });
       });
 
       test('doubter', measure => {
-        const shape = d.string().length(3);
+        const shape = doubter.string().length(3);
 
         measure(() => {
-          shape.parse(value);
+          shape.validate(value);
         });
       });
 
@@ -276,7 +356,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.integer();
+      const shape = doubter.integer();
 
       measure(() => {
         shape.parse(value);
@@ -311,7 +391,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.number();
+      const shape = doubter.number();
 
       measure(() => {
         shape.parse(value);
@@ -345,8 +425,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.number();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.number();
+      const type = myzod.number();
 
       measure(() => {
         type.parse(value);
@@ -354,7 +442,7 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.number();
+      const type = valita.number();
 
       measure(() => {
         type.parse(value);
@@ -362,7 +450,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.number();
+      const shape = doubter.number();
 
       measure(() => {
         shape.parse(value);
@@ -398,8 +486,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.number().min(1).max(5);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.number().min(1).max(5);
+      const type = myzod.number().min(1).max(5);
 
       measure(() => {
         type.parse(value);
@@ -407,7 +503,15 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.number().gte(1).lte(5);
+      const shape = doubter.number().gte(1).lte(5);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+
+    test('next', measure => {
+      const shape = next.number().gte(1).lte(5);
 
       measure(() => {
         shape.parse(value);
@@ -434,8 +538,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.array(zod.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.array(z.number());
+      const type = myzod.array(myzod.number());
 
       measure(() => {
         type.parse(value);
@@ -443,7 +555,7 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.array(v.number());
+      const type = valita.array(valita.number());
 
       measure(() => {
         type.parse(value);
@@ -451,7 +563,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.array(d.number());
+      const shape = doubter.array(doubter.number());
 
       measure(() => {
         shape.parse(value);
@@ -488,8 +600,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.array(zod.number()).length(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.array(z.number()).length(3);
+      const type = myzod.array(myzod.number()).length(3);
 
       measure(() => {
         type.parse(value);
@@ -497,7 +617,15 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.array(d.number()).length(3);
+      const shape = doubter.array(doubter.number()).length(3);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+
+    test('next', measure => {
+      const shape = next.array(next.number()).length(3);
 
       measure(() => {
         shape.parse(value);
@@ -508,7 +636,7 @@ describe(
 );
 
 describe(
-  'array(number().gte(0)).length(3)',
+  'array(number().gte(0).lte(10)).length(3)',
   () => {
     const value = [1, 2, 3];
 
@@ -529,8 +657,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.array(zod.number().min(0).max(10)).length(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.array(z.number().min(0).max(10)).length(3);
+      const type = myzod.array(myzod.number().min(0).max(10)).length(3);
 
       measure(() => {
         type.parse(value);
@@ -538,7 +674,15 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.array(d.number().gte(0).lte(10)).length(3);
+      const shape = doubter.array(doubter.number().gte(0).lte(10)).length(3);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+
+    test('next', measure => {
+      const shape = next.array(next.number().gte(0).lte(10)).length(3);
 
       measure(() => {
         shape.parse(value);
@@ -567,8 +711,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.tuple([zod.number(), zod.number()]);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.tuple([z.number(), z.number()]);
+      const type = myzod.tuple([myzod.number(), myzod.number()]);
 
       measure(() => {
         type.parse(value);
@@ -576,7 +728,7 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.tuple([v.number(), v.number()]);
+      const type = valita.tuple([valita.number(), valita.number()]);
 
       measure(() => {
         type.parse(value);
@@ -584,7 +736,15 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.tuple([d.number(), d.number()]);
+      const shape = doubter.tuple([doubter.number(), doubter.number()]);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+
+    test('next', measure => {
+      const shape = next.tuple([next.number(), next.number()]);
 
       measure(() => {
         shape.parse(value);
@@ -612,8 +772,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.record(zod.string(), zod.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.record(z.number());
+      const type = myzod.record(myzod.number());
 
       measure(() => {
         type.parse(value);
@@ -621,7 +789,7 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.record(v.number());
+      const type = valita.record(valita.number());
 
       measure(() => {
         type.parse(value);
@@ -629,7 +797,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.record(d.string(), d.number());
+      const shape = doubter.record(doubter.string(), doubter.number());
 
       measure(() => {
         shape.parse(value);
@@ -638,14 +806,6 @@ describe(
 
     test('next', measure => {
       const shape = next.record(next.string(), next.number());
-
-      measure(() => {
-        shape.parse(value);
-      });
-    });
-
-    test('doubter.v3.RecordShape null', measure => {
-      const shape = next.record(next.number());
 
       measure(() => {
         shape.parse(value);
@@ -683,11 +843,24 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod
+        .object({
+          foo: zod.string(),
+          bar: zod.number(),
+        })
+        .passthrough();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.object(
+      const type = myzod.object(
         {
-          foo: z.string(),
-          bar: z.number(),
+          foo: myzod.string(),
+          bar: myzod.number(),
         },
         {
           allowUnknown: true,
@@ -700,9 +873,9 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.object({
-        foo: v.string(),
-        bar: v.number(),
+      const type = valita.object({
+        foo: valita.string(),
+        bar: valita.number(),
       });
 
       const options = { mode: 'passthrough' };
@@ -713,9 +886,9 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.object({
-        foo: d.string(),
-        bar: d.number(),
+      const shape = doubter.object({
+        foo: doubter.string(),
+        bar: doubter.number(),
       });
 
       measure(() => {
@@ -764,8 +937,16 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.object({ foo: zod.string() }).catchall(zod.string());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('valita', measure => {
-      const type = v.object({ foo: v.string() }).rest(v.string());
+      const type = valita.object({ foo: valita.string() }).rest(valita.string());
       const options = { mode: 'passthrough' };
 
       measure(() => {
@@ -774,7 +955,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.object({ foo: d.string() }).index(d.string());
+      const shape = doubter.object({ foo: doubter.string() }).index(doubter.string());
 
       measure(() => {
         shape.parse(value);
@@ -820,10 +1001,23 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod
+        .object({
+          foo: zod.string(),
+          bar: zod.number(),
+        })
+        .strict();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.object({
-        foo: z.string(),
-        bar: z.number(),
+      const type = myzod.object({
+        foo: myzod.string(),
+        bar: myzod.number(),
       });
 
       measure(() => {
@@ -832,9 +1026,9 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.object({
-        foo: v.string(),
-        bar: v.number(),
+      const type = valita.object({
+        foo: valita.string(),
+        bar: valita.number(),
       });
       const options = { mode: 'passthrough' };
 
@@ -844,7 +1038,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.object({ foo: d.string(), bar: d.number() }).exact();
+      const shape = doubter.object({ foo: doubter.string(), bar: doubter.number() }).exact();
 
       measure(() => {
         shape.parse(value);
@@ -887,8 +1081,16 @@ describe(
         });
       });
 
+      test('zod', measure => {
+        const type = zod.union([zod.string(), zod.number(), zod.boolean()]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
       test('myzod', measure => {
-        const type = z.union([z.string(), z.number(), z.boolean()]);
+        const type = myzod.union([myzod.string(), myzod.number(), myzod.boolean()]);
 
         measure(() => {
           type.parse(value);
@@ -896,7 +1098,7 @@ describe(
       });
 
       test('valita', measure => {
-        const type = v.union(v.string(), v.number(), v.boolean());
+        const type = valita.union(valita.string(), valita.number(), valita.boolean());
 
         measure(() => {
           type.parse(value);
@@ -904,7 +1106,7 @@ describe(
       });
 
       test('doubter', measure => {
-        const shape = d.or([d.string(), d.number(), d.boolean()]);
+        const shape = doubter.or([doubter.string(), doubter.number(), doubter.boolean()]);
 
         measure(() => {
           shape.parse(value);
@@ -964,8 +1166,16 @@ describe(
         });
       });
 
+      test('zod', measure => {
+        const type = zod.union([zod.object({ foo: zod.string() }), zod.object({ bar: zod.number() })]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
       test('myzod', measure => {
-        const type = z.union([z.object({ foo: z.string() }), z.object({ bar: z.number() })]);
+        const type = myzod.union([myzod.object({ foo: myzod.string() }), myzod.object({ bar: myzod.number() })]);
 
         measure(() => {
           type.parse(value);
@@ -973,7 +1183,7 @@ describe(
       });
 
       test('valita', measure => {
-        const type = v.union(v.object({ foo: v.string() }), v.object({ bar: v.number() }));
+        const type = valita.union(valita.object({ foo: valita.string() }), valita.object({ bar: valita.number() }));
 
         measure(() => {
           type.parse(value);
@@ -981,7 +1191,10 @@ describe(
       });
 
       test('doubter', measure => {
-        const shape = d.or([d.object({ foo: d.string() }), d.object({ bar: d.number() })]);
+        const shape = doubter.or([
+          doubter.object({ foo: doubter.string() }),
+          doubter.object({ bar: doubter.number() }),
+        ]);
 
         measure(() => {
           shape.parse(value);
@@ -1073,20 +1286,44 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod
+        .object({
+          a1: zod.number(),
+          a2: zod.number(),
+          a3: zod.number(),
+          a4: zod.string(),
+          a5: zod.string(),
+          a6: zod.boolean(),
+          a7: zod
+            .object({
+              a71: zod.string(),
+              a72: zod.number(),
+              a73: zod.boolean(),
+            })
+            .passthrough(),
+        })
+        .passthrough();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('myzod', measure => {
-      const type = z.object(
+      const type = myzod.object(
         {
-          a1: z.number(),
-          a2: z.number(),
-          a3: z.number(),
-          a4: z.string(),
-          a5: z.string(),
-          a6: z.boolean(),
-          a7: z.object(
+          a1: myzod.number(),
+          a2: myzod.number(),
+          a3: myzod.number(),
+          a4: myzod.string(),
+          a5: myzod.string(),
+          a6: myzod.boolean(),
+          a7: myzod.object(
             {
-              a71: z.string(),
-              a72: z.number(),
-              a73: z.boolean(),
+              a71: myzod.string(),
+              a72: myzod.number(),
+              a73: myzod.boolean(),
             },
             {
               allowUnknown: true,
@@ -1104,17 +1341,17 @@ describe(
     });
 
     test('valita', measure => {
-      const type = v.object({
-        a1: v.number(),
-        a2: v.number(),
-        a3: v.number(),
-        a4: v.string(),
-        a5: v.string(),
-        a6: v.boolean(),
-        a7: v.object({
-          a71: v.string(),
-          a72: v.number(),
-          a73: v.boolean(),
+      const type = valita.object({
+        a1: valita.number(),
+        a2: valita.number(),
+        a3: valita.number(),
+        a4: valita.string(),
+        a5: valita.string(),
+        a6: valita.boolean(),
+        a7: valita.object({
+          a71: valita.string(),
+          a72: valita.number(),
+          a73: valita.boolean(),
         }),
       });
       const options = { mode: 'passthrough' };
@@ -1125,17 +1362,17 @@ describe(
     });
 
     test('doubter', measure => {
-      const shape = d.object({
-        a1: d.number(),
-        a2: d.number(),
-        a3: d.number(),
-        a4: d.string(),
-        a5: d.string(),
-        a6: d.boolean(),
-        a7: d.object({
-          a71: d.string(),
-          a72: d.number(),
-          a73: d.boolean(),
+      const shape = doubter.object({
+        a1: doubter.number(),
+        a2: doubter.number(),
+        a3: doubter.number(),
+        a4: doubter.string(),
+        a5: doubter.string(),
+        a6: doubter.boolean(),
+        a7: doubter.object({
+          a71: doubter.string(),
+          a72: doubter.number(),
+          a73: doubter.boolean(),
         }),
       });
 
@@ -1274,27 +1511,93 @@ describe(
       });
     });
 
-    test('valita', measure => {
-      const typeA = v.object({
-        a1: v.number(),
-        a2: v.boolean(),
-        a3: v.string(),
-        a4: v.object({
-          a41: v.boolean(),
-          a42: v.string(),
-          a43: v.number(),
+    test('zod', measure => {
+      const typeA = zod
+        .object({
+          a1: zod.number(),
+          a2: zod.boolean(),
+          a3: zod.string(),
+          a4: zod
+            .object({
+              a41: zod.boolean(),
+              a42: zod.string(),
+              a43: zod.number(),
+            })
+            .strict(),
+        })
+        .strict();
+
+      const typeB = zod
+        .object({
+          b1: zod.string(),
+          b2: zod.number(),
+          b3: zod
+            .object({
+              b31: zod.string(),
+              b32: zod.number(),
+            })
+            .strict(),
+          b4: zod.string(),
+          b5: zod.boolean(),
+        })
+        .strict();
+
+      measure(() => {
+        typeA.parse(valueA);
+        typeB.parse(valueB);
+      });
+    });
+
+    test('myzod', measure => {
+      const typeA = myzod.object({
+        a1: myzod.number(),
+        a2: myzod.boolean(),
+        a3: myzod.string(),
+        a4: myzod.object({
+          a41: myzod.boolean(),
+          a42: myzod.string(),
+          a43: myzod.number(),
         }),
       });
 
-      const typeB = v.object({
-        b1: v.string(),
-        b2: v.number(),
-        b3: v.object({
-          b31: v.string(),
-          b32: v.number(),
+      const typeB = myzod.object({
+        b1: myzod.string(),
+        b2: myzod.number(),
+        b3: myzod.object({
+          b31: myzod.string(),
+          b32: myzod.number(),
         }),
-        b4: v.string(),
-        b5: v.boolean(),
+        b4: myzod.string(),
+        b5: myzod.boolean(),
+      });
+
+      measure(() => {
+        typeA.parse(valueA);
+        typeB.parse(valueB);
+      });
+    });
+
+    test('valita', measure => {
+      const typeA = valita.object({
+        a1: valita.number(),
+        a2: valita.boolean(),
+        a3: valita.string(),
+        a4: valita.object({
+          a41: valita.boolean(),
+          a42: valita.string(),
+          a43: valita.number(),
+        }),
+      });
+
+      const typeB = valita.object({
+        b1: valita.string(),
+        b2: valita.number(),
+        b3: valita.object({
+          b31: valita.string(),
+          b32: valita.number(),
+        }),
+        b4: valita.string(),
+        b5: valita.boolean(),
       });
 
       measure(() => {
@@ -1304,33 +1607,33 @@ describe(
     });
 
     test('doubter', measure => {
-      const shapeA = d
+      const shapeA = doubter
         .object({
-          a1: d.number(),
-          a2: d.boolean(),
-          a3: d.string(),
-          a4: d
+          a1: doubter.number(),
+          a2: doubter.boolean(),
+          a3: doubter.string(),
+          a4: doubter
             .object({
-              a41: d.boolean(),
-              a42: d.string(),
-              a43: d.number(),
+              a41: doubter.boolean(),
+              a42: doubter.string(),
+              a43: doubter.number(),
             })
             .exact(),
         })
         .exact();
 
-      const shapeB = d
+      const shapeB = doubter
         .object({
-          b1: d.string(),
-          b2: d.number(),
-          b3: d
+          b1: doubter.string(),
+          b2: doubter.number(),
+          b3: doubter
             .object({
-              b31: d.string(),
-              b32: d.number(),
+              b31: doubter.string(),
+              b32: doubter.number(),
             })
             .exact(),
-          b4: d.string(),
-          b5: d.boolean(),
+          b4: doubter.string(),
+          b5: doubter.boolean(),
         })
         .exact();
 
