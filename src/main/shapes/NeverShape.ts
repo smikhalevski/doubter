@@ -1,17 +1,17 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createCheckConfig, raiseIssue } from '../utils';
+import { createIssueFactory } from '../utils';
 import { CODE_NEVER, MESSAGE_NEVER } from './constants';
 
 export class NeverShape extends Shape<never> {
-  protected _typeCheckConfig;
+  protected _typeIssueFactory;
 
   constructor(options?: TypeConstraintOptions | Message) {
     super();
-    this._typeCheckConfig = createCheckConfig(options, CODE_NEVER, MESSAGE_NEVER, undefined);
+    this._typeIssueFactory = createIssueFactory(options, CODE_NEVER, MESSAGE_NEVER, undefined);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<never> {
-    return raiseIssue(this._typeCheckConfig, input);
+    return [this._typeIssueFactory(input)];
   }
 }

@@ -39,8 +39,8 @@ describe('UnionShape', () => {
   });
 
   test('raises issues from the first failure in the async mode', async () => {
-    const childShape1 = numberShape.convertAsync(value => Promise.resolve(value + ''));
-    const childShape = stringShape.convertAsync(value => Promise.resolve(value + ''));
+    const childShape1 = numberShape.transformAsync(value => Promise.resolve(value + ''));
+    const childShape = stringShape.transformAsync(value => Promise.resolve(value + ''));
 
     expect(await new UnionShape([childShape1, childShape]).validateAsync(true, { verbose: true })).toEqual([
       {

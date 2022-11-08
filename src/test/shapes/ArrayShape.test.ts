@@ -3,15 +3,15 @@ import { CODE_ARRAY_MAX, CODE_ARRAY_MIN, CODE_TYPE, TYPE_ARRAY, TYPE_NUMBER } fr
 
 const numberShape = new NumberShape();
 
-const asyncNumberShape = numberShape.convertAsync(value => Promise.resolve(value));
+const asyncNumberShape = numberShape.transformAsync(value => Promise.resolve(value));
 
 describe('ArrayShape', () => {
   test('infers type of an element shape', () => {
-    const output: string[] = new ArrayShape(numberShape.convert(() => '')).parse([]);
+    const output: string[] = new ArrayShape(numberShape.transform(() => '')).parse([]);
   });
 
   test('infers type of an element shape in async mode', async () => {
-    const output: string[] = await new ArrayShape(numberShape.convertAsync(() => Promise.resolve(''))).parseAsync([]);
+    const output: string[] = await new ArrayShape(numberShape.transformAsync(() => Promise.resolve(''))).parseAsync([]);
   });
 
   test('allows an array', () => {
@@ -136,7 +136,7 @@ describe('ArrayShape', () => {
   });
 
   test('raises multiple issues in the verbose async mode', async () => {
-    const elementShape = numberShape.convertAsync(value => Promise.resolve('' + value));
+    const elementShape = numberShape.transformAsync(value => Promise.resolve('' + value));
     const shape = new ArrayShape(elementShape).min(3, { unsafe: true });
 
     expect(await shape.validateAsync(['aaa', 'bbb'], { verbose: true })).toEqual([
@@ -181,7 +181,7 @@ describe('ArrayShape', () => {
   });
 
   test('raises a single issue for an array in an async mode', async () => {
-    const shape = new ArrayShape(numberShape.convertAsync(value => Promise.resolve(value))).min(3);
+    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve(value))).min(3);
 
     expect(await shape.validateAsync([111, 222])).toEqual([
       {
@@ -209,7 +209,7 @@ describe('ArrayShape', () => {
   });
 
   test('raises a single issue for an array from an element in an async mode', async () => {
-    const shape = new ArrayShape(numberShape.convertAsync(value => Promise.resolve('' + value)));
+    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('' + value)));
 
     expect(await shape.validateAsync(['aaa', 'bbb'])).toEqual([
       {
@@ -231,7 +231,7 @@ describe('ArrayShape', () => {
   });
 
   test('copies an array if values have changed', () => {
-    const shape = new ArrayShape(numberShape.convert(value => value * 2));
+    const shape = new ArrayShape(numberShape.transform(value => value * 2));
     const input = [1, 2];
     const output = shape.parse(input);
 
@@ -241,14 +241,14 @@ describe('ArrayShape', () => {
   });
 
   test('returns an array as is in an async mode', async () => {
-    const shape = new ArrayShape(numberShape.convertAsync(value => Promise.resolve(value)));
+    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve(value)));
     const input = [1, 2];
 
     expect(await shape.parseAsync(input)).toBe(input);
   });
 
   test('copies an array if values have changed in an async mode', async () => {
-    const shape = new ArrayShape(numberShape.convertAsync(value => Promise.resolve(value * 2)));
+    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve(value * 2)));
     const input = [1, 2];
     const output = await shape.parseAsync(input);
 
@@ -258,7 +258,7 @@ describe('ArrayShape', () => {
   });
 
   test('parses async array in async mode', async () => {
-    const shape = new ArrayShape(numberShape.convertAsync(value => Promise.resolve('' + value)));
+    const shape = new ArrayShape(numberShape.transformAsync(value => Promise.resolve('' + value)));
 
     expect(await shape.parseAsync([1, 2])).toEqual(['1', '2']);
   });
@@ -267,7 +267,7 @@ describe('ArrayShape', () => {
     class MockError {}
 
     const shape = new ArrayShape(
-      numberShape.convert((): number => {
+      numberShape.transform((): number => {
         throw new MockError();
       })
     );
@@ -278,7 +278,7 @@ describe('ArrayShape', () => {
   test('does not swallow non-validation errors in an async mode', async () => {
     class MockError {}
 
-    const shape = new ArrayShape(numberShape.convertAsync(() => Promise.reject<number>(new MockError())));
+    const shape = new ArrayShape(numberShape.transformAsync(() => Promise.reject<number>(new MockError())));
 
     await expect(() => shape.validateAsync([1])).rejects.toEqual(new MockError());
   });

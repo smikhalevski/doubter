@@ -4,12 +4,11 @@ import {
   assignProperty,
   cloneEnumerableKeys,
   concatIssues,
-  createCheckConfig,
+  createIssueFactory,
   isArray,
   isEqual,
   isObjectLike,
   ok,
-  raiseIssue,
   unshiftPath,
 } from '../utils';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from './constants';
@@ -22,11 +21,12 @@ export class RecordShape<
   K extends Shape<string, PropertyKey> = Shape<string>,
   V extends AnyShape = AnyShape
 > extends Shape<InferRecord<K['input'], V['input']>, InferRecord<K['output'], V['output']>> {
-  protected _typeCheckConfig;
+  protected _typeIssueFactory;
 
   constructor(readonly keyShape: K | null, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
     super((keyShape != null && keyShape.async) || valueShape.async);
-    this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
+
+    this._typeIssueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
@@ -35,7 +35,7 @@ export class RecordShape<
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K['output'], V['output']>> {
     if (!isObjectLike(input)) {
-      return raiseIssue(this._typeCheckConfig, input);
+      return [this._typeIssueFactory(input)];
     }
 
     const { keyShape, valueShape, _applyChecks, _unsafe } = this;
@@ -100,9 +100,13 @@ export class RecordShape<
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K['output'], V['output']>>> {
+    if (!this.async) {
+      return super.applyAsync(input, options);
+    }
+
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        return raiseIssue(this._typeCheckConfig, input);
+        return [this._typeIssueFactory(input)];
       }
 
       const { keyShape, valueShape, _applyChecks, _unsafe } = this;

@@ -1,4 +1,4 @@
-import { Checker, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
+import { CheckCallback, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { ValidationError } from './ValidationError';
 
@@ -26,62 +26,18 @@ export function addCheck<S extends Shape>(
   shape: S,
   key: string | undefined,
   options: ConstraintOptions | Message | undefined,
-  checker: Checker<S['output']>,
-  param?: unknown
+  param: unknown,
+  cb: CheckCallback<S['output']>
 ): S {
-  return shape.check(checker, {
+  return shape.check(cb, {
     key,
-    unsafe: options !== null && typeof options === 'object' ? options.unsafe : false,
+    unsafe: options !== null && typeof options === 'object' && options.unsafe,
     param,
   });
 }
 
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-// ---------------------------------------------------------------------------------------------------------------------
-
 export function isObjectLike(value: unknown): value is Record<any, any> {
   return value !== null && typeof value === 'object';
-}
-
-export interface CheckConfig {
-  code: unknown;
-  message: unknown;
-  meta: unknown;
-  param: unknown;
-}
-
-export function createCheckConfig(
-  options: ConstraintOptions | Message | undefined,
-  code: unknown,
-  message: unknown,
-  param: unknown
-): CheckConfig {
-  let meta;
-
-  if (options !== null && typeof options === 'object') {
-    if (options.message !== undefined) {
-      message = options.message;
-    }
-    meta = options.meta;
-  } else if (typeof options === 'function') {
-    message = options;
-  } else if (options != null) {
-    message = String(options);
-  }
-
-  if (typeof message === 'string') {
-    message = message.replace('%s', String(param));
-  }
-
-  return { code, message, meta, param };
 }
 
 export function createIssueFactory(
@@ -117,18 +73,6 @@ export function createIssueFactory(
       meta,
     };
   };
-}
-
-export function createIssue(config: CheckConfig, input: unknown, param: unknown): Issue {
-  let { code, message, meta } = config;
-  if (typeof message === 'function') {
-    message = message(param, input);
-  }
-  return { code, path: [], input, message, param, meta };
-}
-
-export function raiseIssue(config: CheckConfig, input: unknown): Issue[] {
-  return [createIssue(config, input, config.param)];
 }
 
 export function unshiftPath(issues: Issue[], key: unknown): void {

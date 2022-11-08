@@ -1,5 +1,5 @@
 import { Any, Message, TypeConstraintOptions } from '../shared-types';
-import { LiteralShape, Shape } from '../shapes';
+import { EnumShape } from '../shapes';
 
 /**
  * Creates the literal value shape.
@@ -9,6 +9,9 @@ import { LiteralShape, Shape } from '../shapes';
  *
  * @template T The type of the literal value.
  */
-export function literal<T extends Any>(value: T, options?: TypeConstraintOptions | Message): Shape<T> {
-  return new LiteralShape(value, options);
+function const_<T extends Any>(value: T, options?: TypeConstraintOptions | Message): EnumShape<T> {
+  return new EnumShape([value], options);
 }
+
+// noinspection ReservedWordAsName
+export { const_ as const };

@@ -1,15 +1,37 @@
 export interface Ok<T> {
   ok: true;
+
+  /**
+   * The output value.
+   */
   value: T;
 }
 
 export interface Err {
   ok: false;
+
+  /**
+   * The list of issues encountered during parsing.
+   */
   issues: Issue[];
 }
 
+/**
+ * The result of shape application. This is the part of the internal API required for creating custom shapes.
+ */
 export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
 
+/**
+ * A callback that takes a value and returns `undefined` if it satisfies the requirements. If a value doesn't satisfy
+ * the check requirements then issues can be returned or a {@linkcode ValidationError} can be thrown.
+ *
+ * @type T The value type.
+ */
+export type CheckCallback<T = any> = (value: T) => Issue[] | Issue | null | undefined | void;
+
+/**
+ * The shape output value check.
+ */
 export interface Check {
   /**
    * The unique key of the check in scope of the shape.
@@ -19,17 +41,42 @@ export interface Check {
   /**
    * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
    */
-  checker: Checker;
+  callback: CheckCallback;
 
   /**
-   * `true` if the check callback is invoked even if previous checks have failed.
+   * `true` if the {@linkcode callback} is invoked even if previous processors failed, or `false` otherwise.
    */
   unsafe: boolean;
 
   /**
-   * The optional parameter used by the callback.
+   * The optional parameter used by the {@linkcode callback}.
    */
   param: any;
+}
+
+/**
+ * Options that are applicable for the custom checks added via {@linkcode Shape.check}.
+ */
+export interface CheckOptions {
+  /**
+   * The unique key of the check in scope of the shape.
+   *
+   * If there is a check with the same key then it is replaced, otherwise it is appended to the list of checks.
+   * If the key is `undefined` then the check is always appended to the list of checks.
+   */
+  key?: string;
+
+  /**
+   * If `true` then the check would be executed even if the preceding check failed, otherwise check is
+   * ignored.
+   */
+  unsafe?: boolean;
+
+  /**
+   * An optional param that would be associated with the checker and can be accessed at {@linkcode Shape.checks} using
+   * {@linkcode Check.param}.
+   */
+  param?: any;
 }
 
 /**
@@ -68,19 +115,12 @@ export interface Issue {
 }
 
 /**
- * A callback that takes an input and returns `undefined` if value satisfies the check requirements. If values
- * doesn't satisfy the check requirements then a {@linkcode ValidationError} can be thrown, or detected issues can
- * be returned.
- */
-export type Checker<T = any> = (value: T) => Issue[] | Issue | null | undefined | void;
-
-/**
  * The message callback or a string.
  */
 export type Message = ((param: any, value: any) => any) | string;
 
 /**
- * Options that are applicable for the type check.
+ * Options that are applicable for the type constraint.
  */
 export interface TypeConstraintOptions {
   /**
@@ -95,7 +135,7 @@ export interface TypeConstraintOptions {
 }
 
 /**
- * Options that are applicable for the built-in type-specific checks.
+ * Options that are applicable for the built-in type-specific constraints.
  */
 export interface ConstraintOptions {
   /**
@@ -109,35 +149,10 @@ export interface ConstraintOptions {
   meta?: any;
 
   /**
-   * If `true` then the check would be executed even if the preceding check failed, otherwise check is
+   * If `true` then the constraint would be executed even if the preceding check failed, otherwise the constraint is
    * ignored.
    */
   unsafe?: boolean;
-}
-
-/**
- * Options that are applicable for the custom checks added via {@linkcode Shape.check}.
- */
-export interface CheckOptions {
-  /**
-   * The unique key of the check in scope of the shape.
-   *
-   * If there is a check with the same key then it is replaced, otherwise it is appended to the list of checks.
-   * If the key is `undefined` then the check is always appended to the list of checks.
-   */
-  key?: string;
-
-  /**
-   * If `true` then the check would be executed even if the preceding check failed, otherwise check is
-   * ignored.
-   */
-  unsafe?: boolean;
-
-  /**
-   * An optional param that would be associated with the checker and can be accessed at {@linkcode Shape.checks} using
-   * {@linkcode Check.param}. This can be used for shape introspection.
-   */
-  param?: any;
 }
 
 /**

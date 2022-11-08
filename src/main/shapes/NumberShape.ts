@@ -20,11 +20,11 @@ import {
 } from './constants';
 
 export class NumberShape extends Shape<number> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   constructor(options?: TypeConstraintOptions | Message) {
     super();
-    this._issueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER);
+    this._typeIssueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER);
   }
 
   /**
@@ -57,7 +57,7 @@ export class NumberShape extends Shape<number> {
   gt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_NUMBER_GT, MESSAGE_NUMBER_GT, value);
 
-    return addCheck(this, CODE_NUMBER_GT, options, output => {
+    return addCheck(this, CODE_NUMBER_GT, options, value, output => {
       if (output <= value) {
         return issueFactory(output);
       }
@@ -74,7 +74,7 @@ export class NumberShape extends Shape<number> {
   lt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_NUMBER_LT, MESSAGE_NUMBER_LT, value);
 
-    return addCheck(this, CODE_NUMBER_LT, options, output => {
+    return addCheck(this, CODE_NUMBER_LT, options, value, output => {
       if (output >= value) {
         return issueFactory(output);
       }
@@ -91,7 +91,7 @@ export class NumberShape extends Shape<number> {
   gte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, value);
 
-    return addCheck(this, CODE_NUMBER_GTE, options, output => {
+    return addCheck(this, CODE_NUMBER_GTE, options, value, output => {
       if (output < value) {
         return issueFactory(output);
       }
@@ -108,7 +108,7 @@ export class NumberShape extends Shape<number> {
   lte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, value);
 
-    return addCheck(this, CODE_NUMBER_LTE, options, output => {
+    return addCheck(this, CODE_NUMBER_LTE, options, value, output => {
       if (output > value) {
         return issueFactory(output);
       }
@@ -125,7 +125,7 @@ export class NumberShape extends Shape<number> {
   multipleOf(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, value);
 
-    return addCheck(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
+    return addCheck(this, CODE_NUMBER_MULTIPLE_OF, options, value, output => {
       if (output % value !== 0) {
         return issueFactory(output);
       }
@@ -141,7 +141,7 @@ export class NumberShape extends Shape<number> {
   finite(options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE);
 
-    return addCheck(this, CODE_NUMBER_FINITE, options, output => {
+    return addCheck(this, CODE_NUMBER_FINITE, options, undefined, output => {
       if (output !== output || output === Infinity || output === -Infinity) {
         return issueFactory(output);
       }
@@ -162,7 +162,7 @@ export class NumberShape extends Shape<number> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'number') {
-      return [this._issueFactory(input)];
+      return [this._typeIssueFactory(input)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

@@ -7,3 +7,5 @@ import { Message, TypeConstraintOptions } from '../shared-types';
 export function integer(options?: TypeConstraintOptions | Message): NumberShape {
   return new NumberShape(options).integer(options);
 }
+
+export { integer as int };

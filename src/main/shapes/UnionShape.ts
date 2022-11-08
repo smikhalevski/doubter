@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createCheckConfig, createIssue, isArray, isAsyncShapes } from '../utils';
+import { concatIssues, createIssueFactory, isArray, isAsyncShapes } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from './constants';
 
 export type InferUnion<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
@@ -11,7 +11,7 @@ export type InferUnion<U extends AnyShape[], C extends 'input' | 'output'> = { [
  * @template U The list of united type definitions.
  */
 export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
-  protected _typeCheckConfig;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.
@@ -22,7 +22,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
   constructor(readonly shapes: Readonly<U>, options?: TypeConstraintOptions | Message) {
     super(isAsyncShapes(shapes));
 
-    this._typeCheckConfig = createCheckConfig(options, CODE_UNION, MESSAGE_UNION, undefined);
+    this._typeIssueFactory = createIssueFactory(options, CODE_UNION, MESSAGE_UNION, undefined);
   }
 
   at(key: unknown): AnyShape | null {
@@ -67,10 +67,14 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
     if (_applyChecks !== null && _unsafe) {
       issues = _applyChecks(input, issues, options);
     }
-    return [createIssue(this._typeCheckConfig, input, issues)];
+    return [this._typeIssueFactory(input, issues)];
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
+    if (!this.async) {
+      return super.applyAsync(input, options);
+    }
+
     const { shapes, _applyChecks, _unsafe } = this;
 
     const shapesLength = shapes.length;
@@ -96,7 +100,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
           if (_applyChecks !== null && _unsafe) {
             issues = _applyChecks(input, issues, options);
           }
-          return [createIssue(this._typeCheckConfig, input, issues)];
+          return [this._typeIssueFactory(input, issues)];
         }
 
         return result;

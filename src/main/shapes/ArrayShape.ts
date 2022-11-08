@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { addCheck, concatIssues, createCheckConfig, isArray, isEqual, ok, raiseIssue, unshiftPath } from '../utils';
+import { addCheck, concatIssues, createIssueFactory, isArray, isEqual, ok, unshiftPath } from '../utils';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -31,7 +31,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
   InferArray<U, R, 'input'>,
   InferArray<U, R, 'output'>
 > {
-  protected _typeCheckConfig;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode ArrayShape} instance.
@@ -63,7 +63,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
     options?: TypeConstraintOptions | Message
   ) {
     super();
-    this._typeCheckConfig = createCheckConfig(options, CODE_TYPE, MESSAGE_ARRAY_TYPE, TYPE_ARRAY);
+    this._typeIssueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_ARRAY_TYPE, TYPE_ARRAY);
   }
 
   at(key: unknown): AnyShape | null {
@@ -72,7 +72,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
     const index =
       typeof key === 'number' ? key : typeof key !== 'string' ? -1 : integerRegex.test(key) ? parseInt(key, 10) : -1;
 
-    if (index % 1 === 0 || index < 0) {
+    if (index % 1 !== 0 || index < 0) {
       return null;
     }
     if (tupleShapes !== null && index < tupleShapes.length) {
@@ -100,11 +100,11 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
    * @returns The clone of the shape.
    */
   min(length: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, length);
+    const issueFactory = createIssueFactory(options, CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, length);
 
-    return addCheck(this, CODE_ARRAY_MIN, options, input => {
+    return addCheck(this, CODE_ARRAY_MIN, options, length, input => {
       if (input.length < length) {
-        return raiseIssue(checkConfig, input);
+        return issueFactory(input);
       }
     });
   }
@@ -117,11 +117,11 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
    * @returns The clone of the shape.
    */
   max(length: number, options?: ConstraintOptions | Message): this {
-    const checkConfig = createCheckConfig(options, CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, length);
+    const issueFactory = createIssueFactory(options, CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, length);
 
-    return addCheck(this, CODE_ARRAY_MAX, options, input => {
+    return addCheck(this, CODE_ARRAY_MAX, options, length, input => {
       if (input.length < length) {
-        return raiseIssue(checkConfig, input);
+        return issueFactory(input);
       }
     });
   }
@@ -138,7 +138,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
       ((inputLength = input.length),
       restShape === null && tupleShapes !== null && inputLength !== (tupleLength = tupleShapes.length))
     ) {
-      return raiseIssue(this._typeCheckConfig, input);
+      return [this._typeIssueFactory(input)];
     }
 
     let issues: Issue[] | null = null;
@@ -179,6 +179,10 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
+    if (!this.async) {
+      return super.applyAsync(input, options);
+    }
+
     return new Promise(resolve => {
       const { tupleShapes, restShape, _applyChecks, _unsafe } = this;
 
@@ -191,7 +195,7 @@ export class ArrayShape<U extends AnyShape[] = [], R extends AnyShape | null = n
         ((inputLength = input.length),
         restShape === null && tupleShapes !== null && inputLength !== (tupleLength = tupleShapes.length))
       ) {
-        return raiseIssue(this._typeCheckConfig, input);
+        return [this._typeIssueFactory(input)];
       }
 
       const promises: Promise<ApplyResult>[] = [];

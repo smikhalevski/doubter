@@ -5,5 +5,5 @@ const emailRegex =
   /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/;
 
 export function email(options?: TypeConstraintOptions | Message): StringShape {
-  return new StringShape(options).regex(emailRegex);
+  return new StringShape(options).match(emailRegex);
 }

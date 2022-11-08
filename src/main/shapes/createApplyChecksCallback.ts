@@ -11,14 +11,14 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   }
 
   if (checksLength === 1) {
-    const [{ unsafe, checker }] = checks;
+    const [{ unsafe, callback }] = checks;
 
     return (output, issues, options) => {
       if (issues === null || unsafe) {
         let result;
 
         try {
-          result = checker(output);
+          result = callback(output);
         } catch (error) {
           return concatIssues(issues, captureIssues(error));
         }
@@ -31,7 +31,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   }
 
   if (checksLength === 2) {
-    const [{ unsafe: unsafe0, checker: cb0 }, { unsafe: unsafe1, checker: cb1 }] = checks;
+    const [{ unsafe: unsafe0, callback: cb0 }, { unsafe: unsafe1, callback: cb1 }] = checks;
 
     return (output, issues, options) => {
       if (issues === null || unsafe0) {
@@ -74,7 +74,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
 
   return (output, issues, options) => {
     for (let i = 1; i < checksLength; ++i) {
-      const { unsafe, checker } = checks[i];
+      const { unsafe, callback } = checks[i];
 
       let result;
 
@@ -83,7 +83,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       }
 
       try {
-        result = checker(output);
+        result = callback(output);
       } catch (error) {
         issues = concatIssues(issues, captureIssues(error));
 

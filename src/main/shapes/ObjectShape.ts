@@ -2,12 +2,10 @@ import { ApplyResult, Dict, Issue, Message, ParseOptions, TypeConstraintOptions 
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from './constants';
 import {
   assignProperty,
-  CheckConfig,
   cloneEnumerableKeys,
   cloneKnownKeys,
   concatIssues,
-  createCheckConfig,
-  createIssue,
+  createIssueFactory,
   Flags,
   isArray,
   isAsyncShapes,
@@ -16,11 +14,11 @@ import {
   isObjectLike,
   ok,
   pushIssue,
-  raiseIssue,
   setFlag,
   unshiftPath,
 } from '../utils';
 import { AnyShape, Shape } from './Shape';
+import { EnumShape } from './EnumShape';
 
 export type Channel = 'input' | 'output';
 
@@ -53,14 +51,14 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   InferObject<P, R, 'output'>
 > {
   readonly keys: readonly ObjectKey<P>[];
-  protected _typeCheckConfig;
-  private _valueShapes: Shape[];
-  private _exactCheckConfig: CheckConfig | null = null;
+  protected _valueShapes: Shape[];
+  protected _typeIssueFactory;
+  protected _exactIssueFactory: ((input: unknown, param: unknown) => Issue) | null = null;
 
   constructor(
     readonly shapes: Readonly<P>,
     readonly restShape: R | null = null,
-    private _options?: TypeConstraintOptions | Message,
+    protected _options?: TypeConstraintOptions | Message,
     readonly keysMode: KeysMode = KeysMode.PRESERVED
   ) {
     const keys = Object.keys(shapes);
@@ -71,7 +69,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     this.keys = keys as ObjectKey<P>[];
 
     this._valueShapes = valueShapes;
-    this._typeCheckConfig = createCheckConfig(_options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(_options, CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT);
   }
 
   at(key: any): AnyShape | null {
@@ -118,7 +116,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   exact(options?: TypeConstraintOptions | Message): ObjectShape<P> {
     const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
 
-    shape._exactCheckConfig = createCheckConfig(options, CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, undefined);
+    shape._exactIssueFactory = createIssueFactory(options, CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, undefined);
 
     return shape;
   }
@@ -135,9 +133,13 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     return new ObjectShape(this.shapes, restShape, this._options);
   }
 
+  keyof(): EnumShape<ObjectKey<P>> {
+    return new EnumShape(this.keys);
+  }
+
   apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
     if (!isObjectLike(input)) {
-      return raiseIssue(this._typeCheckConfig, input);
+      return [this._typeIssueFactory(input)];
     }
     if (this.keysMode !== KeysMode.PRESERVED) {
       return this._applyStrictKeysSync(input, options);
@@ -149,9 +151,13 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
+    if (!this.async) {
+      return super.applyAsync(input, options);
+    }
+
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        return raiseIssue(this._typeCheckConfig, input);
+        return [this._typeIssueFactory(input)];
       }
 
       const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
@@ -205,7 +211,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
       }
 
       if (unknownKeys !== null) {
-        const issue = createIssue(this._exactCheckConfig!, input, unknownKeys);
+        const issue = this._exactIssueFactory!(input, unknownKeys);
 
         if (!options.verbose) {
           return [issue];
@@ -413,7 +419,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape = Shape<ne
     }
 
     if (unknownKeys !== null) {
-      const issue = createIssue(this._exactCheckConfig!, input, unknownKeys);
+      const issue = this._exactIssueFactory!(input, unknownKeys);
 
       if (!options.verbose) {
         return [issue];

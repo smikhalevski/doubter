@@ -55,7 +55,7 @@ describe('StringShape', () => {
   });
 
   test('raises if string does not match a pattern', () => {
-    expect(new StringShape().regex(/a+/).validate('bbb')).toEqual([
+    expect(new StringShape().match(/a+/).validate('bbb')).toEqual([
       {
         code: CODE_STRING_REGEX,
         path: [],
@@ -65,7 +65,7 @@ describe('StringShape', () => {
         meta: undefined,
       },
     ]);
-    expect(new StringShape().regex(/a+/).validate('aaa')).toBe(null);
+    expect(new StringShape().match(/a+/).validate('aaa')).toBe(null);
   });
 
   test('overrides message for type issue', () => {
@@ -108,7 +108,7 @@ describe('StringShape', () => {
   });
 
   test('raises multiple issues in verbose mode', () => {
-    expect(new StringShape({}).min(3).regex(/aaaa/, { unsafe: true }).validate('aa', { verbose: true })).toEqual([
+    expect(new StringShape({}).min(3).match(/aaaa/, { unsafe: true }).validate('aa', { verbose: true })).toEqual([
       {
         code: CODE_STRING_MIN,
         path: [],
@@ -129,7 +129,7 @@ describe('StringShape', () => {
   });
 
   test('raises a single issue', () => {
-    expect(new StringShape().min(3).regex(/aaaa/, { unsafe: true }).validate('aa')).toEqual([
+    expect(new StringShape().min(3).match(/aaaa/, { unsafe: true }).validate('aa')).toEqual([
       {
         code: CODE_STRING_MIN,
         path: [],

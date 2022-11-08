@@ -17,7 +17,7 @@ import {
  * The shape that constrains the input as a string.
  */
 export class StringShape extends Shape<string> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode StringShape} instance.
@@ -26,7 +26,7 @@ export class StringShape extends Shape<string> {
    */
   constructor(options?: TypeConstraintOptions | Message) {
     super();
-    this._issueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING);
+    this._typeIssueFactory = createIssueFactory(options, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING);
   }
 
   /**
@@ -50,7 +50,7 @@ export class StringShape extends Shape<string> {
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_STRING_MIN, MESSAGE_STRING_MIN, length);
 
-    return addCheck(this, CODE_STRING_MIN, options, output => {
+    return addCheck(this, CODE_STRING_MIN, options, length, output => {
       if (output.length < length) {
         return issueFactory(output);
       }
@@ -67,7 +67,7 @@ export class StringShape extends Shape<string> {
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_STRING_MAX, MESSAGE_STRING_MAX, length);
 
-    return addCheck(this, CODE_STRING_MAX, options, output => {
+    return addCheck(this, CODE_STRING_MAX, options, length, output => {
       if (output.length > length) {
         return issueFactory(output);
       }
@@ -81,10 +81,10 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  regex(re: RegExp, options?: ConstraintOptions | Message): this {
+  match(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(options, CODE_STRING_REGEX, MESSAGE_STRING_REGEX, re);
 
-    return addCheck(this, undefined, options, output => {
+    return addCheck(this, CODE_STRING_REGEX, options, re, output => {
       re.lastIndex = 0;
 
       if (!re.test(output)) {
@@ -97,7 +97,7 @@ export class StringShape extends Shape<string> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'string') {
-      return [this._issueFactory(input)];
+      return [this._typeIssueFactory(input)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

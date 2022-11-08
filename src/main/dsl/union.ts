@@ -7,9 +7,11 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  * @param shapes The list of shapes to try.
  * @param options The constraint options or an issue message.
  */
-export function or<U extends [AnyShape, ...AnyShape[]]>(
+export function union<U extends [AnyShape, ...AnyShape[]]>(
   shapes: U,
   options?: TypeConstraintOptions | Message
 ): UnionShape<U> {
   return new UnionShape<U>(shapes, options);
 }
+
+export { union as or };
