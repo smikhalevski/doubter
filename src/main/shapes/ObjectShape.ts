@@ -1,4 +1,4 @@
-import { ApplyResult, Dict, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, Dict, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
   cloneEnumerableKeys,
@@ -21,13 +21,13 @@ import {
 import { AnyShape, Shape } from './Shape';
 import { EnumShape } from './EnumShape';
 
-export type InferObject<P extends Dict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> = Squash<
-  UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>
->;
+// prettier-ignore
+export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> =
+  Squash<UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>>;
 
-export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> = R extends Shape
-  ? { [key: string]: R[C] }
-  : unknown;
+// prettier-ignore
+export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> =
+  R extends Shape ? { [key: string]: R[C] } : unknown;
 
 export type ObjectKey<T extends object> = StringifyPropertyKey<keyof T>;
 
@@ -54,7 +54,7 @@ export const enum KeysMode {
  * @template R The shape that constrains values of
  * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
  */
-export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = null> extends Shape<
+export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends AnyShape | null> extends Shape<
   InferObject<P, R, 'input'>,
   InferObject<P, R, 'output'>
 > {
@@ -63,6 +63,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
    */
   readonly keys: readonly ObjectKey<P>[];
 
+  protected _options;
   protected _valueShapes: Shape[];
   protected _typeIssueFactory;
   protected _exactIssueFactory: IssueFactory | null = null;
@@ -74,7 +75,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
    * @param restShape The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
    * then values thea fall under the indexer signature are unconstrained.
-   * @param _options The type constraint options or an issue message.
+   * @param options The type constraint options or an issue message.
    * @param keysMode The mode of unknown keys handling.
    * @template P The mapping from an object key to a corresponding value shape.
    * @template R The shape that constrains values of
@@ -84,13 +85,13 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
     /**
      * The mapping from an object key to a corresponding value shape.
      */
-    readonly shapes: Readonly<P>,
+    readonly shapes: P,
     /**
      * The shape that constrains values of
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
      */
-    readonly restShape: R | null = null,
-    protected _options?: TypeConstraintOptions | Message,
+    readonly restShape: R,
+    options?: TypeConstraintOptions | Message,
     /**
      * The mode of unknown keys handling.
      */
@@ -103,8 +104,9 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
 
     this.keys = keys as ObjectKey<P>[];
 
+    this._options = options;
     this._valueShapes = valueShapes;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, _options, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
   at(key: any): AnyShape | null {
@@ -119,7 +121,9 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
    * @returns The new object shape.
    * @template T The type of properties to add.
    */
-  extend<T extends Dict<AnyShape>>(shape: ObjectShape<T, any>): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
+  extend<T extends ReadonlyDict<AnyShape>>(
+    shape: ObjectShape<T, any>
+  ): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
 
   /**
    * Add properties to an object shape. If a property with the same key already exists on this object shape then it is
@@ -129,9 +133,9 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
    * @returns The new object shape.
    * @template T The shapes of properties to add.
    */
-  extend<T extends Dict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
+  extend<T extends ReadonlyDict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
 
-  extend(shape: ObjectShape<any> | Dict): ObjectShape<any, R> {
+  extend(shape: ObjectShape<any, any> | ReadonlyDict): ObjectShape<any, R> {
     const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
     return new ObjectShape(shapes, this.restShape, this._options);
@@ -190,8 +194,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
    * @param options The constraint options or an issue message.
    * @returns The new object shape.
    */
-  exact(options?: TypeConstraintOptions | Message): ObjectShape<P> {
-    const shape = new ObjectShape<P>(this.shapes, null, this._options, KeysMode.EXACT);
+  exact(options?: TypeConstraintOptions | Message): ObjectShape<P, null> {
+    const shape = new ObjectShape(this.shapes, null, this._options, KeysMode.EXACT);
 
     shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options, undefined);
 
@@ -205,8 +209,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
    *
    * @returns The new object shape.
    */
-  strip(): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, this._options, KeysMode.STRIPPED);
+  strip(): ObjectShape<P, null> {
+    return new ObjectShape(this.shapes, null, this._options, KeysMode.STRIPPED);
   }
 
   /**
@@ -216,8 +220,8 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
    *
    * @returns The new object shape.
    */
-  preserve(): ObjectShape<P> {
-    return new ObjectShape<P>(this.shapes, null, this._options);
+  preserve(): ObjectShape<P, null> {
+    return new ObjectShape(this.shapes, null, this._options);
   }
 
   /**
@@ -376,7 +380,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
     });
   }
 
-  private _applyPreservedKeysSync(input: Dict, options: ParseOptions): ApplyResult {
+  private _applyPreservedKeysSync(input: ReadonlyDict, options: ParseOptions): ApplyResult {
     const { keys, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
@@ -418,7 +422,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
     return issues;
   }
 
-  private _applyPreservedRestKeysSync(input: Dict, options: ParseOptions): ApplyResult {
+  private _applyPreservedRestKeysSync(input: ReadonlyDict, options: ParseOptions): ApplyResult {
     const { keys, restShape, _valueShapes, _applyChecks, _unsafe } = this;
 
     let issues: Issue[] | null = null;
@@ -459,7 +463,7 @@ export class ObjectShape<P extends Dict<AnyShape>, R extends AnyShape | null = n
     return issues;
   }
 
-  private _applyStrictKeysSync(input: Dict, options: ParseOptions): ApplyResult {
+  private _applyStrictKeysSync(input: ReadonlyDict, options: ParseOptions): ApplyResult {
     const { keys, keysMode, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;

@@ -1,4 +1,13 @@
-import { ApplyChecksCallback, Check, CheckCallback, ConstraintOptions, Dict, Issue, Message, Ok } from './shared-types';
+import {
+  ApplyChecksCallback,
+  Check,
+  CheckCallback,
+  ConstraintOptions,
+  ReadonlyDict,
+  Issue,
+  Message,
+  Ok,
+} from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 
@@ -139,8 +148,8 @@ export function setKeyValue(obj: Record<any, any>, key: PropertyKey, value: unkn
   }
 }
 
-export function cloneEnumerableKeys(input: Dict, keyCount = -1): Dict {
-  const output: Dict = {};
+export function cloneEnumerableKeys(input: ReadonlyDict, keyCount = -1): ReadonlyDict {
+  const output: ReadonlyDict = {};
 
   if (keyCount < 0) {
     for (const key in input) {
@@ -161,8 +170,8 @@ export function cloneEnumerableKeys(input: Dict, keyCount = -1): Dict {
   return output;
 }
 
-export function cloneKnownKeys(input: Dict, keys: readonly string[]): Dict {
-  const output: Dict = {};
+export function cloneKnownKeys(input: ReadonlyDict, keys: readonly string[]): ReadonlyDict {
+  const output: ReadonlyDict = {};
   const keysLength = keys.length;
 
   for (let i = 0; i < keysLength; ++i) {

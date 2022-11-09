@@ -662,43 +662,43 @@ describe(
   () => {
     const value = [111, 222];
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'array',
-        items: [{ type: 'number' }, { type: 'number' }],
-        minItems: 2,
-        maxItems: 2,
-      });
-
-      measure(() => {
-        validate(value);
-      });
-    });
-
-    test('zod', measure => {
-      const type = zod.tuple([zod.number(), zod.number()]);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = myzod.tuple([myzod.number(), myzod.number()]);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('valita', measure => {
-      const type = valita.tuple([valita.number(), valita.number()]);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
+    // test('Ajv', measure => {
+    //   const validate = new Ajv().compile({
+    //     $schema: 'http://json-schema.org/draft-07/schema#',
+    //     type: 'array',
+    //     items: [{ type: 'number' }, { type: 'number' }],
+    //     minItems: 2,
+    //     maxItems: 2,
+    //   });
+    //
+    //   measure(() => {
+    //     validate(value);
+    //   });
+    // });
+    //
+    // test('zod', measure => {
+    //   const type = zod.tuple([zod.number(), zod.number()]);
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
+    //
+    // test('myzod', measure => {
+    //   const type = myzod.tuple([myzod.number(), myzod.number()]);
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
+    //
+    // test('valita', measure => {
+    //   const type = valita.tuple([valita.number(), valita.number()]);
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
 
     test('doubter', measure => {
       const shape = doubter.tuple([doubter.number(), doubter.number()]);

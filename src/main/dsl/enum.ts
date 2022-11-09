@@ -1,4 +1,4 @@
-import { Any, Dict, Message, TypeConstraintOptions } from '../shared-types';
+import { Any, ReadonlyDict, Message, TypeConstraintOptions } from '../shared-types';
 import { EnumShape } from '../shapes';
 import { isArray } from '../utils';
 
@@ -8,7 +8,7 @@ import { isArray } from '../utils';
  * @param values The list of values allowed for the input.
  * @param options The constraint options or an issue message.
  */
-function enum_<T extends Any, U extends [T, ...T[]]>(
+function enum_<T extends Any, U extends readonly [T, ...T[]]>(
   values: U,
   options?: TypeConstraintOptions | Message
 ): EnumShape<U[number]>;
@@ -19,12 +19,12 @@ function enum_<T extends Any, U extends [T, ...T[]]>(
  * @param values The native enum or a mapping object.
  * @param options The constraint options or an issue message.
  */
-function enum_<T extends Any, U extends Dict<T>>(
+function enum_<T extends Any, U extends ReadonlyDict<T>>(
   values: U,
   options?: TypeConstraintOptions | Message
 ): EnumShape<U[keyof U]>;
 
-function enum_(values: Dict, options?: TypeConstraintOptions | Message): EnumShape<any> {
+function enum_(values: ReadonlyDict, options?: TypeConstraintOptions | Message): EnumShape<any> {
   return new EnumShape(
     isArray(values) ? values : Object.values(values).filter(value => typeof values[value] !== 'number'),
     options

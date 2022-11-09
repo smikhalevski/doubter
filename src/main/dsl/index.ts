@@ -14,7 +14,6 @@ export * from './object';
 export * from './preprocess';
 export * from './record';
 export * from './string';
-export * from './tuple';
 export * from './union';
 export * from './unknown';
 export * from './url';

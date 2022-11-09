@@ -1,7 +1,7 @@
-import { ApplyResult, Err, Ok, ParseOptions, Shape, ValidationError } from '../../main';
+import { ApplyResult, Ok, ParseOptions, Shape, ValidationError } from '../../main';
 import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/constants';
 
-class AsyncTestShape extends Shape {
+class AsyncShape extends Shape {
   constructor() {
     super(true);
   }
@@ -71,9 +71,9 @@ describe('Shape', () => {
   });
 
   test('returns err when input parsing failed', () => {
-    const shape = new Shape().check(() => [{ code: 'aaa' }]);
+    const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    expect(shape.try('aaa')).toEqual({ ok: false, issues: [{ code: 'aaa', path: [] }] });
+    expect(shape.try('aaa')).toEqual({ ok: false, issues: [{ code: 'xxx', path: [] }] });
   });
 
   test('returns ok if check returns an empty array', () => {
@@ -87,28 +87,19 @@ describe('Shape', () => {
   });
 
   test('returns err when input parsing failed', () => {
-    const shape = new Shape().check(() => [{ code: 'aaa' }]);
+    const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    expect(() => shape.try('aaa')).toThrow(new ValidationError([{ code: 'aaa' }]));
+    expect(() => shape.try('aaa')).toThrow(new ValidationError([{ code: 'xxx' }]));
   });
 
   test('checks can safely throw ValidationError instances', () => {
     const shape = new Shape().check(() => {
-      throw new ValidationError([{ code: 'bbb' }]);
+      throw new ValidationError([{ code: 'xxx' }]);
     });
 
-    expect(shape.try('aaa')).toEqual<Err>({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: 'bbb',
-          path: [],
-          input: undefined,
-          param: undefined,
-          message: undefined,
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: 'xxx', path: [] }],
     });
   });
 
@@ -121,23 +112,14 @@ describe('Shape', () => {
   });
 
   test('check is not called in verbose mode if preceding check failed', () => {
-    const checkMock1 = jest.fn(() => [{ code: 'bbb' }]);
+    const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
     const checkMock2 = jest.fn();
 
     const shape = new Shape().check(checkMock1).check(checkMock2);
 
-    expect(shape.try('aaa', { verbose: true })).toEqual<Err>({
+    expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
-      issues: [
-        {
-          code: 'bbb',
-          path: [],
-          input: undefined,
-          param: undefined,
-          message: undefined,
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: 'xxx', path: [] }],
     });
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
@@ -145,23 +127,14 @@ describe('Shape', () => {
   });
 
   test('unsafe checks are called in verbose mode even if preceding check failed', () => {
-    const checkMock1 = jest.fn(() => [{ code: 'bbb' }]);
+    const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
     const checkMock2 = jest.fn();
 
     const shape = new Shape().check(checkMock1).check(checkMock2, { unsafe: true });
 
-    expect(shape.try('aaa', { verbose: true })).toEqual<Err>({
+    expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
-      issues: [
-        {
-          code: 'bbb',
-          path: [],
-          input: undefined,
-          param: undefined,
-          message: undefined,
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: 'xxx', path: [] }],
     });
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
@@ -170,30 +143,16 @@ describe('Shape', () => {
   });
 
   test('collects all issues in verbose mode', () => {
-    const checkMock1 = jest.fn(() => [{ code: 'bbb' }]);
-    const checkMock2 = jest.fn(() => [{ code: 'ccc' }]);
+    const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
+    const checkMock2 = jest.fn(() => [{ code: 'yyy' }]);
 
     const shape = new Shape().check(checkMock1).check(checkMock2, { unsafe: true });
 
-    expect(shape.try('aaa', { verbose: true })).toEqual<Err>({
+    expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
       issues: [
-        {
-          code: 'bbb',
-          path: [],
-          input: undefined,
-          param: undefined,
-          message: undefined,
-          meta: undefined,
-        },
-        {
-          code: 'ccc',
-          path: [],
-          input: undefined,
-          param: undefined,
-          message: undefined,
-          meta: undefined,
-        },
+        { code: 'xxx', path: [] },
+        { code: 'yyy', path: [] },
       ],
     });
 
@@ -214,18 +173,9 @@ describe('Shape', () => {
   test('returns issues if predicate fails', () => {
     const cb = () => false;
 
-    expect(new Shape().refine(cb).try('aaa')).toEqual<Err>({
+    expect(new Shape().refine(cb).try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_PREDICATE,
-          path: [],
-          input: 'aaa',
-          message: MESSAGE_PREDICATE,
-          param: cb,
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
     });
   });
 
@@ -240,18 +190,9 @@ describe('Shape', () => {
 
     const shape = new Shape().refine(cb, 'bbb');
 
-    expect(shape.try('aaa')).toEqual<Err>({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_PREDICATE,
-          path: [],
-          input: 'aaa',
-          message: 'bbb',
-          param: cb,
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
     });
   });
 
@@ -260,54 +201,45 @@ describe('Shape', () => {
 
     const shape = new Shape().refine(cb, { message: 'bbb' });
 
-    expect(shape.try('aaa')).toEqual<Err>({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_PREDICATE,
-          path: [],
-          input: 'aaa',
-          message: 'bbb',
-          param: cb,
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
     });
   });
 
   test('allows undefined input', () => {
-    const shape = new Shape().check(() => [{ code: 'bbb' }]).optional();
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).optional();
 
     expect(shape.parse(undefined)).toBe(undefined);
   });
 
   test('returns default value for an undefined input', () => {
-    const shape = new Shape().check(() => [{ code: 'bbb' }]).optional('aaa');
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).optional('aaa');
 
     expect(shape.parse(undefined)).toBe('aaa');
   });
 
   test('allows null input', () => {
-    const shape = new Shape().check(() => [{ code: 'bbb' }]).nullable();
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullable();
 
     expect(shape.parse(null)).toBe(null);
   });
 
   test('returns default value for an null input', () => {
-    const shape = new Shape().check(() => [{ code: 'bbb' }]).nullable('aaa');
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullable('aaa');
 
     expect(shape.parse(null)).toBe('aaa');
   });
 
   test('allows null and undefined input', () => {
-    const shape = new Shape().check(() => [{ code: 'bbb' }]).nullish();
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish();
 
     expect(shape.parse(null)).toBe(null);
     expect(shape.parse(undefined)).toBe(undefined);
   });
 
   test('returns default value for both null and undefined inputs', () => {
-    const shape = new Shape().check(() => [{ code: 'bbb' }]).nullish('aaa');
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish('aaa');
 
     expect(shape.parse(null)).toBe('aaa');
     expect(shape.parse(undefined)).toBe('aaa');
@@ -326,7 +258,7 @@ describe('Shape', () => {
     });
 
     test('returns promise', async () => {
-      const shape = new AsyncTestShape();
+      const shape = new AsyncShape();
 
       const outputPromise = shape.parseAsync('aaa');
       const resultPromise = shape.tryAsync('aaa');
@@ -355,7 +287,7 @@ describe('TransformedShape', () => {
   test('does not call transform if shape parsing failed', () => {
     const cbMock = jest.fn(() => 111);
 
-    const shape = new Shape().check(() => [{ code: 'bbb' }]).transform(cbMock);
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).transform(cbMock);
 
     shape.try('aaa');
 
@@ -364,21 +296,12 @@ describe('TransformedShape', () => {
 
   test('transform callback can throw ValidationError instances', () => {
     const shape = new Shape().transform(() => {
-      throw new ValidationError([{ code: 'bbb' }]);
+      throw new ValidationError([{ code: 'xxx' }]);
     });
 
-    expect(shape.try('aaa')).toEqual<Err>({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: 'bbb',
-          path: [],
-          input: undefined,
-          message: undefined,
-          param: undefined,
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: 'xxx', path: [] }],
     });
   });
 
@@ -404,7 +327,7 @@ describe('TransformedShape', () => {
     test('transforms async shape output', async () => {
       const cbMock = jest.fn(() => 111);
 
-      const shape = new AsyncTestShape().transform(cbMock);
+      const shape = new AsyncShape().transform(cbMock);
 
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
@@ -424,20 +347,11 @@ describe('TransformedShape', () => {
     });
 
     test('transform callback can reject with ValidationError instances', async () => {
-      const shape = new Shape().transformAsync(() => Promise.reject(new ValidationError([{ code: 'bbb' }])));
+      const shape = new Shape().transformAsync(() => Promise.reject(new ValidationError([{ code: 'xxx' }])));
 
-      await expect(shape.tryAsync('aaa')).resolves.toEqual<Err>({
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [
-          {
-            code: 'bbb',
-            path: [],
-            input: undefined,
-            message: undefined,
-            param: undefined,
-            meta: undefined,
-          },
-        ],
+        issues: [{ code: 'xxx', path: [] }],
       });
     });
 
@@ -469,7 +383,7 @@ describe('PipedShape', () => {
   });
 
   test('does not apply the output shape if the input shape parsing failed', () => {
-    const shape1 = new Shape().check(() => [{ code: 'bbb' }]);
+    const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
     const shape2 = new Shape();
 
     const applySpy = jest.spyOn(shape2, 'apply');
@@ -483,7 +397,7 @@ describe('PipedShape', () => {
 
   test('does not apply checks if the output shape has failed', () => {
     const shape1 = new Shape();
-    const shape2 = new Shape().check(() => [{ code: 'bbb' }]);
+    const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
 
     const checkMock = jest.fn();
 

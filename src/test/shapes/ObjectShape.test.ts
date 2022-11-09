@@ -12,7 +12,7 @@ describe('ObjectShape', () => {
     const shape = new ObjectShape({}, null);
 
     expect(shape.keysMode).toBe(KeysMode.PRESERVED);
-    expect(shape.validate({})).toBe(null);
+    expect(shape.parse({})).toBe(null);
   });
 
   test('raises if not an object', () => {

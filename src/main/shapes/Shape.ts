@@ -123,7 +123,7 @@ export class Shape<I = any, O = I> {
 
     if (async) {
       this.apply = () => {
-        throw new Error('Shape is async and cannot be used in a sync context');
+        throw new Error('Shape is async, consider using tryAsync or parseAsync');
       };
     }
   }

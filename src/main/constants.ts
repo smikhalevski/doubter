@@ -13,6 +13,7 @@ export const CODE_STRING_MAX = 'stringMaxLength';
 export const CODE_STRING_MIN = 'stringMinLength';
 export const CODE_STRING_REGEX = 'stringRegex';
 export const CODE_TYPE = 'type';
+export const CODE_TUPLE = 'tuple';
 export const CODE_UNION = 'union';
 export const CODE_UNKNOWN_KEYS = 'unknownKeys';
 
@@ -46,4 +47,5 @@ export const MESSAGE_STRING_TYPE = 'Must be a string';
 export const MESSAGE_STRING_MAX = 'Must have the maximum length of %s';
 export const MESSAGE_STRING_MIN = 'Must have the minimum length of %s';
 export const MESSAGE_STRING_REGEX = 'Must match the pattern %s';
+export const MESSAGE_TUPLE = 'Must be a tuple of length %s';
 export const MESSAGE_UNION = 'Must conform a union';

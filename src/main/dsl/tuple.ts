@@ -8,10 +8,10 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  * @param options The constraint options or an issue message.
  * @template U The tuple elements.
  */
-export function tuple<U extends [AnyShape, ...AnyShape[]]>(
+export function tuple<U extends readonly [AnyShape, ...AnyShape[]]>(
   shapes: U,
   options?: TypeConstraintOptions | Message
-): ArrayShape<U>;
+): ArrayShape<U, null>;
 
 /**
  * Creates the tuple shape with rest elements.
@@ -22,7 +22,7 @@ export function tuple<U extends [AnyShape, ...AnyShape[]]>(
  * @template U The head tuple elements.
  * @template R The rest tuple elements.
  */
-export function tuple<U extends [AnyShape, ...AnyShape[]], R extends AnyShape | null = null>(
+export function tuple<U extends readonly [AnyShape, ...AnyShape[]], R extends AnyShape | null = null>(
   shapes: U,
   restShape?: R | null,
   options?: TypeConstraintOptions | Message
@@ -34,7 +34,7 @@ export function tuple(
   options?: TypeConstraintOptions | Message
 ): ArrayShape<[AnyShape, ...AnyShape[]], AnyShape | null> {
   if (restShape == null || restShape instanceof Shape) {
-    return new ArrayShape(shapes, restShape, options);
+    return new ArrayShape(shapes, restShape || null, options);
   } else {
     return new ArrayShape(shapes, null, restShape);
   }
