@@ -51,15 +51,29 @@ export function appendCheck<S extends Shape>(
   });
 }
 
-export type IssueFactory = (input: unknown) => Issue;
+export function createIssueFactory(
+  code: unknown,
+  defaultMessage: unknown,
+  options: ConstraintOptions | Message | undefined,
+  param: unknown
+): (input: unknown) => Issue;
 
 export function createIssueFactory(
   code: unknown,
-  message: unknown,
+  defaultMessage: unknown,
+  options: ConstraintOptions | Message | undefined
+): (input: unknown, param: unknown) => Issue;
+
+export function createIssueFactory(
+  code: unknown,
+  defaultMessage: any,
   options: ConstraintOptions | Message | undefined,
-  param?: unknown
-): IssueFactory {
+  param?: any
+): (input: unknown, param: unknown) => Issue {
+  const paramKnown = arguments.length === 4;
+
   let meta: unknown;
+  let message = defaultMessage;
 
   if (options !== null && typeof options === 'object') {
     if (options.message !== undefined) {
@@ -69,23 +83,40 @@ export function createIssueFactory(
   } else if (typeof options === 'function') {
     message = options;
   } else if (options != null) {
-    message = String(options);
+    message = options;
+  }
+
+  if (typeof message === 'function') {
+    if (paramKnown) {
+      return input => {
+        return { code, path: [], input, message: message(param, code, input, meta), param, meta };
+      };
+    } else {
+      return (input, param) => {
+        return { code, path: [], input, message: message(param, code, input, meta), param, meta };
+      };
+    }
   }
 
   if (typeof message === 'string') {
-    message = message.replace('%s', String(param));
+    if (paramKnown) {
+      message = message.replace('%s', param);
+    } else if (message.indexOf('%s') !== -1) {
+      return (input, param) => {
+        return { code, path: [], input, message: message.replace('%s', param), param, meta };
+      };
+    }
   }
 
-  return input => {
-    return {
-      code,
-      path: [],
-      input,
-      message,
-      param,
-      meta,
+  if (paramKnown) {
+    return input => {
+      return { code, path: [], input, message, param, meta };
     };
-  };
+  } else {
+    return (input, param) => {
+      return { code, path: [], input, message, param, meta };
+    };
+  }
 }
 
 export function unshiftPath(issues: Issue[], key: unknown): void {

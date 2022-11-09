@@ -10,7 +10,7 @@ describe('EnumShape', () => {
     expect(new EnumShape(['aaa', 'bbb']).try('ccc')).toEqual({
       ok: false,
       issues: [
-        { code: CODE_ENUM, path: [], input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of aaa,bbb' },
+        { code: CODE_ENUM, path: [], input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of: aaa,bbb' },
       ],
     });
   });

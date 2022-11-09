@@ -24,7 +24,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
   constructor(readonly shapes: U, options?: TypeConstraintOptions | Message) {
     super(isAsyncShapes(shapes));
 
-    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options, undefined);
+    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -69,10 +69,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     if (_applyChecks !== null && _unsafe) {
       issues = _applyChecks(input, issues, options);
     }
-    const issue = this._typeIssueFactory(input);
-    issue.param = issues;
-
-    return [issue];
+    return [this._typeIssueFactory(input, issues)];
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
@@ -105,10 +102,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
           if (_applyChecks !== null && _unsafe) {
             issues = _applyChecks(input, issues, options);
           }
-          const issue = this._typeIssueFactory(input);
-          issue.param = issues;
-
-          return [issue];
+          return [this._typeIssueFactory(input, issues)];
         }
 
         return result;

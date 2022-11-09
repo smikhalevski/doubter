@@ -116,7 +116,7 @@ export interface Issue {
 /**
  * The message callback or a string.
  */
-export type Message = ((param: any, value: any) => any) | string;
+export type Message = ((param: any, code: any, input: any, meta: any) => any) | string;
 
 /**
  * Options that are applicable for the type constraint.
@@ -125,7 +125,7 @@ export interface TypeConstraintOptions {
   /**
    * The custom issue message.
    */
-  message?: any;
+  message?: Message | Any;
 
   /**
    * An arbitrary metadata that is added to an issue.
@@ -140,7 +140,7 @@ export interface ConstraintOptions {
   /**
    * The custom issue message.
    */
-  message?: any;
+  message?: Message | Any;
 
   /**
    * An arbitrary metadata that is added to an issue.

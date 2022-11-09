@@ -11,7 +11,6 @@ import {
   isEqual,
   isFlagSet,
   isObjectLike,
-  IssueFactory,
   ok,
   pushIssue,
   setFlag,
@@ -67,7 +66,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   protected _options;
   protected _valueShapes: Shape[];
   protected _typeIssueFactory;
-  protected _exactIssueFactory: IssueFactory | null = null;
+  protected _exactIssueFactory: ((input: unknown, param: unknown) => Issue) | null = null;
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.
@@ -195,7 +194,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   exact(options?: TypeConstraintOptions | Message): ObjectShape<P, null> {
     const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
 
-    shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options, undefined);
+    shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options);
 
     return shape;
   }
@@ -314,8 +313,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
 
       if (unknownKeys !== null) {
-        const issue = this._exactIssueFactory!(input);
-        issue.param = unknownKeys;
+        const issue = this._exactIssueFactory!(input, unknownKeys);
 
         if (!options.verbose) {
           return [issue];
@@ -437,9 +435,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     let unknownKeys: string[] | null = null;
 
-    const unknownKeysCaptured = keysMode === 'exact';
-    const unknownKeysStripped = keysMode === 'stripped';
-
     for (const key in input) {
       const value = input[key];
       const index = keys.indexOf(key as ObjectKey<P>);
@@ -471,7 +466,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = unknownKeysStripped ? cloneKnownKeys(input, keys) : cloneEnumerableKeys(input);
+            output = keysMode === 'stripped' ? cloneKnownKeys(input, keys) : cloneEnumerableKeys(input);
           }
           setKeyValue(output, key, result.value);
         }
@@ -479,7 +474,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
 
       // Unknown keys raise an issue
-      if (unknownKeysCaptured) {
+      if (keysMode === 'exact') {
         if (unknownKeys !== null) {
           unknownKeys.push(key);
           continue;
@@ -501,8 +496,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     // Raise unknown keys issue
     if (unknownKeys !== null) {
-      const issue = this._exactIssueFactory!(input);
-      issue.param = unknownKeys;
+      const issue = this._exactIssueFactory!(input, unknownKeys);
 
       if (!options.verbose) {
         return [issue];
@@ -535,7 +529,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = unknownKeysStripped ? cloneKnownKeys(input, keys) : cloneEnumerableKeys(input);
+            output = keysMode === 'stripped' ? cloneKnownKeys(input, keys) : cloneEnumerableKeys(input);
           }
           setKeyValue(output, key, result.value);
         }
