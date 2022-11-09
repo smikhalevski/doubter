@@ -1,4 +1,4 @@
-import { Any, ReadonlyDict, Message, TypeConstraintOptions } from '../shared-types';
+import { Any, Message, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { EnumShape } from '../shapes';
 import { isArray } from '../utils';
 

@@ -1,4 +1,4 @@
-import { ReadonlyDict, Message, TypeConstraintOptions } from '../shared-types';
+import { Message, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { AnyShape, ObjectShape } from '../shapes';
 
 /**

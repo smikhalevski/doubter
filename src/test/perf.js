@@ -662,43 +662,43 @@ describe(
   () => {
     const value = [111, 222];
 
-    // test('Ajv', measure => {
-    //   const validate = new Ajv().compile({
-    //     $schema: 'http://json-schema.org/draft-07/schema#',
-    //     type: 'array',
-    //     items: [{ type: 'number' }, { type: 'number' }],
-    //     minItems: 2,
-    //     maxItems: 2,
-    //   });
-    //
-    //   measure(() => {
-    //     validate(value);
-    //   });
-    // });
-    //
-    // test('zod', measure => {
-    //   const type = zod.tuple([zod.number(), zod.number()]);
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
-    //
-    // test('myzod', measure => {
-    //   const type = myzod.tuple([myzod.number(), myzod.number()]);
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
-    //
-    // test('valita', measure => {
-    //   const type = valita.tuple([valita.number(), valita.number()]);
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'array',
+        items: [{ type: 'number' }, { type: 'number' }],
+        minItems: 2,
+        maxItems: 2,
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('zod', measure => {
+      const type = zod.tuple([zod.number(), zod.number()]);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.tuple([myzod.number(), myzod.number()]);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = valita.tuple([valita.number(), valita.number()]);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
 
     test('doubter', measure => {
       const shape = doubter.tuple([doubter.number(), doubter.number()]);
@@ -903,7 +903,11 @@ describe(
     });
 
     test('zod', measure => {
-      const type = zod.object({ foo: zod.string() }).catchall(zod.string());
+      const type = zod
+        .object({
+          foo: zod.string(),
+        })
+        .catchall(zod.string());
 
       measure(() => {
         type.parse(value);
@@ -911,16 +915,23 @@ describe(
     });
 
     test('valita', measure => {
-      const type = valita.object({ foo: valita.string() }).rest(valita.string());
-      const options = { mode: 'passthrough' };
+      const type = valita
+        .object({
+          foo: valita.string(),
+        })
+        .rest(valita.string());
 
       measure(() => {
-        type.parse(value, options);
+        type.parse(value);
       });
     });
 
     test('doubter', measure => {
-      const shape = doubter.object({ foo: doubter.string() }).index(doubter.string());
+      const shape = doubter
+        .object({
+          foo: doubter.string(),
+        })
+        .index(doubter.string());
 
       measure(() => {
         shape.parse(value);
@@ -928,7 +939,11 @@ describe(
     });
 
     test('next', measure => {
-      const shape = next.object({ foo: next.string() }).rest(next.string());
+      const shape = next
+        .object({
+          foo: next.string(),
+        })
+        .rest(next.string());
 
       measure(() => {
         shape.parse(value);
@@ -995,15 +1010,19 @@ describe(
         foo: valita.string(),
         bar: valita.number(),
       });
-      const options = { mode: 'passthrough' };
 
       measure(() => {
-        type.parse(value, options);
+        type.parse(value);
       });
     });
 
     test('doubter', measure => {
-      const shape = doubter.object({ foo: doubter.string(), bar: doubter.number() }).exact();
+      const shape = doubter
+        .object({
+          foo: doubter.string(),
+          bar: doubter.number(),
+        })
+        .exact();
 
       measure(() => {
         shape.parse(value);
@@ -1199,132 +1218,132 @@ describe(
       },
     };
 
-    // test('Ajv', measure => {
-    //   const ajv = new Ajv();
-    //
-    //   const schema = {
-    //     $id: 'test',
-    //     $schema: 'http://json-schema.org/draft-07/schema#',
-    //     type: 'object',
-    //     properties: {
-    //       a1: {
-    //         type: 'number',
-    //       },
-    //       a2: {
-    //         type: 'number',
-    //       },
-    //       a3: {
-    //         type: 'number',
-    //       },
-    //       a4: {
-    //         type: 'string',
-    //       },
-    //       a5: {
-    //         type: 'string',
-    //       },
-    //       a6: {
-    //         type: 'boolean',
-    //       },
-    //       a7: {
-    //         type: 'object',
-    //         properties: {
-    //           a71: {
-    //             type: 'string',
-    //           },
-    //           a72: {
-    //             type: 'number',
-    //           },
-    //           a73: {
-    //             type: 'boolean',
-    //           },
-    //         },
-    //         required: ['a71', 'a72', 'a73'],
-    //       },
-    //     },
-    //     required: ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'],
-    //   };
-    //
-    //   const validate = ajv.compile(schema);
-    //
-    //   measure(() => {
-    //     validate(value);
-    //   });
-    // });
-    //
-    // test('zod', measure => {
-    //   const type = zod
-    //     .object({
-    //       a1: zod.number(),
-    //       a2: zod.number(),
-    //       a3: zod.number(),
-    //       a4: zod.string(),
-    //       a5: zod.string(),
-    //       a6: zod.boolean(),
-    //       a7: zod
-    //         .object({
-    //           a71: zod.string(),
-    //           a72: zod.number(),
-    //           a73: zod.boolean(),
-    //         })
-    //         .passthrough(),
-    //     })
-    //     .passthrough();
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
-    //
-    // test('myzod', measure => {
-    //   const type = myzod.object(
-    //     {
-    //       a1: myzod.number(),
-    //       a2: myzod.number(),
-    //       a3: myzod.number(),
-    //       a4: myzod.string(),
-    //       a5: myzod.string(),
-    //       a6: myzod.boolean(),
-    //       a7: myzod.object(
-    //         {
-    //           a71: myzod.string(),
-    //           a72: myzod.number(),
-    //           a73: myzod.boolean(),
-    //         },
-    //         {
-    //           allowUnknown: true,
-    //         }
-    //       ),
-    //     },
-    //     {
-    //       allowUnknown: true,
-    //     }
-    //   );
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
-    //
-    // test('valita', measure => {
-    //   const type = valita.object({
-    //     a1: valita.number(),
-    //     a2: valita.number(),
-    //     a3: valita.number(),
-    //     a4: valita.string(),
-    //     a5: valita.string(),
-    //     a6: valita.boolean(),
-    //     a7: valita.object({
-    //       a71: valita.string(),
-    //       a72: valita.number(),
-    //       a73: valita.boolean(),
-    //     }),
-    //   });
-    //   const options = { mode: 'passthrough' };
-    //
-    //   measure(() => {
-    //     type.parse(value, options);
-    //   });
-    // });
+    test('Ajv', measure => {
+      const ajv = new Ajv();
+
+      const schema = {
+        $id: 'test',
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'object',
+        properties: {
+          a1: {
+            type: 'number',
+          },
+          a2: {
+            type: 'number',
+          },
+          a3: {
+            type: 'number',
+          },
+          a4: {
+            type: 'string',
+          },
+          a5: {
+            type: 'string',
+          },
+          a6: {
+            type: 'boolean',
+          },
+          a7: {
+            type: 'object',
+            properties: {
+              a71: {
+                type: 'string',
+              },
+              a72: {
+                type: 'number',
+              },
+              a73: {
+                type: 'boolean',
+              },
+            },
+            required: ['a71', 'a72', 'a73'],
+          },
+        },
+        required: ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7'],
+      };
+
+      const validate = ajv.compile(schema);
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('zod', measure => {
+      const type = zod
+        .object({
+          a1: zod.number(),
+          a2: zod.number(),
+          a3: zod.number(),
+          a4: zod.string(),
+          a5: zod.string(),
+          a6: zod.boolean(),
+          a7: zod
+            .object({
+              a71: zod.string(),
+              a72: zod.number(),
+              a73: zod.boolean(),
+            })
+            .passthrough(),
+        })
+        .passthrough();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.object(
+        {
+          a1: myzod.number(),
+          a2: myzod.number(),
+          a3: myzod.number(),
+          a4: myzod.string(),
+          a5: myzod.string(),
+          a6: myzod.boolean(),
+          a7: myzod.object(
+            {
+              a71: myzod.string(),
+              a72: myzod.number(),
+              a73: myzod.boolean(),
+            },
+            {
+              allowUnknown: true,
+            }
+          ),
+        },
+        {
+          allowUnknown: true,
+        }
+      );
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = valita.object({
+        a1: valita.number(),
+        a2: valita.number(),
+        a3: valita.number(),
+        a4: valita.string(),
+        a5: valita.string(),
+        a6: valita.boolean(),
+        a7: valita.object({
+          a71: valita.string(),
+          a72: valita.number(),
+          a73: valita.boolean(),
+        }),
+      });
+      const options = { mode: 'passthrough' };
+
+      measure(() => {
+        type.parse(value, options);
+      });
+    });
 
     test('doubter', measure => {
       const shape = doubter.object({

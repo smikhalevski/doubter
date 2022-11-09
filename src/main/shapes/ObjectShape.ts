@@ -41,11 +41,7 @@ export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> 
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export const enum KeysMode {
-  PRESERVED,
-  STRIPPED,
-  EXACT,
-}
+export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
 /**
  * The shape of an object.
@@ -54,7 +50,7 @@ export const enum KeysMode {
  * @template R The shape that constrains values of
  * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
  */
-export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends AnyShape | null> extends Shape<
+export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null> extends Shape<
   InferObject<P, R, 'input'>,
   InferObject<P, R, 'output'>
 > {
@@ -62,6 +58,11 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
    * The array of known object keys.
    */
   readonly keys: readonly ObjectKey<P>[];
+
+  /**
+   * The mode of unknown keys handling.
+   */
+  readonly keysMode: KeysMode;
 
   protected _options;
   protected _valueShapes: Shape[];
@@ -74,7 +75,7 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
    * @param shapes The mapping from an object key to a corresponding value shape.
    * @param restShape The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
-   * then values thea fall under the indexer signature are unconstrained.
+   * then values thea fall under the index signature are unconstrained.
    * @param options The type constraint options or an issue message.
    * @param keysMode The mode of unknown keys handling.
    * @template P The mapping from an object key to a corresponding value shape.
@@ -92,17 +93,14 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
      */
     readonly restShape: R,
     options?: TypeConstraintOptions | Message,
-    /**
-     * The mode of unknown keys handling.
-     */
-    readonly keysMode: KeysMode = KeysMode.PRESERVED
+    keysMode: KeysMode = 'preserved'
   ) {
-    const keys = Object.keys(shapes);
     const valueShapes = Object.values(shapes);
 
-    super((restShape !== null && restShape.async) || isAsyncShapes(valueShapes));
+    super(isAsyncShapes(valueShapes) || (restShape !== null && restShape.async));
 
-    this.keys = keys as ObjectKey<P>[];
+    this.keys = Object.keys(shapes) as ObjectKey<P>[];
+    this.keysMode = keysMode;
 
     this._options = options;
     this._valueShapes = valueShapes;
@@ -115,7 +113,7 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
 
   /**
    * Merge properties from the other object shape. If a property with the same key already exists on this object shape
-   * then it is overwritten. Indexer signature of this shape is preserved intact.
+   * then it is overwritten. The index signature of this shape is preserved intact.
    *
    * @param shape The object shape which properties must be added to this object shape.
    * @returns The new object shape.
@@ -195,7 +193,7 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
    * @returns The new object shape.
    */
   exact(options?: TypeConstraintOptions | Message): ObjectShape<P, null> {
-    const shape = new ObjectShape(this.shapes, null, this._options, KeysMode.EXACT);
+    const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
 
     shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options, undefined);
 
@@ -203,18 +201,18 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
   }
 
   /**
-   * Returns an object shape that doesn't have indexer signature and all unknown keys are stripped.
+   * Returns an object shape that doesn't have an index signature and all unknown keys are stripped.
    *
    * The returned object shape would have no custom checks.
    *
    * @returns The new object shape.
    */
   strip(): ObjectShape<P, null> {
-    return new ObjectShape(this.shapes, null, this._options, KeysMode.STRIPPED);
+    return new ObjectShape(this.shapes, null, this._options, 'stripped');
   }
 
   /**
-   * Returns an object shape that has an indexer signature that doesn't constrain values.
+   * Returns an object shape that has an index signature that doesn't constrain values.
    *
    * The returned object shape would have no custom checks.
    *
@@ -225,13 +223,13 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
   }
 
   /**
-   * Returns an object shape that has an indexer signature that is constrained by the given shape.
+   * Returns an object shape that has an index signature that is constrained by the given shape.
    *
    * The returned object shape would have no custom checks.
    *
-   * @param restShape The shape of the indexer values.
+   * @param restShape The shape that validates values at unknown keys.
    * @returns The new object shape.
-   * @template T The indexer signature shape.
+   * @template T The index signature shape.
    */
   rest<T extends AnyShape>(restShape: T): ObjectShape<P, T> {
     return new ObjectShape(this.shapes, restShape, this._options);
@@ -248,13 +246,11 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
     if (!isObjectLike(input)) {
       return [this._typeIssueFactory(input)];
     }
-    if (this.keysMode !== KeysMode.PRESERVED) {
+    if (this.keysMode === 'preserved' && this.restShape === null) {
+      return this._applyLaxKeysSync(input, options);
+    } else {
       return this._applyStrictKeysSync(input, options);
     }
-    if (this.restShape !== null) {
-      return this._applyPreservedRestKeysSync(input, options);
-    }
-    return this._applyPreservedKeysSync(input, options);
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
@@ -298,7 +294,7 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
           continue;
         }
 
-        if (keysMode === KeysMode.EXACT) {
+        if (keysMode === 'exact') {
           if (unknownKeys !== null) {
             unknownKeys.push(key);
             continue;
@@ -312,7 +308,7 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
           continue;
         }
 
-        if (keysMode === KeysMode.STRIPPED && input === output) {
+        if (input === output && keysMode === 'stripped') {
           output = cloneKnownKeys(input, keys);
         }
       }
@@ -380,7 +376,10 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
     });
   }
 
-  private _applyPreservedKeysSync(input: ReadonlyDict, options: ParseOptions): ApplyResult {
+  /**
+   * Unknown keys are preserved as is and aren't checked.
+   */
+  private _applyLaxKeysSync(input: ReadonlyDict, options: ParseOptions): ApplyResult {
     const { keys, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
@@ -422,49 +421,11 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
     return issues;
   }
 
-  private _applyPreservedRestKeysSync(input: ReadonlyDict, options: ParseOptions): ApplyResult {
-    const { keys, restShape, _valueShapes, _applyChecks, _unsafe } = this;
-
-    let issues: Issue[] | null = null;
-    let output = input;
-
-    for (const key in input) {
-      const value = input[key];
-      const index = keys.indexOf(key as ObjectKey<P>);
-      const valueShape = index !== -1 ? _valueShapes[index] : restShape!;
-      const result = valueShape.apply(value, options);
-
-      if (result === null) {
-        continue;
-      }
-      if (isArray(result)) {
-        unshiftPath(result, key);
-
-        if (!options.verbose) {
-          return result;
-        }
-        issues = concatIssues(issues, result);
-        continue;
-      }
-      if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
-        if (input === output) {
-          output = cloneEnumerableKeys(input);
-        }
-        setKeyValue(output, key, result.value);
-      }
-    }
-
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
-  }
-
+  /**
+   * Unknown keys are either stripped, cause an issue, or parsed with a {@linkcode restShape}.
+   */
   private _applyStrictKeysSync(input: ReadonlyDict, options: ParseOptions): ApplyResult {
-    const { keys, keysMode, _valueShapes, _applyChecks, _unsafe } = this;
+    const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
 
@@ -476,15 +437,25 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
 
     let unknownKeys: string[] | null = null;
 
+    const unknownKeysCaptured = keysMode === 'exact';
+    const unknownKeysStripped = keysMode === 'stripped';
+
     for (const key in input) {
       const value = input[key];
       const index = keys.indexOf(key as ObjectKey<P>);
 
+      let valueShape: AnyShape | null = restShape;
+
+      // The key is known
       if (index !== -1) {
         seenCount++;
         seenFlags = setFlag(seenFlags, index);
+        valueShape = _valueShapes[index];
+      }
 
-        const result = _valueShapes[index].apply(value, options);
+      // The key is known or indexed
+      if (valueShape !== null) {
+        const result = valueShape.apply(value, options);
 
         if (result === null) {
           continue;
@@ -500,14 +471,15 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
         }
         if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = cloneKnownKeys(input, keys);
+            output = unknownKeysStripped ? cloneKnownKeys(input, keys) : cloneEnumerableKeys(input);
           }
           setKeyValue(output, key, result.value);
         }
         continue;
       }
 
-      if (keysMode === KeysMode.EXACT) {
+      // Unknown keys raise an issue
+      if (unknownKeysCaptured) {
         if (unknownKeys !== null) {
           unknownKeys.push(key);
           continue;
@@ -521,11 +493,13 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
         continue;
       }
 
+      // Unknown keys are stripped
       if (input === output && (_unsafe || issues === null)) {
         output = cloneKnownKeys(input, keys);
       }
     }
 
+    // Raise unknown keys issue
     if (unknownKeys !== null) {
       const issue = this._exactIssueFactory!(input);
       issue.param = unknownKeys;
@@ -536,6 +510,7 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
       issues = pushIssue(issues, issue);
     }
 
+    // Parse absent known keys
     if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
         if (isFlagSet(seenFlags, i)) {
@@ -560,7 +535,7 @@ export class ObjectShape<P extends Readonly<ReadonlyDict<AnyShape>>, R extends A
         }
         if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = cloneKnownKeys(input, keys);
+            output = unknownKeysStripped ? cloneKnownKeys(input, keys) : cloneEnumerableKeys(input);
           }
           setKeyValue(output, key, result.value);
         }

@@ -71,7 +71,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   at(key: unknown): AnyShape | null {
-    const { shapes, restShape } = this;
+    const { shapes } = this;
 
     const index =
       typeof key === 'number' ? key : typeof key !== 'string' ? -1 : integerRegex.test(key) ? parseInt(key, 10) : -1;
@@ -82,7 +82,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     if (shapes !== null && index < shapes.length) {
       return shapes[index];
     }
-    return restShape;
+    return this.restShape;
   }
 
   /**

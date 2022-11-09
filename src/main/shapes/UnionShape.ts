@@ -3,14 +3,16 @@ import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from
 import { concatIssues, createIssueFactory, isArray, isAsyncShapes } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
-export type InferUnion<U extends AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
+export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'output'> = {
+  [K in keyof U]: U[K][C];
+}[number];
 
 /**
  * The shape that requires an input to conform at least one of the united shapes.
  *
  * @template U The list of united type definitions.
  */
-export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
+export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
   protected _typeIssueFactory;
 
   /**
@@ -19,7 +21,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
    * @param shapes The list of united shapes.
    * @param options The union constraint options or an issue message.
    */
-  constructor(readonly shapes: Readonly<U>, options?: TypeConstraintOptions | Message) {
+  constructor(readonly shapes: U, options?: TypeConstraintOptions | Message) {
     super(isAsyncShapes(shapes));
 
     this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options, undefined);
@@ -41,7 +43,7 @@ export class UnionShape<U extends AnyShape[]> extends Shape<InferUnion<U, 'input
     if (childShapes.length === 1) {
       return childShapes[0];
     }
-    return new UnionShape(childShapes as U);
+    return new UnionShape(childShapes);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {

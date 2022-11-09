@@ -3,10 +3,10 @@ import {
   Check,
   CheckCallback,
   ConstraintOptions,
-  ReadonlyDict,
   Issue,
   Message,
   Ok,
+  ReadonlyDict,
 } from './shared-types';
 import { AnyShape, Shape } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
