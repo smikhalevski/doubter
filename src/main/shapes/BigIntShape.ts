@@ -1,13 +1,13 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { bigintInputType, createIssueFactory } from '../utils';
+import { bigintTypes, createIssueFactory } from '../utils';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../constants';
 
 export class BigIntShape extends Shape<bigint> {
   protected _typeIssueFactory;
 
   constructor(options?: TypeConstraintOptions | Message) {
-    super(bigintInputType);
+    super(bigintTypes);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }

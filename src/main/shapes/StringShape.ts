@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory, stringInputType } from '../utils';
+import { appendCheck, createIssueFactory, stringTypes } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -25,7 +25,7 @@ export class StringShape extends Shape<string> {
    * @param options The type constraint options or the type issue message.
    */
   constructor(options?: TypeConstraintOptions | Message) {
-    super(stringInputType);
+    super(stringTypes);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
   }

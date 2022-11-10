@@ -11,18 +11,20 @@ import {
 import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 
-export const objectInputType = Object.freeze<ValueType>(['object']);
-export const arrayInputType = Object.freeze<ValueType>(['array']);
-// export const functionInputType = Object.freeze<ValueType>(['function']);
-export const stringInputType = Object.freeze<ValueType>(['string']);
-// export const symbolInputType = Object.freeze<ValueType>(['symbol']);
-export const numberInputType = Object.freeze<ValueType>(['number']);
-export const bigintInputType = Object.freeze<ValueType>(['bigint']);
-export const booleanInputType = Object.freeze<ValueType>(['boolean']);
-// export const nullInputType = Object.freeze<ValueType>(['null']);
-// export const undefinedInputType = Object.freeze<ValueType>(['undefined']);
-export const unknownInputType = Object.freeze<ValueType>(['unknown']);
-export const neverInputType = Object.freeze<ValueType>(['never']);
+const freeze = Object.freeze;
+
+export const objectTypes = freeze<ValueType>(['object']);
+export const arrayTypes = freeze<ValueType>(['array']);
+// export const functionTypes = freeze<ValueType>(['function']);
+export const stringTypes = freeze<ValueType>(['string']);
+// export const symbolTypes = freeze<ValueType>(['symbol']);
+export const numberTypes = freeze<ValueType>(['number']);
+export const bigintTypes = freeze<ValueType>(['bigint']);
+export const booleanTypes = freeze<ValueType>(['boolean']);
+// export const nullTypes = freeze<ValueType>(['null']);
+// export const undefinedTypes = freeze<ValueType>(['undefined']);
+export const unknownTypes = freeze<ValueType>(['unknown']);
+export const neverTypes = freeze<ValueType>(['never']);
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
@@ -360,25 +362,25 @@ function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
 }
 
 export function unique<T>(arr: readonly T[]): readonly T[] {
-  let values: T[] | null = null;
+  let uniqueArr: T[] | null = null;
 
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i];
 
     if (arr.indexOf(value, i + 1) !== -1) {
-      if (values === null) {
-        values = arr.slice(0, i);
+      if (uniqueArr === null) {
+        uniqueArr = arr.slice(0, i);
       }
       continue;
     }
-    if (values !== null) {
-      values.push(value);
+    if (uniqueArr !== null) {
+      uniqueArr.push(value);
     }
   }
-  return values || arr;
+  return uniqueArr || arr;
 }
 
-export function getShapeInputTypes(shapes: readonly AnyShape[]): ValueType[] {
+export function getInputTypes(shapes: readonly AnyShape[]): ValueType[] {
   const types: ValueType[] = [];
 
   for (const shape of shapes) {
@@ -386,47 +388,5 @@ export function getShapeInputTypes(shapes: readonly AnyShape[]): ValueType[] {
       types.push(type);
     }
   }
-
   return types;
-}
-
-export function createUnionBuckets(shapes: readonly AnyShape[]): Record<ValueType, AnyShape[] | null> {
-  const buckets: Record<ValueType, AnyShape[] | null> = {
-    object: null,
-    array: null,
-    function: null,
-    string: null,
-    symbol: null,
-    number: null,
-    bigint: null,
-    boolean: null,
-    null: null,
-    undefined: null,
-    unknown: null,
-    never: null,
-  };
-
-  for (const shape of shapes) {
-    for (const type of shape.inputTypes) {
-      if (type === 'unknown') {
-        for (const key of Object.keys(buckets)) {
-          const bucket = (buckets[key as ValueType] ||= []);
-
-          if (bucket.indexOf(shape) === -1) {
-            bucket.push(shape);
-          }
-        }
-      } else {
-        const bucket = (buckets[type] ||= []);
-
-        if (bucket.indexOf(shape) === -1) {
-          bucket.push(shape);
-        }
-      }
-    }
-  }
-
-  buckets.unknown = shapes as any;
-
-  return buckets;
 }

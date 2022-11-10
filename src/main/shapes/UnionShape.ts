@@ -1,13 +1,6 @@
-import { AnyShape, Shape } from './Shape';
+import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import {
-  concatIssues,
-  createIssueFactory,
-  createUnionBuckets,
-  getShapeInputTypes,
-  isArray,
-  isAsyncShapes,
-} from '../utils';
+import { concatIssues, createIssueFactory, getInputTypes, isArray, isAsyncShapes } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
 // prettier-ignore
@@ -17,7 +10,7 @@ export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'outpu
 /**
  * The shape that requires an input to conform at least one of the united shapes.
  *
- * @template U The list of united type definitions.
+ * @template U The list of united shapes.
  */
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
   protected _typeIssueFactory;
@@ -28,7 +21,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
    *
    * @param shapes The list of united shapes.
    * @param options The union constraint options or an issue message.
-   * @template U The list of united type definitions.
+   * @template U The list of united shapes.
    */
   constructor(
     /**
@@ -37,7 +30,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     readonly shapes: U,
     options?: TypeConstraintOptions | Message
   ) {
-    super(getShapeInputTypes(shapes), isAsyncShapes(shapes));
+    super(getInputTypes(shapes), isAsyncShapes(shapes));
 
     this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
     this._buckets = createUnionBuckets(shapes);
@@ -66,7 +59,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     let bucketLength = 0;
     let index = 0;
 
-    if (bucket !== null) {
+    if (bucket !== undefined) {
       for (bucketLength = bucket.length; index < bucketLength; ++index) {
         result = bucket[index].apply(input, options);
 
@@ -134,4 +127,58 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
 
     return nextShape();
   }
+}
+
+const valueTypes: ValueType[] = [
+  'object',
+  'array',
+  'function',
+  'string',
+  'symbol',
+  'number',
+  'bigint',
+  'boolean',
+  'null',
+  'undefined',
+];
+
+/**
+ * Creates a mapping from the value type to an array of shapes that are applicable.
+ *
+ * @param shapes The list of united shapes.
+ */
+export function createUnionBuckets(shapes: readonly AnyShape[]): Partial<Record<ValueType, AnyShape[]>> {
+  const buckets: Partial<Record<ValueType, AnyShape[]>> = {};
+
+  for (const opaqueShape of shapes) {
+    for (const shape of unwrapUnionShapes(opaqueShape)) {
+      for (const type of valueTypes) {
+        const bucket = buckets[type];
+
+        if (shape.inputTypes.indexOf(type) === -1 && shape.inputTypes.indexOf('unknown') === -1) {
+          continue;
+        }
+        if (bucket === undefined) {
+          buckets[type] = [shape];
+        } else {
+          bucket.push(shape);
+        }
+      }
+    }
+  }
+  return buckets;
+}
+
+/**
+ * Flattens union shapes that don't have any checks.
+ */
+function unwrapUnionShapes(shape: AnyShape): AnyShape[] {
+  const shapes: AnyShape[] = [];
+
+  if (shape instanceof UnionShape && shape.checks.length === 0) {
+    shapes.push(...unwrapUnionShapes(shape));
+  } else {
+    shapes.push(shape);
+  }
+  return shapes;
 }
