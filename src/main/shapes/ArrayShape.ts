@@ -201,7 +201,8 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         ((inputLength = input.length),
         shapes !== null && inputLength !== (shapesLength = shapes.length) && restShape === null)
       ) {
-        return [this._typeIssueFactory(input)];
+        resolve([this._typeIssueFactory(input)]);
+        return;
       }
 
       const promises: Promise<ApplyResult>[] = [];

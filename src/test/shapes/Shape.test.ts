@@ -1,15 +1,5 @@
-import { ApplyResult, Ok, ParseOptions, Shape, ValidationError } from '../../main';
+import { Ok, Shape, ValidationError } from '../../main';
 import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/constants';
-
-class AsyncShape extends Shape {
-  constructor() {
-    super(true);
-  }
-
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult> {
-    return Promise.resolve(null);
-  }
-}
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
@@ -258,7 +248,7 @@ describe('Shape', () => {
     });
 
     test('returns promise', async () => {
-      const shape = new AsyncShape();
+      const shape = new Shape().transformAsync(value => Promise.resolve(value));
 
       const outputPromise = shape.parseAsync('aaa');
       const resultPromise = shape.tryAsync('aaa');
@@ -325,9 +315,9 @@ describe('TransformedShape', () => {
 
   describe('async', () => {
     test('transforms async shape output', async () => {
-      const cbMock = jest.fn(() => 111);
+      const cbMock = jest.fn(() => Promise.resolve(111));
 
-      const shape = new AsyncShape().transform(cbMock);
+      const shape = new Shape().transformAsync(cbMock);
 
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 

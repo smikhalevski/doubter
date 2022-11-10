@@ -177,7 +177,3 @@ export type Any = object | string | number | bigint | boolean | null | undefined
 export interface ReadonlyDict<T = any> {
   readonly [key: string]: T;
 }
-
-export interface Dict<T = any> {
-  [key: string]: T;
-}
