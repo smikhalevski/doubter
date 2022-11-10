@@ -219,8 +219,9 @@ describe('ArrayShape', () => {
 
     expect(arrShape.at('0')).toBe(shape1);
     expect(arrShape.at('1')).toBe(shape2);
-    expect(arrShape.at(-1)).toBe(null);
-    expect(arrShape.at(0.5)).toBe(null);
+    expect(arrShape.at('000')).toBe(null);
+    expect(arrShape.at(-111)).toBe(null);
+    expect(arrShape.at(111.222)).toBe(null);
     expect(arrShape.at('aaa')).toBe(null);
   });
 

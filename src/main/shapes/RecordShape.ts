@@ -13,28 +13,51 @@ import {
 } from '../utils';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
 
-export type InferRecord<
-  K extends Shape<string, PropertyKey> | null,
-  V extends AnyShape,
-  C extends 'input' | 'output'
-> = undefined extends V[C]
-  ? Partial<Record<K extends Shape ? K[C] : string, V[C]>>
-  : Record<K extends Shape ? K[C] : string, V[C]>;
+// prettier-ignore
+export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends 'input' | 'output'> =
+  undefined extends V[C]
+    ? Partial<Record<K extends Shape ? K[C] : string, V[C]>>
+    : Record<K extends Shape ? K[C] : string, V[C]>;
 
+/**
+ * The shape that describes an object with string keys and values that conform the given shape.
+ *
+ * @template K The key shape.
+ * @template V The value shape.
+ */
 export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends AnyShape> extends Shape<
   InferRecord<K, V, 'input'>,
   InferRecord<K, V, 'output'>
 > {
   protected _typeIssueFactory;
 
-  constructor(readonly keyShape: K, readonly valueShape: V, options?: TypeConstraintOptions | Message) {
+  /**
+   * Creates a new {@linkcode RecordShape} instance.
+   *
+   * @param keyShape The key shape.
+   * @param valueShape The value shape.
+   * @param options The type constraint options or an issue message.
+   * @template K The key shape or `null` if keys should be preserved intact.
+   * @template V The value shape.
+   */
+  constructor(
+    /**
+     * The key shape or `null` if keys are preserved intact.
+     */
+    readonly keyShape: K,
+    /**
+     * The value shape.
+     */
+    readonly valueShape: V,
+    options?: TypeConstraintOptions | Message
+  ) {
     super((keyShape != null && keyShape.async) || valueShape.async);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
-    return typeof key === 'string' ? this.valueShape : null;
+    return typeof key === 'string' || typeof key === 'number' ? this.valueShape : null;
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
@@ -110,7 +133,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        return [this._typeIssueFactory(input)];
+        resolve([this._typeIssueFactory(input)]);
+        return;
       }
 
       const { keyShape, valueShape, _applyChecks, _unsafe } = this;
@@ -118,10 +142,12 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       const promises: any[] = [];
 
       for (const key in input) {
+        const value = input[key];
+
         promises.push(
           key,
           keyShape !== null ? keyShape.applyAsync(key, options) : null,
-          valueShape.applyAsync(key, options)
+          valueShape.applyAsync(value, options)
         );
       }
 

@@ -2,7 +2,7 @@ import { ObjectShape, Shape } from '../../main';
 import { CODE_ENUM, CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../../main/constants';
 
 describe('ObjectShape', () => {
-  test('raises non array values', () => {
+  test('raises non object values', () => {
     const restShape = new Shape();
 
     const objShape = new ObjectShape({}, restShape);
@@ -156,6 +156,17 @@ describe('ObjectShape', () => {
     expect(objShape2.checks.length).toBe(0);
     expect(objShape2.shapes).toEqual({ key1: shape2 });
     expect(objShape2.keys).toEqual(['key1']);
+  });
+
+  test('returns property shape at key', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape();
+
+    const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
+
+    expect(objShape.at('key1')).toBe(shape1);
+    expect(objShape.at('key2')).toBe(shape2);
+    expect(objShape.at('xxx')).toBe(null);
   });
 
   describe('lax', () => {
