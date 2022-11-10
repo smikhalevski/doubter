@@ -19,6 +19,46 @@ describe('UnionShape', () => {
     expect(applySpy3).not.toHaveBeenCalled();
   });
 
+  test('unwraps union shapes into buckets', () => {
+    const shape1 = new NumberShape();
+    const shape2 = new StringShape();
+    const shape3 = new BooleanShape();
+    const unionShape1 = new UnionShape([shape2, shape3]);
+
+    const applySpy1 = jest.spyOn(shape1, 'apply');
+    const applySpy2 = jest.spyOn(shape2, 'apply');
+    const applySpy3 = jest.spyOn(shape3, 'apply');
+    const unionApplySpy = jest.spyOn(shape3, 'apply');
+
+    const unionShape2 = new UnionShape([shape1, unionShape1]);
+
+    expect(unionShape2.parse('aaa')).toBe('aaa');
+    expect(applySpy1).not.toHaveBeenCalled();
+    expect(applySpy2).toHaveBeenCalledTimes(1);
+    expect(applySpy3).not.toHaveBeenCalled();
+    expect(unionApplySpy).not.toHaveBeenCalled();
+  });
+
+  test('does not unwrap union shapes that have checks', () => {
+    const shape1 = new NumberShape();
+    const shape2 = new StringShape();
+    const shape3 = new BooleanShape();
+    const unionShape1 = new UnionShape([shape2, shape3]).refine(() => true);
+
+    const applySpy1 = jest.spyOn(shape1, 'apply');
+    const applySpy2 = jest.spyOn(shape2, 'apply');
+    const applySpy3 = jest.spyOn(shape3, 'apply');
+    const unionApplySpy = jest.spyOn(unionShape1, 'apply');
+
+    const unionShape2 = new UnionShape([shape1, unionShape1]);
+
+    expect(unionShape2.parse('aaa')).toBe('aaa');
+    expect(applySpy1).not.toHaveBeenCalled();
+    expect(applySpy2).toHaveBeenCalledTimes(1);
+    expect(applySpy3).not.toHaveBeenCalled();
+    expect(unionApplySpy).toHaveBeenCalledTimes(1);
+  });
+
   test('returns the result of the first shape that returned ok', () => {
     const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
     const shape2 = new Shape();
@@ -50,10 +90,13 @@ describe('UnionShape', () => {
           path: [],
           input: 'aaa',
           message: MESSAGE_UNION,
-          param: [
-            { code: 'xxx', path: [] },
-            { code: 'yyy', path: [] },
-          ],
+          param: {
+            inputTypes: ['any'],
+            issues: [
+              { code: 'xxx', path: [] },
+              { code: 'yyy', path: [] },
+            ],
+          },
         },
       ],
     });

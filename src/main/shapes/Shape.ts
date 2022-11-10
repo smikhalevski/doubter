@@ -11,6 +11,7 @@ import {
   RefineOptions,
 } from '../shared-types';
 import {
+  anyTypes,
   appendCheck,
   captureIssues,
   createApplyChecksCallback,
@@ -19,7 +20,6 @@ import {
   isEqual,
   ok,
   unique,
-  unknownTypes,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../constants';
@@ -45,7 +45,7 @@ export type ValueType =
   | 'boolean'
   | 'null'
   | 'undefined'
-  | 'unknown'
+  | 'any'
   | 'never';
 
 export interface Shape<I, O> {
@@ -166,11 +166,10 @@ export class Shape<I = any, O = I> {
    * @template O The output value.
    */
   constructor(inputTypes?: readonly ValueType[], async = false) {
-    this.inputTypes =
-      inputTypes === undefined || inputTypes.length === 0 || inputTypes.indexOf('unknown') !== -1
-        ? unknownTypes
-        : unique(inputTypes);
+    inputTypes =
+      inputTypes === undefined || inputTypes.length === 0 || inputTypes.includes('any') ? anyTypes : unique(inputTypes);
 
+    this.inputTypes = Object.freeze(inputTypes);
     this.async = async;
 
     if (async) {

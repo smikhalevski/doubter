@@ -162,7 +162,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
 
-      if (keys.indexOf(key) !== -1) {
+      if (keys.includes(key)) {
         shapes[key] = this._valueShapes[i];
       }
     }
@@ -185,7 +185,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     for (let i = 0; i < this.keys.length; ++i) {
       const key = this.keys[i];
 
-      if (keys.indexOf(key) === -1) {
+      if (!keys.includes(key)) {
         shapes[key] = this._valueShapes[i];
       }
     }

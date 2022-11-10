@@ -11,20 +11,18 @@ import {
 import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 
-const freeze = Object.freeze;
-
-export const objectTypes = freeze<ValueType>(['object']);
-export const arrayTypes = freeze<ValueType>(['array']);
-// export const functionTypes = freeze<ValueType>(['function']);
-export const stringTypes = freeze<ValueType>(['string']);
-// export const symbolTypes = freeze<ValueType>(['symbol']);
-export const numberTypes = freeze<ValueType>(['number']);
-export const bigintTypes = freeze<ValueType>(['bigint']);
-export const booleanTypes = freeze<ValueType>(['boolean']);
-// export const nullTypes = freeze<ValueType>(['null']);
-// export const undefinedTypes = freeze<ValueType>(['undefined']);
-export const unknownTypes = freeze<ValueType>(['unknown']);
-export const neverTypes = freeze<ValueType>(['never']);
+export const objectTypes: ValueType[] = ['object'];
+export const arrayTypes: ValueType[] = ['array'];
+// export const functionTypes: ValueType[] = ['function'];
+export const stringTypes: ValueType[] = ['string'];
+// export const symbolTypes: ValueType[] = ['symbol'];
+export const numberTypes: ValueType[] = ['number'];
+export const bigintTypes: ValueType[] = ['bigint'];
+export const booleanTypes: ValueType[] = ['boolean'];
+// export const nullTypes: ValueType[] = ['null'];
+// export const undefinedTypes: ValueType[] = ['undefined'];
+export const anyTypes: ValueType[] = ['any'];
+export const neverTypes: ValueType[] = ['never'];
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
@@ -360,6 +358,10 @@ function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
   }
   return issues;
 }
+
+export function unique<T>(arr: T[]): T[];
+
+export function unique<T>(arr: readonly T[]): readonly T[];
 
 export function unique<T>(arr: readonly T[]): readonly T[] {
   let uniqueArr: T[] | null = null;
