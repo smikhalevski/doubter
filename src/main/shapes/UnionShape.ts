@@ -1,11 +1,18 @@
 import { AnyShape, Shape } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createIssueFactory, isArray, isAsyncShapes } from '../utils';
+import {
+  concatIssues,
+  createIssueFactory,
+  createUnionBuckets,
+  getShapeInputTypes,
+  isArray,
+  isAsyncShapes,
+} from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
-export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'output'> = {
-  [K in keyof U]: U[K][C];
-}[number];
+// prettier-ignore
+export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'output'> =
+  { [K in keyof U]: U[K][C] }[number];
 
 /**
  * The shape that requires an input to conform at least one of the united shapes.
@@ -14,62 +21,78 @@ export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'outpu
  */
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
   protected _typeIssueFactory;
+  protected _buckets;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.
    *
    * @param shapes The list of united shapes.
    * @param options The union constraint options or an issue message.
+   * @template U The list of united type definitions.
    */
-  constructor(readonly shapes: U, options?: TypeConstraintOptions | Message) {
-    super(isAsyncShapes(shapes));
+  constructor(
+    /**
+     * The list of united shapes.
+     */
+    readonly shapes: U,
+    options?: TypeConstraintOptions | Message
+  ) {
+    super(getShapeInputTypes(shapes), isAsyncShapes(shapes));
 
     this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
+    this._buckets = createUnionBuckets(shapes);
   }
 
   at(key: unknown): AnyShape | null {
-    const childShapes: AnyShape[] = [];
+    const shapes = this.shapes.filter(shape => shape.at(key) !== null);
 
-    for (const shape of this.shapes) {
-      const childShape = shape.at(key);
-
-      if (childShape !== null) {
-        childShapes.push(childShape);
-      }
-    }
-    if (childShapes.length === 0) {
+    if (shapes.length === 0) {
       return null;
     }
-    if (childShapes.length === 1) {
-      return childShapes[0];
+    if (shapes.length === 1) {
+      return shapes[0];
     }
-    return new UnionShape(childShapes);
+    return new UnionShape(shapes);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
-    const { shapes, _applyChecks, _unsafe } = this;
+    const { _applyChecks } = this;
 
-    const shapesLength = shapes.length;
+    const bucket = this._buckets[Shape.typeof(input)];
 
     let issues: Issue[] | null = null;
+    let result: ApplyResult = null;
+    let output = input;
+    let bucketLength = 0;
+    let index = 0;
 
-    for (let i = 0; i < shapesLength; ++i) {
-      const result = shapes[i].apply(input, options);
+    if (bucket !== null) {
+      for (bucketLength = bucket.length; index < bucketLength; ++index) {
+        result = bucket[index].apply(input, options);
 
-      if (result === null) {
-        return null;
+        if (result === null) {
+          break;
+        }
+        if (isArray(result)) {
+          issues = concatIssues(issues, result);
+          continue;
+        }
+        output = result.value;
+        break;
       }
-      if (isArray(result)) {
-        issues = concatIssues(issues, result);
-        continue;
-      }
-      return result;
     }
 
-    if (_applyChecks !== null && _unsafe) {
-      issues = _applyChecks(input, issues, options);
+    if (index === bucketLength) {
+      return [this._typeIssueFactory(input, issues)];
     }
-    return [this._typeIssueFactory(input, issues)];
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
+
+      if (issues !== null) {
+        return issues;
+      }
+    }
+    return result;
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {

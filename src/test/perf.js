@@ -827,9 +827,7 @@ describe(
           foo: myzod.string(),
           bar: myzod.number(),
         },
-        {
-          allowUnknown: true,
-        }
+        { allowUnknown: true }
       );
 
       measure(() => {
@@ -1151,7 +1149,10 @@ describe(
       });
 
       test('zod', measure => {
-        const type = zod.union([zod.object({ foo: zod.string() }), zod.object({ bar: zod.number() })]);
+        const type = zod.union([
+          zod.object({ foo: zod.string() }).passthrough(),
+          zod.object({ bar: zod.number() }).passthrough(),
+        ]);
 
         measure(() => {
           type.parse(value);
@@ -1159,7 +1160,10 @@ describe(
       });
 
       test('myzod', measure => {
-        const type = myzod.union([myzod.object({ foo: myzod.string() }), myzod.object({ bar: myzod.number() })]);
+        const type = myzod.union([
+          myzod.object({ foo: myzod.string() }, { allowUnknown: true }),
+          myzod.object({ bar: myzod.number() }, { allowUnknown: true }),
+        ]);
 
         measure(() => {
           type.parse(value);
@@ -1168,9 +1172,10 @@ describe(
 
       test('valita', measure => {
         const type = valita.union(valita.object({ foo: valita.string() }), valita.object({ bar: valita.number() }));
+        const options = { mode: 'passthrough' };
 
         measure(() => {
-          type.parse(value);
+          type.parse(value, options);
         });
       });
 
@@ -1197,6 +1202,92 @@ describe(
     describe('{ foo: "aaa" }', () => createTests({ foo: 'aaa' }));
 
     describe('{ bar: 123 }', () => createTests({ bar: 123 }));
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'or([object({ foo: string() }), array(number())])',
+  () => {
+    const createTests = value => {
+      test('Ajv', measure => {
+        const ajv = new Ajv({ allowUnionTypes: true });
+
+        const schema = {
+          $id: 'test',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          anyOf: [
+            {
+              type: 'object',
+              properties: {
+                foo: { type: 'string' },
+              },
+              required: ['foo'],
+            },
+            {
+              type: 'array',
+              items: {
+                type: 'number',
+              },
+            },
+          ],
+        };
+
+        const validate = ajv.compile(schema);
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('zod', measure => {
+        const type = zod.union([zod.object({ foo: zod.string() }).passthrough(), zod.array(zod.number())]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = myzod.union([
+          myzod.object({ foo: myzod.string() }, { allowUnknown: true }),
+          myzod.array(myzod.number()),
+        ]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('valita', measure => {
+        const type = valita.union(valita.object({ foo: valita.string() }), valita.array(valita.number()));
+        const options = { mode: 'passthrough' };
+
+        measure(() => {
+          type.parse(value, options);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = doubter.or([doubter.object({ foo: doubter.string() }), doubter.array(doubter.number())]);
+
+        measure(() => {
+          shape.parse(value);
+        });
+      });
+
+      test('next', measure => {
+        const shape = next.or([next.object({ foo: next.string() }), next.array(next.number())]);
+
+        measure(() => {
+          shape.parse(value);
+        });
+      });
+    };
+
+    describe('{ foo: "aaa" }', () => createTests({ foo: 'aaa' }));
+
+    describe('[123]', () => createTests([123]));
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
@@ -1309,14 +1400,10 @@ describe(
               a72: myzod.number(),
               a73: myzod.boolean(),
             },
-            {
-              allowUnknown: true,
-            }
+            { allowUnknown: true }
           ),
         },
-        {
-          allowUnknown: true,
-        }
+        { allowUnknown: true }
       );
 
       measure(() => {

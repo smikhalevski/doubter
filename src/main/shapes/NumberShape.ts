@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory } from '../utils';
+import { appendCheck, createIssueFactory, numberInputType } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -24,7 +24,8 @@ export class NumberShape extends Shape<number> {
   protected _typePredicate = Number.isFinite;
 
   constructor(options?: TypeConstraintOptions | Message) {
-    super();
+    super(numberInputType);
+
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
   }
 

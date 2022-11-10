@@ -7,6 +7,7 @@ import {
   isArray,
   isEqual,
   isObjectLike,
+  objectInputType,
   ok,
   setKeyValue,
   unshiftPath,
@@ -51,7 +52,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     readonly valueShape: V,
     options?: TypeConstraintOptions | Message
   ) {
-    super((keyShape != null && keyShape.async) || valueShape.async);
+    super(objectInputType, (keyShape != null && keyShape.async) || valueShape.async);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }

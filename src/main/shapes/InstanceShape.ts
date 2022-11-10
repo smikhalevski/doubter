@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory } from '../utils';
+import { arrayInputType, createIssueFactory, objectInputType } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
 
 export type InferInstance<C> = C extends new (...args: any[]) => infer T ? T : never;
@@ -14,7 +14,8 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
   protected _typeIssueFactory;
 
   constructor(readonly ctor: C, options?: TypeConstraintOptions | Message) {
-    super();
+    super(Array.prototype.isPrototypeOf(ctor.prototype) ? arrayInputType : objectInputType);
+
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 

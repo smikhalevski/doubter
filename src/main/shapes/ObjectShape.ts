@@ -11,6 +11,7 @@ import {
   isEqual,
   isFlagSet,
   isObjectLike,
+  objectInputType,
   ok,
   pushIssue,
   setFlag,
@@ -96,7 +97,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   ) {
     const valueShapes = Object.values(shapes);
 
-    super(isAsyncShapes(valueShapes) || (restShape !== null && restShape.async));
+    super(objectInputType, isAsyncShapes(valueShapes) || (restShape !== null && restShape.async));
 
     this.keys = Object.keys(shapes) as StringKeyof<P>[];
     this.keysMode = keysMode;

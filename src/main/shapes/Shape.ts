@@ -18,6 +18,8 @@ import {
   isArray,
   isEqual,
   ok,
+  unique,
+  unknownInputType,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../constants';
@@ -28,6 +30,23 @@ const defaultParseOptions: ParseOptions = Object.freeze({ verbose: false });
  * An arbitrary shape.
  */
 export type AnyShape = Shape | Shape<never>;
+
+/**
+ * The detected runtime input value type.
+ */
+export type ValueType =
+  | 'object'
+  | 'array'
+  | 'function'
+  | 'string'
+  | 'symbol'
+  | 'number'
+  | 'bigint'
+  | 'boolean'
+  | 'null'
+  | 'undefined'
+  | 'unknown'
+  | 'never';
 
 export interface Shape<I, O> {
   /**
@@ -94,6 +113,8 @@ export class Shape<I = any, O = I> {
    */
   readonly async;
 
+  readonly inputTypes: readonly ValueType[];
+
   /**
    * The list of checks applied to the shape output.
    */
@@ -112,13 +133,15 @@ export class Shape<I = any, O = I> {
   /**
    * Creates the new {@linkcode Shape} instance.
    *
+   * @param inputTypes
    * @param async If `true` then the shape would allow only {@linkcode parseAsync} and throw an error if
    * {@linkcode parse} is called. Otherwise, shape can be used in both sync and async contexts.
    *
    * @template I The input value.
    * @template O The output value.
    */
-  constructor(async = false) {
+  constructor(inputTypes?: readonly ValueType[], async = false) {
+    this.inputTypes = inputTypes === undefined || inputTypes.length === 0 ? unknownInputType : unique(inputTypes);
     this.async = async;
 
     if (async) {
@@ -126,6 +149,21 @@ export class Shape<I = any, O = I> {
         throw new Error('Shape is async, consider using tryAsync or parseAsync');
       };
     }
+  }
+
+  static typeof(value: unknown): ValueType {
+    const type = typeof value;
+
+    if (type === 'object') {
+      if (value === null) {
+        return 'null';
+      }
+      if (isArray(value)) {
+        return 'array';
+      }
+      return 'object';
+    }
+    return type;
   }
 
   /**
@@ -436,7 +474,7 @@ export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O
      */
     readonly callback: (output: S['output'], options: Readonly<ParseOptions>) => Promise<O> | O
   ) {
-    super(shape.async || async);
+    super(shape.inputTypes, shape.async || async);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<O> {
@@ -534,7 +572,7 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
      */
     readonly outputShape: O
   ) {
-    super(inputShape.async || outputShape.async);
+    super(inputShape.inputTypes, inputShape.async || outputShape.async);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
@@ -653,7 +691,7 @@ export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['inp
      */
     readonly value?: O
   ) {
-    super(shape.async);
+    super(shape.inputTypes.concat(Shape.typeof(replacedValue)), shape.async);
 
     this._replacedResult = value === undefined || value === replacedValue ? null : ok(value);
   }

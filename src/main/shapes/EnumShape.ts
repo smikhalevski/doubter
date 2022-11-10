@@ -18,7 +18,8 @@ export class EnumShape<T> extends Shape<T> {
    * @param options The type constraint options or an issue message.
    */
   constructor(readonly values: readonly T[], options?: TypeConstraintOptions | Message) {
-    super();
+    super(values.map(Shape.typeof));
+
     this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 

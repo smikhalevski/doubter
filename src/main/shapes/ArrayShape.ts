@@ -2,6 +2,7 @@ import { AnyShape, Shape } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
   appendCheck,
+  arrayInputType,
   concatIssues,
   createIssueFactory,
   isArray,
@@ -62,7 +63,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     readonly restShape: R,
     options?: TypeConstraintOptions | Message
   ) {
-    super((shapes !== null && isAsyncShapes(shapes)) || (restShape !== null && restShape.async));
+    super(arrayInputType, (shapes !== null && isAsyncShapes(shapes)) || (restShape !== null && restShape.async));
 
     this._typeIssueFactory =
       shapes !== null && restShape === null
