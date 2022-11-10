@@ -41,7 +41,6 @@
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@types/jest": "^29.2.1",
     "ajv": "^8.11.0",
-    "doubter": "^0.2.1",
     "jest": "^29.2.2",
     "myzod": "^1.8.8",
     "prettier": "^2.7.1",
