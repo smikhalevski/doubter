@@ -41,15 +41,23 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
   }
 
   at(key: unknown): AnyShape | null {
-    const shapes = this.shapes.filter(shape => shape.at(key) !== null);
+    const valueShapes: AnyShape[] = [];
 
-    if (shapes.length === 0) {
+    for (const shape of this.shapes) {
+      const valueShape = shape.at(key);
+
+      if (valueShape !== null) {
+        valueShapes.push(valueShape);
+      }
+    }
+
+    if (valueShapes.length === 0) {
       return null;
     }
-    if (shapes.length === 1) {
-      return shapes[0];
+    if (valueShapes.length === 1) {
+      return valueShapes[0];
     }
-    return new UnionShape(shapes);
+    return new UnionShape(valueShapes);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {

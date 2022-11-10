@@ -146,6 +146,11 @@ export class Shape<I = any, O = I> {
   readonly checks: readonly Check[] = [];
 
   /**
+   * The human-readable shape description.
+   */
+  description = '';
+
+  /**
    * Applies checks to the output.
    */
   protected _applyChecks: ApplyChecksCallback | null = null;
@@ -203,6 +208,18 @@ export class Shape<I = any, O = I> {
    */
   at(key: unknown): AnyShape | null {
     return null;
+  }
+
+  /**
+   * Adds a human-readable description text to the shape.
+   *
+   * @param text The description text.
+   * @returns The clone of this shape with the description added.
+   */
+  describe(text: string): this {
+    const shape = this._clone();
+    shape.description = text;
+    return shape;
   }
 
   /**
