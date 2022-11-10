@@ -84,28 +84,28 @@ export function appendCheck<S extends Shape>(
 }
 
 export function createIssueFactory(
-  code: unknown,
-  defaultMessage: unknown,
+  code: string,
+  defaultMessage: string,
   options: ConstraintOptions | Message | undefined,
   param: unknown
 ): (input: unknown) => Issue;
 
 export function createIssueFactory(
-  code: unknown,
-  defaultMessage: unknown,
+  code: string,
+  defaultMessage: string,
   options: ConstraintOptions | Message | undefined
 ): (input: unknown, param: unknown) => Issue;
 
 export function createIssueFactory(
-  code: unknown,
-  defaultMessage: any,
+  code: string,
+  defaultMessage: string,
   options: ConstraintOptions | Message | undefined,
   param?: any
 ): (input: unknown, param: unknown) => Issue {
   const paramKnown = arguments.length === 4;
 
   let meta: unknown;
-  let message = defaultMessage;
+  let message: any = defaultMessage;
 
   if (options !== null && typeof options === 'object') {
     if (options.message !== undefined) {
@@ -149,6 +149,23 @@ export function createIssueFactory(
       return { code, path: [], input, message, param, meta };
     };
   }
+}
+
+export function fallbackOptions(
+  options: ConstraintOptions | Message | undefined,
+  defaultMessage: string
+): ConstraintOptions | Message {
+  if (options == null) {
+    return defaultMessage;
+  }
+  if (typeof options === 'object' && options.message == null) {
+    return {
+      message: defaultMessage,
+      meta: options.meta,
+      unsafe: options.unsafe,
+    };
+  }
+  return options;
 }
 
 export function unshiftPath(issues: Issue[], key: unknown): void {

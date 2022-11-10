@@ -1,7 +1,7 @@
-import { boolean, BooleanShape } from '../../main';
+import * as d from '../../main';
 
 describe('boolean', () => {
   test('returns an boolean shape', () => {
-    expect(boolean()).toBeInstanceOf(BooleanShape);
+    expect(d.boolean()).toBeInstanceOf(d.BooleanShape);
   });
 });

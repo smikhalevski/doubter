@@ -3,7 +3,7 @@ import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/constants';
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
-    expect(new Shape(false).async).toBe(false);
+    expect(new Shape([], false).async).toBe(false);
   });
 
   test('clones shape when check is added', () => {
@@ -76,10 +76,10 @@ describe('Shape', () => {
     expect(new Shape().parse('aaa')).toEqual('aaa');
   });
 
-  test('returns err when input parsing failed', () => {
+  test('throw ValidationError when input parsing failed', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    expect(() => shape.try('aaa')).toThrow(new ValidationError([{ code: 'xxx' }]));
+    expect(() => shape.parse('aaa')).toThrow(new ValidationError([{ code: 'xxx' }]));
   });
 
   test('checks can safely throw ValidationError instances', () => {
@@ -237,11 +237,11 @@ describe('Shape', () => {
 
   describe('async', () => {
     test('creates an async shape', () => {
-      expect(new Shape(true).async).toBe(true);
+      expect(new Shape([], true).async).toBe(true);
     });
 
     test('throws if sync methods are invoked', () => {
-      const shape = new Shape(true);
+      const shape = new Shape([], true);
 
       expect(() => shape.parse('')).toThrow(Error);
       expect(() => shape.try('')).toThrow(Error);

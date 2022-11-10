@@ -1,5 +1,7 @@
 import { StringShape } from '../shapes';
 import { Message, TypeConstraintOptions } from '../shared-types';
+import { fallbackOptions } from '../utils';
+import { MESSAGE_CUID } from '../constants';
 
 const cuidRegex = /^[cC][^\s-]{8,}$/;
 
@@ -9,5 +11,5 @@ const cuidRegex = /^[cC][^\s-]{8,}$/;
  * @param options The constraint options or an issue message.
  */
 export function cuid(options?: TypeConstraintOptions | Message): StringShape {
-  return new StringShape(options).match(cuidRegex);
+  return new StringShape(options).match(cuidRegex, fallbackOptions(options, MESSAGE_CUID));
 }

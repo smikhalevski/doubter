@@ -1,11 +1,11 @@
-import { number, string, tuple, TupleShape } from '../../main';
+import * as d from '../../main';
 
 describe('tuple', () => {
   test('infers type', () => {
-    const output: [string, number] = tuple([string(), number()]).parse(['aaa', 111]);
+    const output: [string, number] = d.tuple([d.string(), d.number()]).parse(['aaa', 111]);
   });
 
-  test('returns an tuple shape', () => {
-    expect(tuple([number()])).toBeInstanceOf(TupleShape);
+  test('returns an array shape', () => {
+    expect(d.tuple([d.number()])).toBeInstanceOf(d.ArrayShape);
   });
 });

@@ -1,7 +1,7 @@
-import { never, NeverShape } from '../../main';
+import * as d from '../../main';
 
 describe('never', () => {
   test('returns an never shape', () => {
-    expect(never()).toBeInstanceOf(NeverShape);
+    expect(d.never()).toBeInstanceOf(d.NeverShape);
   });
 });
