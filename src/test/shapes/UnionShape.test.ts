@@ -90,13 +90,10 @@ describe('UnionShape', () => {
           path: [],
           input: 'aaa',
           message: MESSAGE_UNION,
-          param: {
-            inputTypes: ['any'],
-            issues: [
-              { code: 'xxx', path: [] },
-              { code: 'yyy', path: [] },
-            ],
-          },
+          param: [
+            { code: 'xxx', path: [] },
+            { code: 'yyy', path: [] },
+          ],
         },
       ],
     });
@@ -141,5 +138,122 @@ describe('UnionShape', () => {
     const unionShape = new UnionShape([objShape, arrShape]);
 
     expect(unionShape.at('key1')).toBe(shape2);
+  });
+
+  describe('async', () => {
+    test('distributes buckets', async () => {
+      const shape1 = new NumberShape();
+      const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
+      const shape3 = new BooleanShape();
+
+      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
+      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
+      const applyAsyncSpy3 = jest.spyOn(shape3, 'applyAsync');
+
+      const unionShape = new UnionShape([shape1, shape2, shape3]);
+
+      expect(unionShape.async).toBe(true);
+
+      await expect(unionShape.parseAsync('aaa')).resolves.toBe('aaa');
+      expect(applyAsyncSpy1).not.toHaveBeenCalled();
+      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
+      expect(applyAsyncSpy3).not.toHaveBeenCalled();
+    });
+
+    test('unwraps union shapes into buckets', async () => {
+      const shape1 = new NumberShape();
+      const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
+      const shape3 = new BooleanShape();
+      const unionShape1 = new UnionShape([shape2, shape3]);
+
+      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
+      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
+      const applyAsyncSpy3 = jest.spyOn(shape3, 'applyAsync');
+      const unionApplyAsyncSpy = jest.spyOn(shape3, 'applyAsync');
+
+      const unionShape2 = new UnionShape([shape1, unionShape1]);
+
+      expect(unionShape2.async).toBe(true);
+
+      await expect(unionShape2.parseAsync('aaa')).resolves.toBe('aaa');
+      expect(applyAsyncSpy1).not.toHaveBeenCalled();
+      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
+      expect(applyAsyncSpy3).not.toHaveBeenCalled();
+      expect(unionApplyAsyncSpy).not.toHaveBeenCalled();
+    });
+
+    test('does not unwrap union shapes that have checks', async () => {
+      const shape1 = new NumberShape();
+      const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
+      const shape3 = new BooleanShape();
+      const unionShape1 = new UnionShape([shape2, shape3]).refine(() => true);
+
+      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
+      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
+      const applyAsyncSpy3 = jest.spyOn(shape3, 'applyAsync');
+      const unionApplyAsyncSpy = jest.spyOn(unionShape1, 'applyAsync');
+
+      const unionShape2 = new UnionShape([shape1, unionShape1]);
+
+      expect(unionShape2.async).toBe(true);
+
+      await expect(unionShape2.parseAsync('aaa')).resolves.toBe('aaa');
+      expect(applyAsyncSpy1).not.toHaveBeenCalled();
+      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
+      expect(applyAsyncSpy3).not.toHaveBeenCalled();
+      expect(unionApplyAsyncSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('returns the result of the first shape that returned ok', async () => {
+      const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
+      const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
+      const shape3 = new Shape();
+
+      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
+      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
+      const applyAsyncSpy3 = jest.spyOn(shape3, 'applyAsync');
+
+      const unionShape = new UnionShape([shape1, shape2, shape3]);
+
+      await expect(unionShape.parseAsync('aaa')).resolves.toBe('aaa');
+      expect(applyAsyncSpy1).toHaveBeenCalledTimes(1);
+      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
+      expect(applyAsyncSpy3).not.toHaveBeenCalled();
+    });
+
+    test('raises if no shapes returned ok', async () => {
+      const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
+      const shape2 = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'yyy' }]);
+
+      const unionShape = new UnionShape([shape1, shape2]);
+
+      await expect(unionShape.tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_UNION,
+            path: [],
+            input: 'aaa',
+            message: MESSAGE_UNION,
+            param: [
+              { code: 'xxx', path: [] },
+              { code: 'yyy', path: [] },
+            ],
+          },
+        ],
+      });
+    });
+
+    test('applies checks', async () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const unionShape = new UnionShape([shape1, shape2]).check(() => [{ code: 'xxx' }]);
+
+      await expect(unionShape.tryAsync({})).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
+    });
   });
 });

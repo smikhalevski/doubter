@@ -88,7 +88,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     }
 
     if (index === bucketLength) {
-      return [this._typeIssueFactory(input, { inputTypes: this.inputTypes, issues })];
+      return [this._typeIssueFactory(input, issues)];
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
@@ -105,34 +105,44 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
       return super.applyAsync(input, options);
     }
 
-    const { shapes, _applyChecks, _unsafe } = this;
+    const { _buckets, _anyBucket, _applyChecks } = this;
 
-    const shapesLength = shapes.length;
+    const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
+
+    if (bucket === null) {
+      return Promise.resolve([this._typeIssueFactory(input, null)]);
+    }
+
+    const bucketLength = bucket.length;
 
     let issues: Issue[] | null = null;
     let index = 0;
 
     const nextShape = (): Promise<ApplyResult<InferUnion<U, 'output'>>> => {
-      return shapes[index].applyAsync(input, options).then(result => {
+      return bucket[index].applyAsync(input, options).then(result => {
         ++index;
 
-        if (result === null) {
-          return null;
-        }
+        let output = input;
 
-        if (isArray(result)) {
-          issues = concatIssues(issues, result);
+        if (result !== null) {
+          if (isArray(result)) {
+            issues = concatIssues(issues, result);
 
-          if (index < shapesLength) {
+            if (index === bucketLength) {
+              return [this._typeIssueFactory(input, issues)];
+            }
             return nextShape();
           }
-
-          if (_applyChecks !== null && _unsafe) {
-            issues = _applyChecks(input, issues, options);
-          }
-          return [this._typeIssueFactory(input, issues)];
+          output = result.value;
         }
 
+        if (_applyChecks !== null) {
+          issues = _applyChecks(output, null, options);
+
+          if (issues !== null) {
+            return issues;
+          }
+        }
         return result;
       });
     };
