@@ -10,7 +10,7 @@ import {
   isAsyncShapes,
   isEqual,
   isFlagSet,
-  isObjectLike,
+  isPlainObject,
   objectTypes,
   ok,
   pushIssue,
@@ -251,7 +251,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
-    if (!isObjectLike(input)) {
+    if (!isPlainObject(input)) {
       return [this._typeIssueFactory(input)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
@@ -267,7 +267,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
 
     return new Promise(resolve => {
-      if (!isObjectLike(input)) {
+      if (!isPlainObject(input)) {
         resolve([this._typeIssueFactory(input)]);
         return;
       }

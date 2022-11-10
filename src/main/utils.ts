@@ -13,19 +13,38 @@ import { inflateIssue, ValidationError } from './ValidationError';
 
 export const objectTypes: ValueType[] = ['object'];
 export const arrayTypes: ValueType[] = ['array'];
-// export const functionTypes: ValueType[] = ['function'];
 export const stringTypes: ValueType[] = ['string'];
-// export const symbolTypes: ValueType[] = ['symbol'];
 export const numberTypes: ValueType[] = ['number'];
 export const bigintTypes: ValueType[] = ['bigint'];
 export const booleanTypes: ValueType[] = ['boolean'];
-// export const nullTypes: ValueType[] = ['null'];
-// export const undefinedTypes: ValueType[] = ['undefined'];
 export const anyTypes: ValueType[] = ['any'];
 export const neverTypes: ValueType[] = ['never'];
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
+}
+
+export function unique<T>(arr: T[]): T[];
+
+export function unique<T>(arr: readonly T[]): readonly T[];
+
+export function unique<T>(arr: readonly T[]): readonly T[] {
+  let uniqueArr: T[] | null = null;
+
+  for (let i = 0; i < arr.length; ++i) {
+    const value = arr[i];
+
+    if (arr.indexOf(value, i + 1) !== -1) {
+      if (uniqueArr === null) {
+        uniqueArr = arr.slice(0, i);
+      }
+      continue;
+    }
+    if (uniqueArr !== null) {
+      uniqueArr.push(value);
+    }
+  }
+  return uniqueArr || arr;
 }
 
 export const isArray = Array.isArray;
@@ -34,7 +53,7 @@ export function isEqual(a: unknown, b: unknown): boolean {
   return a === b || (a !== a && b !== b);
 }
 
-export function isObjectLike(value: unknown): value is Record<any, any> {
+export function isPlainObject(value: unknown): value is Record<any, any> {
   return value !== null && typeof value === 'object' && !isArray(value);
 }
 
@@ -134,6 +153,7 @@ export function createIssueFactory(
 
 export function unshiftPath(issues: Issue[], key: unknown): void {
   let issuesLength = issues.length;
+
   for (let i = 0; i < issuesLength; ++i) {
     issues[i].path.unshift(key);
   }
@@ -298,7 +318,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   }
 
   return (output, issues, options) => {
-    for (let i = 1; i < checksLength; ++i) {
+    for (let i = 0; i < checksLength; ++i) {
       const { unsafe, callback } = checks[i];
 
       let result;
@@ -357,29 +377,6 @@ function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
     }
   }
   return issues;
-}
-
-export function unique<T>(arr: T[]): T[];
-
-export function unique<T>(arr: readonly T[]): readonly T[];
-
-export function unique<T>(arr: readonly T[]): readonly T[] {
-  let uniqueArr: T[] | null = null;
-
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i];
-
-    if (arr.indexOf(value, i + 1) !== -1) {
-      if (uniqueArr === null) {
-        uniqueArr = arr.slice(0, i);
-      }
-      continue;
-    }
-    if (uniqueArr !== null) {
-      uniqueArr.push(value);
-    }
-  }
-  return uniqueArr || arr;
 }
 
 export function getInputTypes(shapes: readonly AnyShape[]): ValueType[] {

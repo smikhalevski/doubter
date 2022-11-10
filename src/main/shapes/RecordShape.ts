@@ -6,7 +6,7 @@ import {
   createIssueFactory,
   isArray,
   isEqual,
-  isObjectLike,
+  isPlainObject,
   objectTypes,
   ok,
   setKeyValue,
@@ -62,7 +62,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
-    if (!isObjectLike(input)) {
+    if (!isPlainObject(input)) {
       return [this._typeIssueFactory(input)];
     }
 
@@ -133,7 +133,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     }
 
     return new Promise(resolve => {
-      if (!isObjectLike(input)) {
+      if (!isPlainObject(input)) {
         resolve([this._typeIssueFactory(input)]);
         return;
       }
