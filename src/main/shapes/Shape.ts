@@ -381,7 +381,11 @@ export class Shape<I = any, O = I> {
    */
   apply(input: unknown, options: ParseOptions): ApplyResult<O> {
     const { _applyChecks } = this;
-    return _applyChecks !== null ? _applyChecks(input, null, options) : null;
+
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
+    }
+    return null;
   }
 
   /**
