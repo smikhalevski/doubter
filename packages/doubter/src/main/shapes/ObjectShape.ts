@@ -41,11 +41,11 @@ export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> 
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export type ToOptional<P extends ReadonlyDict<AnyShape>> = {
+export type MakeOptional<P extends ReadonlyDict<AnyShape>> = {
   [K in keyof P]: Shape<P[K]['input'] | undefined, P[K]['output'] | undefined>;
 };
 
-export type PartialProps<P extends ReadonlyDict<AnyShape>, K extends keyof P> = Omit<P, K> & ToOptional<Pick<P, K>>;
+export type MakePartial<P extends ReadonlyDict<AnyShape>, K extends keyof P> = Omit<P, K> & MakeOptional<Pick<P, K>>;
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
@@ -198,9 +198,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
   }
 
-  partial(): ObjectShape<PartialProps<P, keyof P>, R>;
+  partial(): ObjectShape<MakePartial<P, keyof P>, R>;
 
-  partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<PartialProps<P, K[number]>, R>;
+  partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<MakePartial<P, K[number]>, R>;
 
   partial(keys?: string[]) {
     return this as any;

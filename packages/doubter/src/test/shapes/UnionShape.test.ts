@@ -13,6 +13,7 @@ describe('UnionShape', () => {
 
     const unionShape = new UnionShape([shape1, shape2, shape3]);
 
+    expect(unionShape.inputTypes).toEqual(['number', 'string', 'boolean']);
     expect(unionShape.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
@@ -32,6 +33,7 @@ describe('UnionShape', () => {
 
     const unionShape2 = new UnionShape([shape1, unionShape1]);
 
+    expect(unionShape2.inputTypes).toEqual(['number', 'string', 'boolean']);
     expect(unionShape2.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
