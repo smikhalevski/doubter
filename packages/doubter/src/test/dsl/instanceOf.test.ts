@@ -4,10 +4,10 @@ describe('instanceOf', () => {
   class Foo {}
 
   test('infers type', () => {
-    const output: Foo = d.instanceOf(Foo).parse(new Foo());
+    const value: Foo = d.instanceOf(Foo).parse(new Foo());
   });
 
-  test('returns an instanceOf shape', () => {
+  test('returns an instance shape', () => {
     expect(d.instanceOf(Foo)).toBeInstanceOf(d.InstanceShape);
   });
 });

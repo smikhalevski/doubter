@@ -13,6 +13,7 @@ export function array(options?: TypeConstraintOptions | Message): ArrayShape<nul
  *
  * @param shape The shape of an array element.
  * @param options The constraint options or an issue message.
+ * @template S The shape of array elements.
  */
 export function array<S extends AnyShape | null>(
   shape: S,

@@ -19,10 +19,18 @@ import {
   TYPE_NUMBER,
 } from '../constants';
 
+/**
+ * The shape of the finite number.
+ */
 export class NumberShape extends Shape<number> {
   protected _typeIssueFactory;
   protected _typePredicate = Number.isFinite;
 
+  /**
+   * Creates a new {@linkcode NumberShape} instance.
+   *
+   * @param options The type constraint options or the type issue message.
+   */
   constructor(options?: TypeConstraintOptions | Message) {
     super(numberTypes);
 

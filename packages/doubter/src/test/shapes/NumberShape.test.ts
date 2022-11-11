@@ -11,7 +11,7 @@ import {
 } from '../../main/constants';
 
 describe('NumberShape', () => {
-  test('allows a number', () => {
+  test('parses a number', () => {
     expect(new NumberShape().parse(111)).toBe(111);
   });
 
@@ -29,7 +29,7 @@ describe('NumberShape', () => {
     expect(new NumberShape().gt(2).parse(3)).toBe(3);
   });
 
-  test('raises if value is not an infinity', () => {
+  test('raises if value is an infinity', () => {
     expect(new NumberShape().try(Infinity)).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, path: [], input: Infinity, param: TYPE_NUMBER, message: MESSAGE_NUMBER_TYPE }],

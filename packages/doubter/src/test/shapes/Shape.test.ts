@@ -22,7 +22,7 @@ describe('Shape', () => {
     shape.parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
   });
 
   test('invokes checks in the same order they were added', () => {
@@ -129,7 +129,7 @@ describe('Shape', () => {
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
     expect(checkMock2).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa');
+    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
   });
 
   test('collects all issues in verbose mode', () => {
@@ -148,7 +148,7 @@ describe('Shape', () => {
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
     expect(checkMock2).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa');
+    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
   });
 
   test('invokes a predicate', () => {
@@ -310,7 +310,7 @@ describe('TransformedShape', () => {
     shape.parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 111);
+    expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false });
   });
 
   describe('async', () => {

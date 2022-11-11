@@ -4,9 +4,9 @@ import { createIssueFactory } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
 
 /**
- * The shape that constrains input to one of values.
+ * The shape that constrains an input to one of values.
  *
- * @template T The type of the allowed values.
+ * @template T Allowed values.
  */
 export class EnumShape<T> extends Shape<T> {
   protected _typeIssueFactory;
@@ -26,7 +26,7 @@ export class EnumShape<T> extends Shape<T> {
   apply(input: any, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 
-    if (this.values.indexOf(input) === -1) {
+    if (!this.values.includes(input)) {
       return [this._typeIssueFactory(input)];
     }
     if (_applyChecks !== null) {

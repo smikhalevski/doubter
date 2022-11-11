@@ -6,15 +6,24 @@ import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
 export type InferInstance<C> = C extends new (...args: any[]) => infer T ? T : never;
 
 /**
- * The class instance shape.
+ * The shape of the class instance.
  *
  * @template C The class constructor.
  */
 export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<InferInstance<C>> {
   protected _typeIssueFactory;
 
+  /**
+   * Creates a new {@linkcode InstanceShape} instance.
+   *
+   * @param ctor The class constructor.
+   * @param options The type constraint options or the type issue message.
+   * @template C The class constructor.
+   */
   constructor(readonly ctor: C, options?: TypeConstraintOptions | Message) {
-    super(Array.prototype.isPrototypeOf(ctor.prototype) ? arrayTypes : objectTypes);
+    super(
+      ctor.prototype === Array.prototype || Array.prototype.isPrototypeOf(ctor.prototype) ? arrayTypes : objectTypes
+    );
 
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }

@@ -9,6 +9,17 @@ import {
 } from '../../main/constants';
 
 describe('ArrayShape', () => {
+  test('creates an array shape', () => {
+    const shape1 = new Shape();
+    const restShape = new Shape();
+
+    const arrShape = new ArrayShape([shape1], restShape);
+
+    expect(arrShape.shapes).toEqual([shape1]);
+    expect(arrShape.restShape).toBe(restShape);
+    expect(arrShape.inputTypes).toEqual(['array']);
+  });
+
   test('raises an issue if an input is not an unconstrained array', () => {
     const arrShape = new ArrayShape(null, null);
 

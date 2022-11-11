@@ -3,9 +3,17 @@ import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../sh
 import { bigintTypes, createIssueFactory } from '../utils';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../constants';
 
+/**
+ * The shape of the bigint value.
+ */
 export class BigIntShape extends Shape<bigint> {
   protected _typeIssueFactory;
 
+  /**
+   * Creates a new {@linkcode BigIntShape} instance.
+   *
+   * @param options The type constraint options or the type issue message.
+   */
   constructor(options?: TypeConstraintOptions | Message) {
     super(bigintTypes);
 

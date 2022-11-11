@@ -8,32 +8,33 @@ describe('enum', () => {
       BBB,
     }
 
-    const output1: 1 | 'aaa' = d.enum([1, 'aaa']).parse('aaa');
+    const obj = {
+      AAA: 'aaa',
+      BBB: 'bbb',
+    } as const;
 
-    const output2: Foo = d.enum(Foo).parse(Foo.AAA);
+    const value1: 111 | 'aaa' = d.enum([111, 'aaa']).parse('aaa');
+    const value2: Foo = d.enum(Foo).parse(Foo.AAA);
+    const value3: 'aaa' | 'bbb' = d.enum(obj).parse(obj.AAA);
   });
 
-  test('raises issue when value is not one of values from the list', () => {
-    expect(d.enum(['aaa', 'bbb']).try('ccc')).toEqual({
-      ok: false,
-      issues: [
-        {
-          code: CODE_ENUM,
-          path: [],
-          input: 'ccc',
-          param: ['aaa', 'bbb'],
-          message: 'Must be equal to one of: aaa,bbb',
-          meta: undefined,
-        },
-      ],
-    });
+  test('returns an enum shape', () => {
+    const shape = d.enum([111, 222]);
+
+    expect(shape).toBeInstanceOf(d.EnumShape);
+    expect(shape.values).toEqual([111, 222]);
   });
 
-  test('allows the value from the list', () => {
-    expect(d.enum(['aaa', 'bbb']).parse('aaa')).toBe('aaa');
+  test('parses the numeric enum values', () => {
+    enum Foo {
+      AAA,
+      BBB,
+    }
+
+    expect(d.enum(Foo).parse(Foo.AAA)).toBe(Foo.AAA);
   });
 
-  test('raises issue when value is not one of the numeric enum values', () => {
+  test('raises an issue if an input is not one of the numeric enum values', () => {
     enum Foo {
       AAA,
       BBB,
@@ -54,7 +55,7 @@ describe('enum', () => {
     });
   });
 
-  test('raises issue when value is the name of the numeric enum element', () => {
+  test('raises an issue when an input is the key of the numeric enum', () => {
     enum Foo {
       AAA,
       BBB,
@@ -75,16 +76,7 @@ describe('enum', () => {
     });
   });
 
-  test('allows the value from the numeric enum', () => {
-    enum Foo {
-      AAA,
-      BBB,
-    }
-
-    expect(d.enum(Foo).parse(Foo.AAA)).toBe(Foo.AAA);
-  });
-
-  test('raises issue when value is not one of the string enum values', () => {
+  test('raises an issue when an input is not among the string enum values', () => {
     enum Foo {
       AAA = 'aaa',
       BBB = 'bbb',
@@ -105,7 +97,7 @@ describe('enum', () => {
     });
   });
 
-  test('allows the value from the string enum', () => {
+  test('parses the string enum value', () => {
     enum Foo {
       AAA = 'aaa',
       BBB = 'bbb',
@@ -114,7 +106,7 @@ describe('enum', () => {
     expect(d.enum(Foo).parse(Foo.AAA)).toBe(Foo.AAA);
   });
 
-  test('allows the value from the object', () => {
+  test('parses the enum-like object value', () => {
     const obj = {
       AAA: 'aaa',
       BBB: 'bbb',

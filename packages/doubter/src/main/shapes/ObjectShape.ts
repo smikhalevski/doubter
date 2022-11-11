@@ -127,7 +127,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    *
    * @param shape The object shape which properties must be added to this object shape.
    * @returns The new object shape.
-   * @template T The type of properties to add.
+   * @template T Properties to add.
    */
   extend<T extends ReadonlyDict<AnyShape>>(
     shape: ObjectShape<T, any>
