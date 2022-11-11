@@ -2,19 +2,23 @@
   "compilerOptions": {
     "importHelpers": true,
     "declaration": true,
-    "esModuleInterop": true,
     "moduleResolution": "Node",
-    "skipLibCheck": true,
+    "esModuleInterop": true,
     "strict": true,
     "target": "ES5",
     "module": "ES6",
-    "rootDir": "./src/main",
-    "outDir": "./lib",
-    "lib": [
-      "ES2020"
-    ]
+    "rootDir": ".",
+    "baseUrl": ".",
+    "paths": {
+      "doubter": [
+        "./packages/doubter/src/main"
+      ],
+      "@doubter/*": [
+        "./packages/*/src/main"
+      ]
+    }
   },
   "include": [
-    "./src/main/**/*"
+    "./packages/*/src/main/**/*"
   ]
 }

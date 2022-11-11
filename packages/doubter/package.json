@@ -1,0 +1,48 @@
+{
+  "name": "doubter",
+  "version": "1.0.0",
+  "description": "No-hassle runtime type validation and parsing.",
+  "main": "./lib/index-cjs.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "build": "tsc --project ./tsconfig.build.json && rollup --external tslib --input ./lib/index.js --file ./lib/index-cjs.js --format cjs --plugin @rollup/plugin-node-resolve && npm run build:terser",
+    "build:terser": "TEMP=$(mktemp) && rm $TEMP && for FILE in $(find ./lib -name '*.js'); do terser --name-cache $TEMP --compress --mangle toplevel --output $FILE -- $FILE; done && rm $TEMP || exit 1",
+    "clean": "rimraf './lib' './docs' './coverage'",
+    "test": "jest --config ../../jest.config.js",
+    "perf": "[ -d ./lib ] || npm run build && node --expose-gc --max-old-space-size=4096 ./node_modules/.bin/toofast ./src/test/perf.js",
+    "prepack": "cp ../../README.md .",
+    "postpack": "rimraf ./README.md"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/smikhalevski/doubter.git"
+  },
+  "keywords": [
+    "typings",
+    "validate",
+    "parse",
+    "runtime",
+    "union",
+    "lazy"
+  ],
+  "author": "Savva Mikhalevski <smikhalevski@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/smikhalevski/doubter/issues"
+  },
+  "homepage": "https://github.com/smikhalevski/doubter#readme",
+  "devDependencies": {
+    "@badrap/valita": "^0.1.6",
+    "ajv": "^8.11.0",
+    "myzod": "^1.8.8",
+    "zod": "^3.19.1"
+  },
+  "peerDependencies": {
+    "tslib": "^2.4.1"
+  }
+}
