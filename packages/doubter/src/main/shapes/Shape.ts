@@ -24,7 +24,7 @@ import {
 import { ValidationError } from '../ValidationError';
 import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../constants';
 
-const defaultParseOptions: ParseOptions = Object.freeze({ verbose: false });
+const defaultParseOptions: ParseOptions = { verbose: false };
 
 /**
  * An arbitrary shape.
@@ -171,10 +171,8 @@ export class Shape<I = any, O = I> {
    * @template O The output value.
    */
   constructor(inputTypes?: readonly ValueType[], async = false) {
-    inputTypes =
+    this.inputTypes =
       inputTypes === undefined || inputTypes.length === 0 || inputTypes.includes('any') ? anyTypes : unique(inputTypes);
-
-    this.inputTypes = Object.freeze(inputTypes);
     this.async = async;
 
     if (async) {

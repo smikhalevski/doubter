@@ -1,17 +1,22 @@
-import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from 'doubter';
+import { ApplyResult, createIssueFactory, Message, ParseOptions, TypeConstraintOptions } from 'doubter';
 import isURL, { IsURLOptions } from 'validator/es/lib/isURL';
 import { ValidatorShape } from './ValidatorShape';
+import { CODE_TYPE, MESSAGE_URL, TYPE_URL } from '../constants';
 
 export class UrlShape extends ValidatorShape<IsURLOptions> {
+  protected _typeIssueFactory;
+
   constructor(options?: TypeConstraintOptions | Message) {
     super({});
+
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_URL, options, TYPE_URL);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'string' || !isURL(input, this._options)) {
-      // return [this._typeIssueFactory(input)];
+      return [this._typeIssueFactory(input)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

@@ -1,17 +1,22 @@
-import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from 'doubter';
+import { ApplyResult, createIssueFactory, Message, ParseOptions, TypeConstraintOptions } from 'doubter';
 import { ValidatorShape } from './ValidatorShape';
 import isEmail, { IsEmailOptions } from 'validator/es/lib/isEmail';
+import { CODE_TYPE, MESSAGE_EMAIL, TYPE_EMAIL } from '../constants';
 
 export class EmailShape extends ValidatorShape<IsEmailOptions> {
+  protected _typeIssueFactory;
+
   constructor(options?: TypeConstraintOptions | Message) {
     super({});
+
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_EMAIL, options, TYPE_EMAIL);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'string' || !isEmail(input, this._options)) {
-      // return [this._typeIssueFactory(input)];
+      return [this._typeIssueFactory(input)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

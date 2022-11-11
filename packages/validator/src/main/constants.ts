@@ -1,3 +1,5 @@
+export const CODE_TYPE = 'type';
+
 export const TYPE_CUID = 'cuid';
 export const TYPE_EMAIL = 'email';
 export const TYPE_URL = 'url';

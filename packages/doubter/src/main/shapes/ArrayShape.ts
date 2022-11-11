@@ -34,7 +34,7 @@ export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape 
     : R extends AnyShape ? R[C][] : any[];
 
 /**
- * The shape that describes an array.
+ * The shape that describes an array or a tuple.
  *
  * @template U The list of positioned element shapes or `null` if there are no positioned elements.
  * @template R The shape of rest elements or `null` if there are no rest elements.
@@ -65,10 +65,11 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   ) {
     super(arrayTypes, (shapes !== null && isAsyncShapes(shapes)) || (restShape !== null && restShape.async));
 
-    this._typeIssueFactory =
-      shapes !== null && restShape === null
-        ? createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length)
-        : createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
+    if (shapes !== null && restShape === null) {
+      this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
+    } else {
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
+    }
   }
 
   at(key: unknown): AnyShape | null {

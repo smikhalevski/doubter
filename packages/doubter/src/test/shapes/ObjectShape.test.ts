@@ -94,7 +94,7 @@ describe('ObjectShape', () => {
     const shape2 = new Shape();
 
     const objShape1 = new ObjectShape({ key1: shape1, key2: shape2 }, null);
-    const objShape2 = objShape1.pick('key1');
+    const objShape2 = objShape1.pick(['key1']);
 
     expect(objShape2).not.toBe(objShape1);
     expect(objShape2.shapes).toEqual({ key1: shape1 });
@@ -105,7 +105,7 @@ describe('ObjectShape', () => {
     const shape2 = new Shape();
 
     const objShape1 = new ObjectShape({ key1: shape1, key2: shape2 }, null);
-    const objShape2 = objShape1.omit('key1');
+    const objShape2 = objShape1.omit(['key1']);
 
     expect(objShape2).not.toBe(objShape1);
     expect(objShape2.shapes).toEqual({ key2: shape2 });
