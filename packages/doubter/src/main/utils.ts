@@ -263,7 +263,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         let result;
 
         try {
-          result = cb0(output);
+          result = cb0(output, options);
         } catch (error) {
           return concatIssues(issues, captureIssues(error));
         }
@@ -283,7 +283,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         let result;
 
         try {
-          result = cb0(output);
+          result = cb0(output, options);
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
 
@@ -304,7 +304,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         let result;
 
         try {
-          result = cb1(output);
+          result = cb1(output, options);
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
         }
@@ -328,7 +328,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       }
 
       try {
-        result = callback(output);
+        result = callback(output, options);
       } catch (error) {
         issues = concatIssues(issues, captureIssues(error));
 
