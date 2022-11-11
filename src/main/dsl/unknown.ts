@@ -1,5 +1,8 @@
-import { UnconstrainedShape } from '../shapes';
+import { Shape } from '../shapes';
 
-export function unknown(): UnconstrainedShape<unknown> {
-  return new UnconstrainedShape();
+/**
+ * Creates the unconstrained shape with unknown value.
+ */
+export function unknown(): Shape<unknown> {
+  return new Shape();
 }

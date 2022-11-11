@@ -1,44 +1,43 @@
 import { Issue } from './shared-types';
 
 /**
- * The validation error that is thrown to indicate a set of issues detected in the input value.
+ * An error thrown if parsing failed. Custom checkers and transformers can throw this error to notify that the operation
+ * has failed.
  */
 export class ValidationError extends Error {
   /**
-   * The list of issues associated with the error.
+   * The list of issues that caused the error.
    */
   issues: Issue[];
 
   /**
-   * Creates a new {@linkcode ValidationError}.
+   * Creates a new {@linkcode ValidationError} instance.
    *
-   * @param issues The mutable array of mutable partially defined issues.
+   * @param issues The mutable list of partially defined issues that have caused an error.
    */
   constructor(issues: Partial<Issue>[]) {
-    super();
-
-    Object.setPrototypeOf(this, new.target.prototype);
-
-    Error.captureStackTrace?.(this, ValidationError);
+    let message = '';
 
     for (const issue of issues) {
-      issue.code ??= 'unknown';
-      issue.path ??= [];
+      inflateIssue(issue);
+      message +=
+        '\n' + issue.code + ' at /' + issue.path!.join('/') + (issue.message != null ? ': ' + issue.message : '');
     }
+
+    super(message);
+
+    Object.setPrototypeOf(this, new.target.prototype);
 
     this.name = 'ValidationError';
     this.issues = issues as Issue[];
   }
+}
 
-  get message() {
-    let errorMessage = '';
-    for (const { code, path, message } of this.issues) {
-      errorMessage += '\n' + code + ' at /' + path.join('/') + (typeof message === 'string' ? ': ' + message : '');
-    }
-    return errorMessage;
+export function inflateIssue(issue: Partial<Issue>): void {
+  if (issue.code == null) {
+    issue.code = 'unknown';
   }
-
-  set message(value: string) {
-    Object.defineProperty(this, 'message', { value, writable: true, configurable: true });
+  if (issue.path == null) {
+    issue.path = [];
   }
 }

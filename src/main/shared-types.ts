@@ -1,7 +1,85 @@
+export interface Ok<T> {
+  ok: true;
+
+  /**
+   * The output value.
+   */
+  value: T;
+}
+
+export interface Err {
+  ok: false;
+
+  /**
+   * The list of issues encountered during parsing.
+   */
+  issues: Issue[];
+}
+
 /**
- * Symbol that denotes an invalid value.
+ * The result of shape application. This is the part of the internal API required for creating custom shapes.
  */
-export const INVALID: any = Symbol('invalid');
+export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
+
+/**
+ * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.
+ */
+export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
+
+/**
+ * A callback that takes a value and returns `undefined` if it satisfies the requirements. If a value doesn't satisfy
+ * the check requirements then issues can be returned or a {@linkcode ValidationError} can be thrown.
+ *
+ * @type T The value type.
+ */
+export type CheckCallback<T = any> = (value: T) => Partial<Issue>[] | Partial<Issue> | null | undefined | void;
+
+/**
+ * The shape output value check.
+ */
+export interface Check {
+  /**
+   * The unique key of the check in scope of the shape.
+   */
+  key: unknown;
+
+  /**
+   * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
+   */
+  callback: CheckCallback;
+
+  /**
+   * `true` if the {@linkcode callback} is invoked even if previous processors failed, or `false` otherwise.
+   */
+  unsafe: boolean;
+
+  /**
+   * The optional parameter used by the {@linkcode callback}.
+   */
+  param: any;
+}
+
+/**
+ * Options that are applicable for the custom checks added via {@linkcode Shape.check}.
+ */
+export interface CheckOptions {
+  /**
+   * The unique key of the check in scope of the shape.
+   */
+  key?: unknown;
+
+  /**
+   * If `true` then the check would be executed even if the preceding check failed, otherwise check is
+   * ignored.
+   */
+  unsafe?: boolean;
+
+  /**
+   * An optional param that would be associated with the checker and can be accessed at {@linkcode Shape.checks} using
+   * {@linkcode Check.param}.
+   */
+  param?: any;
+}
 
 /**
  * A validation issue raised during input parsing.
@@ -10,7 +88,7 @@ export interface Issue {
   /**
    * The unique code of the validation issue.
    */
-  code: string;
+  code: any;
 
   /**
    * The object path where an issue has occurred.
@@ -39,24 +117,18 @@ export interface Issue {
 }
 
 /**
- * Transforms the value from one type to another. Transformer may throw a {@linkcode ValidationError} if there are
- * issues that prevent the value from being properly transformed.
+ * The message callback or a string.
  */
-export type Transformer<I, O> = (value: I) => O;
-
-/**
- * Constraint is a callback that takes an input and throws a {@linkcode ValidationError} if it has recognised issues.
- */
-export type Constraint<T> = (value: T, parserOptions: ParserOptions | undefined) => Issue[] | null | undefined | void;
+export type Message = ((param: any, code: any, input: any, meta: any) => any) | string;
 
 /**
  * Options that are applicable for the type constraint.
  */
-export interface InputConstraintOptions {
+export interface TypeConstraintOptions {
   /**
    * The custom issue message.
    */
-  message?: any;
+  message?: Message | Any;
 
   /**
    * An arbitrary metadata that is added to an issue.
@@ -65,77 +137,46 @@ export interface InputConstraintOptions {
 }
 
 /**
- * Options that follow in chain after the input constraint.
+ * Options that are applicable for the built-in type-specific constraints.
  */
-export interface ChainableConstraintOptions {
+export interface ConstraintOptions {
   /**
-   * If `true` then the constraint would be executed even if the preceding constraint failed, otherwise constraint is
+   * The custom issue message.
+   */
+  message?: Message | Any;
+
+  /**
+   * An arbitrary metadata that is added to an issue.
+   */
+  meta?: any;
+
+  /**
+   * If `true` then the constraint would be executed even if the preceding check failed, otherwise the constraint is
    * ignored.
    */
   unsafe?: boolean;
 }
 
 /**
- * Options that are applicable for the built-in type-specific constraints.
+ * Options for type narrowing checks.
  */
-export interface OutputConstraintOptions extends InputConstraintOptions, ChainableConstraintOptions {}
+export interface RefineOptions extends ConstraintOptions, CheckOptions {}
 
 /**
- * Options that are applicable for the custom constraints added via {@linkcode Shape.constrain}.
+ * Options applied during parsing.
  */
-export interface IdentifiableConstraintOptions extends ChainableConstraintOptions {
+export interface ParseOptions {
   /**
-   * The unique ID of the constraint in scope of the shape.
-   *
-   * If there is a constraint with the same ID then it is replaced, otherwise it is appended to the list of constraints.
-   * If the ID is `null` then the constraint is always appended to the list of constraints.
-   */
-  id?: string | null;
-}
-
-/**
- * Options for narrowing constraints that are added
- */
-export interface NarrowingConstraintOptions extends OutputConstraintOptions, IdentifiableConstraintOptions {}
-
-export type InputConstraintOptionsOrMessage = InputConstraintOptions | ((param: any) => any) | string;
-
-export type OutputConstraintOptionsOrMessage = OutputConstraintOptions | ((param: any) => any) | string;
-
-export type NarrowingConstraintOptionsOrMessage = NarrowingConstraintOptions | ((param: any) => any) | string;
-
-/**
- * Options used by a shape to apply constraints and transformations.
- */
-export interface ParserOptions {
-  /**
-   * If `true` then parsing should end as soon as the first issue is captured, otherwise maximum number of issues should
-   * be collected before parsing is terminated.
+   * If `true` then all issues are collected during parsing, otherwise parsing is aborted after the first issue is
+   * encountered.
    *
    * @default false
    */
-  fast?: boolean;
+  verbose?: boolean;
 }
 
-export type Tuple<T> = [T, ...T[]];
+export type Any = object | string | number | bigint | boolean | null | undefined;
 
-export type Primitive = string | number | bigint | boolean | null | undefined;
-
-export interface Dict<T = any> {
-  [key: string]: T;
+export interface ReadonlyDict<T = any> {
+  readonly [key: string]: T;
 }
-
-/**
- * The closure that applies constraints to the input value and throws a validation error if
- * {@linkcode ParserOptions.fast fast} parsing is enabled, or returns an error otherwise.
- *
- * @param value The value to which constraints are applied.
- * @param parserOptions Parsing options.
- * @param issues The list of already captured issues.
- * @returns The list of captured issues, or `null` if there are no issues.
- */
-export type ApplyConstraints = (
-  value: any,
-  parserOptions: ParserOptions | undefined,
-  issues: Issue[] | null
-) => Issue[] | null;

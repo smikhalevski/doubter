@@ -1,7 +1,7 @@
-import { number, object, ObjectShape } from '../../main';
+import * as d from '../../main';
 
 describe('object', () => {
   test('returns an object shape', () => {
-    expect(object({ foo: number() })).toBeInstanceOf(ObjectShape);
+    expect(d.object({ foo: d.number() })).toBeInstanceOf(d.ObjectShape);
   });
 });

@@ -1,7 +1,7 @@
-import { string, StringShape } from '../../main';
+import * as d from '../../main';
 
 describe('string', () => {
   test('returns an string shape', () => {
-    expect(string()).toBeInstanceOf(StringShape);
+    expect(d.string()).toBeInstanceOf(d.StringShape);
   });
 });

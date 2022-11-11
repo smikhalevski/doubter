@@ -1,111 +1,218 @@
-import { InputConstraintOptionsOrMessage, Issue, ParserOptions, Tuple } from '../shared-types';
-import { AnyShape, Shape } from './Shape';
-import { createIssue, isAsyncShapes, raiseIfIssues, raiseIfUnknownError } from '../utils';
-import { CODE_UNION, MESSAGE_UNION } from './constants';
+import { AnyShape, Shape, ValueType } from './Shape';
+import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { concatIssues, createIssueFactory, getInputTypes, isArray, isAsyncShapes, unique } from '../utils';
+import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
-type InferUnion<U extends Tuple<AnyShape>, C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] }[number];
+// prettier-ignore
+export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'output'> =
+  { [K in keyof U]: U[K][C] }[number];
 
 /**
  * The shape that requires an input to conform at least one of the united shapes.
  *
- * @template U The list of united type definitions.
+ * @template U The list of united shapes.
  */
-export class UnionShape<U extends Tuple<AnyShape>> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
+export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
+  protected _typeIssueFactory;
+  protected _buckets;
+  protected _anyBucket;
+
   /**
    * Creates a new {@linkcode UnionShape} instance.
    *
    * @param shapes The list of united shapes.
-   * @param options The constraint options or an issue message.
+   * @param options The union constraint options or an issue message.
+   * @template U The list of united shapes.
    */
-  constructor(readonly shapes: Readonly<U>, protected options?: InputConstraintOptionsOrMessage) {
-    super(isAsyncShapes(shapes));
+  constructor(
+    /**
+     * The list of united shapes.
+     */
+    readonly shapes: U,
+    options?: TypeConstraintOptions | Message
+  ) {
+    super(getInputTypes(shapes), isAsyncShapes(shapes));
+
+    const { buckets, anyBucket } = createUnionBuckets(shapes);
+
+    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
+    this._buckets = buckets;
+    this._anyBucket = anyBucket;
   }
 
   at(key: unknown): AnyShape | null {
-    const childShapes: AnyShape[] = [];
+    const valueShapes: AnyShape[] = [];
 
     for (const shape of this.shapes) {
-      const childShape = shape.at(key);
+      const valueShape = shape.at(key);
 
-      if (childShape !== null) {
-        childShapes.push(childShape);
+      if (valueShape !== null) {
+        valueShapes.push(valueShape);
       }
     }
-    if (childShapes.length === 0) {
+
+    if (valueShapes.length === 0) {
       return null;
     }
-    if (childShapes.length === 1) {
-      return childShapes[0];
+    if (valueShapes.length === 1) {
+      return valueShapes[0];
     }
-    return new UnionShape(childShapes as U);
+    return new UnionShape(valueShapes);
   }
 
-  parse(input: unknown, options?: ParserOptions): InferUnion<U, 'output'> {
-    const { shapes, applyConstraints } = this;
+  apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
+    const { _buckets, _anyBucket, _applyChecks } = this;
 
-    const shapesLength = shapes.length;
+    const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
 
     let issues: Issue[] | null = null;
+    let result: ApplyResult = null;
+    let output = input;
+    let bucketLength = 0;
+    let index = 0;
 
-    for (let i = 0; i < shapesLength; ++i) {
-      try {
-        return shapes[i].parse(input, options);
-      } catch (error) {
-        issues = captureOrMergeIssues(issues, error);
+    if (bucket !== null) {
+      for (bucketLength = bucket.length; index < bucketLength; ++index) {
+        result = bucket[index].apply(input, options);
+
+        if (result === null) {
+          break;
+        }
+        if (isArray(result)) {
+          issues = concatIssues(issues, result);
+          continue;
+        }
+        output = result.value;
+        break;
       }
     }
 
-    issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
+    if (index === bucketLength) {
+      return [this._typeIssueFactory(input, issues)];
+    }
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
 
-    raiseIfIssues(
-      (options !== undefined && options.fast) || applyConstraints === null
-        ? issues
-        : applyConstraints(input, options, issues)
-    );
+      if (issues !== null) {
+        return issues;
+      }
+    }
+    return result;
   }
 
-  parseAsync(input: unknown, options?: ParserOptions): Promise<InferUnion<U, 'output'>> {
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
     if (!this.async) {
-      return super.parseAsync(input, options);
+      return super.applyAsync(input, options);
     }
 
-    const { shapes, applyConstraints } = this;
+    const { _buckets, _anyBucket, _applyChecks } = this;
 
-    const shapesLength = shapes.length;
+    const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
+
+    if (bucket === null) {
+      return Promise.resolve([this._typeIssueFactory(input, null)]);
+    }
+
+    const bucketLength = bucket.length;
 
     let issues: Issue[] | null = null;
-    let promise = shapes[0].parseAsync(input, options);
+    let index = 0;
 
-    for (let i = 1; i < shapesLength; ++i) {
-      promise = promise.catch(error => {
-        issues = captureOrMergeIssues(issues, error);
+    const nextShape = (): Promise<ApplyResult<InferUnion<U, 'output'>>> => {
+      return bucket[index].applyAsync(input, options).then(result => {
+        ++index;
 
-        return shapes[i].parseAsync(input, options);
+        let output = input;
+
+        if (result !== null) {
+          if (isArray(result)) {
+            issues = concatIssues(issues, result);
+
+            if (index === bucketLength) {
+              return [this._typeIssueFactory(input, issues)];
+            }
+            return nextShape();
+          }
+          output = result.value;
+        }
+
+        if (_applyChecks !== null) {
+          issues = _applyChecks(output, null, options);
+
+          if (issues !== null) {
+            return issues;
+          }
+        }
+        return result;
       });
-    }
+    };
 
-    return promise.catch(error => {
-      raiseIfUnknownError(error);
-
-      issues = [createIssue(input, CODE_UNION, issues, this.options, MESSAGE_UNION)];
-
-      raiseIfIssues(
-        (options !== undefined && options.fast) || applyConstraints === null
-          ? issues
-          : applyConstraints(input, options, issues)
-      );
-    });
+    return nextShape();
   }
 }
 
-function captureOrMergeIssues(issues: Issue[] | null, error: unknown): Issue[] {
-  raiseIfUnknownError(error);
+/**
+ * Creates a mapping from the value type to an array of shapes that are applicable.
+ *
+ * @param shapes The list of united shapes.
+ */
+export function createUnionBuckets(shapes: readonly AnyShape[]): {
+  buckets: Partial<Record<ValueType, readonly AnyShape[]>> | null;
+  anyBucket: readonly AnyShape[] | null;
+} {
+  let buckets: Partial<Record<string, AnyShape[]>> | null = {};
+  let anyBucket: AnyShape[] | null = null;
+  let bucketTypes: ValueType[] = [];
 
-  const errorIssues = error.issues;
+  for (const shape of unwrapUnionShapes(shapes)) {
+    // Collect shapes that can parse any input
+    if (shape.inputTypes.includes('any')) {
+      anyBucket ||= [];
 
-  if (issues !== null) {
-    issues.push(...errorIssues);
-    return issues;
+      if (!anyBucket.includes(shape)) {
+        anyBucket.push(shape);
+      }
+      continue;
+    }
+
+    // Populate buckets that require specific input types
+    for (const type of shape.inputTypes) {
+      const bucket = buckets[type];
+
+      if (!bucket) {
+        bucketTypes.push(type);
+        buckets[type] = [shape];
+        continue;
+      }
+      if (!bucket.includes(shape)) {
+        bucket.push(shape);
+      }
+    }
   }
-  return errorIssues;
+
+  if (bucketTypes.length === 0) {
+    buckets = null;
+  } else if (anyBucket !== null && buckets !== null) {
+    for (const type of bucketTypes) {
+      buckets[type] = unique(buckets[type]!.concat(anyBucket));
+    }
+  }
+
+  return { buckets, anyBucket };
+}
+
+/**
+ * Unwraps nested union shapes that don't have any checks.
+ */
+function unwrapUnionShapes(opaqueShapes: readonly AnyShape[]): AnyShape[] {
+  const shapes: AnyShape[] = [];
+
+  for (const shape of opaqueShapes) {
+    if (shape instanceof UnionShape && shape.checks.length === 0) {
+      shapes.push(...unwrapUnionShapes(shape.shapes));
+    } else {
+      shapes.push(shape);
+    }
+  }
+  return shapes;
 }

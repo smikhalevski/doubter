@@ -1,4 +1,4 @@
-import { InputConstraintOptionsOrMessage, Primitive, Tuple } from '../shared-types';
+import { Any, Message, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { EnumShape } from '../shapes';
 import { isArray } from '../utils';
 
@@ -8,40 +8,28 @@ import { isArray } from '../utils';
  * @param values The list of values allowed for the input.
  * @param options The constraint options or an issue message.
  */
-function _enum<T extends Primitive, U extends Tuple<T>>(
+function enum_<T extends Any, U extends readonly [T, ...T[]]>(
   values: U,
-  options?: InputConstraintOptionsOrMessage
+  options?: TypeConstraintOptions | Message
 ): EnumShape<U[number]>;
 
 /**
  * The shape that constrains input with values of [the enum-like object](https://www.typescriptlang.org/docs/handbook/enums.html).
  *
- * @param values The enum-like object.
+ * @param values The native enum or a mapping object.
  * @param options The constraint options or an issue message.
  */
-function _enum<U extends { [name: string]: string | number }>(
+function enum_<T extends Any, U extends ReadonlyDict<T>>(
   values: U,
-  options?: InputConstraintOptionsOrMessage
+  options?: TypeConstraintOptions | Message
 ): EnumShape<U[keyof U]>;
 
-function _enum(
-  values: Tuple<Primitive> | { [name: string]: string | number },
-  options?: InputConstraintOptionsOrMessage
-): EnumShape<any> {
-  if (isArray(values)) {
-    return new EnumShape(values, options);
-  }
-
-  const enumValues = [];
-
-  for (const value of Object.values(values)) {
-    if (typeof values[value] !== 'number') {
-      enumValues.push(value);
-    }
-  }
-
-  return new EnumShape(enumValues, options);
+function enum_(values: ReadonlyDict, options?: TypeConstraintOptions | Message): EnumShape<any> {
+  return new EnumShape(
+    isArray(values) ? values : Object.values(values).filter(value => typeof values[value] !== 'number'),
+    options
+  );
 }
 
 // noinspection ReservedWordAsName
-export { _enum as enum };
+export { enum_ as enum };

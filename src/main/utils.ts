@@ -1,106 +1,61 @@
 import {
-  ApplyConstraints,
-  Constraint,
-  Dict,
-  InputConstraintOptionsOrMessage,
-  INVALID,
+  ApplyChecksCallback,
+  Check,
+  CheckCallback,
+  ConstraintOptions,
   Issue,
-  OutputConstraintOptionsOrMessage,
-  ParserOptions,
+  Message,
+  Ok,
+  ReadonlyDict,
 } from './shared-types';
-import { ValidationError } from './ValidationError';
-import type { AnyShape, Shape } from './shapes/Shape';
+import { AnyShape, Shape, ValueType } from './shapes/Shape';
+import { inflateIssue, ValidationError } from './ValidationError';
 
-export function addConstraint<S extends Shape<any>>(
-  shape: S,
-  id: string | undefined | null,
-  options: OutputConstraintOptionsOrMessage | undefined,
-  constraint: Constraint<S['output']>
-): S {
-  return shape.constrain(constraint, {
-    id,
-    unsafe: options !== null && typeof options === 'object' ? options.unsafe : false,
-  });
+export const objectTypes: ValueType[] = ['object'];
+export const arrayTypes: ValueType[] = ['array'];
+export const stringTypes: ValueType[] = ['string'];
+export const numberTypes: ValueType[] = ['number'];
+export const bigintTypes: ValueType[] = ['bigint'];
+export const booleanTypes: ValueType[] = ['boolean'];
+export const anyTypes: ValueType[] = ['any'];
+export const neverTypes: ValueType[] = ['never'];
+
+export function ok<T>(value: T): Ok<T> {
+  return { ok: true, value };
 }
 
-export function createResolveArray(
-  input: unknown[],
-  options: ParserOptions | undefined,
-  context: ParserContext,
-  applyConstraints: ApplyConstraints | null
-): (elements: unknown[]) => any {
-  return elements => {
-    const inputLength = input.length;
+export function unique<T>(arr: T[]): T[];
 
-    let output = input;
+export function unique<T>(arr: readonly T[]): readonly T[];
 
-    for (let i = 0; i < inputLength; ++i) {
-      if (!isEqual(input[i], elements[i])) {
-        output = elements;
+export function unique<T>(arr: readonly T[]): readonly T[] {
+  let uniqueArr: T[] | null = null;
+
+  for (let i = 0; i < arr.length; ++i) {
+    const value = arr[i];
+
+    if (arr.indexOf(value, i + 1) !== -1) {
+      if (uniqueArr === null) {
+        uniqueArr = arr.slice(0, i);
       }
+      continue;
     }
-
-    let { issues } = context;
-    if (applyConstraints !== null) {
-      issues = applyConstraints(output, options, issues);
+    if (uniqueArr !== null) {
+      uniqueArr.push(value);
     }
-    raiseIfIssues(issues);
-
-    return output;
-  };
-}
-
-export interface ParserContext {
-  issues: Issue[] | null;
-}
-
-export function createCatchForKey(
-  key: unknown,
-  options: ParserOptions | undefined,
-  context: ParserContext
-): (error: unknown) => any {
-  return error => {
-    const { issues } = context;
-
-    if (options !== undefined && options.fast && issues !== null) {
-      raiseIfIssues(issues);
-    }
-
-    context.issues = raiseOrCaptureIssuesForKey(error, options, issues, key);
-    return INVALID;
-  };
-}
-
-export function captureIssues(error: unknown): Issue[] {
-  raiseIfUnknownError(error);
-  return error.issues;
-}
-
-export function parseAsync<O>(shape: Shape<any, O>, input: unknown, options: ParserOptions | undefined): Promise<O> {
-  return new Promise(resolve => resolve(shape.parse(input, options)));
-}
-
-export function isDict(value: unknown): value is Dict {
-  return value !== null && typeof value === 'object';
-}
-
-const positiveIntegerPattern = /^[1-9]\d*$/;
-
-export function isArrayIndex(key: any): boolean {
-  return (isInteger(key) && key >= 0) || key === '0' || (typeof key === 'string' && positiveIntegerPattern.test(key));
-}
-
-export function isTupleIndex(key: any, length: number): boolean {
-  return isArrayIndex(key) && parseInt(key, 10) < length;
+  }
+  return uniqueArr || arr;
 }
 
 export const isArray = Array.isArray;
 
-export const isEqual = Object.is as <T>(value1: unknown, value2: T) => value1 is T;
+export function isEqual(a: unknown, b: unknown): boolean {
+  return a === b || (a !== a && b !== b);
+}
 
-export const isInteger = Number.isInteger as (value: unknown) => value is number;
-
-export const isFinite = Number.isFinite as (value: unknown) => value is number;
+export function isPlainObject(value: unknown): value is Record<any, any> {
+  return value !== null && typeof value === 'object' && !isArray(value);
+}
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   let async = false;
@@ -111,137 +66,46 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   return async;
 }
 
-export function createApplyConstraints(constraints: any[]): ApplyConstraints | null {
-  const constraintsLength = constraints.length;
-
-  if (constraintsLength === 0) {
-    return null;
-  }
-
-  if (constraintsLength === 3) {
-    const [, unsafe0, callback0] = constraints;
-
-    return (input, parserOptions, issues) => {
-      if (issues === null || unsafe0) {
-        try {
-          callback0(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      return issues;
-    };
-  }
-
-  if (constraintsLength === 6) {
-    const [, unsafe0, callback0, , unsafe1, callback1] = constraints;
-
-    return (input, parserOptions, issues) => {
-      if (issues === null || unsafe0) {
-        try {
-          callback0(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      if (issues === null || unsafe1) {
-        try {
-          callback1(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      return issues;
-    };
-  }
-
-  if (constraintsLength === 3) {
-    const [, unsafe0, callback0, , unsafe1, callback1, , unsafe2, callback2] = constraints;
-
-    return (input, parserOptions, issues) => {
-      if (issues === null || unsafe0) {
-        try {
-          callback0(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      if (issues === null || unsafe1) {
-        try {
-          callback1(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      if (issues === null || unsafe2) {
-        try {
-          callback2(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      return issues;
-    };
-  }
-
-  if (constraintsLength === 4) {
-    const [, unsafe0, callback0, , unsafe1, callback1, , unsafe2, callback2, , unsafe3, callback3] = constraints;
-
-    return (input, parserOptions, issues) => {
-      if (issues === null || unsafe0) {
-        try {
-          callback0(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      if (issues === null || unsafe1) {
-        try {
-          callback1(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      if (issues === null || unsafe2) {
-        try {
-          callback2(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      if (issues === null || unsafe3) {
-        try {
-          callback3(input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-      return issues;
-    };
-  }
-
-  return (input, parserOptions, issues) => {
-    for (let i = 1; i < constraintsLength; i += 3) {
-      if (issues === null || constraints[i]) {
-        try {
-          constraints[i + 1](input, parserOptions);
-        } catch (error) {
-          issues = raiseOrCaptureIssues(error, parserOptions, issues);
-        }
-      }
-    }
-    return issues;
-  };
+/**
+ * The convenient shortcut to add built-in checks to shapes.
+ */
+export function appendCheck<S extends Shape>(
+  shape: S,
+  key: string | undefined,
+  options: ConstraintOptions | Message | undefined,
+  param: unknown,
+  cb: CheckCallback<S['output']>
+): S {
+  return shape.check(cb, {
+    key,
+    unsafe: options !== null && typeof options === 'object' && options.unsafe,
+    param,
+  });
 }
 
-export function createIssue(
-  input: unknown,
+export function createIssueFactory(
   code: string,
-  param: unknown,
-  options: InputConstraintOptionsOrMessage | undefined,
-  message: string
-): Issue {
-  let meta;
+  defaultMessage: string,
+  options: ConstraintOptions | Message | undefined,
+  param: unknown
+): (input: unknown) => Issue;
+
+export function createIssueFactory(
+  code: string,
+  defaultMessage: string,
+  options: ConstraintOptions | Message | undefined
+): (input: unknown, param: unknown) => Issue;
+
+export function createIssueFactory(
+  code: string,
+  defaultMessage: string,
+  options: ConstraintOptions | Message | undefined,
+  param?: any
+): (input: unknown, param: unknown) => Issue {
+  const paramKnown = arguments.length === 4;
+
+  let meta: unknown;
+  let message: any = defaultMessage;
 
   if (options !== null && typeof options === 'object') {
     if (options.message !== undefined) {
@@ -249,80 +113,279 @@ export function createIssue(
     }
     meta = options.meta;
   } else if (typeof options === 'function') {
-    message = options(param);
-  } else if (typeof options === 'string') {
-    message = options.replace('%s', String(param));
+    message = options;
+  } else if (options != null) {
+    message = options;
+  }
+
+  if (typeof message === 'function') {
+    if (paramKnown) {
+      return input => {
+        return { code, path: [], input, message: message(param, code, input, meta), param, meta };
+      };
+    } else {
+      return (input, param) => {
+        return { code, path: [], input, message: message(param, code, input, meta), param, meta };
+      };
+    }
+  }
+
+  if (typeof message === 'string') {
+    if (paramKnown) {
+      message = message.replace('%s', param);
+    } else if (message.indexOf('%s') !== -1) {
+      return (input, param) => {
+        return { code, path: [], input, message: message.replace('%s', param), param, meta };
+      };
+    }
+  }
+
+  if (paramKnown) {
+    return input => {
+      return { code, path: [], input, message, param, meta };
+    };
   } else {
-    message = message.replace('%s', String(param));
-  }
-
-  return { code, path: [], input, param, message, meta };
-}
-
-export function raise(message: string): never {
-  throw new Error(message);
-}
-
-export function raiseIssue(
-  input: unknown,
-  code: string,
-  param: unknown,
-  options: InputConstraintOptionsOrMessage | undefined,
-  message: string
-): never {
-  throw new ValidationError([createIssue(input, code, param, options, message)]);
-}
-
-export function raiseIfUnknownError(error: unknown): asserts error is ValidationError {
-  if (!(error instanceof ValidationError)) {
-    throw error;
+    return (input, param) => {
+      return { code, path: [], input, message, param, meta };
+    };
   }
 }
 
-export function raiseIfIssues(issues: Issue[] | null): void {
+export function unshiftPath(issues: Issue[], key: unknown): void {
+  let issuesLength = issues.length;
+
+  for (let i = 0; i < issuesLength; ++i) {
+    issues[i].path.unshift(key);
+  }
+}
+
+export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
   if (issues !== null) {
-    throw new ValidationError(issues);
-  }
-}
-
-export function raiseOrCaptureIssues(
-  error: unknown,
-  options: ParserOptions | undefined,
-  issues: Issue[] | null
-): Issue[] {
-  raiseIfUnknownError(error);
-
-  const errorIssues = error.issues;
-
-  if (issues !== null) {
-    issues.push(...errorIssues);
+    issues.push(...result);
     return issues;
   }
-  if (options !== undefined && options.fast) {
-    throw error;
-  }
-  return errorIssues;
+  return result;
 }
 
-export function raiseOrCaptureIssuesForKey(
-  error: unknown,
-  options: ParserOptions | undefined,
-  issues: Issue[] | null,
-  key: unknown
-): Issue[] {
-  raiseIfUnknownError(error);
-
-  const errorIssues = error.issues;
-
-  for (const issue of errorIssues) {
-    issue.path.unshift(key);
-  }
+export function pushIssue(issues: Issue[] | null, result: Issue): Issue[] {
   if (issues !== null) {
-    issues.push(...errorIssues);
+    issues.push(result);
     return issues;
   }
-  if (options !== undefined && options.fast) {
-    throw error;
+  return [result];
+}
+
+export function captureIssues(error: unknown): Issue[] {
+  if (error instanceof ValidationError) {
+    return error.issues;
   }
-  return errorIssues;
+  throw error;
+}
+
+export type Flags = number[] | number;
+
+export function setFlag(flags: Flags, index: number): Flags {
+  if (typeof flags === 'number') {
+    if (index < 32) {
+      return flags | (1 << index);
+    }
+    flags = [flags, 0, 0];
+  }
+
+  flags[index >> 5] |= 1 << index % 32;
+  return flags;
+}
+
+export function isFlagSet(flag: Flags, index: number): boolean {
+  if (typeof flag === 'number') {
+    return 0 !== flag >>> index;
+  } else {
+    return 0 !== flag[index >> 5] >>> index % 32;
+  }
+}
+
+export function setKeyValue(obj: Record<any, any>, key: PropertyKey, value: unknown): void {
+  if (key === '__proto__') {
+    Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
+  } else {
+    obj[key as string] = value;
+  }
+}
+
+export function cloneEnumerableKeys(input: ReadonlyDict, keyCount = -1): ReadonlyDict {
+  const output: ReadonlyDict = {};
+
+  if (keyCount < 0) {
+    for (const key in input) {
+      setKeyValue(output, key, input[key]);
+    }
+  }
+  if (keyCount > 0) {
+    let index = 0;
+
+    for (const key in input) {
+      if (index === keyCount) {
+        break;
+      }
+      setKeyValue(output, key, input[key]);
+      ++index;
+    }
+  }
+  return output;
+}
+
+export function cloneKnownKeys(input: ReadonlyDict, keys: readonly string[]): ReadonlyDict {
+  const output: ReadonlyDict = {};
+  const keysLength = keys.length;
+
+  for (let i = 0; i < keysLength; ++i) {
+    const key = keys[i];
+
+    if (key in input) {
+      setKeyValue(output, key, input[key]);
+    }
+  }
+  return output;
+}
+
+export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback | null {
+  const checksLength = checks.length;
+
+  if (checksLength === 0) {
+    return null;
+  }
+
+  if (checksLength === 1) {
+    const [{ unsafe: unsafe0, callback: cb0 }] = checks;
+
+    return (output, issues, options) => {
+      if (issues === null || unsafe0) {
+        let result;
+
+        try {
+          result = cb0(output);
+        } catch (error) {
+          return concatIssues(issues, captureIssues(error));
+        }
+        if (result != null) {
+          return appendIssue(issues, result);
+        }
+      }
+      return issues;
+    };
+  }
+
+  if (checksLength === 2) {
+    const [{ unsafe: unsafe0, callback: cb0 }, { unsafe: unsafe1, callback: cb1 }] = checks;
+
+    return (output, issues, options) => {
+      if (issues === null || unsafe0) {
+        let result;
+
+        try {
+          result = cb0(output);
+        } catch (error) {
+          issues = concatIssues(issues, captureIssues(error));
+
+          if (!options.verbose) {
+            return issues;
+          }
+        }
+        if (result != null) {
+          issues = appendIssue(issues, result);
+
+          if (issues !== null && !options.verbose) {
+            return issues;
+          }
+        }
+      }
+
+      if (issues === null || unsafe1) {
+        let result;
+
+        try {
+          result = cb1(output);
+        } catch (error) {
+          issues = concatIssues(issues, captureIssues(error));
+        }
+        if (result != null) {
+          issues = appendIssue(issues, result);
+        }
+      }
+
+      return issues;
+    };
+  }
+
+  return (output, issues, options) => {
+    for (let i = 0; i < checksLength; ++i) {
+      const { unsafe, callback } = checks[i];
+
+      let result;
+
+      if (issues !== null && !unsafe) {
+        continue;
+      }
+
+      try {
+        result = callback(output);
+      } catch (error) {
+        issues = concatIssues(issues, captureIssues(error));
+
+        if (!options.verbose) {
+          return issues;
+        }
+      }
+
+      if (result != null) {
+        issues = appendIssue(issues, result);
+
+        if (issues !== null && !options.verbose) {
+          return issues;
+        }
+      }
+    }
+
+    return issues;
+  };
+}
+
+function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
+  if (isArray(result)) {
+    const resultLength = result.length;
+
+    if (resultLength === 0) {
+      return issues;
+    }
+
+    for (let i = 0; i < resultLength; ++i) {
+      inflateIssue(result[i]);
+    }
+
+    if (issues === null) {
+      issues = result;
+    } else {
+      issues.push(...result);
+    }
+  } else {
+    inflateIssue(result);
+
+    if (issues === null) {
+      issues = [result];
+    } else {
+      issues.push(result);
+    }
+  }
+  return issues;
+}
+
+export function getInputTypes(shapes: readonly AnyShape[]): ValueType[] {
+  const types: ValueType[] = [];
+
+  for (const shape of shapes) {
+    for (const type of shape.inputTypes) {
+      types.push(type);
+    }
+  }
+  return types;
 }

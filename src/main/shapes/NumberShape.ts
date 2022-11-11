@@ -1,6 +1,6 @@
 import { Shape } from './Shape';
-import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { addConstraint, isFinite, raiseIfIssues, raiseIssue } from '../utils';
+import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { appendCheck, createIssueFactory, numberTypes } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -8,18 +8,25 @@ import {
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
+  MESSAGE_INTEGER_TYPE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
+  TYPE_INTEGER,
   TYPE_NUMBER,
-} from './constants';
+} from '../constants';
 
 export class NumberShape extends Shape<number> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
-    super(false);
+  protected _typeIssueFactory;
+  protected _typePredicate = Number.isFinite;
+
+  constructor(options?: TypeConstraintOptions | Message) {
+    super(numberTypes);
+
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
   }
 
   /**
@@ -28,7 +35,7 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  positive(options?: OutputConstraintOptionsOrMessage): this {
+  positive(options?: ConstraintOptions | Message): this {
     return this.gt(0, options);
   }
 
@@ -38,7 +45,7 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  negative(options?: OutputConstraintOptionsOrMessage): this {
+  negative(options?: ConstraintOptions | Message): this {
     return this.lt(0, options);
   }
 
@@ -49,10 +56,12 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  gt(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_GT, options, output => {
+  gt(value: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
+
+    return appendCheck(this, CODE_NUMBER_GT, options, value, output => {
       if (output <= value) {
-        raiseIssue(output, CODE_NUMBER_GT, value, options, MESSAGE_NUMBER_GT);
+        return issueFactory(output);
       }
     });
   }
@@ -64,10 +73,12 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  lt(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_LT, options, output => {
+  lt(value: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
+
+    return appendCheck(this, CODE_NUMBER_LT, options, value, output => {
       if (output >= value) {
-        raiseIssue(output, CODE_NUMBER_LT, value, options, MESSAGE_NUMBER_LT);
+        return issueFactory(output);
       }
     });
   }
@@ -79,10 +90,12 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  gte(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_GTE, options, output => {
+  gte(value: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
+
+    return appendCheck(this, CODE_NUMBER_GTE, options, value, output => {
       if (output < value) {
-        raiseIssue(output, CODE_NUMBER_GTE, value, options, MESSAGE_NUMBER_GTE);
+        return issueFactory(output);
       }
     });
   }
@@ -94,10 +107,12 @@ export class NumberShape extends Shape<number> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  lte(value: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_LTE, options, output => {
+  lte(value: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
+
+    return appendCheck(this, CODE_NUMBER_LTE, options, value, output => {
       if (output > value) {
-        raiseIssue(output, CODE_NUMBER_LTE, value, options, MESSAGE_NUMBER_LTE);
+        return issueFactory(output);
       }
     });
   }
@@ -105,27 +120,44 @@ export class NumberShape extends Shape<number> {
   /**
    * Constrains the number to be a multiple of the divisor.
    *
-   * @param divisor The number by which the input should be divisible without a remainder.
+   * @param value The number by which the input should be divisible without a remainder.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  multipleOf(divisor: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, options, output => {
-      if (output % divisor !== 0) {
-        raiseIssue(output, CODE_NUMBER_MULTIPLE_OF, divisor, options, MESSAGE_NUMBER_MULTIPLE_OF);
+  multipleOf(value: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
+
+    return appendCheck(this, CODE_NUMBER_MULTIPLE_OF, options, value, output => {
+      if (output % value !== 0) {
+        return issueFactory(output);
       }
     });
   }
 
-  parse(input: unknown, options?: ParserOptions): number {
-    if (!isFinite(input)) {
-      raiseIssue(input, CODE_TYPE, TYPE_NUMBER, this.options, MESSAGE_NUMBER_TYPE);
-    }
+  /**
+   * Constrains the number to be an integer and rejects `Infinity` and `NaN` values.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  integer(options?: ConstraintOptions | Message): this {
+    const shape = this._clone();
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+    shape._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
+    shape._typePredicate = Number.isInteger;
+
+    return shape;
+  }
+
+  apply(input: unknown, options: ParseOptions): ApplyResult<number> {
+    const { _typePredicate, _applyChecks } = this;
+
+    if (!_typePredicate(input)) {
+      return [this._typeIssueFactory(input)];
     }
-    return input;
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
+    }
+    return null;
   }
 }

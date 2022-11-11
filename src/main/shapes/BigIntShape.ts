@@ -1,22 +1,26 @@
 import { Shape } from './Shape';
-import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { raiseIfIssues, raiseIssue } from '../utils';
-import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from './constants';
+import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { bigintTypes, createIssueFactory } from '../utils';
+import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../constants';
 
 export class BigIntShape extends Shape<bigint> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
-    super(false);
+  protected _typeIssueFactory;
+
+  constructor(options?: TypeConstraintOptions | Message) {
+    super(bigintTypes);
+
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }
 
-  parse(input: unknown, options?: ParserOptions): bigint {
-    if (typeof input !== 'bigint') {
-      raiseIssue(input, CODE_TYPE, TYPE_BIGINT, this.options, MESSAGE_BIGINT_TYPE);
-    }
+  apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {
+    const { _applyChecks } = this;
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+    if (typeof input !== 'bigint') {
+      return [this._typeIssueFactory(input)];
     }
-    return input;
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
+    }
+    return null;
   }
 }

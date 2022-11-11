@@ -1,6 +1,6 @@
-import { InputConstraintOptionsOrMessage, OutputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
 import { Shape } from './Shape';
-import { addConstraint, raiseIfIssues, raiseIssue } from '../utils';
+import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { appendCheck, createIssueFactory, stringTypes } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -11,11 +11,23 @@ import {
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_TYPE,
   TYPE_STRING,
-} from './constants';
+} from '../constants';
 
+/**
+ * The shape that constrains the input as a string.
+ */
 export class StringShape extends Shape<string> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
-    super(false);
+  protected _typeIssueFactory;
+
+  /**
+   * Creates a new {@linkcode StringShape} instance.
+   *
+   * @param options The type constraint options or the type issue message.
+   */
+  constructor(options?: TypeConstraintOptions | Message) {
+    super(stringTypes);
+
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
   }
 
   /**
@@ -25,7 +37,7 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  length(length: number, options?: OutputConstraintOptionsOrMessage): this {
+  length(length: number, options?: ConstraintOptions | Message): this {
     return this.min(length, options).max(length, options);
   }
 
@@ -36,10 +48,12 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  min(length: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_STRING_MIN, options, input => {
-      if (input.length < length) {
-        raiseIssue(input, CODE_STRING_MIN, length, options, MESSAGE_STRING_MIN);
+  min(length: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
+
+    return appendCheck(this, CODE_STRING_MIN, options, length, output => {
+      if (output.length < length) {
+        return issueFactory(output);
       }
     });
   }
@@ -51,10 +65,12 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  max(length: number, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_STRING_MAX, options, output => {
+  max(length: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
+
+    return appendCheck(this, CODE_STRING_MAX, options, length, output => {
       if (output.length > length) {
-        raiseIssue(output, CODE_STRING_MAX, length, options, MESSAGE_STRING_MAX);
+        return issueFactory(output);
       }
     });
   }
@@ -66,25 +82,27 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  regex(re: RegExp, options?: OutputConstraintOptionsOrMessage): this {
-    return addConstraint(this, CODE_STRING_REGEX, options, output => {
+  match(re: RegExp, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
+
+    return appendCheck(this, CODE_STRING_REGEX, options, re, output => {
       re.lastIndex = 0;
 
       if (!re.test(output)) {
-        raiseIssue(output, CODE_STRING_REGEX, re, options, MESSAGE_STRING_REGEX);
+        return issueFactory(output);
       }
     });
   }
 
-  parse(input: unknown, options?: ParserOptions): string {
-    if (typeof input !== 'string') {
-      raiseIssue(input, CODE_TYPE, TYPE_STRING, this.options, MESSAGE_STRING_TYPE);
-    }
+  apply(input: unknown, options: ParseOptions): ApplyResult<string> {
+    const { _applyChecks } = this;
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+    if (typeof input !== 'string') {
+      return [this._typeIssueFactory(input)];
     }
-    return input;
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
+    }
+    return null;
   }
 }

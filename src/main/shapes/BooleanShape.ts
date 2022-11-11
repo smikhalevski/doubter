@@ -1,22 +1,26 @@
 import { Shape } from './Shape';
-import { InputConstraintOptionsOrMessage, ParserOptions } from '../shared-types';
-import { raiseIfIssues, raiseIssue } from '../utils';
-import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from './constants';
+import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { booleanTypes, createIssueFactory } from '../utils';
+import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../constants';
 
 export class BooleanShape extends Shape<boolean> {
-  constructor(protected options?: InputConstraintOptionsOrMessage) {
-    super(false);
+  protected _typeIssueFactory;
+
+  constructor(options?: TypeConstraintOptions | Message) {
+    super(booleanTypes);
+
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
   }
 
-  parse(input: unknown, options?: ParserOptions): boolean {
-    if (typeof input !== 'boolean') {
-      raiseIssue(input, CODE_TYPE, TYPE_BOOLEAN, this.options, MESSAGE_BOOLEAN_TYPE);
-    }
+  apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
+    const { _applyChecks } = this;
 
-    const { applyConstraints } = this;
-    if (applyConstraints !== null) {
-      raiseIfIssues(applyConstraints(input, options, null));
+    if (typeof input !== 'boolean') {
+      return [this._typeIssueFactory(input)];
     }
-    return input;
+    if (_applyChecks !== null) {
+      return _applyChecks(input, null, options);
+    }
+    return null;
   }
 }

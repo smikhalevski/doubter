@@ -1,370 +1,546 @@
-import { KeysMode, NumberShape, ObjectShape, StringShape } from '../../main';
-import { CODE_TYPE, CODE_UNKNOWN_KEYS, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/shapes/constants';
-
-const stringShape = new StringShape();
-const numberShape = new NumberShape();
-
-const asyncStringShape = stringShape.transformAsync(value => Promise.resolve(value));
-const asyncNumberShape = numberShape.transformAsync(value => Promise.resolve(value));
+import { ObjectShape, Shape } from '../../main';
+import { CODE_ENUM, CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../../main/constants';
 
 describe('ObjectShape', () => {
-  test('allows an empty object', () => {
-    const shape = new ObjectShape({}, null);
+  test('raises non object values', () => {
+    const restShape = new Shape();
 
-    expect(shape.keysMode).toBe(KeysMode.PRESERVED);
-    expect(shape.validate({})).toBe(null);
+    const objShape = new ObjectShape({}, restShape);
+
+    expect(objShape.try('')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+    });
   });
 
-  test('raises if not an object', () => {
-    expect(new ObjectShape({}, null).validate('aaa')).toEqual([
-      {
-        code: CODE_TYPE,
-        path: [],
-        input: 'aaa',
-        param: TYPE_OBJECT,
-        message: 'Must be an object',
-        meta: undefined,
-      },
-    ]);
+  test('creates a shape', () => {
+    const shapes = { foo: new Shape() };
+    const restShape = new Shape();
+
+    const objShape = new ObjectShape(shapes, restShape);
+
+    expect(objShape.keysMode).toBe('preserved');
+    expect(objShape.keys).toEqual(['foo']);
+    expect(objShape.restShape).toBe(restShape);
+    expect(objShape.shapes).toBe(shapes);
+    expect(objShape.async).toBe(false);
   });
 
-  test('raises if not an object in async mode', async () => {
-    expect(await new ObjectShape({ foo: asyncStringShape }, null).validateAsync('aaa')).toEqual([
-      {
-        code: CODE_TYPE,
-        path: [],
-        input: 'aaa',
-        param: TYPE_OBJECT,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
+  test('adds rest signature', () => {
+    const restShape = new Shape();
+    const objShape1 = new ObjectShape({}, null).refine(() => true);
+    const objShape2 = objShape1.rest(restShape);
+
+    expect(objShape1.checks.length).toBe(1);
+    expect(objShape1.restShape).toBe(null);
+    expect(objShape1.keysMode).toBe('preserved');
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.restShape).toBe(restShape);
+    expect(objShape2.keysMode).toBe('preserved');
   });
 
-  test('raises when an object must have exact keys and an unknown key is present', () => {
-    const shape = new ObjectShape({ foo: stringShape }, null).exact();
+  test('sets exact key mode', () => {
+    const objShape1 = new ObjectShape({}, null).refine(() => true);
+    const objShape2 = objShape1.exact();
 
-    expect(shape.keysMode).toBe(KeysMode.EXACT);
-    expect(shape.validate({ foo: 'aaa', bar: 'aaa' })).toEqual([
-      {
-        code: CODE_UNKNOWN_KEYS,
-        path: [],
-        input: {
-          bar: 'aaa',
-          foo: 'aaa',
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.keysMode).toBe('exact');
+  });
+
+  test('sets stripped key mode', () => {
+    const objShape1 = new ObjectShape({}, null).refine(() => true);
+    const objShape2 = objShape1.strip();
+
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.keysMode).toBe('stripped');
+  });
+
+  test('sets preserved key mode', () => {
+    const objShape1 = new ObjectShape({}, null).strip().refine(() => true);
+    const objShape2 = objShape1.preserve();
+
+    expect(objShape1.checks.length).toBe(1);
+    expect(objShape1.restShape).toBe(null);
+    expect(objShape1.keysMode).toBe('stripped');
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.keysMode).toBe('preserved');
+  });
+
+  test('returns an enum of keys', () => {
+    const objShape = new ObjectShape({ key1: new Shape(), key2: new Shape() }, null).keyof();
+
+    expect(objShape.try('key1')).toEqual({ ok: true, value: 'key1' });
+    expect(objShape.try('key2')).toEqual({ ok: true, value: 'key2' });
+    expect(objShape.try('xxx')).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_ENUM,
+          input: 'xxx',
+          message: 'Must be equal to one of: key1,key2',
+          param: ['key1', 'key2'],
+          path: [],
         },
-        param: ['bar'],
-        message: 'Must not have unknown keys bar',
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises when an object must have exact keys and an unknown key is present in async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape }, null).exact();
-
-    expect(await shape.validateAsync({ foo: 'aaa', bar: 'aaa' })).toEqual([
-      {
-        code: CODE_UNKNOWN_KEYS,
-        path: [],
-        input: {
-          bar: 'aaa',
-          foo: 'aaa',
-        },
-        param: ['bar'],
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('strips unknown keys', () => {
-    const shape = new ObjectShape({ foo: stringShape }, null).strip();
-
-    expect(shape.keysMode).toBe(KeysMode.STRIPPED);
-    expect(shape.parse({ foo: 'aaa', bar: 'aaa' })).toEqual({ foo: 'aaa' });
-  });
-
-  test('strips unknown keys in async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape }, null).strip();
-
-    expect(await shape.parseAsync({ foo: 'aaa', bar: 'aaa' })).toEqual({ foo: 'aaa' });
-  });
-
-  test('preserves unknown properties', () => {
-    const shape = new ObjectShape({ foo: stringShape }, null).strip().preserve();
-
-    expect(shape.keysMode).toBe(KeysMode.PRESERVED);
-    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
-  });
-
-  test('preserves unknown properties in async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape }, null).strip().preserve();
-
-    expect(await shape.parseAsync({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
-  });
-
-  test('preserves unknown properties by default', () => {
-    const shape = new ObjectShape({ foo: stringShape });
-
-    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
-  });
-
-  test('preserves unknown properties by default in async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape });
-
-    expect(await shape.parseAsync({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
-  });
-
-  test('extends object type with new properties', () => {
-    const shape = new ObjectShape({ foo: stringShape }, null).extend({ bar: numberShape });
-
-    expect(shape.shapes).toEqual({
-      foo: stringShape,
-      bar: numberShape,
+      ],
     });
-    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
   });
 
-  test('merges object type with another object', () => {
-    const shape = new ObjectShape({ foo: stringShape }, null).extend(new ObjectShape({ bar: numberShape }, null));
+  test('picks properties', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape();
 
-    expect(shape.shapes).toEqual({
-      foo: stringShape,
-      bar: numberShape,
-    });
-    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ foo: 'aaa', bar: 111 });
+    const objShape1 = new ObjectShape({ key1: shape1, key2: shape2 }, null);
+    const objShape2 = objShape1.pick('key1');
+
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.shapes).toEqual({ key1: shape1 });
   });
 
-  test('picks properties from an abject', () => {
-    const shape = new ObjectShape({ foo: stringShape, bar: numberShape }, null).pick('foo').strip();
+  test('omits properties', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape();
 
-    expect(shape.shapes).toEqual({ foo: stringShape });
-    expect(shape.parse({ foo: 'aaa', bar: 'bbb' })).toEqual({ foo: 'aaa' });
+    const objShape1 = new ObjectShape({ key1: shape1, key2: shape2 }, null);
+    const objShape2 = objShape1.omit('key1');
+
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.shapes).toEqual({ key2: shape2 });
   });
 
-  test('omits properties in an abject', () => {
-    const shape = new ObjectShape({ foo: stringShape, bar: numberShape }, null).omit('foo').strip();
+  test('extends object with properties', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape();
 
-    expect(shape.shapes).toEqual({ bar: numberShape });
-    expect(shape.parse({ foo: 'aaa', bar: 111 })).toEqual({ bar: 111 });
+    const objShape1 = new ObjectShape({ key1: shape1 }, null).strip().refine(() => true);
+    const objShape2 = objShape1.extend({ key2: shape2 });
+
+    expect(objShape1.checks.length).toBe(1);
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.shapes).toEqual({ key1: shape1, key2: shape2 });
+    expect(objShape2.keys).toEqual(['key1', 'key2']);
+    expect(objShape2.keysMode).toBe('stripped');
   });
 
-  test('raises issue when a property is absent', () => {
-    expect(new ObjectShape({ foo: stringShape, bar: numberShape }, null).validate({ foo: 'aaa' })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['bar'],
-        input: undefined,
-        param: TYPE_NUMBER,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
+  test('extends object with properties from another object and preserves rest shape', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape();
+
+    const restShape1 = new Shape();
+    const restShape2 = new Shape();
+
+    const objShape1 = new ObjectShape({ key1: shape1 }, restShape1).refine(() => true);
+    const objShape2 = objShape1.extend(new ObjectShape({ key2: shape2 }, restShape2));
+
+    expect(objShape1.checks.length).toBe(1);
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.shapes).toEqual({ key1: shape1, key2: shape2 });
+    expect(objShape2.keys).toEqual(['key1', 'key2']);
+    expect(objShape2.keysMode).toBe('preserved');
+    expect(objShape2.restShape).toBe(restShape1);
   });
 
-  test('raises issue when a property is absent in async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape, bar: numberShape });
+  test('overwrites extended properties', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape();
 
-    expect(await shape.validateAsync({ foo: 'aaa' })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['bar'],
-        input: undefined,
-        param: TYPE_NUMBER,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
+    const objShape1 = new ObjectShape({ key1: shape1 }, null);
+    const objShape2 = objShape1.extend({ key1: shape2 });
+
+    expect(objShape2).not.toBe(objShape1);
+    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.shapes).toEqual({ key1: shape2 });
+    expect(objShape2.keys).toEqual(['key1']);
   });
 
-  test('raises issue when an indexer property has invalid type', () => {
-    const shape = new ObjectShape({ foo: stringShape }, null).index(stringShape);
+  test('returns property shape at key', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape();
 
-    expect(shape.validate({ foo: 'aaa', bar: 111 })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['bar'],
-        input: 111,
-        param: TYPE_STRING,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
+    const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
+
+    expect(objShape.at('key1')).toBe(shape1);
+    expect(objShape.at('key2')).toBe(shape2);
+    expect(objShape.at('xxx')).toBe(null);
   });
 
-  test('raises issue when an indexer property has invalid type in async mode', async () => {
-    const shape = new ObjectShape({ foo: stringShape }, null).index(asyncStringShape);
+  describe('lax', () => {
+    test('checks known keys', () => {
+      const shape1 = new Shape();
+      const applySpy1 = jest.spyOn(shape1, 'apply');
 
-    expect(await shape.validateAsync({ foo: 'aaa', bar: 111 })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['bar'],
-        input: 111,
-        param: TYPE_STRING,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
-  });
+      const objShape = new ObjectShape({ key1: shape1 }, null);
 
-  test('raises multiple issues', () => {
-    const shape = new ObjectShape({ foo: stringShape }, numberShape);
+      const obj = { key1: 'aaa' };
+      const result: any = objShape.try(obj);
 
-    expect(shape.validate({ foo: 111, bar: 'aaa' })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['foo'],
-        input: 111,
-        param: TYPE_STRING,
-        message: expect.any(String),
-        meta: undefined,
-      },
-      {
-        code: CODE_TYPE,
-        path: ['bar'],
-        input: 'aaa',
-        param: TYPE_NUMBER,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises multiple issues in async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape }, asyncNumberShape);
-
-    expect(await shape.validateAsync({ foo: 111, bar: 'aaa' })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['foo'],
-        input: 111,
-        param: TYPE_STRING,
-        message: expect.any(String),
-        meta: undefined,
-      },
-      {
-        code: CODE_TYPE,
-        path: ['bar'],
-        input: 'aaa',
-        param: TYPE_NUMBER,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises a single issue in fast mode', () => {
-    const shape = new ObjectShape({ foo: stringShape }, numberShape);
-
-    expect(shape.validate({ foo: 111, bar: 'aaa' }, { fast: true })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['foo'],
-        input: 111,
-        param: TYPE_STRING,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('raises multiple issues in fast async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape }, asyncNumberShape);
-
-    expect(await shape.validateAsync({ foo: 111, bar: 'aaa' }, { fast: true })).toEqual([
-      {
-        code: CODE_TYPE,
-        path: ['foo'],
-        input: 111,
-        param: TYPE_STRING,
-        message: expect.any(String),
-        meta: undefined,
-      },
-    ]);
-  });
-
-  test('returns the same object is unchanged', () => {
-    const shape = new ObjectShape({ foo: stringShape });
-    const input = { foo: 'aaa' };
-    const output = shape.parse(input);
-
-    expect(input).toBe(output);
-    expect(input).toEqual({ foo: 'aaa' });
-  });
-
-  test('returns the same object is unchanged in async mode', async () => {
-    const shape = new ObjectShape({ foo: asyncStringShape });
-    const input = { foo: 'aaa' };
-    const output = await shape.parseAsync(input);
-
-    expect(input).toBe(output);
-    expect(input).toEqual({ foo: 'aaa' });
-  });
-
-  test('returns the object clone if changed', () => {
-    const shape = new ObjectShape({ foo: numberShape.transform(() => 'aaa') });
-    const input = { foo: 111 };
-    const output = shape.parse(input);
-
-    expect(input).not.toBe(output);
-    expect(input).toEqual({ foo: 111 });
-    expect(output).toEqual({ foo: 'aaa' });
-  });
-
-  test('returns the object clone if changed in async mode', async () => {
-    const shape = new ObjectShape({ foo: numberShape.transform(() => 'aaa') });
-    const input = { foo: 111 };
-    const output = await shape.parseAsync(input);
-
-    expect(input).not.toBe(output);
-    expect(input).toEqual({ foo: 111 });
-    expect(output).toEqual({ foo: 'aaa' });
-  });
-
-  test('returns value type at key', () => {
-    const valueShape = numberShape;
-    const shape = new ObjectShape({ foo: valueShape });
-
-    expect(shape.at('foo')).toBe(valueShape);
-    expect(shape.at('bar')).toBe(null);
-  });
-
-  test('returns indexer type at key', () => {
-    const indexerShape = stringShape;
-    const shape = new ObjectShape({}, indexerShape);
-
-    expect(shape.at('foo')).toBe(indexerShape);
-    expect(shape.at('bar')).toBe(indexerShape);
-  });
-
-  test('does not swallow unknown errors', () => {
-    const shape = new ObjectShape({
-      foo: stringShape.constrain(() => {
-        throw new Error('Unknown');
-      }),
+      expect(result).toEqual({ ok: true, value: obj });
+      expect(result.value).toBe(obj);
+      expect(applySpy1).toHaveBeenCalledTimes(1);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
     });
 
-    expect(() => shape.validate({ foo: '' })).toThrow(new Error('Unknown'));
-  });
+    test('raises the first issue only', () => {
+      const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
+      const shape2 = new Shape().check(() => [{ code: 'yyy' }]);
 
-  test('does not swallow unknown errors in async mode', async () => {
-    const shape = new ObjectShape({
-      foo: asyncStringShape.constrain(() => {
-        throw new Error('Unknown');
-      }),
+      const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
+
+      const result: any = objShape.try({});
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: ['key1'] }],
+      });
     });
 
-    await expect(shape.validateAsync({ foo: '' })).rejects.toEqual(new Error('Unknown'));
-  });
+    test('raises multiple issues in verbose mode', () => {
+      const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
+      const shape2 = new Shape().check(() => [{ code: 'yyy' }]);
 
-  test('does not swallow unknown errors in fast async mode', async () => {
-    const shape = new ObjectShape({
-      foo: asyncStringShape.constrain(() => {
-        throw new Error('Unknown');
-      }),
+      const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
+
+      const result: any = objShape.try({}, { verbose: true });
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [
+          { code: 'xxx', path: ['key1'] },
+          { code: 'yyy', path: ['key2'] },
+        ],
+      });
     });
 
-    await expect(shape.validateAsync({ foo: '' }, { fast: true })).rejects.toEqual(new Error('Unknown'));
+    test('clones the object if a property value is changed', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape().transform(() => 111);
+
+      const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
+
+      const obj = { key1: 'aaa', key2: 'bbb' };
+      const result: any = objShape.try(obj);
+
+      expect(result).toEqual({ ok: true, value: { key1: 'aaa', key2: 111 } });
+      expect(result.value).not.toBe(obj);
+    });
+
+    test('safely assigns __proto__', () => {
+      const shape1 = new Shape().transform(() => 111);
+
+      const shapes = Object.defineProperty({}, '__proto__', { value: shape1, enumerable: true });
+
+      const objShape = new ObjectShape(shapes, null);
+
+      const obj = {};
+      const result: any = objShape.try(obj);
+
+      expect(result).toEqual({
+        ok: true,
+        value: Object.defineProperty({}, '__proto__', { value: 111, enumerable: true }),
+      });
+      expect(result.value).not.toBe(obj);
+      expect(result.value.hasOwnProperty('__proto__')).toBe(true);
+    });
+
+    test('applies checks', () => {
+      const objShape = new ObjectShape({}, null).check(() => [{ code: 'xxx' }]);
+
+      expect(objShape.try({})).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
+    });
+  });
+
+  describe('strict', () => {
+    test('checks both known keys and indexed keys', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape();
+      const restShape = new Shape();
+
+      const applySpy1 = jest.spyOn(shape1, 'apply');
+      const applySpy2 = jest.spyOn(shape2, 'apply');
+      const restApplySpy = jest.spyOn(restShape, 'apply');
+
+      const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, restShape);
+
+      const obj = { key1: 'aaa', yay: 'bbb' };
+      const result: any = objShape.try(obj);
+
+      expect(result).toEqual({ ok: true, value: obj });
+      expect(result.value).toBe(obj);
+      expect(applySpy1).toHaveBeenCalledTimes(1);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+      expect(applySpy2).toHaveBeenCalledTimes(1);
+      expect(applySpy2).toHaveBeenNthCalledWith(1, undefined, { verbose: false });
+      expect(restApplySpy).toHaveBeenCalledTimes(1);
+      expect(restApplySpy).toHaveBeenNthCalledWith(1, 'bbb', { verbose: false });
+    });
+
+    test('raises multiple issues in verbose mode', () => {
+      const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
+      const restShape = new Shape().check(() => [{ code: 'yyy' }]);
+
+      const objShape = new ObjectShape({ key1: shape1 }, restShape);
+
+      const result: any = objShape.try({ key2: 'aaa' }, { verbose: true });
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [
+          { code: 'yyy', path: ['key2'] },
+          { code: 'xxx', path: ['key1'] },
+        ],
+      });
+    });
+
+    test('clones the object if an indexed property value is changed', () => {
+      const shape1 = new Shape();
+      const restShape = new Shape().transform(() => 111);
+
+      const objShape = new ObjectShape({ key1: shape1 }, restShape);
+
+      const obj = { key1: 'aaa', yay: 'bbb' };
+      const result: any = objShape.try(obj);
+
+      expect(result).toEqual({ ok: true, value: { key1: 'aaa', yay: 111 } });
+      expect(result.value).not.toBe(obj);
+    });
+
+    test('strip removes rest shape', () => {
+      const objShape = new ObjectShape({}, new Shape()).strip();
+
+      expect(objShape.restShape).toBe(null);
+    });
+
+    test('strips unknown properties', () => {
+      const shape1 = new Shape();
+
+      const objShape = new ObjectShape({ key1: shape1 }, null).strip();
+
+      const obj = { key1: 'aaa', yay: 'bbb' };
+      const result: any = objShape.try(obj);
+
+      expect(result).toEqual({ ok: true, value: { key1: 'aaa' } });
+      expect(result.value).not.toBe(obj);
+    });
+
+    test('strips unknown properties if property value has changed', () => {
+      const shape1 = new Shape().transform(() => 111);
+
+      const objShape = new ObjectShape({ key1: shape1 }, null).strip();
+
+      const obj = { key1: 'aaa', yay: 'bbb' };
+      const result: any = objShape.try(obj);
+
+      expect(result).toEqual({ ok: true, value: { key1: 111 } });
+      expect(result.value).not.toBe(obj);
+    });
+
+    test('raises an issue if unknown property is encountered', () => {
+      const shape1 = new Shape();
+
+      const objShape = new ObjectShape({ key1: shape1 }, null).exact();
+
+      const obj = { key1: 'aaa', yay: 'bbb', wow: 'ccc' };
+      const result = objShape.try(obj);
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_UNKNOWN_KEYS,
+            input: obj,
+            message: 'Must not have unknown keys: yay',
+            param: ['yay'],
+            path: [],
+          },
+        ],
+      });
+    });
+
+    test('raises an issue if with all unknown properties in verbose mode', () => {
+      const shape1 = new Shape();
+
+      const objShape = new ObjectShape({ key1: shape1 }, null).exact();
+
+      const obj = { key1: 'aaa', yay: 'bbb', wow: 'ccc' };
+      const result = objShape.try(obj, { verbose: true });
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_UNKNOWN_KEYS,
+            input: obj,
+            message: 'Must not have unknown keys: yay,wow',
+            param: ['yay', 'wow'],
+            path: [],
+          },
+        ],
+      });
+    });
+
+    test('applies checks', () => {
+      const objShape = new ObjectShape({}, new Shape()).check(() => [{ code: 'xxx' }]);
+
+      expect(objShape.try({})).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
+    });
+  });
+
+  describe('async', () => {
+    test('raises non array values', async () => {
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const objShape = new ObjectShape({}, restShape);
+
+      expect(await objShape.tryAsync('')).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+      });
+    });
+
+    test('checks both known keys and indexed keys', async () => {
+      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
+      const shape2 = new Shape();
+      const restShape = new Shape();
+
+      const applySpy1 = jest.spyOn(shape1, 'applyAsync');
+      const applySpy2 = jest.spyOn(shape2, 'applyAsync');
+      const restApplySpy = jest.spyOn(restShape, 'applyAsync');
+
+      const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, restShape);
+
+      const obj = { key1: 'aaa', yay: 'bbb' };
+      const result: any = await objShape.tryAsync(obj);
+
+      expect(result).toEqual({ ok: true, value: obj });
+      expect(result.value).toBe(obj);
+      expect(applySpy1).toHaveBeenCalledTimes(1);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+      expect(applySpy2).toHaveBeenCalledTimes(1);
+      expect(applySpy2).toHaveBeenNthCalledWith(1, undefined, { verbose: false });
+      expect(restApplySpy).toHaveBeenCalledTimes(1);
+      expect(restApplySpy).toHaveBeenNthCalledWith(1, 'bbb', { verbose: false });
+    });
+
+    test('raises multiple issues in verbose mode', async () => {
+      const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'yyy' }]);
+
+      const objShape = new ObjectShape({ key1: shape1 }, restShape);
+
+      const result = await objShape.tryAsync({ key2: 'aaa' }, { verbose: true });
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [
+          { code: 'yyy', path: ['key2'] },
+          { code: 'xxx', path: ['key1'] },
+        ],
+      });
+    });
+
+    test('clones the object if an indexed property value is changed', async () => {
+      const shape1 = new Shape();
+      const restShape = new Shape().transformAsync(() => Promise.resolve(111));
+
+      const objShape = new ObjectShape({ key1: shape1 }, restShape);
+
+      const obj = { key1: 'aaa', yay: 'bbb' };
+      const result: any = await objShape.tryAsync(obj);
+
+      expect(result).toEqual({ ok: true, value: { key1: 'aaa', yay: 111 } });
+      expect(result.value).not.toBe(obj);
+    });
+
+    test('strips unknown properties', async () => {
+      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const objShape = new ObjectShape({ key1: shape1 }, null).strip();
+
+      const obj = { key1: 'aaa', yay: 'bbb' };
+      const result: any = await objShape.tryAsync(obj);
+
+      expect(result).toEqual({ ok: true, value: { key1: 'aaa' } });
+      expect(result.value).not.toBe(obj);
+    });
+
+    test('strips unknown properties if property value has changed', async () => {
+      const shape1 = new Shape().transformAsync(() => Promise.resolve(111));
+
+      const objShape = new ObjectShape({ key1: shape1 }, null).strip();
+
+      const obj = { key1: 'aaa', yay: 'bbb' };
+      const result: any = await objShape.tryAsync(obj);
+
+      expect(result).toEqual({ ok: true, value: { key1: 111 } });
+      expect(result.value).not.toBe(obj);
+    });
+
+    test('raises an issue if unknown property is encountered', async () => {
+      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const objShape = new ObjectShape({ key1: shape1 }, null).exact();
+
+      const obj = { key1: 'aaa', yay: 'bbb', wow: 'ccc' };
+      const result = await objShape.tryAsync(obj);
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_UNKNOWN_KEYS,
+            input: obj,
+            message: 'Must not have unknown keys: yay',
+            param: ['yay'],
+            path: [],
+          },
+        ],
+      });
+    });
+
+    test('raises an issue if with all unknown properties in verbose mode', async () => {
+      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const objShape = new ObjectShape({ key1: shape1 }, null).exact();
+
+      const obj = { key1: 'aaa', yay: 'bbb', wow: 'ccc' };
+      const result = await objShape.tryAsync(obj, { verbose: true });
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_UNKNOWN_KEYS,
+            input: obj,
+            message: 'Must not have unknown keys: yay,wow',
+            param: ['yay', 'wow'],
+            path: [],
+          },
+        ],
+      });
+    });
+
+    test('applies checks', async () => {
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const objShape = new ObjectShape({}, restShape).check(() => [{ code: 'xxx' }]);
+
+      const result = await objShape.tryAsync({});
+
+      expect(result).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
+    });
   });
 });

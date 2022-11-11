@@ -1,12 +1,41 @@
-import { AnyShape, TupleShape } from '../shapes';
-import { InputConstraintOptionsOrMessage, Tuple } from '../shared-types';
+import { AnyShape, ArrayShape, Shape } from '../shapes';
+import { Message, TypeConstraintOptions } from '../shared-types';
 
 /**
  * Creates the tuple shape.
  *
- * @param types The list of tuple elements.
+ * @param shapes The list of tuple element shapes.
  * @param options The constraint options or an issue message.
+ * @template U The tuple elements.
  */
-export function tuple<U extends Tuple<AnyShape>>(types: U, options?: InputConstraintOptionsOrMessage): TupleShape<U> {
-  return new TupleShape<U>(types, options);
+export function tuple<U extends readonly [AnyShape, ...AnyShape[]]>(
+  shapes: U,
+  options?: TypeConstraintOptions | Message
+): ArrayShape<U, null>;
+
+/**
+ * Creates the tuple shape with rest elements.
+ *
+ * @param shapes The list of tuple element shapes.
+ * @param restShape The shape of rest elements.
+ * @param options The constraint options or an issue message.
+ * @template U The head tuple elements.
+ * @template R The rest tuple elements.
+ */
+export function tuple<U extends readonly [AnyShape, ...AnyShape[]], R extends AnyShape | null = null>(
+  shapes: U,
+  restShape?: R | null,
+  options?: TypeConstraintOptions | Message
+): ArrayShape<U, R>;
+
+export function tuple(
+  shapes: [AnyShape, ...AnyShape[]],
+  restShape?: AnyShape | TypeConstraintOptions | Message | null,
+  options?: TypeConstraintOptions | Message
+): ArrayShape<[AnyShape, ...AnyShape[]], AnyShape | null> {
+  if (restShape == null || restShape instanceof Shape) {
+    return new ArrayShape(shapes, restShape || null, options);
+  } else {
+    return new ArrayShape(shapes, null, restShape);
+  }
 }
