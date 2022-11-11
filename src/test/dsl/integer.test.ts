@@ -4,6 +4,7 @@ import { CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER } from '../../main/consta
 describe('integer', () => {
   test('returns an integer shape', () => {
     expect(d.integer()).toBeInstanceOf(d.NumberShape);
+    expect(d.int()).toBeInstanceOf(d.NumberShape);
   });
 
   test('raises an issue if value is not an integer', () => {

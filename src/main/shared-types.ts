@@ -21,6 +21,9 @@ export interface Err {
  */
 export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
 
+/**
+ * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.
+ */
 export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
 
 /**

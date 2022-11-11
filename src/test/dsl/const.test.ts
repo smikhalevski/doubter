@@ -13,7 +13,7 @@ describe('const', () => {
         {
           code: CODE_ENUM,
           input: 'aaa',
-          message: 'Must be equal to 111',
+          message: 'Must be equal to one of: 111',
           param: [111],
           path: [],
         },

@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { CODE_STRING_REGEX, MESSAGE_CUID } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_CUID, TYPE_CUID } from '../../main/constants';
 
 describe('cuid', () => {
   test('returns a string shape', () => {
@@ -13,10 +13,10 @@ describe('cuid', () => {
       ok: false,
       issues: [
         {
-          code: CODE_STRING_REGEX,
+          code: CODE_TYPE,
           input: 'asdfghjnm',
           message: MESSAGE_CUID,
-          param: expect.any(RegExp),
+          param: TYPE_CUID,
           path: [],
         },
       ],

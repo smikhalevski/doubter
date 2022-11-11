@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { CODE_STRING_REGEX, MESSAGE_EMAIL } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_EMAIL, TYPE_EMAIL } from '../../main/constants';
 
 describe('email', () => {
   test('returns a string shape', () => {
@@ -13,10 +13,10 @@ describe('email', () => {
       ok: false,
       issues: [
         {
-          code: CODE_STRING_REGEX,
+          code: CODE_TYPE,
           input: 'aaa@',
           message: MESSAGE_EMAIL,
-          param: expect.any(RegExp),
+          param: TYPE_EMAIL,
           path: [],
         },
       ],

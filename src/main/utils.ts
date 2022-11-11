@@ -151,23 +151,6 @@ export function createIssueFactory(
   }
 }
 
-export function fallbackOptions(
-  options: ConstraintOptions | Message | undefined,
-  defaultMessage: string
-): ConstraintOptions | Message {
-  if (options == null) {
-    return defaultMessage;
-  }
-  if (typeof options === 'object' && options.message == null) {
-    return {
-      message: defaultMessage,
-      meta: options.meta,
-      unsafe: options.unsafe,
-    };
-  }
-  return options;
-}
-
 export function unshiftPath(issues: Issue[], key: unknown): void {
   let issuesLength = issues.length;
 

@@ -1,16 +1,17 @@
 import { Message, TypeConstraintOptions } from '../shared-types';
 import { StringShape } from '../shapes';
-import { fallbackOptions } from '../utils';
-import { MESSAGE_EMAIL } from '../constants';
+import { RegexShape } from '../shapes/RegexShape';
+import { createIssueFactory } from '../utils';
+import { CODE_TYPE, MESSAGE_EMAIL, TYPE_EMAIL } from '../constants';
 
-const emailRegex =
+export const emailRegex =
   /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/;
 
 /**
- * Constrains the input to email.
+ * Creates the shape that checks that the input is a valid email.
  *
  * @param options The constraint options or an issue message.
  */
 export function email(options?: TypeConstraintOptions | Message): StringShape {
-  return new StringShape(options).match(emailRegex, fallbackOptions(options, MESSAGE_EMAIL));
+  return new RegexShape(emailRegex, createIssueFactory(CODE_TYPE, MESSAGE_EMAIL, options, TYPE_EMAIL));
 }
