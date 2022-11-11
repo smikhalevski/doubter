@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc --project ./tsconfig.build.json && rollup --external tslib --input ./lib/index.js --file ./lib/index-cjs.js --format cjs --plugin @rollup/plugin-node-resolve && npm run build:terser",
     "build:terser": "TEMP=$(mktemp) && rm $TEMP && for FILE in $(find ./lib -name '*.js'); do terser --name-cache $TEMP --compress --mangle toplevel --output $FILE -- $FILE; done && rm $TEMP || exit 1",
-    "clean": "rimraf './lib' './docs' './coverage'",
+    "clean": "rimraf './lib'",
     "test": "jest --config ../../jest.config.js"
   },
   "repository": {
@@ -30,8 +30,8 @@
   },
   "homepage": "https://github.com/smikhalevski/doubter#readme",
   "peerDependencies": {
+    "@types/validator": "^13.7.10",
     "doubter": "^1.0.0",
-    "validator": "^13.7.0",
-    "@types/validator": "^13.7.10"
+    "validator": "^13.7.0"
   }
 }
