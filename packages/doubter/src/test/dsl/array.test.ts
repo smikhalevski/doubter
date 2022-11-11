@@ -8,11 +8,11 @@ describe('array', () => {
     expect(arrShape.restShape).toBe(null);
   });
 
-  test('returns an array shape', () => {
-    const shape1 = d.number();
-    const arrShape = d.array(shape1);
+  test('returns an array shape with elements constrained by a rest shape', () => {
+    const restShape = d.number();
+    const arrShape = d.array(restShape);
 
     expect(arrShape.shapes).toBe(null);
-    expect(arrShape.restShape).toBe(shape1);
+    expect(arrShape.restShape).toBe(restShape);
   });
 });

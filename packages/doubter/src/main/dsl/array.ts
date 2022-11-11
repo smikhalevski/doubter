@@ -9,7 +9,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
 export function array(options?: TypeConstraintOptions | Message): ArrayShape<null, null>;
 
 /**
- * Creates the array shape with elements that conform the given shape.
+ * Creates the array shape with elements that conform the element shape.
  *
  * @param shape The shape of an array element.
  * @param options The constraint options or an issue message.
