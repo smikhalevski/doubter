@@ -1,4 +1,5 @@
 import {
+  Any,
   ApplyChecksCallback,
   ApplyResult,
   Check,
@@ -351,7 +352,7 @@ export class Shape<I = any, O = I> {
    * @template T The excluded value.
    * @returns The {@linkcode ExcludeShape} instance.
    */
-  exclude<T>(value: T, options?: TypeConstraintOptions | Message): Shape<Exclude<I, T>, Exclude<O, T>> {
+  exclude<T extends Any>(value: T, options?: TypeConstraintOptions | Message): Shape<Exclude<I, T>, Exclude<O, T>> {
     return new ExcludeShape(this, value, options);
   }
 
