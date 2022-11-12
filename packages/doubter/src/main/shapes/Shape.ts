@@ -9,6 +9,7 @@ import {
   Ok,
   ParseOptions,
   RefineOptions,
+  TypeConstraintOptions,
 } from '../shared-types';
 import {
   anyTypes,
@@ -22,7 +23,7 @@ import {
   unique,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../constants';
+import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_EXCLUSION, MESSAGE_PREDICATE } from '../constants';
 
 const defaultParseOptions: ParseOptions = { verbose: false };
 
@@ -340,6 +341,18 @@ export class Shape<I = any, O = I> {
         return issueFactory(output);
       }
     });
+  }
+
+  /**
+   * Replaces the input value with the given output value.
+   *
+   * @param value The value that is prohibited in both input and output.
+   * @param options The value exclusion constraint options or an issue message.
+   * @template T The excluded value.
+   * @returns The {@linkcode ExcludeShape} instance.
+   */
+  exclude<T>(value: T, options?: TypeConstraintOptions | Message): Shape<Exclude<I, T>, Exclude<O, T>> {
+    return new ExcludeShape(this, value, options);
   }
 
   /**
@@ -885,6 +898,86 @@ export class ReplaceShape<S extends AnyShape, I, O = I> extends Shape<S['input']
           return result;
         }
         output = result.value;
+      }
+
+      if (_applyChecks !== null) {
+        issues = _applyChecks(output, null, options);
+
+        if (issues !== null) {
+          return issues;
+        }
+      }
+      return result;
+    });
+  }
+}
+
+export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>> {
+  protected _typeIssueFactory;
+
+  constructor(readonly shape: S, readonly excludedValue: T, options?: TypeConstraintOptions | Message) {
+    super(shape.inputTypes, shape.async);
+
+    this._typeIssueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
+  }
+
+  apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
+    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
+
+    let issues;
+    let output = input;
+
+    if (isEqual(input, excludedValue)) {
+      return [_typeIssueFactory(input)];
+    }
+
+    const result = this.shape.apply(input, options);
+
+    if (result !== null) {
+      if (isArray(result)) {
+        return result;
+      }
+      output = result.value;
+
+      if (isEqual(output, excludedValue)) {
+        return [_typeIssueFactory(input)];
+      }
+    }
+
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
+
+      if (issues !== null) {
+        return issues;
+      }
+    }
+    return result;
+  }
+
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
+    if (!this.async) {
+      return super.applyAsync(input, options);
+    }
+
+    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
+
+    if (isEqual(input, excludedValue)) {
+      return Promise.resolve([_typeIssueFactory(input)]);
+    }
+
+    return this.shape.applyAsync(input, options).then(result => {
+      let issues;
+      let output = input;
+
+      if (result !== null) {
+        if (isArray(result)) {
+          return result;
+        }
+        output = result.value;
+
+        if (isEqual(output, excludedValue)) {
+          return [_typeIssueFactory(input)];
+        }
       }
 
       if (_applyChecks !== null) {

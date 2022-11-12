@@ -1,6 +1,7 @@
 export const CODE_ARRAY_MAX = 'arrayMaxLength';
 export const CODE_ARRAY_MIN = 'arrayMinLength';
 export const CODE_ENUM = 'enum';
+export const CODE_EXCLUSION = 'exclusion';
 export const CODE_INSTANCE = 'instance';
 export const CODE_PREDICATE = 'predicate';
 export const CODE_NEVER = 'never';
@@ -31,6 +32,7 @@ export const MESSAGE_ARRAY_MIN = 'Must have the minimum length of %s';
 export const MESSAGE_BIGINT_TYPE = 'Must be a bigint';
 export const MESSAGE_BOOLEAN_TYPE = 'Must be a boolean';
 export const MESSAGE_ENUM = 'Must be equal to one of: %s';
+export const MESSAGE_EXCLUSION = 'Must not be equal to %s';
 export const MESSAGE_INSTANCE = 'Must be a class instance';
 export const MESSAGE_INTEGER_TYPE = 'Must be an integer';
 export const MESSAGE_PREDICATE = 'Must conform the predicate';
