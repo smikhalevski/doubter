@@ -222,14 +222,14 @@ describe('Shape', () => {
   });
 
   test('allows null and undefined input', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish();
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).maybe();
 
     expect(shape.parse(null)).toBe(null);
     expect(shape.parse(undefined)).toBe(undefined);
   });
 
   test('returns default value for both null and undefined inputs', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish('aaa');
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).maybe('aaa');
 
     expect(shape.parse(null)).toBe('aaa');
     expect(shape.parse(undefined)).toBe('aaa');

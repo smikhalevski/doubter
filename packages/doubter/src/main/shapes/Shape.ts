@@ -34,6 +34,15 @@ const defaultParseOptions: ParseOptions = { verbose: false };
 export type AnyShape = Shape | Shape<never>;
 
 /**
+ * Hides shape implementation details from the type system.
+ */
+export type Opaque<S extends AnyShape> = Shape<S['input'], S['output']>;
+
+export type OpaqueReplace<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
+
+export type OpaqueExclude<S extends AnyShape, T> = Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>;
+
+/**
  * The detected runtime input value type.
  */
 export type ValueType =
@@ -352,7 +361,7 @@ export class Shape<I = any, O = I> {
    * @template T The excluded value.
    * @returns The {@linkcode ExcludeShape} instance.
    */
-  exclude<T extends Any>(value: T, options?: TypeConstraintOptions | Message): Shape<Exclude<I, T>, Exclude<O, T>> {
+  exclude<T extends Any>(value: T, options?: TypeConstraintOptions | Message): OpaqueExclude<this, T> {
     return new ExcludeShape(this, value, options);
   }
 
@@ -365,7 +374,7 @@ export class Shape<I = any, O = I> {
    * @template B The output value.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  replace<A, B = A>(input: A, value: B): Shape<I | A, O | B> {
+  replace<A extends Any, B extends Any = A>(input: A, value: B): OpaqueReplace<this, A, B> {
     return new ReplaceShape(this, input, value);
   }
 
@@ -374,7 +383,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional(): Shape<I | undefined, O | undefined>;
+  optional(): OpaqueReplace<this, undefined>;
 
   /**
    * Replaces `undefined` input value with a default output value.
@@ -382,9 +391,9 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional<T>(defaultValue: T): Shape<I | undefined, O | T>;
+  optional<T>(defaultValue: T): OpaqueReplace<this, undefined, T>;
 
-  optional(defaultValue?: unknown): Shape<I | undefined, unknown> {
+  optional(defaultValue?: any): OpaqueReplace<this, undefined, unknown> {
     return this.replace(undefined, defaultValue);
   }
 
@@ -393,7 +402,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable(): Shape<I | null, O | null>;
+  nullable(): OpaqueReplace<this, null>;
 
   /**
    * Replaces `null` input value with a default output value.
@@ -401,9 +410,9 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable<T>(defaultValue: T): Shape<I | null, O | T>;
+  nullable<T>(defaultValue: T): OpaqueReplace<this, null, T>;
 
-  nullable(defaultValue?: unknown): Shape<I | null, unknown> {
+  nullable(defaultValue?: any): OpaqueReplace<this, null, unknown> {
     return this.replace(null, defaultValue);
   }
 
@@ -412,7 +421,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish(): Shape<I | null | undefined, O | null | undefined>;
+  maybe(): OpaqueReplace<this, null | undefined>;
 
   /**
    * Replaces `null` and `undefined` input value with a default output value.
@@ -420,10 +429,41 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish<T>(defaultValue?: T): Shape<I | null | undefined, O | T>;
+  maybe<T>(defaultValue?: T): OpaqueReplace<this, null | undefined, T>;
 
-  nullish(defaultValue?: unknown): Shape<I | null | undefined, unknown> {
+  maybe(defaultValue?: unknown): OpaqueReplace<this, null | undefined, unknown> {
     return this.nullable(defaultValue).optional(defaultValue);
+  }
+
+  nonOptional(options?: TypeConstraintOptions | Message): OpaqueExclude<this, undefined> {
+    let shape: Shape = this;
+
+    while (shape instanceof ReplaceShape && shape.checks.length === 0 && shape.searchedValue === undefined) {
+      shape = shape.shape;
+    }
+    if (shape.inputTypes.includes('any') || shape.inputTypes.includes('undefined')) {
+      shape = shape.exclude(undefined, options);
+    }
+    return shape;
+  }
+
+  nonMaybe(options?: TypeConstraintOptions | Message): OpaqueExclude<this, null | undefined> {
+    let shape: Shape = this;
+
+    while (shape instanceof ReplaceShape && shape.checks.length === 0 && shape.searchedValue == null) {
+      shape = shape.shape;
+    }
+
+    const { inputTypes } = shape;
+    const opaque = inputTypes.includes('any');
+
+    if (opaque || inputTypes.includes('undefined')) {
+      shape = shape.exclude(undefined, options);
+    }
+    if (opaque || inputTypes.includes('null')) {
+      shape = shape.exclude(null, options);
+    }
+    return shape;
   }
 
   /**
@@ -809,22 +849,22 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
  * The shape that replaces an input value with another value.
  *
  * @template S The shape that parses the input without the replaced value.
- * @template I The replaced value.
- * @template O The replacement value.
+ * @template A The replaced value.
+ * @template B The replacement value.
  */
-export class ReplaceShape<S extends AnyShape, I, O = I> extends Shape<S['input'] | I, S['output'] | O> {
-  private _replacedResult: ApplyResult<O>;
-  private _replacedResultPromise?: Promise<ApplyResult<O>>;
+export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input'] | A, Exclude<S['output'], A> | B> {
+  private _replacedResult: ApplyResult<B>;
+  private _replacedResultPromise?: Promise<ApplyResult<B>>;
 
   /**
    * Creates the new {@linkcode ReplaceShape} instance.
    *
    * @param shape The shape that parses the input without the replaced value.
-   * @param replacedValue The replaced value.
+   * @param searchedValue The input that should be replaced.
    * @param value The replacement value. If `undefined` then the replaced value is returned as is without any parsing.
    * @template S The shape that parses the input without the replaced value.
-   * @template I The replaced value.
-   * @template O The replacement value.
+   * @template A The searched value.
+   * @template B The replacement value.
    */
   constructor(
     /**
@@ -834,24 +874,24 @@ export class ReplaceShape<S extends AnyShape, I, O = I> extends Shape<S['input']
     /**
      * The replaced value.
      */
-    readonly replacedValue: I,
+    readonly searchedValue: A,
     /**
      * The replacement value.
      */
-    readonly value?: O
+    readonly value?: B
   ) {
-    super(shape.inputTypes.concat(Shape.typeof(replacedValue)), shape.async);
+    super(shape.inputTypes.concat(Shape.typeof(searchedValue)), shape.async);
 
-    this._replacedResult = value === undefined || isEqual(value, replacedValue) ? null : ok(value);
+    this._replacedResult = value === undefined || isEqual(value, searchedValue) ? null : ok(value);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | O> {
+  apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
     const { _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    const result = isEqual(input, this.replacedValue) ? this._replacedResult : this.shape.apply(input, options);
+    const result = isEqual(input, this.searchedValue) ? this._replacedResult : this.shape.apply(input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -870,7 +910,7 @@ export class ReplaceShape<S extends AnyShape, I, O = I> extends Shape<S['input']
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | O>> {
+  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
     if (!this.async) {
       return super.applyAsync(input, options);
     }
@@ -879,7 +919,7 @@ export class ReplaceShape<S extends AnyShape, I, O = I> extends Shape<S['input']
 
     let issues;
 
-    if (input === this.replacedValue) {
+    if (isEqual(input, this.searchedValue)) {
       if (_applyChecks !== null) {
         return new Promise(resolve => {
           issues = _applyChecks(this.value, null, options);
