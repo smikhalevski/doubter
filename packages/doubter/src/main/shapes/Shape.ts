@@ -177,22 +177,27 @@ export class Shape<I = any, O = I> {
 
     if (async) {
       this.apply = () => {
-        throw new Error('Shape is async, consider using tryAsync or parseAsync');
+        throw new Error('Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync');
       };
     }
   }
 
+  /**
+   * Returns the type of the value.
+   *
+   * @param value The value to detect type of.
+   */
   static typeof(value: unknown): ValueType {
     const type = typeof value;
 
-    if (type === 'object') {
-      if (value === null) {
-        return 'null';
-      }
-      if (isArray(value)) {
-        return 'array';
-      }
-      return 'object';
+    if (type !== 'object') {
+      return type;
+    }
+    if (value === null) {
+      return 'null';
+    }
+    if (isArray(value)) {
+      return 'array';
     }
     return type;
   }
@@ -248,21 +253,21 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Parses the shape output using another shape.
+   * Redirects the shape output to another shape.
    *
    * @param shape The shape that validates the output if this shape.
-   * @returns The {@linkcode PipedShape} instance.
+   * @returns The {@linkcode RedirectShape} instance.
    * @template T The output value.
    */
-  pipe<T>(shape: Shape<O, T>): Shape<I, T> {
-    return new PipedShape(this, shape);
+  to<T>(shape: Shape<O, T>): Shape<I, T> {
+    return new RedirectShape(this, shape);
   }
 
   /**
    * Synchronously transforms the output value of the shape with a transformer callback.
    *
    * @param cb The callback that transforms the shape output value.
-   * @returns The {@linkcode TransformedShape} instance.
+   * @returns The {@linkcode TransformShape} instance.
    * @template T The output value.
    */
   transform<T>(
@@ -274,14 +279,14 @@ export class Shape<I = any, O = I> {
      */
     cb: (output: O, options: Readonly<ParseOptions>) => T
   ): Shape<I, T> {
-    return new TransformedShape(this, false, cb);
+    return new TransformShape(this, false, cb);
   }
 
   /**
    * Asynchronously transforms the output value of the shape with a transformer callback.
    *
    * @param cb The callback that transforms the shape output value.
-   * @returns The {@linkcode TransformedShape} instance.
+   * @returns The {@linkcode TransformShape} instance.
    * @template T The transformed value.
    */
   transformAsync<T>(
@@ -293,7 +298,7 @@ export class Shape<I = any, O = I> {
      */
     cb: (output: O, options: Readonly<ParseOptions>) => Promise<T>
   ): Shape<I, T> {
-    return new TransformedShape(this, true, cb);
+    return new TransformShape(this, true, cb);
   }
 
   /**
@@ -338,32 +343,72 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Marks the type as optional.
+   * Replaces the input value with the given output value.
+   *
+   * @param input The input value to capture.
+   * @param value The output value that is used as a replacement for `input` value.
+   * @template A The input value.
+   * @template B The output value.
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  replace<A, B = A>(input: A, value: B): Shape<I | A, O | B> {
+    return new ReplaceShape(this, input, value);
+  }
+
+  /**
+   * Replaces `undefined` input value with an `undefined` output value.
+   *
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  optional(): Shape<I | undefined, O | undefined>;
+
+  /**
+   * Replaces `undefined` input value with a default output value.
    *
    * @param defaultValue The value that should be used if an input value is `undefined`.
-   * @returns The {@linkcode ReplacementShape} instance.
+   * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional<T = undefined>(defaultValue?: T): Shape<I | undefined, O | T> {
-    return new ReplacementShape(this, undefined, defaultValue);
+  optional<T>(defaultValue: T): Shape<I | undefined, O | T>;
+
+  optional(defaultValue?: unknown): Shape<I | undefined, unknown> {
+    return this.replace(undefined, defaultValue);
   }
 
   /**
-   * Creates the nullable shape.
+   * Replaces `null` input value with an `null` output value.
+   *
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  nullable(): Shape<I | null, O | null>;
+
+  /**
+   * Replaces `null` input value with a default output value.
    *
    * @param defaultValue The value that should be used if an input value is `null`.
-   * @returns The {@linkcode ReplacementShape} instance.
+   * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable<T = null>(defaultValue?: T): Shape<I | null, O | T> {
-    return new ReplacementShape(this, null, defaultValue);
+  nullable<T>(defaultValue: T): Shape<I | null, O | T>;
+
+  nullable(defaultValue?: unknown): Shape<I | null, unknown> {
+    return this.replace(null, defaultValue);
   }
 
   /**
-   * Creates the shape that allows both `undefined` and `null` values.
+   * Passes `null` and `undefined` input value to the output.
+   *
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  nullish(): Shape<I | null | undefined, O | null | undefined>;
+
+  /**
+   * Replaces `null` and `undefined` input value with a default output value.
    *
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
-   * @returns The {@linkcode ReplacementShape} instance.
+   * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish<T = null | undefined>(defaultValue?: T): Shape<I | null | undefined, O | T> {
+  nullish<T>(defaultValue?: T): Shape<I | null | undefined, O | T>;
+
+  nullish(defaultValue?: unknown): Shape<I | null | undefined, unknown> {
     return this.nullable(defaultValue).optional(defaultValue);
   }
 
@@ -534,9 +579,9 @@ Object.defineProperty(Shape.prototype, 'parseOrDefaultAsync', {
  * @template S The base shape.
  * @template O The transformed value.
  */
-export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O> {
+export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> {
   /**
-   * Creates the new {@linkcode TransformedShape} instance.
+   * Creates the new {@linkcode TransformShape} instance.
    *
    * @param shape The base shape.
    * @param async If `true` then the transformed shape would await for the transformer to finish and use the resolved
@@ -640,9 +685,12 @@ export class TransformedShape<S extends AnyShape, O> extends Shape<S['input'], O
  * @template I The input shape.
  * @template O The output shape.
  */
-export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
+export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<
+  I['input'],
+  O['output']
+> {
   /**
-   * Creates the new {@linkcode PipedShape} instance.
+   * Creates the new {@linkcode RedirectShape} instance.
    *
    * @param inputShape The shape that parses the input value.
    * @param outputShape The shape that parses the output of `inputShape`.
@@ -750,12 +798,12 @@ export class PipedShape<I extends AnyShape, O extends Shape<I['output'], any>> e
  * @template I The replaced value.
  * @template O The replacement value.
  */
-export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['input'] | I, S['output'] | O> {
+export class ReplaceShape<S extends AnyShape, I, O = I> extends Shape<S['input'] | I, S['output'] | O> {
   private _replacedResult: ApplyResult<O>;
   private _replacedResultPromise?: Promise<ApplyResult<O>>;
 
   /**
-   * Creates the new {@linkcode ReplacementShape} instance.
+   * Creates the new {@linkcode ReplaceShape} instance.
    *
    * @param shape The shape that parses the input without the replaced value.
    * @param replacedValue The replaced value.
@@ -780,7 +828,7 @@ export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['inp
   ) {
     super(shape.inputTypes.concat(Shape.typeof(replacedValue)), shape.async);
 
-    this._replacedResult = value === undefined || value === replacedValue ? null : ok(value);
+    this._replacedResult = value === undefined || isEqual(value, replacedValue) ? null : ok(value);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | O> {
@@ -789,7 +837,7 @@ export class ReplacementShape<S extends AnyShape, I, O = I> extends Shape<S['inp
     let issues;
     let output = input;
 
-    const result = input === this.replacedValue ? this._replacedResult : this.shape.apply(input, options);
+    const result = isEqual(input, this.replacedValue) ? this._replacedResult : this.shape.apply(input, options);
 
     if (result !== null) {
       if (isArray(result)) {

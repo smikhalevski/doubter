@@ -14,7 +14,7 @@
     "build:terser": "TEMP=$(mktemp) && rm $TEMP && for FILE in $(find ./lib -name '*.js'); do terser --name-cache $TEMP --compress --mangle toplevel --output $FILE -- $FILE; done && rm $TEMP || exit 1",
     "clean": "rimraf './lib'",
     "test": "jest --config ../../jest.config.js",
-    "perf": "[ -d ./lib ] || npm run build && node --expose-gc --max-old-space-size=4096 ./node_modules/.bin/toofast ./src/test/perf.js",
+    "perf": "[ -d ./lib ] || npm run build && node --expose-gc --max-old-space-size=4096 ../../node_modules/.bin/toofast ./src/test/perf.js",
     "prepack": "cp ../../README.md .",
     "postpack": "rimraf ./README.md"
   },

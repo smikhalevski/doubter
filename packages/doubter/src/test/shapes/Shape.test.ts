@@ -262,7 +262,7 @@ describe('Shape', () => {
   });
 });
 
-describe('TransformedShape', () => {
+describe('TransformShape', () => {
   test('transforms the output', () => {
     const cbMock = jest.fn(() => 111);
 
@@ -353,15 +353,15 @@ describe('TransformedShape', () => {
   });
 });
 
-describe('PipedShape', () => {
-  test('pipes the output of one shape to the other', () => {
+describe('RedirectShape', () => {
+  test('redirects the output of one shape to the other', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
     const applySpy1 = jest.spyOn(shape1, 'apply');
     const applySpy2 = jest.spyOn(shape2, 'apply');
 
-    const shape = shape1.pipe(shape2);
+    const shape = shape1.to(shape2);
 
     expect(shape.parse('aaa')).toBe('aaa');
 
@@ -378,7 +378,7 @@ describe('PipedShape', () => {
 
     const applySpy = jest.spyOn(shape2, 'apply');
 
-    const shape = shape1.pipe(shape2);
+    const shape = shape1.to(shape2);
 
     shape.try('aaa');
 
@@ -391,7 +391,7 @@ describe('PipedShape', () => {
 
     const checkMock = jest.fn();
 
-    const shape = shape1.pipe(shape2).check(checkMock);
+    const shape = shape1.to(shape2).check(checkMock);
 
     shape.try('aaa');
 

@@ -2,7 +2,7 @@ const Ajv = require('ajv');
 const zod = require('zod');
 const myzod = require('myzod');
 const valita = require('@badrap/valita');
-const doubter = require('../../../../lib/index-cjs');
+const doubter = require('../../lib/index-cjs');
 
 beforeBatch(gc);
 
@@ -47,12 +47,12 @@ describe(
 );
 
 describe(
-  'string().pipe(string())',
+  'string().to(string())',
   () => {
     const value = 'aaa';
 
     test('doubter', measure => {
-      const shape = doubter.string().pipe(doubter.string());
+      const shape = doubter.string().to(doubter.string());
 
       measure(() => {
         shape.parse(value);

@@ -7,6 +7,6 @@ export { NeverShape } from './NeverShape';
 export { NumberShape } from './NumberShape';
 export { ObjectShape, KeysMode } from './ObjectShape';
 export { RecordShape } from './RecordShape';
-export { AnyShape, PipedShape, ReplacementShape, Shape, TransformedShape, ValueType } from './Shape';
+export { AnyShape, RedirectShape, ReplaceShape, Shape, TransformShape, ValueType } from './Shape';
 export { StringShape } from './StringShape';
 export { UnionShape } from './UnionShape';
