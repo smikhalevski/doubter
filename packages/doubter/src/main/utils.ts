@@ -34,7 +34,7 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i];
 
-    if (arr.indexOf(value, i + 1) !== -1) {
+    if (arr.includes(value, i + 1)) {
       if (uniqueArr === null) {
         uniqueArr = arr.slice(0, i);
       }

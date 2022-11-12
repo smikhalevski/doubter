@@ -39,6 +39,14 @@ describe('unique', () => {
     expect(uniqueArr).not.toBe(arr);
     expect(uniqueArr).toEqual([2, 3, 1]);
   });
+
+  test('removes NaN duplicates', () => {
+    const arr = [NaN, 1, NaN, 2, NaN];
+    const uniqueArr = unique(arr);
+
+    expect(uniqueArr).not.toBe(arr);
+    expect(uniqueArr).toEqual([1, 2, NaN]);
+  });
 });
 
 describe('createIssueFactory', () => {
