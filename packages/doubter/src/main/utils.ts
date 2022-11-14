@@ -49,12 +49,19 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
 
 export const isArray = Array.isArray;
 
+export const getPrototypeOf = Object.getPrototypeOf;
+
 export function isEqual(a: unknown, b: unknown): boolean {
   return a === b || (a !== a && b !== b);
 }
 
+export function isObjectLike(value: unknown): value is Record<any, any> {
+  return value !== null && typeof value === 'object';
+}
+
 export function isPlainObject(value: unknown): value is Record<any, any> {
-  return value !== null && typeof value === 'object' && !isArray(value);
+  let prototype;
+  return isObjectLike(value) && ((prototype = getPrototypeOf(value)) === null || prototype.constructor === Object);
 }
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {

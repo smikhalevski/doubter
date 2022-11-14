@@ -34,7 +34,7 @@ export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape 
     : R extends AnyShape ? R[C][] : any[];
 
 /**
- * The shape of an array or tuple.
+ * The shape of an array or a tuple.
  *
  * @template U The list of positioned element shapes or `null` if there are no positioned elements.
  * @template R The shape of rest elements or `null` if there are no rest elements.

@@ -18,6 +18,7 @@ import {
   captureIssues,
   createApplyChecksCallback,
   createIssueFactory,
+  getPrototypeOf,
   isArray,
   isEqual,
   ok,
@@ -503,7 +504,7 @@ export class Shape<I = any, O = I> {
    * Returns the shallow clone of this shape.
    */
   protected _clone(): this {
-    return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+    return Object.assign(Object.create(getPrototypeOf(this)), this);
   }
 }
 

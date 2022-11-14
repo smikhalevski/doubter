@@ -10,6 +10,7 @@ import {
   isAsyncShapes,
   isEqual,
   isFlagSet,
+  isObjectLike,
   isPlainObject,
   objectTypes,
   ok,
@@ -70,6 +71,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
   protected _options;
   protected _valueShapes: Shape[];
+  protected _typePredicate = isObjectLike;
   protected _typeIssueFactory;
   protected _exactIssueFactory: ((input: unknown, param: unknown) => Issue) | null = null;
 
@@ -270,8 +272,19 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return new EnumShape(this.keys);
   }
 
+  /**
+   * Constrains an object to be an `Object` instance or to have a `null` prototype.
+   */
+  plain(): this {
+    const shape = this._clone();
+    shape._typePredicate = isPlainObject;
+    return shape;
+  }
+
   apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
-    if (!isPlainObject(input)) {
+    const { _typePredicate } = this;
+
+    if (!_typePredicate(input)) {
       return [this._typeIssueFactory(input)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
@@ -287,7 +300,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
 
     return new Promise(resolve => {
-      if (!isPlainObject(input)) {
+      const { _typePredicate } = this;
+
+      if (!_typePredicate(input)) {
         resolve([this._typeIssueFactory(input)]);
         return;
       }
