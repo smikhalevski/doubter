@@ -30,9 +30,7 @@ export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | n
 export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> =
   R extends Shape ? { [key: string]: R[C] } : unknown;
 
-export type StringKeyof<T extends object> = StringifyPropertyKey<keyof T>;
-
-export type StringifyPropertyKey<K extends PropertyKey> = K extends symbol ? never : K extends number ? `${K}` : K;
+export type StringKeyof<T extends object> = Extract<keyof T, string>;
 
 export type Squash<T> = T extends never ? never : { [K in keyof T]: T[K] };
 
@@ -147,7 +145,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    */
   extend<T extends ReadonlyDict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
 
-  extend(shape: ObjectShape<any, any> | ReadonlyDict): ObjectShape<any, R> {
+  extend(shape: ObjectShape<any, any> | ReadonlyDict) {
     const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
     return new ObjectShape(shapes, this.restShape, this._options, this.keysMode);
@@ -165,14 +163,11 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   pick<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Pick<P, K[number]>, R> {
     const shapes: Record<string, AnyShape> = {};
 
-    for (let i = 0; i < this.keys.length; ++i) {
-      const key = this.keys[i];
-
+    for (const key in this.shapes) {
       if (keys.includes(key)) {
-        shapes[key] = this._valueShapes[i];
+        shapes[key] = this.shapes[key];
       }
     }
-
     return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
   }
 
@@ -188,30 +183,80 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   omit<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]>, R> {
     const shapes: Record<string, AnyShape> = {};
 
-    for (let i = 0; i < this.keys.length; ++i) {
-      const key = this.keys[i];
-
+    for (const key in this.shapes) {
       if (!keys.includes(key)) {
-        shapes[key] = this._valueShapes[i];
+        shapes[key] = this.shapes[key];
       }
     }
     return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
   }
 
+  /**
+   * Returns an object shape with all properties marked as optional.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @returns The new object shape.
+   */
   partial(): ObjectShape<Optional<P>, R>;
 
+  /**
+   * Returns an object shape with keys marked as optional.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @param keys The list of property keys to make optional.
+   * @returns The new object shape.
+   * @template K The list of string keys.
+   */
   partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Optional<Pick<P, K[number]>>, R>;
 
   partial(keys?: string[]) {
-    return this as any;
+    const shapes: Record<string, AnyShape> = {};
+
+    for (const key in this.shapes) {
+      let shape: AnyShape = this.shapes[key];
+
+      if (keys === undefined || keys.includes(key)) {
+        shape = shape.optional();
+      }
+      shapes[key] = shape;
+    }
+    return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
   }
 
+  /**
+   * Returns an object shape with all properties marked as required.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @returns The new object shape.
+   */
   required(): ObjectShape<Required<P>, R>;
 
+  /**
+   * Returns an object shape with keys marked as required.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @param keys The list of property keys to make required.
+   * @returns The new object shape.
+   * @template K The list of string keys.
+   */
   required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Required<Pick<P, K[number]>>, R>;
 
   required(keys?: string[]) {
-    return this as any;
+    const shapes: Record<string, AnyShape> = {};
+
+    for (const key in this.shapes) {
+      let shape: AnyShape = this.shapes[key];
+
+      if (keys === undefined || keys.includes(key)) {
+        shape = shape.nonOptional();
+      }
+      shapes[key] = shape;
+    }
+    return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
   }
 
   /**

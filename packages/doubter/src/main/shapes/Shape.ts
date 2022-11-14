@@ -1,5 +1,4 @@
 import {
-  Any,
   ApplyChecksCallback,
   ApplyResult,
   Check,
@@ -35,12 +34,20 @@ const defaultParseOptions: ParseOptions = { verbose: false };
 export type AnyShape = Shape | Shape<never>;
 
 /**
- * Hides shape implementation details from the type system.
+ * A shape that replaces a value from an input with an output value.
+ *
+ * @template S The base shape.
+ * @template A The searched value.
+ * @template B The value that is used as a replacement.
  */
-export type Opaque<S extends AnyShape> = Shape<S['input'], S['output']>;
-
 export type OpaqueReplace<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
 
+/**
+ * Excludes a value from both input and output.
+ *
+ * @template S The base shape.
+ * @template T The excluded value.
+ */
 export type OpaqueExclude<S extends AnyShape, T> = Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>;
 
 /**
@@ -344,7 +351,7 @@ export class Shape<I = any, O = I> {
     options?: RefineOptions | Message
   ): this;
 
-  refine(cb: (output: O) => unknown, options?: RefineOptions | Message): this {
+  refine(cb: (output: O) => unknown, options?: RefineOptions | Message) {
     const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
     return appendCheck(this, undefined, options, cb, output => {
@@ -352,31 +359,6 @@ export class Shape<I = any, O = I> {
         return issueFactory(output);
       }
     });
-  }
-
-  /**
-   * Replaces the input value with the given output value.
-   *
-   * @param value The value that is prohibited in both input and output.
-   * @param options The value exclusion constraint options or an issue message.
-   * @template T The excluded value.
-   * @returns The {@linkcode ExcludeShape} instance.
-   */
-  exclude<T extends Any>(value: T, options?: TypeConstraintOptions | Message): OpaqueExclude<this, T> {
-    return new ExcludeShape(this, value, options);
-  }
-
-  /**
-   * Replaces the input value with the given output value.
-   *
-   * @param input The input value to capture.
-   * @param value The output value that is used as a replacement for `input` value.
-   * @template A The input value.
-   * @template B The output value.
-   * @returns The {@linkcode ReplaceShape} instance.
-   */
-  replace<A extends Any, B extends Any = A>(input: A, value: B): OpaqueReplace<this, A, B> {
-    return new ReplaceShape(this, input, value);
   }
 
   /**
@@ -394,8 +376,8 @@ export class Shape<I = any, O = I> {
    */
   optional<T>(defaultValue: T): OpaqueReplace<this, undefined, T>;
 
-  optional(defaultValue?: any): OpaqueReplace<this, undefined, unknown> {
-    return this.replace(undefined, defaultValue);
+  optional(defaultValue?: any) {
+    return new ReplaceShape(this, undefined, defaultValue);
   }
 
   /**
@@ -413,8 +395,8 @@ export class Shape<I = any, O = I> {
    */
   nullable<T>(defaultValue: T): OpaqueReplace<this, null, T>;
 
-  nullable(defaultValue?: any): OpaqueReplace<this, null, unknown> {
-    return this.replace(null, defaultValue);
+  nullable(defaultValue?: any) {
+    return new ReplaceShape(this, null, defaultValue);
   }
 
   /**
@@ -422,7 +404,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  maybe(): OpaqueReplace<this, null | undefined>;
+  nullish(): OpaqueReplace<this, null | undefined>;
 
   /**
    * Replaces `null` and `undefined` input value with a default output value.
@@ -430,41 +412,25 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  maybe<T>(defaultValue?: T): OpaqueReplace<this, null | undefined, T>;
+  nullish<T>(defaultValue?: T): OpaqueReplace<this, null | undefined, T>;
 
-  maybe(defaultValue?: unknown): OpaqueReplace<this, null | undefined, unknown> {
+  nullish(defaultValue?: unknown) {
     return this.nullable(defaultValue).optional(defaultValue);
   }
 
+  /**
+   * Prevents an input and output from being undefined.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The {@linkcode ExcludeShape} instance.
+   */
   nonOptional(options?: TypeConstraintOptions | Message): OpaqueExclude<this, undefined> {
     let shape: Shape = this;
 
     while (shape instanceof ReplaceShape && shape.checks.length === 0 && shape.searchedValue === undefined) {
       shape = shape.shape;
     }
-    if (shape.inputTypes.includes('any') || shape.inputTypes.includes('undefined')) {
-      shape = shape.exclude(undefined, options);
-    }
-    return shape;
-  }
-
-  nonMaybe(options?: TypeConstraintOptions | Message): OpaqueExclude<this, null | undefined> {
-    let shape: Shape = this;
-
-    while (shape instanceof ReplaceShape && shape.checks.length === 0 && shape.searchedValue == null) {
-      shape = shape.shape;
-    }
-
-    const { inputTypes } = shape;
-    const opaque = inputTypes.includes('any');
-
-    if (opaque || inputTypes.includes('undefined')) {
-      shape = shape.exclude(undefined, options);
-    }
-    if (opaque || inputTypes.includes('null')) {
-      shape = shape.exclude(null, options);
-    }
-    return shape;
+    return new ExcludeShape(shape, undefined, options);
   }
 
   /**
@@ -954,10 +920,35 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
   }
 }
 
+/**
+ * The shape that excludes a value from both input and output.
+ *
+ * @template S The base shape.
+ * @template T The excluded value.
+ */
 export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>> {
   protected _typeIssueFactory;
 
-  constructor(readonly shape: S, readonly excludedValue: T, options?: TypeConstraintOptions | Message) {
+  /**
+   * Creates the new {@linkcode ExcludeShape} instance.
+   *
+   * @param shape The shape that parses the input without the replaced value.
+   * @param excludedValue The excluded value.
+   * @param options The constraint options or an issue message.
+   * @template S The shape that parses the input without the replaced value.
+   * @template T The excluded value.
+   */
+  constructor(
+    /**
+     * The base shape.
+     */
+    readonly shape: S,
+    /**
+     * The excluded value.
+     */
+    readonly excludedValue: T,
+    options?: TypeConstraintOptions | Message
+  ) {
     super(shape.inputTypes, shape.async);
 
     this._typeIssueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);

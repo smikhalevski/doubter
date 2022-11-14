@@ -1,5 +1,5 @@
 import { Ok, Shape, ValidationError } from '../../main';
-import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/constants';
+import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/constants';
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
@@ -222,14 +222,14 @@ describe('Shape', () => {
   });
 
   test('allows null and undefined input', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).maybe();
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish();
 
     expect(shape.parse(null)).toBe(null);
     expect(shape.parse(undefined)).toBe(undefined);
   });
 
   test('returns default value for both null and undefined inputs', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).maybe('aaa');
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish('aaa');
 
     expect(shape.parse(null)).toBe('aaa');
     expect(shape.parse(undefined)).toBe('aaa');
@@ -396,5 +396,95 @@ describe('RedirectShape', () => {
     shape.try('aaa');
 
     expect(checkMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('ExcludeShape', () => {
+  test('returns input as is', () => {
+    const shape = new Shape().nonOptional();
+
+    expect(shape.try(111)).toEqual({ ok: true, value: 111 });
+  });
+
+  test('returns output as is', () => {
+    const shape = new Shape().transform(() => 222).nonOptional();
+
+    expect(shape.try(111)).toEqual({ ok: true, value: 222 });
+  });
+
+  test('raises an issue if an input is undefined', () => {
+    const shape = new Shape().nonOptional();
+
+    expect(shape.try(undefined)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_EXCLUSION,
+          message: 'Must not be equal to undefined',
+          path: [],
+        },
+      ],
+    });
+  });
+
+  test('raises an issue if an output is undefined', () => {
+    const shape = new Shape().transform(() => undefined).nonOptional();
+
+    expect(shape.try(111)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_EXCLUSION,
+          message: 'Must not be equal to undefined',
+          path: [],
+          input: 111,
+        },
+      ],
+    });
+  });
+
+  describe('async', () => {
+    test('returns input as is', async () => {
+      const shape = new Shape().transformAsync(value => Promise.resolve(value)).nonOptional();
+
+      await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 111 });
+    });
+
+    test('returns output as is', async () => {
+      const shape = new Shape().transformAsync(() => Promise.resolve(222)).nonOptional();
+
+      await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 222 });
+    });
+
+    test('raises an issue if an input is undefined', async () => {
+      const shape = new Shape().transformAsync(value => Promise.resolve(value)).nonOptional();
+
+      await expect(shape.tryAsync(undefined)).resolves.toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_EXCLUSION,
+            message: 'Must not be equal to undefined',
+            path: [],
+          },
+        ],
+      });
+    });
+
+    test('raises an issue if an output is undefined', async () => {
+      const shape = new Shape().transformAsync(() => Promise.resolve(undefined)).nonOptional();
+
+      await expect(shape.tryAsync(111)).resolves.toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_EXCLUSION,
+            message: 'Must not be equal to undefined',
+            path: [],
+            input: 111,
+          },
+        ],
+      });
+    });
   });
 });
