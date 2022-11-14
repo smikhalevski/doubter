@@ -8,18 +8,13 @@
     "strict": true,
     "target": "ES5",
     "module": "ES6",
-    "rootDir": ".",
-    "baseUrl": ".",
-    "paths": {
-      "doubter": [
-        "./packages/doubter/src/main"
-      ],
-      "@doubter/*": [
-        "./packages/*/src/main"
-      ]
-    }
+    "rootDir": "./src/main",
+    "outDir": "./lib",
+    "lib": [
+      "ES2020"
+    ]
   },
   "include": [
-    "./packages/*/src/main/**/*"
+    "./src/main/**/*"
   ]
 }
