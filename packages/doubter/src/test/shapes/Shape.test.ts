@@ -235,6 +235,12 @@ describe('Shape', () => {
     expect(shape.parse(undefined)).toBe('aaa');
   });
 
+  test('returns default if parsing failed', () => {
+    const shape = new Shape().check(() => [{ code: 'xxx' }]);
+
+    expect(shape.parseOrDefault(111, 222)).toBe(222);
+  });
+
   describe('async', () => {
     test('creates an async shape', () => {
       expect(new Shape([], true).async).toBe(true);
@@ -258,6 +264,12 @@ describe('Shape', () => {
 
       expect(await outputPromise).toBe('aaa');
       expect(await resultPromise).toEqual<Ok<string>>({ ok: true, value: 'aaa' });
+    });
+
+    test('returns default if parsing failed', async () => {
+      const shape = new Shape().transformAsync(() => Promise.resolve()).check(() => [{ code: 'xxx' }]);
+
+      await expect(shape.parseOrDefaultAsync(111, 222)).resolves.toBe(222);
     });
   });
 });
