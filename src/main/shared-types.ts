@@ -176,6 +176,11 @@ export interface ParseOptions {
    * @default false
    */
   verbose?: boolean;
+
+  /**
+   * The custom context that can be used inside check and transform callbacks.
+   */
+  context?: any;
 }
 
 export type Any = object | string | number | bigint | boolean | null | undefined;

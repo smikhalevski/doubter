@@ -36,6 +36,7 @@ npm install --save-prod doubter@1.0.0
     - [Redirections](#redirections)
     - [Localization](#localization)
     - [Integrations](#integrations)
+    - [Parsing context](#parsing-context)
 
 - [API reference](#api-reference)
 
@@ -325,6 +326,19 @@ All rules described above are applied to the `message` option as well:
 
 ```ts
 d.string().length(3, { message: 'Expected length is %s' })
+```
+
+## Parsing context
+
+Inside check and transform callbacks you can access options passed to the parser:
+
+```ts
+const myShape = d.number().transform((val, options) => {
+  return new Intl.NumberFormat(options.context.locale).format(val);
+});
+
+myShape.parse(1000, { context: { locale: 'en-US' } });
+// → '1,000'
 ```
 
 ## Integrations
