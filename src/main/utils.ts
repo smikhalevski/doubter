@@ -7,6 +7,7 @@ import {
   Message,
   Ok,
   ReadonlyDict,
+  TypeConstraintOptions,
 } from './shared-types';
 import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
@@ -90,23 +91,40 @@ export function appendCheck<S extends Shape>(
   });
 }
 
+/**
+ * Returns a function that creates a new issue.
+ *
+ * @param code The code of the issue.
+ * @param defaultMessage The default message that is used if message isn't provided through options.
+ * @param options Options provided by the user.
+ * @param param The param that is added to the issue.
+ * @returns The callback that takes an input and returns an issue.
+ */
 export function createIssueFactory(
-  code: string,
-  defaultMessage: string,
-  options: ConstraintOptions | Message | undefined,
+  code: unknown,
+  defaultMessage: unknown,
+  options: TypeConstraintOptions | Message | undefined,
   param: unknown
 ): (input: unknown) => Issue;
 
+/**
+ * Returns a function that creates a new issue.
+ *
+ * @param code The code of the issue.
+ * @param defaultMessage The default message that is used if message isn't provided through options.
+ * @param options Options provided by the user.
+ * @returns The callback that takes an input and a param, and returns an issue.
+ */
 export function createIssueFactory(
-  code: string,
-  defaultMessage: string,
-  options: ConstraintOptions | Message | undefined
+  code: unknown,
+  defaultMessage: unknown,
+  options: TypeConstraintOptions | Message | undefined
 ): (input: unknown, param: unknown) => Issue;
 
 export function createIssueFactory(
-  code: string,
-  defaultMessage: string,
-  options: ConstraintOptions | Message | undefined,
+  code: unknown,
+  defaultMessage: unknown,
+  options: TypeConstraintOptions | Message | undefined,
   param?: any
 ): (input: unknown, param: unknown) => Issue {
   const paramKnown = arguments.length === 4;
