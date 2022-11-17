@@ -808,7 +808,9 @@ d.record(myKeyShape, d.number());
 You can rename record keys using transformation:
 
 ```ts
-const myKeyShape = d.enum(['foo', 'bar']).transform(val => val.toUpperCase() as Uppercase<typeof val>);
+const myKeyShape = d.enum(['foo', 'bar']).transform(val => {
+  return val.toUpperCase() as Uppercase<typeof val>;
+});
 // → Shape<'foo' | 'bar', 'FOO' | 'BAR'>
 
 const myShape = d.record(myKeyShape, d.number());
@@ -889,4 +891,4 @@ d.unknown();
 
 Clone this repo and use `npm ci && npm run perf -- -t 'overall'` to run the performance testsuite.
 
-![Parsing performance chart](https://github.com/smikhalevski/doubter/raw/master/images/perf.svg)
+![Parsing performance chart](./images/perf.svg)
