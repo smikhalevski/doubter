@@ -1,3 +1,5 @@
+export const MESSAGE_ERROR_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
+
 export const CODE_ARRAY_MAX = 'arrayMaxLength';
 export const CODE_ARRAY_MIN = 'arrayMinLength';
 export const CODE_ENUM = 'enum';
@@ -24,6 +26,7 @@ export const TYPE_BOOLEAN = 'boolean';
 export const TYPE_INTEGER = 'integer';
 export const TYPE_NUMBER = 'number';
 export const TYPE_OBJECT = 'object';
+export const TYPE_PROMISE = 'promise';
 export const TYPE_STRING = 'string';
 
 export const MESSAGE_ARRAY_TYPE = 'Must be an array';
@@ -44,6 +47,7 @@ export const MESSAGE_NUMBER_LT = 'Must be less than %s';
 export const MESSAGE_NUMBER_LTE = 'Must be less than or equal to %s';
 export const MESSAGE_NUMBER_MULTIPLE_OF = 'Must be a multiple of %s';
 export const MESSAGE_OBJECT_TYPE = 'Must be an object';
+export const MESSAGE_PROMISE_TYPE = 'Must be a promise';
 export const MESSAGE_UNKNOWN_KEYS = 'Must not have unknown keys: %s';
 export const MESSAGE_STRING_TYPE = 'Must be a string';
 export const MESSAGE_STRING_MAX = 'Must have the maximum length of %s';

@@ -6,6 +6,7 @@ export { InstanceShape } from './InstanceShape';
 export { NeverShape } from './NeverShape';
 export { NumberShape } from './NumberShape';
 export { ObjectShape, KeysMode } from './ObjectShape';
+export { PromiseShape } from './PromiseShape';
 export { RecordShape } from './RecordShape';
 export {
   AnyShape,
