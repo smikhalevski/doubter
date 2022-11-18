@@ -1,5 +1,6 @@
 export const ERROR_REQUIRES_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
 export const ERROR_FORBIDDEN_AT_RUNTIME = 'Must not be accessed at runtime';
+export const ERROR_ASYNC_ARGUMENTS = 'Some of argument shapes are async, consider using fnAsync';
 
 export const CODE_ARRAY_MAX = 'arrayMaxLength';
 export const CODE_ARRAY_MIN = 'arrayMinLength';
