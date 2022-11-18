@@ -10,6 +10,7 @@ export * from './never';
 export * from './number';
 export * from './object';
 export * from './preprocess';
+export * from './promise';
 export * from './record';
 export * from './string';
 export * from './tuple';

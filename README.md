@@ -34,6 +34,7 @@ npm install --save-prod doubter@1.0.0
     - [Refinements](#refinements)
     - [Transformations](#transformations)
     - [Redirections](#redirections)
+    - [Async shapes](#async-shapes)
     - [Localization](#localization)
     - [Integrations](#integrations)
     - [Parsing context](#parsing-context)
@@ -49,11 +50,6 @@ npm install --save-prod doubter@1.0.0
       [`record`](#record)
       [`instanceOf`](#instanceof)
 
-    - Unconstrained values<br>
-      [`any`](#any)
-      [`unknown`](#unknown)
-      [`never`](#never)
-
     - Numbers<br>
       [`number`](#number)
       [`integer`](#integer)
@@ -66,6 +62,9 @@ npm install --save-prod doubter@1.0.0
     - Booleans<br>
       [`boolean`](#boolean)
 
+    - Promises<br>
+      [`promise`](#promise)
+
     - Literal values<br>
       [`const`](#const)
       [`enum`](#enum)
@@ -76,6 +75,11 @@ npm install --save-prod doubter@1.0.0
 
     - Preprocess and coerce<br>
       [`preprocess`](#preprocess)
+
+    - Unconstrained values<br>
+      [`any`](#any)
+      [`unknown`](#unknown)
+      [`never`](#never)
 
 - [Performance](#performance)
 
@@ -293,6 +297,81 @@ const muShape2 = myShape1.to(number().lt(5).gt(10));
 
 Redirections are particularly useful along with transformations since the `transform` method returns a `TransformShape`
 instance that has a generic API.
+
+## Async shapes
+
+Most of the time your shapes would be sync. But some transformations or promise values would make them async.
+
+Let's consider the sync transformation:
+
+```ts
+const syncShape1 = d.string().transform(val => 'Hello, ' + val);
+// → Shape<string>
+
+syncShape1.async;
+// → false
+
+syncShape1.parse('Jill');
+// → 'Hello, Jill'
+```
+
+The transformation callback receives and returns a string and so does `syncShape1`.
+
+Now lets return a promise from the transformation callback:
+
+```ts
+const syncShape2 = d.string().transform(val => Promise.resolve('Hello, ' + val));
+// → Shape<string, Promise<string>>
+
+syncShape2.async;
+// → false
+
+syncShape2.parse('Jill');
+// → Promise<string>
+```
+
+Notice that `syncShape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `syncShape2`
+is still sync, since the transformation callback _synchronously wraps_ a value in a promise.
+
+Now let's create an async shape using the async transformation:
+
+```ts
+const asyncShape = d.string().transformAsync(async (val) => {
+  await doAysncJob(val);
+  return 'Hello, ' + val;
+});
+// → Shape<string>
+
+asyncShape.async;
+// → true
+
+await syncShape2.parseAsync('Jill');
+// → 'Hello, Jill'
+```
+
+Notice that shape `asyncShape` still transforms the input string value to output string but the transformation itself is
+asynchronous.
+
+The shape is async if it uses async transformations. Here's an async object shape:
+
+```ts
+const objShape1 = d.object({
+  foo: d.string().transformAsync(val => Promise.resolve(val))
+});
+// → Shape<{ foo: string }>
+
+objShape1.async;
+// → true
+```
+
+Shape also becomes async if it relies on a [`promise`](#promise) shape:
+
+```ts
+const objShape2 = d.object({
+  foo: d.promise(d.string())
+});
+// → Shape<{ foo: Promise<string> }>
+```
 
 ## Localization
 
@@ -762,6 +841,29 @@ myShape.required(['foo'])
 ```
 
 Note that required would force the value of both input and output to be required.
+
+## `promise`
+
+A shape that applies another shape to the resolved value of a `Promise`.
+
+```ts
+d.promise(d.string());
+// → Shape<Promise<string>>
+```
+
+You can transform the value inside a promise:
+
+```ts
+const myShape = d.promise(d.string().transform(parseFloat));
+// → Shape<Promise<string>, Promise<number>>
+```
+
+Promise shapes don't support sync parsing, so `tryAsync`, `parseAsync` or `parseOrDefaultAsync` should be used:
+
+```ts
+await myShape.parseAsync('42');
+// → 42
+```
 
 ## `preprocess`
 

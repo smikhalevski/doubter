@@ -24,7 +24,13 @@ import {
   unique,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_EXCLUSION, MESSAGE_PREDICATE } from '../constants';
+import {
+  CODE_EXCLUSION,
+  CODE_PREDICATE,
+  MESSAGE_ERROR_ASYNC,
+  MESSAGE_EXCLUSION,
+  MESSAGE_PREDICATE,
+} from '../constants';
 
 const defaultParseOptions: ParseOptions = { verbose: false };
 
@@ -185,7 +191,6 @@ export class Shape<I = any, O = I> {
    * @param inputTypes
    * @param async If `true` then the shape would allow only {@linkcode parseAsync} and throw an error if
    * {@linkcode parse} is called. Otherwise, shape can be used in both sync and async contexts.
-   *
    * @template I The input value.
    * @template O The output value.
    */
@@ -196,7 +201,7 @@ export class Shape<I = any, O = I> {
 
     if (async) {
       this.apply = () => {
-        throw new Error('Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync');
+        throw new Error(MESSAGE_ERROR_ASYNC);
       };
     }
   }
