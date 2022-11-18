@@ -1,5 +1,5 @@
 import { Ok, Shape, ValidationError } from '../../main';
-import { CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/constants';
+import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/constants';
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
@@ -22,7 +22,7 @@ describe('Shape', () => {
     shape.parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
   });
 
   test('invokes checks in the same order they were added', () => {
@@ -129,7 +129,7 @@ describe('Shape', () => {
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
     expect(checkMock2).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa');
+    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
   });
 
   test('collects all issues in verbose mode', () => {
@@ -148,7 +148,7 @@ describe('Shape', () => {
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
     expect(checkMock2).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa');
+    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
   });
 
   test('invokes a predicate', () => {
@@ -235,6 +235,12 @@ describe('Shape', () => {
     expect(shape.parse(undefined)).toBe('aaa');
   });
 
+  test('returns default if parsing failed', () => {
+    const shape = new Shape().check(() => [{ code: 'xxx' }]);
+
+    expect(shape.parseOrDefault(111, 222)).toBe(222);
+  });
+
   describe('async', () => {
     test('creates an async shape', () => {
       expect(new Shape([], true).async).toBe(true);
@@ -259,10 +265,16 @@ describe('Shape', () => {
       expect(await outputPromise).toBe('aaa');
       expect(await resultPromise).toEqual<Ok<string>>({ ok: true, value: 'aaa' });
     });
+
+    test('returns default if parsing failed', async () => {
+      const shape = new Shape().transformAsync(() => Promise.resolve()).check(() => [{ code: 'xxx' }]);
+
+      await expect(shape.parseOrDefaultAsync(111, 222)).resolves.toBe(222);
+    });
   });
 });
 
-describe('TransformedShape', () => {
+describe('TransformShape', () => {
   test('transforms the output', () => {
     const cbMock = jest.fn(() => 111);
 
@@ -310,7 +322,7 @@ describe('TransformedShape', () => {
     shape.parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 111);
+    expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false });
   });
 
   describe('async', () => {
@@ -353,15 +365,15 @@ describe('TransformedShape', () => {
   });
 });
 
-describe('PipedShape', () => {
-  test('pipes the output of one shape to the other', () => {
+describe('RedirectShape', () => {
+  test('redirects the output of one shape to the other', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
     const applySpy1 = jest.spyOn(shape1, 'apply');
     const applySpy2 = jest.spyOn(shape2, 'apply');
 
-    const shape = shape1.pipe(shape2);
+    const shape = shape1.to(shape2);
 
     expect(shape.parse('aaa')).toBe('aaa');
 
@@ -378,7 +390,7 @@ describe('PipedShape', () => {
 
     const applySpy = jest.spyOn(shape2, 'apply');
 
-    const shape = shape1.pipe(shape2);
+    const shape = shape1.to(shape2);
 
     shape.try('aaa');
 
@@ -391,10 +403,100 @@ describe('PipedShape', () => {
 
     const checkMock = jest.fn();
 
-    const shape = shape1.pipe(shape2).check(checkMock);
+    const shape = shape1.to(shape2).check(checkMock);
 
     shape.try('aaa');
 
     expect(checkMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('ExcludeShape', () => {
+  test('returns input as is', () => {
+    const shape = new Shape().nonOptional();
+
+    expect(shape.try(111)).toEqual({ ok: true, value: 111 });
+  });
+
+  test('returns output as is', () => {
+    const shape = new Shape().transform(() => 222).nonOptional();
+
+    expect(shape.try(111)).toEqual({ ok: true, value: 222 });
+  });
+
+  test('raises an issue if an input is undefined', () => {
+    const shape = new Shape().nonOptional();
+
+    expect(shape.try(undefined)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_EXCLUSION,
+          message: 'Must not be equal to undefined',
+          path: [],
+        },
+      ],
+    });
+  });
+
+  test('raises an issue if an output is undefined', () => {
+    const shape = new Shape().transform(() => undefined).nonOptional();
+
+    expect(shape.try(111)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_EXCLUSION,
+          message: 'Must not be equal to undefined',
+          path: [],
+          input: 111,
+        },
+      ],
+    });
+  });
+
+  describe('async', () => {
+    test('returns input as is', async () => {
+      const shape = new Shape().transformAsync(value => Promise.resolve(value)).nonOptional();
+
+      await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 111 });
+    });
+
+    test('returns output as is', async () => {
+      const shape = new Shape().transformAsync(() => Promise.resolve(222)).nonOptional();
+
+      await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 222 });
+    });
+
+    test('raises an issue if an input is undefined', async () => {
+      const shape = new Shape().transformAsync(value => Promise.resolve(value)).nonOptional();
+
+      await expect(shape.tryAsync(undefined)).resolves.toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_EXCLUSION,
+            message: 'Must not be equal to undefined',
+            path: [],
+          },
+        ],
+      });
+    });
+
+    test('raises an issue if an output is undefined', async () => {
+      const shape = new Shape().transformAsync(() => Promise.resolve(undefined)).nonOptional();
+
+      await expect(shape.tryAsync(111)).resolves.toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_EXCLUSION,
+            message: 'Must not be equal to undefined',
+            path: [],
+            input: 111,
+          },
+        ],
+      });
+    });
   });
 });

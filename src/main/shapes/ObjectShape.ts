@@ -10,6 +10,7 @@ import {
   isAsyncShapes,
   isEqual,
   isFlagSet,
+  isObjectLike,
   isPlainObject,
   objectTypes,
   ok,
@@ -18,7 +19,7 @@ import {
   setKeyValue,
   unshiftPath,
 } from '../utils';
-import { AnyShape, Shape } from './Shape';
+import { AnyShape, OpaqueExclude, OpaqueReplace, Shape } from './Shape';
 import { EnumShape } from './EnumShape';
 
 // prettier-ignore
@@ -29,9 +30,7 @@ export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | n
 export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> =
   R extends Shape ? { [key: string]: R[C] } : unknown;
 
-export type StringKeyof<T extends object> = StringifyPropertyKey<keyof T>;
-
-export type StringifyPropertyKey<K extends PropertyKey> = K extends symbol ? never : K extends number ? `${K}` : K;
+export type StringKeyof<T extends object> = Extract<keyof T, string>;
 
 export type Squash<T> = T extends never ? never : { [K in keyof T]: T[K] };
 
@@ -40,6 +39,10 @@ export type UndefinedAsOptional<T> = OmitBy<T, undefined> & Partial<PickBy<T, un
 export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
+
+export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueReplace<P[K], undefined> };
+
+export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueExclude<P[K], undefined> };
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
@@ -66,6 +69,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
   protected _options;
   protected _valueShapes: Shape[];
+  protected _typePredicate = isObjectLike;
   protected _typeIssueFactory;
   protected _exactIssueFactory: ((input: unknown, param: unknown) => Issue) | null = null;
 
@@ -121,7 +125,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    *
    * @param shape The object shape which properties must be added to this object shape.
    * @returns The new object shape.
-   * @template T The type of properties to add.
+   * @template T Properties to add.
    */
   extend<T extends ReadonlyDict<AnyShape>>(
     shape: ObjectShape<T, any>
@@ -141,7 +145,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    */
   extend<T extends ReadonlyDict<AnyShape>>(shapes: T): ObjectShape<Pick<P, Exclude<keyof P, keyof T>> & T, R>;
 
-  extend(shape: ObjectShape<any, any> | ReadonlyDict): ObjectShape<any, R> {
+  extend(shape: ObjectShape<any, any> | ReadonlyDict) {
     const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
     return new ObjectShape(shapes, this.restShape, this._options, this.keysMode);
@@ -156,17 +160,14 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    * @template K The tuple of keys to pick.
    */
-  pick<K extends StringKeyof<P>[]>(...keys: K): ObjectShape<Pick<P, K[number]>, R> {
+  pick<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Pick<P, K[number]>, R> {
     const shapes: Record<string, AnyShape> = {};
 
-    for (let i = 0; i < this.keys.length; ++i) {
-      const key = this.keys[i];
-
+    for (const key in this.shapes) {
       if (keys.includes(key)) {
-        shapes[key] = this._valueShapes[i];
+        shapes[key] = this.shapes[key];
       }
     }
-
     return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
   }
 
@@ -179,15 +180,81 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    * @template K The tuple of keys to omit.
    */
-  omit<K extends StringKeyof<P>[]>(...keys: K): ObjectShape<Omit<P, K[number]>, R> {
+  omit<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]>, R> {
     const shapes: Record<string, AnyShape> = {};
 
-    for (let i = 0; i < this.keys.length; ++i) {
-      const key = this.keys[i];
-
+    for (const key in this.shapes) {
       if (!keys.includes(key)) {
-        shapes[key] = this._valueShapes[i];
+        shapes[key] = this.shapes[key];
       }
+    }
+    return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
+  }
+
+  /**
+   * Returns an object shape with all properties marked as optional.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @returns The new object shape.
+   */
+  partial(): ObjectShape<Optional<P>, R>;
+
+  /**
+   * Returns an object shape with keys marked as optional.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @param keys The list of property keys to make optional.
+   * @returns The new object shape.
+   * @template K The list of string keys.
+   */
+  partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Optional<Pick<P, K[number]>>, R>;
+
+  partial(keys?: string[]) {
+    const shapes: Record<string, AnyShape> = {};
+
+    for (const key in this.shapes) {
+      let shape: AnyShape = this.shapes[key];
+
+      if (keys === undefined || keys.includes(key)) {
+        shape = shape.optional();
+      }
+      shapes[key] = shape;
+    }
+    return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
+  }
+
+  /**
+   * Returns an object shape with all properties marked as required.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @returns The new object shape.
+   */
+  required(): ObjectShape<Required<P>, R>;
+
+  /**
+   * Returns an object shape with keys marked as required.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @param keys The list of property keys to make required.
+   * @returns The new object shape.
+   * @template K The list of string keys.
+   */
+  required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Required<Pick<P, K[number]>>, R>;
+
+  required(keys?: string[]) {
+    const shapes: Record<string, AnyShape> = {};
+
+    for (const key in this.shapes) {
+      let shape: AnyShape = this.shapes[key];
+
+      if (keys === undefined || keys.includes(key)) {
+        shape = shape.nonOptional();
+      }
+      shapes[key] = shape;
     }
     return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
   }
@@ -250,8 +317,19 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return new EnumShape(this.keys);
   }
 
+  /**
+   * Constrains an object to be an `Object` instance or to have a `null` prototype.
+   */
+  plain(): this {
+    const shape = this._clone();
+    shape._typePredicate = isPlainObject;
+    return shape;
+  }
+
   apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
-    if (!isPlainObject(input)) {
+    const { _typePredicate } = this;
+
+    if (!_typePredicate(input)) {
       return [this._typeIssueFactory(input)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
@@ -267,7 +345,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
 
     return new Promise(resolve => {
-      if (!isPlainObject(input)) {
+      const { _typePredicate } = this;
+
+      if (!_typePredicate(input)) {
         resolve([this._typeIssueFactory(input)]);
         return;
       }

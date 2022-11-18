@@ -1,5 +1,14 @@
-import { ObjectShape, Shape } from '../../main';
-import { CODE_ENUM, CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../../main/constants';
+import { ObjectShape, Shape, StringShape } from '../../main';
+import {
+  CODE_ENUM,
+  CODE_EXCLUSION,
+  CODE_TYPE,
+  CODE_UNKNOWN_KEYS,
+  MESSAGE_OBJECT_TYPE,
+  MESSAGE_STRING_TYPE,
+  TYPE_OBJECT,
+  TYPE_STRING,
+} from '../../main/constants';
 
 describe('ObjectShape', () => {
   test('raises non object values', () => {
@@ -94,7 +103,7 @@ describe('ObjectShape', () => {
     const shape2 = new Shape();
 
     const objShape1 = new ObjectShape({ key1: shape1, key2: shape2 }, null);
-    const objShape2 = objShape1.pick('key1');
+    const objShape2 = objShape1.pick(['key1']);
 
     expect(objShape2).not.toBe(objShape1);
     expect(objShape2.shapes).toEqual({ key1: shape1 });
@@ -105,7 +114,7 @@ describe('ObjectShape', () => {
     const shape2 = new Shape();
 
     const objShape1 = new ObjectShape({ key1: shape1, key2: shape2 }, null);
-    const objShape2 = objShape1.omit('key1');
+    const objShape2 = objShape1.omit(['key1']);
 
     expect(objShape2).not.toBe(objShape1);
     expect(objShape2.shapes).toEqual({ key2: shape2 });
@@ -167,6 +176,58 @@ describe('ObjectShape', () => {
     expect(objShape.at('key1')).toBe(shape1);
     expect(objShape.at('key2')).toBe(shape2);
     expect(objShape.at('xxx')).toBe(null);
+  });
+
+  test('marks all properties optional', () => {
+    const shape1 = new StringShape();
+    const shape2 = new StringShape();
+
+    const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null).partial();
+    const obj = {};
+
+    expect(objShape.try(obj, { verbose: true })).toEqual({ ok: true, value: obj });
+  });
+
+  test('marks all properties with given keys as optional', () => {
+    const shape1 = new StringShape();
+    const shape2 = new StringShape();
+
+    const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null).partial(['key2']);
+    const obj = {};
+
+    expect(objShape.try(obj, { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1'] }],
+    });
+  });
+
+  test('marks all properties required', () => {
+    const shape1 = new StringShape().optional();
+    const shape2 = new StringShape().optional();
+
+    const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null).required();
+    const obj = {};
+
+    expect(objShape.try(obj, { verbose: true })).toEqual({
+      ok: false,
+      issues: [
+        { code: CODE_EXCLUSION, message: 'Must not be equal to undefined', path: ['key1'] },
+        { code: CODE_EXCLUSION, message: 'Must not be equal to undefined', path: ['key2'] },
+      ],
+    });
+  });
+
+  test('marks all properties with given keys as required', () => {
+    const shape1 = new StringShape().optional();
+    const shape2 = new StringShape().optional();
+
+    const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null).required(['key1']);
+    const obj = {};
+
+    expect(objShape.try(obj, { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: CODE_EXCLUSION, message: 'Must not be equal to undefined', path: ['key1'] }],
+    });
   });
 
   describe('lax', () => {

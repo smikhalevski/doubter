@@ -32,7 +32,10 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
  *
  * @type T The value type.
  */
-export type CheckCallback<T = any> = (value: T) => Partial<Issue>[] | Partial<Issue> | null | undefined | void;
+export type CheckCallback<T = any> = (
+  value: T,
+  options: Readonly<ParseOptions>
+) => Partial<Issue>[] | Partial<Issue> | null | undefined | void;
 
 /**
  * The shape output value check.
@@ -173,6 +176,11 @@ export interface ParseOptions {
    * @default false
    */
   verbose?: boolean;
+
+  /**
+   * The custom context that can be used inside check and transform callbacks.
+   */
+  context?: any;
 }
 
 export type Any = object | string | number | bigint | boolean | null | undefined;

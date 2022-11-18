@@ -28,13 +28,13 @@ const integerRegex = /^(?:0|[1-9]\d*)$/;
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] };
 
 // prettier-ignore
-export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends 'input' | 'output'> =
+export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends "input" | "output"> =
   U extends readonly AnyShape[]
     ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
     : R extends AnyShape ? R[C][] : any[];
 
 /**
- * The shape that describes an array.
+ * The shape of an array or a tuple.
  *
  * @template U The list of positioned element shapes or `null` if there are no positioned elements.
  * @template R The shape of rest elements or `null` if there are no rest elements.
@@ -43,6 +43,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   InferArray<U, R, 'input'>,
   InferArray<U, R, 'output'>
 > {
+  protected _options;
   protected _typeIssueFactory;
 
   /**
@@ -65,10 +66,13 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   ) {
     super(arrayTypes, (shapes !== null && isAsyncShapes(shapes)) || (restShape !== null && restShape.async));
 
-    this._typeIssueFactory =
-      shapes !== null && restShape === null
-        ? createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length)
-        : createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
+    this._options = options;
+
+    if (shapes !== null && restShape === null) {
+      this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
+    } else {
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
+    }
   }
 
   at(key: unknown): AnyShape | null {
@@ -84,6 +88,19 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       return shapes[index];
     }
     return this.restShape;
+  }
+
+  /**
+   * Returns an array shape that has rest elements constrained by the given shape.
+   *
+   * The returned object shape would have no checks.
+   *
+   * @param restShape The shape of rest elements or `null` if there are no rest elements.
+   * @returns The new array shape.
+   * @template T The shape of rest elements.
+   */
+  rest<T extends AnyShape | null>(restShape: T): ArrayShape<U, T> {
+    return new ArrayShape<U, T>(this.shapes, restShape, this._options);
   }
 
   /**

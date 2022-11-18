@@ -8,6 +8,8 @@ describe('integer', () => {
   });
 
   test('raises an issue if value is not an integer', () => {
+    expect(d.integer().parse(5)).toBe(5);
+
     expect(d.integer().try(0.5)).toEqual({
       ok: false,
       issues: [

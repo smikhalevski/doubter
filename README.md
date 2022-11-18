@@ -1,24 +1,45 @@
 # Doubter&ensp;🤔&ensp;[![build](https://github.com/smikhalevski/doubter/actions/workflows/master.yml/badge.svg?branch=master&event=push)](https://github.com/smikhalevski/doubter/actions/workflows/master.yml)
 
-No-hassle runtime type validation and parsing.
+No-hassle runtime validation and transformation.
 
+- TypeScript first;
+- Sync and async validation and transformation flows;
 - [High performance and low memory consumption](#performance);
-- [Just 4 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable.
+- [Just 7 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+
+```ts
+import * as d from 'doubter';
+
+const userShape = d.object({
+  name: d.string().optional('Anonymous'),
+  age: d.int().gte(18).lt(100)
+});
+
+type User = typeof userShape['output'];
+// → { name: string, age: number }
+
+const user = userShape.parse({ age: 21 });
+// → { name: 'Anonymous', age: 21 }
+```
 
 🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
 
 ```shell
-npm install --save-prod doubter
+npm install --save-prod doubter@1.0.0
 ```
 
 - [Usage](#usage)
 
-    - [Type narrowing](#type-narrowing)
-    - [Type transformations](#type-transformations)
-    - [Validation errors](#validation-errors)
-    - [Custom messages](#custom-messages)
+    - [Checks](#checks)
+    - [Refinements](#refinements)
+    - [Transformations](#transformations)
+    - [Redirections](#redirections)
+    - [Localization](#localization)
+    - [Integrations](#integrations)
+    - [Parsing context](#parsing-context)
 
-- [DSL reference](#dsl-reference)
+- [API reference](#api-reference)
+
     - Arrays<br>
       [`array`](#array)
       [`tuple`](#tuple)
@@ -28,9 +49,15 @@ npm install --save-prod doubter
       [`record`](#record)
       [`instanceOf`](#instanceof)
 
+    - Unconstrained values<br>
+      [`any`](#any)
+      [`unknown`](#unknown)
+      [`never`](#never)
+
     - Numbers<br>
       [`number`](#number)
       [`integer`](#integer)
+      [`int`](#integer)
       [`bigint`](#bigint)
 
     - Strings<br>
@@ -40,146 +67,331 @@ npm install --save-prod doubter
       [`boolean`](#boolean)
 
     - Literal values<br>
-      [`literal`](#literal)
-      [`oneOf`](#oneof)
+      [`const`](#const)
+      [`enum`](#enum)
 
-    - Unconstrained values<br>
-      [`any`](#any)
-      [`unknown`](#unknown)
+    - Shape composition<br>
+      [`union`](#union)
+      [`or`](#union)
 
-    - Prohibited values<br>
-      [`never`](#never)
-
-    - Optional values<br>
-      [`optional`](#optional)
-      [`nullable`](#nullable)
-      [`nullish`](#nullish)
-
-    - Type composition<br>
-      [`or`](#or)
-
-    - Recursive types<br>
-      [`lazy`](#lazy)
+    - Preprocess and coerce<br>
+      [`preprocess`](#preprocess)
 
 - [Performance](#performance)
 
 # Usage
 
-Doubter provides a DSL API to compose a runtime type definition that can be used to validate arbitrary data.
+Doubter provides an API to compose runtime shapes that validate and transform data. Shapes can be treated as pipelines
+that have an input and output. For example, consider a shape that ensures that an input value is a string.
 
 ```ts
 import * as d from 'doubter';
 
-const myType = d.object({
-  name: d.string().min(1),
-  age: d.number().min(18).max(100)
+const myShape = d.string();
+// → Shape<string>
+
+myShape.parse('foo');
+// → 'foo'
+```
+
+If an input value isn't a string, a `ValidationError` is thrown.
+
+```ts
+myShape.parse(42);
+// → throws new ValidationError
+```
+
+Each error instance has `issues` property that contains issues that occurred during parsing.
+
+```ts
+[{
+  code: 'type',
+  path: [],
+  input: 42,
+  message: 'Must be a string',
+  param: 'string',
+  meta: undefied
+}]
+```
+
+It isn't always convenient to write a try-catch block to handle a validation error. Use `try` method in such cases.
+
+```ts
+myShape.try('foo');
+// → { ok: true, value: 'foo' }
+
+myShape.try(42);
+// → { ok: false, issues: [{ code: 'type', … }] }
+```
+
+Sometimes you don't care about issues at all, and want a default value to be returned if things go south:
+
+```ts
+myShape.parseOrDefault('foo');
+// → 'foo'
+
+myShape.parseOrDefault(42, 'bar');
+// → 'bar'
+```
+
+You can infer the input and output types of the shape:
+
+```ts
+type MyShapeInput = typeof myShape['input'];
+
+type MyShapeOutput = typeof myShape['output'];
+```
+
+## Checks
+
+Checks allow constraining the input value beyond type assertions. For example, if you want to constrain an input number
+to be greater than 5:
+
+```ts
+const myShape = d.number().check(val => {
+  if (val <= 5) {
+    return { code: 'woops' };
+  }
 });
+// → Shape<number>
+
+myShape.parse(10);
+// → 10
+
+myShape.parse(3);
+// → throws new ValidationError
 ```
 
-Infer the type from the definition:
+A check callback receives an input value and returns an issue or an array of issues if the value isn't valid. If value
+is valid, a check callback must return `null` or `undefined`.
+
+Most shapes have a set of built-in checks. The check we've just implemented is called `gt` (greater than):
 
 ```ts
-import { InferType } from 'doubter';
-
-type MyType = InferType<typeof myType>;
-// → Type<{ name: string, age: number }>
+d.number().gt(5);
 ```
 
-Validate the input using the type definition:
+You can add as many checks as you want to the shape. They are executed the same order they are defined.
 
 ```ts
-myType.validate({ age: 5 });
-// → [{path: ['name'], message: 'Must be a string', …}, …]
+d.string().min(5).match(/a/).parse('foo');
 ```
 
-## Type narrowing
-
-The type of each type definition can be
-[narrowed using a type predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates):
+By default, if a check returned an issue, all consequent checks are ignored. In the example above, a validation error
+would be thrown with a single issue:
 
 ```ts
-function isFooOrBar(input: string): input is 'foo' | 'bar' {
-  return input === 'foo' || input === 'bar';
-}
-
-d.string().narrow(isFooOrBar);
-// → Type<'foo' | 'bar'>
+[{
+  code: 'stringMinLength',
+  path: [],
+  input: 'foo',
+  message: 'Must have the minimum length of 5',
+  param: 'string',
+  meta: undefied
+}]
 ```
 
-You can use a boolean predicate to validate a specific condition:
+If you want a check to be executed even if the previous check failed, pass the `unsafe` option.
 
 ```ts
-function isEven(input: number): boolean {
-  return (input & 1) === 0;
-}
-
-d.number().narrow(isEven);
-// → Type<number>
+d.string().min(5).match(/bar/, { unsafe: true }).parse('foo', { verbose: true });
 ```
 
-## Type transformations
-
-You can perform custom type transformations.
+This would throw a validation error with the following issues.
 
 ```ts
-function toFixed(input: number): string {
-  return input.toFixed(2);
-}
-
-d.number().transform(toFixed);
-// → Type<string>
+[
+  {
+    code: 'stringMinLength',
+    path: [],
+    input: 'foo',
+    message: 'Must have the minimum length of 5',
+    param: 'string',
+    meta: undefied
+  },
+  {
+    code: 'stringRegex',
+    path: [],
+    input: 'foo',
+    message: 'Must match the pattern /bar/',
+    param: /bar/,
+    meta: undefied
+  },
+]
 ```
 
-## Validation errors
+Doubter halts parsing and raises an error as soon as the first issue was encountered. Sometimes you may want to collect
+all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option as seen in the example
+above.
 
-If you encounter an error during a [narrowing](#type-narrowing) or a [transformation](#type-transformations), throw
-a `ValidationError` with an array of associated issues:
+At this point you may be wondering what is that `meta` field of the issue object anyway? You can pass a `meta` option to
+any built-in check, and it would be added to an issue.
 
 ```ts
-import * as d from 'doubter';
-import { ValidationError } from 'doubter';
+d.number().gt(5, { meta: 'Any useful data here' });
+```
 
-function toNumber(input: any): number {
-  const output = +input;
+## Refinements
+
+Refinements are a simplified checks that use a predicate to validate an input. For example, the shape below would raise
+an issue if the input string is less than three characters long.
+
+```ts
+d.string().refine(val => val.length >= 3)
+// → String<string, string>
+```
+
+You can also use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type
+of the shape:
+
+```ts
+d.string().refine((val): val is 'foo' | 'bar' => val === 'foo' || val === 'bar')
+// → Shape<string, 'foo' | 'bar'>
+```
+
+## Transformations
+
+Shapes can transform values. Let's consider a shape that takes a string as an input and converts it to number.
+
+```ts
+const myShape = d.string().transform(val => parseInt(val, 10));
+// → Shape<string, number>
+```
+
+This shape ensures that the input value is a string and passes it to a transformation callback.
+
+```ts
+myShape2.parse('42');
+// → 42
+```
+
+You can throw `ValidationError` inside the transformation callback to notify parser that transformation cannot be
+successfully completed:
+
+```ts
+d.string().transform(val => {
+  const output = parseInt(val, 10);
 
   if (isNaN(output)) {
-    throw new ValidationError([
-      {
-        code: 'nan',
-        path: [],
-        input: input,
-        message: 'Must be a number',
-      }
-    ]);
+    throw new d.ValidationError([{ code: 'woops' }]);
   }
-
   return output;
-}
-
-d.any().transform(toNumber);
-// → Type<number>
+})
 ```
 
-## Custom messages
+## Redirections
 
-Many of the DSL methods support an `options` argument. You can use it to pass a customized message and metadata that are
-attached to an issue:
+Redirections allow you to apply a shape checks to the output of another shape.
 
 ```ts
-d.array(d.string(), { message: 'Expected an array' }).min(3, { message: 'Not enough' })
+const myShape1 = d.string().transform(val => parseFloat(val));
+// → Shape<string, number>
+
+const muShape2 = myShape1.to(number().lt(5).gt(10));
+// → Shape<string, number>
 ```
 
-# DSL reference
+Redirections are particularly useful along with transformations since the `transform` method returns a `TransformShape`
+instance that has a generic API.
 
-🔎[API documentation is available here.](https://smikhalevski.github.io/doubter/)
+## Localization
+
+All shapes and built-in checks support custom messages:
+
+```ts
+d.string('Hey, string here').min(3, 'Too short');
+```
+
+Checks that have a param, such as `min` constraint in the example above, can use a `%s` placeholder that would be
+interpolated with the param value.
+
+```ts
+d.string().min(3, 'Minimum length is %s');
+```
+
+You can pass a function as a message, then it would receive a param, a code, an input and a meta arguments and should
+return a formatted message value. The returned formatted message can be of any type. For example, when using with React
+you may return a JSX element:
+
+```tsx
+d.number().gt(5, (param) => (
+  <span style={{ color: 'red' }}>
+    Minimum length is {param}
+  </span>
+))
+```
+
+All rules described above are applied to the `message` option as well:
+
+```ts
+d.string().length(3, { message: 'Expected length is %s' })
+```
+
+## Parsing context
+
+Inside check and transform callbacks you can access options passed to the parser:
+
+```ts
+const myShape = d.number().transform((val, options) => {
+  return new Intl.NumberFormat(options.context.locale).format(val);
+});
+
+myShape.parse(1000, { context: { locale: 'en-US' } });
+// → '1,000'
+```
+
+## Integrations
+
+You can combine Doubter with any predicate library.
+
+```ts
+import * as d from 'doubter';
+import isEmail from 'validator/lib/isEmail';
+
+const emailShape = d.string().refine(isEmail, 'Must be an email');
+```
+
+# API reference
+
+🔎 [API documentation is available here.](https://smikhalevski.github.io/doubter/)
+
+## `any`
+
+An unconstrained value that is inferred as `any`:
+
+```ts
+d.any();
+// → Shape<any>
+```
+
+You can use `any` to create shapes that are unconstrained at runtime but constrained at compile time:
+
+```ts
+d.any<{ foo: string }>();
+// → Shape<{ foo: string }>
+```
+
+You can create a shape that is constrained by the narrowing predicate:
+
+```ts
+d.any((val): val is string => typeof val === 'string');
+// → Shape<any, string>
+```
 
 ## `array`
 
-Constrains a value to be an array of elements of a given type:
+Constrains a value to be an array of arbitrary elements:
+
+```ts
+d.array();
+// → Shape<any[]>
+```
+
+Your can constrain the shape of array elements:
 
 ```ts
 d.array(d.number());
-// → Type<number[]>
+// → Shape<number[]>
 ```
 
 Constrain the array length limits:
@@ -194,13 +406,161 @@ You can limit both minimum and maximum array length at the same time:
 d.array(d.string()).length(5);
 ```
 
-## `tuple`
-
-Constrains a value to be a tuple where elements at particular positions have concrete types:
+You can transform array values during parsing:
 
 ```ts
-d.tuple([d.string(), d.number()]);
-// → Type<[string, number]>
+d.array(d.string().transform(val => parseFloat(val)));
+// → Shape<string[], number[]>
+```
+
+## `bigint`
+
+Constrains a value to be a `BigInt`.
+
+```ts
+d.bigint();
+// → Shape<bigint>
+```
+
+## `boolean`
+
+Constrains a value to be boolean.
+
+```ts
+d.boolean();
+// → Shape<boolean>
+```
+
+## `const`
+
+Constrains a value to be an exact value:
+
+```ts
+d.const('foo');
+// → Shape<'foo'>
+```
+
+You can use this to define `NaN` constants as well:
+
+```ts
+d.const(NaN);
+// → Shape<number>
+```
+
+## `enum`
+
+Constrains a value to be equal to one of predefined values:
+
+```ts
+d.enum([1, 'foo', 'bar']);
+// → Shape<1 | 'foo' | 'bar'>
+```
+
+You can use a non-constant enum to limit the possible values:
+
+```ts
+enum Foo {
+  BAR = 'bar',
+  QUX = 'qux'
+}
+
+d.enum(Foo);
+// → Shape<Foo>
+```
+
+Or you can use a const object:
+
+```ts
+const Foo = {
+  BAR: 'bar',
+  QUX: 'qux'
+} as const;
+
+d.enum(Foo);
+// → Shape<'bar' | 'qux'>
+```
+
+## `instanceOf`
+
+Constrains a value to be an object that is an instance of a class:
+
+```ts
+class Foo {
+  bar: string;
+}
+
+d.instanceOf(Foo);
+// → Shape<Foo>
+```
+
+## `integer`
+
+Constrains a value to be an integer.
+
+```ts
+d.integer().min(5);
+// → Shape<number>
+
+d.int().max(5);
+// → Shape<number>
+```
+
+This is a shortcut for number shape declaration:
+
+```ts
+d.number().integer();
+// → Shape<number>
+```
+
+## `never`
+
+A shape that always raises a validation issue regardless of a value:
+
+```ts
+d.never();
+// → Shape<never>
+```
+
+## `number`
+
+Constrains a finite and non-`NaN` number.
+
+```ts
+d.number();
+// → Shape<number>
+```
+
+### Minimum and maximum values
+
+You can limit the exclusive `gt` and inclusive `gte` minimum and the exclusive `lt` and inclusive `lte` maximum
+values:
+
+```ts
+// The number must be greater than 5 and less then of equal to 10
+d.number().gt(0.5).lte(2.5)
+// → Shape<number>
+```
+
+Constrain a number to be a multiple of a divisor:
+
+```ts
+// Number must be divisible by 5 without a remainder
+d.number().multipleOf(5);
+```
+
+You can constrain the number to be an integer:
+
+```ts
+d.number().integer();
+```
+
+The integer constraint is always applied first.
+
+If you want to allow `NaN` numbers you can use a union shape:
+
+```ts
+d.or([d.number(), d.const(NaN)]);
+// → Shape<number>
 ```
 
 ## `object`
@@ -212,47 +572,68 @@ d.object({
   foo: d.string(),
   bar: d.number()
 });
-// → Type<{ foo: string, bar: number }>
+// → Shape<{ foo: string, bar: number }>
 ```
 
 ### Optional properties
 
-If the inferred type of the property is a union with `undefined` then the property becomes optional:
+If the inferred type of the property shape is a union with `undefined` then the property becomes optional:
 
 ```ts
 d.object({
-  foo: d.optional(d.string()),
+  foo: d.string().optional(),
   bar: d.number()
 });
-// → Type<{ foo?: string | undefined, bar: number }>
+// → Shape<{ foo?: string | undefined, bar: number }>
+```
+
+Or you can define optional properties as a union:
+
+```ts
+d.object({
+  foo: d.or([d.string(), d.const(undefined)]),
+});
+// → Shape<{ foo?: string | undefined }>
+```
+
+If the transformation result extends `undefined` then the output property becomes optional:
+
+```ts
+d.object({
+  foo: d.string().transform(val => val === 'foo' ? val : undefined),
+});
+// → Shape<{ foo: string }, { foo?: string | undefined }>
 ```
 
 ### Index signature
 
-Add an index signature to the object, so all properties that are not listed explicitly are validated with the indexer
-type:
+You can add an index signature to the object type, so all properties that aren't listed explicitly are validated with
+the rest shape:
 
 ```ts
-const type = d.object({
+const myShape = d.object({
   foo: d.string(),
   bar: d.number()
 });
+// → Shape<{ foo: string, bar: number }>
 
-const indexType = d.or([
+const myRestShape = d.or([
   d.string(),
   d.number()
 ]);
-// → Type<string | number>
+// → Shape<string | number>
 
-type.index(indexType);
-// → Type<{ foo: string, bar: number, [key: string]: string | number }>
+myShape.rest(myRestShape);
+// → Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
+
+Rest shape is applied only to keys that aren't explicitly specified among object property shapes.
 
 ### Unknown keys
 
-Keys that are not defined explicitly can be handled in several ways:
+Keys that aren't defined explicitly can be handled in several ways:
 
-- constrained by the [index signature](#index-signature);
+- constrained by the [rest shape](#index-signature);
 - stripped;
 - preserved as is, this is the default behavior;
 - prohibited.
@@ -275,150 +656,167 @@ d.object({
 }).strip();
 ```
 
-You can derive a new type and override the strategy for unknown keys:
+You can derive the new shape and override the strategy for unknown keys:
 
 ```ts
-const type = d.object({ foo: d.string() }).exact();
+const myShape = d.object({ foo: d.string() }).exact();
 
 // Unknonwn keys are now preserved
-type.preserve();
+myShape.preserve();
 ```
 
 ### Picking and omitting properties
 
-Picking keys from an object creates a new type that contains only listed keys:
+Picking keys from an object creates the new shape that contains only listed keys:
 
 ```ts
-const type = d.object({
+const myShape = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-type.pick(['foo']);
-// → Type<{ foo: string }>
+myShape.pick(['foo']);
+// → Shape<{ foo: string }>
 ```
 
-Omitting keys of an object creates a new type that contains all keys except listed ones:
+Omitting keys of an object creates the new shape that contains all keys except listed ones:
 
 ```ts
-const type = d.object({
+const myShape = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-type.omit(['foo']);
-// → Type<{ bar: number }>
+myShape.omit(['foo']);
+// → Shape<{ bar: number }>
 ```
 
 ### Extending objects
 
-Add new properties to the object type:
+Add new properties to the object shape:
 
 ```ts
-const type = d.object({
+const myShape = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-type.extend({
+myShape.extend({
   qux: d.boolean()
 });
-// → Type<{ foo: string, bar: number, qux: boolean }>
+// → Shape<{ foo: string, bar: number, qux: boolean }>
 ```
 
-Merge object types preserving the index signature of the left-hand type:
+Merging object shapes preserves the index signature of the left-hand shape:
 
 ```ts
-const fooType = d.object({
+const myFooShape = d.object({
   foo: d.string()
-});
+}).rest(d.or([d.string(), d.number()]));
 
-const barType = d.object({
+const myBarShape = d.object({
   bar: d.number()
 });
 
-fooType.extend(barType);
-// → Type<{ foo: string, bar: number }>
+myFooShape.extend(myBarShape);
+// → Shape<{ foo: string, bar: number, [key: string]: string | number }>
+```
+
+### Making objects partial and required
+
+Object properties are optional if their type extends `undefined`. You can derive an object shape that would have its
+properties all marked as optional:
+
+```ts
+const myShape = d.object({
+  foo: d.string(),
+  bar: d.number()
+});
+
+myShape.partial()
+// → Shape<{ foo?: string | undefined, bar?: number | undefined }>
+```
+
+You can specify which fields should be marked as optional:
+
+```ts
+const myShape = d.object({
+  foo: d.string(),
+  bar: d.number()
+});
+
+myShape.partial(['foo'])
+// → Shape<{ foo?: string | undefined, bar: number }>
+```
+
+In the same way, properties that are optional can be made required:
+
+```ts
+const myShape = d.object({
+  foo: d.string().optional(),
+  bar: d.number()
+});
+
+myShape.required(['foo'])
+// → Shape<{ foo: string, bar: number }>
+```
+
+Note that required would force the value of both input and output to be required.
+
+## `preprocess`
+
+Preprocesses the input value. Useful for input value coercion:
+
+```ts
+const myShape = d.preprocess(parseFloat);
+// → Shape<string, number>
+```
+
+You can use `preprocess` in conjunction with [redirection](#redirections):
+
+```ts
+myShape.to(d.number().min(3).max(5));
 ```
 
 ## `record`
 
-Constrains a value to be an object with both keys and values constrained by given types.
+Constrain values of a dictionary-like object:
+
+```ts
+d.record(d.number())
+// → Shape<Record<string, number>>
+```
+
+Constrain both keys and values of a dictionary-like object:
 
 ```ts
 d.record(d.string(), d.number())
-// → Type<{ [key: string]: number }>
+// → Shape<Record<string, number>>
 ```
 
-You can pass any type that extends `Type<string>` as a key constraint:
+You can pass any shape that extends `Shape<string>` as a key constraint:
 
 ```ts
-const keyType = d.or([
-  d.literal('foo'),
-  d.literal('bar')
-]);
-// → Type<'foo' | 'bar'>
+const myKeyShape = d.enum(['foo', 'bar']);
+// → Shape<'foo' | 'bar'>
 
-d.record(keyType, d.number());
-// → Type<{ foo: number, bar: number }>
+d.record(myKeyShape, d.number());
+// → Shape<Record<'foo' | 'bar', number>>
 ```
 
-## `instanceOf`
-
-Constrains a value to be an object that is an instance of a class:
+You can rename record keys using transformation:
 
 ```ts
-class Foo {
-  bar: string;
-}
+const myKeyShape = d.enum(['foo', 'bar']).transform(val => {
+  return val.toUpperCase() as Uppercase<typeof val>;
+});
+// → Shape<'foo' | 'bar', 'FOO' | 'BAR'>
 
-d.instanceOf(Foo);
-// → Type<Foo>
-```
+const myShape = d.record(myKeyShape, d.number());
+// → Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
 
-## `number`
-
-Constrains a floating point number.
-
-```ts
-number();
-// → Type<number>
-```
-
-### Minimum and maximum values
-
-You can limit the exclusive `gt` and inclusive `gte` minimum and the exclusive `lt` and inclusive `lte` maximum
-values:
-
-```ts
-// The number must be greater than 5 and less then of equal to 10
-number().gt(0.5).lte(2.5)
-// → Type<number>
-```
-
-Constrain a number to be a multiple of a divisor:
-
-```ts
-// Number must be divisible by 5 without a remainder
-number().multipleOf(5);
-```
-
-## `integer`
-
-Constrains a value to be an integer. This type inherits [number refinements](#number).
-
-```ts
-integer().min(5);
-// → Type<number>
-```
-
-## `bigint`
-
-Constrains a value to be a `BigInt`.
-
-```ts
-bigint();
-// → Type<bigint>
+myShape.parse({ foo: 1, bar: 2 });
+// → { FOO: 1, BAR: 2 }
 ```
 
 ## `string`
@@ -426,8 +824,8 @@ bigint();
 Constrains a value to be string.
 
 ```ts
-string();
-// → Type<string>
+d.string();
+// → Shape<string>
 ```
 
 Constrain the string length limits:
@@ -445,62 +843,38 @@ d.string().length(5);
 Constrain a string with a regular expression:
 
 ```ts
-d.string().regex(/foo|bar/);
+d.string().match(/foo|bar/);
 ```
 
-## `boolean`
+## `tuple`
 
-Constrains a value to be boolean.
+Constrains a value to be a tuple where elements at particular positions have concrete types:
 
 ```ts
-d.boolean();
-// → Type<boolean>
+d.tuple([d.string(), d.number()]);
+// → Shape<[string, number]>
 ```
 
-## `literal`
-
-Constrains a value to be an exact primitive value:
+Specify a rest tuple elements:
 
 ```ts
-d.literal('foo');
-// → Type<'foo'>
+d.tuple([d.string(), d.number()], d.boolean());
+// → Shape<[string, number, ...boolean]>
 ```
 
-## `oneOf`
+## `union`
 
-Constrains a value to be equal to one of the primitive values:
+A constraint that allows a value to be one of the given types:
 
 ```ts
-d.oneOf([1, 'foo', 'bar']);
-// → Type<1 | 'foo' | 'bar'>
+d.union([d.string(), d.number()]);
+// → Shape<string | number>
 ```
 
-You can use a non-constant enum to limit the possible values:
+You can use a shorter alias `or`:
 
 ```ts
-enum Foo {
-  BAR = 'bar',
-  QUX = 'qux'
-}
-
-d.oneOf(Foo);
-// → Type<Foo>
-```
-
-## `any`
-
-An unconstrained value that is inferred as `any`:
-
-```ts
-d.any();
-// → Type<any>
-```
-
-You can use `any` to create types that are unconstrained at runtime but constrained at compile time:
-
-```ts
-d.any<{ foo: string }>();
-// → Type<{ foo: string }>;
+d.or([d.string(), d.number()]);
 ```
 
 ## `unknown`
@@ -509,76 +883,11 @@ An unconstrained value that is inferred as `unknown`:
 
 ```ts
 d.unknown();
-// → Type<unknown>
+// → Shape<unknown>
 ```
-
-## `never`
-
-A type that always raises a validation issue regardless of a value:
-
-```ts
-d.never();
-// → Type<never>
-```
-
-## `optional`
-
-Allows a value to be `undefined`:
-
-```ts
-d.optional(d.string());
-// → Type<string | undefined>
-```
-
-## `nullable`
-
-Allows a value to be `null`:
-
-```ts
-d.nullable(d.string());
-// → Type<string | null>
-```
-
-## `nullish`
-
-Allows a value to be `null` or `undefined`.
-
-```ts
-d.nullish(d.string());
-// → Type<string | null | undefined>
-```
-
-## `or`
-
-A constraint that allows a value to be one of the given types:
-
-```ts
-d.or([
-  d.string(),
-  d.number()
-]);
-// → Type<string | number>
-```
-
-## `lazy`
-
-To create a type that references itself you may need a lazy type definition:
-
-```ts
-interface Foo {
-  bar: Foo;
-}
-
-const fooType: Type<Foo> = d.object({
-  bar: d.lazy(() => fooType)
-});
-// → Type<Foo>
-```
-
-Note that type of `fooType` must be explicitly defined to satisfy TypeScript type inference.
 
 # Performance
 
-Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
+Clone this repo and use `npm ci && npm run perf -- -t 'overall'` to run the performance testsuite.
 
-![Parsing performance chart](https://github.com/smikhalevski/doubter/raw/master/images/perf-parse.svg)
+![Parsing performance chart](./images/perf.svg)

@@ -1,12 +1,14 @@
 import { Any, Message, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { EnumShape } from '../shapes';
-import { isArray } from '../utils';
+import { isArray, unique } from '../utils';
 
 /**
  * The shape that constrains input with the list of primitive values.
  *
  * @param values The list of values allowed for the input.
  * @param options The constraint options or an issue message.
+ * @template T Allowed values.
+ * @template U The list of allowed values.
  */
 function enum_<T extends Any, U extends readonly [T, ...T[]]>(
   values: U,
@@ -18,6 +20,8 @@ function enum_<T extends Any, U extends readonly [T, ...T[]]>(
  *
  * @param values The native enum or a mapping object.
  * @param options The constraint options or an issue message.
+ * @template T Allowed values.
+ * @template U The object that maps from the key to an enum value.
  */
 function enum_<T extends Any, U extends ReadonlyDict<T>>(
   values: U,
@@ -26,7 +30,7 @@ function enum_<T extends Any, U extends ReadonlyDict<T>>(
 
 function enum_(values: ReadonlyDict, options?: TypeConstraintOptions | Message): EnumShape<any> {
   return new EnumShape(
-    isArray(values) ? values : Object.values(values).filter(value => typeof values[value] !== 'number'),
+    unique(isArray(values) ? values : Object.values(values).filter(value => typeof values[value] !== 'number')),
     options
   );
 }

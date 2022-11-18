@@ -9,21 +9,32 @@ import {
 } from '../../main/constants';
 
 describe('ArrayShape', () => {
-  test('raises non array values', () => {
+  test('creates an array shape', () => {
+    const shape1 = new Shape();
+    const restShape = new Shape();
+
+    const arrShape = new ArrayShape([shape1], restShape);
+
+    expect(arrShape.shapes).toEqual([shape1]);
+    expect(arrShape.restShape).toBe(restShape);
+    expect(arrShape.inputTypes).toEqual(['array']);
+  });
+
+  test('raises an issue if an input is not an unconstrained array', () => {
     const arrShape = new ArrayShape(null, null);
 
-    const result = arrShape.try('');
+    const result = arrShape.try('aaa');
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY, path: [] }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY, path: [] }],
     });
   });
 
-  test('does not check array elements if there are no element shapes', () => {
+  test('does not check array elements if there are no tuple element shapes and no rest element shape', () => {
     const arrShape = new ArrayShape(null, null);
 
-    const arr = [1, 2];
+    const arr = [111, 222];
     const result: any = arrShape.try(arr);
 
     expect(result).toEqual({ ok: true, value: arr });
@@ -39,15 +50,15 @@ describe('ArrayShape', () => {
 
     const arrShape = new ArrayShape([shape1, shape2], null);
 
-    const arr = [1, 2];
+    const arr = [111, 222];
     const result: any = arrShape.try(arr);
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 1, { verbose: false });
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false });
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 2, { verbose: false });
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false });
   });
 
   test('parses rest elements', () => {
@@ -57,17 +68,17 @@ describe('ArrayShape', () => {
 
     const arrShape = new ArrayShape(null, restShape);
 
-    const arr = [1, 2];
+    const arr = [111, 222];
     const result: any = arrShape.try(arr);
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(restApplySpy).toHaveBeenCalledTimes(2);
-    expect(restApplySpy).toHaveBeenNthCalledWith(1, 1, { verbose: false });
-    expect(restApplySpy).toHaveBeenNthCalledWith(2, 2, { verbose: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false });
   });
 
-  test('parses tuple and rest elements', () => {
+  test('parses both tuple and rest elements at the same time', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
     const restShape = new Shape();
@@ -78,30 +89,30 @@ describe('ArrayShape', () => {
 
     const arrShape = new ArrayShape([shape1, shape2], restShape);
 
-    const arr = [1, 2, 3, 4];
+    const arr = [111, 222, 333, 444];
     const result: any = arrShape.try(arr);
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 1, { verbose: false });
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false });
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 2, { verbose: false });
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false });
     expect(restApplySpy).toHaveBeenCalledTimes(2);
-    expect(restApplySpy).toHaveBeenNthCalledWith(1, 3, { verbose: false });
-    expect(restApplySpy).toHaveBeenNthCalledWith(2, 4, { verbose: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(1, 333, { verbose: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(2, 444, { verbose: false });
   });
 
-  test('raises issue if tuple length is invalid', () => {
+  test('raises an issue if the tuple length does not match shapes', () => {
     const arrShape = new ArrayShape([new Shape(), new Shape()], null);
 
-    expect(arrShape.try([0])).toEqual({
+    expect(arrShape.try([111])).toEqual({
       ok: false,
-      issues: [{ code: CODE_TUPLE, input: [0], message: 'Must be a tuple of length 2', param: 2, path: [] }],
+      issues: [{ code: CODE_TUPLE, input: [111], message: 'Must be a tuple of length 2', param: 2, path: [] }],
     });
   });
 
-  test('raises issue if passed value is not a tuple', () => {
+  test('raises an issue if an input is not a tuple', () => {
     const arrShape = new ArrayShape([new Shape(), new Shape()], null);
 
     expect(arrShape.try('aaa')).toEqual({
@@ -110,7 +121,7 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('raises issue if passed value is not an array', () => {
+  test('raises an issue if an input is not an array', () => {
     const arrShape = new ArrayShape(null, new Shape());
 
     expect(arrShape.try('aaa')).toEqual({
@@ -119,23 +130,23 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('raises single issue with rest element', () => {
+  test('raises a single issue captured by the rest shape', () => {
     const restShape = new Shape().check(() => [{ code: 'xxx' }]);
 
     const arrShape = new ArrayShape(null, restShape);
 
-    expect(arrShape.try([0, 1])).toEqual({
+    expect(arrShape.try(['aaa', 'bbb'])).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
   });
 
-  test('raises multiple issues with rest elements in verbose mode', () => {
+  test('raises multiple issues captured by the rest shape in verbose mode', () => {
     const restShape = new Shape().check(() => [{ code: 'xxx' }]);
 
     const arrShape = new ArrayShape(null, restShape);
 
-    expect(arrShape.try([0, 1], { verbose: true })).toEqual({
+    expect(arrShape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -144,13 +155,13 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('raises multiple issues with tuple elements in verbose mode', () => {
+  test('raises multiple issues captured by tuple shapes in verbose mode', () => {
     const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
     const shape2 = new Shape().check(() => [{ code: 'yyy' }]);
 
     const arrShape = new ArrayShape([shape1, shape2], null);
 
-    expect(arrShape.try([0, 1], { verbose: true })).toEqual({
+    expect(arrShape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -159,23 +170,23 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('clones an array if element is changed', () => {
+  test('clones an array if a tuple element was transformed', () => {
     const shape1 = new Shape();
     const shape2 = new Shape().transform(() => 'aaa');
 
     const arrShape = new ArrayShape([shape1, shape2], null);
 
-    const arr = [0, 1];
+    const arr = [111, 222];
     const result: any = arrShape.try(arr);
 
-    expect(result).toEqual({ ok: true, value: [0, 'aaa'] });
+    expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
     expect(result.value).not.toBe(arr);
   });
 
   test('applies checks', () => {
     const arrShape = new ArrayShape(null, new Shape()).check(() => [{ code: 'xxx' }]);
 
-    expect(arrShape.try([0])).toEqual({
+    expect(arrShape.try([111])).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [] }],
     });
@@ -184,34 +195,42 @@ describe('ArrayShape', () => {
   test('checks length', () => {
     const arrShape = new ArrayShape(null, new Shape()).length(2);
 
-    expect(arrShape.try([0, 1])).toEqual({ ok: true, value: [0, 1] });
-    expect(arrShape.try([0])).toEqual({ ok: false, issues: expect.any(Array) });
-    expect(arrShape.try([0, 1, 2])).toEqual({ ok: false, issues: expect.any(Array) });
+    expect(arrShape.try([111, 222])).toEqual({ ok: true, value: [111, 222] });
+    expect(arrShape.try([111])).toEqual({ ok: false, issues: expect.any(Array) });
+    expect(arrShape.try([111, 222, 333])).toEqual({ ok: false, issues: expect.any(Array) });
   });
 
   test('checks min length', () => {
     const arrShape = new ArrayShape(null, new Shape()).min(2);
 
-    expect(arrShape.try([0, 1])).toEqual({ ok: true, value: [0, 1] });
-    expect(arrShape.try([0])).toEqual({
+    expect(arrShape.try([111, 222])).toEqual({ ok: true, value: [111, 222] });
+    expect(arrShape.try([111])).toEqual({
       ok: false,
-      issues: [{ code: CODE_ARRAY_MIN, path: [], input: [0], message: 'Must have the minimum length of 2', param: 2 }],
+      issues: [
+        { code: CODE_ARRAY_MIN, path: [], input: [111], message: 'Must have the minimum length of 2', param: 2 },
+      ],
     });
   });
 
   test('checks max length', () => {
     const arrShape = new ArrayShape(null, new Shape()).max(2);
 
-    expect(arrShape.try([0, 1])).toEqual({ ok: true, value: [0, 1] });
-    expect(arrShape.try([0, 1, 2])).toEqual({
+    expect(arrShape.try([111, 222])).toEqual({ ok: true, value: [111, 222] });
+    expect(arrShape.try([111, 222, 333])).toEqual({
       ok: false,
       issues: [
-        { code: CODE_ARRAY_MAX, path: [], input: [0, 1, 2], message: 'Must have the maximum length of 2', param: 2 },
+        {
+          code: CODE_ARRAY_MAX,
+          path: [],
+          input: [111, 222, 333],
+          message: 'Must have the maximum length of 2',
+          param: 2,
+        },
       ],
     });
   });
 
-  test('returns array element shape if only if key represents an integer', () => {
+  test('returns the tuple element shape', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
@@ -219,24 +238,19 @@ describe('ArrayShape', () => {
 
     expect(arrShape.at('0')).toBe(shape1);
     expect(arrShape.at('1')).toBe(shape2);
+    expect(arrShape.at('2')).toBe(null);
+
+    expect(arrShape.at(0)).toBe(shape1);
+    expect(arrShape.at(1)).toBe(shape2);
+    expect(arrShape.at(2)).toBe(null);
+
     expect(arrShape.at('000')).toBe(null);
     expect(arrShape.at(-111)).toBe(null);
     expect(arrShape.at(111.222)).toBe(null);
     expect(arrShape.at('aaa')).toBe(null);
   });
 
-  test('returns tuple element shape', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape();
-
-    const arrShape = new ArrayShape([shape1, shape2], null);
-
-    expect(arrShape.at(0)).toBe(shape1);
-    expect(arrShape.at(1)).toBe(shape2);
-    expect(arrShape.at(2)).toBe(null);
-  });
-
-  test('returns rest element shape', () => {
+  test('returns the rest element shape', () => {
     const restShape = new Shape();
 
     const arrShape = new ArrayShape(null, restShape);
@@ -245,7 +259,7 @@ describe('ArrayShape', () => {
     expect(arrShape.at(1)).toBe(restShape);
   });
 
-  test('returns rest element shape when tuple elements are available', () => {
+  test('returns the rest element shape when tuple element shapes are available', () => {
     const shape1 = new Shape();
     const restShape = new Shape();
 
@@ -257,20 +271,20 @@ describe('ArrayShape', () => {
   });
 
   describe('async', () => {
-    test('raises non array values', async () => {
+    test('raises an issue if an input is not an unconstrained array', async () => {
       const restShape = new Shape().transformAsync(value => Promise.resolve(value));
 
       const arrShape = new ArrayShape(null, restShape);
 
-      const result = await arrShape.tryAsync('');
+      const result = await arrShape.tryAsync('aaa');
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY, path: [] }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY, path: [] }],
       });
     });
 
-    test('delegates to sync implementation', async () => {
+    test('downgrades to sync implementation if there are async element shapes', async () => {
       const arrShape = new ArrayShape(null, new Shape());
 
       const arrApplySpy = jest.spyOn(arrShape, 'apply');
@@ -289,15 +303,15 @@ describe('ArrayShape', () => {
 
       const arrShape = new ArrayShape([shape1, shape2], null);
 
-      const arr = [1, 2];
+      const arr = [111, 222];
       const result: any = await arrShape.tryAsync(arr);
 
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
       expect(applyAsyncSpy1).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy1).toHaveBeenNthCalledWith(1, 1, { verbose: false });
+      expect(applyAsyncSpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false });
       expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy2).toHaveBeenNthCalledWith(1, 2, { verbose: false });
+      expect(applyAsyncSpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false });
     });
 
     test('parses rest elements', async () => {
@@ -307,26 +321,26 @@ describe('ArrayShape', () => {
 
       const arrShape = new ArrayShape(null, restShape);
 
-      const arr = [1, 2];
+      const arr = [111, 222];
       const result: any = await arrShape.tryAsync(arr);
 
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
       expect(restApplyAsyncSpy).toHaveBeenCalledTimes(2);
-      expect(restApplyAsyncSpy).toHaveBeenNthCalledWith(1, 1, { verbose: false });
-      expect(restApplyAsyncSpy).toHaveBeenNthCalledWith(2, 2, { verbose: false });
+      expect(restApplyAsyncSpy).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+      expect(restApplyAsyncSpy).toHaveBeenNthCalledWith(2, 222, { verbose: false });
     });
 
-    test('clones an array if element is changed', async () => {
+    test('clones an array if a tuple element was transformed', async () => {
       const shape1 = new Shape();
       const shape2 = new Shape().transformAsync(() => Promise.resolve('aaa'));
 
       const arrShape = new ArrayShape([shape1, shape2], null);
 
-      const arr = [0, 1];
+      const arr = [111, 222];
       const result: any = await arrShape.tryAsync(arr);
 
-      expect(result).toEqual({ ok: true, value: [0, 'aaa'] });
+      expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
       expect(result.value).not.toBe(arr);
     });
 
@@ -335,7 +349,7 @@ describe('ArrayShape', () => {
 
       const arrShape = new ArrayShape(null, restShape).check(() => [{ code: 'xxx' }]);
 
-      await expect(arrShape.tryAsync([0])).resolves.toEqual({
+      await expect(arrShape.tryAsync([111])).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx', path: [] }],
       });

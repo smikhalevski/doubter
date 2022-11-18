@@ -3,9 +3,17 @@ import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../sh
 import { booleanTypes, createIssueFactory } from '../utils';
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../constants';
 
+/**
+ * The shape of the bigint value.
+ */
 export class BooleanShape extends Shape<boolean> {
   protected _typeIssueFactory;
 
+  /**
+   * Creates a new {@linkcode BooleanShape} instance.
+   *
+   * @param options The type constraint options or the type issue message.
+   */
   constructor(options?: TypeConstraintOptions | Message) {
     super(booleanTypes);
 

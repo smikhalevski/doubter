@@ -1,7 +1,7 @@
 import * as d from '../../main';
 
 describe('bigint', () => {
-  test('returns an bigint shape', () => {
+  test('returns a bigint shape', () => {
     expect(d.bigint()).toBeInstanceOf(d.BigIntShape);
   });
 });

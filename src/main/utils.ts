@@ -7,6 +7,7 @@ import {
   Message,
   Ok,
   ReadonlyDict,
+  TypeConstraintOptions,
 } from './shared-types';
 import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
@@ -34,7 +35,7 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i];
 
-    if (arr.indexOf(value, i + 1) !== -1) {
+    if (arr.includes(value, i + 1)) {
       if (uniqueArr === null) {
         uniqueArr = arr.slice(0, i);
       }
@@ -49,12 +50,19 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
 
 export const isArray = Array.isArray;
 
+export const getPrototypeOf = Object.getPrototypeOf;
+
 export function isEqual(a: unknown, b: unknown): boolean {
   return a === b || (a !== a && b !== b);
 }
 
+export function isObjectLike(value: unknown): value is Record<any, any> {
+  return value !== null && typeof value === 'object';
+}
+
 export function isPlainObject(value: unknown): value is Record<any, any> {
-  return value !== null && typeof value === 'object' && !isArray(value);
+  let prototype;
+  return isObjectLike(value) && ((prototype = getPrototypeOf(value)) === null || prototype.constructor === Object);
 }
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
@@ -83,23 +91,40 @@ export function appendCheck<S extends Shape>(
   });
 }
 
+/**
+ * Returns a function that creates a new issue.
+ *
+ * @param code The code of the issue.
+ * @param defaultMessage The default message that is used if message isn't provided through options.
+ * @param options Options provided by the user.
+ * @param param The param that is added to the issue.
+ * @returns The callback that takes an input and returns an issue.
+ */
 export function createIssueFactory(
-  code: string,
-  defaultMessage: string,
-  options: ConstraintOptions | Message | undefined,
+  code: unknown,
+  defaultMessage: unknown,
+  options: TypeConstraintOptions | Message | undefined,
   param: unknown
 ): (input: unknown) => Issue;
 
+/**
+ * Returns a function that creates a new issue.
+ *
+ * @param code The code of the issue.
+ * @param defaultMessage The default message that is used if message isn't provided through options.
+ * @param options Options provided by the user.
+ * @returns The callback that takes an input and a param, and returns an issue.
+ */
 export function createIssueFactory(
-  code: string,
-  defaultMessage: string,
-  options: ConstraintOptions | Message | undefined
+  code: unknown,
+  defaultMessage: unknown,
+  options: TypeConstraintOptions | Message | undefined
 ): (input: unknown, param: unknown) => Issue;
 
 export function createIssueFactory(
-  code: string,
-  defaultMessage: string,
-  options: ConstraintOptions | Message | undefined,
+  code: unknown,
+  defaultMessage: unknown,
+  options: TypeConstraintOptions | Message | undefined,
   param?: any
 ): (input: unknown, param: unknown) => Issue {
   const paramKnown = arguments.length === 4;
@@ -263,7 +288,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         let result;
 
         try {
-          result = cb0(output);
+          result = cb0(output, options);
         } catch (error) {
           return concatIssues(issues, captureIssues(error));
         }
@@ -283,7 +308,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         let result;
 
         try {
-          result = cb0(output);
+          result = cb0(output, options);
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
 
@@ -304,7 +329,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
         let result;
 
         try {
-          result = cb1(output);
+          result = cb1(output, options);
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
         }
@@ -328,7 +353,7 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
       }
 
       try {
-        result = callback(output);
+        result = callback(output, options);
       } catch (error) {
         issues = concatIssues(issues, captureIssues(error));
 
