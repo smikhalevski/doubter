@@ -52,6 +52,7 @@ npm install --save-prod doubter@1.0.0
     - Unconstrained values<br>
       [`any`](#any)
       [`unknown`](#unknown)
+      [`never`](#never)
 
     - Numbers<br>
       [`number`](#number)
@@ -69,11 +70,9 @@ npm install --save-prod doubter@1.0.0
       [`const`](#const)
       [`enum`](#enum)
 
-    - Prohibited values<br>
-      [`never`](#never)
-
     - Shape composition<br>
-      [`union`](#union) [`or`](#union)
+      [`union`](#union)
+      [`or`](#union)
 
     - Preprocess and coerce<br>
       [`preprocess`](#preprocess)
@@ -766,11 +765,11 @@ Note that required would force the value of both input and output to be required
 
 ## `preprocess`
 
-Preprocesses the input value.
+Preprocesses the input value. Useful for input value coercion:
 
 ```ts
-const myShape = d.preprocess(val => parseInt(val, 10) || 0);
-// → Shape<any, number>
+const myShape = d.preprocess(parseFloat);
+// → Shape<string, number>
 ```
 
 You can use `preprocess` in conjunction with [redirection](#redirections):
