@@ -72,6 +72,8 @@ npm install --save-prod doubter@1.0.0
     - Shape composition<br>
       [`union`](#union)
       [`or`](#union)
+      [`intersection`](#intersection)
+      [`and`](#intersection)
 
     - Preprocess and coerce<br>
       [`preprocess`](#preprocess)
@@ -589,6 +591,66 @@ This is a shortcut for number shape declaration:
 ```ts
 d.number().integer();
 // → Shape<number>
+```
+
+## `intersection`
+
+Creates a shape that checks that the input value conforms all the given shapes.
+
+```ts
+const myShape = d.intersection([
+  d.object({
+    foo: d.string()
+  }),
+  d.object({
+    bar: d.number()
+  })
+]);
+// → Shape<{ foo: string, bar: string }>
+```
+
+You can use a shorter alias `and`:
+
+```ts
+const myShape = d.and([
+  d.array(d.string()),
+  d.array(d.enum(['foo', 'bar']))
+]);
+// → Shape<Array<'foo' | 'bar'>>
+```
+
+When working with objects, use [extend objects](#extending-objects) instead of an intersection whenever possible, since
+objects are more performant than objects intersections.
+
+There's a logical difference between extended and intersected objects. Let's consider two shapes that both contain the
+same key:
+
+```ts
+const shape1 = d.object({
+  foo: d.string(),
+  bar: d.boolean(),
+});
+
+const shape2 = d.object({
+  // 🟡 Notice that the type of foo in shape2 differs from shape1.
+  foo: d.number()
+});
+```
+
+Object extensions overwrite properties of the left object with properties right object:
+
+```ts
+const shape = shape1.extend(shape2);
+// → Shape<{ foo: number, bar: boolean }>
+```
+
+While intersection requires the input to conform both shapes at the same time, what isn't possible since there's no
+value that can conform `string | number`. So the type of `foo` becomes `never` and no value would be able to satisfy the
+resulting intersection shape.
+
+```ts
+const shape = d.and([shape1, shape2]);
+// → Shape<{ foo: never, bar: boolean }>
 ```
 
 ## `never`
