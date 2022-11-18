@@ -4,6 +4,7 @@ export * from './bigint';
 export * from './boolean';
 export * from './enum';
 export * from './instanceOf';
+export * from './intersection';
 export * from './integer';
 export * from './const';
 export * from './never';
