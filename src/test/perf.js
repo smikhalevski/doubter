@@ -1135,24 +1135,62 @@ describe(
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
 
-describe('overall', () => {
-  const value = {
-    a1: 1,
-    a2: -1,
-    a3: Number.MAX_VALUE,
-    a4: 'foo',
-    a5: 'bar',
-    a6: true,
-    a7: {
-      a71: 'baz',
-      a72: 1,
-      a73: false,
-    },
-  };
+describe(
+  'and([object({ foo: string() }), object({ bar: number() })])',
+  () => {
+    const value = { foo: 'aaa', bar: 123 };
 
-  describe(
-    'loose',
-    () => {
+    test('zod', measure => {
+      const type = zod.intersection(
+        zod.object({ foo: zod.string() }).passthrough(),
+        zod.object({ bar: zod.number() }).passthrough()
+      );
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.intersection(
+        myzod.object({ foo: myzod.string() }, { allowUnknown: true }),
+        myzod.object({ bar: myzod.number() }, { allowUnknown: true })
+      );
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = doubter.and([doubter.object({ foo: doubter.string() }), doubter.object({ bar: doubter.number() })]);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'overall',
+  () => {
+    const value = {
+      a1: 1,
+      a2: -1,
+      a3: Number.MAX_VALUE,
+      a4: 'foo',
+      a5: 'bar',
+      a6: true,
+      a7: {
+        a71: 'baz',
+        a72: 1,
+        a73: false,
+      },
+    };
+
+    describe('loose', () => {
       test('Ajv', measure => {
         const ajv = new Ajv();
 
@@ -1295,13 +1333,9 @@ describe('overall', () => {
           shape.parse(value);
         });
       });
-    },
-    { warmupIterationCount: 1000, targetRme: 0.002 }
-  );
+    });
 
-  describe(
-    'strict',
-    () => {
+    describe('strict', () => {
       test('Ajv', measure => {
         const ajv = new Ajv();
 
@@ -1439,7 +1473,7 @@ describe('overall', () => {
           shape.parse(value);
         });
       });
-    },
-    { warmupIterationCount: 1000, targetRme: 0.002 }
-  );
-});
+    });
+  },
+  { warmupIterationCount: 1000, targetRme: 0.002 }
+);
