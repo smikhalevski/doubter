@@ -51,9 +51,9 @@ export class StringShape extends Shape<string> {
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-    return appendCheck(this, CODE_STRING_MIN, options, length, output => {
-      if (output.length < length) {
-        return issueFactory(output);
+    return appendCheck(this, CODE_STRING_MIN, options, length, (input, options) => {
+      if (input.length < length) {
+        return issueFactory(input, options);
       }
     });
   }
@@ -68,9 +68,9 @@ export class StringShape extends Shape<string> {
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-    return appendCheck(this, CODE_STRING_MAX, options, length, output => {
-      if (output.length > length) {
-        return issueFactory(output);
+    return appendCheck(this, CODE_STRING_MAX, options, length, (input, options) => {
+      if (input.length > length) {
+        return issueFactory(input, options);
       }
     });
   }
@@ -85,11 +85,11 @@ export class StringShape extends Shape<string> {
   match(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-    return appendCheck(this, CODE_STRING_REGEX, options, re, output => {
+    return appendCheck(this, CODE_STRING_REGEX, options, re, (input, options) => {
       re.lastIndex = 0;
 
-      if (!re.test(output)) {
-        return issueFactory(output);
+      if (!re.test(input)) {
+        return issueFactory(input, options);
       }
     });
   }
@@ -98,7 +98,7 @@ export class StringShape extends Shape<string> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'string') {
-      return [this._typeIssueFactory(input)];
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

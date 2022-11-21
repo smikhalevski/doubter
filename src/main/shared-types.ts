@@ -121,8 +121,20 @@ export interface Issue {
 
 /**
  * The message callback or a string.
+ *
+ * @param param The check param or `undefined` if there's no param.
+ * @param code The issue code.
+ * @param input The input value that the shape was trying to parse.
+ * @param meta The metadata passed as a check option during shape declaration.
+ * @param options The parsing options.
+ * @returns Any value that should be used as an issue message.
  */
-export type Message = ((param: any, code: any, input: any, meta: any) => any) | string;
+export type MessageCallback = (param: any, code: any, input: any, meta: any, options: Readonly<ParseOptions>) => any;
+
+/**
+ * A callback that returns an issue message or a message string.
+ */
+export type Message = MessageCallback | string;
 
 /**
  * Options that are applicable for the type constraint.

@@ -88,7 +88,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     }
 
     if (index === bucketLength) {
-      return [this._typeIssueFactory(input, issues)];
+      return [this._typeIssueFactory(input, options, issues)];
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
@@ -110,7 +110,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
 
     if (bucket === null) {
-      return Promise.resolve([this._typeIssueFactory(input, null)]);
+      return Promise.resolve([this._typeIssueFactory(input, options, null)]);
     }
 
     const bucketLength = bucket.length;
@@ -129,7 +129,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
             issues = concatIssues(issues, result);
 
             if (index === bucketLength) {
-              return [this._typeIssueFactory(input, issues)];
+              return [this._typeIssueFactory(input, options, issues)];
             }
             return nextShape();
           }

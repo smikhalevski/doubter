@@ -359,9 +359,9 @@ export class Shape<I = any, O = I> {
   refine(cb: (output: O) => unknown, options?: RefineOptions | Message) {
     const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
-    return appendCheck(this, undefined, options, cb, output => {
-      if (!cb(output)) {
-        return issueFactory(output);
+    return appendCheck(this, undefined, options, cb, (input, options) => {
+      if (!cb(input)) {
+        return issueFactory(input, options);
       }
     });
   }
@@ -966,7 +966,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     let output = input;
 
     if (isEqual(input, excludedValue)) {
-      return [_typeIssueFactory(input)];
+      return [_typeIssueFactory(input, options)];
     }
 
     const result = this.shape.apply(input, options);
@@ -978,7 +978,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       output = result.value;
 
       if (isEqual(output, excludedValue)) {
-        return [_typeIssueFactory(input)];
+        return [_typeIssueFactory(input, options)];
       }
     }
 
@@ -1000,7 +1000,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     const { excludedValue, _typeIssueFactory, _applyChecks } = this;
 
     if (isEqual(input, excludedValue)) {
-      return Promise.resolve([_typeIssueFactory(input)]);
+      return Promise.resolve([_typeIssueFactory(input, options)]);
     }
 
     return this.shape.applyAsync(input, options).then(result => {
@@ -1014,7 +1014,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
         output = result.value;
 
         if (isEqual(output, excludedValue)) {
-          return [_typeIssueFactory(input)];
+          return [_typeIssueFactory(input, options)];
         }
       }
 

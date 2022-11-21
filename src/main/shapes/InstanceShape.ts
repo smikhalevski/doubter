@@ -28,7 +28,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {
-      return [this._typeIssueFactory(input)];
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

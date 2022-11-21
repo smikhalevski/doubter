@@ -124,9 +124,9 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-    return appendCheck(this, CODE_ARRAY_MIN, options, length, input => {
+    return appendCheck(this, CODE_ARRAY_MIN, options, length, (input, options) => {
       if (input.length < length) {
-        return issueFactory(input);
+        return issueFactory(input, options);
       }
     });
   }
@@ -141,9 +141,9 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-    return appendCheck(this, CODE_ARRAY_MAX, options, length, input => {
+    return appendCheck(this, CODE_ARRAY_MAX, options, length, (input, options) => {
       if (input.length > length) {
-        return issueFactory(input);
+        return issueFactory(input, options);
       }
     });
   }
@@ -160,7 +160,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       ((inputLength = input.length),
       shapes !== null && inputLength !== (shapesLength = shapes.length) && restShape === null)
     ) {
-      return [this._typeIssueFactory(input)];
+      return [this._typeIssueFactory(input, options)];
     }
 
     let issues: Issue[] | null = null;
@@ -219,7 +219,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         ((inputLength = input.length),
         shapes !== null && inputLength !== (shapesLength = shapes.length) && restShape === null)
       ) {
-        resolve([this._typeIssueFactory(input)]);
+        resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 

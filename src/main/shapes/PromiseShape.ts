@@ -30,7 +30,7 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
     if (!(input instanceof Promise)) {
-      return Promise.resolve([this._typeIssueFactory(input)]);
+      return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
 
     const { _applyChecks } = this;

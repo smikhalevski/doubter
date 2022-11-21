@@ -6,6 +6,7 @@ import {
   Issue,
   Message,
   Ok,
+  ParseOptions,
   ReadonlyDict,
   TypeConstraintOptions,
 } from './shared-types';
@@ -105,7 +106,7 @@ export function createIssueFactory(
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined,
   param: unknown
-): (input: unknown) => Issue;
+): (input: unknown, options: Readonly<ParseOptions>) => Issue;
 
 /**
  * Returns a function that creates a new issue.
@@ -119,14 +120,14 @@ export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined
-): (input: unknown, param: unknown) => Issue;
+): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue;
 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined,
   param?: any
-): (input: unknown, param: unknown) => Issue {
+): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue {
   const paramKnown = arguments.length === 4;
 
   let meta: unknown;
@@ -145,12 +146,12 @@ export function createIssueFactory(
 
   if (typeof message === 'function') {
     if (paramKnown) {
-      return input => {
-        return { code, path: [], input, message: message(param, code, input, meta), param, meta };
+      return (input, options) => {
+        return { code, path: [], input, message: message(param, code, input, meta, options), param, meta };
       };
     } else {
-      return (input, param) => {
-        return { code, path: [], input, message: message(param, code, input, meta), param, meta };
+      return (input, options, param) => {
+        return { code, path: [], input, message: message(param, code, input, meta, options), param, meta };
       };
     }
   }
@@ -159,7 +160,7 @@ export function createIssueFactory(
     if (paramKnown) {
       message = message.replace('%s', param);
     } else if (message.indexOf('%s') !== -1) {
-      return (input, param) => {
+      return (input, options, param) => {
         return { code, path: [], input, message: message.replace('%s', param), param, meta };
       };
     }
@@ -170,7 +171,7 @@ export function createIssueFactory(
       return { code, path: [], input, message, param, meta };
     };
   } else {
-    return (input, param) => {
+    return (input, options, param) => {
       return { code, path: [], input, message, param, meta };
     };
   }
