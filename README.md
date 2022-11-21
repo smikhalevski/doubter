@@ -15,6 +15,9 @@ const userShape = d.object({
   age: d.int().gte(18).lt(100)
 });
 
+type PartialUser = typeof userShape['input'];
+// → { age: number }
+
 type User = typeof userShape['output'];
 // → { name: string, age: number }
 
@@ -36,8 +39,8 @@ npm install --save-prod doubter
     - [Redirections](#redirections)
     - [Async shapes](#async-shapes)
     - [Localization](#localization)
-    - [Integrations](#integrations)
     - [Parsing context](#parsing-context)
+    - [Integrations](#integrations)
 
 - [API reference](#api-reference)
 
@@ -75,20 +78,27 @@ npm install --save-prod doubter
       [`intersection`](#intersection)
       [`and`](#intersection)
 
-    - Preprocess and coerce<br>
-      [`preprocess`](#preprocess)
-
     - Unconstrained values<br>
       [`any`](#any)
       [`unknown`](#unknown)
       [`never`](#never)
+
+    - Other<br>
+      [`preprocess`](#preprocess)
+      [`lazy`](#lazy)
 
 - [Performance](#performance)
 
 # Usage
 
 Doubter provides an API to compose runtime shapes that validate and transform data. Shapes can be treated as pipelines
-that have an input and output. For example, consider a shape that ensures that an input value is a string.
+that have an input and an output. The `Shape` type may have zero, one or two parameters.
+
+- `Shape<I, O>` is a shape that has an input of the type `I` and output of the type `O`.
+- `Shape<T>` is a shortcut for `Shape<T, T>`.
+- `Shape` is a shortcut for `Shape<any, any>`.
+
+For example, consider a shape that ensures that an input value is a string.
 
 ```ts
 import * as d from 'doubter';
@@ -104,7 +114,7 @@ If an input value isn't a string, a `ValidationError` is thrown.
 
 ```ts
 myShape.parse(42);
-// → throws new ValidationError
+// → throws a ValidationError
 ```
 
 Each error instance has `issues` property that contains issues that occurred during parsing.
@@ -143,9 +153,9 @@ myShape.parseOrDefault(42, 'bar');
 You can infer the input and output types of the shape:
 
 ```ts
-type MyShapeInput = typeof myShape['input'];
+type MyInput = typeof myShape['input'];
 
-type MyShapeOutput = typeof myShape['output'];
+type MyOutput = typeof myShape['output'];
 ```
 
 ## Checks
@@ -165,7 +175,7 @@ myShape.parse(10);
 // → 10
 
 myShape.parse(3);
-// → throws new ValidationError
+// → throws a ValidationError
 ```
 
 A check callback receives an input value and returns an issue or an array of issues if the value isn't valid. If value
@@ -338,10 +348,7 @@ is still sync, since the transformation callback _synchronously wraps_ a value i
 Now let's create an async shape using the async transformation:
 
 ```ts
-const asyncShape = d.string().transformAsync(async (val) => {
-  await doAysncJob(val);
-  return 'Hello, ' + val;
-});
+const asyncShape = d.string().transformAsync(val => Promise.resolve('Hello, ' + val));
 // → Shape<string>
 
 asyncShape.async;
@@ -351,7 +358,7 @@ await syncShape2.parseAsync('Jill');
 // → 'Hello, Jill'
 ```
 
-Notice that shape `asyncShape` still transforms the input string value to output string but the transformation itself is
+Notice that `asyncShape` still transforms the input string value to output string but the transformation itself is
 async.
 
 The shape is async if it uses async transformations. Here's an async object shape:
@@ -390,12 +397,13 @@ interpolated with the param value.
 d.string().min(3, 'Minimum length is %s');
 ```
 
-You can pass a function as a message, then it would receive a param, a code, an input and a meta arguments and should
-return a formatted message value. The returned formatted message can be of any type. For example, when using with React
-you may return a JSX element:
+You can pass a function as a message, then it would receive a check param, an issue code, an input value, a metadata,
+and parsing options and should return a formatted message value. The returned formatted message can be of any type.
+
+For example, when using with React you may return a JSX element:
 
 ```tsx
-d.number().gt(5, (param) => (
+d.number().gt(5, (param, code, input, meta, options) => (
   <span style={{ color: 'red' }}>
     Minimum length is {param}
   </span>
@@ -430,6 +438,7 @@ import * as d from 'doubter';
 import isEmail from 'validator/lib/isEmail';
 
 const emailShape = d.string().refine(isEmail, 'Must be an email');
+// → Shape<string>
 ```
 
 # API reference
@@ -490,7 +499,7 @@ d.array(d.string()).length(5);
 You can transform array values during parsing:
 
 ```ts
-d.array(d.string().transform(val => parseFloat(val)));
+d.array(d.string().transform(parseFloat));
 // → Shape<string[], number[]>
 ```
 
@@ -595,7 +604,7 @@ d.number().integer();
 
 ## `intersection`
 
-Creates a shape that checks that the input value conforms all the given shapes.
+Creates a shape that checks that the input value conforms to all shapes.
 
 ```ts
 const myShape = d.intersection([
@@ -619,8 +628,8 @@ const myShape = d.and([
 // → Shape<Array<'foo' | 'bar'>>
 ```
 
-When working with objects, [extend objects](#extending-objects) instead of an intersection whenever possible, since
-objects are more performant than objects intersections.
+When working with objects, [extend objects](#extending-objects) instead of intersecting them whenever possible, since
+object shapes are more performant than object intersection shapes.
 
 There's a logical difference between extended and intersected objects. Let's consider two shapes that both contain the
 same key:
@@ -637,25 +646,40 @@ const myShape2 = d.object({
 });
 ```
 
-Object extensions overwrite properties of the left object with properties right object:
+Object extensions overwrite properties of the left object with properties of the right object:
 
 ```ts
 const myShape = myShape1.extend(myShape2);
 // → Shape<{ foo: number, bar: boolean }>
 ```
 
-While intersection requires the input to conform both shapes at the same time, what isn't possible since there's no
-value that can conform `string | number`. So the type of `foo` becomes `never` and no value would be able to satisfy the
-resulting intersection shape.
+The intersection requires the input value to conform both shapes at the same time, it's no possible since there are no
+values that can satisfy the `string | number` type. So the type of property `foo` becomes `never` and no value would be
+able to satisfy the resulting intersection shape.
 
 ```ts
 const myShape = d.and([myShape1, myShape2]);
 // → Shape<{ foo: never, bar: boolean }>
 ```
 
+## `lazy`
+
+Creates the lazy-loaded shape. For example, you can create cyclic shapes:
+
+```ts
+type MyType = string | MyType[];
+
+const myShape: Shape<MyType> = d.lazy(() => d.or([d.string, d.array(myShape)]));
+```
+
+Note that you must define a shape type explicitly, because it cannot be inferred.
+
+While Doubter supports cyclic types, it doesn't support cyclic data structures. The latter would cause an infinite loop
+at runtime.
+
 ## `never`
 
-A shape that always raises a validation issue regardless of a value:
+A shape that always raises a validation issue regardless of an input value:
 
 ```ts
 d.never();
@@ -693,9 +717,10 @@ You can constrain the number to be an integer:
 
 ```ts
 d.number().integer();
+// Or use a shortcut d.int()
 ```
 
-The integer constraint is always applied first.
+The integer check is always applied before any other checks.
 
 If you want to allow `NaN` numbers you can use a union shape:
 
@@ -768,7 +793,8 @@ myShape.rest(myRestShape);
 // → Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
-Rest shape is applied only to keys that aren't explicitly specified among object property shapes.
+Unlike an index signature in TypeScript, a rest shape is applied only to keys that aren't explicitly specified among
+object property shapes.
 
 ### Unknown keys
 
@@ -811,12 +837,12 @@ myShape.preserve();
 Picking keys from an object creates the new shape that contains only listed keys:
 
 ```ts
-const myShape = d.object({
+const myShape1 = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-myShape.pick(['foo']);
+const myShape2 = myShape1.pick(['foo']);
 // → Shape<{ foo: string }>
 ```
 
@@ -902,7 +928,7 @@ myShape.required(['foo'])
 // → Shape<{ foo: string, bar: number }>
 ```
 
-Note that required would force the value of both input and output to be required.
+Note that `required` would force the value of both input and output to be non-`undefined`.
 
 ## `promise`
 
