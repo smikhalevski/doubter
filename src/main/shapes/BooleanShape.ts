@@ -24,7 +24,7 @@ export class BooleanShape extends Shape<boolean> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {
-      return [this._typeIssueFactory(input)];
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

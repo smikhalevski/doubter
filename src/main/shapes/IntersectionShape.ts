@@ -55,7 +55,7 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     if (outputs.length !== shapesLength) {
       outputs.push(input);
     }
-    return intersectOutputs(input, outputs, this._typeIssueFactory);
+    return intersectOutputs(input, outputs, this._typeIssueFactory, options);
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferIntersection<U, 'output'>>> {
@@ -98,14 +98,19 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
       if (outputs.length !== shapesLength) {
         outputs.push(input);
       }
-      return intersectOutputs(input, outputs, this._typeIssueFactory);
+      return intersectOutputs(input, outputs, this._typeIssueFactory, options);
     });
   }
 }
 
 const NEVER = Symbol();
 
-function intersectOutputs(input: unknown, outputs: any[], typeIssueFactory: (input: unknown) => Issue): ApplyResult {
+function intersectOutputs(
+  input: unknown,
+  outputs: any[],
+  typeIssueFactory: (input: unknown, options: Readonly<ParseOptions>) => Issue,
+  options: ParseOptions
+): ApplyResult {
   const outputsLength = outputs.length;
 
   let value = outputs[0];
@@ -114,7 +119,7 @@ function intersectOutputs(input: unknown, outputs: any[], typeIssueFactory: (inp
     value = intersectPair(value, outputs[i]);
 
     if (value === NEVER) {
-      return [typeIssueFactory(input)];
+      return [typeIssueFactory(input, options)];
     }
   }
 

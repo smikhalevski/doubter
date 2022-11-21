@@ -71,7 +71,8 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   protected _valueShapes: Shape[];
   protected _typePredicate = isObjectLike;
   protected _typeIssueFactory;
-  protected _exactIssueFactory: ((input: unknown, param: unknown) => Issue) | null = null;
+  protected _exactIssueFactory: ((input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue) | null =
+    null;
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.
@@ -330,7 +331,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     const { _typePredicate } = this;
 
     if (!_typePredicate(input)) {
-      return [this._typeIssueFactory(input)];
+      return [this._typeIssueFactory(input, options)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
       return this._applyLax(input, options);
@@ -348,7 +349,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       const { _typePredicate } = this;
 
       if (!_typePredicate(input)) {
-        resolve([this._typeIssueFactory(input)]);
+        resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 
@@ -403,7 +404,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
 
       if (unknownKeys !== null) {
-        const issue = this._exactIssueFactory!(input, unknownKeys);
+        const issue = this._exactIssueFactory!(input, options, unknownKeys);
 
         if (!options.verbose) {
           resolve([issue]);
@@ -588,7 +589,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     // Raise unknown keys issue
     if (unknownKeys !== null) {
-      const issue = this._exactIssueFactory!(input, unknownKeys);
+      const issue = this._exactIssueFactory!(input, options, unknownKeys);
 
       if (!options.verbose) {
         return [issue];

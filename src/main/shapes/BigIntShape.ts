@@ -24,7 +24,7 @@ export class BigIntShape extends Shape<bigint> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'bigint') {
-      return [this._typeIssueFactory(input)];
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);
