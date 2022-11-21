@@ -178,7 +178,7 @@ export interface ParseOptions {
   verbose?: boolean;
 
   /**
-   * The custom context that can be used inside check and transform callbacks.
+   * The custom context. Use it to pass custom params to check and transform callbacks.
    */
   context?: any;
 }

@@ -32,7 +32,7 @@ import {
   MESSAGE_PREDICATE,
 } from '../constants';
 
-const defaultParseOptions: ParseOptions = { verbose: false };
+const defaultParseOptions: ParseOptions = Object.freeze({ verbose: false });
 
 /**
  * An arbitrary shape.
@@ -90,7 +90,7 @@ export interface Shape<I, O> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the synchronous parsing, see {@linkcode async}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
    */
   try(input: unknown, options?: ParseOptions): Ok<O> | Err;
 
@@ -109,7 +109,7 @@ export interface Shape<I, O> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the synchronous parsing, see {@linkcode async}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parse(input: unknown, options?: ParseOptions): O;
@@ -131,7 +131,7 @@ export interface Shape<I, O> {
    * @param defaultValue The default value that is returned if parsing fails.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the synchronous parsing, see {@linkcode async}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
    */
   parseOrDefault<T = undefined>(input: unknown, defaultValue?: T, options?: ParseOptions): O | T;
 

@@ -4,6 +4,7 @@ export { BooleanShape } from './BooleanShape';
 export { EnumShape } from './EnumShape';
 export { InstanceShape } from './InstanceShape';
 export { IntersectionShape } from './IntersectionShape';
+export { LazyShape } from './LazyShape';
 export { NeverShape } from './NeverShape';
 export { NumberShape } from './NumberShape';
 export { ObjectShape, KeysMode } from './ObjectShape';

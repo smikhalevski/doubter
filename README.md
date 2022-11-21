@@ -25,7 +25,7 @@ const user = userShape.parse({ age: 21 });
 🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
 
 ```shell
-npm install --save-prod doubter@1.0.0
+npm install --save-prod doubter
 ```
 
 - [Usage](#usage)
@@ -244,7 +244,7 @@ an issue if the input string is less than three characters long.
 
 ```ts
 d.string().refine(val => val.length >= 3)
-// → String<string, string>
+// → Shape<string>
 ```
 
 You can also use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type
@@ -287,7 +287,7 @@ d.string().transform(val => {
 
 ## Redirections
 
-Redirections allow you to apply a shape checks to the output of another shape.
+Redirections allow you to apply a shape to the output of another shape.
 
 ```ts
 const myShape1 = d.string().transform(val => parseFloat(val));
@@ -352,7 +352,7 @@ await syncShape2.parseAsync('Jill');
 ```
 
 Notice that shape `asyncShape` still transforms the input string value to output string but the transformation itself is
-asynchronous.
+async.
 
 The shape is async if it uses async transformations. Here's an async object shape:
 
@@ -619,20 +619,20 @@ const myShape = d.and([
 // → Shape<Array<'foo' | 'bar'>>
 ```
 
-When working with objects, use [extend objects](#extending-objects) instead of an intersection whenever possible, since
+When working with objects, [extend objects](#extending-objects) instead of an intersection whenever possible, since
 objects are more performant than objects intersections.
 
 There's a logical difference between extended and intersected objects. Let's consider two shapes that both contain the
 same key:
 
 ```ts
-const shape1 = d.object({
+const myShape1 = d.object({
   foo: d.string(),
   bar: d.boolean(),
 });
 
-const shape2 = d.object({
-  // 🟡 Notice that the type of foo in shape2 differs from shape1.
+const myShape2 = d.object({
+  // 🟡 Notice that the type of foo in myShape2 differs from myShape1.
   foo: d.number()
 });
 ```
@@ -640,7 +640,7 @@ const shape2 = d.object({
 Object extensions overwrite properties of the left object with properties right object:
 
 ```ts
-const shape = shape1.extend(shape2);
+const myShape = myShape1.extend(myShape2);
 // → Shape<{ foo: number, bar: boolean }>
 ```
 
@@ -649,7 +649,7 @@ value that can conform `string | number`. So the type of `foo` becomes `never` a
 resulting intersection shape.
 
 ```ts
-const shape = d.and([shape1, shape2]);
+const myShape = d.and([myShape1, myShape2]);
 // → Shape<{ foo: never, bar: boolean }>
 ```
 
