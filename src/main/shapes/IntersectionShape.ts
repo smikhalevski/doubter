@@ -5,7 +5,7 @@ import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 
 // prettier-ignore
-export type InferIntersection<U extends readonly AnyShape[], C extends "input" | "output"> =
+export type InferIntersection<U extends readonly AnyShape[], C extends 'input' | 'output'> =
   UnionToIntersection<InferUnion<U, C>>;
 
 export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;

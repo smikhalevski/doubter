@@ -25,13 +25,17 @@ import {
 
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 
-export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] };
+export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> = ToArray<{
+  [K in keyof U & number]: U[K][C];
+}>;
 
 // prettier-ignore
-export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends "input" | "output"> =
+export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends 'input' | 'output'> =
   U extends readonly AnyShape[]
     ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
     : R extends AnyShape ? R[C][] : any[];
+
+export type ToArray<T> = T extends any[] ? T : never;
 
 /**
  * The shape of an array or a tuple.
