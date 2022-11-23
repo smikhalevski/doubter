@@ -13,9 +13,9 @@ export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'outpu
  * @template U The list of united shapes.
  */
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
-  protected _typeIssueFactory;
   protected _buckets;
   protected _anyBucket;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.
@@ -35,9 +35,9 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
 
     const { buckets, anyBucket } = createUnionBuckets(shapes);
 
-    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
     this._buckets = buckets;
     this._anyBucket = anyBucket;
+    this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -88,7 +88,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     }
 
     if (index === bucketLength) {
-      return [this._typeIssueFactory(input, options, issues)];
+      return [this._issueFactory(input, options, issues)];
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
@@ -110,7 +110,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
 
     if (bucket === null) {
-      return Promise.resolve([this._typeIssueFactory(input, options, null)]);
+      return Promise.resolve([this._issueFactory(input, options, null)]);
     }
 
     const bucketLength = bucket.length;
@@ -129,7 +129,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
             issues = concatIssues(issues, result);
 
             if (index === bucketLength) {
-              return [this._typeIssueFactory(input, options, issues)];
+              return [this._issueFactory(input, options, issues)];
             }
             return nextShape();
           }

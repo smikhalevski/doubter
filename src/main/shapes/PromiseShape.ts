@@ -9,7 +9,7 @@ import { CODE_TYPE, MESSAGE_ERROR_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_PROMISE } fr
  * @template S The shape of the resolved value.
  */
 export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>, Promise<S['output']>> {
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode PromiseShape} instance.
@@ -21,7 +21,7 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
   constructor(readonly shape: S, options?: TypeConstraintOptions | Message) {
     super(objectTypes, true);
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
+    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<Promise<S['output']>> {
@@ -30,7 +30,7 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
     if (!(input instanceof Promise)) {
-      return Promise.resolve([this._typeIssueFactory(input, options)]);
+      return Promise.resolve([this._issueFactory(input, options)]);
     }
 
     const { _applyChecks } = this;

@@ -30,7 +30,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   InferRecord<K, V, 'input'>,
   InferRecord<K, V, 'output'>
 > {
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode RecordShape} instance.
@@ -54,7 +54,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   ) {
     super(objectTypes, (keyShape != null && keyShape.async) || valueShape.async);
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
+    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
@@ -63,7 +63,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
-      return [this._typeIssueFactory(input, options)];
+      return [this._issueFactory(input, options)];
     }
 
     const { keyShape, valueShape, _applyChecks, _unsafe } = this;
@@ -134,7 +134,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve([this._issueFactory(input, options)]);
         return;
       }
 

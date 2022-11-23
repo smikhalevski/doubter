@@ -9,7 +9,7 @@ import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
  * @template T Allowed values.
  */
 export class EnumShape<T> extends Shape<T> {
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode EnumShape} instance.
@@ -20,14 +20,14 @@ export class EnumShape<T> extends Shape<T> {
   constructor(readonly values: readonly T[], options?: TypeConstraintOptions | Message) {
     super(values.map(Shape.typeof));
 
-    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
+    this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
   apply(input: any, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 
     if (!this.values.includes(input)) {
-      return [this._typeIssueFactory(input, options)];
+      return [this._issueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

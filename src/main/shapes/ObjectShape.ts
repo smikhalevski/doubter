@@ -71,8 +71,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   protected _valueShapes: Shape[];
   protected _typePredicate = isObjectLike;
   protected _typeIssueFactory;
-  protected _exactIssueFactory: ((input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue) | null =
-    null;
+  protected _exactIssueFactory?: (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue;
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.
