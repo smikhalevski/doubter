@@ -190,7 +190,7 @@ d.number().gt(5);
 You can add as many checks as you want to the shape. They are executed the same order they are defined.
 
 ```ts
-d.string().min(5).match(/a/).parse('foo');
+d.string().min(5).regex(/a/).parse('foo');
 ```
 
 By default, if a check returned an issue, all consequent checks are ignored. In the example above, a validation error
@@ -210,7 +210,7 @@ would be thrown with a single issue:
 If you want a check to be executed even if the previous check failed, pass the `unsafe` option.
 
 ```ts
-d.string().min(5).match(/bar/, { unsafe: true }).parse('foo', { verbose: true });
+d.string().min(5).regex(/bar/, { unsafe: true }).parse('foo', { verbose: true });
 ```
 
 This would throw a validation error with the following issues.
@@ -229,7 +229,7 @@ This would throw a validation error with the following issues.
     code: 'stringRegex',
     path: [],
     input: 'foo',
-    message: 'Must match the pattern /bar/',
+    message: 'Must regex the pattern /bar/',
     param: /bar/,
     meta: undefied
   },
@@ -1033,7 +1033,7 @@ d.string().length(5);
 Constrain a string with a regular expression:
 
 ```ts
-d.string().match(/foo|bar/);
+d.string().regex(/foo|bar/);
 ```
 
 ## `tuple`

@@ -82,7 +82,7 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  match(re: RegExp, options?: ConstraintOptions | Message): this {
+  regex(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
     return appendCheck(this, CODE_STRING_REGEX, options, re, (input, options) => {
