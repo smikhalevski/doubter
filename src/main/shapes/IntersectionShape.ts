@@ -5,7 +5,7 @@ import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 
 // prettier-ignore
-export type InferIntersection<U extends readonly AnyShape[], C extends "input" | "output"> =
+export type InferIntersection<U extends readonly AnyShape[], C extends 'input' | 'output'> =
   UnionToIntersection<InferUnion<U, C>>;
 
 export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
@@ -14,12 +14,12 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
   InferIntersection<U, 'input'>,
   InferIntersection<U, 'output'>
 > {
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   constructor(readonly shapes: U, options?: TypeConstraintOptions | Message) {
     super([], isAsyncShapes(shapes));
 
-    this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
+    this._issueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<InferIntersection<U, 'output'>> {
@@ -55,7 +55,7 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     if (outputs.length !== shapesLength) {
       outputs.push(input);
     }
-    return intersectOutputs(input, outputs, this._typeIssueFactory, options);
+    return intersectOutputs(input, outputs, this._issueFactory, options);
   }
 
   applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferIntersection<U, 'output'>>> {
@@ -98,7 +98,7 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
       if (outputs.length !== shapesLength) {
         outputs.push(input);
       }
-      return intersectOutputs(input, outputs, this._typeIssueFactory, options);
+      return intersectOutputs(input, outputs, this._issueFactory, options);
     });
   }
 }
@@ -108,7 +108,7 @@ const NEVER = Symbol();
 function intersectOutputs(
   input: unknown,
   outputs: any[],
-  typeIssueFactory: (input: unknown, options: Readonly<ParseOptions>) => Issue,
+  issueFactory: (input: unknown, options: Readonly<ParseOptions>) => Issue,
   options: ParseOptions
 ): ApplyResult {
   const outputsLength = outputs.length;
@@ -119,7 +119,7 @@ function intersectOutputs(
     value = intersectPair(value, outputs[i]);
 
     if (value === NEVER) {
-      return [typeIssueFactory(input, options)];
+      return [issueFactory(input, options)];
     }
   }
 

@@ -7,7 +7,7 @@ import { CODE_NEVER, MESSAGE_NEVER } from '../constants';
  * The shape that doesn't match any input.
  */
 export class NeverShape extends Shape<never> {
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode NeverShape} instance.
@@ -17,10 +17,10 @@ export class NeverShape extends Shape<never> {
   constructor(options?: TypeConstraintOptions | Message) {
     super(neverTypes);
 
-    this._typeIssueFactory = createIssueFactory(CODE_NEVER, MESSAGE_NEVER, options, undefined);
+    this._issueFactory = createIssueFactory(CODE_NEVER, MESSAGE_NEVER, options, undefined);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<never> {
-    return [this._typeIssueFactory(input, options)];
+    return [this._issueFactory(input, options)];
   }
 }

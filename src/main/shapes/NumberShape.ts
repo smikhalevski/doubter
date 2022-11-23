@@ -23,7 +23,7 @@ import {
  * The shape of the finite number.
  */
 export class NumberShape extends Shape<number> {
-  protected _typeIssueFactory;
+  protected _issueFactory;
   protected _typePredicate = Number.isFinite;
 
   /**
@@ -34,7 +34,7 @@ export class NumberShape extends Shape<number> {
   constructor(options?: TypeConstraintOptions | Message) {
     super(numberTypes);
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
+    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
   }
 
   /**
@@ -151,7 +151,7 @@ export class NumberShape extends Shape<number> {
   integer(options?: ConstraintOptions | Message): this {
     const shape = this._clone();
 
-    shape._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
+    shape._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
     shape._typePredicate = Number.isInteger;
 
     return shape;
@@ -161,7 +161,7 @@ export class NumberShape extends Shape<number> {
     const { _typePredicate, _applyChecks } = this;
 
     if (!_typePredicate(input)) {
-      return [this._typeIssueFactory(input, options)];
+      return [this._issueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

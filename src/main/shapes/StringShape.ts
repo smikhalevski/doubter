@@ -17,7 +17,7 @@ import {
  * The shape that constrains the input as a string.
  */
 export class StringShape extends Shape<string> {
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode StringShape} instance.
@@ -27,7 +27,7 @@ export class StringShape extends Shape<string> {
   constructor(options?: TypeConstraintOptions | Message) {
     super(stringTypes);
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
+    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
   }
 
   /**
@@ -82,7 +82,7 @@ export class StringShape extends Shape<string> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  match(re: RegExp, options?: ConstraintOptions | Message): this {
+  regex(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
     return appendCheck(this, CODE_STRING_REGEX, options, re, (input, options) => {
@@ -98,7 +98,7 @@ export class StringShape extends Shape<string> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'string') {
-      return [this._typeIssueFactory(input, options)];
+      return [this._issueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

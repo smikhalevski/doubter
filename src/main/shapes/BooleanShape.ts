@@ -7,7 +7,7 @@ import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../constants';
  * The shape of the bigint value.
  */
 export class BooleanShape extends Shape<boolean> {
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode BooleanShape} instance.
@@ -17,14 +17,14 @@ export class BooleanShape extends Shape<boolean> {
   constructor(options?: TypeConstraintOptions | Message) {
     super(booleanTypes);
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
+    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {
-      return [this._typeIssueFactory(input, options)];
+      return [this._issueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

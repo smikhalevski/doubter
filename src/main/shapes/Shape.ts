@@ -256,6 +256,8 @@ export class Shape<I = any, O = I> {
    * and a new check is appended to the list of shape checks. If the key is `undefined` then the `cb` identity is used
    * as a key.
    *
+   * If check callback returns an empty array, it is considered that no issues have occurred.
+   *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of this shape with the check added.
@@ -932,7 +934,7 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
  * @template T The excluded value.
  */
 export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>> {
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   /**
    * Creates the new {@linkcode ExcludeShape} instance.
@@ -956,17 +958,17 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
   ) {
     super(shape.inputTypes, shape.async);
 
-    this._typeIssueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
+    this._issueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
   }
 
   apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
-    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
+    const { excludedValue, _issueFactory, _applyChecks } = this;
 
     let issues;
     let output = input;
 
     if (isEqual(input, excludedValue)) {
-      return [_typeIssueFactory(input, options)];
+      return [_issueFactory(input, options)];
     }
 
     const result = this.shape.apply(input, options);
@@ -978,7 +980,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       output = result.value;
 
       if (isEqual(output, excludedValue)) {
-        return [_typeIssueFactory(input, options)];
+        return [_issueFactory(input, options)];
       }
     }
 
@@ -997,10 +999,10 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       return super.applyAsync(input, options);
     }
 
-    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
+    const { excludedValue, _issueFactory, _applyChecks } = this;
 
     if (isEqual(input, excludedValue)) {
-      return Promise.resolve([_typeIssueFactory(input, options)]);
+      return Promise.resolve([_issueFactory(input, options)]);
     }
 
     return this.shape.applyAsync(input, options).then(result => {
@@ -1014,7 +1016,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
         output = result.value;
 
         if (isEqual(output, excludedValue)) {
-          return [_typeIssueFactory(input, options)];
+          return [_issueFactory(input, options)];
         }
       }
 

@@ -25,13 +25,17 @@ import {
 
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 
-export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> = { [K in keyof U]: U[K][C] };
+export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> = ToArray<{
+  [K in keyof U & number]: U[K][C];
+}>;
 
 // prettier-ignore
-export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends "input" | "output"> =
+export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends 'input' | 'output'> =
   U extends readonly AnyShape[]
     ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
     : R extends AnyShape ? R[C][] : any[];
+
+export type ToArray<T> = T extends any[] ? T : never;
 
 /**
  * The shape of an array or a tuple.
@@ -44,7 +48,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   InferArray<U, R, 'output'>
 > {
   protected _options;
-  protected _typeIssueFactory;
+  protected _issueFactory;
 
   /**
    * Creates a new {@linkcode ArrayShape} instance.
@@ -69,9 +73,9 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     this._options = options;
 
     if (shapes !== null && restShape === null) {
-      this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
+      this._issueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
     } else {
-      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
+      this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
     }
   }
 
@@ -160,7 +164,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       ((inputLength = input.length),
       shapes !== null && inputLength !== (shapesLength = shapes.length) && restShape === null)
     ) {
-      return [this._typeIssueFactory(input, options)];
+      return [this._issueFactory(input, options)];
     }
 
     let issues: Issue[] | null = null;
@@ -219,7 +223,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         ((inputLength = input.length),
         shapes !== null && inputLength !== (shapesLength = shapes.length) && restShape === null)
       ) {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve([this._issueFactory(input, options)]);
         return;
       }
 

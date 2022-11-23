@@ -51,7 +51,7 @@ describe('StringShape', () => {
   });
 
   test('raises if string does not match a pattern', () => {
-    expect(new StringShape().match(/a+/).try('bbb')).toEqual({
+    expect(new StringShape().regex(/a+/).try('bbb')).toEqual({
       ok: false,
       issues: [
         {
@@ -64,7 +64,7 @@ describe('StringShape', () => {
         },
       ],
     });
-    expect(new StringShape().match(/a+/).parse('aaa')).toBe('aaa');
+    expect(new StringShape().regex(/a+/).parse('aaa')).toBe('aaa');
   });
 
   test('overrides message for type issue', () => {
@@ -89,7 +89,7 @@ describe('StringShape', () => {
   });
 
   test('raises multiple issues in verbose mode', () => {
-    expect(new StringShape({}).min(3).match(/aaaa/, { unsafe: true }).try('aa', { verbose: true })).toEqual({
+    expect(new StringShape({}).min(3).regex(/aaaa/, { unsafe: true }).try('aa', { verbose: true })).toEqual({
       ok: false,
       issues: [
         {
@@ -113,7 +113,7 @@ describe('StringShape', () => {
   });
 
   test('raises a single issue', () => {
-    expect(new StringShape().min(3).match(/aaaa/, { unsafe: true }).try('aa')).toEqual({
+    expect(new StringShape().min(3).regex(/aaaa/, { unsafe: true }).try('aa')).toEqual({
       ok: false,
       issues: [
         {
