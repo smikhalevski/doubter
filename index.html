@@ -1,25 +1,47 @@
-<!DOCTYPE html><html class="default"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Doubter - v0.2.0</title><meta name="description" content="Documentation for Doubter - v0.2.0"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.body.classList.add(localStorage.getItem("tsd-theme") || "os")</script><header><div class="tsd-page-toolbar"><div class="container"><div class="table-wrap"><div class="table-cell" id="tsd-search" data-base="."><div class="field"><label for="tsd-search-field" class="tsd-widget search no-caption">Search</label><input type="text" id="tsd-search-field"/></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">Doubter - v0.2.0</a></div><div class="table-cell" id="tsd-widgets"><div id="tsd-filter"><a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a><div class="tsd-filter-group"><div class="tsd-select" id="tsd-filter-visibility"><span class="tsd-select-label">All</span><ul class="tsd-select-list"><li data-value="public">Public</li><li data-value="protected">Public/Protected</li><li data-value="private" class="selected">All</li></ul></div> <input type="checkbox" id="tsd-filter-inherited" checked/><label class="tsd-widget" for="tsd-filter-inherited">Inherited</label><input type="checkbox" id="tsd-filter-externals" checked/><label class="tsd-widget" for="tsd-filter-externals">Externals</label></div></div><a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a></div></div></div></div><div class="tsd-page-title"><div class="container"><h1>Doubter - v0.2.0 </h1></div></div></header><div class="container container-main"><div class="row"><div class="col-8 col-content"><div class="tsd-panel tsd-typography">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Doubter - v1.0.0</title><meta name="description" content="Documentation for Doubter - v1.0.0"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<div class="tsd-toolbar-contents container">
+<div class="table-cell" id="tsd-search" data-base=".">
+<div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
+<div class="field">
+<div id="tsd-toolbar-links"></div></div>
+<ul class="results">
+<li class="state loading">Preparing search index...</li>
+<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">Doubter - v1.0.0</a></div>
+<div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
+<div class="container container-main">
+<div class="col-8 col-content">
+<div class="tsd-page-title">
+<h2>Doubter - v1.0.0</h2></div>
+<div class="tsd-panel tsd-typography">
 <a href="#doubterensp🤔ensp" id="doubterensp🤔ensp" style="color: inherit; text-decoration: none;">
   <h1>Doubter&ensp;🤔&ensp;<a href="https://github.com/smikhalevski/doubter/actions/workflows/master.yml"><img src="https://github.com/smikhalevski/doubter/actions/workflows/master.yml/badge.svg?branch=master&event=push" alt="build"></a></h1>
 </a>
-<p>No-hassle runtime type validation and parsing.</p>
+<p>No-hassle runtime validation and transformation.</p>
 <ul>
+<li>TypeScript first;</li>
+<li>Sync and async validation and transformation flows;</li>
 <li><a href="#performance">High performance and low memory consumption</a>;</li>
-<li><a href="https://bundlephobia.com/result?p=doubter">Just 4 kB gzipped</a> and tree-shakable.</li>
+<li><a href="https://bundlephobia.com/result?p=doubter">Just 7 kB gzipped</a> and tree-shakable;</li>
 </ul>
+<pre><code class="language-ts"><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">*</span><span class="hl-1"> </span><span class="hl-0">as</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1"> </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-4">&#39;doubter&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">userShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">name:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">optional</span><span class="hl-1">(</span><span class="hl-4">&#39;Anonymous&#39;</span><span class="hl-1">),</span><br/><span class="hl-1">  </span><span class="hl-3">age:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">int</span><span class="hl-1">().</span><span class="hl-6">gte</span><span class="hl-1">(</span><span class="hl-7">18</span><span class="hl-1">).</span><span class="hl-6">lt</span><span class="hl-1">(</span><span class="hl-7">100</span><span class="hl-1">)</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-2">type</span><span class="hl-1"> </span><span class="hl-8">PartialUser</span><span class="hl-1"> = </span><span class="hl-2">typeof</span><span class="hl-1"> </span><span class="hl-3">userShape</span><span class="hl-1">[</span><span class="hl-4">&#39;input&#39;</span><span class="hl-1">];</span><br/><span class="hl-9">// → { age: number }</span><br/><br/><span class="hl-2">type</span><span class="hl-1"> </span><span class="hl-8">User</span><span class="hl-1"> = </span><span class="hl-2">typeof</span><span class="hl-1"> </span><span class="hl-3">userShape</span><span class="hl-1">[</span><span class="hl-4">&#39;output&#39;</span><span class="hl-1">];</span><br/><span class="hl-9">// → { name: string, age: number }</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">user</span><span class="hl-1"> = </span><span class="hl-3">userShape</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">({ </span><span class="hl-3">age:</span><span class="hl-1"> </span><span class="hl-7">21</span><span class="hl-1"> });</span><br/><span class="hl-9">// → { name: &#39;Anonymous&#39;, age: 21 }</span>
+</code></pre>
 <p>🔥&ensp;<a href="https://codesandbox.io/s/doubter-example-y5kec4"><strong>Try it on CodeSandbox</strong></a></p>
-<pre><code class="language-shell"><span class="hl-0">npm install --save-prod doubter</span>
+<pre><code class="language-shell"><span class="hl-1">npm install --save-prod doubter</span>
 </code></pre>
 <ul>
 <li><p><a href="#usage">Usage</a></p>
 <ul>
-<li><a href="#type-narrowing">Type narrowing</a></li>
-<li><a href="#type-transformations">Type transformations</a></li>
-<li><a href="#validation-errors">Validation errors</a></li>
-<li><a href="#custom-messages">Custom messages</a></li>
+<li><a href="#checks">Checks</a></li>
+<li><a href="#refinements">Refinements</a></li>
+<li><a href="#transformations">Transformations</a></li>
+<li><a href="#redirections">Redirections</a></li>
+<li><a href="#async-shapes">Async shapes</a></li>
+<li><a href="#localization">Localization</a></li>
+<li><a href="#parsing-context">Parsing context</a></li>
+<li><a href="#integrations">Integrations</a></li>
 </ul>
 </li>
-<li><p><a href="#dsl-reference">DSL reference</a></p>
+<li><p><a href="#api-reference">API reference</a></p>
 <ul>
 <li><p>Arrays<br>
 <a href="#array"><code>array</code></a>
@@ -33,6 +55,7 @@
 <li><p>Numbers<br>
 <a href="#number"><code>number</code></a>
 <a href="#integer"><code>integer</code></a>
+<a href="#integer"><code>int</code></a>
 <a href="#bigint"><code>bigint</code></a></p>
 </li>
 <li><p>Strings<br>
@@ -41,26 +64,26 @@
 <li><p>Booleans<br>
 <a href="#boolean"><code>boolean</code></a></p>
 </li>
+<li><p>Promises<br>
+<a href="#promise"><code>promise</code></a></p>
+</li>
 <li><p>Literal values<br>
-<a href="#literal"><code>literal</code></a>
-<a href="#oneof"><code>oneOf</code></a></p>
+<a href="#const"><code>const</code></a>
+<a href="#enum"><code>enum</code></a></p>
+</li>
+<li><p>Shape composition<br>
+<a href="#union"><code>union</code></a>
+<a href="#union"><code>or</code></a>
+<a href="#intersection"><code>intersection</code></a>
+<a href="#intersection"><code>and</code></a></p>
 </li>
 <li><p>Unconstrained values<br>
 <a href="#any"><code>any</code></a>
-<a href="#unknown"><code>unknown</code></a></p>
-</li>
-<li><p>Prohibited values<br>
+<a href="#unknown"><code>unknown</code></a>
 <a href="#never"><code>never</code></a></p>
 </li>
-<li><p>Optional values<br>
-<a href="#optional"><code>optional</code></a>
-<a href="#nullable"><code>nullable</code></a>
-<a href="#nullish"><code>nullish</code></a></p>
-</li>
-<li><p>Type composition<br>
-<a href="#or"><code>or</code></a></p>
-</li>
-<li><p>Recursive types<br>
+<li><p>Other<br>
+<a href="#preprocess"><code>preprocess</code></a>
 <a href="#lazy"><code>lazy</code></a></p>
 </li>
 </ul>
@@ -72,159 +95,295 @@
 <a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
   <h1>Usage</h1>
 </a>
-<p>Doubter provides a DSL API to compose a runtime type definition that can be used to validate arbitrary data.</p>
-<pre><code class="language-ts"><span class="hl-1">import</span><span class="hl-0"> </span><span class="hl-2">*</span><span class="hl-0"> </span><span class="hl-1">as</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0"> </span><span class="hl-1">from</span><span class="hl-0"> </span><span class="hl-4">&#39;doubter&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">myType</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">name:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">().</span><span class="hl-6">min</span><span class="hl-0">(</span><span class="hl-7">1</span><span class="hl-0">),</span><br/><span class="hl-0">  </span><span class="hl-3">age:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">().</span><span class="hl-6">min</span><span class="hl-0">(</span><span class="hl-7">18</span><span class="hl-0">).</span><span class="hl-6">max</span><span class="hl-0">(</span><span class="hl-7">100</span><span class="hl-0">)</span><br/><span class="hl-0">});</span>
+<p>Doubter provides an API to compose runtime shapes that validate and transform data. Shapes can be treated as pipelines
+that have an input and an output. The <code>Shape</code> type may have zero, one or two parameters.</p>
+<ul>
+<li><code>Shape&lt;I, O&gt;</code> is a shape that has an input of the type <code>I</code> and output of the type <code>O</code>.</li>
+<li><code>Shape&lt;T&gt;</code> is a shortcut for <code>Shape&lt;T, T&gt;</code>.</li>
+<li><code>Shape</code> is a shortcut for <code>Shape&lt;any, any&gt;</code>.</li>
+</ul>
+<p>For example, consider a shape that ensures that an input value is a string.</p>
+<pre><code class="language-ts"><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">*</span><span class="hl-1"> </span><span class="hl-0">as</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1"> </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-4">&#39;doubter&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;string&gt;</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → &#39;foo&#39;</span>
 </code></pre>
-<p>Infer the type from the definition:</p>
-<pre><code class="language-ts"><span class="hl-1">import</span><span class="hl-0"> { </span><span class="hl-3">InferType</span><span class="hl-0"> } </span><span class="hl-1">from</span><span class="hl-0"> </span><span class="hl-4">&#39;doubter&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-2">type</span><span class="hl-0"> </span><span class="hl-8">MyType</span><span class="hl-0"> = </span><span class="hl-8">InferType</span><span class="hl-0">&lt;</span><span class="hl-2">typeof</span><span class="hl-0"> </span><span class="hl-3">myType</span><span class="hl-0">&gt;;</span><br/><span class="hl-9">// → Type&lt;{ name: string, age: number }&gt;</span>
+<p>If an input value isn&#39;t a string, a <code>ValidationError</code> is thrown.</p>
+<pre><code class="language-ts"><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-7">42</span><span class="hl-1">);</span><br/><span class="hl-9">// → throws a ValidationError</span>
 </code></pre>
-<p>Validate the value using the type definition:</p>
-<pre><code class="language-ts"><span class="hl-3">myType</span><span class="hl-0">.</span><span class="hl-6">validate</span><span class="hl-0">({ </span><span class="hl-3">age:</span><span class="hl-0"> </span><span class="hl-7">5</span><span class="hl-0"> });</span><br/><span class="hl-9">// → [{path: [&#39;name&#39;], message: &#39;Must be a string&#39;, …}, …]</span>
+<p>Each error instance has <code>issues</code> property that contains issues that occurred during parsing.</p>
+<pre><code class="language-ts"><span class="hl-1">[{</span><br/><span class="hl-1">  </span><span class="hl-3">code:</span><span class="hl-1"> </span><span class="hl-4">&#39;type&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">path:</span><span class="hl-1"> [],</span><br/><span class="hl-1">  </span><span class="hl-3">input:</span><span class="hl-1"> </span><span class="hl-7">42</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">message:</span><span class="hl-1"> </span><span class="hl-4">&#39;Must be a string&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">param:</span><span class="hl-1"> </span><span class="hl-4">&#39;string&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">meta:</span><span class="hl-1"> </span><span class="hl-3">undefied</span><br/><span class="hl-1">}]</span>
 </code></pre>
-
-<a href="#type-narrowing" id="type-narrowing" style="color: inherit; text-decoration: none;">
-  <h2>Type narrowing</h2>
-</a>
-<p>The type of each type definition can be
-<a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html#using-type-predicates">narrowed using a type predicate</a>:</p>
-<pre><code class="language-ts"><span class="hl-2">function</span><span class="hl-0"> </span><span class="hl-6">isFooOrBar</span><span class="hl-0">(</span><span class="hl-3">input</span><span class="hl-0">: </span><span class="hl-8">string</span><span class="hl-0">): </span><span class="hl-3">input</span><span class="hl-0"> </span><span class="hl-2">is</span><span class="hl-0"> </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-0"> | </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-1">return</span><span class="hl-0"> </span><span class="hl-3">input</span><span class="hl-0"> === </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-0"> || </span><span class="hl-3">input</span><span class="hl-0"> === </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-0">;</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">().</span><span class="hl-6">narrow</span><span class="hl-0">(</span><span class="hl-3">isFooOrBar</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;&#39;foo&#39; | &#39;bar&#39;&gt;</span>
+<p>It isn&#39;t always convenient to write a try-catch block to handle a validation error. Use <code>try</code> method in such cases.</p>
+<pre><code class="language-ts"><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">try</span><span class="hl-1">(</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → { ok: true, value: &#39;foo&#39; }</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">try</span><span class="hl-1">(</span><span class="hl-7">42</span><span class="hl-1">);</span><br/><span class="hl-9">// → { ok: false, issues: [{ code: &#39;type&#39;, … }] }</span>
 </code></pre>
-<p>You can use a boolean predicate to validate a specific condition:</p>
-<pre><code class="language-ts"><span class="hl-2">function</span><span class="hl-0"> </span><span class="hl-6">isEven</span><span class="hl-0">(</span><span class="hl-3">input</span><span class="hl-0">: </span><span class="hl-8">number</span><span class="hl-0">): </span><span class="hl-8">boolean</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-1">return</span><span class="hl-0"> </span><span class="hl-3">input</span><span class="hl-0"> &amp; </span><span class="hl-7">1</span><span class="hl-0"> === </span><span class="hl-7">0</span><span class="hl-0">;</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">().</span><span class="hl-6">narrow</span><span class="hl-0">(</span><span class="hl-3">isEven</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;number&gt;</span>
+<p>Sometimes you don&#39;t care about issues at all, and want a default value to be returned if things go south:</p>
+<pre><code class="language-ts"><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parseOrDefault</span><span class="hl-1">(</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → &#39;foo&#39;</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parseOrDefault</span><span class="hl-1">(</span><span class="hl-7">42</span><span class="hl-1">, </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → &#39;bar&#39;</span>
 </code></pre>
-
-<a href="#type-transformations" id="type-transformations" style="color: inherit; text-decoration: none;">
-  <h2>Type transformations</h2>
-</a>
-<p>You can perform custom type transformations.</p>
-<pre><code class="language-ts"><span class="hl-2">function</span><span class="hl-0"> </span><span class="hl-6">toFixed</span><span class="hl-0">(</span><span class="hl-3">input</span><span class="hl-0">: </span><span class="hl-8">number</span><span class="hl-0">): </span><span class="hl-8">string</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-1">return</span><span class="hl-0"> </span><span class="hl-3">input</span><span class="hl-0">.</span><span class="hl-6">toFixed</span><span class="hl-0">(</span><span class="hl-7">2</span><span class="hl-0">);</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">().</span><span class="hl-6">transform</span><span class="hl-0">(</span><span class="hl-3">toFixed</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;string&gt;</span>
+<p>You can infer the input and output types of the shape:</p>
+<pre><code class="language-ts"><span class="hl-2">type</span><span class="hl-1"> </span><span class="hl-8">MyInput</span><span class="hl-1"> = </span><span class="hl-2">typeof</span><span class="hl-1"> </span><span class="hl-3">myShape</span><span class="hl-1">[</span><span class="hl-4">&#39;input&#39;</span><span class="hl-1">];</span><br/><br/><span class="hl-2">type</span><span class="hl-1"> </span><span class="hl-8">MyOutput</span><span class="hl-1"> = </span><span class="hl-2">typeof</span><span class="hl-1"> </span><span class="hl-3">myShape</span><span class="hl-1">[</span><span class="hl-4">&#39;output&#39;</span><span class="hl-1">];</span>
 </code></pre>
 
-<a href="#validation-errors" id="validation-errors" style="color: inherit; text-decoration: none;">
-  <h2>Validation errors</h2>
+<a href="#checks" id="checks" style="color: inherit; text-decoration: none;">
+  <h2>Checks</h2>
 </a>
-<p>If you encounter an error during a <a href="#type-narrowing">narrowing</a> or a <a href="#type-transformations">transformation</a>, throw
-a <code>ValidationError</code> with an array of associated issues:</p>
-<pre><code class="language-ts"><span class="hl-1">import</span><span class="hl-0"> </span><span class="hl-2">*</span><span class="hl-0"> </span><span class="hl-1">as</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0"> </span><span class="hl-1">from</span><span class="hl-0"> </span><span class="hl-4">&#39;doubter&#39;</span><span class="hl-0">;</span><br/><span class="hl-1">import</span><span class="hl-0"> { </span><span class="hl-3">ValidationError</span><span class="hl-0"> } </span><span class="hl-1">from</span><span class="hl-0"> </span><span class="hl-4">&#39;doubter&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-2">function</span><span class="hl-0"> </span><span class="hl-6">toNumber</span><span class="hl-0">(</span><span class="hl-3">input</span><span class="hl-0">: </span><span class="hl-8">any</span><span class="hl-0">): </span><span class="hl-8">number</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">output</span><span class="hl-0"> = +</span><span class="hl-3">input</span><span class="hl-0">;</span><br/><br/><span class="hl-0">  </span><span class="hl-1">if</span><span class="hl-0"> (</span><span class="hl-6">isNaN</span><span class="hl-0">(</span><span class="hl-3">output</span><span class="hl-0">)) {</span><br/><span class="hl-0">    </span><span class="hl-1">throw</span><span class="hl-0"> </span><span class="hl-2">new</span><span class="hl-0"> </span><span class="hl-6">ValidationError</span><span class="hl-0">([</span><br/><span class="hl-0">      {</span><br/><span class="hl-0">        </span><span class="hl-3">code:</span><span class="hl-0"> </span><span class="hl-4">&#39;nan&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">        </span><span class="hl-3">path:</span><span class="hl-0"> [],</span><br/><span class="hl-0">        </span><span class="hl-3">input:</span><span class="hl-0"> </span><span class="hl-3">input</span><span class="hl-0">,</span><br/><span class="hl-0">        </span><span class="hl-3">message:</span><span class="hl-0"> </span><span class="hl-4">&#39;Must be a number&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">      }</span><br/><span class="hl-0">    ]);</span><br/><span class="hl-0">  }</span><br/><br/><span class="hl-0">  </span><span class="hl-1">return</span><span class="hl-0"> </span><span class="hl-3">output</span><span class="hl-0">;</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">any</span><span class="hl-0">().</span><span class="hl-6">transform</span><span class="hl-0">(</span><span class="hl-3">toNumber</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;number&gt;</span>
+<p>Checks allow constraining the input value beyond type assertions. For example, if you want to constrain an input number
+to be greater than 5:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">check</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-0">if</span><span class="hl-1"> (</span><span class="hl-3">val</span><span class="hl-1"> &lt;= </span><span class="hl-7">5</span><span class="hl-1">) {</span><br/><span class="hl-1">    </span><span class="hl-0">return</span><span class="hl-1"> { </span><span class="hl-3">code:</span><span class="hl-1"> </span><span class="hl-4">&#39;woops&#39;</span><span class="hl-1"> };</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;number&gt;</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-7">10</span><span class="hl-1">);</span><br/><span class="hl-9">// → 10</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">);</span><br/><span class="hl-9">// → throws a ValidationError</span>
+</code></pre>
+<p>A check callback receives an input value and returns an issue or an array of issues if the value isn&#39;t valid. If value
+is valid, a check callback must return <code>null</code> or <code>undefined</code>.</p>
+<p>Most shapes have a set of built-in checks. The check we&#39;ve just implemented is called <code>gt</code> (greater than):</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">gt</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span>
+</code></pre>
+<p>You can add as many checks as you want to the shape. They are executed the same order they are defined.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">min</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">).</span><span class="hl-6">regex</span><span class="hl-1">(</span><span class="hl-10">/a/</span><span class="hl-1">).</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">);</span>
+</code></pre>
+<p>By default, if a check returned an issue, all consequent checks are ignored. In the example above, a validation error
+would be thrown with a single issue:</p>
+<pre><code class="language-ts"><span class="hl-1">[{</span><br/><span class="hl-1">  </span><span class="hl-3">code:</span><span class="hl-1"> </span><span class="hl-4">&#39;stringMinLength&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">path:</span><span class="hl-1"> [],</span><br/><span class="hl-1">  </span><span class="hl-3">input:</span><span class="hl-1"> </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">message:</span><span class="hl-1"> </span><span class="hl-4">&#39;Must have the minimum length of 5&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">param:</span><span class="hl-1"> </span><span class="hl-4">&#39;string&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">meta:</span><span class="hl-1"> </span><span class="hl-3">undefied</span><br/><span class="hl-1">}]</span>
+</code></pre>
+<p>If you want a check to be executed even if the previous check failed, pass the <code>unsafe</code> option.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">min</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">).</span><span class="hl-6">regex</span><span class="hl-1">(</span><span class="hl-10">/bar/</span><span class="hl-1">, { </span><span class="hl-3">unsafe:</span><span class="hl-1"> </span><span class="hl-2">true</span><span class="hl-1"> }).</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">, { </span><span class="hl-3">verbose:</span><span class="hl-1"> </span><span class="hl-2">true</span><span class="hl-1"> });</span>
+</code></pre>
+<p>This would throw a validation error with the following issues.</p>
+<pre><code class="language-ts"><span class="hl-1">[</span><br/><span class="hl-1">  {</span><br/><span class="hl-1">    </span><span class="hl-3">code:</span><span class="hl-1"> </span><span class="hl-4">&#39;stringMinLength&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-3">path:</span><span class="hl-1"> [],</span><br/><span class="hl-1">    </span><span class="hl-3">input:</span><span class="hl-1"> </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-3">message:</span><span class="hl-1"> </span><span class="hl-4">&#39;Must have the minimum length of 5&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-3">param:</span><span class="hl-1"> </span><span class="hl-4">&#39;string&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-3">meta:</span><span class="hl-1"> </span><span class="hl-3">undefied</span><br/><span class="hl-1">  },</span><br/><span class="hl-1">  {</span><br/><span class="hl-1">    </span><span class="hl-3">code:</span><span class="hl-1"> </span><span class="hl-4">&#39;stringRegex&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-3">path:</span><span class="hl-1"> [],</span><br/><span class="hl-1">    </span><span class="hl-3">input:</span><span class="hl-1"> </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-3">message:</span><span class="hl-1"> </span><span class="hl-4">&#39;Must regex the pattern /bar/&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-3">param:</span><span class="hl-10"> /bar/</span><span class="hl-1">,</span><br/><span class="hl-1">    </span><span class="hl-3">meta:</span><span class="hl-1"> </span><span class="hl-3">undefied</span><br/><span class="hl-1">  },</span><br/><span class="hl-1">]</span>
+</code></pre>
+<p>Doubter halts parsing and raises an error as soon as the first issue was encountered. Sometimes you may want to collect
+all issues that prevent input from being successfully parsed. To do this, pass a <code>verbose</code> option as seen in the example
+above.</p>
+<p>At this point you may be wondering what is that <code>meta</code> field of the issue object anyway? You can pass a <code>meta</code> option to
+any built-in check, and it would be added to an issue.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">gt</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">, { </span><span class="hl-3">meta:</span><span class="hl-1"> </span><span class="hl-4">&#39;Any useful data here&#39;</span><span class="hl-1"> });</span>
 </code></pre>
 
-<a href="#custom-messages" id="custom-messages" style="color: inherit; text-decoration: none;">
-  <h2>Custom messages</h2>
+<a href="#refinements" id="refinements" style="color: inherit; text-decoration: none;">
+  <h2>Refinements</h2>
 </a>
-<p>Many of the DSL methods support an <code>options</code> argument. You can use it to pass a customized message and metadata that are
-attached to an issue:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">array</span><span class="hl-0">({ </span><span class="hl-3">message:</span><span class="hl-0"> </span><span class="hl-4">&#39;Expected array&#39;</span><span class="hl-0"> }).</span><span class="hl-6">min</span><span class="hl-0">(</span><span class="hl-7">3</span><span class="hl-0">, { </span><span class="hl-3">message:</span><span class="hl-0"> </span><span class="hl-4">&#39;Not enough&#39;</span><span class="hl-0"> })</span>
+<p>Refinements are a simplified checks that use a predicate to validate an input. For example, the shape below would raise
+an issue if the input string is less than three characters long.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">refine</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-3">val</span><span class="hl-1">.</span><span class="hl-3">length</span><span class="hl-1"> &gt;= </span><span class="hl-7">3</span><span class="hl-1">)</span><br/><span class="hl-9">// → Shape&lt;string&gt;</span>
+</code></pre>
+<p>You can also use refinements to <a href="https://www.typescriptlang.org/docs/handbook/2/narrowing.html">narrow</a> the output type
+of the shape:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">refine</span><span class="hl-1">((</span><span class="hl-3">val</span><span class="hl-1">): </span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">is</span><span class="hl-1"> </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1"> | </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-3">val</span><span class="hl-1"> === </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1"> || </span><span class="hl-3">val</span><span class="hl-1"> === </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1">)</span><br/><span class="hl-9">// → Shape&lt;string, &#39;foo&#39; | &#39;bar&#39;&gt;</span>
 </code></pre>
 
-<a href="#dsl-reference" id="dsl-reference" style="color: inherit; text-decoration: none;">
-  <h1>DSL reference</h1>
+<a href="#transformations" id="transformations" style="color: inherit; text-decoration: none;">
+  <h2>Transformations</h2>
 </a>
-<p>🔎<a href="https://smikhalevski.github.io/doubter/">API documentation is available here.</a></p>
+<p>Shapes can transform values. Let&#39;s consider a shape that takes a string as an input and converts it to number.</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-6">parseInt</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1">, </span><span class="hl-7">10</span><span class="hl-1">));</span><br/><span class="hl-9">// → Shape&lt;string, number&gt;</span>
+</code></pre>
+<p>This shape ensures that the input value is a string and passes it to a transformation callback.</p>
+<pre><code class="language-ts"><span class="hl-3">myShape2</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-4">&#39;42&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → 42</span>
+</code></pre>
+<p>You can throw <code>ValidationError</code> inside the transformation callback to notify parser that transformation cannot be
+successfully completed:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">output</span><span class="hl-1"> = </span><span class="hl-6">parseInt</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1">, </span><span class="hl-7">10</span><span class="hl-1">);</span><br/><br/><span class="hl-1">  </span><span class="hl-0">if</span><span class="hl-1"> (</span><span class="hl-6">isNaN</span><span class="hl-1">(</span><span class="hl-3">output</span><span class="hl-1">)) {</span><br/><span class="hl-1">    </span><span class="hl-0">throw</span><span class="hl-1"> </span><span class="hl-2">new</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">ValidationError</span><span class="hl-1">([{ </span><span class="hl-3">code:</span><span class="hl-1"> </span><span class="hl-4">&#39;woops&#39;</span><span class="hl-1"> }]);</span><br/><span class="hl-1">  }</span><br/><span class="hl-1">  </span><span class="hl-0">return</span><span class="hl-1"> </span><span class="hl-3">output</span><span class="hl-1">;</span><br/><span class="hl-1">})</span>
+</code></pre>
+
+<a href="#redirections" id="redirections" style="color: inherit; text-decoration: none;">
+  <h2>Redirections</h2>
+</a>
+<p>Redirections allow you to apply a shape to the output of another shape.</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape1</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-6">parseFloat</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1">));</span><br/><span class="hl-9">// → Shape&lt;string, number&gt;</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">muShape2</span><span class="hl-1"> = </span><span class="hl-3">myShape1</span><span class="hl-1">.</span><span class="hl-6">to</span><span class="hl-1">(</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">lt</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">).</span><span class="hl-6">gt</span><span class="hl-1">(</span><span class="hl-7">10</span><span class="hl-1">));</span><br/><span class="hl-9">// → Shape&lt;string, number&gt;</span>
+</code></pre>
+<p>Redirections are particularly useful along with transformations since the <code>transform</code> method returns a <code>TransformShape</code>
+instance that has a generic API.</p>
+
+<a href="#async-shapes" id="async-shapes" style="color: inherit; text-decoration: none;">
+  <h2>Async shapes</h2>
+</a>
+<p>Most of the time your shapes would be sync. But some transformations or promise values would make them async.</p>
+<p>Let&#39;s consider the sync transformation:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">syncShape1</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-4">&#39;Hello, &#39;</span><span class="hl-1"> + </span><span class="hl-3">val</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;string&gt;</span><br/><br/><span class="hl-3">syncShape1</span><span class="hl-1">.</span><span class="hl-3">async</span><span class="hl-1">;</span><br/><span class="hl-9">// → false</span><br/><br/><span class="hl-3">syncShape1</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-4">&#39;Jill&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → &#39;Hello, Jill&#39;</span>
+</code></pre>
+<p>The transformation callback receives and returns a string and so does <code>syncShape1</code>.</p>
+<p>Now lets return a promise from the transformation callback:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">syncShape2</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-8">Promise</span><span class="hl-1">.</span><span class="hl-6">resolve</span><span class="hl-1">(</span><span class="hl-4">&#39;Hello, &#39;</span><span class="hl-1"> + </span><span class="hl-3">val</span><span class="hl-1">));</span><br/><span class="hl-9">// → Shape&lt;string, Promise&lt;string&gt;&gt;</span><br/><br/><span class="hl-3">syncShape2</span><span class="hl-1">.</span><span class="hl-3">async</span><span class="hl-1">;</span><br/><span class="hl-9">// → false</span><br/><br/><span class="hl-3">syncShape2</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-4">&#39;Jill&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → Promise&lt;string&gt;</span>
+</code></pre>
+<p>Notice that <code>syncShape2</code> is asymmetric: it expects a string input and transforms it to a <code>Promise&lt;string&gt;</code>. <code>syncShape2</code>
+is still sync, since the transformation callback <em>synchronously wraps</em> a value in a promise.</p>
+<p>Now let&#39;s create an async shape using the async transformation:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">asyncShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transformAsync</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-8">Promise</span><span class="hl-1">.</span><span class="hl-6">resolve</span><span class="hl-1">(</span><span class="hl-4">&#39;Hello, &#39;</span><span class="hl-1"> + </span><span class="hl-3">val</span><span class="hl-1">));</span><br/><span class="hl-9">// → Shape&lt;string&gt;</span><br/><br/><span class="hl-3">asyncShape</span><span class="hl-1">.</span><span class="hl-3">async</span><span class="hl-1">;</span><br/><span class="hl-9">// → true</span><br/><br/><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-3">syncShape2</span><span class="hl-1">.</span><span class="hl-6">parseAsync</span><span class="hl-1">(</span><span class="hl-4">&#39;Jill&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → &#39;Hello, Jill&#39;</span>
+</code></pre>
+<p>Notice that <code>asyncShape</code> still transforms the input string value to output string but the transformation itself is
+async.</p>
+<p>The shape is async if it uses async transformations. Here&#39;s an async object shape:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">objShape1</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transformAsync</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-8">Promise</span><span class="hl-1">.</span><span class="hl-6">resolve</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1">))</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;{ foo: string }&gt;</span><br/><br/><span class="hl-3">objShape1</span><span class="hl-1">.</span><span class="hl-3">async</span><span class="hl-1">;</span><br/><span class="hl-9">// → true</span>
+</code></pre>
+<p>Shape also becomes async if it relies on a <a href="#promise"><code>promise</code></a> shape:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">objShape2</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">promise</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">())</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;{ foo: Promise&lt;string&gt; }&gt;</span>
+</code></pre>
+
+<a href="#localization" id="localization" style="color: inherit; text-decoration: none;">
+  <h2>Localization</h2>
+</a>
+<p>All shapes and built-in checks support custom messages:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(</span><span class="hl-4">&#39;Hey, string here&#39;</span><span class="hl-1">).</span><span class="hl-6">min</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">, </span><span class="hl-4">&#39;Too short&#39;</span><span class="hl-1">);</span>
+</code></pre>
+<p>Checks that have a param, such as <code>min</code> constraint in the example above, can use a <code>%s</code> placeholder that would be
+interpolated with the param value.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">min</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">, </span><span class="hl-4">&#39;Minimum length is %s&#39;</span><span class="hl-1">);</span>
+</code></pre>
+<p>You can pass a function as a message, then it would receive a check param, an issue code, an input value, a metadata,
+and parsing options and should return a formatted message value. The returned formatted message can be of any type.</p>
+<p>For example, when using with React you may return a JSX element:</p>
+<pre><code class="language-tsx"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">gt</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">, (</span><span class="hl-3">param</span><span class="hl-1">, </span><span class="hl-3">code</span><span class="hl-1">, </span><span class="hl-3">input</span><span class="hl-1">, </span><span class="hl-3">meta</span><span class="hl-1">, </span><span class="hl-3">options</span><span class="hl-1">) </span><span class="hl-2">=&gt;</span><span class="hl-1"> (</span><br/><span class="hl-1">  </span><span class="hl-11">&lt;</span><span class="hl-12">span</span><span class="hl-1"> </span><span class="hl-13">style</span><span class="hl-1">=</span><span class="hl-2">{</span><span class="hl-14">{ </span><span class="hl-3">color:</span><span class="hl-14"> </span><span class="hl-4">&#39;red&#39;</span><span class="hl-14"> }</span><span class="hl-2">}</span><span class="hl-11">&gt;</span><br/><span class="hl-1">    Minimum length is </span><span class="hl-2">{</span><span class="hl-3">param</span><span class="hl-2">}</span><br/><span class="hl-1">  </span><span class="hl-11">&lt;/</span><span class="hl-12">span</span><span class="hl-11">&gt;</span><br/><span class="hl-1">))</span>
+</code></pre>
+<p>All rules described above are applied to the <code>message</code> option as well:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">length</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">, { </span><span class="hl-3">message:</span><span class="hl-1"> </span><span class="hl-4">&#39;Expected length is %s&#39;</span><span class="hl-1"> })</span>
+</code></pre>
+
+<a href="#parsing-context" id="parsing-context" style="color: inherit; text-decoration: none;">
+  <h2>Parsing context</h2>
+</a>
+<p>Inside check and transform callbacks you can access options passed to the parser:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">((</span><span class="hl-3">val</span><span class="hl-1">, </span><span class="hl-3">options</span><span class="hl-1">) </span><span class="hl-2">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-0">return</span><span class="hl-1"> </span><span class="hl-2">new</span><span class="hl-1"> </span><span class="hl-3">Intl</span><span class="hl-1">.</span><span class="hl-6">NumberFormat</span><span class="hl-1">(</span><span class="hl-3">options</span><span class="hl-1">.</span><span class="hl-3">context</span><span class="hl-1">.</span><span class="hl-3">locale</span><span class="hl-1">).</span><span class="hl-6">format</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1">);</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">(</span><span class="hl-7">1000</span><span class="hl-1">, { </span><span class="hl-3">context:</span><span class="hl-1"> { </span><span class="hl-3">locale:</span><span class="hl-1"> </span><span class="hl-4">&#39;en-US&#39;</span><span class="hl-1"> } });</span><br/><span class="hl-9">// → &#39;1,000&#39;</span>
+</code></pre>
+
+<a href="#integrations" id="integrations" style="color: inherit; text-decoration: none;">
+  <h2>Integrations</h2>
+</a>
+<p>You can combine Doubter with any predicate library.</p>
+<pre><code class="language-ts"><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-2">*</span><span class="hl-1"> </span><span class="hl-0">as</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1"> </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-4">&#39;doubter&#39;</span><span class="hl-1">;</span><br/><span class="hl-0">import</span><span class="hl-1"> </span><span class="hl-3">isEmail</span><span class="hl-1"> </span><span class="hl-0">from</span><span class="hl-1"> </span><span class="hl-4">&#39;validator/lib/isEmail&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">emailShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">refine</span><span class="hl-1">(</span><span class="hl-3">isEmail</span><span class="hl-1">, </span><span class="hl-4">&#39;Must be an email&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;string&gt;</span>
+</code></pre>
+
+<a href="#api-reference" id="api-reference" style="color: inherit; text-decoration: none;">
+  <h1>API reference</h1>
+</a>
+<p>🔎 <a href="https://smikhalevski.github.io/doubter/">API documentation is available here.</a></p>
+
+<a href="#any" id="any" style="color: inherit; text-decoration: none;">
+  <h2><code>any</code></h2>
+</a>
+<p>An unconstrained value that is inferred as <code>any</code>:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">any</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;any&gt;</span>
+</code></pre>
+<p>You can use <code>any</code> to create shapes that are unconstrained at runtime but constrained at compile time:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">any</span><span class="hl-1">&lt;{ </span><span class="hl-3">foo</span><span class="hl-1">: </span><span class="hl-8">string</span><span class="hl-1"> }&gt;();</span><br/><span class="hl-9">// → Shape&lt;{ foo: string }&gt;</span>
+</code></pre>
+<p>You can create a shape that is constrained by the narrowing predicate:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">any</span><span class="hl-1">((</span><span class="hl-3">val</span><span class="hl-1">): </span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">is</span><span class="hl-1"> </span><span class="hl-8">string</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-2">typeof</span><span class="hl-1"> </span><span class="hl-3">val</span><span class="hl-1"> === </span><span class="hl-4">&#39;string&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;any, string&gt;</span>
+</code></pre>
 
 <a href="#array" id="array" style="color: inherit; text-decoration: none;">
   <h2><code>array</code></h2>
 </a>
-<p>Constrains a value to be an array of elements of a given type:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">array</span><span class="hl-0">(</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">());</span><br/><span class="hl-9">// → Type&lt;number[]&gt;</span>
+<p>Constrains a value to be an array of arbitrary elements:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">array</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;any[]&gt;</span>
+</code></pre>
+<p>Your can constrain the shape of array elements:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">array</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">());</span><br/><span class="hl-9">// → Shape&lt;number[]&gt;</span>
 </code></pre>
 <p>Constrain the array length limits:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">array</span><span class="hl-0">(</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">()).</span><span class="hl-6">min</span><span class="hl-0">(</span><span class="hl-7">1</span><span class="hl-0">).</span><span class="hl-6">max</span><span class="hl-0">(</span><span class="hl-7">10</span><span class="hl-0">);</span>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">array</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">()).</span><span class="hl-6">min</span><span class="hl-1">(</span><span class="hl-7">1</span><span class="hl-1">).</span><span class="hl-6">max</span><span class="hl-1">(</span><span class="hl-7">10</span><span class="hl-1">);</span>
 </code></pre>
 <p>You can limit both minimum and maximum array length at the same time:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">array</span><span class="hl-0">(</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">()).</span><span class="hl-6">length</span><span class="hl-0">(</span><span class="hl-7">5</span><span class="hl-0">);</span>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">array</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">()).</span><span class="hl-6">length</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span>
+</code></pre>
+<p>You can transform array values during parsing:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">array</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">parseFloat</span><span class="hl-1">));</span><br/><span class="hl-9">// → Shape&lt;string[], number[]&gt;</span>
 </code></pre>
 
-<a href="#tuple" id="tuple" style="color: inherit; text-decoration: none;">
-  <h2><code>tuple</code></h2>
+<a href="#bigint" id="bigint" style="color: inherit; text-decoration: none;">
+  <h2><code>bigint</code></h2>
 </a>
-<p>Constrains a value to be a tuple where elements at particular positions have concrete types:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">tuple</span><span class="hl-0">([</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(), </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()]);</span><br/><span class="hl-9">// → Type&lt;[string, number]&gt;</span>
+<p>Constrains a value to be a <code>BigInt</code>.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">bigint</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;bigint&gt;</span>
 </code></pre>
 
-<a href="#object" id="object" style="color: inherit; text-decoration: none;">
-  <h2><code>object</code></h2>
+<a href="#boolean" id="boolean" style="color: inherit; text-decoration: none;">
+  <h2><code>boolean</code></h2>
 </a>
-<p>Constrains a value to be an object with a set of properties:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><span class="hl-9">// → Type&lt;{ foo: string, bar: number }&gt;</span>
+<p>Constrains a value to be boolean.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">boolean</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;boolean&gt;</span>
 </code></pre>
 
-<a href="#optional-properties" id="optional-properties" style="color: inherit; text-decoration: none;">
-  <h3>Optional properties</h3>
+<a href="#const" id="const" style="color: inherit; text-decoration: none;">
+  <h2><code>const</code></h2>
 </a>
-<p>If the inferred type of the property is a union with <code>undefined</code> then the property becomes optional:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">optional</span><span class="hl-0">(</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">()),</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><span class="hl-9">// → Type&lt;{ foo?: string | undefined, bar: number }&gt;</span>
+<p>Constrains a value to be an exact value:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">const</span><span class="hl-1">(</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;&#39;foo&#39;&gt;</span>
+</code></pre>
+<p>You can use this to define <code>NaN</code> constants as well:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">const</span><span class="hl-1">(</span><span class="hl-2">NaN</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;number&gt;</span>
 </code></pre>
 
-<a href="#index-signature" id="index-signature" style="color: inherit; text-decoration: none;">
-  <h3>Index signature</h3>
+<a href="#enum" id="enum" style="color: inherit; text-decoration: none;">
+  <h2><code>enum</code></h2>
 </a>
-<p>Add an index signature to the object, so all properties that are not listed explicitly are validated with the indexer
-type:</p>
-<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">type</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><br/><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">indexType</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">or</span><span class="hl-0">([</span><br/><span class="hl-0">  </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">]);</span><br/><span class="hl-9">// → Type&lt;string | number&gt;</span><br/><br/><span class="hl-3">type</span><span class="hl-0">.</span><span class="hl-6">index</span><span class="hl-0">(</span><span class="hl-3">indexType</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;{ foo: string bar: number, [key: string]: string | number }&gt;</span>
+<p>Constrains a value to be equal to one of predefined values:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">enum</span><span class="hl-1">([</span><span class="hl-7">1</span><span class="hl-1">, </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">, </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1">]);</span><br/><span class="hl-9">// → Shape&lt;1 | &#39;foo&#39; | &#39;bar&#39;&gt;</span>
 </code></pre>
-
-<a href="#unknown-keys" id="unknown-keys" style="color: inherit; text-decoration: none;">
-  <h3>Unknown keys</h3>
-</a>
-<p>Keys that are not defined explicitly can be handled in several ways:</p>
-<ul>
-<li>constrained by the <a href="#index-signature">index signature</a>;</li>
-<li>stripped;</li>
-<li>preserved as is, this is the default behavior;</li>
-<li>prohibited.</li>
-</ul>
-<p>You can force an object to have only known keys. If an unknown key is met, a validation issue is raised.</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">}).</span><span class="hl-6">exact</span><span class="hl-0">();</span>
+<p>You can use a non-constant enum to limit the possible values:</p>
+<pre><code class="language-ts"><span class="hl-2">enum</span><span class="hl-1"> </span><span class="hl-8">Foo</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-5">BAR</span><span class="hl-1"> = </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-5">QUX</span><span class="hl-1"> = </span><span class="hl-4">&#39;qux&#39;</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">enum</span><span class="hl-1">(</span><span class="hl-3">Foo</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;Foo&gt;</span>
 </code></pre>
-<p>You can strip unknown keys, so the object is cloned and only known keys are preserved.</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">}).</span><span class="hl-6">strip</span><span class="hl-0">();</span>
-</code></pre>
-<p>You can derive a new type and override the strategy for unknown keys:</p>
-<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">type</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({ </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">() }).</span><span class="hl-6">exact</span><span class="hl-0">();</span><br/><br/><span class="hl-9">// Unknonwn keys are preserved this new type</span><br/><span class="hl-3">type</span><span class="hl-0">.</span><span class="hl-6">preserve</span><span class="hl-0">();</span>
-</code></pre>
-
-<a href="#picking-and-omitting-properties" id="picking-and-omitting-properties" style="color: inherit; text-decoration: none;">
-  <h3>Picking and omitting properties</h3>
-</a>
-<p>Picking keys from an object creates a new type that contains only listed keys:</p>
-<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">type</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><br/><span class="hl-3">type</span><span class="hl-0">.</span><span class="hl-6">pick</span><span class="hl-0">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-0">]);</span><br/><span class="hl-9">// → Type&lt;{ foo: string }&gt;</span>
-</code></pre>
-<p>Omitting keys of an object creates a new type that contains all keys except listed ones:</p>
-<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">type</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><br/><span class="hl-3">type</span><span class="hl-0">.</span><span class="hl-6">omit</span><span class="hl-0">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-0">]);</span><br/><span class="hl-9">// → Type&lt;{ bar: number }&gt;</span>
-</code></pre>
-
-<a href="#extending-objects" id="extending-objects" style="color: inherit; text-decoration: none;">
-  <h3>Extending objects</h3>
-</a>
-<p>Add new properties to the object type:</p>
-<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">type</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><br/><span class="hl-3">type</span><span class="hl-0">.</span><span class="hl-6">extend</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">qux:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">boolean</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><span class="hl-9">// → Type&lt;{ foo: string, bar: number, qux: boolean }&gt;</span>
-</code></pre>
-<p>Merge object types preserving the index signature of the left-hand type:</p>
-<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">fooType</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">foo:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><br/><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">barType</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><br/><span class="hl-3">fooType</span><span class="hl-0">.</span><span class="hl-6">extend</span><span class="hl-0">(</span><span class="hl-3">barType</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;{ foo: string, bar: number }&gt;</span>
-</code></pre>
-
-<a href="#record" id="record" style="color: inherit; text-decoration: none;">
-  <h2><code>record</code></h2>
-</a>
-<p>Constrains a value to be an object with both keys and values constrained by given types.</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">record</span><span class="hl-0">(</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(), </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">())</span><br/><span class="hl-9">// → Type&lt;{ [key: string]: number }&gt;</span>
-</code></pre>
-<p>You can pass any type that extends <code>Type&lt;string&gt;</code> as a key constraint:</p>
-<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">keyType</span><span class="hl-0"> = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">or</span><span class="hl-0">([</span><br/><span class="hl-0">  </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">literal</span><span class="hl-0">(</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-0">),</span><br/><span class="hl-0">  </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">literal</span><span class="hl-0">(</span><span class="hl-4">&#39;bar&#39;</span><span class="hl-0">)</span><br/><span class="hl-0">]);</span><br/><span class="hl-9">// → Type&lt;&#39;foo&#39; | &#39;bar&#39;&gt;</span><br/><br/><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">record</span><span class="hl-0">(</span><span class="hl-3">keyType</span><span class="hl-0">, </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">());</span><br/><span class="hl-9">// → Type&lt;{ foo: number, bar: number }&gt;</span>
+<p>Or you can use a const object:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">Foo</span><span class="hl-1"> = {</span><br/><span class="hl-1">  </span><span class="hl-3">BAR:</span><span class="hl-1"> </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-3">QUX:</span><span class="hl-1"> </span><span class="hl-4">&#39;qux&#39;</span><br/><span class="hl-1">} </span><span class="hl-0">as</span><span class="hl-1"> </span><span class="hl-2">const</span><span class="hl-1">;</span><br/><br/><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">enum</span><span class="hl-1">(</span><span class="hl-3">Foo</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;&#39;bar&#39; | &#39;qux&#39;&gt;</span>
 </code></pre>
 
 <a href="#instanceof" id="instanceof" style="color: inherit; text-decoration: none;">
   <h2><code>instanceOf</code></h2>
 </a>
 <p>Constrains a value to be an object that is an instance of a class:</p>
-<pre><code class="language-ts"><span class="hl-2">class</span><span class="hl-0"> </span><span class="hl-8">Foo</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-3">bar</span><span class="hl-0">: </span><span class="hl-8">string</span><span class="hl-0">;</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">instanceOf</span><span class="hl-0">(</span><span class="hl-3">Foo</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;Foo&gt;</span>
+<pre><code class="language-ts"><span class="hl-2">class</span><span class="hl-1"> </span><span class="hl-8">Foo</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-3">bar</span><span class="hl-1">: </span><span class="hl-8">string</span><span class="hl-1">;</span><br/><span class="hl-1">}</span><br/><br/><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">instanceOf</span><span class="hl-1">(</span><span class="hl-3">Foo</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;Foo&gt;</span>
+</code></pre>
+
+<a href="#integer" id="integer" style="color: inherit; text-decoration: none;">
+  <h2><code>integer</code></h2>
+</a>
+<p>Constrains a value to be an integer.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">integer</span><span class="hl-1">().</span><span class="hl-6">min</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;number&gt;</span><br/><br/><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">int</span><span class="hl-1">().</span><span class="hl-6">max</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;number&gt;</span>
+</code></pre>
+<p>This is a shortcut for number shape declaration:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">integer</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;number&gt;</span>
+</code></pre>
+
+<a href="#intersection" id="intersection" style="color: inherit; text-decoration: none;">
+  <h2><code>intersection</code></h2>
+</a>
+<p>Creates a shape that checks that the input value conforms to all shapes.</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">intersection</span><span class="hl-1">([</span><br/><span class="hl-1">  </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">()</span><br/><span class="hl-1">  }),</span><br/><span class="hl-1">  </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">    </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">  })</span><br/><span class="hl-1">]);</span><br/><span class="hl-9">// → Shape&lt;{ foo: string, bar: string }&gt;</span>
+</code></pre>
+<p>You can use a shorter alias <code>and</code>:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">and</span><span class="hl-1">([</span><br/><span class="hl-1">  </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">array</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">()),</span><br/><span class="hl-1">  </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">array</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">enum</span><span class="hl-1">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">, </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1">]))</span><br/><span class="hl-1">]);</span><br/><span class="hl-9">// → Shape&lt;Array&lt;&#39;foo&#39; | &#39;bar&#39;&gt;&gt;</span>
+</code></pre>
+<p>When working with objects, <a href="#extending-objects">extend objects</a> instead of intersecting them whenever possible, since
+object shapes are more performant than object intersection shapes.</p>
+<p>There&#39;s a logical difference between extended and intersected objects. Let&#39;s consider two shapes that both contain the
+same key:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape1</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">boolean</span><span class="hl-1">(),</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape2</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-9">// 🟡 Notice that the type of foo in myShape2 differs from myShape1.</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span>
+</code></pre>
+<p>Object extensions overwrite properties of the left object with properties of the right object:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">myShape1</span><span class="hl-1">.</span><span class="hl-6">extend</span><span class="hl-1">(</span><span class="hl-3">myShape2</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;{ foo: number, bar: boolean }&gt;</span>
+</code></pre>
+<p>The intersection requires the input value to conform both shapes at the same time, it&#39;s no possible since there are no
+values that can satisfy the <code>string | number</code> type. So the type of property <code>foo</code> becomes <code>never</code> and no value would be
+able to satisfy the resulting intersection shape.</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">and</span><span class="hl-1">([</span><span class="hl-3">myShape1</span><span class="hl-1">, </span><span class="hl-3">myShape2</span><span class="hl-1">]);</span><br/><span class="hl-9">// → Shape&lt;{ foo: never, bar: boolean }&gt;</span>
+</code></pre>
+
+<a href="#lazy" id="lazy" style="color: inherit; text-decoration: none;">
+  <h2><code>lazy</code></h2>
+</a>
+<p>Creates the lazy-loaded shape. For example, you can create cyclic shapes:</p>
+<pre><code class="language-ts"><span class="hl-2">type</span><span class="hl-1"> </span><span class="hl-8">MyType</span><span class="hl-1"> = </span><span class="hl-8">string</span><span class="hl-1"> | </span><span class="hl-8">MyType</span><span class="hl-1">[];</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1">: </span><span class="hl-8">Shape</span><span class="hl-1">&lt;</span><span class="hl-8">MyType</span><span class="hl-1">&gt; = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">lazy</span><span class="hl-1">(() </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">or</span><span class="hl-1">([</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-3">string</span><span class="hl-1">, </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">array</span><span class="hl-1">(</span><span class="hl-3">myShape</span><span class="hl-1">)]));</span>
+</code></pre>
+<p>Note that you must define a shape type explicitly, because it cannot be inferred.</p>
+<p>While Doubter supports cyclic types, it doesn&#39;t support cyclic data structures. The latter would cause an infinite loop
+at runtime.</p>
+
+<a href="#never" id="never" style="color: inherit; text-decoration: none;">
+  <h2><code>never</code></h2>
+</a>
+<p>A shape that always raises a validation issue regardless of an input value:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">never</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;never&gt;</span>
 </code></pre>
 
 <a href="#number" id="number" style="color: inherit; text-decoration: none;">
   <h2><code>number</code></h2>
 </a>
-<p>Constrains a floating point number.</p>
-<pre><code class="language-ts"><span class="hl-6">number</span><span class="hl-0">();</span><br/><span class="hl-9">// → Type&lt;number&gt;</span>
+<p>Constrains a finite and non-<code>NaN</code> number.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;number&gt;</span>
 </code></pre>
 
 <a href="#minimum-and-maximum-values" id="minimum-and-maximum-values" style="color: inherit; text-decoration: none;">
@@ -232,126 +391,280 @@ type:</p>
 </a>
 <p>You can limit the exclusive <code>gt</code> and inclusive <code>gte</code> minimum and the exclusive <code>lt</code> and inclusive <code>lte</code> maximum
 values:</p>
-<pre><code class="language-ts"><span class="hl-9">// The number must be greater than 5 and less then of equal to 10</span><br/><span class="hl-6">number</span><span class="hl-0">().</span><span class="hl-6">gt</span><span class="hl-0">(</span><span class="hl-7">0.5</span><span class="hl-0">).</span><span class="hl-6">lte</span><span class="hl-0">(</span><span class="hl-7">2.5</span><span class="hl-0">)</span><br/><span class="hl-9">// → Type&lt;number&gt;</span>
+<pre><code class="language-ts"><span class="hl-9">// The number must be greater than 5 and less then of equal to 10</span><br/><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">gt</span><span class="hl-1">(</span><span class="hl-7">0.5</span><span class="hl-1">).</span><span class="hl-6">lte</span><span class="hl-1">(</span><span class="hl-7">2.5</span><span class="hl-1">)</span><br/><span class="hl-9">// → Shape&lt;number&gt;</span>
 </code></pre>
 <p>Constrain a number to be a multiple of a divisor:</p>
-<pre><code class="language-ts"><span class="hl-9">// Number must be divisible by 5 without a remainder</span><br/><span class="hl-6">number</span><span class="hl-0">().</span><span class="hl-6">multipleOf</span><span class="hl-0">(</span><span class="hl-7">5</span><span class="hl-0">);</span>
+<pre><code class="language-ts"><span class="hl-9">// Number must be divisible by 5 without a remainder</span><br/><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">multipleOf</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span>
+</code></pre>
+<p>You can constrain the number to be an integer:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">integer</span><span class="hl-1">();</span><br/><span class="hl-9">// Or use a shortcut d.int()</span>
+</code></pre>
+<p>The integer check is always applied before any other checks.</p>
+<p>If you want to allow <code>NaN</code> numbers you can use a union shape:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">or</span><span class="hl-1">([</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">(), </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">const</span><span class="hl-1">(</span><span class="hl-2">NaN</span><span class="hl-1">)]);</span><br/><span class="hl-9">// → Shape&lt;number&gt;</span>
 </code></pre>
 
-<a href="#integer" id="integer" style="color: inherit; text-decoration: none;">
-  <h2><code>integer</code></h2>
+<a href="#object" id="object" style="color: inherit; text-decoration: none;">
+  <h2><code>object</code></h2>
 </a>
-<p>Constrains a value to be an integer. This type inherits <a href="#number">number refinements</a>.</p>
-<pre><code class="language-ts"><span class="hl-6">integer</span><span class="hl-0">().</span><span class="hl-6">min</span><span class="hl-0">(</span><span class="hl-7">5</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;number&gt;</span>
+<p>Constrains a value to be an object with a set of properties:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;{ foo: string, bar: number }&gt;</span>
 </code></pre>
 
-<a href="#bigint" id="bigint" style="color: inherit; text-decoration: none;">
-  <h2><code>bigint</code></h2>
+<a href="#optional-properties" id="optional-properties" style="color: inherit; text-decoration: none;">
+  <h3>Optional properties</h3>
 </a>
-<p>Constrains a value to be a <code>BigInt</code>.</p>
-<pre><code class="language-ts"><span class="hl-6">bigint</span><span class="hl-0">();</span><br/><span class="hl-9">// → Type&lt;bigint&gt;</span>
+<p>If the inferred type of the property shape is a union with <code>undefined</code> then the property becomes optional:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">optional</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;{ foo?: string | undefined, bar: number }&gt;</span>
+</code></pre>
+<p>Or you can define optional properties as a union:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">or</span><span class="hl-1">([</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(), </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">const</span><span class="hl-1">(</span><span class="hl-2">undefined</span><span class="hl-1">)]),</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;{ foo?: string | undefined }&gt;</span>
+</code></pre>
+<p>If the transformation result extends <code>undefined</code> then the output property becomes optional:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> </span><span class="hl-3">val</span><span class="hl-1"> === </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1"> ? </span><span class="hl-3">val</span><span class="hl-1"> : </span><span class="hl-2">undefined</span><span class="hl-1">),</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;{ foo: string }, { foo?: string | undefined }&gt;</span>
+</code></pre>
+
+<a href="#index-signature" id="index-signature" style="color: inherit; text-decoration: none;">
+  <h3>Index signature</h3>
+</a>
+<p>You can add an index signature to the object type, so all properties that aren&#39;t listed explicitly are validated with
+the rest shape:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;{ foo: string, bar: number }&gt;</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myRestShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">or</span><span class="hl-1">([</span><br/><span class="hl-1">  </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">]);</span><br/><span class="hl-9">// → Shape&lt;string | number&gt;</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">rest</span><span class="hl-1">(</span><span class="hl-3">myRestShape</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;{ foo: string, bar: number, [key: string]: string | number }&gt;</span>
+</code></pre>
+<p>Unlike an index signature in TypeScript, a rest shape is applied only to keys that aren&#39;t explicitly specified among
+object property shapes.</p>
+
+<a href="#unknown-keys" id="unknown-keys" style="color: inherit; text-decoration: none;">
+  <h3>Unknown keys</h3>
+</a>
+<p>Keys that aren&#39;t defined explicitly can be handled in several ways:</p>
+<ul>
+<li>constrained by the <a href="#index-signature">rest shape</a>;</li>
+<li>stripped;</li>
+<li>preserved as is, this is the default behavior;</li>
+<li>prohibited.</li>
+</ul>
+<p>You can force an object to have only known keys. If an unknown key is met, a validation issue is raised.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">}).</span><span class="hl-6">exact</span><span class="hl-1">();</span>
+</code></pre>
+<p>You can strip unknown keys, so the object is cloned if an unknown key is met, and only known keys are preserved.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">}).</span><span class="hl-6">strip</span><span class="hl-1">();</span>
+</code></pre>
+<p>You can derive the new shape and override the strategy for unknown keys:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({ </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">() }).</span><span class="hl-6">exact</span><span class="hl-1">();</span><br/><br/><span class="hl-9">// Unknonwn keys are now preserved</span><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">preserve</span><span class="hl-1">();</span>
+</code></pre>
+
+<a href="#picking-and-omitting-properties" id="picking-and-omitting-properties" style="color: inherit; text-decoration: none;">
+  <h3>Picking and omitting properties</h3>
+</a>
+<p>Picking keys from an object creates the new shape that contains only listed keys:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape1</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape2</span><span class="hl-1"> = </span><span class="hl-3">myShape1</span><span class="hl-1">.</span><span class="hl-6">pick</span><span class="hl-1">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">]);</span><br/><span class="hl-9">// → Shape&lt;{ foo: string }&gt;</span>
+</code></pre>
+<p>Omitting keys of an object creates the new shape that contains all keys except listed ones:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">omit</span><span class="hl-1">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">]);</span><br/><span class="hl-9">// → Shape&lt;{ bar: number }&gt;</span>
+</code></pre>
+
+<a href="#extending-objects" id="extending-objects" style="color: inherit; text-decoration: none;">
+  <h3>Extending objects</h3>
+</a>
+<p>Add new properties to the object shape:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">extend</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">qux:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">boolean</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;{ foo: string, bar: number, qux: boolean }&gt;</span>
+</code></pre>
+<p>Merging object shapes preserves the index signature of the left-hand shape:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myFooShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">()</span><br/><span class="hl-1">}).</span><span class="hl-6">rest</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">or</span><span class="hl-1">([</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(), </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()]));</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myBarShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">myFooShape</span><span class="hl-1">.</span><span class="hl-6">extend</span><span class="hl-1">(</span><span class="hl-3">myBarShape</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;{ foo: string, bar: number, [key: string]: string | number }&gt;</span>
+</code></pre>
+
+<a href="#making-objects-partial-and-required" id="making-objects-partial-and-required" style="color: inherit; text-decoration: none;">
+  <h3>Making objects partial and required</h3>
+</a>
+<p>Object properties are optional if their type extends <code>undefined</code>. You can derive an object shape that would have its
+properties all marked as optional:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">partial</span><span class="hl-1">()</span><br/><span class="hl-9">// → Shape&lt;{ foo?: string | undefined, bar?: number | undefined }&gt;</span>
+</code></pre>
+<p>You can specify which fields should be marked as optional:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">partial</span><span class="hl-1">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">])</span><br/><span class="hl-9">// → Shape&lt;{ foo?: string | undefined, bar: number }&gt;</span>
+</code></pre>
+<p>In the same way, properties that are optional can be made required:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">object</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">optional</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">required</span><span class="hl-1">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">])</span><br/><span class="hl-9">// → Shape&lt;{ foo: string, bar: number }&gt;</span>
+</code></pre>
+<p>Note that <code>required</code> would force the value of both input and output to be non-<code>undefined</code>.</p>
+
+<a href="#promise" id="promise" style="color: inherit; text-decoration: none;">
+  <h2><code>promise</code></h2>
+</a>
+<p>A shape that applies another shape to the resolved value of a <code>Promise</code>.</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">promise</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">());</span><br/><span class="hl-9">// → Shape&lt;Promise&lt;string&gt;&gt;</span>
+</code></pre>
+<p>You can transform the value inside a promise:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">promise</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">parseFloat</span><span class="hl-1">));</span><br/><span class="hl-9">// → Shape&lt;Promise&lt;string&gt;, Promise&lt;number&gt;&gt;</span>
+</code></pre>
+<p>Promise shapes don&#39;t support sync parsing, so <code>tryAsync</code>, <code>parseAsync</code> or <code>parseOrDefaultAsync</code> should be used:</p>
+<pre><code class="language-ts"><span class="hl-0">await</span><span class="hl-1"> </span><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parseAsync</span><span class="hl-1">(</span><span class="hl-4">&#39;42&#39;</span><span class="hl-1">);</span><br/><span class="hl-9">// → 42</span>
+</code></pre>
+
+<a href="#preprocess" id="preprocess" style="color: inherit; text-decoration: none;">
+  <h2><code>preprocess</code></h2>
+</a>
+<p>Preprocesses the input value. Useful for input value coercion:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">preprocess</span><span class="hl-1">(</span><span class="hl-3">parseFloat</span><span class="hl-1">);</span><br/><span class="hl-9">// → Shape&lt;string, number&gt;</span>
+</code></pre>
+<p>You can use <code>preprocess</code> in conjunction with <a href="#redirections">redirection</a>:</p>
+<pre><code class="language-ts"><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">to</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">().</span><span class="hl-6">min</span><span class="hl-1">(</span><span class="hl-7">3</span><span class="hl-1">).</span><span class="hl-6">max</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">));</span>
+</code></pre>
+
+<a href="#record" id="record" style="color: inherit; text-decoration: none;">
+  <h2><code>record</code></h2>
+</a>
+<p>Constrain values of a dictionary-like object:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">record</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">())</span><br/><span class="hl-9">// → Shape&lt;Record&lt;string, number&gt;&gt;</span>
+</code></pre>
+<p>Constrain both keys and values of a dictionary-like object:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">record</span><span class="hl-1">(</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(), </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">())</span><br/><span class="hl-9">// → Shape&lt;Record&lt;string, number&gt;&gt;</span>
+</code></pre>
+<p>You can pass any shape that extends <code>Shape&lt;string&gt;</code> as a key constraint:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myKeyShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">enum</span><span class="hl-1">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">, </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1">]);</span><br/><span class="hl-9">// → Shape&lt;&#39;foo&#39; | &#39;bar&#39;&gt;</span><br/><br/><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">record</span><span class="hl-1">(</span><span class="hl-3">myKeyShape</span><span class="hl-1">, </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">());</span><br/><span class="hl-9">// → Shape&lt;Record&lt;&#39;foo&#39; | &#39;bar&#39;, number&gt;&gt;</span>
+</code></pre>
+<p>You can rename record keys using transformation:</p>
+<pre><code class="language-ts"><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myKeyShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">enum</span><span class="hl-1">([</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-1">, </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-1">]).</span><span class="hl-6">transform</span><span class="hl-1">(</span><span class="hl-3">val</span><span class="hl-1"> </span><span class="hl-2">=&gt;</span><span class="hl-1"> {</span><br/><span class="hl-1">  </span><span class="hl-0">return</span><span class="hl-1"> </span><span class="hl-3">val</span><span class="hl-1">.</span><span class="hl-6">toUpperCase</span><span class="hl-1">() </span><span class="hl-0">as</span><span class="hl-1"> </span><span class="hl-8">Uppercase</span><span class="hl-1">&lt;</span><span class="hl-2">typeof</span><span class="hl-1"> </span><span class="hl-3">val</span><span class="hl-1">&gt;;</span><br/><span class="hl-1">});</span><br/><span class="hl-9">// → Shape&lt;&#39;foo&#39; | &#39;bar&#39;, &#39;FOO&#39; | &#39;BAR&#39;&gt;</span><br/><br/><span class="hl-2">const</span><span class="hl-1"> </span><span class="hl-5">myShape</span><span class="hl-1"> = </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">record</span><span class="hl-1">(</span><span class="hl-3">myKeyShape</span><span class="hl-1">, </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">());</span><br/><span class="hl-9">// → Shape&lt;Record&lt;&#39;foo&#39; | &#39;bar&#39;, number&gt;, Record&lt;&#39;FOO&#39; | &#39;BAR&#39;, number&gt;&gt;</span><br/><br/><span class="hl-3">myShape</span><span class="hl-1">.</span><span class="hl-6">parse</span><span class="hl-1">({ </span><span class="hl-3">foo:</span><span class="hl-1"> </span><span class="hl-7">1</span><span class="hl-1">, </span><span class="hl-3">bar:</span><span class="hl-1"> </span><span class="hl-7">2</span><span class="hl-1"> });</span><br/><span class="hl-9">// → { FOO: 1, BAR: 2 }</span>
 </code></pre>
 
 <a href="#string" id="string" style="color: inherit; text-decoration: none;">
   <h2><code>string</code></h2>
 </a>
 <p>Constrains a value to be string.</p>
-<pre><code class="language-ts"><span class="hl-6">string</span><span class="hl-0">();</span><br/><span class="hl-9">// → Type&lt;string&gt;</span>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;string&gt;</span>
 </code></pre>
 <p>Constrain the string length limits:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">().</span><span class="hl-6">min</span><span class="hl-0">(</span><span class="hl-7">1</span><span class="hl-0">).</span><span class="hl-6">max</span><span class="hl-0">(</span><span class="hl-7">10</span><span class="hl-0">);</span>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">min</span><span class="hl-1">(</span><span class="hl-7">1</span><span class="hl-1">).</span><span class="hl-6">max</span><span class="hl-1">(</span><span class="hl-7">10</span><span class="hl-1">);</span>
 </code></pre>
 <p>You can limit both minimum and maximum string length at the same time:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">().</span><span class="hl-6">length</span><span class="hl-0">(</span><span class="hl-7">5</span><span class="hl-0">);</span>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">length</span><span class="hl-1">(</span><span class="hl-7">5</span><span class="hl-1">);</span>
 </code></pre>
 <p>Constrain a string with a regular expression:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">().</span><span class="hl-6">regex</span><span class="hl-0">(</span><span class="hl-10">/foo</span><span class="hl-11">|</span><span class="hl-10">bar/</span><span class="hl-0">);</span>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">().</span><span class="hl-6">regex</span><span class="hl-1">(</span><span class="hl-10">/foo</span><span class="hl-15">|</span><span class="hl-10">bar/</span><span class="hl-1">);</span>
 </code></pre>
 
-<a href="#boolean" id="boolean" style="color: inherit; text-decoration: none;">
-  <h2><code>boolean</code></h2>
+<a href="#tuple" id="tuple" style="color: inherit; text-decoration: none;">
+  <h2><code>tuple</code></h2>
 </a>
-<p>Constrains a value to be boolean.</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">boolean</span><span class="hl-0">();</span><br/><span class="hl-9">// → Type&lt;boolean&gt;</span>
+<p>Constrains a value to be a tuple where elements at particular positions have concrete types:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">tuple</span><span class="hl-1">([</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(), </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()]);</span><br/><span class="hl-9">// → Shape&lt;[string, number]&gt;</span>
+</code></pre>
+<p>Specify a rest tuple elements:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">tuple</span><span class="hl-1">([</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(), </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()], </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">boolean</span><span class="hl-1">());</span><br/><span class="hl-9">// → Shape&lt;[string, number, ...boolean]&gt;</span>
 </code></pre>
 
-<a href="#literal" id="literal" style="color: inherit; text-decoration: none;">
-  <h2><code>literal</code></h2>
+<a href="#union" id="union" style="color: inherit; text-decoration: none;">
+  <h2><code>union</code></h2>
 </a>
-<p>Constrains a value to be an exact primitive value:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">literal</span><span class="hl-0">(</span><span class="hl-4">&#39;foo&#39;</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;&#39;foo&#39;&gt;</span>
+<p>A constraint that allows a value to be one of the given types:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">union</span><span class="hl-1">([</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(), </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()]);</span><br/><span class="hl-9">// → Shape&lt;string | number&gt;</span>
 </code></pre>
-
-<a href="#oneof" id="oneof" style="color: inherit; text-decoration: none;">
-  <h2><code>oneOf</code></h2>
-</a>
-<p>Constrains a value to be equal to one of the primitive values:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">oneOf</span><span class="hl-0">([</span><span class="hl-7">1</span><span class="hl-0">, </span><span class="hl-4">&#39;foo&#39;</span><span class="hl-0">, </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-0">]);</span><br/><span class="hl-9">// → Type&lt;1 | &#39;foo&#39; | &#39;bar&#39;&gt;</span>
-</code></pre>
-<p>You can use a non-constant enum to limit the possible values:</p>
-<pre><code class="language-ts"><span class="hl-2">enum</span><span class="hl-0"> </span><span class="hl-8">Foo</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-5">BAR</span><span class="hl-0"> = </span><span class="hl-4">&#39;bar&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-5">QUX</span><span class="hl-0"> = </span><span class="hl-4">&#39;qux&#39;</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">oneOf</span><span class="hl-0">(</span><span class="hl-3">Foo</span><span class="hl-0">);</span><br/><span class="hl-9">// → Type&lt;Foo&gt;</span>
-</code></pre>
-
-<a href="#any" id="any" style="color: inherit; text-decoration: none;">
-  <h2><code>any</code></h2>
-</a>
-<p>An unconstrained value that is inferred as <code>any</code>:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">any</span><span class="hl-0">();</span><br/><span class="hl-9">// → Type&lt;any&gt;</span>
+<p>You can use a shorter alias <code>or</code>:</p>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">or</span><span class="hl-1">([</span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">string</span><span class="hl-1">(), </span><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">number</span><span class="hl-1">()]);</span>
 </code></pre>
 
 <a href="#unknown" id="unknown" style="color: inherit; text-decoration: none;">
   <h2><code>unknown</code></h2>
 </a>
 <p>An unconstrained value that is inferred as <code>unknown</code>:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">unknown</span><span class="hl-0">();</span><br/><span class="hl-9">// → Type&lt;unknown&gt;</span>
+<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-1">.</span><span class="hl-6">unknown</span><span class="hl-1">();</span><br/><span class="hl-9">// → Shape&lt;unknown&gt;</span>
 </code></pre>
-
-<a href="#never" id="never" style="color: inherit; text-decoration: none;">
-  <h2><code>never</code></h2>
-</a>
-<p>A type that always raises a validation issue regardless of a value:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">never</span><span class="hl-0">();</span><br/><span class="hl-9">// → Type&lt;never&gt;</span>
-</code></pre>
-
-<a href="#optional" id="optional" style="color: inherit; text-decoration: none;">
-  <h2><code>optional</code></h2>
-</a>
-<p>Allows a value to be <code>undefined</code>:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">optional</span><span class="hl-0">(</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">());</span><br/><span class="hl-9">// → Type&lt;string | undefined&gt;</span>
-</code></pre>
-
-<a href="#nullable" id="nullable" style="color: inherit; text-decoration: none;">
-  <h2><code>nullable</code></h2>
-</a>
-<p>Allows a value to be <code>null</code>:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">nullable</span><span class="hl-0">(</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">());</span><br/><span class="hl-9">// → Type&lt;string | null&gt;</span>
-</code></pre>
-
-<a href="#nullish" id="nullish" style="color: inherit; text-decoration: none;">
-  <h2><code>nullish</code></h2>
-</a>
-<p>Allows a value to be <code>null</code> or <code>undefined</code>.</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">nullish</span><span class="hl-0">(</span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">());</span><br/><span class="hl-9">// → Type&lt;string | null | undefined&gt;</span>
-</code></pre>
-
-<a href="#or" id="or" style="color: inherit; text-decoration: none;">
-  <h2><code>or</code></h2>
-</a>
-<p>A constraint that allows a value to be one of the given types:</p>
-<pre><code class="language-ts"><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">or</span><span class="hl-0">([</span><br/><span class="hl-0">  </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">()</span><br/><span class="hl-0">]);</span><br/><span class="hl-9">// → Type&lt;string | number&gt;</span>
-</code></pre>
-
-<a href="#lazy" id="lazy" style="color: inherit; text-decoration: none;">
-  <h2><code>lazy</code></h2>
-</a>
-<p>To create a type that references itself you may need a lazy type definition:</p>
-<pre><code class="language-ts"><span class="hl-2">interface</span><span class="hl-0"> </span><span class="hl-8">Foo</span><span class="hl-0"> {</span><br/><span class="hl-0">  </span><span class="hl-3">bar</span><span class="hl-0">: </span><span class="hl-8">Foo</span><span class="hl-0">;</span><br/><span class="hl-0">}</span><br/><br/><span class="hl-2">const</span><span class="hl-0"> </span><span class="hl-5">fooType</span><span class="hl-0">: </span><span class="hl-8">Type</span><span class="hl-0">&lt;</span><span class="hl-8">Foo</span><span class="hl-0">&gt; = </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-3">bar:</span><span class="hl-0"> </span><span class="hl-3">d</span><span class="hl-0">.</span><span class="hl-6">lazy</span><span class="hl-0">(() </span><span class="hl-2">=&gt;</span><span class="hl-0"> </span><span class="hl-3">fooType</span><span class="hl-0">)</span><br/><span class="hl-0">});</span><br/><span class="hl-9">// → Type&lt;Foo&gt;</span>
-</code></pre>
-<p>Note that type of <code>fooType</code> must be explicitly defined to satisfy TypeScript type inference.</p>
 
 <a href="#performance" id="performance" style="color: inherit; text-decoration: none;">
   <h1>Performance</h1>
 </a>
-<p>Clone this repo and use <code>npm ci &amp;&amp; npm run perf</code> to run the performance testsuite.</p>
-<p><img src="https://github.com/smikhalevski/doubter/raw/master/images/perf-parse.svg" alt="Parsing performance chart"></p>
-</div></div><div class="col-4 col-menu menu-sticky-wrap menu-highlight"><nav class="tsd-navigation primary"><ul><li class="current"><a href="modules.html">Exports</a></li></ul></nav><nav class="tsd-navigation secondary menu-sticky"><ul><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/ArrayType.html" class="tsd-kind-icon">Array<wbr/>Type</a></li><li class="tsd-kind-class"><a href="classes/BigIntType.html" class="tsd-kind-icon">Big<wbr/>Int<wbr/>Type</a></li><li class="tsd-kind-class"><a href="classes/BooleanType.html" class="tsd-kind-icon">Boolean<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/InstanceOfType.html" class="tsd-kind-icon">Instance<wbr/>Of<wbr/>Type</a></li><li class="tsd-kind-class"><a href="classes/IntegerType.html" class="tsd-kind-icon">Integer<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/LazyType.html" class="tsd-kind-icon">Lazy<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/LiteralType.html" class="tsd-kind-icon">Literal<wbr/>Type</a></li><li class="tsd-kind-class"><a href="classes/NeverType.html" class="tsd-kind-icon">Never<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/NullableType.html" class="tsd-kind-icon">Nullable<wbr/>Type</a></li><li class="tsd-kind-class"><a href="classes/NumberType.html" class="tsd-kind-icon">Number<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/ObjectType.html" class="tsd-kind-icon">Object<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/OneOfType.html" class="tsd-kind-icon">One<wbr/>Of<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/OptionalType.html" class="tsd-kind-icon">Optional<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/RecordType.html" class="tsd-kind-icon">Record<wbr/>Type</a></li><li class="tsd-kind-class"><a href="classes/StringType.html" class="tsd-kind-icon">String<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/TransformedType.html" class="tsd-kind-icon">Transformed<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/TupleType.html" class="tsd-kind-icon">Tuple<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/Type.html" class="tsd-kind-icon">Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/UnconstrainedType.html" class="tsd-kind-icon">Unconstrained<wbr/>Type</a></li><li class="tsd-kind-class tsd-has-type-parameter"><a href="classes/UnionType.html" class="tsd-kind-icon">Union<wbr/>Type</a></li><li class="tsd-kind-class"><a href="classes/ValidationError.html" class="tsd-kind-icon">Validation<wbr/>Error</a></li><li class="tsd-kind-interface"><a href="interfaces/ConstraintOptions.html" class="tsd-kind-icon">Constraint<wbr/>Options</a></li><li class="tsd-kind-interface tsd-has-type-parameter"><a href="interfaces/Dict.html" class="tsd-kind-icon">Dict</a></li><li class="tsd-kind-interface"><a href="interfaces/Issue.html" class="tsd-kind-icon">Issue</a></li><li class="tsd-kind-interface"><a href="interfaces/ParserOptions.html" class="tsd-kind-icon">Parser<wbr/>Options</a></li><li class="tsd-kind-type-alias"><a href="modules.html#AnyType" class="tsd-kind-icon">Any<wbr/>Type</a></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#Awaitable" class="tsd-kind-icon">Awaitable</a></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#Constructor" class="tsd-kind-icon">Constructor</a></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#InferConstructorType" class="tsd-kind-icon">Infer<wbr/>Constructor<wbr/>Type</a></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#InferTupleType" class="tsd-kind-icon">Infer<wbr/>Tuple<wbr/>Type</a></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#InferType" class="tsd-kind-icon">Infer<wbr/>Type</a></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#InferUnionType" class="tsd-kind-icon">Infer<wbr/>Union<wbr/>Type</a></li><li class="tsd-kind-type-alias"><a href="modules.html#Primitive" class="tsd-kind-icon">Primitive</a></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#Several" class="tsd-kind-icon">Several</a></li><li class="tsd-kind-type-alias tsd-has-type-parameter"><a href="modules.html#Transformer" class="tsd-kind-icon">Transformer</a></li><li class="tsd-kind-function"><a href="modules.html#any" class="tsd-kind-icon">any</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#array" class="tsd-kind-icon">array</a></li><li class="tsd-kind-function"><a href="modules.html#bigint" class="tsd-kind-icon">bigint</a></li><li class="tsd-kind-function"><a href="modules.html#boolean" class="tsd-kind-icon">boolean</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#instanceOf" class="tsd-kind-icon">instance<wbr/>Of</a></li><li class="tsd-kind-function"><a href="modules.html#integer" class="tsd-kind-icon">integer</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#lazy" class="tsd-kind-icon">lazy</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#literal" class="tsd-kind-icon">literal</a></li><li class="tsd-kind-function"><a href="modules.html#never" class="tsd-kind-icon">never</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#nullable" class="tsd-kind-icon">nullable</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#nullish" class="tsd-kind-icon">nullish</a></li><li class="tsd-kind-function"><a href="modules.html#number" class="tsd-kind-icon">number</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#object" class="tsd-kind-icon">object</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#oneOf" class="tsd-kind-icon">one<wbr/>Of</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#optional" class="tsd-kind-icon">optional</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#or" class="tsd-kind-icon">or</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#record" class="tsd-kind-icon">record</a></li><li class="tsd-kind-function"><a href="modules.html#string" class="tsd-kind-icon">string</a></li><li class="tsd-kind-function tsd-has-type-parameter"><a href="modules.html#tuple" class="tsd-kind-icon">tuple</a></li><li class="tsd-kind-function"><a href="modules.html#unknown" class="tsd-kind-icon">unknown</a></li></ul></nav></div></div></div><footer class="with-border-bottom"><div class="container"><h2>Legend</h2><div class="tsd-legend-group"><ul class="tsd-legend"><li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li><li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li><li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li><li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li></ul><ul class="tsd-legend"><li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li></ul></div><h2>Settings</h2><p>Theme <select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></p></div></footer><div class="container tsd-generator"><p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div><div class="overlay"></div><script src="assets/main.js"></script></body></html>
+<p>Clone this repo and use <code>npm ci &amp;&amp; npm run perf -- -t &#39;overall&#39;</code> to run the performance testsuite.</p>
+<p><img src="./images/perf.svg" alt="Parsing performance chart"></p>
+</div></div>
+<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+<div class="tsd-navigation settings">
+<details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Settings</h3></summary>
+<div class="tsd-accordion-details">
+<div class="tsd-filter-visibility">
+<h4 class="uppercase">Member Visibility</h4><form>
+<ul id="tsd-filter-options">
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li>
+<li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li></ul></form></div>
+<div class="tsd-theme-toggle">
+<h4 class="uppercase">Theme</h4><select id="theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div>
+<nav class="tsd-navigation primary">
+<details class="tsd-index-accordion" open><summary class="tsd-accordion-summary">
+<h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Modules</h3></summary>
+<div class="tsd-accordion-details">
+<ul>
+<li class="current selected"><a href="modules.html">Doubter -<wbr/> v1.0.0</a>
+<ul></ul></li></ul></div></details></nav>
+<nav class="tsd-navigation secondary menu-sticky">
+<ul>
+<li class="tsd-kind-reference"><a href="modules.html#and" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="#FF4D82" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="12" id="icon-8388608-path"></rect><path d="M10.354 17V8.24H13.066C13.586 8.24 14.042 8.348 14.434 8.564C14.826 8.772 15.13 9.064 15.346 9.44C15.562 9.816 15.67 10.256 15.67 10.76C15.67 11.352 15.514 11.86 15.202 12.284C14.898 12.708 14.482 13 13.954 13.16L15.79 17H14.518L12.838 13.28H11.434V17H10.354ZM11.434 12.308H13.066C13.514 12.308 13.874 12.168 14.146 11.888C14.418 11.6 14.554 11.224 14.554 10.76C14.554 10.288 14.418 9.912 14.146 9.632C13.874 9.352 13.514 9.212 13.066 9.212H11.434V12.308Z" fill="var(--color-text)" id="icon-8388608-text"></path></svg>and</a></li>
+<li class="tsd-kind-reference"><a href="modules.html#int" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg>int</a></li>
+<li class="tsd-kind-reference"><a href="modules.html#or" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-8388608-path"></use><use href="#icon-8388608-text"></use></svg>or</a></li>
+<li class="tsd-kind-class"><a href="classes/ArrayShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-class)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-128-path"></rect><path d="M11.898 16.1201C11.098 16.1201 10.466 15.8961 10.002 15.4481C9.53803 15.0001 9.30603 14.3841 9.30603 13.6001V9.64012C9.30603 8.85612 9.53803 8.24012 10.002 7.79212C10.466 7.34412 11.098 7.12012 11.898 7.12012C12.682 7.12012 13.306 7.34812 13.77 7.80412C14.234 8.25212 14.466 8.86412 14.466 9.64012H13.386C13.386 9.14412 13.254 8.76412 12.99 8.50012C12.734 8.22812 12.37 8.09212 11.898 8.09212C11.426 8.09212 11.054 8.22412 10.782 8.48812C10.518 8.75212 10.386 9.13212 10.386 9.62812V13.6001C10.386 14.0961 10.518 14.4801 10.782 14.7521C11.054 15.0161 11.426 15.1481 11.898 15.1481C12.37 15.1481 12.734 15.0161 12.99 14.7521C13.254 14.4801 13.386 14.0961 13.386 13.6001H14.466C14.466 14.3761 14.234 14.9921 13.77 15.4481C13.306 15.8961 12.682 16.1201 11.898 16.1201Z" fill="var(--color-text)" id="icon-128-text"></path></svg>Array<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/BigIntShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Big<wbr/>Int<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/BooleanShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Boolean<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/EnumShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Enum<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/ExcludeShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Exclude<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/InstanceShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Instance<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/IntersectionShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Intersection<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/LazyShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Lazy<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/NeverShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Never<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/NumberShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Number<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/ObjectShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Object<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/PromiseShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Promise<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/RecordShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Record<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/RedirectShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Redirect<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/ReplaceShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Replace<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/Shape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/StringShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>String<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/TransformShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Transform<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/UnionShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Union<wbr/>Shape</a></li>
+<li class="tsd-kind-class"><a href="classes/ValidationError.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-128-path"></use><use href="#icon-128-text"></use></svg>Validation<wbr/>Error</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Check.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-interface)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-256-path"></rect><path d="M9.51 16V15.016H11.298V8.224H9.51V7.24H14.19V8.224H12.402V15.016H14.19V16H9.51Z" fill="var(--color-text)" id="icon-256-text"></path></svg>Check</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/CheckOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Check<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/ConstraintOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Constraint<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Err.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Err</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Issue.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Issue</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/Ok.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Ok</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/ParseOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Parse<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/ReadonlyDict.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Readonly<wbr/>Dict</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/RefineOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Refine<wbr/>Options</a></li>
+<li class="tsd-kind-interface"><a href="interfaces/TypeConstraintOptions.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-256-path"></use><use href="#icon-256-text"></use></svg>Type<wbr/>Constraint<wbr/>Options</a></li>
+<li class="tsd-kind-type-alias"><a href="types/Any.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-4194304-path"></rect><path d="M11.31 16V8.224H8.91V7.24H14.79V8.224H12.39V16H11.31Z" fill="var(--color-text)" id="icon-4194304-text"></path></svg>Any</a></li>
+<li class="tsd-kind-type-alias"><a href="types/AnyShape.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Any<wbr/>Shape</a></li>
+<li class="tsd-kind-type-alias"><a href="types/ApplyChecksCallback.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Apply<wbr/>Checks<wbr/>Callback</a></li>
+<li class="tsd-kind-type-alias"><a href="types/ApplyResult.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Apply<wbr/>Result</a></li>
+<li class="tsd-kind-type-alias"><a href="types/CheckCallback.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Check<wbr/>Callback</a></li>
+<li class="tsd-kind-type-alias"><a href="types/KeysMode.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Keys<wbr/>Mode</a></li>
+<li class="tsd-kind-type-alias"><a href="types/Message.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Message</a></li>
+<li class="tsd-kind-type-alias"><a href="types/MessageCallback.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Message<wbr/>Callback</a></li>
+<li class="tsd-kind-type-alias"><a href="types/OpaqueExclude.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Opaque<wbr/>Exclude</a></li>
+<li class="tsd-kind-type-alias"><a href="types/OpaqueReplace.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Opaque<wbr/>Replace</a></li>
+<li class="tsd-kind-type-alias"><a href="types/ValueType.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-4194304-path"></use><use href="#icon-4194304-text"></use></svg>Value<wbr/>Type</a></li>
+<li class="tsd-kind-function"><a href="functions/any-1.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><rect fill="var(--color-icon-background)" stroke="var(--color-ts-function)" stroke-width="1.5" x="1" y="1" width="22" height="22" rx="6" id="icon-64-path"></rect><path d="M9.39 16V7.24H14.55V8.224H10.446V11.128H14.238V12.112H10.47V16H9.39Z" fill="var(--color-text)" id="icon-64-text"></path></svg>any</a></li>
+<li class="tsd-kind-function"><a href="functions/array.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>array</a></li>
+<li class="tsd-kind-function"><a href="functions/bigint.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>bigint</a></li>
+<li class="tsd-kind-function"><a href="functions/boolean.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>boolean</a></li>
+<li class="tsd-kind-function"><a href="functions/const.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>const</a></li>
+<li class="tsd-kind-function"><a href="functions/createIssueFactory.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>create<wbr/>Issue<wbr/>Factory</a></li>
+<li class="tsd-kind-function"><a href="functions/enum.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>enum</a></li>
+<li class="tsd-kind-function"><a href="functions/instanceOf.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>instance<wbr/>Of</a></li>
+<li class="tsd-kind-function"><a href="functions/integer.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>integer</a></li>
+<li class="tsd-kind-function"><a href="functions/intersection.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>intersection</a></li>
+<li class="tsd-kind-function"><a href="functions/lazy.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>lazy</a></li>
+<li class="tsd-kind-function"><a href="functions/lazyAsync.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>lazy<wbr/>Async</a></li>
+<li class="tsd-kind-function"><a href="functions/never.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>never</a></li>
+<li class="tsd-kind-function"><a href="functions/number.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>number</a></li>
+<li class="tsd-kind-function"><a href="functions/object.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>object</a></li>
+<li class="tsd-kind-function"><a href="functions/preprocess.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>preprocess</a></li>
+<li class="tsd-kind-function"><a href="functions/preprocessAsync.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>preprocess<wbr/>Async</a></li>
+<li class="tsd-kind-function"><a href="functions/promise.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>promise</a></li>
+<li class="tsd-kind-function"><a href="functions/record.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>record</a></li>
+<li class="tsd-kind-function"><a href="functions/string.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>string</a></li>
+<li class="tsd-kind-function"><a href="functions/tuple.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>tuple</a></li>
+<li class="tsd-kind-function"><a href="functions/union.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>union</a></li>
+<li class="tsd-kind-function"><a href="functions/unknown.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>unknown</a></li></ul></nav></div></div>
+<div class="container tsd-generator">
+<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>
+<div class="overlay"></div><script src="assets/main.js"></script></body></html>
