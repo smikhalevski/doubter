@@ -110,7 +110,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
 
     if (bucket === null) {
-      return Promise.resolve([this._issueFactory(input, options, null)]);
+      return Promise.resolve([this._issueFactory(input, options, [])]);
     }
 
     const bucketLength = bucket.length;
