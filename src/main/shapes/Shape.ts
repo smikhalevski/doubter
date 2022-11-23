@@ -256,6 +256,8 @@ export class Shape<I = any, O = I> {
    * and a new check is appended to the list of shape checks. If the key is `undefined` then the `cb` identity is used
    * as a key.
    *
+   * If check callback returns an empty array, it is considered that no issues have occurred.
+   *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of this shape with the check added.
