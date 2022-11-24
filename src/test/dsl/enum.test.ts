@@ -2,22 +2,6 @@ import * as d from '../../main';
 import { CODE_ENUM } from '../../main/constants';
 
 describe('enum', () => {
-  test('infers type', () => {
-    enum Foo {
-      AAA,
-      BBB,
-    }
-
-    const obj = {
-      AAA: 'aaa',
-      BBB: 'bbb',
-    } as const;
-
-    const value1: 111 | 'aaa' = d.enum([111, 'aaa']).parse('aaa');
-    const value2: Foo = d.enum(Foo).parse(Foo.AAA);
-    const value3: 'aaa' | 'bbb' = d.enum(obj).parse(obj.AAA);
-  });
-
   test('returns an enum shape', () => {
     const shape = d.enum([111, 222]);
 

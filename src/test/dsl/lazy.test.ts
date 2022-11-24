@@ -1,10 +1,6 @@
 import * as d from '../../main';
 
 describe('lazy', () => {
-  test('infers type', () => {
-    const value: number = d.lazy(() => d.string().transform(parseFloat)).parse('111');
-  });
-
   test('returns a shape', () => {
     const shape = d.string();
     const lazyShape = d.lazy(() => shape);
