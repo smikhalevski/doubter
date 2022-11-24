@@ -26,7 +26,7 @@ import {
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> = ToArray<{
-  [K in keyof U & number]: U[K][C];
+  [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never;
 }>;
 
 // prettier-ignore
