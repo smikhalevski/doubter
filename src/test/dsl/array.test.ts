@@ -1,10 +1,6 @@
 import * as d from '../../main';
 
 describe('array', () => {
-  test('infers type', () => {
-    const value: 111[] = d.array(d.const(111)).parse([111]);
-  });
-
   test('returns an unconstrained array shape', () => {
     const arrShape = d.array();
 

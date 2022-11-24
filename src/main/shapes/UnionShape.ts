@@ -5,7 +5,7 @@ import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
 // prettier-ignore
 export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'output'> =
-  { [K in keyof U & number]: U[K][C] }[number];
+  { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }[number];
 
 /**
  * The shape that requires an input to conform at least one of the united shapes.
