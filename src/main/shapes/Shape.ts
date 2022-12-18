@@ -21,7 +21,6 @@ import {
   isArray,
   isEqual,
   ok,
-  unique,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -876,7 +875,7 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
   }
 
   protected _getInputTypes(): ValueType[] {
-    return unique(this.shape['_getInputTypes']().concat(getValueType(this.searchedValue)));
+    return this.shape['_getInputTypes']().concat(getValueType(this.searchedValue));
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {

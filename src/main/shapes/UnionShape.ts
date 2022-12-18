@@ -1,14 +1,6 @@
 import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import {
-  concatIssues,
-  createIssueFactory,
-  getInputTypes,
-  getValueType,
-  isArray,
-  isAsyncShapes,
-  unique,
-} from '../utils';
+import { concatIssues, createIssueFactory, getInputTypes, getValueType, isArray, isAsyncShapes } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
 // prettier-ignore
@@ -208,7 +200,13 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): {
     buckets = null;
   } else if (anyBucket !== null && buckets !== null) {
     for (const type of bucketTypes) {
-      buckets[type] = unique(buckets[type]!.concat(anyBucket));
+      const bucket = buckets[type]!;
+
+      for (const shape of anyBucket) {
+        if (!bucket.includes(shape)) {
+          bucket.push(shape);
+        }
+      }
     }
   }
 

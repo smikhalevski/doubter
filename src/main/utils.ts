@@ -32,29 +32,6 @@ export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
 
-export function unique<T>(arr: T[]): T[];
-
-export function unique<T>(arr: readonly T[]): readonly T[];
-
-export function unique<T>(arr: readonly T[]): readonly T[] {
-  let uniqueArr: T[] | null = null;
-
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i];
-
-    if (arr.includes(value, i + 1)) {
-      if (uniqueArr === null) {
-        uniqueArr = arr.slice(0, i);
-      }
-      continue;
-    }
-    if (uniqueArr !== null) {
-      uniqueArr.push(value);
-    }
-  }
-  return uniqueArr || arr;
-}
-
 export const isArray = Array.isArray;
 
 export const getPrototypeOf = Object.getPrototypeOf;
@@ -79,6 +56,10 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
     async = shapes[i].async;
   }
   return async;
+}
+
+export function isUnique<T>(value: T, index: number, values: readonly T[]): boolean {
+  return !values.includes(value, index + 1);
 }
 
 /**
