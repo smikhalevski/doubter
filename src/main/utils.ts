@@ -22,6 +22,21 @@ export const booleanTypes: ValueType[] = ['boolean'];
 export const anyTypes: ValueType[] = ['any'];
 export const neverTypes: ValueType[] = ['never'];
 
+export function getValueType(value: unknown): ValueType {
+  const type = typeof value;
+
+  if (type !== 'object') {
+    return type;
+  }
+  if (value === null) {
+    return 'null';
+  }
+  if (isArray(value)) {
+    return 'array';
+  }
+  return type;
+}
+
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }

@@ -18,6 +18,7 @@ import {
   createApplyChecksCallback,
   createIssueFactory,
   getPrototypeOf,
+  getValueType,
   isArray,
   isEqual,
   ok,
@@ -170,8 +171,7 @@ export class Shape<I = any, O = I> {
   description = '';
 
   /**
-   * The list of runtime value types that can be processed by the shape. Use {@linkcode Shape.typeof} to detect a
-   * runtime value type.
+   * The list of runtime value types that can be processed by the shape.
    */
   protected _inputTypes: readonly ValueType[];
 
@@ -204,26 +204,6 @@ export class Shape<I = any, O = I> {
         throw new Error(MESSAGE_ERROR_ASYNC);
       };
     }
-  }
-
-  /**
-   * Returns the type of the value.
-   *
-   * @param value The value to detect type of.
-   */
-  static typeof(value: unknown): ValueType {
-    const type = typeof value;
-
-    if (type !== 'object') {
-      return type;
-    }
-    if (value === null) {
-      return 'null';
-    }
-    if (isArray(value)) {
-      return 'array';
-    }
-    return type;
   }
 
   /**
@@ -853,7 +833,7 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
      */
     readonly value?: B
   ) {
-    super(shape['_inputTypes'].concat(Shape.typeof(searchedValue)), shape.async);
+    super(shape['_inputTypes'].concat(getValueType(searchedValue)), shape.async);
 
     this._replacedResult = value === undefined || isEqual(value, searchedValue) ? null : ok(value);
   }

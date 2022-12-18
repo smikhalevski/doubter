@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { InferUnion } from './UnionShape';
-import { createIssueFactory, isArray, isAsyncShapes, isEqual, ok } from '../utils';
+import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 
@@ -131,8 +131,8 @@ function intersectPair(a: any, b: any): any {
     return a;
   }
 
-  const aType = Shape.typeof(a);
-  const bType = Shape.typeof(b);
+  const aType = getValueType(a);
+  const bType = getValueType(b);
 
   if (aType !== bType) {
     return NEVER;

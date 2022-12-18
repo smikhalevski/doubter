@@ -1,6 +1,14 @@
 import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createIssueFactory, getInputTypes, isArray, isAsyncShapes, unique } from '../utils';
+import {
+  concatIssues,
+  createIssueFactory,
+  getInputTypes,
+  getValueType,
+  isArray,
+  isAsyncShapes,
+  unique,
+} from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
 // prettier-ignore
@@ -63,7 +71,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
     const { _buckets, _anyBucket, _applyChecks } = this;
 
-    const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
+    const bucket = _buckets !== null ? _buckets[getValueType(input)] || _anyBucket : _anyBucket;
 
     let issues: Issue[] | null = null;
     let result: ApplyResult = null;
@@ -107,7 +115,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
 
     const { _buckets, _anyBucket, _applyChecks } = this;
 
-    const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
+    const bucket = _buckets !== null ? _buckets[getValueType(input)] || _anyBucket : _anyBucket;
 
     if (bucket === null) {
       return Promise.resolve([this._issueFactory(input, options, [])]);
