@@ -13,15 +13,6 @@ import {
 import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 
-export const objectTypes: ValueType[] = ['object'];
-export const arrayTypes: ValueType[] = ['array'];
-export const stringTypes: ValueType[] = ['string'];
-export const numberTypes: ValueType[] = ['number'];
-export const bigintTypes: ValueType[] = ['bigint'];
-export const booleanTypes: ValueType[] = ['boolean'];
-export const anyTypes: ValueType[] = ['any'];
-export const neverTypes: ValueType[] = ['never'];
-
 export function getValueType(value: unknown): ValueType {
   const type = typeof value;
 
@@ -424,7 +415,7 @@ export function getInputTypes(shapes: readonly AnyShape[]): ValueType[] {
   const types: ValueType[] = [];
 
   for (const shape of shapes) {
-    for (const type of shape['_inputTypes']) {
+    for (const type of shape['_getInputTypes']()) {
       types.push(type);
     }
   }

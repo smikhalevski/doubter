@@ -1,6 +1,6 @@
-import { Shape } from './Shape';
+import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { bigintTypes, createIssueFactory } from '../utils';
+import { createIssueFactory } from '../utils';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../constants';
 
 /**
@@ -15,9 +15,13 @@ export class BigIntShape extends Shape<bigint> {
    * @param options The type constraint options or the type issue message.
    */
   constructor(options?: TypeConstraintOptions | Message) {
-    super(bigintTypes);
+    super();
 
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return ['bigint'];
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {

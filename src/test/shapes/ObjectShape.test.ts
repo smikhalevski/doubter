@@ -474,6 +474,10 @@ describe('ObjectShape', () => {
       const shape2 = new Shape();
       const restShape = new Shape();
 
+      shape1.async;
+      shape2.async;
+      restShape.async;
+
       const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
       const restApplySpy = jest.spyOn<Shape, any>(restShape, '_applyAsync');

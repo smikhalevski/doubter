@@ -12,14 +12,13 @@ import {
   isFlagSet,
   isObjectLike,
   isPlainObject,
-  objectTypes,
   ok,
   pushIssue,
   setFlag,
   setKeyValue,
   unshiftPath,
 } from '../utils';
-import { AnyShape, OpaqueExclude, OpaqueReplace, Shape } from './Shape';
+import { AnyShape, OpaqueExclude, OpaqueReplace, Shape, ValueType } from './Shape';
 import { EnumShape } from './EnumShape';
 
 // prettier-ignore
@@ -99,15 +98,13 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     options?: TypeConstraintOptions | Message,
     keysMode: KeysMode = 'preserved'
   ) {
-    const valueShapes = Object.values(shapes);
-
-    super(objectTypes, isAsyncShapes(valueShapes) || (restShape !== null && restShape.async));
+    super();
 
     this.keys = Object.keys(shapes) as StringKeyof<P>[];
     this.keysMode = keysMode;
 
     this._options = options;
-    this._valueShapes = valueShapes;
+    this._valueShapes = Object.values(shapes);
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
@@ -326,6 +323,14 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return shape;
   }
 
+  protected _checkAsync(): boolean {
+    return (this.restShape !== null && this.restShape.async) || isAsyncShapes(Object.values(this.shapes));
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return ['object'];
+  }
+
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
     const { _typePredicate } = this;
 
@@ -340,10 +345,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
-    if (!this.async) {
-      return super._applyAsync(input, options);
-    }
-
     return new Promise(resolve => {
       const { _typePredicate } = this;
 

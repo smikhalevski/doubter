@@ -13,7 +13,7 @@ describe('UnionShape', () => {
 
     const orShape = new UnionShape([shape1, shape2, shape3]);
 
-    expect(orShape['_inputTypes']).toEqual(['number', 'string', 'boolean']);
+    expect(orShape['_getInputTypes']()).toEqual(['number', 'string', 'boolean']);
     expect(orShape.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
@@ -33,7 +33,7 @@ describe('UnionShape', () => {
 
     const orShape2 = new UnionShape([shape1, orShape1]);
 
-    expect(orShape2['_inputTypes']).toEqual(['number', 'string', 'boolean']);
+    expect(orShape2['_getInputTypes']()).toEqual(['number', 'string', 'boolean']);
     expect(orShape2.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
@@ -210,6 +210,10 @@ describe('UnionShape', () => {
       const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
       const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
       const shape3 = new Shape();
+
+      shape1.async;
+      shape2.async;
+      shape3.async;
 
       const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');

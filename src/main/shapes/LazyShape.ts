@@ -1,6 +1,6 @@
-import { AnyShape, Shape } from './Shape';
+import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, ParseOptions } from '../shared-types';
-import { anyTypes, isArray } from '../utils';
+import { isArray } from '../utils';
 
 /**
  * Lazily resolves a shape using the provider.
@@ -14,22 +14,26 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
   declare readonly shape: S;
 
   /**
-   * The callback that returns the base shape.
-   */
-  protected _provider;
-
-  /**
    * Creates a new {@linkcode LazyShape} instance.
    *
-   * @param provider The provider that returns the base shape.
-   * @param async If `true` the shape would support both sync and async base shapes, otherwise only sync shapes are
-   * allowed.
+   * @param _shapeProvider The provider that returns the base shape.
    * @template S The base shape.
    */
-  constructor(provider: () => S, async: boolean) {
-    super(anyTypes, async);
+  constructor(
+    /**
+     * The callback that returns the base shape.
+     */
+    protected _shapeProvider: () => S
+  ) {
+    super();
+  }
 
-    this._provider = provider;
+  protected _checkAsync(): boolean {
+    return this.shape.async;
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return this.shape['_getInputTypes']();
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<S['output']> {
@@ -84,9 +88,11 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
 }
 
 Object.defineProperty(LazyShape.prototype, 'shape', {
-  get() {
-    const shape = this._provider();
-    Object.defineProperty(this, 'shape', { value: shape, enumerable: true });
+  get(this: LazyShape<AnyShape>) {
+    const shape = this._shapeProvider();
+
+    Object.defineProperty(this, 'shape', { value: shape });
+
     return shape;
   },
 });

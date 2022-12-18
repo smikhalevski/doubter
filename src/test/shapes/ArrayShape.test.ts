@@ -17,7 +17,7 @@ describe('ArrayShape', () => {
 
     expect(arrShape.shapes).toEqual([shape1]);
     expect(arrShape.restShape).toBe(restShape);
-    expect(arrShape['_inputTypes']).toEqual(['array']);
+    expect(arrShape['_getInputTypes']()).toEqual(['array']);
   });
 
   test('raises an issue if an input is not an unconstrained array', () => {
@@ -297,6 +297,9 @@ describe('ArrayShape', () => {
     test('parses tuple elements', async () => {
       const shape1 = new Shape();
       const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
+
+      shape1.async;
+      shape2.async;
 
       const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');

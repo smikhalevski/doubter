@@ -1,4 +1,4 @@
-import { Shape } from './Shape';
+import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, getValueType } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
@@ -18,9 +18,13 @@ export class EnumShape<T> extends Shape<T> {
    * @param options The type constraint options or an issue message.
    */
   constructor(readonly values: readonly T[], options?: TypeConstraintOptions | Message) {
-    super(values.map(getValueType));
+    super();
 
     this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return this.values.map(getValueType);
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<T> {

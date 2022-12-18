@@ -1,6 +1,6 @@
-import { Shape } from './Shape';
+import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { arrayTypes, createIssueFactory, objectTypes } from '../utils';
+import { createIssueFactory } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
 
 /**
@@ -19,9 +19,17 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
    * @template C The class constructor.
    */
   constructor(readonly ctor: C, options?: TypeConstraintOptions | Message) {
-    super((ctor as unknown) === Array || Array.prototype.isPrototypeOf(ctor.prototype) ? arrayTypes : objectTypes);
+    super();
 
     this._issueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    if ((this.ctor as unknown) === Array || Array.prototype.isPrototypeOf(this.ctor.prototype)) {
+      return ['array'];
+    } else {
+      return ['object'];
+    }
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InstanceType<C>> {

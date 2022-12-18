@@ -17,9 +17,13 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
   protected _issueFactory;
 
   constructor(readonly shapes: U, options?: TypeConstraintOptions | Message) {
-    super([], isAsyncShapes(shapes));
+    super();
 
     this._issueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
+  }
+
+  protected _checkAsync(): boolean {
+    return isAsyncShapes(this.shapes);
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferIntersection<U, 'output'>> {

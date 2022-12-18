@@ -39,7 +39,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     readonly shapes: U,
     options?: TypeConstraintOptions | Message
   ) {
-    super(getInputTypes(shapes), isAsyncShapes(shapes));
+    super();
 
     const { buckets, anyBucket } = createUnionBuckets(shapes);
 
@@ -66,6 +66,14 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
       return valueShapes[0];
     }
     return new UnionShape(valueShapes);
+  }
+
+  protected _checkAsync(): boolean {
+    return isAsyncShapes(this.shapes);
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return getInputTypes(this.shapes);
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
@@ -109,10 +117,6 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
-    if (!this.async) {
-      return super._applyAsync(input, options);
-    }
-
     const { _buckets, _anyBucket, _applyChecks } = this;
 
     const bucket = _buckets !== null ? _buckets[getValueType(input)] || _anyBucket : _anyBucket;
@@ -173,8 +177,10 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): {
   let bucketTypes: ValueType[] = [];
 
   for (const shape of unwrapUnionShapes(shapes)) {
+    const inputTypes = shape['_getInputTypes']();
+
     // Collect shapes that can parse any input
-    if (shape['_inputTypes'].includes('any')) {
+    if (inputTypes.includes('any')) {
       anyBucket ||= [];
 
       if (!anyBucket.includes(shape)) {
@@ -184,7 +190,7 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): {
     }
 
     // Populate buckets that require specific input types
-    for (const type of shape['_inputTypes']) {
+    for (const type of inputTypes) {
       const bucket = buckets[type];
 
       if (!bucket) {

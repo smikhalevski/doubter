@@ -8,12 +8,12 @@ describe('InstanceShape', () => {
     const shape = new InstanceShape(Foo);
 
     expect(shape.ctor).toBe(Foo);
-    expect(shape['_inputTypes']).toEqual(['object']);
+    expect(shape['_getInputTypes']()).toEqual(['object']);
   });
 
   test('uses array input type for an Array and its subclasses', () => {
-    expect(new InstanceShape(Array)['_inputTypes']).toEqual(['array']);
-    expect(new InstanceShape(class extends Array {})['_inputTypes']).toEqual(['array']);
+    expect(new InstanceShape(Array)['_getInputTypes']()).toEqual(['array']);
+    expect(new InstanceShape(class extends Array {})['_getInputTypes']()).toEqual(['array']);
   });
 
   test('parses an instance of a class', () => {
