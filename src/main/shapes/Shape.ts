@@ -161,8 +161,17 @@ export class Shape<I = any, O = I> {
 
   /**
    * The list of checks applied to the shape output.
+   *
+   * @readonly
    */
-  readonly checks: readonly Check[] = [];
+  checks: readonly Check[] = [];
+
+  /**
+   * `true` if input values are coerced during parsing.
+   *
+   * @readonly
+   */
+  coerced = false;
 
   /**
    * The human-readable shape description.
@@ -203,6 +212,15 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Enables input coercion during parsing.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.coerced = true;
+    return shape;
+  }
+
+  /**
    * Appends the check that is applied to the shape output.
    *
    * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then, it is removed
@@ -224,7 +242,7 @@ export class Shape<I = any, O = I> {
 
     const shape = this._clone();
 
-    (shape as any).checks = checks;
+    shape.checks = checks;
     shape._applyChecks = createApplyChecksCallback(checks);
     shape._unsafe ||= unsafe;
 

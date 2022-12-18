@@ -47,7 +47,9 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   InferArray<U, R, 'output'>
 > {
   protected _options;
+  protected _coercible;
   protected _issueFactory;
+  protected _shapesLength;
 
   /**
    * Creates a new {@linkcode ArrayShape} instance.
@@ -69,7 +71,11 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   ) {
     super();
 
+    const shapesLength = shapes !== null ? shapes.length : -1;
+
     this._options = options;
+    this._coercible = shapesLength === -1 || shapesLength === 1 || (shapesLength <= 1 && restShape !== null);
+    this._shapesLength = shapesLength;
 
     if (shapes !== null && restShape === null) {
       this._issueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
@@ -152,37 +158,38 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   protected _checkAsync(): boolean {
-    const { shapes, restShape } = this;
-
-    return (shapes !== null && isAsyncShapes(shapes)) || (restShape !== null && restShape.async);
+    return (this.shapes !== null && isAsyncShapes(this.shapes)) || (this.restShape !== null && this.restShape.async);
   }
 
   protected _getInputTypes(): ValueType[] {
-    return ['array'];
+    return this.coerced ? ['any'] : ['array'];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
-    const { shapes, restShape, _applyChecks, _unsafe } = this;
+  protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
+    const { shapes, restShape, _shapesLength, _applyChecks, _unsafe } = this;
 
     let inputLength;
-    let shapesLength = 0;
-
-    // noinspection CommaExpressionJS
-    if (
-      !isArray(input) ||
-      ((inputLength = input.length),
-      shapes !== null && inputLength !== (shapesLength = shapes.length) && restShape === null)
-    ) {
-      return [this._issueFactory(input, options)];
-    }
-
-    let issues: Issue[] | null = null;
     let output = input;
+    let issues: Issue[] | null = null;
+
+    const checked = isArray(input);
+
+    if (
+      !checked ||
+      (inputLength = input.length) < _shapesLength ||
+      (restShape === null && _shapesLength !== -1 && inputLength !== _shapesLength)
+    ) {
+      if (checked || !(options.coerced || this.coerced) || !this._coercible) {
+        return [this._issueFactory(input, options)];
+      }
+      output = [input];
+      inputLength = 1;
+    }
 
     if (shapes !== null || restShape !== null) {
       for (let i = 0; i < inputLength; ++i) {
-        const value = input[i];
-        const valueShape = i < shapesLength ? shapes![i] : restShape!;
+        const value = output[i];
+        const valueShape = i < _shapesLength ? shapes![i] : restShape!;
         const result = valueShape['_apply'](value, options);
 
         if (result === null) {
@@ -215,29 +222,34 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
-      const { shapes, restShape, _applyChecks, _unsafe } = this;
+      const { shapes, restShape, _shapesLength, _applyChecks, _unsafe } = this;
 
-      let inputLength: number;
-      let shapesLength = 0;
+      let inputLength;
+      let output = input;
 
-      // noinspection CommaExpressionJS
+      const checked = isArray(input);
+
       if (
-        !isArray(input) ||
-        ((inputLength = input.length),
-        shapes !== null && inputLength !== (shapesLength = shapes.length) && restShape === null)
+        !checked ||
+        (inputLength = input.length) < _shapesLength ||
+        (restShape === null && _shapesLength !== -1 && inputLength !== _shapesLength)
       ) {
-        resolve([this._issueFactory(input, options)]);
-        return;
+        if (checked || !(options.coerced || this.coerced) || !this._coercible) {
+          resolve([this._issueFactory(input, options)]);
+          return;
+        }
+        output = [input];
+        inputLength = 1;
       }
 
       const promises: Promise<ApplyResult>[] = [];
 
       if (shapes !== null || restShape !== null) {
         for (let i = 0; i < inputLength; ++i) {
-          const value = input[i];
-          const valueShape = i < shapesLength ? shapes![i] : restShape!;
+          const value = output[i];
+          const valueShape = i < _shapesLength ? shapes![i] : restShape!;
 
           promises.push(valueShape['_applyAsync'](value, options));
         }
@@ -248,7 +260,6 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
           const resultsLength = results.length;
 
           let issues: Issue[] | null = null;
-          let output = input;
 
           for (let i = 0; i < resultsLength; ++i) {
             const result = results[i];

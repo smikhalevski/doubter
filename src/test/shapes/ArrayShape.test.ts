@@ -130,6 +130,15 @@ describe('ArrayShape', () => {
     });
   });
 
+  test('raises an issue if an input is too short for tuple with rest elements', () => {
+    const arrShape = new ArrayShape([new Shape(), new Shape()], new Shape());
+
+    expect(arrShape.try(['aaa'])).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TYPE, input: ['aaa'], message: 'Must be an array', param: TYPE_ARRAY, path: [] }],
+    });
+  });
+
   test('raises a single issue captured by the rest shape', () => {
     const restShape = new Shape().check(() => [{ code: 'xxx' }]);
 
@@ -270,6 +279,57 @@ describe('ArrayShape', () => {
     expect(arrShape.at(2)).toBe(restShape);
   });
 
+  test('does not coerce if a tuple has no elements', () => {
+    const arrShape = new ArrayShape([], null).coerce();
+
+    expect(arrShape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 0', param: 0, path: [] }],
+    });
+  });
+
+  test('coerces a non-array to a tuple of one element', () => {
+    const arrShape = new ArrayShape([new Shape()], null).coerce();
+
+    expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('does not coerce if a tuple has more than one element', () => {
+    const arrShape = new ArrayShape([new Shape(), new Shape()], null).coerce();
+
+    expect(arrShape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2, path: [] }],
+    });
+  });
+
+  test('coerces a non-array to an array', () => {
+    const arrShape = new ArrayShape(null, new Shape()).coerce();
+
+    expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('coerce if a tuple has no elements with rest elements', () => {
+    const arrShape = new ArrayShape([], new Shape()).coerce();
+
+    expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('coerces a non-array to a tuple of one element with rest elements', () => {
+    const arrShape = new ArrayShape([new Shape()], new Shape()).coerce();
+
+    expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('does not coerce if a tuple has more than one element with rest elements', () => {
+    const arrShape = new ArrayShape([new Shape(), new Shape()], new Shape()).coerce();
+
+    expect(arrShape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY, path: [] }],
+    });
+  });
+
   describe('async', () => {
     test('raises an issue if an input is not an unconstrained array', async () => {
       const restShape = new Shape().transformAsync(value => Promise.resolve(value));
@@ -355,6 +415,33 @@ describe('ArrayShape', () => {
       await expect(arrShape.tryAsync([111])).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx', path: [] }],
+      });
+    });
+
+    test('coerces a non-array to an array', async () => {
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const arrShape = new ArrayShape(null, restShape).coerce();
+
+      await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
+    });
+
+    test('coerces a non-array to a tuple of one element', async () => {
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const arrShape = new ArrayShape([new Shape()], restShape).coerce();
+
+      await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
+    });
+
+    test('does not coerce if not a tuple of one element', async () => {
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const arrShape = new ArrayShape([new Shape(), new Shape()], restShape).coerce();
+
+      await expect(arrShape.tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY, path: [] }],
       });
     });
   });

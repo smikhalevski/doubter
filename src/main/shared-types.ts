@@ -190,6 +190,13 @@ export interface ParseOptions {
   verbose?: boolean;
 
   /**
+   * If `true` then all shapes would try to coerce input to a required type.
+   *
+   * @default false
+   */
+  coerced?: boolean;
+
+  /**
    * The custom context. Use it to pass custom params to check and transform callbacks.
    */
   context?: any;
