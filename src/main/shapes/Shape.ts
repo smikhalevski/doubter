@@ -12,22 +12,22 @@ import {
   TypeConstraintOptions,
 } from '../shared-types';
 import {
-  anyTypes,
   appendCheck,
   captureIssues,
   createApplyChecksCallback,
   createIssueFactory,
   getPrototypeOf,
+  getValueType,
   isArray,
   isEqual,
   ok,
-  unique,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
   CODE_EXCLUSION,
   CODE_PREDICATE,
   MESSAGE_ERROR_ASYNC,
+  MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME,
   MESSAGE_EXCLUSION,
   MESSAGE_PREDICATE,
 } from '../constants';
@@ -74,16 +74,6 @@ export type ValueType =
   | 'never';
 
 export interface Shape<I, O> {
-  /**
-   * The shape input type. Accessible only at compile time for type inference.
-   */
-  readonly input: I;
-
-  /**
-   * The shape output type. Accessible only at compile time for type inference.
-   */
-  readonly output: O;
-
   /**
    * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
    *
@@ -154,16 +144,20 @@ export interface Shape<I, O> {
  */
 export class Shape<I = any, O = I> {
   /**
+   * The shape input type. Accessible only at compile time for type inference.
+   */
+  declare readonly input: I;
+
+  /**
+   * The shape output type. Accessible only at compile time for type inference.
+   */
+  declare readonly output: O;
+
+  /**
    * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
    * `false` if the shape can be used in both sync and async contexts.
    */
-  readonly async;
-
-  /**
-   * The list of runtime value types that can be processed by the shape. Use {@linkcode Shape.typeof} to detect a
-   * runtime value type.
-   */
-  readonly inputTypes: readonly ValueType[];
+  declare readonly async: boolean;
 
   /**
    * The list of checks applied to the shape output.
@@ -184,47 +178,6 @@ export class Shape<I = any, O = I> {
    * `true` if some checks from {@linkcode checks} were marked as unsafe, `false` otherwise.
    */
   protected _unsafe = false;
-
-  /**
-   * Creates the new {@linkcode Shape} instance.
-   *
-   * @param inputTypes
-   * @param async If `true` then the shape would allow only {@linkcode parseAsync} and throw an error if
-   * {@linkcode parse} is called. Otherwise, shape can be used in both sync and async contexts.
-   * @template I The input value.
-   * @template O The output value.
-   */
-  constructor(inputTypes?: readonly ValueType[], async = false) {
-    this.inputTypes =
-      inputTypes === undefined || inputTypes.length === 0 || inputTypes.includes('any') ? anyTypes : unique(inputTypes);
-    this.async = async;
-
-    if (async) {
-      this.apply = () => {
-        throw new Error(MESSAGE_ERROR_ASYNC);
-      };
-    }
-  }
-
-  /**
-   * Returns the type of the value.
-   *
-   * @param value The value to detect type of.
-   */
-  static typeof(value: unknown): ValueType {
-    const type = typeof value;
-
-    if (type !== 'object') {
-      return type;
-    }
-    if (value === null) {
-      return 'null';
-    }
-    if (isArray(value)) {
-      return 'array';
-    }
-    return type;
-  }
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -441,16 +394,28 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Synchronously parses the input.
-   *
-   * Use {@linkcode parse} or {@linkcode try} instead of this method whenever possible. Override this method to
-   * implement a custom shape.
+   * Must return `true` is shape must be used in async context only, otherwise shape can be used in both sync and async
+   * contexts. Override this method to implement a custom shape.
+   */
+  protected _checkAsync(): boolean {
+    return false;
+  }
+
+  /**
+   * Returns the list of runtime value types that can be processed by the shape. Used for various optimizations.
+   */
+  protected _getInputTypes(): ValueType[] {
+    return ['any'];
+  }
+
+  /**
+   * Synchronously parses the input. Override this method to implement a custom shape.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  apply(input: unknown, options: ParseOptions): ApplyResult<O> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<O> {
     const { _applyChecks } = this;
 
     if (_applyChecks !== null) {
@@ -460,17 +425,14 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Asynchronously parses the input.
-   *
-   * Use {@linkcode parseAsync} or {@linkcode tryAsync} instead of this method whenever possible. Override this method
-   * to implement a custom shape that requires an async context.
+   * Asynchronously parses the input. Override this method to implement a custom shape.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
-    return new Promise(resolve => resolve(this.apply(input, options)));
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
+    return new Promise(resolve => resolve(this._apply(input, options)));
   }
 
   /**
@@ -481,10 +443,42 @@ export class Shape<I = any, O = I> {
   }
 }
 
-Object.defineProperty(Shape.prototype, 'try', {
+Object.defineProperty(Shape.prototype, 'input', {
   get() {
+    throw new Error(MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME);
+  },
+});
+
+Object.defineProperty(Shape.prototype, 'output', {
+  get() {
+    throw new Error(MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME);
+  },
+});
+
+Object.defineProperty(Shape.prototype, 'async', {
+  get(this: Shape) {
+    const async = this._checkAsync();
+
+    if (async) {
+      this._apply = () => {
+        throw new Error(MESSAGE_ERROR_ASYNC);
+      };
+    } else {
+      this._applyAsync = Shape.prototype['_applyAsync'];
+    }
+
+    Object.defineProperty(this, 'async', { value: async });
+
+    return async;
+  },
+});
+
+Object.defineProperty(Shape.prototype, 'try', {
+  get(this: Shape) {
+    void this.async;
+
     const cb: Shape['try'] = (input, options) => {
-      const result = this.apply(input, options || defaultParseOptions);
+      const result = this._apply(input, options || defaultParseOptions);
 
       if (result === null) {
         return ok(input);
@@ -502,9 +496,11 @@ Object.defineProperty(Shape.prototype, 'try', {
 });
 
 Object.defineProperty(Shape.prototype, 'tryAsync', {
-  get() {
+  get(this: Shape) {
+    void this.async;
+
     const cb: Shape['tryAsync'] = (input, options) => {
-      return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
         if (result === null) {
           return ok(input);
         }
@@ -522,9 +518,11 @@ Object.defineProperty(Shape.prototype, 'tryAsync', {
 });
 
 Object.defineProperty(Shape.prototype, 'parse', {
-  get() {
+  get(this: Shape) {
+    void this.async;
+
     const cb: Shape['parse'] = (input, options) => {
-      const result = this.apply(input, options || defaultParseOptions);
+      const result = this._apply(input, options || defaultParseOptions);
 
       if (result === null) {
         return input;
@@ -542,9 +540,11 @@ Object.defineProperty(Shape.prototype, 'parse', {
 });
 
 Object.defineProperty(Shape.prototype, 'parseAsync', {
-  get() {
+  get(this: Shape) {
+    void this.async;
+
     const cb: Shape['parseAsync'] = (input, options) => {
-      return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
         if (result === null) {
           return input;
         }
@@ -562,9 +562,11 @@ Object.defineProperty(Shape.prototype, 'parseAsync', {
 });
 
 Object.defineProperty(Shape.prototype, 'parseOrDefault', {
-  get() {
+  get(this: Shape) {
+    void this.async;
+
     const cb: Shape['parseOrDefault'] = (input, defaultValue, options) => {
-      const result = this.apply(input, options || defaultParseOptions);
+      const result = this._apply(input, options || defaultParseOptions);
 
       if (result === null) {
         return input;
@@ -582,9 +584,11 @@ Object.defineProperty(Shape.prototype, 'parseOrDefault', {
 });
 
 Object.defineProperty(Shape.prototype, 'parseOrDefaultAsync', {
-  get() {
+  get(this: Shape) {
+    void this.async;
+
     const cb: Shape['parseOrDefaultAsync'] = (input, defaultValue, options) => {
-      return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
         if (result === null) {
           return input;
         }
@@ -612,7 +616,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
    * Creates the new {@linkcode TransformShape} instance.
    *
    * @param shape The base shape.
-   * @param async If `true` then the transformed shape would await for the transformer to finish and use the resolved
+   * @param _async If `true` then the transformed shape would await for the callback to finish and use the resolved
    * value as an output. Otherwise, the value that is synchronously returned from the transformer is used as an output.
    * @param callback The callback that transforms the shape output value.
    * @template S The base shape.
@@ -623,7 +627,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
      * The base shape which output value is transformed.
      */
     readonly shape: S,
-    async: boolean,
+    protected _async: boolean,
     /**
      * The callback that transforms the shape output value.
      *
@@ -634,16 +638,24 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
      */
     readonly callback: (output: S['output'], options: Readonly<ParseOptions>) => Promise<O> | O
   ) {
-    super(shape.inputTypes, shape.async || async);
+    super();
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<O> {
+  protected _checkAsync(): boolean {
+    return this.shape.async || this._async;
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return this.shape['_getInputTypes']();
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<O> {
     const { shape, callback, _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    const result = shape.apply(input, options);
+    const result = shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -671,14 +683,10 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     return ok(output as O);
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
-    if (!this.async) {
-      return super.applyAsync(input, options);
-    }
-
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     const { shape, callback, _applyChecks } = this;
 
-    return shape.applyAsync(input, options).then(result => {
+    return shape['_applyAsync'](input, options).then(result => {
       let output = input;
 
       if (result !== null) {
@@ -735,16 +743,24 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
      */
     readonly outputShape: O
   ) {
-    super(inputShape.inputTypes, inputShape.async || outputShape.async);
+    super();
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
+  protected _checkAsync(): boolean {
+    return this.inputShape.async || this.outputShape.async;
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return this.inputShape['_getInputTypes']();
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    let result = inputShape.apply(input, options);
+    let result = inputShape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -753,7 +769,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
       output = result.value;
     }
 
-    const outputResult = outputShape.apply(output, options);
+    const outputResult = outputShape['_apply'](output, options);
 
     if (outputResult !== null) {
       if (isArray(outputResult)) {
@@ -773,18 +789,13 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O['output']>> {
-    if (!this.async) {
-      return super.applyAsync(input, options);
-    }
-
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O['output']>> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let result: ApplyResult = null;
     let output = input;
 
-    return inputShape
-      .applyAsync(input, options)
+    return inputShape['_applyAsync'](input, options)
       .then(inputResult => {
         if (inputResult !== null) {
           if (isArray(inputResult)) {
@@ -794,7 +805,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
           output = inputResult.value;
         }
 
-        return outputShape.applyAsync(output, options);
+        return outputShape['_applyAsync'](output, options);
       })
       .then(outputResult => {
         let issues;
@@ -854,18 +865,26 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
      */
     readonly value?: B
   ) {
-    super(shape.inputTypes.concat(Shape.typeof(searchedValue)), shape.async);
+    super();
 
     this._replacedResult = value === undefined || isEqual(value, searchedValue) ? null : ok(value);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
+  protected _checkAsync(): boolean {
+    return this.shape.async;
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return this.shape['_getInputTypes']().concat(getValueType(this.searchedValue));
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
     const { _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    const result = isEqual(input, this.searchedValue) ? this._replacedResult : this.shape.apply(input, options);
+    const result = isEqual(input, this.searchedValue) ? this._replacedResult : this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -884,11 +903,7 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
-    if (!this.async) {
-      return super.applyAsync(input, options);
-    }
-
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
     const { _applyChecks } = this;
 
     let issues;
@@ -904,7 +919,7 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
       return (this._replacedResultPromise ||= Promise.resolve(this._replacedResult));
     }
 
-    return this.shape.applyAsync(input, options).then(result => {
+    return this.shape['_applyAsync'](input, options).then(result => {
       let issues;
       let output = input;
 
@@ -956,12 +971,20 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     readonly excludedValue: T,
     options?: TypeConstraintOptions | Message
   ) {
-    super(shape.inputTypes, shape.async);
+    super();
 
     this._issueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
+  protected _checkAsync(): boolean {
+    return this.shape.async;
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return this.shape['_getInputTypes']();
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
     const { excludedValue, _issueFactory, _applyChecks } = this;
 
     let issues;
@@ -971,7 +994,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       return [_issueFactory(input, options)];
     }
 
-    const result = this.shape.apply(input, options);
+    const result = this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -994,18 +1017,14 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
-    if (!this.async) {
-      return super.applyAsync(input, options);
-    }
-
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
     const { excludedValue, _issueFactory, _applyChecks } = this;
 
     if (isEqual(input, excludedValue)) {
       return Promise.resolve([_issueFactory(input, options)]);
     }
 
-    return this.shape.applyAsync(input, options).then(result => {
+    return this.shape['_applyAsync'](input, options).then(result => {
       let issues;
       let output = input;
 

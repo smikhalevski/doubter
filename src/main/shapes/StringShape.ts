@@ -1,6 +1,6 @@
-import { Shape } from './Shape';
+import { Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory, stringTypes } from '../utils';
+import { appendCheck, createIssueFactory } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -25,7 +25,7 @@ export class StringShape extends Shape<string> {
    * @param options The type constraint options or the type issue message.
    */
   constructor(options?: TypeConstraintOptions | Message) {
-    super(stringTypes);
+    super();
 
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
   }
@@ -94,7 +94,11 @@ export class StringShape extends Shape<string> {
     });
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<string> {
+  protected _getInputTypes(): ValueType[] {
+    return ['string'];
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'string') {

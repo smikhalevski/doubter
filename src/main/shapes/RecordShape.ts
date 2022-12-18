@@ -1,4 +1,4 @@
-import { AnyShape, Shape } from './Shape';
+import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
   cloneEnumerableKeys,
@@ -7,7 +7,6 @@ import {
   isArray,
   isEqual,
   isObjectLike,
-  objectTypes,
   ok,
   setKeyValue,
   unshiftPath,
@@ -52,7 +51,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     readonly valueShape: V,
     options?: TypeConstraintOptions | Message
   ) {
-    super(objectTypes, (keyShape != null && keyShape.async) || valueShape.async);
+    super();
 
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
@@ -61,7 +60,15 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return typeof key === 'string' || typeof key === 'number' ? this.valueShape : null;
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
+  protected _checkAsync(): boolean {
+    return (this.keyShape !== null && this.keyShape.async) || this.valueShape.async;
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return ['object'];
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
       return [this._issueFactory(input, options)];
     }
@@ -79,7 +86,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       let outputValue = value;
 
       if (keyShape !== null) {
-        const keyResult = keyShape.apply(key, options);
+        const keyResult = keyShape['_apply'](key, options);
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
@@ -95,7 +102,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
         }
       }
 
-      const valueResult = valueShape.apply(value, options);
+      const valueResult = valueShape['_apply'](value, options);
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
@@ -127,11 +134,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
-    if (!this.async) {
-      return super.applyAsync(input, options);
-    }
-
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         resolve([this._issueFactory(input, options)]);
@@ -147,8 +150,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
         promises.push(
           key,
-          keyShape !== null ? keyShape.applyAsync(key, options) : null,
-          valueShape.applyAsync(value, options)
+          keyShape !== null ? keyShape['_applyAsync'](key, options) : null,
+          valueShape['_applyAsync'](value, options)
         );
       }
 

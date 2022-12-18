@@ -1,6 +1,6 @@
-import { Shape } from './Shape';
+import { Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory, numberTypes } from '../utils';
+import { appendCheck, createIssueFactory } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -32,7 +32,7 @@ export class NumberShape extends Shape<number> {
    * @param options The type constraint options or the type issue message.
    */
   constructor(options?: TypeConstraintOptions | Message) {
-    super(numberTypes);
+    super();
 
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
   }
@@ -157,7 +157,11 @@ export class NumberShape extends Shape<number> {
     return shape;
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<number> {
+  protected _getInputTypes(): ValueType[] {
+    return ['number'];
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { _typePredicate, _applyChecks } = this;
 
     if (!_typePredicate(input)) {

@@ -1,6 +1,6 @@
 import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createIssueFactory, getInputTypes, isArray, isAsyncShapes, unique } from '../utils';
+import { concatIssues, createIssueFactory, getInputTypes, getValueType, isArray, isAsyncShapes } from '../utils';
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
 
 // prettier-ignore
@@ -31,7 +31,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     readonly shapes: U,
     options?: TypeConstraintOptions | Message
   ) {
-    super(getInputTypes(shapes), isAsyncShapes(shapes));
+    super();
 
     const { buckets, anyBucket } = createUnionBuckets(shapes);
 
@@ -60,10 +60,18 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     return new UnionShape(valueShapes);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
+  protected _checkAsync(): boolean {
+    return isAsyncShapes(this.shapes);
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return getInputTypes(this.shapes);
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
     const { _buckets, _anyBucket, _applyChecks } = this;
 
-    const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
+    const bucket = _buckets !== null ? _buckets[getValueType(input)] || _anyBucket : _anyBucket;
 
     let issues: Issue[] | null = null;
     let result: ApplyResult = null;
@@ -73,7 +81,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
 
     if (bucket !== null) {
       for (bucketLength = bucket.length; index < bucketLength; ++index) {
-        result = bucket[index].apply(input, options);
+        result = bucket[index]['_apply'](input, options);
 
         if (result === null) {
           break;
@@ -100,14 +108,10 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
-    if (!this.async) {
-      return super.applyAsync(input, options);
-    }
-
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
     const { _buckets, _anyBucket, _applyChecks } = this;
 
-    const bucket = _buckets !== null ? _buckets[Shape.typeof(input)] || _anyBucket : _anyBucket;
+    const bucket = _buckets !== null ? _buckets[getValueType(input)] || _anyBucket : _anyBucket;
 
     if (bucket === null) {
       return Promise.resolve([this._issueFactory(input, options, [])]);
@@ -119,7 +123,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     let index = 0;
 
     const nextShape = (): Promise<ApplyResult<InferUnion<U, 'output'>>> => {
-      return bucket[index].applyAsync(input, options).then(result => {
+      return bucket[index]['_applyAsync'](input, options).then(result => {
         ++index;
 
         let output = input;
@@ -160,13 +164,15 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): {
   buckets: Partial<Record<ValueType, readonly AnyShape[]>> | null;
   anyBucket: readonly AnyShape[] | null;
 } {
-  let buckets: Partial<Record<string, AnyShape[]>> | null = {};
+  let buckets: Partial<Record<ValueType, AnyShape[]>> | null = {};
   let anyBucket: AnyShape[] | null = null;
   let bucketTypes: ValueType[] = [];
 
   for (const shape of unwrapUnionShapes(shapes)) {
+    const inputTypes = shape['_getInputTypes']();
+
     // Collect shapes that can parse any input
-    if (shape.inputTypes.includes('any')) {
+    if (inputTypes.includes('any')) {
       anyBucket ||= [];
 
       if (!anyBucket.includes(shape)) {
@@ -176,7 +182,7 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): {
     }
 
     // Populate buckets that require specific input types
-    for (const type of shape.inputTypes) {
+    for (const type of inputTypes) {
       const bucket = buckets[type];
 
       if (!bucket) {
@@ -194,7 +200,13 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): {
     buckets = null;
   } else if (anyBucket !== null && buckets !== null) {
     for (const type of bucketTypes) {
-      buckets[type] = unique(buckets[type]!.concat(anyBucket));
+      const bucket = buckets[type]!;
+
+      for (const shape of anyBucket) {
+        if (!bucket.includes(shape)) {
+          bucket.push(shape);
+        }
+      }
     }
   }
 

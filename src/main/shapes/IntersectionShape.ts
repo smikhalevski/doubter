@@ -1,6 +1,6 @@
 import { AnyShape, Shape } from './Shape';
 import { InferUnion } from './UnionShape';
-import { createIssueFactory, isArray, isAsyncShapes, isEqual, ok } from '../utils';
+import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 
@@ -17,19 +17,23 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
   protected _issueFactory;
 
   constructor(readonly shapes: U, options?: TypeConstraintOptions | Message) {
-    super([], isAsyncShapes(shapes));
+    super();
 
     this._issueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InferIntersection<U, 'output'>> {
+  protected _checkAsync(): boolean {
+    return isAsyncShapes(this.shapes);
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferIntersection<U, 'output'>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
     let outputs: any[] | null = null;
 
     for (let i = 0; i < shapesLength; ++i) {
-      const result = shapes[i].apply(input, options);
+      const result = shapes[i]['_apply'](input, options);
 
       if (result === null) {
         continue;
@@ -58,14 +62,14 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     return intersectOutputs(input, outputs, this._issueFactory, options);
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferIntersection<U, 'output'>>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferIntersection<U, 'output'>>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
     const promises: Promise<ApplyResult>[] = [];
 
     for (let i = 0; i < shapesLength; ++i) {
-      promises.push(shapes[i].applyAsync(input, options));
+      promises.push(shapes[i]['_applyAsync'](input, options));
     }
 
     return Promise.all(promises).then(results => {
@@ -131,8 +135,8 @@ function intersectPair(a: any, b: any): any {
     return a;
   }
 
-  const aType = Shape.typeof(a);
-  const bType = Shape.typeof(b);
+  const aType = getValueType(a);
+  const bType = getValueType(b);
 
   if (aType !== bType) {
     return NEVER;

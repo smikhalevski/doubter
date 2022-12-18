@@ -1,4 +1,5 @@
 import * as d from '../../main';
+import { Shape } from '../../main';
 
 describe('lazy', () => {
   test('returns a shape', () => {
@@ -11,8 +12,14 @@ describe('lazy', () => {
   });
 
   test('returns an async shape', () => {
-    const shape = d.string();
-    const lazyShape = d.lazyAsync(() => shape);
+    class AsyncShape extends Shape {
+      protected _checkAsync() {
+        return true;
+      }
+    }
+
+    const shape = new AsyncShape();
+    const lazyShape = d.lazy(() => shape);
 
     expect(lazyShape).toBeInstanceOf(d.LazyShape);
     expect(lazyShape.async).toBe(true);

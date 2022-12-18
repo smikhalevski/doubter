@@ -13,40 +13,23 @@ import {
 import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 
-export const objectTypes: ValueType[] = ['object'];
-export const arrayTypes: ValueType[] = ['array'];
-export const stringTypes: ValueType[] = ['string'];
-export const numberTypes: ValueType[] = ['number'];
-export const bigintTypes: ValueType[] = ['bigint'];
-export const booleanTypes: ValueType[] = ['boolean'];
-export const anyTypes: ValueType[] = ['any'];
-export const neverTypes: ValueType[] = ['never'];
+export function getValueType(value: unknown): ValueType {
+  const type = typeof value;
+
+  if (type !== 'object') {
+    return type;
+  }
+  if (value === null) {
+    return 'null';
+  }
+  if (isArray(value)) {
+    return 'array';
+  }
+  return type;
+}
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
-}
-
-export function unique<T>(arr: T[]): T[];
-
-export function unique<T>(arr: readonly T[]): readonly T[];
-
-export function unique<T>(arr: readonly T[]): readonly T[] {
-  let uniqueArr: T[] | null = null;
-
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i];
-
-    if (arr.includes(value, i + 1)) {
-      if (uniqueArr === null) {
-        uniqueArr = arr.slice(0, i);
-      }
-      continue;
-    }
-    if (uniqueArr !== null) {
-      uniqueArr.push(value);
-    }
-  }
-  return uniqueArr || arr;
 }
 
 export const isArray = Array.isArray;
@@ -73,6 +56,10 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
     async = shapes[i].async;
   }
   return async;
+}
+
+export function isUnique<T>(value: T, index: number, values: readonly T[]): boolean {
+  return !values.includes(value, index + 1);
 }
 
 /**
@@ -409,7 +396,7 @@ export function getInputTypes(shapes: readonly AnyShape[]): ValueType[] {
   const types: ValueType[] = [];
 
   for (const shape of shapes) {
-    for (const type of shape.inputTypes) {
+    for (const type of shape['_getInputTypes']()) {
       types.push(type);
     }
   }

@@ -1,6 +1,6 @@
-import { Shape } from './Shape';
+import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory } from '../utils';
+import { createIssueFactory, getValueType, isUnique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
 
 /**
@@ -9,6 +9,11 @@ import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
  * @template T Allowed values.
  */
 export class EnumShape<T> extends Shape<T> {
+  /**
+   * The list of values allowed for the input.
+   */
+  readonly values: readonly T[];
+
   protected _issueFactory;
 
   /**
@@ -17,13 +22,19 @@ export class EnumShape<T> extends Shape<T> {
    * @param values The list of values allowed for the input.
    * @param options The type constraint options or an issue message.
    */
-  constructor(readonly values: readonly T[], options?: TypeConstraintOptions | Message) {
-    super(values.map(Shape.typeof));
+  constructor(values: readonly T[], options?: TypeConstraintOptions | Message) {
+    super();
+
+    this.values = values.filter(isUnique);
 
     this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
-  apply(input: any, options: ParseOptions): ApplyResult<T> {
+  protected _getInputTypes(): ValueType[] {
+    return this.values.map(getValueType);
+  }
+
+  protected _apply(input: any, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 
     if (!this.values.includes(input)) {

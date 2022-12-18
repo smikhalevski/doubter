@@ -17,7 +17,7 @@ describe('ArrayShape', () => {
 
     expect(arrShape.shapes).toEqual([shape1]);
     expect(arrShape.restShape).toBe(restShape);
-    expect(arrShape.inputTypes).toEqual(['array']);
+    expect(arrShape['_getInputTypes']()).toEqual(['array']);
   });
 
   test('raises an issue if an input is not an unconstrained array', () => {
@@ -45,8 +45,8 @@ describe('ArrayShape', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
-    const applySpy1 = jest.spyOn(shape1, 'apply');
-    const applySpy2 = jest.spyOn(shape2, 'apply');
+    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
 
     const arrShape = new ArrayShape([shape1, shape2], null);
 
@@ -64,7 +64,7 @@ describe('ArrayShape', () => {
   test('parses rest elements', () => {
     const restShape = new Shape();
 
-    const restApplySpy = jest.spyOn(restShape, 'apply');
+    const restApplySpy = jest.spyOn<Shape, any>(restShape, '_apply');
 
     const arrShape = new ArrayShape(null, restShape);
 
@@ -83,9 +83,9 @@ describe('ArrayShape', () => {
     const shape2 = new Shape();
     const restShape = new Shape();
 
-    const applySpy1 = jest.spyOn(shape1, 'apply');
-    const applySpy2 = jest.spyOn(shape2, 'apply');
-    const restApplySpy = jest.spyOn(restShape, 'apply');
+    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
+    const restApplySpy = jest.spyOn<Shape, any>(restShape, '_apply');
 
     const arrShape = new ArrayShape([shape1, shape2], restShape);
 
@@ -287,7 +287,7 @@ describe('ArrayShape', () => {
     test('downgrades to sync implementation if there are async element shapes', async () => {
       const arrShape = new ArrayShape(null, new Shape());
 
-      const arrApplySpy = jest.spyOn(arrShape, 'apply');
+      const arrApplySpy = jest.spyOn<Shape, any>(arrShape, '_apply');
 
       await expect(arrShape.tryAsync([])).resolves.toEqual({ ok: true, value: [] });
       expect(arrApplySpy).toHaveBeenCalledTimes(1);
@@ -298,8 +298,11 @@ describe('ArrayShape', () => {
       const shape1 = new Shape();
       const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
 
-      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
-      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
+      shape1.async;
+      shape2.async;
+
+      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
 
       const arrShape = new ArrayShape([shape1, shape2], null);
 
@@ -317,7 +320,7 @@ describe('ArrayShape', () => {
     test('parses rest elements', async () => {
       const restShape = new Shape().transformAsync(value => Promise.resolve(value));
 
-      const restApplyAsyncSpy = jest.spyOn(restShape, 'applyAsync');
+      const restApplyAsyncSpy = jest.spyOn<Shape, any>(restShape, '_applyAsync');
 
       const arrShape = new ArrayShape(null, restShape);
 

@@ -1,6 +1,6 @@
-import { Shape } from './Shape';
+import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { booleanTypes, createIssueFactory } from '../utils';
+import { createIssueFactory } from '../utils';
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../constants';
 
 /**
@@ -15,12 +15,16 @@ export class BooleanShape extends Shape<boolean> {
    * @param options The type constraint options or the type issue message.
    */
   constructor(options?: TypeConstraintOptions | Message) {
-    super(booleanTypes);
+    super();
 
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
+  protected _getInputTypes(): ValueType[] {
+    return ['boolean'];
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {

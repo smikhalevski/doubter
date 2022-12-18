@@ -3,7 +3,7 @@ import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/co
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
-    expect(new Shape([], false).async).toBe(false);
+    expect(new Shape().async).toBe(false);
   });
 
   test('clones shape when check is added', () => {
@@ -243,11 +243,23 @@ describe('Shape', () => {
 
   describe('async', () => {
     test('creates an async shape', () => {
-      expect(new Shape([], true).async).toBe(true);
+      class AsyncShape extends Shape {
+        protected _checkAsync() {
+          return true;
+        }
+      }
+
+      expect(new AsyncShape().async).toBe(true);
     });
 
     test('throws if sync methods are invoked', () => {
-      const shape = new Shape([], true);
+      class AsyncShape extends Shape {
+        protected _checkAsync() {
+          return true;
+        }
+      }
+
+      const shape = new AsyncShape();
 
       expect(() => shape.parse('')).toThrow(Error);
       expect(() => shape.try('')).toThrow(Error);
@@ -370,8 +382,8 @@ describe('RedirectShape', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
-    const applySpy1 = jest.spyOn(shape1, 'apply');
-    const applySpy2 = jest.spyOn(shape2, 'apply');
+    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
 
     const shape = shape1.to(shape2);
 
@@ -388,7 +400,7 @@ describe('RedirectShape', () => {
     const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
     const shape2 = new Shape();
 
-    const applySpy = jest.spyOn(shape2, 'apply');
+    const applySpy = jest.spyOn<Shape, any>(shape2, '_apply');
 
     const shape = shape1.to(shape2);
 

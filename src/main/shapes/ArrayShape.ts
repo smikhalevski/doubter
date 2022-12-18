@@ -1,8 +1,7 @@
-import { AnyShape, Shape } from './Shape';
+import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
   appendCheck,
-  arrayTypes,
   concatIssues,
   createIssueFactory,
   isArray,
@@ -68,7 +67,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     readonly restShape: R,
     options?: TypeConstraintOptions | Message
   ) {
-    super(arrayTypes, (shapes !== null && isAsyncShapes(shapes)) || (restShape !== null && restShape.async));
+    super();
 
     this._options = options;
 
@@ -152,7 +151,17 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     });
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
+  protected _checkAsync(): boolean {
+    const { shapes, restShape } = this;
+
+    return (shapes !== null && isAsyncShapes(shapes)) || (restShape !== null && restShape.async);
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return ['array'];
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
     const { shapes, restShape, _applyChecks, _unsafe } = this;
 
     let inputLength;
@@ -174,7 +183,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       for (let i = 0; i < inputLength; ++i) {
         const value = input[i];
         const valueShape = i < shapesLength ? shapes![i] : restShape!;
-        const result = valueShape.apply(value, options);
+        const result = valueShape['_apply'](value, options);
 
         if (result === null) {
           continue;
@@ -206,11 +215,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return issues;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
-    if (!this.async) {
-      return super.applyAsync(input, options);
-    }
-
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
       const { shapes, restShape, _applyChecks, _unsafe } = this;
 
@@ -234,7 +239,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
           const value = input[i];
           const valueShape = i < shapesLength ? shapes![i] : restShape!;
 
-          promises.push(valueShape.applyAsync(value, options));
+          promises.push(valueShape['_applyAsync'](value, options));
         }
       }
 

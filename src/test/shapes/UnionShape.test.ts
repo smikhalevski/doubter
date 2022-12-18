@@ -7,13 +7,13 @@ describe('UnionShape', () => {
     const shape2 = new StringShape();
     const shape3 = new BooleanShape();
 
-    const applySpy1 = jest.spyOn(shape1, 'apply');
-    const applySpy2 = jest.spyOn(shape2, 'apply');
-    const applySpy3 = jest.spyOn(shape3, 'apply');
+    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
+    const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
 
     const orShape = new UnionShape([shape1, shape2, shape3]);
 
-    expect(orShape.inputTypes).toEqual(['number', 'string', 'boolean']);
+    expect(orShape['_getInputTypes']()).toEqual(['number', 'string', 'boolean']);
     expect(orShape.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
@@ -26,14 +26,14 @@ describe('UnionShape', () => {
     const shape3 = new BooleanShape();
     const orShape1 = new UnionShape([shape2, shape3]);
 
-    const applySpy1 = jest.spyOn(shape1, 'apply');
-    const applySpy2 = jest.spyOn(shape2, 'apply');
-    const applySpy3 = jest.spyOn(shape3, 'apply');
-    const unionApplySpy = jest.spyOn(shape3, 'apply');
+    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
+    const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
+    const unionApplySpy = jest.spyOn<Shape, any>(shape3, '_apply');
 
     const orShape2 = new UnionShape([shape1, orShape1]);
 
-    expect(orShape2.inputTypes).toEqual(['number', 'string', 'boolean']);
+    expect(orShape2['_getInputTypes']()).toEqual(['number', 'string', 'boolean']);
     expect(orShape2.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
@@ -47,10 +47,10 @@ describe('UnionShape', () => {
     const shape3 = new BooleanShape();
     const orShape1 = new UnionShape([shape2, shape3]).refine(() => true);
 
-    const applySpy1 = jest.spyOn(shape1, 'apply');
-    const applySpy2 = jest.spyOn(shape2, 'apply');
-    const applySpy3 = jest.spyOn(shape3, 'apply');
-    const unionApplySpy = jest.spyOn(orShape1, 'apply');
+    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
+    const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
+    const unionApplySpy = jest.spyOn<Shape, any>(orShape1, '_apply');
 
     const orShape2 = new UnionShape([shape1, orShape1]);
 
@@ -66,9 +66,9 @@ describe('UnionShape', () => {
     const shape2 = new Shape();
     const shape3 = new Shape();
 
-    const applySpy1 = jest.spyOn(shape1, 'apply');
-    const applySpy2 = jest.spyOn(shape2, 'apply');
-    const applySpy3 = jest.spyOn(shape3, 'apply');
+    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
+    const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
 
     const orShape = new UnionShape([shape1, shape2, shape3]);
 
@@ -148,9 +148,9 @@ describe('UnionShape', () => {
       const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
       const shape3 = new BooleanShape();
 
-      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
-      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
-      const applyAsyncSpy3 = jest.spyOn(shape3, 'applyAsync');
+      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applyAsyncSpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
 
       const orShape = new UnionShape([shape1, shape2, shape3]);
 
@@ -168,10 +168,10 @@ describe('UnionShape', () => {
       const shape3 = new BooleanShape();
       const orShape1 = new UnionShape([shape2, shape3]);
 
-      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
-      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
-      const applyAsyncSpy3 = jest.spyOn(shape3, 'applyAsync');
-      const unionApplyAsyncSpy = jest.spyOn(shape3, 'applyAsync');
+      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applyAsyncSpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
+      const unionApplyAsyncSpy = jest.spyOn<Shape, any>(shape3, '_applyAsync');
 
       const orShape2 = new UnionShape([shape1, orShape1]);
 
@@ -190,10 +190,10 @@ describe('UnionShape', () => {
       const shape3 = new BooleanShape();
       const orShape1 = new UnionShape([shape2, shape3]).refine(() => true);
 
-      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
-      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
-      const applyAsyncSpy3 = jest.spyOn(shape3, 'applyAsync');
-      const unionApplyAsyncSpy = jest.spyOn(orShape1, 'applyAsync');
+      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applyAsyncSpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
+      const unionApplyAsyncSpy = jest.spyOn<Shape, any>(orShape1, '_applyAsync');
 
       const orShape2 = new UnionShape([shape1, orShape1]);
 
@@ -211,9 +211,13 @@ describe('UnionShape', () => {
       const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
       const shape3 = new Shape();
 
-      const applyAsyncSpy1 = jest.spyOn(shape1, 'applyAsync');
-      const applyAsyncSpy2 = jest.spyOn(shape2, 'applyAsync');
-      const applyAsyncSpy3 = jest.spyOn(shape3, 'applyAsync');
+      shape1.async;
+      shape2.async;
+      shape3.async;
+
+      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applyAsyncSpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
 
       const orShape = new UnionShape([shape1, shape2, shape3]);
 
