@@ -28,6 +28,7 @@ import {
   CODE_EXCLUSION,
   CODE_PREDICATE,
   MESSAGE_ERROR_ASYNC,
+  MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME,
   MESSAGE_EXCLUSION,
   MESSAGE_PREDICATE,
 } from '../constants';
@@ -74,22 +75,6 @@ export type ValueType =
   | 'never';
 
 export interface Shape<I, O> {
-  /**
-   * The shape input type. Accessible only at compile time for type inference.
-   */
-  readonly input: I;
-
-  /**
-   * The shape output type. Accessible only at compile time for type inference.
-   */
-  readonly output: O;
-
-  /**
-   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
-   * `false` if the shape can be used in both sync and async contexts.
-   */
-  readonly async: boolean;
-
   /**
    * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
    *
@@ -159,6 +144,22 @@ export interface Shape<I, O> {
  * @template O The output value.
  */
 export class Shape<I = any, O = I> {
+  /**
+   * The shape input type. Accessible only at compile time for type inference.
+   */
+  declare readonly input: I;
+
+  /**
+   * The shape output type. Accessible only at compile time for type inference.
+   */
+  declare readonly output: O;
+
+  /**
+   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
+   * `false` if the shape can be used in both sync and async contexts.
+   */
+  declare readonly async: boolean;
+
   /**
    * The list of checks applied to the shape output.
    */
@@ -443,6 +444,18 @@ export class Shape<I = any, O = I> {
   }
 }
 
+Object.defineProperty(Shape.prototype, 'input', {
+  get() {
+    throw new Error(MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME);
+  },
+});
+
+Object.defineProperty(Shape.prototype, 'output', {
+  get() {
+    throw new Error(MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME);
+  },
+});
+
 Object.defineProperty(Shape.prototype, 'async', {
   get(this: Shape) {
     const async = this._checkAsync();
@@ -463,7 +476,7 @@ Object.defineProperty(Shape.prototype, 'async', {
 
 Object.defineProperty(Shape.prototype, 'try', {
   get(this: Shape) {
-    this.async;
+    void this.async;
 
     const cb: Shape['try'] = (input, options) => {
       const result = this._apply(input, options || defaultParseOptions);
@@ -485,7 +498,7 @@ Object.defineProperty(Shape.prototype, 'try', {
 
 Object.defineProperty(Shape.prototype, 'tryAsync', {
   get(this: Shape) {
-    this.async;
+    void this.async;
 
     const cb: Shape['tryAsync'] = (input, options) => {
       return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
@@ -507,7 +520,7 @@ Object.defineProperty(Shape.prototype, 'tryAsync', {
 
 Object.defineProperty(Shape.prototype, 'parse', {
   get(this: Shape) {
-    this.async;
+    void this.async;
 
     const cb: Shape['parse'] = (input, options) => {
       const result = this._apply(input, options || defaultParseOptions);
@@ -529,7 +542,7 @@ Object.defineProperty(Shape.prototype, 'parse', {
 
 Object.defineProperty(Shape.prototype, 'parseAsync', {
   get(this: Shape) {
-    this.async;
+    void this.async;
 
     const cb: Shape['parseAsync'] = (input, options) => {
       return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
@@ -551,7 +564,7 @@ Object.defineProperty(Shape.prototype, 'parseAsync', {
 
 Object.defineProperty(Shape.prototype, 'parseOrDefault', {
   get(this: Shape) {
-    this.async;
+    void this.async;
 
     const cb: Shape['parseOrDefault'] = (input, defaultValue, options) => {
       const result = this._apply(input, options || defaultParseOptions);
@@ -573,7 +586,7 @@ Object.defineProperty(Shape.prototype, 'parseOrDefault', {
 
 Object.defineProperty(Shape.prototype, 'parseOrDefaultAsync', {
   get(this: Shape) {
-    this.async;
+    void this.async;
 
     const cb: Shape['parseOrDefaultAsync'] = (input, defaultValue, options) => {
       return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {

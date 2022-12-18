@@ -1,4 +1,6 @@
 export const MESSAGE_ERROR_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
+export const MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME =
+  'Shape input and output inference properties must not be accessed at runtime';
 
 export const CODE_ARRAY_MAX = 'arrayMaxLength';
 export const CODE_ARRAY_MIN = 'arrayMinLength';
