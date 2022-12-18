@@ -326,7 +326,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return shape;
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
     const { _typePredicate } = this;
 
     if (!_typePredicate(input)) {
@@ -339,9 +339,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
     if (!this.async) {
-      return super.applyAsync(input, options);
+      return super._applyAsync(input, options);
     }
 
     return new Promise(resolve => {
@@ -379,7 +379,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
 
         if (valueShape !== null) {
-          promises.push(key, valueShape.applyAsync(value, options));
+          promises.push(key, valueShape['_applyAsync'](value, options));
           continue;
         }
 
@@ -421,7 +421,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           const key = keys[i];
           const value = input[key];
 
-          promises.push(key, _valueShapes[i].applyAsync(value, options));
+          promises.push(key, _valueShapes[i]['_applyAsync'](value, options));
         }
       }
 
@@ -479,7 +479,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     for (let i = 0; i < keysLength; ++i) {
       const key = keys[i];
       const value = input[key];
-      const result = _valueShapes[i].apply(value, options);
+      const result = _valueShapes[i]['_apply'](value, options);
 
       if (result === null) {
         continue;
@@ -542,7 +542,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       // The key is known or indexed
       if (valueShape !== null) {
-        const result = valueShape.apply(value, options);
+        const result = valueShape['_apply'](value, options);
 
         if (result === null) {
           continue;
@@ -605,7 +605,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
         const key = keys[i];
         const value = input[key];
-        const result = _valueShapes[i].apply(value, options);
+        const result = _valueShapes[i]['_apply'](value, options);
 
         if (result === null) {
           continue;

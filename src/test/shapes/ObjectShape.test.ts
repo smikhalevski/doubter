@@ -233,7 +233,7 @@ describe('ObjectShape', () => {
   describe('lax', () => {
     test('checks known keys', () => {
       const shape1 = new Shape();
-      const applySpy1 = jest.spyOn(shape1, 'apply');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
 
       const objShape = new ObjectShape({ key1: shape1 }, null);
 
@@ -324,9 +324,9 @@ describe('ObjectShape', () => {
       const shape2 = new Shape();
       const restShape = new Shape();
 
-      const applySpy1 = jest.spyOn(shape1, 'apply');
-      const applySpy2 = jest.spyOn(shape2, 'apply');
-      const restApplySpy = jest.spyOn(restShape, 'apply');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
+      const restApplySpy = jest.spyOn<Shape, any>(restShape, '_apply');
 
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, restShape);
 
@@ -474,9 +474,9 @@ describe('ObjectShape', () => {
       const shape2 = new Shape();
       const restShape = new Shape();
 
-      const applySpy1 = jest.spyOn(shape1, 'applyAsync');
-      const applySpy2 = jest.spyOn(shape2, 'applyAsync');
-      const restApplySpy = jest.spyOn(restShape, 'applyAsync');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const restApplySpy = jest.spyOn<Shape, any>(restShape, '_applyAsync');
 
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, restShape);
 

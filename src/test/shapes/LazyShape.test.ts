@@ -1,11 +1,11 @@
-import { LazyShape, StringShape } from '../../main';
+import { LazyShape, Shape, StringShape } from '../../main';
 
 describe('LazyShape', () => {
   test('parses values with a shape', () => {
     const shape = new StringShape();
     const lazyShape = new LazyShape(() => shape, false);
 
-    const applySpy = jest.spyOn(shape, 'apply');
+    const applySpy = jest.spyOn<Shape, any>(shape, '_apply');
 
     expect(lazyShape.async).toBe(false);
     expect(lazyShape.parse('aaa')).toBe('aaa');
@@ -32,7 +32,7 @@ describe('LazyShape', () => {
       const shape = new StringShape();
       const lazyShape = new LazyShape(() => shape, true);
 
-      const applyAsyncSpy = jest.spyOn(shape, 'applyAsync');
+      const applyAsyncSpy = jest.spyOn<Shape, any>(shape, '_applyAsync');
 
       expect(lazyShape.async).toBe(true);
       await expect(lazyShape.parseAsync('aaa')).resolves.toBe('aaa');

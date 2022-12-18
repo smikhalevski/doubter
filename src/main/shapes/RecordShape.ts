@@ -61,7 +61,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return typeof key === 'string' || typeof key === 'number' ? this.valueShape : null;
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
       return [this._issueFactory(input, options)];
     }
@@ -79,7 +79,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       let outputValue = value;
 
       if (keyShape !== null) {
-        const keyResult = keyShape.apply(key, options);
+        const keyResult = keyShape['_apply'](key, options);
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
@@ -95,7 +95,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
         }
       }
 
-      const valueResult = valueShape.apply(value, options);
+      const valueResult = valueShape['_apply'](value, options);
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
@@ -127,9 +127,9 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
     if (!this.async) {
-      return super.applyAsync(input, options);
+      return super._applyAsync(input, options);
     }
 
     return new Promise(resolve => {
@@ -147,8 +147,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
         promises.push(
           key,
-          keyShape !== null ? keyShape.applyAsync(key, options) : null,
-          valueShape.applyAsync(value, options)
+          keyShape !== null ? keyShape['_applyAsync'](key, options) : null,
+          valueShape['_applyAsync'](value, options)
         );
       }
 

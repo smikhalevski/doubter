@@ -23,7 +23,7 @@ export class EnumShape<T> extends Shape<T> {
     this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
-  apply(input: any, options: ParseOptions): ApplyResult<T> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 
     if (!this.values.includes(input)) {

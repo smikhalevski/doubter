@@ -409,7 +409,7 @@ export function getInputTypes(shapes: readonly AnyShape[]): ValueType[] {
   const types: ValueType[] = [];
 
   for (const shape of shapes) {
-    for (const type of shape.inputTypes) {
+    for (const type of shape['_inputTypes']) {
       types.push(type);
     }
   }

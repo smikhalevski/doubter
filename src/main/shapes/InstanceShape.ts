@@ -24,7 +24,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     this._issueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InstanceType<C>> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InstanceType<C>> {
     const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {

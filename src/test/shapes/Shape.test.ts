@@ -370,8 +370,8 @@ describe('RedirectShape', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
-    const applySpy1 = jest.spyOn(shape1, 'apply');
-    const applySpy2 = jest.spyOn(shape2, 'apply');
+    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
 
     const shape = shape1.to(shape2);
 
@@ -388,7 +388,7 @@ describe('RedirectShape', () => {
     const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
     const shape2 = new Shape();
 
-    const applySpy = jest.spyOn(shape2, 'apply');
+    const applySpy = jest.spyOn<Shape, any>(shape2, '_apply');
 
     const shape = shape1.to(shape2);
 

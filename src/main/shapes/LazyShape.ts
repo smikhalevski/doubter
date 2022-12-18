@@ -32,13 +32,13 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     this._provider = provider;
   }
 
-  apply(input: any, options: ParseOptions): ApplyResult<S['output']> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<S['output']> {
     const { _applyChecks } = this;
 
     let output = input;
     let issues;
 
-    const result = this.shape.apply(input, options);
+    const result = this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -57,10 +57,10 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
     const { _applyChecks } = this;
 
-    return this.shape.applyAsync(input, options).then(result => {
+    return this.shape['_applyAsync'](input, options).then(result => {
       let output = input;
       let issues;
 

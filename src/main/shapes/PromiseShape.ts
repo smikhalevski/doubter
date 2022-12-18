@@ -24,11 +24,11 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<Promise<S['output']>> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Promise<S['output']>> {
     throw new Error(MESSAGE_ERROR_ASYNC);
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
     if (!(input instanceof Promise)) {
       return Promise.resolve([this._issueFactory(input, options)]);
     }
@@ -41,7 +41,7 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
     return input
       .then(value => {
         inputValue = outputValue = value;
-        return this.shape.applyAsync(value, options);
+        return this.shape['_applyAsync'](value, options);
       })
       .then(result => {
         let issues;

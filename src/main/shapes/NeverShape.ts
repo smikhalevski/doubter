@@ -20,7 +20,7 @@ export class NeverShape extends Shape<never> {
     this._issueFactory = createIssueFactory(CODE_NEVER, MESSAGE_NEVER, options, undefined);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<never> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<never> {
     return [this._issueFactory(input, options)];
   }
 }

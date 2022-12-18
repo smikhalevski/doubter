@@ -160,12 +160,6 @@ export class Shape<I = any, O = I> {
   readonly async;
 
   /**
-   * The list of runtime value types that can be processed by the shape. Use {@linkcode Shape.typeof} to detect a
-   * runtime value type.
-   */
-  readonly inputTypes: readonly ValueType[];
-
-  /**
    * The list of checks applied to the shape output.
    */
   readonly checks: readonly Check[] = [];
@@ -174,6 +168,12 @@ export class Shape<I = any, O = I> {
    * The human-readable shape description.
    */
   description = '';
+
+  /**
+   * The list of runtime value types that can be processed by the shape. Use {@linkcode Shape.typeof} to detect a
+   * runtime value type.
+   */
+  protected _inputTypes: readonly ValueType[];
 
   /**
    * Applies checks to the output.
@@ -195,12 +195,12 @@ export class Shape<I = any, O = I> {
    * @template O The output value.
    */
   constructor(inputTypes?: readonly ValueType[], async = false) {
-    this.inputTypes =
+    this._inputTypes =
       inputTypes === undefined || inputTypes.length === 0 || inputTypes.includes('any') ? anyTypes : unique(inputTypes);
     this.async = async;
 
     if (async) {
-      this.apply = () => {
+      this._apply = () => {
         throw new Error(MESSAGE_ERROR_ASYNC);
       };
     }
@@ -450,7 +450,7 @@ export class Shape<I = any, O = I> {
    * @param options Parsing options.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  apply(input: unknown, options: ParseOptions): ApplyResult<O> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<O> {
     const { _applyChecks } = this;
 
     if (_applyChecks !== null) {
@@ -469,8 +469,8 @@ export class Shape<I = any, O = I> {
    * @param options Parsing options.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
-    return new Promise(resolve => resolve(this.apply(input, options)));
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
+    return new Promise(resolve => resolve(this._apply(input, options)));
   }
 
   /**
@@ -484,7 +484,7 @@ export class Shape<I = any, O = I> {
 Object.defineProperty(Shape.prototype, 'try', {
   get() {
     const cb: Shape['try'] = (input, options) => {
-      const result = this.apply(input, options || defaultParseOptions);
+      const result = this._apply(input, options || defaultParseOptions);
 
       if (result === null) {
         return ok(input);
@@ -504,7 +504,7 @@ Object.defineProperty(Shape.prototype, 'try', {
 Object.defineProperty(Shape.prototype, 'tryAsync', {
   get() {
     const cb: Shape['tryAsync'] = (input, options) => {
-      return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      return this['_applyAsync'](input, options || defaultParseOptions).then((result: ApplyResult) => {
         if (result === null) {
           return ok(input);
         }
@@ -524,7 +524,7 @@ Object.defineProperty(Shape.prototype, 'tryAsync', {
 Object.defineProperty(Shape.prototype, 'parse', {
   get() {
     const cb: Shape['parse'] = (input, options) => {
-      const result = this.apply(input, options || defaultParseOptions);
+      const result = this._apply(input, options || defaultParseOptions);
 
       if (result === null) {
         return input;
@@ -544,7 +544,7 @@ Object.defineProperty(Shape.prototype, 'parse', {
 Object.defineProperty(Shape.prototype, 'parseAsync', {
   get() {
     const cb: Shape['parseAsync'] = (input, options) => {
-      return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      return this['_applyAsync'](input, options || defaultParseOptions).then((result: ApplyResult) => {
         if (result === null) {
           return input;
         }
@@ -564,7 +564,7 @@ Object.defineProperty(Shape.prototype, 'parseAsync', {
 Object.defineProperty(Shape.prototype, 'parseOrDefault', {
   get() {
     const cb: Shape['parseOrDefault'] = (input, defaultValue, options) => {
-      const result = this.apply(input, options || defaultParseOptions);
+      const result = this._apply(input, options || defaultParseOptions);
 
       if (result === null) {
         return input;
@@ -584,7 +584,7 @@ Object.defineProperty(Shape.prototype, 'parseOrDefault', {
 Object.defineProperty(Shape.prototype, 'parseOrDefaultAsync', {
   get() {
     const cb: Shape['parseOrDefaultAsync'] = (input, defaultValue, options) => {
-      return this.applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      return this['_applyAsync'](input, options || defaultParseOptions).then((result: ApplyResult) => {
         if (result === null) {
           return input;
         }
@@ -634,16 +634,16 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
      */
     readonly callback: (output: S['output'], options: Readonly<ParseOptions>) => Promise<O> | O
   ) {
-    super(shape.inputTypes, shape.async || async);
+    super(shape['_inputTypes'], shape.async || async);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<O> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<O> {
     const { shape, callback, _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    const result = shape.apply(input, options);
+    const result = shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -671,14 +671,14 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     return ok(output as O);
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     if (!this.async) {
-      return super.applyAsync(input, options);
+      return super._applyAsync(input, options);
     }
 
     const { shape, callback, _applyChecks } = this;
 
-    return shape.applyAsync(input, options).then(result => {
+    return shape['_applyAsync'](input, options).then(result => {
       let output = input;
 
       if (result !== null) {
@@ -735,16 +735,16 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
      */
     readonly outputShape: O
   ) {
-    super(inputShape.inputTypes, inputShape.async || outputShape.async);
+    super(inputShape['_inputTypes'], inputShape.async || outputShape.async);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    let result = inputShape.apply(input, options);
+    let result = inputShape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -753,7 +753,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
       output = result.value;
     }
 
-    const outputResult = outputShape.apply(output, options);
+    const outputResult = outputShape['_apply'](output, options);
 
     if (outputResult !== null) {
       if (isArray(outputResult)) {
@@ -773,9 +773,9 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O['output']>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O['output']>> {
     if (!this.async) {
-      return super.applyAsync(input, options);
+      return super._applyAsync(input, options);
     }
 
     const { inputShape, outputShape, _applyChecks } = this;
@@ -783,8 +783,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
     let result: ApplyResult = null;
     let output = input;
 
-    return inputShape
-      .applyAsync(input, options)
+    return inputShape['_applyAsync'](input, options)
       .then(inputResult => {
         if (inputResult !== null) {
           if (isArray(inputResult)) {
@@ -794,7 +793,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
           output = inputResult.value;
         }
 
-        return outputShape.applyAsync(output, options);
+        return outputShape['_applyAsync'](output, options);
       })
       .then(outputResult => {
         let issues;
@@ -854,18 +853,18 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
      */
     readonly value?: B
   ) {
-    super(shape.inputTypes.concat(Shape.typeof(searchedValue)), shape.async);
+    super(shape['_inputTypes'].concat(Shape.typeof(searchedValue)), shape.async);
 
     this._replacedResult = value === undefined || isEqual(value, searchedValue) ? null : ok(value);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
     const { _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    const result = isEqual(input, this.searchedValue) ? this._replacedResult : this.shape.apply(input, options);
+    const result = isEqual(input, this.searchedValue) ? this._replacedResult : this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -884,9 +883,9 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
     if (!this.async) {
-      return super.applyAsync(input, options);
+      return super._applyAsync(input, options);
     }
 
     const { _applyChecks } = this;
@@ -904,7 +903,7 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
       return (this._replacedResultPromise ||= Promise.resolve(this._replacedResult));
     }
 
-    return this.shape.applyAsync(input, options).then(result => {
+    return this.shape['_applyAsync'](input, options).then(result => {
       let issues;
       let output = input;
 
@@ -956,12 +955,12 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     readonly excludedValue: T,
     options?: TypeConstraintOptions | Message
   ) {
-    super(shape.inputTypes, shape.async);
+    super(shape['_inputTypes'], shape.async);
 
     this._issueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
     const { excludedValue, _issueFactory, _applyChecks } = this;
 
     let issues;
@@ -971,7 +970,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       return [_issueFactory(input, options)];
     }
 
-    const result = this.shape.apply(input, options);
+    const result = this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -994,9 +993,9 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     return result;
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
     if (!this.async) {
-      return super.applyAsync(input, options);
+      return super._applyAsync(input, options);
     }
 
     const { excludedValue, _issueFactory, _applyChecks } = this;
@@ -1005,7 +1004,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       return Promise.resolve([_issueFactory(input, options)]);
     }
 
-    return this.shape.applyAsync(input, options).then(result => {
+    return this.shape['_applyAsync'](input, options).then(result => {
       let issues;
       let output = input;
 

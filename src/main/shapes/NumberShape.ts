@@ -157,7 +157,7 @@ export class NumberShape extends Shape<number> {
     return shape;
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<number> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { _typePredicate, _applyChecks } = this;
 
     if (!_typePredicate(input)) {

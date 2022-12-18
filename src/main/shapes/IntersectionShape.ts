@@ -22,14 +22,14 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     this._issueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<InferIntersection<U, 'output'>> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferIntersection<U, 'output'>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
     let outputs: any[] | null = null;
 
     for (let i = 0; i < shapesLength; ++i) {
-      const result = shapes[i].apply(input, options);
+      const result = shapes[i]['_apply'](input, options);
 
       if (result === null) {
         continue;
@@ -58,14 +58,14 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     return intersectOutputs(input, outputs, this._issueFactory, options);
   }
 
-  applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferIntersection<U, 'output'>>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferIntersection<U, 'output'>>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
     const promises: Promise<ApplyResult>[] = [];
 
     for (let i = 0; i < shapesLength; ++i) {
-      promises.push(shapes[i].applyAsync(input, options));
+      promises.push(shapes[i]['_applyAsync'](input, options));
     }
 
     return Promise.all(promises).then(results => {

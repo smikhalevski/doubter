@@ -20,7 +20,7 @@ export class BigIntShape extends Shape<bigint> {
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'bigint') {

@@ -20,7 +20,7 @@ export class BooleanShape extends Shape<boolean> {
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
   }
 
-  apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'boolean') {
