@@ -1,6 +1,6 @@
-import { Shape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory } from '../utils';
+import { ValueType } from './Shape';
+import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { appendCheck, coercibleTypes, createIssueFactory, isArray, ok, stringTypes } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -12,11 +12,12 @@ import {
   MESSAGE_STRING_TYPE,
   TYPE_STRING,
 } from '../constants';
+import { CoercibleShape } from './CoercibleShape';
 
 /**
  * The shape that constrains the input as a string.
  */
-export class StringShape extends Shape<string> {
+export class StringShape extends CoercibleShape<string> {
   protected _issueFactory;
 
   /**
@@ -95,18 +96,61 @@ export class StringShape extends Shape<string> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return ['string'];
+    return this._coerced ? coercibleTypes : stringTypes;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
+    if (options.coerced || this._coerced) {
+      return this._applyToCoerced(input, options);
+    }
     if (typeof input !== 'string') {
-      return [this._issueFactory(input, options)];
+      return this._issueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);
     }
     return null;
   }
+
+  private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<string> {
+    const { _applyChecks } = this;
+
+    const output = coerceString(input);
+
+    let issues: Issue[] | null = null;
+
+    if (typeof output !== 'string') {
+      return this._issueFactory(input, options);
+    }
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
+  }
+}
+
+/**
+ * Coerces a value to a string or returns value as is.
+ */
+export function coerceString(value: unknown): unknown {
+  const type = typeof value;
+
+  if (value == null) {
+    return '';
+  }
+  if (type === 'string') {
+    return value;
+  }
+  if ((type === 'number' && Number.isFinite(value)) || type === 'boolean' || type === 'bigint') {
+    return '' + value;
+  }
+  if (isArray(value) && value.length === 1 && typeof value[0] === 'string') {
+    return value[0];
+  }
+  return value;
 }

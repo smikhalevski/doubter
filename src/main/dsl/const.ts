@@ -1,5 +1,5 @@
 import { Any, Message, TypeConstraintOptions } from '../shared-types';
-import { EnumShape } from '../shapes';
+import { ConstShape } from '../shapes';
 
 /**
  * Creates the constant value shape.
@@ -8,8 +8,8 @@ import { EnumShape } from '../shapes';
  * @param options The constraint options or an issue message.
  * @template T The value type.
  */
-function const_<T extends Any>(value: T, options?: TypeConstraintOptions | Message): EnumShape<T> {
-  return new EnumShape([value], options);
+function const_<T extends Any>(value: T, options?: TypeConstraintOptions | Message): ConstShape<T> {
+  return new ConstShape(value, options);
 }
 
 // noinspection ReservedWordAsName

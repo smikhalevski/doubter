@@ -1,6 +1,6 @@
-import { Shape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory } from '../utils';
+import { ValueType } from './Shape';
+import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { appendCheck, coercibleTypes, createIssueFactory, isArray, numberTypes, ok } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -18,11 +18,12 @@ import {
   TYPE_INTEGER,
   TYPE_NUMBER,
 } from '../constants';
+import { CoercibleShape } from './CoercibleShape';
 
 /**
  * The shape of the finite number.
  */
-export class NumberShape extends Shape<number> {
+export class NumberShape extends CoercibleShape<number> {
   protected _issueFactory;
   protected _typePredicate = Number.isFinite;
 
@@ -158,18 +159,61 @@ export class NumberShape extends Shape<number> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return ['number'];
+    return this._coerced ? coercibleTypes : numberTypes;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { _typePredicate, _applyChecks } = this;
 
+    if (options.coerced || this._coerced) {
+      return this._applyToCoerced(input, options);
+    }
     if (!_typePredicate(input)) {
-      return [this._issueFactory(input, options)];
+      return this._issueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);
     }
     return null;
   }
+
+  private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<number> {
+    const { _typePredicate, _applyChecks } = this;
+
+    const output = coerceNumber(input);
+
+    let issues: Issue[] | null = null;
+
+    if (!_typePredicate(output)) {
+      return this._issueFactory(input, options);
+    }
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
+  }
+}
+
+export function coerceNumber(input: unknown): any {
+  if (input == null) {
+    return 0;
+  }
+  if (typeof input === 'string') {
+    const output = +input;
+
+    if (output !== output) {
+      return input;
+    }
+    return output;
+  }
+  if (typeof input === 'boolean') {
+    return +input;
+  }
+  if (isArray(input) && input.length === 1 && typeof input[0] === 'number') {
+    return input[0];
+  }
+  return input;
 }

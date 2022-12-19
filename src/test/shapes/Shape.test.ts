@@ -22,7 +22,7 @@ describe('Shape', () => {
     shape.parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
   });
 
   test('invokes checks in the same order they were added', () => {
@@ -295,7 +295,7 @@ describe('TransformShape', () => {
     expect(shape.parse('aaa')).toBe(111);
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
   });
 
   test('does not call transform if shape parsing failed', () => {
@@ -334,7 +334,7 @@ describe('TransformShape', () => {
     shape.parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
   });
 
   describe('async', () => {
@@ -346,7 +346,7 @@ describe('TransformShape', () => {
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
     });
 
     test('transforms using an async callback', async () => {
@@ -357,7 +357,7 @@ describe('TransformShape', () => {
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
     });
 
     test('transform callback can reject with ValidationError instances', async () => {
@@ -390,10 +390,10 @@ describe('RedirectShape', () => {
     expect(shape.parse('aaa')).toBe('aaa');
 
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
 
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
   });
 
   test('does not apply the output shape if the input shape parsing failed', () => {

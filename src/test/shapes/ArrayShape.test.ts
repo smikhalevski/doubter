@@ -5,6 +5,7 @@ import {
   CODE_TUPLE,
   CODE_TYPE,
   MESSAGE_ARRAY_TYPE,
+  TYPE_ANY,
   TYPE_ARRAY,
 } from '../../main/constants';
 
@@ -17,7 +18,7 @@ describe('ArrayShape', () => {
 
     expect(arrShape.shapes).toEqual([shape1]);
     expect(arrShape.restShape).toBe(restShape);
-    expect(arrShape['_getInputTypes']()).toEqual(['array']);
+    expect(arrShape['_getInputTypes']()).toEqual([TYPE_ARRAY]);
   });
 
   test('raises an issue if an input is not an unconstrained array', () => {
@@ -56,9 +57,9 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false });
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false });
   });
 
   test('parses rest elements', () => {
@@ -74,8 +75,8 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(restApplySpy).toHaveBeenCalledTimes(2);
-    expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false });
-    expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
   });
 
   test('parses both tuple and rest elements at the same time', () => {
@@ -95,12 +96,12 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false });
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false });
     expect(restApplySpy).toHaveBeenCalledTimes(2);
-    expect(restApplySpy).toHaveBeenNthCalledWith(1, 333, { verbose: false });
-    expect(restApplySpy).toHaveBeenNthCalledWith(2, 444, { verbose: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(1, 333, { verbose: false, coerced: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(2, 444, { verbose: false, coerced: false });
   });
 
   test('raises an issue if the tuple length does not match shapes', () => {
@@ -127,6 +128,15 @@ describe('ArrayShape', () => {
     expect(arrShape.try('aaa')).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: 'aaa', message: 'Must be an array', param: TYPE_ARRAY, path: [] }],
+    });
+  });
+
+  test('raises an issue if an input is too short for tuple with rest elements', () => {
+    const arrShape = new ArrayShape([new Shape(), new Shape()], new Shape());
+
+    expect(arrShape.try(['aaa'])).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TYPE, input: ['aaa'], message: 'Must be an array', param: TYPE_ARRAY, path: [] }],
     });
   });
 
@@ -270,6 +280,63 @@ describe('ArrayShape', () => {
     expect(arrShape.at(2)).toBe(restShape);
   });
 
+  test('updates input types when coerced', () => {
+    const arrShape = new ArrayShape(null, null).coerce();
+
+    expect(arrShape['_getInputTypes']()).toEqual([TYPE_ANY]);
+  });
+
+  test('does not coerce if a tuple has no elements', () => {
+    const arrShape = new ArrayShape([], null).coerce();
+
+    expect(arrShape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 0', param: 0, path: [] }],
+    });
+  });
+
+  test('coerces a non-array to a tuple of one element', () => {
+    const arrShape = new ArrayShape([new Shape()], null).coerce();
+
+    expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('does not coerce if a tuple has more than one element', () => {
+    const arrShape = new ArrayShape([new Shape(), new Shape()], null).coerce();
+
+    expect(arrShape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2, path: [] }],
+    });
+  });
+
+  test('coerces a non-array to an array', () => {
+    const arrShape = new ArrayShape(null, new Shape()).coerce();
+
+    expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('coerce if a tuple has no elements with rest elements', () => {
+    const arrShape = new ArrayShape([], new Shape()).coerce();
+
+    expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('coerces a non-array to a tuple of one element with rest elements', () => {
+    const arrShape = new ArrayShape([new Shape()], new Shape()).coerce();
+
+    expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('does not coerce if a tuple has more than one element with rest elements', () => {
+    const arrShape = new ArrayShape([new Shape(), new Shape()], new Shape()).coerce();
+
+    expect(arrShape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY, path: [] }],
+    });
+  });
+
   describe('async', () => {
     test('raises an issue if an input is not an unconstrained array', async () => {
       const restShape = new Shape().transformAsync(value => Promise.resolve(value));
@@ -291,7 +358,7 @@ describe('ArrayShape', () => {
 
       await expect(arrShape.tryAsync([])).resolves.toEqual({ ok: true, value: [] });
       expect(arrApplySpy).toHaveBeenCalledTimes(1);
-      expect(arrApplySpy).toHaveBeenNthCalledWith(1, [], { verbose: false });
+      expect(arrApplySpy).toHaveBeenNthCalledWith(1, [], { verbose: false, coerced: false });
     });
 
     test('parses tuple elements', async () => {
@@ -312,9 +379,9 @@ describe('ArrayShape', () => {
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
       expect(applyAsyncSpy1).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+      expect(applyAsyncSpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
       expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false });
+      expect(applyAsyncSpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false });
     });
 
     test('parses rest elements', async () => {
@@ -330,8 +397,8 @@ describe('ArrayShape', () => {
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
       expect(restApplyAsyncSpy).toHaveBeenCalledTimes(2);
-      expect(restApplyAsyncSpy).toHaveBeenNthCalledWith(1, 111, { verbose: false });
-      expect(restApplyAsyncSpy).toHaveBeenNthCalledWith(2, 222, { verbose: false });
+      expect(restApplyAsyncSpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(restApplyAsyncSpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
     });
 
     test('clones an array if a tuple element was transformed', async () => {
@@ -355,6 +422,33 @@ describe('ArrayShape', () => {
       await expect(arrShape.tryAsync([111])).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx', path: [] }],
+      });
+    });
+
+    test('coerces a non-array to an array', async () => {
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const arrShape = new ArrayShape(null, restShape).coerce();
+
+      await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
+    });
+
+    test('coerces a non-array to a tuple of one element', async () => {
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const arrShape = new ArrayShape([new Shape()], restShape).coerce();
+
+      await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
+    });
+
+    test('does not coerce if not a tuple of one element', async () => {
+      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+      const arrShape = new ArrayShape([new Shape(), new Shape()], restShape).coerce();
+
+      await expect(arrShape.tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY, path: [] }],
       });
     });
   });

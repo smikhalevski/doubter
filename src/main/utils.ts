@@ -12,6 +12,45 @@ import {
 } from './shared-types';
 import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
+import {
+  TYPE_ANY,
+  TYPE_ARRAY,
+  TYPE_BIGINT,
+  TYPE_BOOLEAN,
+  TYPE_FUNCTION,
+  TYPE_NEVER,
+  TYPE_NULL,
+  TYPE_NUMBER,
+  TYPE_OBJECT,
+  TYPE_STRING,
+  TYPE_SYMBOL,
+  TYPE_UNDEFINED,
+} from './constants';
+
+export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+
+export const coercibleTypes: ValueType[] = [
+  TYPE_STRING,
+  TYPE_NUMBER,
+  TYPE_BOOLEAN,
+  TYPE_BIGINT,
+  TYPE_ARRAY,
+  TYPE_NULL,
+  TYPE_UNDEFINED,
+];
+
+export const objectTypes: ValueType[] = [TYPE_OBJECT];
+export const arrayTypes: ValueType[] = [TYPE_ARRAY];
+export const functionTypes: ValueType[] = [TYPE_FUNCTION];
+export const stringTypes: ValueType[] = [TYPE_STRING];
+export const symbolTypes: ValueType[] = [TYPE_SYMBOL];
+export const numberTypes: ValueType[] = [TYPE_NUMBER];
+export const bigintTypes: ValueType[] = [TYPE_BIGINT];
+export const booleanTypes: ValueType[] = [TYPE_BOOLEAN];
+export const nullTypes: ValueType[] = [TYPE_NULL];
+export const undefinedTypes: ValueType[] = [TYPE_UNDEFINED];
+export const anyTypes: ValueType[] = [TYPE_ANY];
+export const neverTypes: ValueType[] = [TYPE_NEVER];
 
 export function getValueType(value: unknown): ValueType {
   const type = typeof value;
@@ -20,10 +59,10 @@ export function getValueType(value: unknown): ValueType {
     return type;
   }
   if (value === null) {
-    return 'null';
+    return TYPE_NULL;
   }
   if (isArray(value)) {
-    return 'array';
+    return TYPE_ARRAY;
   }
   return type;
 }
@@ -93,7 +132,7 @@ export function createIssueFactory(
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined,
   param: unknown
-): (input: unknown, options: Readonly<ParseOptions>) => Issue;
+): (input: unknown, options: Readonly<ParseOptions>) => Issue[];
 
 /**
  * Returns a function that creates a new issue.
@@ -107,14 +146,14 @@ export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined
-): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue;
+): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[];
 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined,
   param?: any
-): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue {
+): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[] {
   const paramKnown = arguments.length === 4;
 
   let meta: unknown;
@@ -133,13 +172,13 @@ export function createIssueFactory(
 
   if (typeof message === 'function') {
     if (paramKnown) {
-      return (input, options) => {
-        return { code, path: [], input, message: message(param, code, input, meta, options), param, meta };
-      };
+      return (input, options) => [
+        { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
+      ];
     } else {
-      return (input, options, param) => {
-        return { code, path: [], input, message: message(param, code, input, meta, options), param, meta };
-      };
+      return (input, options, param) => [
+        { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
+      ];
     }
   }
 
@@ -147,20 +186,14 @@ export function createIssueFactory(
     if (paramKnown) {
       message = message.replace('%s', param);
     } else if (message.indexOf('%s') !== -1) {
-      return (input, options, param) => {
-        return { code, path: [], input, message: message.replace('%s', param), param, meta };
-      };
+      return (input, options, param) => [{ code, path: [], input, message: message.replace('%s', param), param, meta }];
     }
   }
 
   if (paramKnown) {
-    return input => {
-      return { code, path: [], input, message, param, meta };
-    };
+    return input => [{ code, path: [], input, message, param, meta }];
   } else {
-    return (input, options, param) => {
-      return { code, path: [], input, message, param, meta };
-    };
+    return (input, options, param) => [{ code, path: [], input, message, param, meta }];
   }
 }
 
@@ -178,14 +211,6 @@ export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
     return issues;
   }
   return result;
-}
-
-export function pushIssue(issues: Issue[] | null, result: Issue): Issue[] {
-  if (issues !== null) {
-    issues.push(result);
-    return issues;
-  }
-  return [result];
 }
 
 export function captureIssues(error: unknown): Issue[] {

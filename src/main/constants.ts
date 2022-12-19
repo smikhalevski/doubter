@@ -1,9 +1,6 @@
-export const MESSAGE_ERROR_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
-export const MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME =
-  'Shape input and output inference properties must not be accessed at runtime';
-
 export const CODE_ARRAY_MAX = 'arrayMaxLength';
 export const CODE_ARRAY_MIN = 'arrayMinLength';
+export const CODE_CONST = 'const';
 export const CODE_ENUM = 'enum';
 export const CODE_EXCLUSION = 'exclusion';
 export const CODE_INSTANCE = 'instance';
@@ -23,21 +20,30 @@ export const CODE_TUPLE = 'tuple';
 export const CODE_UNION = 'union';
 export const CODE_UNKNOWN_KEYS = 'unknownKeys';
 
+export const TYPE_OBJECT = 'object';
 export const TYPE_ARRAY = 'array';
+export const TYPE_FUNCTION = 'function';
+export const TYPE_STRING = 'string';
+export const TYPE_SYMBOL = 'symbol';
+export const TYPE_NUMBER = 'number';
 export const TYPE_BIGINT = 'bigint';
 export const TYPE_BOOLEAN = 'boolean';
+export const TYPE_NULL = 'null';
+export const TYPE_UNDEFINED = 'undefined';
+export const TYPE_ANY = 'any';
+export const TYPE_NEVER = 'never';
 export const TYPE_INTEGER = 'integer';
-export const TYPE_NUMBER = 'number';
-export const TYPE_OBJECT = 'object';
 export const TYPE_PROMISE = 'promise';
-export const TYPE_STRING = 'string';
 
+export const MESSAGE_REQUIRES_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
+export const MESSAGE_FORBIDDEN_AT_RUNTIME = 'Must not be accessed at runtime';
 export const MESSAGE_ARRAY_TYPE = 'Must be an array';
 export const MESSAGE_ARRAY_MAX = 'Must have the maximum length of %s';
 export const MESSAGE_ARRAY_MIN = 'Must have the minimum length of %s';
 export const MESSAGE_BIGINT_TYPE = 'Must be a bigint';
 export const MESSAGE_BOOLEAN_TYPE = 'Must be a boolean';
-export const MESSAGE_ENUM = 'Must be equal to one of: %s';
+export const MESSAGE_CONST = 'Must be equal to %s';
+export const MESSAGE_ENUM = 'Must be equal to one of %s';
 export const MESSAGE_EXCLUSION = 'Must not be equal to %s';
 export const MESSAGE_INSTANCE = 'Must be a class instance';
 export const MESSAGE_INTEGER_TYPE = 'Must be an integer';

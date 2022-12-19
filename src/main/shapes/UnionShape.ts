@@ -21,7 +21,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
    * Creates a new {@linkcode UnionShape} instance.
    *
    * @param shapes The list of united shapes.
-   * @param options The union constraint options or an issue message.
+   * @param _options The union constraint options or an issue message.
    * @template U The list of united shapes.
    */
   constructor(
@@ -29,7 +29,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
      * The list of united shapes.
      */
     readonly shapes: U,
-    options?: TypeConstraintOptions | Message
+    protected _options?: TypeConstraintOptions | Message
   ) {
     super();
 
@@ -37,7 +37,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
 
     this._buckets = buckets;
     this._anyBucket = anyBucket;
-    this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
+    this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, _options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -96,7 +96,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     }
 
     if (index === bucketLength) {
-      return [this._issueFactory(input, options, issues)];
+      return this._issueFactory(input, options, issues);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
@@ -114,7 +114,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     const bucket = _buckets !== null ? _buckets[getValueType(input)] || _anyBucket : _anyBucket;
 
     if (bucket === null) {
-      return Promise.resolve([this._issueFactory(input, options, [])]);
+      return Promise.resolve(this._issueFactory(input, options, []));
     }
 
     const bucketLength = bucket.length;
@@ -133,7 +133,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
             issues = concatIssues(issues, result);
 
             if (index === bucketLength) {
-              return [this._issueFactory(input, options, issues)];
+              return this._issueFactory(input, options, issues);
             }
             return nextShape();
           }

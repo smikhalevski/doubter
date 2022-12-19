@@ -38,6 +38,7 @@ npm install --save-prod doubter
     - [Transformations](#transformations)
     - [Redirections](#redirections)
     - [Async shapes](#async-shapes)
+    - [Input value coercion](#input-value-coercion)
     - [Localization](#localization)
     - [Parsing context](#parsing-context)
     - [Integrations](#integrations)
@@ -71,6 +72,10 @@ npm install --save-prod doubter
     - Literal values<br>
       [`const`](#const)
       [`enum`](#enum)
+      [`null`](#null)
+      [`undefined`](#undefined)
+      [`nan`](#nan)
+      [`void`](#void)
 
     - Shape composition<br>
       [`union`](#union)
@@ -382,6 +387,109 @@ const objShape2 = d.object({
 // → Shape<{ foo: Promise<string> }>
 ```
 
+## Input value coercion
+
+[`array`](#array), [`bigint`](#bigint), [`boolean`](#boolean), [`enum`](#enum), [`number`](#number),
+[`promise`](#promise) and [`string`](#string) support input value coercion.
+
+```ts
+const myShape = d.number().coerce();
+// → Shape<number>
+
+myShape.parse('0xAAA');
+// → 2730
+```
+
+You can also pass `coersed` option to parser to make all shapes that support coercion to apply coercion rules input
+values:
+
+```ts
+const myShape = d.object({
+  foo: d.number(),
+  bar: d.string()
+});
+
+myShape.parse(
+  { foo: '0b1101', bar: 42 },
+  { coerced: true }
+);
+// → { foo: 13, bar: '42' }
+```
+
+### Primitive value coercion rules
+
+The coercion rules are different from JavaScript to validate input as expected.
+
+<table>
+<thead>
+<tr>
+  <th>From&nbsp;↓&nbsp;to&nbsp;→</th>
+  <th>string</th>
+  <th>number</th>
+  <th>bigint</th>
+  <th>boolean</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td><b>string</b></td>
+  <td>–</td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>+x</code><br></td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>BigInt(x)</code><br></td>
+  <td><code>'false'</code>&nbsp;→&nbsp;<code>false</code><br><code>'true'</code>&nbsp;→&nbsp;<code>true</code><br><code>'abc'</code>&nbsp;×<br><code>''</code>&nbsp;×</td>
+</tr>
+<tr>
+  <td><b>number</b></td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>''+x</code></td>
+  <td>–</td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>BigInt(x)</code><br></td>
+  <td><code>0</code>&nbsp;→&nbsp;<code>false</code><br><code>1</code>&nbsp;→&nbsp;<code>true</code><br><code>x</code>&nbsp;×</td>
+</tr>
+<tr>
+  <td><b>bigint</b></td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>''+x</code></td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>BigInt(x)</code><br></td>
+  <td>–</td>
+  <td><code>0n</code>&nbsp;→&nbsp;<code>false</code><br><code>1n</code>&nbsp;→&nbsp;<code>true</code><br><code>x</code>&nbsp;×</td>
+</tr>
+<tr>
+  <td><b>boolean</b></td>
+  <td><code>false</code>&nbsp;→&nbsp;<code>'false'</code><br><code>true</code>&nbsp;→&nbsp;<code>'true'</code></td>
+  <td><code>false</code>&nbsp;→&nbsp;<code>0</code><br><code>true</code>&nbsp;→&nbsp;<code>1</code></td>
+  <td><code>false</code>&nbsp;→&nbsp;<code>0n</code><br><code>true</code>&nbsp;→&nbsp;<code>1n</code></td>
+  <td>–</td>
+</tr>
+<tr>
+  <td><b>null</b><br><b>undefined</b></td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>''</code></td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>0</code></td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>0n</code></td>
+  <td><code>x</code>&nbsp;→&nbsp;<code>false</code></td>
+</tr>
+</tbody>
+</table>
+
+### Enum coercion rules
+
+If enum is defined as an array of values, then no coercion is applied.
+
+If an enum is defined as a key-value mapping
+(as [an object with a `const` assertion](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions)
+or as [an `enum`](https://www.typescriptlang.org/docs/handbook/enums.html)) the keys can be coerced to values:
+
+```ts
+enum Foo {
+  BAR = 'bar',
+  QUX = 'qux'
+}
+
+const myShape = d.enum(Foo).coerce();
+// → Shape<Foo>
+
+myShape.parse('BAR');
+// → 'bar'
+```
+
 ## Localization
 
 All shapes and built-in checks support custom messages:
@@ -677,6 +785,15 @@ Note that you must define a shape type explicitly, because it cannot be inferred
 While Doubter supports cyclic types, it doesn't support cyclic data structures. The latter would cause an infinite loop
 at runtime.
 
+## `nan`
+
+A shape that requires an input to be `NaN`:
+
+```ts
+d.nan();
+// → Shape<number>
+```
+
 ## `never`
 
 A shape that always raises a validation issue regardless of an input value:
@@ -684,6 +801,15 @@ A shape that always raises a validation issue regardless of an input value:
 ```ts
 d.never();
 // → Shape<never>
+```
+
+## `null`
+
+A shape that requires an input to be `null`:
+
+```ts
+d.null();
+// → Shape<null>
 ```
 
 ## `number`
@@ -1067,6 +1193,15 @@ You can use a shorter alias `or`:
 d.or([d.string(), d.number()]);
 ```
 
+## `undefined`
+
+A shape that requires an input to be `undefined`:
+
+```ts
+d.undefined();
+// → Shape<undefined>
+```
+
 ## `unknown`
 
 An unconstrained value that is inferred as `unknown`:
@@ -1074,6 +1209,15 @@ An unconstrained value that is inferred as `unknown`:
 ```ts
 d.unknown();
 // → Shape<unknown>
+```
+
+## `void`
+
+A shape that requires an input to be `undefined` that is typed as `void`:
+
+```ts
+d.void();
+// → Shape<void>
 ```
 
 # Performance

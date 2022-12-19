@@ -13,19 +13,18 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
    */
   declare readonly shape: S;
 
+  protected _shapeProvider;
+
   /**
    * Creates a new {@linkcode LazyShape} instance.
    *
-   * @param _shapeProvider The provider that returns the base shape.
+   * @param shapeProvider The provider that returns the base shape.
    * @template S The base shape.
    */
-  constructor(
-    /**
-     * The callback that returns the base shape.
-     */
-    protected _shapeProvider: () => S
-  ) {
+  constructor(shapeProvider: () => S) {
     super();
+
+    this._shapeProvider = shapeProvider;
   }
 
   protected _checkAsync(): boolean {

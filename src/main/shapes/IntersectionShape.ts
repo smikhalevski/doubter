@@ -112,7 +112,7 @@ const NEVER = Symbol();
 function intersectOutputs(
   input: unknown,
   outputs: any[],
-  issueFactory: (input: unknown, options: Readonly<ParseOptions>) => Issue,
+  issueFactory: (input: unknown, options: Readonly<ParseOptions>) => Issue[],
   options: ParseOptions
 ): ApplyResult {
   const outputsLength = outputs.length;
@@ -123,7 +123,7 @@ function intersectOutputs(
     value = intersectPair(value, outputs[i]);
 
     if (value === NEVER) {
-      return [issueFactory(input, options)];
+      return issueFactory(input, options);
     }
   }
 

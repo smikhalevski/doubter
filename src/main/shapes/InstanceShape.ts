@@ -1,6 +1,6 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory } from '../utils';
+import { arrayTypes, createIssueFactory, objectTypes } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
 
 /**
@@ -26,9 +26,9 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
 
   protected _getInputTypes(): ValueType[] {
     if ((this.ctor as unknown) === Array || Array.prototype.isPrototypeOf(this.ctor.prototype)) {
-      return ['array'];
+      return arrayTypes;
     } else {
-      return ['object'];
+      return objectTypes;
     }
   }
 
@@ -36,7 +36,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {
-      return [this._issueFactory(input, options)];
+      return this._issueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

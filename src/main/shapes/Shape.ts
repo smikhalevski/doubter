@@ -12,6 +12,7 @@ import {
   TypeConstraintOptions,
 } from '../shared-types';
 import {
+  anyTypes,
   appendCheck,
   captureIssues,
   createApplyChecksCallback,
@@ -20,19 +21,20 @@ import {
   getValueType,
   isArray,
   isEqual,
+  Mutable,
   ok,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
   CODE_EXCLUSION,
   CODE_PREDICATE,
-  MESSAGE_ERROR_ASYNC,
-  MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME,
   MESSAGE_EXCLUSION,
+  MESSAGE_FORBIDDEN_AT_RUNTIME,
   MESSAGE_PREDICATE,
+  MESSAGE_REQUIRES_ASYNC,
 } from '../constants';
 
-const defaultParseOptions: ParseOptions = Object.freeze({ verbose: false });
+const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
 
 /**
  * An arbitrary shape.
@@ -224,7 +226,7 @@ export class Shape<I = any, O = I> {
 
     const shape = this._clone();
 
-    (shape as any).checks = checks;
+    (shape as Mutable<this>).checks = checks;
     shape._applyChecks = createApplyChecksCallback(checks);
     shape._unsafe ||= unsafe;
 
@@ -405,7 +407,7 @@ export class Shape<I = any, O = I> {
    * Returns the list of runtime value types that can be processed by the shape. Used for various optimizations.
    */
   protected _getInputTypes(): ValueType[] {
-    return ['any'];
+    return anyTypes;
   }
 
   /**
@@ -445,13 +447,13 @@ export class Shape<I = any, O = I> {
 
 Object.defineProperty(Shape.prototype, 'input', {
   get() {
-    throw new Error(MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME);
+    throw new Error(MESSAGE_FORBIDDEN_AT_RUNTIME);
   },
 });
 
 Object.defineProperty(Shape.prototype, 'output', {
   get() {
-    throw new Error(MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME);
+    throw new Error(MESSAGE_FORBIDDEN_AT_RUNTIME);
   },
 });
 
@@ -461,7 +463,7 @@ Object.defineProperty(Shape.prototype, 'async', {
 
     if (async) {
       this._apply = () => {
-        throw new Error(MESSAGE_ERROR_ASYNC);
+        throw new Error(MESSAGE_REQUIRES_ASYNC);
       };
     } else {
       this._applyAsync = Shape.prototype['_applyAsync'];
@@ -991,7 +993,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     let output = input;
 
     if (isEqual(input, excludedValue)) {
-      return [_issueFactory(input, options)];
+      return _issueFactory(input, options);
     }
 
     const result = this.shape['_apply'](input, options);
@@ -1003,7 +1005,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       output = result.value;
 
       if (isEqual(output, excludedValue)) {
-        return [_issueFactory(input, options)];
+        return _issueFactory(input, options);
       }
     }
 
@@ -1021,7 +1023,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     const { excludedValue, _issueFactory, _applyChecks } = this;
 
     if (isEqual(input, excludedValue)) {
-      return Promise.resolve([_issueFactory(input, options)]);
+      return Promise.resolve(_issueFactory(input, options));
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
@@ -1035,7 +1037,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
         output = result.value;
 
         if (isEqual(output, excludedValue)) {
-          return [_issueFactory(input, options)];
+          return _issueFactory(input, options);
         }
       }
 
