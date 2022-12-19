@@ -71,6 +71,10 @@ npm install --save-prod doubter
     - Literal values<br>
       [`const`](#const)
       [`enum`](#enum)
+      [`null`](#null)
+      [`undefined`](#undefined)
+      [`nan`](#nan)
+      [`void`](#void)
 
     - Shape composition<br>
       [`union`](#union)
@@ -677,6 +681,15 @@ Note that you must define a shape type explicitly, because it cannot be inferred
 While Doubter supports cyclic types, it doesn't support cyclic data structures. The latter would cause an infinite loop
 at runtime.
 
+## `nan`
+
+A shape that requires an input to be `NaN`:
+
+```ts
+d.nan();
+// → Shape<number>
+```
+
 ## `never`
 
 A shape that always raises a validation issue regardless of an input value:
@@ -684,6 +697,15 @@ A shape that always raises a validation issue regardless of an input value:
 ```ts
 d.never();
 // → Shape<never>
+```
+
+## `null`
+
+A shape that requires an input to be `null`:
+
+```ts
+d.null();
+// → Shape<null>
 ```
 
 ## `number`
@@ -1067,6 +1089,15 @@ You can use a shorter alias `or`:
 d.or([d.string(), d.number()]);
 ```
 
+## `undefined`
+
+A shape that requires an input to be `undefined`:
+
+```ts
+d.undefined();
+// → Shape<undefined>
+```
+
 ## `unknown`
 
 An unconstrained value that is inferred as `unknown`:
@@ -1074,6 +1105,15 @@ An unconstrained value that is inferred as `unknown`:
 ```ts
 d.unknown();
 // → Shape<unknown>
+```
+
+## `void`
+
+A shape that requires an input to be `undefined` that is typed as `void`:
+
+```ts
+d.void();
+// → Shape<void>
 ```
 
 # Performance

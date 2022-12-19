@@ -21,3 +21,4 @@ export * from './tuple';
 export * from './undefined';
 export * from './union';
 export * from './unknown';
+export * from './void';
