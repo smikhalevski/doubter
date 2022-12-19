@@ -90,7 +90,7 @@ describe('ObjectShape', () => {
         {
           code: CODE_ENUM,
           input: 'xxx',
-          message: 'Must be equal to one of: key1,key2',
+          message: 'Must be equal to one of key1,key2',
           param: ['key1', 'key2'],
           path: [],
         },

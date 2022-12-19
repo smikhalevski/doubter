@@ -49,7 +49,7 @@ describe('EnumShape', () => {
           path: [],
           input: 2,
           param: [Foo.AAA, Foo.BBB],
-          message: 'Must be equal to one of: 0,1',
+          message: 'Must be equal to one of 0,1',
           meta: undefined,
         },
       ],
@@ -70,7 +70,7 @@ describe('EnumShape', () => {
           path: [],
           input: 'AAA',
           param: [Foo.AAA, Foo.BBB],
-          message: 'Must be equal to one of: 0,1',
+          message: 'Must be equal to one of 0,1',
           meta: undefined,
         },
       ],
@@ -91,7 +91,7 @@ describe('EnumShape', () => {
           path: [],
           input: 'ccc',
           param: [Foo.AAA, Foo.BBB],
-          message: 'Must be equal to one of: aaa,bbb',
+          message: 'Must be equal to one of aaa,bbb',
           meta: undefined,
         },
       ],
@@ -115,7 +115,7 @@ describe('EnumShape', () => {
     expect(new EnumShape(['aaa', 'bbb']).try('ccc')).toEqual({
       ok: false,
       issues: [
-        { code: CODE_ENUM, path: [], input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of: aaa,bbb' },
+        { code: CODE_ENUM, path: [], input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of aaa,bbb' },
       ],
     });
   });
@@ -132,5 +132,14 @@ describe('EnumShape', () => {
 
     expect(new EnumShape(Foo).coerce().parse('AAA')).toEqual(Foo.AAA);
     expect(new EnumShape(Foo).parse('AAA', { coerced: true })).toEqual(Foo.AAA);
+  });
+
+  test('applies checks', () => {
+    const shape = new EnumShape(['aaa', 'bbb']).check(() => [{ code: 'xxx' }]);
+
+    expect(shape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
   });
 });
