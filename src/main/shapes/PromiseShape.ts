@@ -29,7 +29,7 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
   }
 
   protected _getInputTypes(): ValueType[] {
-    return ['object'];
+    return [this.coerced ? 'any' : 'object'];
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Promise<S['output']>> {
@@ -37,8 +37,13 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
-    if (!(input instanceof Promise)) {
-      return Promise.resolve([this._issueFactory(input, options)]);
+    let output = input as Promise<unknown>;
+
+    if (!(output instanceof Promise)) {
+      if (!options.coerced && !this.coerced) {
+        return Promise.resolve(this._issueFactory(input, options));
+      }
+      output = Promise.resolve(input);
     }
 
     const { _applyChecks } = this;
@@ -46,14 +51,13 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
     let inputValue: unknown;
     let outputValue: unknown;
 
-    return input
+    return output
       .then(value => {
         inputValue = outputValue = value;
         return this.shape['_applyAsync'](value, options);
       })
       .then(result => {
         let issues;
-        let output = input;
 
         if (result !== null) {
           if (isArray(result)) {

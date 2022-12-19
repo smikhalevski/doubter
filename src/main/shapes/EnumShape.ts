@@ -38,7 +38,7 @@ export class EnumShape<T> extends Shape<T> {
     const { _applyChecks } = this;
 
     if (!this.values.includes(input)) {
-      return [this._issueFactory(input, options)];
+      return this._issueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

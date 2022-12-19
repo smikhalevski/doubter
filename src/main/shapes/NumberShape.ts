@@ -1,6 +1,6 @@
 import { Shape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory } from '../utils';
+import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -158,18 +158,61 @@ export class NumberShape extends Shape<number> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return ['number'];
+    return [this.coerced ? 'any' : 'number'];
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { _typePredicate, _applyChecks } = this;
 
+    if (options.coerced || this.coerced) {
+      return this._applyToCoerced(input, options);
+    }
     if (!_typePredicate(input)) {
-      return [this._issueFactory(input, options)];
+      return this._issueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);
     }
     return null;
   }
+
+  private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<number> {
+    const { _typePredicate, _applyChecks } = this;
+
+    const output = coerceNumber(input);
+
+    let issues: Issue[] | null = null;
+
+    if (!_typePredicate(output)) {
+      return this._issueFactory(input, options);
+    }
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
+  }
+}
+
+function coerceNumber(input: unknown): any {
+  if (input == null || input !== input) {
+    return 0;
+  }
+  if (typeof input === 'string') {
+    const output = +input;
+
+    if (output !== output) {
+      return input;
+    }
+    return output;
+  }
+  if (typeof input === 'boolean') {
+    return +input;
+  }
+  if (isArray(input) && input.length === 1 && typeof input[0] === 'number') {
+    return input[0];
+  }
+  return input;
 }

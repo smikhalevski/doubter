@@ -70,7 +70,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
-      return [this._issueFactory(input, options)];
+      return this._issueFactory(input, options);
     }
 
     const { keyShape, valueShape, _applyChecks, _unsafe } = this;
@@ -137,7 +137,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
-        resolve([this._issueFactory(input, options)]);
+        resolve(this._issueFactory(input, options));
         return;
       }
 

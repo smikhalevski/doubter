@@ -25,6 +25,6 @@ export class NeverShape extends Shape<never> {
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<never> {
-    return [this._issueFactory(input, options)];
+    return this._issueFactory(input, options);
   }
 }

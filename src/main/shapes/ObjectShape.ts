@@ -13,7 +13,6 @@ import {
   isObjectLike,
   isPlainObject,
   ok,
-  pushIssue,
   setFlag,
   setKeyValue,
   unshiftPath,
@@ -70,7 +69,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   protected _valueShapes: Shape[];
   protected _typePredicate = isObjectLike;
   protected _typeIssueFactory;
-  protected _exactIssueFactory?: (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue;
+  protected _exactIssueFactory?: (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[];
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.
@@ -335,12 +334,12 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     const { _typePredicate } = this;
 
     if (!_typePredicate(input)) {
-      return [this._typeIssueFactory(input, options)];
+      return this._typeIssueFactory(input, options);
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
-      return this._applyLax(input, options);
+      return this._applyRestUnchecked(input, options);
     } else {
-      return this._applyStrict(input, options);
+      return this._applyRestChecked(input, options);
     }
   }
 
@@ -349,7 +348,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       const { _typePredicate } = this;
 
       if (!_typePredicate(input)) {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve(this._typeIssueFactory(input, options));
         return;
       }
 
@@ -407,10 +406,10 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         const issue = this._exactIssueFactory!(input, options, unknownKeys);
 
         if (!options.verbose) {
-          resolve([issue]);
+          resolve(issue);
           return;
         }
-        issues = pushIssue(issues, issue);
+        issues = concatIssues(issues, issue);
       }
 
       if (seenCount !== keysLength) {
@@ -469,7 +468,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Unknown keys are preserved as is and aren't checked.
    */
-  private _applyLax(input: ReadonlyDict, options: ParseOptions): ApplyResult {
+  private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions): ApplyResult {
     const { keys, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
@@ -514,7 +513,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
-  private _applyStrict(input: ReadonlyDict, options: ParseOptions): ApplyResult {
+  private _applyRestChecked(input: ReadonlyDict, options: ParseOptions): ApplyResult {
     const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
 
     const keysLength = keys.length;
@@ -592,9 +591,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       const issue = this._exactIssueFactory!(input, options, unknownKeys);
 
       if (!options.verbose) {
-        return [issue];
+        return issue;
       }
-      issues = pushIssue(issues, issue);
+      issues = concatIssues(issues, issue);
     }
 
     // Parse absent known keys

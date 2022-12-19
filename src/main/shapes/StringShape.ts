@@ -1,6 +1,6 @@
 import { Shape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory } from '../utils';
+import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -95,18 +95,53 @@ export class StringShape extends Shape<string> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return ['string'];
+    return [this.coerced ? 'any' : 'string'];
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
+    if (options.coerced || this.coerced) {
+      return this._applyToCoerced(input, options);
+    }
     if (typeof input !== 'string') {
-      return [this._issueFactory(input, options)];
+      return this._issueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);
     }
     return null;
   }
+
+  private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<string> {
+    const { _applyChecks } = this;
+
+    const output = coerceString(input);
+
+    let issues: Issue[] | null = null;
+
+    if (typeof output !== 'string') {
+      return this._issueFactory(input, options);
+    }
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
+  }
+}
+
+function coerceString(input: unknown): unknown {
+  if (typeof input === 'string') {
+    return input;
+  }
+  if (input == null) {
+    return '';
+  }
+  if (isArray(input) && input.length === 1 && typeof input[0] === 'string') {
+    return input[0];
+  }
+  return input;
 }

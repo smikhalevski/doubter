@@ -162,7 +162,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this.coerced ? ['any'] : ['array'];
+    return [this.coerced ? 'any' : 'array'];
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
@@ -180,7 +180,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       (restShape === null && _shapesLength !== -1 && inputLength !== _shapesLength)
     ) {
       if (checked || !(options.coerced || this.coerced) || !this._coercible) {
-        return [this._issueFactory(input, options)];
+        return this._issueFactory(input, options);
       }
       output = [input];
       inputLength = 1;
@@ -237,7 +237,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         (restShape === null && _shapesLength !== -1 && inputLength !== _shapesLength)
       ) {
         if (checked || !(options.coerced || this.coerced) || !this._coercible) {
-          resolve([this._issueFactory(input, options)]);
+          resolve(this._issueFactory(input, options));
           return;
         }
         output = [input];

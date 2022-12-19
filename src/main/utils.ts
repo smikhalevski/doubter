@@ -93,7 +93,7 @@ export function createIssueFactory(
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined,
   param: unknown
-): (input: unknown, options: Readonly<ParseOptions>) => Issue;
+): (input: unknown, options: Readonly<ParseOptions>) => Issue[];
 
 /**
  * Returns a function that creates a new issue.
@@ -107,14 +107,14 @@ export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined
-): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue;
+): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[];
 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: TypeConstraintOptions | Message | undefined,
   param?: any
-): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue {
+): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[] {
   const paramKnown = arguments.length === 4;
 
   let meta: unknown;
@@ -133,13 +133,13 @@ export function createIssueFactory(
 
   if (typeof message === 'function') {
     if (paramKnown) {
-      return (input, options) => {
-        return { code, path: [], input, message: message(param, code, input, meta, options), param, meta };
-      };
+      return (input, options) => [
+        { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
+      ];
     } else {
-      return (input, options, param) => {
-        return { code, path: [], input, message: message(param, code, input, meta, options), param, meta };
-      };
+      return (input, options, param) => [
+        { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
+      ];
     }
   }
 
@@ -147,20 +147,14 @@ export function createIssueFactory(
     if (paramKnown) {
       message = message.replace('%s', param);
     } else if (message.indexOf('%s') !== -1) {
-      return (input, options, param) => {
-        return { code, path: [], input, message: message.replace('%s', param), param, meta };
-      };
+      return (input, options, param) => [{ code, path: [], input, message: message.replace('%s', param), param, meta }];
     }
   }
 
   if (paramKnown) {
-    return input => {
-      return { code, path: [], input, message, param, meta };
-    };
+    return input => [{ code, path: [], input, message, param, meta }];
   } else {
-    return (input, options, param) => {
-      return { code, path: [], input, message, param, meta };
-    };
+    return (input, options, param) => [{ code, path: [], input, message, param, meta }];
   }
 }
 
@@ -178,14 +172,6 @@ export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
     return issues;
   }
   return result;
-}
-
-export function pushIssue(issues: Issue[] | null, result: Issue): Issue[] {
-  if (issues !== null) {
-    issues.push(result);
-    return issues;
-  }
-  return [result];
 }
 
 export function captureIssues(error: unknown): Issue[] {
