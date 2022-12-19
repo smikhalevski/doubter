@@ -67,10 +67,10 @@ export function coerceBoolean(value: unknown): unknown {
   if (typeof value === 'boolean') {
     return value;
   }
-  if (value == null || value === false || value === 0 || value === 'false') {
+  if (value == null || value === false || value === 0 || value === 'false' || value === BigInt(0)) {
     return false;
   }
-  if (value === true || value === 1 || value === 'true') {
+  if (value === true || value === 1 || value === 'true' || value === BigInt(1)) {
     return true;
   }
   if (isArray(value) && value.length === 1 && typeof value[0] === 'boolean') {
