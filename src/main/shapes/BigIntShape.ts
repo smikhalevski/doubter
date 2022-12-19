@@ -1,12 +1,13 @@
-import { Shape, ValueType } from './Shape';
+import { ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok } from '../utils';
+import { bigintTypes, coercibleTypes, createIssueFactory, isArray, ok } from '../utils';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../constants';
+import { CoercibleShape } from './CoercibleShape';
 
 /**
  * The shape of the bigint value.
  */
-export class BigIntShape extends Shape<bigint> {
+export class BigIntShape extends CoercibleShape<bigint> {
   protected _issueFactory;
 
   /**
@@ -21,13 +22,13 @@ export class BigIntShape extends Shape<bigint> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return [this.coerced ? 'any' : 'bigint'];
+    return this._coerced ? coercibleTypes : bigintTypes;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {
     const { _applyChecks } = this;
 
-    if (options.coerced || this.coerced) {
+    if (options.coerced || this._coerced) {
       return this._applyToCoerced(input, options);
     }
     if (typeof input !== 'bigint') {
@@ -59,16 +60,22 @@ export class BigIntShape extends Shape<bigint> {
   }
 }
 
-function coerceBigInt(input: any): unknown {
-  if (typeof input === 'bigint') {
-    return input;
+export function coerceBigInt(value: any): unknown {
+  const type = typeof value;
+
+  if (value == null) {
+    return BigInt(0);
   }
-  if (isArray(input) && input.length === 1 && typeof input[0] === 'bigint') {
-    return input[0];
+  if (type === 'bigint') {
+    return value;
   }
-  try {
-    return BigInt(input);
-  } catch {
-    return input;
+  if (isArray(value) && value.length === 1 && typeof value[0] === 'bigint') {
+    return value[0];
   }
+  if (type === 'number' || type === 'string' || type === 'boolean') {
+    try {
+      return BigInt(value);
+    } catch {}
+  }
+  return value;
 }

@@ -12,6 +12,7 @@ import {
   isFlagSet,
   isObjectLike,
   isPlainObject,
+  objectTypes,
   ok,
   setFlag,
   setKeyValue,
@@ -327,7 +328,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   }
 
   protected _getInputTypes(): ValueType[] {
-    return ['object'];
+    return objectTypes;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {

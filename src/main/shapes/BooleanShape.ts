@@ -1,12 +1,13 @@
-import { Shape, ValueType } from './Shape';
+import { ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok } from '../utils';
+import { booleanTypes, coercibleTypes, createIssueFactory, isArray, ok } from '../utils';
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../constants';
+import { CoercibleShape } from './CoercibleShape';
 
 /**
  * The shape of the bigint value.
  */
-export class BooleanShape extends Shape<boolean> {
+export class BooleanShape extends CoercibleShape<boolean> {
   protected _issueFactory;
 
   /**
@@ -21,13 +22,13 @@ export class BooleanShape extends Shape<boolean> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return [this.coerced ? 'boolean' : 'any'];
+    return this._coerced ? coercibleTypes : booleanTypes;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
-    if (options.coerced || this.coerced) {
+    if (options.coerced || this._coerced) {
       return this._applyToCoerced(input, options);
     }
     if (typeof input !== 'boolean') {
@@ -59,18 +60,21 @@ export class BooleanShape extends Shape<boolean> {
   }
 }
 
-function coerceBoolean(input: unknown): unknown {
-  if (typeof input === 'boolean') {
-    return input;
-  }
-  if (input === 'false' || input == false || input == null) {
+export function coerceBoolean(value: unknown): unknown {
+  if (value == null) {
     return false;
   }
-  if (input === 'true' || input == true) {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+  if (value == null || value === false || value === 0 || value === 'false') {
+    return false;
+  }
+  if (value === true || value === 1 || value === 'true') {
     return true;
   }
-  if (isArray(input) && input.length === 1 && typeof input[0] === 'boolean') {
-    return input[0];
+  if (isArray(value) && value.length === 1 && typeof value[0] === 'boolean') {
+    return value[0];
   }
-  return input;
+  return value;
 }

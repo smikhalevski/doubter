@@ -1,6 +1,6 @@
-import { Shape, ValueType } from './Shape';
+import { ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
+import { appendCheck, coercibleTypes, createIssueFactory, isArray, numberTypes, ok } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -18,11 +18,12 @@ import {
   TYPE_INTEGER,
   TYPE_NUMBER,
 } from '../constants';
+import { CoercibleShape } from './CoercibleShape';
 
 /**
  * The shape of the finite number.
  */
-export class NumberShape extends Shape<number> {
+export class NumberShape extends CoercibleShape<number> {
   protected _issueFactory;
   protected _typePredicate = Number.isFinite;
 
@@ -158,13 +159,13 @@ export class NumberShape extends Shape<number> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return [this.coerced ? 'any' : 'number'];
+    return this._coerced ? coercibleTypes : numberTypes;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { _typePredicate, _applyChecks } = this;
 
-    if (options.coerced || this.coerced) {
+    if (options.coerced || this._coerced) {
       return this._applyToCoerced(input, options);
     }
     if (!_typePredicate(input)) {
@@ -196,8 +197,8 @@ export class NumberShape extends Shape<number> {
   }
 }
 
-function coerceNumber(input: unknown): any {
-  if (input == null || input !== input) {
+export function coerceNumber(input: unknown): any {
+  if (input == null) {
     return 0;
   }
   if (typeof input === 'string') {

@@ -1,6 +1,6 @@
-import { Shape, ValueType } from './Shape';
+import { ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
+import { appendCheck, coercibleTypes, createIssueFactory, isArray, ok, stringTypes } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -12,11 +12,12 @@ import {
   MESSAGE_STRING_TYPE,
   TYPE_STRING,
 } from '../constants';
+import { CoercibleShape } from './CoercibleShape';
 
 /**
  * The shape that constrains the input as a string.
  */
-export class StringShape extends Shape<string> {
+export class StringShape extends CoercibleShape<string> {
   protected _issueFactory;
 
   /**
@@ -95,13 +96,13 @@ export class StringShape extends Shape<string> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return [this.coerced ? 'any' : 'string'];
+    return this._coerced ? coercibleTypes : stringTypes;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
-    if (options.coerced || this.coerced) {
+    if (options.coerced || this._coerced) {
       return this._applyToCoerced(input, options);
     }
     if (typeof input !== 'string') {
@@ -133,15 +134,23 @@ export class StringShape extends Shape<string> {
   }
 }
 
-function coerceString(input: unknown): unknown {
-  if (typeof input === 'string') {
-    return input;
-  }
-  if (input == null) {
+/**
+ * Coerces a value to a string or returns value as is.
+ */
+export function coerceString(value: unknown): unknown {
+  const type = typeof value;
+
+  if (value == null) {
     return '';
   }
-  if (isArray(input) && input.length === 1 && typeof input[0] === 'string') {
-    return input[0];
+  if (type === 'string') {
+    return value;
   }
-  return input;
+  if ((type === 'number' && Number.isFinite(value)) || type === 'boolean' || type === 'bigint') {
+    return '' + value;
+  }
+  if (isArray(value) && value.length === 1 && typeof value[0] === 'string') {
+    return value[0];
+  }
+  return value;
 }

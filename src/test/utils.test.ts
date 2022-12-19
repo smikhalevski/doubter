@@ -253,9 +253,9 @@ describe('createApplyChecksCallback', () => {
         { callback: cbMock, param: undefined, key: 'aaa', unsafe: false },
       ]);
 
-      expect(applyChecks!(111, null, { verbose: false })).toEqual([{ code: 'xxx', path: [] }]);
+      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
     });
 
     test('unsafe check merges issues', () => {
@@ -265,10 +265,10 @@ describe('createApplyChecksCallback', () => {
 
       const issues: Issue[] = [];
 
-      expect(applyChecks!(111, issues, { verbose: false })).toEqual(issues);
+      expect(applyChecks!(111, issues, { verbose: false, coerced: false })).toEqual(issues);
       expect(issues).toEqual([{ code: 'xxx', path: [] }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
     });
 
     test('safe check is not called when issues present', () => {
@@ -280,7 +280,7 @@ describe('createApplyChecksCallback', () => {
 
       const issues: Issue[] = [];
 
-      expect(applyChecks!(111, issues, { verbose: false })).toEqual(issues);
+      expect(applyChecks!(111, issues, { verbose: false, coerced: false })).toEqual(issues);
       expect(issues.length).toBe(0);
       expect(cbMock).not.toHaveBeenCalled();
     });
@@ -306,7 +306,7 @@ describe('createApplyChecksCallback', () => {
         { callback: cbMock, param: undefined, key: 'aaa', unsafe: false },
       ]);
 
-      expect(applyChecks!(111, null, { verbose: false })).toEqual([{ code: 'xxx', path: [] }]);
+      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
     });
   });
 
@@ -324,11 +324,11 @@ describe('createApplyChecksCallback', () => {
         { callback: cbMock4, param: undefined, key: 'ddd', unsafe: true },
       ]);
 
-      expect(applyChecks!(111, null, { verbose: false })).toEqual([{ code: 'BBB', path: [] }]);
+      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'BBB', path: [] }]);
       expect(cbMock1).toHaveBeenCalledTimes(1);
-      expect(cbMock1).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+      expect(cbMock1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
       expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+      expect(cbMock2).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
       expect(cbMock3).not.toHaveBeenCalled();
       expect(cbMock4).not.toHaveBeenCalled();
     });

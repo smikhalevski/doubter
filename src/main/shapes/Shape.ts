@@ -12,6 +12,7 @@ import {
   TypeConstraintOptions,
 } from '../shared-types';
 import {
+  anyTypes,
   appendCheck,
   captureIssues,
   createApplyChecksCallback,
@@ -20,19 +21,20 @@ import {
   getValueType,
   isArray,
   isEqual,
+  Mutable,
   ok,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
   CODE_EXCLUSION,
   CODE_PREDICATE,
-  MESSAGE_ERROR_ASYNC,
-  MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME,
   MESSAGE_EXCLUSION,
+  MESSAGE_FORBIDDEN_AT_RUNTIME,
   MESSAGE_PREDICATE,
+  MESSAGE_REQUIRES_ASYNC,
 } from '../constants';
 
-const defaultParseOptions: ParseOptions = Object.freeze({ verbose: false });
+const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
 
 /**
  * An arbitrary shape.
@@ -161,17 +163,8 @@ export class Shape<I = any, O = I> {
 
   /**
    * The list of checks applied to the shape output.
-   *
-   * @readonly
    */
-  checks: readonly Check[] = [];
-
-  /**
-   * `true` if input values are coerced during parsing.
-   *
-   * @readonly
-   */
-  coerced = false;
+  readonly checks: readonly Check[] = [];
 
   /**
    * The human-readable shape description.
@@ -212,15 +205,6 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Enables input coercion during parsing.
-   */
-  coerce(): this {
-    const shape = this._clone();
-    shape.coerced = true;
-    return shape;
-  }
-
-  /**
    * Appends the check that is applied to the shape output.
    *
    * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then, it is removed
@@ -242,7 +226,7 @@ export class Shape<I = any, O = I> {
 
     const shape = this._clone();
 
-    shape.checks = checks;
+    (shape as Mutable<this>).checks = checks;
     shape._applyChecks = createApplyChecksCallback(checks);
     shape._unsafe ||= unsafe;
 
@@ -423,7 +407,7 @@ export class Shape<I = any, O = I> {
    * Returns the list of runtime value types that can be processed by the shape. Used for various optimizations.
    */
   protected _getInputTypes(): ValueType[] {
-    return ['any'];
+    return anyTypes;
   }
 
   /**
@@ -463,13 +447,13 @@ export class Shape<I = any, O = I> {
 
 Object.defineProperty(Shape.prototype, 'input', {
   get() {
-    throw new Error(MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME);
+    throw new Error(MESSAGE_FORBIDDEN_AT_RUNTIME);
   },
 });
 
 Object.defineProperty(Shape.prototype, 'output', {
   get() {
-    throw new Error(MESSAGE_ERROR_FORBIDDEN_AT_RUNTIME);
+    throw new Error(MESSAGE_FORBIDDEN_AT_RUNTIME);
   },
 });
 
@@ -479,7 +463,7 @@ Object.defineProperty(Shape.prototype, 'async', {
 
     if (async) {
       this._apply = () => {
-        throw new Error(MESSAGE_ERROR_ASYNC);
+        throw new Error(MESSAGE_REQUIRES_ASYNC);
       };
     } else {
       this._applyAsync = Shape.prototype['_applyAsync'];

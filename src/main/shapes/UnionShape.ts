@@ -60,13 +60,6 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     return new UnionShape(valueShapes);
   }
 
-  coerce(): this {
-    return new UnionShape(
-      this.shapes.map(shape => shape.coerce()),
-      this._options
-    ) as any;
-  }
-
   protected _checkAsync(): boolean {
     return isAsyncShapes(this.shapes);
   }

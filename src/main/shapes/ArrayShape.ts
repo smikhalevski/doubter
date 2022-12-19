@@ -1,7 +1,9 @@
-import { AnyShape, Shape, ValueType } from './Shape';
+import { AnyShape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
+  anyTypes,
   appendCheck,
+  arrayTypes,
   concatIssues,
   createIssueFactory,
   isArray,
@@ -21,6 +23,7 @@ import {
   MESSAGE_TUPLE,
   TYPE_ARRAY,
 } from '../constants';
+import { CoercibleShape } from './CoercibleShape';
 
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 
@@ -42,11 +45,15 @@ export type ToArray<T> = T extends any[] ? T : never;
  * @template U The list of positioned element shapes or `null` if there are no positioned elements.
  * @template R The shape of rest elements or `null` if there are no rest elements.
  */
-export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> extends Shape<
+export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> extends CoercibleShape<
   InferArray<U, R, 'input'>,
   InferArray<U, R, 'output'>
 > {
   protected _options;
+
+  /**
+   * `true` if an arbitrary input value can be potentially coerced to this array type, or `false` otherwise.
+   */
   protected _coercible;
   protected _issueFactory;
   protected _shapesLength;
@@ -162,7 +169,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   protected _getInputTypes(): ValueType[] {
-    return [this.coerced ? 'any' : 'array'];
+    return this._coerced ? anyTypes : arrayTypes;
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
@@ -179,7 +186,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       (inputLength = input.length) < _shapesLength ||
       (restShape === null && _shapesLength !== -1 && inputLength !== _shapesLength)
     ) {
-      if (checked || !(options.coerced || this.coerced) || !this._coercible) {
+      if (checked || !(options.coerced || this._coerced) || !this._coercible) {
         return this._issueFactory(input, options);
       }
       output = [input];
@@ -236,7 +243,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         (inputLength = input.length) < _shapesLength ||
         (restShape === null && _shapesLength !== -1 && inputLength !== _shapesLength)
       ) {
-        if (checked || !(options.coerced || this.coerced) || !this._coercible) {
+        if (checked || !(options.coerced || this._coerced) || !this._coercible) {
           resolve(this._issueFactory(input, options));
           return;
         }

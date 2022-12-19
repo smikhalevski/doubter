@@ -1,7 +1,29 @@
 import { StringShape } from '../../main';
-import { CODE_STRING_MAX, CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE, TYPE_STRING } from '../../main/constants';
+import {
+  CODE_STRING_MAX,
+  CODE_STRING_MIN,
+  CODE_STRING_REGEX,
+  CODE_TYPE,
+  MESSAGE_STRING_TYPE,
+  TYPE_ARRAY,
+  TYPE_BIGINT,
+  TYPE_BOOLEAN,
+  TYPE_NULL,
+  TYPE_NUMBER,
+  TYPE_STRING,
+  TYPE_UNDEFINED,
+} from '../../main/constants';
+import { coerceString } from '../../main/shapes/StringShape';
 
 describe('StringShape', () => {
+  test('creates a string shape', () => {
+    const shape = new StringShape();
+
+    expect(shape.checks.length).toBe(0);
+    expect(shape.async).toBe(false);
+    expect(shape['_getInputTypes']()).toEqual([TYPE_STRING]);
+  });
+
   test('allows a string', () => {
     expect(new StringShape().parse('aaa')).toBe('aaa');
   });
@@ -129,11 +151,97 @@ describe('StringShape', () => {
   });
 
   test('applies checks', () => {
-    const objShape = new StringShape().check(() => [{ code: 'xxx' }]);
+    const shape = new StringShape().check(() => [{ code: 'xxx' }]);
 
-    expect(objShape.try('')).toEqual({
+    expect(shape.try('')).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [] }],
     });
+  });
+
+  test('updates input types when coerced', () => {
+    const shape = new StringShape().coerce();
+
+    expect(shape['_getInputTypes']()).toEqual([
+      TYPE_STRING,
+      TYPE_NUMBER,
+      TYPE_BOOLEAN,
+      TYPE_BIGINT,
+      TYPE_ARRAY,
+      TYPE_NULL,
+      TYPE_UNDEFINED,
+    ]);
+  });
+
+  test('coerces an input', () => {
+    expect(new StringShape().coerce().parse(111)).toBe('111');
+    expect(new StringShape().coerce().parse(true)).toBe('true');
+    expect(new StringShape().coerce().parse(['aaa'])).toBe('aaa');
+    expect(new StringShape().parse(['aaa'], { coerced: true })).toBe('aaa');
+
+    expect(new StringShape().coerce().try([111])).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_TYPE,
+          input: [111],
+          message: MESSAGE_STRING_TYPE,
+          param: TYPE_STRING,
+          path: [],
+        },
+      ],
+    });
+  });
+});
+
+describe('coerceString', () => {
+  test('coerces a string', () => {
+    expect(coerceString('aaa')).toBe('aaa');
+  });
+
+  test('coerces a number', () => {
+    expect(coerceString(111)).toBe('111');
+    expect(coerceString(111.222)).toBe('111.222');
+    expect(coerceString(NaN)).toBe(NaN);
+    expect(coerceString(Infinity)).toBe(Infinity);
+    expect(coerceString(-Infinity)).toBe(-Infinity);
+  });
+
+  test('coerces a boolean', () => {
+    expect(coerceString(true)).toBe('true');
+    expect(coerceString(false)).toBe('false');
+  });
+
+  test('coerces null and undefined values', () => {
+    expect(coerceString(null)).toBe('');
+    expect(coerceString(undefined)).toBe('');
+  });
+
+  test('coerces an array with a single string element', () => {
+    expect(coerceString(['aaa'])).toBe('aaa');
+  });
+
+  test('does not coerce unsuitable arrays as is', () => {
+    const value1 = ['aaa', 'bbb'];
+    const value2 = ['aaa', 111];
+    const value3 = [111];
+
+    expect(coerceString(value1)).toBe(value1);
+    expect(coerceString(value2)).toBe(value2);
+    expect(coerceString(value3)).toBe(value3);
+  });
+
+  test('does not coerce objects and functions as is', () => {
+    const value1 = { foo: 111 };
+    const value2 = () => undefined;
+
+    expect(coerceString(value1)).toBe(value1);
+    expect(coerceString(value2)).toBe(value2);
+  });
+
+  test('does not coerce a symbol', () => {
+    const value = Symbol();
+
+    expect(coerceString(value)).toBe(value);
   });
 });

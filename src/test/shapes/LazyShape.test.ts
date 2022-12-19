@@ -10,7 +10,7 @@ describe('LazyShape', () => {
     expect(lazyShape.async).toBe(false);
     expect(lazyShape.parse('aaa')).toBe('aaa');
     expect(applySpy).toHaveBeenCalledTimes(1);
-    expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+    expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
   });
 
   test('applies checks to transformed value', () => {
@@ -24,7 +24,7 @@ describe('LazyShape', () => {
       issues: [{ code: 'xxx', path: [] }],
     });
     expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+    expect(checkMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
   });
 
   describe('async', () => {
@@ -47,7 +47,7 @@ describe('LazyShape', () => {
       expect(lazyShape.async).toBe(true);
       await expect(lazyShape.parseAsync('aaa')).resolves.toBe('aaa');
       expect(applyAsyncSpy).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false });
+      expect(applyAsyncSpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
     });
 
     test('applies checks to transformed value', async () => {
@@ -61,7 +61,7 @@ describe('LazyShape', () => {
         issues: [{ code: 'xxx', path: [] }],
       });
       expect(checkMock).toHaveBeenCalledTimes(1);
-      expect(checkMock).toHaveBeenNthCalledWith(1, 111, { verbose: false });
+      expect(checkMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
     });
   });
 });

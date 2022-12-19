@@ -7,6 +7,7 @@ import {
   isArray,
   isEqual,
   isObjectLike,
+  objectTypes,
   ok,
   setKeyValue,
   unshiftPath,
@@ -65,7 +66,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   }
 
   protected _getInputTypes(): ValueType[] {
-    return ['object'];
+    return objectTypes;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {

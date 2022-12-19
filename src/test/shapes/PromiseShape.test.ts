@@ -1,5 +1,5 @@
 import { ArrayShape, PromiseShape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_ERROR_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_PROMISE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_PROMISE_TYPE, MESSAGE_REQUIRES_ASYNC, TYPE_PROMISE } from '../../main/constants';
 
 describe('PromiseShape', () => {
   test('create a promise shape', () => {
@@ -15,7 +15,7 @@ describe('PromiseShape', () => {
   });
 
   test('does not support sync parsing', () => {
-    expect(() => new PromiseShape(new StringShape()).try('aaa')).toThrow(new Error(MESSAGE_ERROR_ASYNC));
+    expect(() => new PromiseShape(new StringShape()).try('aaa')).toThrow(new Error(MESSAGE_REQUIRES_ASYNC));
   });
 
   test('raises an issue if value is not a Promise', async () => {
@@ -37,7 +37,7 @@ describe('PromiseShape', () => {
     });
 
     expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, input, { verbose: false });
+    expect(checkMock).toHaveBeenNthCalledWith(1, input, { verbose: false, coerced: false });
   });
 
   test('returns the same promise if the resolved value did not change', async () => {
