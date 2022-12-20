@@ -203,6 +203,17 @@ describe('Shape', () => {
     expect(shape.parse(undefined)).toBe(undefined);
   });
 
+  test('result returned by optional can be safely mutated', () => {
+    const shape = new Shape().optional('aaa');
+    const result = shape.try(undefined);
+
+    if (result.ok) {
+      result.value = 'bbb';
+    }
+
+    expect(shape.parse(undefined)).toBe('aaa');
+  });
+
   test('returns default value for an undefined input', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]).optional('aaa');
 

@@ -846,8 +846,8 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
  * @template B The replacement value.
  */
 export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input'] | A, Exclude<S['output'], A> | B> {
-  private _replacedResult: ApplyResult<B>;
-  private _replacedResultPromise?: Promise<ApplyResult<B>>;
+  private _result: ApplyResult<B>;
+  private _resultPromise: Promise<ApplyResult<B>>;
 
   /**
    * Creates the new {@linkcode ReplaceShape} instance.
@@ -875,7 +875,10 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
   ) {
     super();
 
-    this._replacedResult = value === undefined || isEqual(value, searchedValue) ? null : ok(value);
+    const result = value === undefined || isEqual(value, searchedValue) ? null : ok(value);
+
+    this._result = result;
+    this._resultPromise = Promise.resolve(result);
   }
 
   protected _checkAsync(): boolean {
@@ -892,7 +895,7 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
     let issues;
     let output = input;
 
-    const result = isEqual(input, this.searchedValue) ? this._replacedResult : this.shape['_apply'](input, options);
+    const result = isEqual(input, this.searchedValue) ? this._result : this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -921,10 +924,11 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
         return new Promise(resolve => {
           issues = _applyChecks(this.value, null, options);
 
-          resolve(issues !== null ? issues : this._replacedResult);
+          resolve(issues !== null ? issues : this._result);
         });
       }
-      return (this._replacedResultPromise ||= Promise.resolve(this._replacedResult));
+
+      return this._resultPromise;
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
