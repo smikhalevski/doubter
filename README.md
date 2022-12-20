@@ -38,6 +38,7 @@ npm install --save-prod doubter
     - [Refinements](#refinements)
     - [Transformations](#transformations)
     - [Redirections](#redirections)
+    - [Fallback values](#fallback-values)
     - [Async shapes](#async-shapes)
     - [Localization](#localization)
     - [Parsing context](#parsing-context)
@@ -317,6 +318,35 @@ const muShape2 = myShape1.to(number().lt(5).gt(10));
 
 Redirections are particularly useful along with transformations since the `transform` method returns a `TransformShape`
 instance that has a generic API.
+
+## Fallback values
+
+If parsing fails a shape can return a fallback value.
+
+```ts
+const myShape = d.string().catch('Mars');
+
+myShape.parse('Pluto');
+// → 'Pluto'
+
+myShape.parse(42);
+// → 'Mars'
+```
+
+Pass a callback as a fallback value, it would be executed every time the catch clause is reached:
+
+```ts
+const myShape = d.number().catch(Date.now);
+
+myShape.parse(42)
+// → 42
+
+myShape.parse('Pluto');
+// → 1671565311528
+
+myShape.parse('Mars');
+// → 1671565326707
+```
 
 ## Async shapes
 
