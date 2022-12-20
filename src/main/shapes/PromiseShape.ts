@@ -1,15 +1,15 @@
-import { AnyShape, ValueType } from './Shape';
+import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, isArray, isEqual, objectTypes, ok } from '../utils';
-import { CODE_TYPE, MESSAGE_PROMISE_TYPE, MESSAGE_REQUIRES_ASYNC, TYPE_PROMISE } from '../constants';
-import { CoercibleShape } from './CoercibleShape';
+import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_PROMISE } from '../constants';
 
 /**
  * The shape of a value wrapped in a `Promise` instance.
  *
  * @template S The shape of the resolved value.
  */
-export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['input']>, Promise<S['output']>> {
+export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>, Promise<S['output']>> {
+  protected _coerced = false;
   protected _issueFactory;
 
   /**
@@ -25,6 +25,17 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
   }
 
+  /**
+   * Enables input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape._coerced = true;
+    return shape;
+  }
+
   protected _checkAsync(): boolean {
     return true;
   }
@@ -34,7 +45,7 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Promise<S['output']>> {
-    throw new Error(MESSAGE_REQUIRES_ASYNC);
+    throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {

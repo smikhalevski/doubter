@@ -180,6 +180,10 @@ describe('NumberShape', () => {
       ],
     });
   });
+
+  test('uses a fallback value if coercion fails', () => {
+    expect(new NumberShape().coerce(111).parse(['aaa'])).toBe(111);
+  });
 });
 
 describe('coerceNumber', () => {

@@ -107,9 +107,9 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
   }
 }
 
-const NEVER = Symbol();
+export const NEVER = Symbol();
 
-function intersectOutputs(
+export function intersectOutputs(
   input: unknown,
   outputs: any[],
   issueFactory: (input: unknown, options: Readonly<ParseOptions>) => Issue[],
@@ -130,7 +130,7 @@ function intersectOutputs(
   return ok(value);
 }
 
-function intersectPair(a: any, b: any): any {
+export function intersectPair(a: any, b: any): any {
   if (isEqual(a, b)) {
     return a;
   }
@@ -139,6 +139,13 @@ function intersectPair(a: any, b: any): any {
   const bType = getValueType(b);
 
   if (aType !== bType) {
+    return NEVER;
+  }
+
+  if (aType === 'date') {
+    if (a.getTime() === b.getTime()) {
+      return a;
+    }
     return NEVER;
   }
 
@@ -161,29 +168,31 @@ function intersectPair(a: any, b: any): any {
   if (aType === 'array') {
     const aLength = a.length;
 
-    if (aLength === b.length) {
-      let output = a;
-
-      for (let i = 0; i < aLength; ++i) {
-        const aValue = a[i];
-        const bValue = b[i];
-
-        if (isEqual(aValue, bValue)) {
-          continue;
-        }
-        if (output === a) {
-          output = a.slice(0);
-        }
-        const outputValue = intersectPair(aValue, bValue);
-
-        if (outputValue === NEVER) {
-          return NEVER;
-        }
-        output[i] = outputValue;
-      }
-
-      return output;
+    if (aLength !== b.length) {
+      return NEVER;
     }
+
+    let output = a;
+
+    for (let i = 0; i < aLength; ++i) {
+      const aValue = a[i];
+      const bValue = b[i];
+
+      if (isEqual(aValue, bValue)) {
+        continue;
+      }
+      if (output === a) {
+        output = a.slice(0);
+      }
+      const outputValue = intersectPair(aValue, bValue);
+
+      if (outputValue === NEVER) {
+        return NEVER;
+      }
+      output[i] = outputValue;
+    }
+
+    return output;
   }
 
   return NEVER;

@@ -4,6 +4,7 @@ No-hassle runtime validation and transformation.
 
 - TypeScript first;
 - Sync and async validation and transformation flows;
+- Type coercion for primitives, arrays, promises and dates;
 - [High performance and low memory consumption](#performance);
 - [Just 7 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
@@ -38,7 +39,6 @@ npm install --save-prod doubter
     - [Transformations](#transformations)
     - [Redirections](#redirections)
     - [Async shapes](#async-shapes)
-    - [Input value coercion](#input-value-coercion)
     - [Localization](#localization)
     - [Parsing context](#parsing-context)
     - [Integrations](#integrations)
@@ -58,6 +58,7 @@ npm install --save-prod doubter
       [`number`](#number)
       [`integer`](#integer)
       [`int`](#integer)
+      [`nan`](#nan)
       [`bigint`](#bigint)
 
     - Strings<br>
@@ -66,16 +67,18 @@ npm install --save-prod doubter
     - Booleans<br>
       [`boolean`](#boolean)
 
-    - Promises<br>
-      [`promise`](#promise)
+    - Dates<br>
+      [`date`](#date)
 
     - Literal values<br>
-      [`const`](#const)
       [`enum`](#enum)
+      [`const`](#const)
       [`null`](#null)
       [`undefined`](#undefined)
-      [`nan`](#nan)
       [`void`](#void)
+
+    - Promises<br>
+      [`promise`](#promise)
 
     - Shape composition<br>
       [`union`](#union)
@@ -119,7 +122,7 @@ If an input value isn't a string, a `ValidationError` is thrown.
 
 ```ts
 myShape.parse(42);
-// → throws a ValidationError
+// ❌ Error
 ```
 
 Each error instance has `issues` property that contains issues that occurred during parsing.
@@ -155,7 +158,7 @@ myShape.parseOrDefault(42, 'bar');
 // → 'bar'
 ```
 
-You can infer the input and output types of the shape:
+Infer the input and output types of the shape:
 
 ```ts
 type MyInput = typeof myShape['input'];
@@ -180,7 +183,7 @@ myShape.parse(10);
 // → 10
 
 myShape.parse(3);
-// → throws a ValidationError
+// ❌ Error
 ```
 
 A check callback receives an input value and returns an issue or an array of issues if the value isn't valid. If value
@@ -192,7 +195,7 @@ Most shapes have a set of built-in checks. The check we've just implemented is c
 d.number().gt(5);
 ```
 
-You can add as many checks as you want to the shape. They are executed the same order they are defined.
+Add as many checks as you want to the shape. They are executed the same order they are defined.
 
 ```ts
 d.string().min(5).regex(/a/).parse('foo');
@@ -245,8 +248,8 @@ Doubter halts parsing and raises an error as soon as the first issue was encount
 all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option as seen in the example
 above.
 
-At this point you may be wondering what is that `meta` field of the issue object anyway? You can pass a `meta` option to
-any built-in check, and it would be added to an issue.
+At this point you may be wondering what is that `meta` field of the issue object anyway? Pass a `meta` option to any
+built-in check, and it would be added to an issue.
 
 ```ts
 d.number().gt(5, { meta: 'Any useful data here' });
@@ -262,8 +265,8 @@ d.string().refine(val => val.length >= 3)
 // → Shape<string>
 ```
 
-You can also use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type
-of the shape:
+Or use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type of the
+shape:
 
 ```ts
 d.string().refine((val): val is 'foo' | 'bar' => val === 'foo' || val === 'bar')
@@ -286,8 +289,8 @@ myShape2.parse('42');
 // → 42
 ```
 
-You can throw `ValidationError` inside the transformation callback to notify parser that transformation cannot be
-successfully completed:
+Throw a `ValidationError` inside the transformation callback to notify parser that transformation cannot be successfully
+completed:
 
 ```ts
 d.string().transform(val => {
@@ -387,109 +390,6 @@ const objShape2 = d.object({
 // → Shape<{ foo: Promise<string> }>
 ```
 
-## Input value coercion
-
-[`array`](#array), [`bigint`](#bigint), [`boolean`](#boolean), [`enum`](#enum), [`number`](#number),
-[`promise`](#promise) and [`string`](#string) support input value coercion.
-
-```ts
-const myShape = d.number().coerce();
-// → Shape<number>
-
-myShape.parse('0xAAA');
-// → 2730
-```
-
-You can also pass `coersed` option to parser to make all shapes that support coercion to apply coercion rules input
-values:
-
-```ts
-const myShape = d.object({
-  foo: d.number(),
-  bar: d.string()
-});
-
-myShape.parse(
-  { foo: '0b1101', bar: 42 },
-  { coerced: true }
-);
-// → { foo: 13, bar: '42' }
-```
-
-### Primitive value coercion rules
-
-The coercion rules are different from JavaScript to validate input as expected.
-
-<table>
-<thead>
-<tr>
-  <th>From&nbsp;↓&nbsp;to&nbsp;→</th>
-  <th>string</th>
-  <th>number</th>
-  <th>bigint</th>
-  <th>boolean</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td><b>string</b></td>
-  <td>–</td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>+x</code><br></td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>BigInt(x)</code><br></td>
-  <td><code>'false'</code>&nbsp;→&nbsp;<code>false</code><br><code>'true'</code>&nbsp;→&nbsp;<code>true</code><br><code>'abc'</code>&nbsp;×<br><code>''</code>&nbsp;×</td>
-</tr>
-<tr>
-  <td><b>number</b></td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>''+x</code></td>
-  <td>–</td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>BigInt(x)</code><br></td>
-  <td><code>0</code>&nbsp;→&nbsp;<code>false</code><br><code>1</code>&nbsp;→&nbsp;<code>true</code><br><code>x</code>&nbsp;×</td>
-</tr>
-<tr>
-  <td><b>bigint</b></td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>''+x</code></td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>BigInt(x)</code><br></td>
-  <td>–</td>
-  <td><code>0n</code>&nbsp;→&nbsp;<code>false</code><br><code>1n</code>&nbsp;→&nbsp;<code>true</code><br><code>x</code>&nbsp;×</td>
-</tr>
-<tr>
-  <td><b>boolean</b></td>
-  <td><code>false</code>&nbsp;→&nbsp;<code>'false'</code><br><code>true</code>&nbsp;→&nbsp;<code>'true'</code></td>
-  <td><code>false</code>&nbsp;→&nbsp;<code>0</code><br><code>true</code>&nbsp;→&nbsp;<code>1</code></td>
-  <td><code>false</code>&nbsp;→&nbsp;<code>0n</code><br><code>true</code>&nbsp;→&nbsp;<code>1n</code></td>
-  <td>–</td>
-</tr>
-<tr>
-  <td><b>null</b><br><b>undefined</b></td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>''</code></td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>0</code></td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>0n</code></td>
-  <td><code>x</code>&nbsp;→&nbsp;<code>false</code></td>
-</tr>
-</tbody>
-</table>
-
-### Enum coercion rules
-
-If enum is defined as an array of values, then no coercion is applied.
-
-If an enum is defined as a key-value mapping
-(as [an object with a `const` assertion](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions)
-or as [an `enum`](https://www.typescriptlang.org/docs/handbook/enums.html)) the keys can be coerced to values:
-
-```ts
-enum Foo {
-  BAR = 'bar',
-  QUX = 'qux'
-}
-
-const myShape = d.enum(Foo).coerce();
-// → Shape<Foo>
-
-myShape.parse('BAR');
-// → 'bar'
-```
-
 ## Localization
 
 All shapes and built-in checks support custom messages:
@@ -505,8 +405,8 @@ interpolated with the param value.
 d.string().min(3, 'Minimum length is %s');
 ```
 
-You can pass a function as a message, then it would receive a check param, an issue code, an input value, a metadata,
-and parsing options and should return a formatted message value. The returned formatted message can be of any type.
+Pass a function as a message, then it would receive a check param, an issue code, an input value, a metadata, and
+parsing options and should return a formatted message value. The returned formatted message can be of any type.
 
 For example, when using with React you may return a JSX element:
 
@@ -539,7 +439,7 @@ myShape.parse(1000, { context: { locale: 'en-US' } });
 
 ## Integrations
 
-You can combine Doubter with any predicate library.
+Combine Doubter with any predicate library.
 
 ```ts
 import * as d from 'doubter';
@@ -562,14 +462,14 @@ d.any();
 // → Shape<any>
 ```
 
-You can use `any` to create shapes that are unconstrained at runtime but constrained at compile time:
+Use `any` to create shapes that are unconstrained at runtime but constrained at compile time:
 
 ```ts
 d.any<{ foo: string }>();
 // → Shape<{ foo: string }>
 ```
 
-You can create a shape that is constrained by the narrowing predicate:
+Create a shape that is constrained by the narrowing predicate:
 
 ```ts
 d.any((val): val is string => typeof val === 'string');
@@ -585,39 +485,87 @@ d.array();
 // → Shape<any[]>
 ```
 
-Your can constrain the shape of array elements:
+Constrain the shape of array elements:
 
 ```ts
 d.array(d.number());
 // → Shape<number[]>
 ```
 
-Constrain the array length limits:
+Constrain the length of an array:
 
 ```ts
 d.array(d.string()).min(1).max(10);
 ```
 
-You can limit both minimum and maximum array length at the same time:
+Limit both minimum and maximum array length at the same time:
 
 ```ts
 d.array(d.string()).length(5);
 ```
 
-You can transform array values during parsing:
+Transform array values during parsing:
 
 ```ts
 d.array(d.string().transform(parseFloat));
 // → Shape<string[], number[]>
 ```
 
+### Array type coercion
+
+Coerce input values to an array:
+
+```ts
+d.array(d.string()).coerce().parse('Pluto');
+// → ['Pluto']
+```
+
 ## `bigint`
 
-Constrains a value to be a `BigInt`.
+Constrains a value to be a bigint.
 
 ```ts
 d.bigint();
 // → Shape<bigint>
+```
+
+### Bigint type coercion
+
+Coerce input values to a bigint:
+
+```ts
+const myShape = d.bigint().coerce();
+
+myShape.parse(null);
+// → 0n
+
+myShape.parse(['42']);
+// → 42n
+
+myShape.parse('Mars');
+// ❌ Error
+```
+
+Pass the fallback value that would be used if type coercion fails:
+
+```ts
+d.number().coerce(42n).parse('Mars');
+// → 42n
+```
+
+Coercion rules:
+
+- `null` and `undefined` → `0n`
+- `false` → `0n`
+- `true` → `1n`
+- Numbers and strings `x` → `BigInt(x)`
+- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
+
+No implicit rounding is performed during coercion:
+
+```ts
+d.bigint().coerce().parse('3.14');
+// ❌ Error
 ```
 
 ## `boolean`
@@ -629,6 +577,33 @@ d.boolean();
 // → Shape<boolean>
 ```
 
+### Boolean type coercion
+
+Coerce input values to a boolean:
+
+```ts
+const myShape = d.boolean().coerce();
+
+myShape.parse(1);
+// → true
+
+myShape.parse(['false']);
+// → false
+```
+
+Pass the fallback value that would be used if type coercion fails:
+
+```ts
+d.boolean().coerce(false).parse('Pluto');
+// → false
+```
+
+Coercion rules:
+
+- `0`, `0n`, `'false'`, `null` and `undefined` → `false`
+- `1`, `1n` and `'true'` → `true`
+- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
+
 ## `const`
 
 Constrains a value to be an exact value:
@@ -638,12 +613,45 @@ d.const('foo');
 // → Shape<'foo'>
 ```
 
-You can use this to define `NaN` constants as well:
+There are shortcuts for [`null`](#null), [`undefined`](#undefined) and [`nan`](#nan) constants.
+
+## `date`
+
+Constrains a value to be a valid date.
 
 ```ts
-d.const(NaN);
-// → Shape<number>
+d.date();
+// → Shape<Date>
 ```
+
+### Date type coercion
+
+Coerce input values to a date:
+
+```ts
+const myShape = d.date().coerce();
+
+myShape.parse('2020-02-02');
+// → new Date('2020-02-02T00:00:00Z')
+
+myShape.parse(1580601600000);
+// → new Date('2020-02-02T00:00:00Z')
+
+myShape.parse(null);
+// ❌ Error
+```
+
+Pass the fallback value that would be used if type coercion fails:
+
+```ts
+d.string().coerce(new Date('2020-02-02')).parse(null);
+// → new Date('2020-02-02')
+```
+
+Coercion rules:
+
+- Finite number and string `x` → `new Date(x)`
+- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
 
 ## `enum`
 
@@ -654,7 +662,7 @@ d.enum([1, 'foo', 'bar']);
 // → Shape<1 | 'foo' | 'bar'>
 ```
 
-You can use a non-constant enum to limit the possible values:
+Or use an enum to limit possible values:
 
 ```ts
 enum Foo {
@@ -666,7 +674,8 @@ d.enum(Foo);
 // → Shape<Foo>
 ```
 
-Or you can use a const object:
+Or use
+[an object with a `const` assertion](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions):
 
 ```ts
 const Foo = {
@@ -676,6 +685,37 @@ const Foo = {
 
 d.enum(Foo);
 // → Shape<'bar' | 'qux'>
+```
+
+### Enum type coercion
+
+If an enum is defined as a key-value mapping the keys can be coerced to values:
+
+```ts
+enum Foo {
+  BAR = 'bar',
+  QUX = 'qux'
+}
+
+const myShape = d.enum(Foo).coerce();
+// → Shape<Foo>
+
+myShape.parse('BAR');
+// → Foo.BAR
+```
+
+Pass the fallback value that would be used if type coercion fails:
+
+```ts
+d.enum(Foo).coerce(Foo.BAR).parse('Phobos');
+// → Foo.BAR
+```
+
+If enum is defined as an array of values, then no coercion is applied, but you can still make use of a fallback value:
+
+```ts
+d.enum(['foo', 'bar']).coerce('bar').parse('qux');
+// → 'bar'
 ```
 
 ## `instanceOf`
@@ -710,12 +750,14 @@ d.number().integer();
 // → Shape<number>
 ```
 
+Integers follow the same [type coercion rules](#number-type-coercion) as numbers do.
+
 ## `intersection`
 
 Creates a shape that checks that the input value conforms to all shapes.
 
 ```ts
-const myShape = d.intersection([
+d.intersection([
   d.object({
     foo: d.string()
   }),
@@ -726,10 +768,10 @@ const myShape = d.intersection([
 // → Shape<{ foo: string, bar: string }>
 ```
 
-You can use a shorter alias `and`:
+Or use a shorter alias `and`:
 
 ```ts
-const myShape = d.and([
+d.and([
   d.array(d.string()),
   d.array(d.enum(['foo', 'bar']))
 ]);
@@ -749,7 +791,7 @@ const myShape1 = d.object({
 });
 
 const myShape2 = d.object({
-  // 🟡 Notice that the type of foo in myShape2 differs from myShape1.
+  // ⚠️ Notice that the type of foo in myShape2 differs from myShape1.
   foo: d.number()
 });
 ```
@@ -777,20 +819,35 @@ Creates the lazy-loaded shape. For example, you can create cyclic shapes:
 ```ts
 type MyType = string | MyType[];
 
-const myShape: Shape<MyType> = d.lazy(() => d.or([d.string, d.array(myShape)]));
+const myShape: Shape<MyType> = d.lazy(
+  () => d.or([
+    d.string,
+    d.array(myShape)
+  ])
+);
 ```
 
-Note that you must define a shape type explicitly, because it cannot be inferred.
+Note that you must define the type explicitly, because it cannot be inferred.
 
-While Doubter supports cyclic types, it doesn't support cyclic data structures. The latter would cause an infinite loop
-at runtime.
+> **Warning**
+>
+> While Doubter supports cyclic types, it doesn't support cyclic data structures.
+>
+> The latter would cause an infinite loop at runtime.
 
 ## `nan`
 
-A shape that requires an input to be `NaN`:
+A shape that requires an input to be equal to `NaN`:
 
 ```ts
 d.nan();
+// → Shape<number>
+```
+
+If you want to constrain a number and allow `NaN` values, use [`number`](#number):
+
+```ts
+d.number().nan();
 // → Shape<number>
 ```
 
@@ -814,17 +871,28 @@ d.null();
 
 ## `number`
 
-Constrains a finite and non-`NaN` number.
+Constrains a finite number.
 
 ```ts
 d.number();
 // → Shape<number>
 ```
 
-### Minimum and maximum values
+Allow `NaN` input values:
 
-You can limit the exclusive `gt` and inclusive `gte` minimum and the exclusive `lt` and inclusive `lte` maximum
-values:
+```ts
+d.number().nan();
+// → Shape<number>
+```
+
+Replace `NaN` with a default value:
+
+```ts
+d.number().nan(0).parse(NaN);
+// → 0
+```
+
+Limit the exclusive `gt` and inclusive `gte` minimum and the exclusive `lt` and inclusive `lte` maximum values:
 
 ```ts
 // The number must be greater than 5 and less then of equal to 10
@@ -839,20 +907,55 @@ Constrain a number to be a multiple of a divisor:
 d.number().multipleOf(5);
 ```
 
-You can constrain the number to be an integer:
+Constrain the number to be an integer:
 
 ```ts
 d.number().integer();
-// Or use a shortcut d.int()
+// or
+d.int();
 ```
 
-The integer check is always applied before any other checks.
+The integer check is always applied before other checks.
 
-If you want to allow `NaN` numbers you can use a union shape:
+### Number type coercion
+
+Coerce input values to a number:
 
 ```ts
-d.or([d.number(), d.const(NaN)]);
-// → Shape<number>
+const myShape = d.number().coerce();
+
+myShape.parse(null);
+// → 0
+
+myShape.parse(['42']);
+// → 42
+
+myShape.parse('Mars');
+// ❌ Error
+```
+
+Pass the fallback value that would be used if type coercion fails:
+
+```ts
+d.number().coerce(13).parse('Phobos');
+// → 13
+```
+
+Coercion rules:
+
+- `null` and `undefined` → `0`
+- `false` → `0`
+- `true` → `1`
+- Date instance `x` → `x.getTime()`
+- String that represent finite numbers `x` → `+x`
+- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
+- Other values, including bigint, `NaN` and `±Infinity` aren't coerced.
+
+No implicit rounding is performed during coercion:
+
+```ts
+d.number().integer().coerce().parse('3.14');
+// ❌ Error
 ```
 
 ## `object`
@@ -883,7 +986,7 @@ Or you can define optional properties as a union:
 
 ```ts
 d.object({
-  foo: d.or([d.string(), d.const(undefined)]),
+  foo: d.or([d.string(), d.undefined()]),
 });
 // → Shape<{ foo?: string | undefined }>
 ```
@@ -899,8 +1002,8 @@ d.object({
 
 ### Index signature
 
-You can add an index signature to the object type, so all properties that aren't listed explicitly are validated with
-the rest shape:
+Add an index signature to the object type, so all properties that aren't listed explicitly are validated with the rest
+shape:
 
 ```ts
 const myShape = d.object({
@@ -931,7 +1034,7 @@ Keys that aren't defined explicitly can be handled in several ways:
 - preserved as is, this is the default behavior;
 - prohibited.
 
-You can force an object to have only known keys. If an unknown key is met, a validation issue is raised.
+Force an object to have only known keys. If an unknown key is met, a validation issue is raised.
 
 ```ts
 d.object({
@@ -940,7 +1043,7 @@ d.object({
 }).exact();
 ```
 
-You can strip unknown keys, so the object is cloned if an unknown key is met, and only known keys are preserved.
+Strip unknown keys, so the object is cloned if an unknown key is met, and only known keys are preserved.
 
 ```ts
 d.object({
@@ -949,7 +1052,7 @@ d.object({
 }).strip();
 ```
 
-You can derive the new shape and override the strategy for unknown keys:
+Derive the new shape and override the strategy for unknown keys:
 
 ```ts
 const myShape = d.object({ foo: d.string() }).exact();
@@ -1017,8 +1120,8 @@ myFooShape.extend(myBarShape);
 
 ### Making objects partial and required
 
-Object properties are optional if their type extends `undefined`. You can derive an object shape that would have its
-properties all marked as optional:
+Object properties are optional if their type extends `undefined`. Derive an object shape that would have its properties
+all marked as optional:
 
 ```ts
 const myShape = d.object({
@@ -1030,7 +1133,7 @@ myShape.partial()
 // → Shape<{ foo?: string | undefined, bar?: number | undefined }>
 ```
 
-You can specify which fields should be marked as optional:
+Specify which fields should be marked as optional:
 
 ```ts
 const myShape = d.object({
@@ -1058,14 +1161,14 @@ Note that `required` would force the value of both input and output to be non-`u
 
 ## `promise`
 
-A shape that applies another shape to the resolved value of a `Promise`.
+A shape that constrains to the resolved value of a `Promise`.
 
 ```ts
 d.promise(d.string());
 // → Shape<Promise<string>>
 ```
 
-You can transform the value inside a promise:
+Transform the value inside a promise:
 
 ```ts
 const myShape = d.promise(d.string().transform(parseFloat));
@@ -1075,8 +1178,25 @@ const myShape = d.promise(d.string().transform(parseFloat));
 Promise shapes don't support sync parsing, so `tryAsync`, `parseAsync` or `parseOrDefaultAsync` should be used:
 
 ```ts
-await myShape.parseAsync('42');
+await myShape.parseAsync(Promise.resolve('42'));
 // → 42
+
+await myShape.parseAsync('42');
+// ❌ Error
+```
+
+### Promise type coercion
+
+If an input value isn't a `Promise` instance then it is wrapped:
+
+```ts
+const myShape = d.promise(d.string()).coerce();
+
+await myShape.parseAsync(Promise.resolve('Mars'));
+// → 'Mars'
+
+await myShape.parseAsync('Pluto');
+// → 'Pluto'
 ```
 
 ## `preprocess`
@@ -1088,7 +1208,7 @@ const myShape = d.preprocess(parseFloat);
 // → Shape<string, number>
 ```
 
-You can use `preprocess` in conjunction with [redirection](#redirections):
+Use `preprocess` in conjunction with [redirection](#redirections):
 
 ```ts
 myShape.to(d.number().min(3).max(5));
@@ -1110,7 +1230,7 @@ d.record(d.string(), d.number())
 // → Shape<Record<string, number>>
 ```
 
-You can pass any shape that extends `Shape<string>` as a key constraint:
+Pass any shape that extends `Shape<string>` as a key constraint:
 
 ```ts
 const myKeyShape = d.enum(['foo', 'bar']);
@@ -1120,7 +1240,7 @@ d.record(myKeyShape, d.number());
 // → Shape<Record<'foo' | 'bar', number>>
 ```
 
-You can rename record keys using transformation:
+Rename record keys using transformation:
 
 ```ts
 const myKeyShape = d.enum(['foo', 'bar']).transform(val => {
@@ -1150,7 +1270,7 @@ Constrain the string length limits:
 d.string().min(1).max(10);
 ```
 
-You can limit both minimum and maximum string length at the same time:
+Limit both minimum and maximum string length at the same time:
 
 ```ts
 d.string().length(5);
@@ -1161,6 +1281,38 @@ Constrain a string with a regular expression:
 ```ts
 d.string().regex(/foo|bar/);
 ```
+
+### String type coercion
+
+Coerce input values to a string:
+
+```ts
+const myShape = d.string().coerce();
+
+myShape.parse(null);
+// → ''
+
+myShape.parse([42]);
+// → '42'
+
+myShape.parse({ foo: 'bar' });
+// ❌ Error
+```
+
+Pass the fallback value that would be used if type coercion fails:
+
+```ts
+d.string().coerce('').parse({ foo: 'bar' });
+// → ''
+```
+
+Coercion rules:
+
+- `null` and `undefined` → `''`
+- `false` → `'false'`
+- `true` → `'true'`
+- Finite number and bigint `x` → `String(x)`
+- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
 
 ## `tuple`
 
@@ -1178,6 +1330,19 @@ d.tuple([d.string(), d.number()], d.boolean());
 // → Shape<[string, number, ...boolean]>
 ```
 
+### Tuple type coercion
+
+Coerce input values to a tuple:
+
+```ts
+const myShape = d.array([d.number()]).coerce();
+
+myShape.parse(42);
+// → [42]
+```
+
+If a tuple has more than one positioned element then coercion isn't possible.
+
 ## `union`
 
 A constraint that allows a value to be one of the given types:
@@ -1187,7 +1352,7 @@ d.union([d.string(), d.number()]);
 // → Shape<string | number>
 ```
 
-You can use a shorter alias `or`:
+Use a shorter alias `or`:
 
 ```ts
 d.or([d.string(), d.number()]);

@@ -43,7 +43,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
-    const output = coerceBoolean(input);
+    const output = coerceBoolean(input, this._fallbackValue);
 
     let issues: Issue[] | null = null;
 
@@ -60,7 +60,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   }
 }
 
-export function coerceBoolean(value: unknown): unknown {
+export function coerceBoolean(value: unknown, defaultValue = value): unknown {
   if (value == null) {
     return false;
   }
@@ -73,8 +73,8 @@ export function coerceBoolean(value: unknown): unknown {
   if (value === true || value === 1 || value === 'true' || value === BigInt(1)) {
     return true;
   }
-  if (isArray(value) && value.length === 1 && typeof value[0] === 'boolean') {
-    return value[0];
+  if (isArray(value) && value.length === 1) {
+    return coerceBoolean(value[0], defaultValue);
   }
-  return value;
+  return defaultValue;
 }

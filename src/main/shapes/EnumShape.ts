@@ -71,11 +71,13 @@ export class EnumShape<T> extends CoercibleShape<T> {
     let output;
     let issues: Issue[] | null = null;
 
-    if (_valueMapping === null || !_valueMapping.hasOwnProperty(input)) {
+    if (_valueMapping !== null && _valueMapping.hasOwnProperty(input)) {
+      output = _valueMapping[input];
+    } else if (this._fallbackValue !== undefined) {
+      output = this._fallbackValue;
+    } else {
       return this._issueFactory(input, options);
     }
-
-    output = _valueMapping[input];
 
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);

@@ -3,6 +3,7 @@ export { BigIntShape } from './BigIntShape';
 export { BooleanShape } from './BooleanShape';
 export { CoercibleShape } from './CoercibleShape';
 export { ConstShape } from './ConstShape';
+export { DateShape } from './DateShape';
 export { EnumShape } from './EnumShape';
 export { InstanceShape } from './InstanceShape';
 export { IntersectionShape } from './IntersectionShape';

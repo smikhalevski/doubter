@@ -17,6 +17,7 @@ import {
   TYPE_ARRAY,
   TYPE_BIGINT,
   TYPE_BOOLEAN,
+  TYPE_DATE,
   TYPE_FUNCTION,
   TYPE_NEVER,
   TYPE_NULL,
@@ -51,6 +52,7 @@ export const nullTypes: ValueType[] = [TYPE_NULL];
 export const undefinedTypes: ValueType[] = [TYPE_UNDEFINED];
 export const anyTypes: ValueType[] = [TYPE_ANY];
 export const neverTypes: ValueType[] = [TYPE_NEVER];
+export const dateTypes: ValueType[] = [TYPE_DATE];
 
 export function getValueType(value: unknown): ValueType {
   const type = typeof value;
@@ -63,6 +65,9 @@ export function getValueType(value: unknown): ValueType {
   }
   if (isArray(value)) {
     return TYPE_ARRAY;
+  }
+  if (value instanceof Date) {
+    return TYPE_DATE;
   }
   return type;
 }
@@ -95,10 +100,6 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
     async = shapes[i].async;
   }
   return async;
-}
-
-export function isUnique<T>(value: T, index: number, values: readonly T[]): boolean {
-  return !values.includes(value, index + 1);
 }
 
 /**

@@ -117,7 +117,7 @@ export class StringShape extends CoercibleShape<string> {
   private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
-    const output = coerceString(input);
+    const output = coerceString(input, this._fallbackValue);
 
     let issues: Issue[] | null = null;
 
@@ -134,10 +134,7 @@ export class StringShape extends CoercibleShape<string> {
   }
 }
 
-/**
- * Coerces a value to a string or returns value as is.
- */
-export function coerceString(value: unknown): unknown {
+export function coerceString(value: unknown, defaultValue = value): unknown {
   const type = typeof value;
 
   if (value == null) {
@@ -149,8 +146,8 @@ export function coerceString(value: unknown): unknown {
   if ((type === 'number' && Number.isFinite(value)) || type === 'boolean' || type === 'bigint') {
     return '' + value;
   }
-  if (isArray(value) && value.length === 1 && typeof value[0] === 'string') {
-    return value[0];
+  if (isArray(value) && value.length === 1) {
+    return coerceString(value[0], defaultValue);
   }
-  return value;
+  return defaultValue;
 }

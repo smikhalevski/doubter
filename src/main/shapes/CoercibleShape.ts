@@ -8,26 +8,21 @@ import { Shape } from './Shape';
  */
 export class CoercibleShape<I = any, O = I> extends Shape<I, O> {
   protected _coerced = false;
+  protected _fallbackValue: I | undefined;
 
   /**
-   * Enables input coercion during parsing.
+   * Enables input value coercion.
    *
+   * @param fallbackValue The value that is used if coercion fails.
+   * @template I The input value.
    * @returns The clone of the shape.
    */
-  coerce(): this {
+  coerce(fallbackValue?: I): this {
     const shape = this._clone();
+
     shape._coerced = true;
-    return shape;
-  }
+    shape._fallbackValue = fallbackValue;
 
-  /**
-   * Disables input coercion during parsing.
-   *
-   * @returns The clone of the shape.
-   */
-  noCoerce(): this {
-    const shape = this._clone();
-    shape._coerced = false;
     return shape;
   }
 }

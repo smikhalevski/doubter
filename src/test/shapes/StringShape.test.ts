@@ -179,18 +179,22 @@ describe('StringShape', () => {
     expect(new StringShape().coerce().parse(['aaa'])).toBe('aaa');
     expect(new StringShape().parse(['aaa'], { coerced: true })).toBe('aaa');
 
-    expect(new StringShape().coerce().try([111])).toEqual({
+    expect(new StringShape().coerce().try([111, 222])).toEqual({
       ok: false,
       issues: [
         {
           code: CODE_TYPE,
-          input: [111],
+          input: [111, 222],
           message: MESSAGE_STRING_TYPE,
           param: TYPE_STRING,
           path: [],
         },
       ],
     });
+  });
+
+  test('uses a fallback value if coercion fails', () => {
+    expect(new StringShape().coerce('aaa').parse([111, 222])).toBe('aaa');
   });
 });
 
@@ -219,16 +223,15 @@ describe('coerceString', () => {
 
   test('coerces an array with a single string element', () => {
     expect(coerceString(['aaa'])).toBe('aaa');
+    expect(coerceString([111])).toBe('111');
   });
 
   test('does not coerce unsuitable arrays as is', () => {
     const value1 = ['aaa', 'bbb'];
     const value2 = ['aaa', 111];
-    const value3 = [111];
 
     expect(coerceString(value1)).toBe(value1);
     expect(coerceString(value2)).toBe(value2);
-    expect(coerceString(value3)).toBe(value3);
   });
 
   test('does not coerce objects and functions as is', () => {

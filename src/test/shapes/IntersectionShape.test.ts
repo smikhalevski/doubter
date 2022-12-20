@@ -6,6 +6,7 @@ import {
   MESSAGE_NUMBER_TYPE,
   TYPE_NUMBER,
 } from '../../main/constants';
+import { intersectPair, NEVER } from '../../main/shapes/IntersectionShape';
 
 describe('IntersectionShape', () => {
   test('returns the input that matches all shapes as is', () => {
@@ -83,5 +84,37 @@ describe('IntersectionShape', () => {
         },
       ],
     });
+  });
+});
+
+describe('intersectPair', () => {
+  test('returns value if primitives are equal', () => {
+    expect(intersectPair(111, 111)).toBe(111);
+  });
+
+  test('returns NEVER if primitive values are not equal', () => {
+    expect(intersectPair(111, 222)).toBe(NEVER);
+  });
+
+  test('returns value if dates have the same time', () => {
+    const date = new Date(111);
+
+    expect(intersectPair(date, new Date(111))).toBe(date);
+  });
+
+  test('returns NEVER if dates do not have the same time', () => {
+    expect(intersectPair(new Date(111), new Date(222))).toBe(NEVER);
+  });
+
+  test('merges objects', () => {
+    expect(intersectPair({ aaa: 111 }, { bbb: 222 })).toEqual({ aaa: 111, bbb: 222 });
+    expect(intersectPair({ aaa: 111 }, { aaa: 111, bbb: 222 })).toEqual({ aaa: 111, bbb: 222 });
+    expect(intersectPair({ aaa: 111 }, { aaa: 222 })).toEqual(NEVER);
+  });
+
+  test('merges arrays', () => {
+    expect(intersectPair([111], [111])).toEqual([111]);
+    expect(intersectPair([111], [111, 222])).toEqual(NEVER);
+    expect(intersectPair([111], [])).toEqual(NEVER);
   });
 });

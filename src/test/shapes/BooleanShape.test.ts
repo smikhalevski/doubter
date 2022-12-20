@@ -20,7 +20,7 @@ describe('BooleanShape', () => {
   test('raises an issue if an input is not a boolean', () => {
     expect(new BooleanShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: 'aaa', param: TYPE_BOOLEAN, message: 'Must be a boolean' }],
+      issues: [{ code: CODE_TYPE, path: [], input: 'aaa', param: TYPE_BOOLEAN, message: MESSAGE_BOOLEAN_TYPE }],
     });
   });
 
@@ -62,6 +62,10 @@ describe('BooleanShape', () => {
         },
       ],
     });
+  });
+
+  test('uses a fallback value if coercion fails', () => {
+    expect(new BooleanShape().coerce(true).parse(111)).toBe(true);
   });
 });
 

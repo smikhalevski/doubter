@@ -1,4 +1,4 @@
-import { ValueType } from './Shape';
+import { ReplaceShape, Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { appendCheck, coercibleTypes, createIssueFactory, isArray, numberTypes, ok } from '../utils';
 import {
@@ -144,6 +144,15 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
+   * Allow `NaN` input values.
+   *
+   * @param defaultValue The value that is used instead of `NaN` in the output.
+   */
+  nan(defaultValue = NaN): Shape<number> {
+    return new ReplaceShape(this, NaN, defaultValue);
+  }
+
+  /**
    * Constrains the number to be an integer and rejects `Infinity` and `NaN` values.
    *
    * @param options The constraint options or an issue message.
@@ -180,7 +189,7 @@ export class NumberShape extends CoercibleShape<number> {
   private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { _typePredicate, _applyChecks } = this;
 
-    const output = coerceNumber(input);
+    const output = coerceNumber(input, this._fallbackValue);
 
     let issues: Issue[] | null = null;
 
@@ -197,23 +206,38 @@ export class NumberShape extends CoercibleShape<number> {
   }
 }
 
-export function coerceNumber(input: unknown): any {
-  if (input == null) {
+export function coerceNumber(value: unknown, defaultValue = value): any {
+  const type = typeof value;
+
+  if (value == null) {
     return 0;
   }
-  if (typeof input === 'string') {
-    const output = +input;
-
-    if (output !== output) {
-      return input;
+  if (type === 'number') {
+    if (value !== value) {
+      return defaultValue;
     }
-    return output;
+    return value;
   }
-  if (typeof input === 'boolean') {
-    return +input;
+  if (type === 'string') {
+    const result = +value;
+
+    if (result !== result) {
+      return defaultValue;
+    }
+    return result;
   }
-  if (isArray(input) && input.length === 1 && typeof input[0] === 'number') {
-    return input[0];
+  if (type === 'boolean') {
+    return +value;
   }
-  return input;
+  if (type === 'object') {
+    if (isArray(value) && value.length === 1) {
+      return coerceNumber(value[0], defaultValue);
+    }
+    if (value instanceof Date) {
+      return value.getTime();
+    }
+    return defaultValue;
+  }
+
+  return defaultValue;
 }

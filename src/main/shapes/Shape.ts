@@ -28,10 +28,10 @@ import { ValidationError } from '../ValidationError';
 import {
   CODE_EXCLUSION,
   CODE_PREDICATE,
+  ERROR_FORBIDDEN_AT_RUNTIME,
+  ERROR_REQUIRES_ASYNC,
   MESSAGE_EXCLUSION,
-  MESSAGE_FORBIDDEN_AT_RUNTIME,
   MESSAGE_PREDICATE,
-  MESSAGE_REQUIRES_ASYNC,
 } from '../constants';
 
 const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
@@ -70,6 +70,7 @@ export type ValueType =
   | 'number'
   | 'bigint'
   | 'boolean'
+  | 'date'
   | 'null'
   | 'undefined'
   | 'any'
@@ -447,13 +448,13 @@ export class Shape<I = any, O = I> {
 
 Object.defineProperty(Shape.prototype, 'input', {
   get() {
-    throw new Error(MESSAGE_FORBIDDEN_AT_RUNTIME);
+    throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
   },
 });
 
 Object.defineProperty(Shape.prototype, 'output', {
   get() {
-    throw new Error(MESSAGE_FORBIDDEN_AT_RUNTIME);
+    throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
   },
 });
 
@@ -463,7 +464,7 @@ Object.defineProperty(Shape.prototype, 'async', {
 
     if (async) {
       this._apply = () => {
-        throw new Error(MESSAGE_REQUIRES_ASYNC);
+        throw new Error(ERROR_REQUIRES_ASYNC);
       };
     } else {
       this._applyAsync = Shape.prototype['_applyAsync'];

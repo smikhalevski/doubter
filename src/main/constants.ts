@@ -1,3 +1,6 @@
+export const ERROR_REQUIRES_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
+export const ERROR_FORBIDDEN_AT_RUNTIME = 'Must not be accessed at runtime';
+
 export const CODE_ARRAY_MAX = 'arrayMaxLength';
 export const CODE_ARRAY_MIN = 'arrayMinLength';
 export const CODE_CONST = 'const';
@@ -34,15 +37,15 @@ export const TYPE_ANY = 'any';
 export const TYPE_NEVER = 'never';
 export const TYPE_INTEGER = 'integer';
 export const TYPE_PROMISE = 'promise';
+export const TYPE_DATE = 'date';
 
-export const MESSAGE_REQUIRES_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
-export const MESSAGE_FORBIDDEN_AT_RUNTIME = 'Must not be accessed at runtime';
 export const MESSAGE_ARRAY_TYPE = 'Must be an array';
 export const MESSAGE_ARRAY_MAX = 'Must have the maximum length of %s';
 export const MESSAGE_ARRAY_MIN = 'Must have the minimum length of %s';
 export const MESSAGE_BIGINT_TYPE = 'Must be a bigint';
 export const MESSAGE_BOOLEAN_TYPE = 'Must be a boolean';
 export const MESSAGE_CONST = 'Must be equal to %s';
+export const MESSAGE_DATE_TYPE = 'Must be a date';
 export const MESSAGE_ENUM = 'Must be equal to one of %s';
 export const MESSAGE_EXCLUSION = 'Must not be equal to %s';
 export const MESSAGE_INSTANCE = 'Must be a class instance';
