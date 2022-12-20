@@ -67,8 +67,8 @@ npm install --save-prod doubter
     - Booleans<br>
       [`boolean`](#boolean)
 
-    - Promises<br>
-      [`promise`](#promise)
+    - Dates<br>
+      [`date`](#date)
 
     - Literal values<br>
       [`enum`](#enum)
@@ -76,6 +76,9 @@ npm install --save-prod doubter
       [`null`](#null)
       [`undefined`](#undefined)
       [`void`](#void)
+
+    - Promises<br>
+      [`promise`](#promise)
 
     - Shape composition<br>
       [`union`](#union)
@@ -611,6 +614,44 @@ d.const('foo');
 ```
 
 There are shortcuts for [`null`](#null), [`undefined`](#undefined) and [`nan`](#nan) constants.
+
+## `date`
+
+Constrains a value to be a valid date.
+
+```ts
+d.date();
+// → Shape<Date>
+```
+
+### Date type coercion
+
+Coerce input values to a date:
+
+```ts
+const myShape = d.date().coerce();
+
+myShape.parse('2020-02-02');
+// → new Date('2020-02-02T00:00:00Z')
+
+myShape.parse(1580601600000);
+// → new Date('2020-02-02T00:00:00Z')
+
+myShape.parse(null);
+// ❌ Error
+```
+
+Pass the fallback value that would be used if type coercion fails:
+
+```ts
+d.string().coerce(new Date('2020-02-02')).parse(null);
+// → new Date('2020-02-02')
+```
+
+Coercion rules:
+
+- Finite number and string `x` → `new Date(x)`
+- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
 
 ## `enum`
 

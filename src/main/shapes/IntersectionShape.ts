@@ -107,9 +107,9 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
   }
 }
 
-const NEVER = Symbol();
+export const NEVER = Symbol();
 
-function intersectOutputs(
+export function intersectOutputs(
   input: unknown,
   outputs: any[],
   issueFactory: (input: unknown, options: Readonly<ParseOptions>) => Issue[],
@@ -130,7 +130,7 @@ function intersectOutputs(
   return ok(value);
 }
 
-function intersectPair(a: any, b: any): any {
+export function intersectPair(a: any, b: any): any {
   if (isEqual(a, b)) {
     return a;
   }

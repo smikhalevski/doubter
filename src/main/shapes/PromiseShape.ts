@@ -1,7 +1,7 @@
 import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, isArray, isEqual, objectTypes, ok } from '../utils';
-import { CODE_TYPE, MESSAGE_PROMISE_TYPE, MESSAGE_REQUIRES_ASYNC, TYPE_PROMISE } from '../constants';
+import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_PROMISE } from '../constants';
 
 /**
  * The shape of a value wrapped in a `Promise` instance.
@@ -45,7 +45,7 @@ export class PromiseShape<S extends AnyShape> extends Shape<Promise<S['input']>,
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Promise<S['output']>> {
-    throw new Error(MESSAGE_REQUIRES_ASYNC);
+    throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {

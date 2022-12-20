@@ -1,4 +1,4 @@
-import { Shape, ValueType } from './Shape';
+import { ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, dateTypes, isArray, ok } from '../utils';
 import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
@@ -19,10 +19,6 @@ export class DateShape extends CoercibleShape<Date> {
     super();
 
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);
-  }
-
-  iso(): Shape<Date, string> {
-    return this.transform(output => output.toISOString());
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -65,14 +61,19 @@ export class DateShape extends CoercibleShape<Date> {
 }
 
 export function isValidDate(value: unknown): value is Date {
-  return value instanceof Date && Number.isNaN(value.getTime());
+  let time;
+  return value instanceof Date && (time = value.getTime()) === time;
 }
 
-export function coerceDate(value: any, defaultValue = value): unknown {
-  const type = typeof value;
+export function coerceDate(value: unknown, defaultValue = value): unknown {
+  if (typeof value === 'string' || typeof value === 'number') {
+    const date = new Date(value);
+    const time = date.getTime();
 
-  if (type === 'string' || type === 'number') {
-    return new Date(value);
+    if (time !== time) {
+      return defaultValue;
+    }
+    return date;
   }
   if (isArray(value) && value.length === 1) {
     return coerceDate(value[0], defaultValue);
