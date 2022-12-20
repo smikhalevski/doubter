@@ -63,6 +63,10 @@ describe('BooleanShape', () => {
       ],
     });
   });
+
+  test('uses a fallback value if coercion fails', () => {
+    expect(new BooleanShape().coerce(true).parse(111)).toBe(true);
+  });
 });
 
 describe('coerceBoolean', () => {

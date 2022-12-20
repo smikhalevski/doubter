@@ -9,8 +9,8 @@ import { CODE_CONST, MESSAGE_CONST } from '../constants';
  * @template T The value.
  */
 export class ConstShape<T> extends Shape<T> {
-  protected _typePredicate: (input: unknown) => boolean;
   protected _issueFactory;
+  protected _typePredicate: (input: unknown) => boolean;
 
   /**
    * Creates a new {@linkcode ConstShape} instance.

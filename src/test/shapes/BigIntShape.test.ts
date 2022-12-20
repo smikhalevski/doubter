@@ -73,6 +73,10 @@ describe('BigIntShape', () => {
       ],
     });
   });
+
+  test('uses a fallback value if coercion fails', () => {
+    expect(new BigIntShape().coerce(BigInt(111)).parse(['aaa'])).toBe(BigInt(111));
+  });
 });
 
 describe('coerceBigInt', () => {

@@ -1,4 +1,4 @@
-import { AnyShape, ValueType } from './Shape';
+import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
   anyTypes,
@@ -23,7 +23,6 @@ import {
   MESSAGE_TUPLE,
   TYPE_ARRAY,
 } from '../constants';
-import { CoercibleShape } from './CoercibleShape';
 
 const integerRegex = /^(?:0|[1-9]\d*)$/;
 
@@ -45,11 +44,12 @@ export type ToArray<T> = T extends any[] ? T : never;
  * @template U The list of positioned element shapes or `null` if there are no positioned elements.
  * @template R The shape of rest elements or `null` if there are no rest elements.
  */
-export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> extends CoercibleShape<
+export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> extends Shape<
   InferArray<U, R, 'input'>,
   InferArray<U, R, 'output'>
 > {
   protected _options;
+  protected _coerced = false;
 
   /**
    * `true` if an arbitrary input value can be potentially coerced to this array type, or `false` otherwise.
@@ -104,6 +104,17 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       return shapes[index];
     }
     return this.restShape;
+  }
+
+  /**
+   * Enables input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape._coerced = true;
+    return shape;
   }
 
   /**

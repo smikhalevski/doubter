@@ -70,6 +70,7 @@ export type ValueType =
   | 'number'
   | 'bigint'
   | 'boolean'
+  | 'date'
   | 'null'
   | 'undefined'
   | 'any'

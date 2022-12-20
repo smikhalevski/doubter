@@ -43,7 +43,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
   private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<bigint> {
     const { _applyChecks } = this;
 
-    const output = coerceBigInt(input);
+    const output = coerceBigInt(input, this._fallbackValue);
 
     let issues: Issue[] | null = null;
 
@@ -60,7 +60,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
   }
 }
 
-export function coerceBigInt(value: any): unknown {
+export function coerceBigInt(value: any, defaultValue = value): unknown {
   const type = typeof value;
 
   if (value == null) {
@@ -69,13 +69,13 @@ export function coerceBigInt(value: any): unknown {
   if (type === 'bigint') {
     return value;
   }
-  if (isArray(value) && value.length === 1 && typeof value[0] === 'bigint') {
-    return value[0];
+  if (isArray(value) && value.length === 1) {
+    return coerceBigInt(value[0], defaultValue);
   }
   if (type === 'number' || type === 'string' || type === 'boolean') {
     try {
       return BigInt(value);
     } catch {}
   }
-  return value;
+  return defaultValue;
 }

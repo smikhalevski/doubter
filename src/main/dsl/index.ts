@@ -3,6 +3,7 @@ export * from './array';
 export * from './bigint';
 export * from './boolean';
 export * from './const';
+export * from './date';
 export * from './enum';
 export * from './instanceOf';
 export * from './intersection';
