@@ -14,7 +14,6 @@ import {
 import {
   anyTypes,
   appendCheck,
-  callOrGet,
   captureIssues,
   createApplyChecksCallback,
   createIssueFactory,
@@ -397,6 +396,12 @@ export class Shape<I = any, O = I> {
     return new ExcludeShape(shape, undefined, options);
   }
 
+  /**
+   * Returns the fallback value if parsing fails.
+   *
+   * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
+   * @returns The {@linkcode CatchShape} instance.
+   */
   catch(fallback: O | (() => O)): Shape<I, O> {
     return new CatchShape(this, fallback);
   }
@@ -620,12 +625,15 @@ Object.defineProperty(Shape.prototype, 'parseOrDefaultAsync', {
  * @template O The transformed value.
  */
 export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> {
+  protected _requiresAsync;
+
   /**
    * Creates the new {@linkcode TransformShape} instance.
    *
    * @param shape The base shape.
-   * @param _async If `true` then the transformed shape would await for the callback to finish and use the resolved
-   * value as an output. Otherwise, the value that is synchronously returned from the transformer is used as an output.
+   * @param requiresAsync If `true` then the transformed shape would await for the callback to finish and use the
+   * resolved value as an output. Otherwise, the value that is synchronously returned from the transformer is used as an
+   * output.
    * @param callback The callback that transforms the shape output value.
    * @template S The base shape.
    * @template O The transformed value.
@@ -635,7 +643,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
      * The base shape which output value is transformed.
      */
     readonly shape: S,
-    protected _async: boolean,
+    requiresAsync: boolean,
     /**
      * The callback that transforms the shape output value.
      *
@@ -647,10 +655,12 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     readonly callback: (output: S['output'], options: Readonly<ParseOptions>) => Promise<O> | O
   ) {
     super();
+
+    this._requiresAsync = requiresAsync;
   }
 
   protected _checkAsync(): boolean {
-    return this.shape.async || this._async;
+    return this.shape.async || this._requiresAsync;
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -1064,11 +1074,13 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
 }
 
 /**
- * The shape that returns
+ * The shape that returns the fallback value if parsing fails.
  *
  * @template S The shape that parses the input.
  */
 export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
+  protected _resultProvider: () => Ok<S['output']>;
+
   /**
    * Creates the new {@linkcode CatchShape} instance.
    *
@@ -1087,6 +1099,13 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     readonly fallback: S['output'] | (() => S['output'])
   ) {
     super();
+
+    if (typeof fallback === 'function') {
+      this._resultProvider = () => ok((fallback as Function)());
+    } else {
+      const result = ok(fallback);
+      this._resultProvider = () => result;
+    }
   }
 
   protected _checkAsync(): boolean {
@@ -1106,7 +1125,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
 
     if (result !== null) {
       if (isArray(result)) {
-        result = ok(callOrGet(this.fallback));
+        result = this._resultProvider();
       }
       output = result.value;
     }
@@ -1130,7 +1149,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
 
       if (result !== null) {
         if (isArray(result)) {
-          result = ok(callOrGet(this.fallback));
+          result = this._resultProvider();
         }
         output = result.value;
       }

@@ -102,10 +102,6 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   return async;
 }
 
-export function callOrGet<T>(value: T | (() => T)): T {
-  return typeof value === 'function' ? (value as Function)() : value;
-}
-
 /**
  * The convenient shortcut to add built-in checks to shapes.
  */

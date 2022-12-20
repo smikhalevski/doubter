@@ -230,6 +230,19 @@ describe('ObjectShape', () => {
     });
   });
 
+  test('raises if object is not plain', () => {
+    const objShape = new ObjectShape({}, null).plain();
+
+    expect(objShape.parse({})).toEqual({});
+
+    class Foo {}
+
+    expect(objShape.try(new Foo())).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TYPE, input: {}, message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+    });
+  });
+
   describe('lax', () => {
     test('checks known keys', () => {
       const shape1 = new Shape();
