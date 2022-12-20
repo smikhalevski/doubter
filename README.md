@@ -546,13 +546,6 @@ myShape.parse('Mars');
 // ❌ Error
 ```
 
-Pass the fallback value that would be used if type coercion fails:
-
-```ts
-d.number().coerce(42n).parse('Mars');
-// → 42n
-```
-
 Coercion rules:
 
 - `null` and `undefined` → `0n`
@@ -588,13 +581,6 @@ myShape.parse(1);
 // → true
 
 myShape.parse(['false']);
-// → false
-```
-
-Pass the fallback value that would be used if type coercion fails:
-
-```ts
-d.boolean().coerce(false).parse('Pluto');
 // → false
 ```
 
@@ -641,13 +627,6 @@ myShape.parse(null);
 // ❌ Error
 ```
 
-Pass the fallback value that would be used if type coercion fails:
-
-```ts
-d.string().coerce(new Date('2020-02-02')).parse(null);
-// → new Date('2020-02-02')
-```
-
 Coercion rules:
 
 - Finite number and string `x` → `new Date(x)`
@@ -689,6 +668,8 @@ d.enum(Foo);
 
 ### Enum type coercion
 
+If enum is defined as an array of values, then no coercion is applied.
+
 If an enum is defined as a key-value mapping the keys can be coerced to values:
 
 ```ts
@@ -702,20 +683,6 @@ const myShape = d.enum(Foo).coerce();
 
 myShape.parse('BAR');
 // → Foo.BAR
-```
-
-Pass the fallback value that would be used if type coercion fails:
-
-```ts
-d.enum(Foo).coerce(Foo.BAR).parse('Phobos');
-// → Foo.BAR
-```
-
-If enum is defined as an array of values, then no coercion is applied, but you can still make use of a fallback value:
-
-```ts
-d.enum(['foo', 'bar']).coerce('bar').parse('qux');
-// → 'bar'
 ```
 
 ## `instanceOf`
@@ -932,13 +899,6 @@ myShape.parse(['42']);
 
 myShape.parse('Mars');
 // ❌ Error
-```
-
-Pass the fallback value that would be used if type coercion fails:
-
-```ts
-d.number().coerce(13).parse('Phobos');
-// → 13
 ```
 
 Coercion rules:
@@ -1297,13 +1257,6 @@ myShape.parse([42]);
 
 myShape.parse({ foo: 'bar' });
 // ❌ Error
-```
-
-Pass the fallback value that would be used if type coercion fails:
-
-```ts
-d.string().coerce('').parse({ foo: 'bar' });
-// → ''
 ```
 
 Coercion rules:
