@@ -51,6 +51,14 @@ describe(
   () => {
     const value = 'aaa';
 
+    test('zod', measure => {
+      const type = zod.string().pipe(zod.string());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('doubter', measure => {
       const shape = doubter.string().to(doubter.string());
 
@@ -98,6 +106,62 @@ describe(
         shape.parse(value);
       });
     });
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'string().coerce()',
+  () => {
+    const createTests = value => {
+      test('zod', measure => {
+        const type = zod.coerce.string();
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = doubter.string().coerce();
+
+        measure(() => {
+          shape.parse(value);
+        });
+      });
+    };
+
+    createTests('aaa');
+
+    describe('invalid input', () => createTests(111));
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
+  'string().catch("foo")',
+  () => {
+    const createTests = value => {
+      test('zod', measure => {
+        const type = zod.string().catch('foo');
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = doubter.string().catch('foo');
+
+        measure(() => {
+          shape.parse(value);
+        });
+      });
+    };
+
+    createTests('aaa');
+
+    describe('invalid input', () => createTests(111));
   },
   { warmupIterationCount: 100, targetRme: 0.002 }
 );
