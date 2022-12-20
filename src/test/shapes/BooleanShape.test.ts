@@ -49,7 +49,9 @@ describe('BooleanShape', () => {
     expect(new BooleanShape().coerce().parse(1)).toBe(true);
     expect(new BooleanShape().coerce().parse('true')).toBe(true);
     expect(new BooleanShape().parse('true', { coerced: true })).toBe(true);
+  });
 
+  test('raises an issue if coercion fails', () => {
     expect(new BooleanShape().coerce().try(222)).toEqual({
       ok: false,
       issues: [
@@ -63,63 +65,50 @@ describe('BooleanShape', () => {
       ],
     });
   });
-
-  test('uses a fallback value if coercion fails', () => {
-    expect(new BooleanShape().coerce(true).parse(111)).toBe(true);
-  });
 });
 
 describe('coerceBoolean', () => {
   test('coerces a string', () => {
-    expect(coerceBoolean('aaa')).toBe('aaa');
-    expect(coerceBoolean('true')).toBe(true);
+    expect(coerceBoolean('aaa', null)).toBe(null);
+    expect(coerceBoolean('true', null)).toBe(true);
   });
 
   test('coerces a number', () => {
-    expect(coerceBoolean(1)).toBe(true);
-    expect(coerceBoolean(0)).toBe(false);
-    expect(coerceBoolean(111)).toBe(111);
-    expect(coerceBoolean(NaN)).toBe(NaN);
-    expect(coerceBoolean(Infinity)).toBe(Infinity);
-    expect(coerceBoolean(-Infinity)).toBe(-Infinity);
+    expect(coerceBoolean(1, null)).toBe(true);
+    expect(coerceBoolean(0, null)).toBe(false);
+    expect(coerceBoolean(111, null)).toBe(null);
+    expect(coerceBoolean(NaN, null)).toBe(null);
+    expect(coerceBoolean(Infinity, null)).toBe(null);
+    expect(coerceBoolean(-Infinity, null)).toBe(null);
   });
 
   test('coerces a boolean', () => {
-    expect(coerceBoolean(true)).toBe(true);
-    expect(coerceBoolean(false)).toBe(false);
+    expect(coerceBoolean(true, null)).toBe(true);
+    expect(coerceBoolean(false, null)).toBe(false);
   });
 
   test('coerces null and undefined values', () => {
-    expect(coerceBoolean(null)).toBe(false);
-    expect(coerceBoolean(undefined)).toBe(false);
+    expect(coerceBoolean(null, null)).toBe(false);
+    expect(coerceBoolean(undefined, null)).toBe(false);
   });
 
   test('coerces an array with a single boolean element', () => {
-    expect(coerceBoolean([true])).toBe(true);
-    expect(coerceBoolean([false])).toBe(false);
+    expect(coerceBoolean([true], null)).toBe(true);
+    expect(coerceBoolean([false], null)).toBe(false);
   });
 
   test('does not coerce unsuitable arrays as is', () => {
-    const value1 = [true, true];
-    const value2 = [true, 111];
-    const value3 = [111];
-
-    expect(coerceBoolean(value1)).toBe(value1);
-    expect(coerceBoolean(value2)).toBe(value2);
-    expect(coerceBoolean(value3)).toBe(value3);
+    expect(coerceBoolean([true, true], null)).toBe(null);
+    expect(coerceBoolean([true, 111], null)).toBe(null);
+    expect(coerceBoolean([111], null)).toBe(null);
   });
 
-  test('does not coerce objects and functions as is', () => {
-    const value1 = { foo: 111 };
-    const value2 = () => undefined;
-
-    expect(coerceBoolean(value1)).toBe(value1);
-    expect(coerceBoolean(value2)).toBe(value2);
+  test('does not coerce objects and functions', () => {
+    expect(coerceBoolean({ foo: 111 }, null)).toBe(null);
+    expect(coerceBoolean(() => undefined, null)).toBe(null);
   });
 
   test('does not coerce a symbol', () => {
-    const value = Symbol();
-
-    expect(coerceBoolean(value)).toBe(value);
+    expect(coerceBoolean(Symbol(), null)).toBe(null);
   });
 });

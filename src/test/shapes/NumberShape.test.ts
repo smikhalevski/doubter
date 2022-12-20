@@ -16,7 +16,6 @@ import {
   TYPE_UNDEFINED,
 } from '../../main/constants';
 import { coerceNumber } from '../../main/shapes/NumberShape';
-import { coerceBigInt } from '../../main/shapes/BigIntShape';
 
 describe('NumberShape', () => {
   test('parses a number', () => {
@@ -166,7 +165,9 @@ describe('NumberShape', () => {
     expect(new NumberShape().coerce().parse(true)).toBe(1);
     expect(new NumberShape().coerce().parse([111])).toBe(111);
     expect(new NumberShape().parse([111], { coerced: true })).toBe(111);
+  });
 
+  test('raises an issue if coercion fails', () => {
     expect(new NumberShape().coerce().try(['aaa'])).toEqual({
       ok: false,
       issues: [
@@ -180,62 +181,49 @@ describe('NumberShape', () => {
       ],
     });
   });
-
-  test('uses a fallback value if coercion fails', () => {
-    expect(new NumberShape().coerce(111).parse(['aaa'])).toBe(111);
-  });
 });
 
 describe('coerceNumber', () => {
   test('coerces a string', () => {
-    expect(coerceNumber('aaa')).toBe('aaa');
-    expect(coerceNumber('111')).toBe(111);
-    expect(coerceNumber('111.222')).toBe(111.222);
+    expect(coerceNumber('aaa', null)).toBe(null);
+    expect(coerceNumber('111', null)).toBe(111);
+    expect(coerceNumber('111.222', null)).toBe(111.222);
   });
 
   test('coerces a number', () => {
-    expect(coerceNumber(111)).toBe(111);
-    expect(coerceNumber(111.222)).toBe(111.222);
-    expect(coerceNumber(NaN)).toBe(NaN);
-    expect(coerceBigInt(Infinity)).toBe(Infinity);
-    expect(coerceBigInt(-Infinity)).toBe(-Infinity);
+    expect(coerceNumber(111, null)).toBe(111);
+    expect(coerceNumber(111.222, null)).toBe(111.222);
+    expect(coerceNumber(NaN, null)).toBe(null);
+    expect(coerceNumber(Infinity, null)).toBe(Infinity);
+    expect(coerceNumber(-Infinity, null)).toBe(-Infinity);
   });
 
   test('coerces a boolean', () => {
-    expect(coerceNumber(true)).toBe(1);
-    expect(coerceNumber(false)).toBe(0);
+    expect(coerceNumber(true, null)).toBe(1);
+    expect(coerceNumber(false, null)).toBe(0);
   });
 
   test('coerces null and undefined values', () => {
-    expect(coerceNumber(null)).toBe(0);
-    expect(coerceNumber(undefined)).toBe(0);
+    expect(coerceNumber(null, null)).toBe(0);
+    expect(coerceNumber(undefined, null)).toBe(0);
   });
 
   test('coerces an array with a single number element', () => {
-    expect(coerceNumber([111])).toBe(111);
+    expect(coerceNumber([111], null)).toBe(111);
   });
 
   test('does not coerce unsuitable arrays as is', () => {
-    const value1 = [111, 222];
-    const value2 = [111, 'aaa'];
-    const value3 = ['aaa'];
-
-    expect(coerceNumber(value1)).toBe(value1);
-    expect(coerceNumber(value2)).toBe(value2);
-    expect(coerceNumber(value3)).toBe(value3);
+    expect(coerceNumber([111, 222], null)).toBe(null);
+    expect(coerceNumber([111, 'aaa'], null)).toBe(null);
+    expect(coerceNumber(['aaa'], null)).toBe(null);
   });
 
-  test('does not coerce objects and functions as is', () => {
-    const value1 = { foo: 111 };
-    const value2 = () => undefined;
-
-    expect(coerceNumber(value1)).toBe(value1);
-    expect(coerceNumber(value2)).toBe(value2);
+  test('does not coerce objects and functions', () => {
+    expect(coerceNumber({ foo: 111 }, null)).toBe(null);
+    expect(coerceNumber(() => undefined, null)).toBe(null);
   });
 
   test('does not coerce a symbol', () => {
-    const value = Symbol();
-
-    expect(coerceNumber(value)).toBe(value);
+    expect(coerceNumber(Symbol(), null)).toBe(null);
   });
 });

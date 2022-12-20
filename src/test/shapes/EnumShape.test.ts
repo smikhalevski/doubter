@@ -142,8 +142,4 @@ describe('EnumShape', () => {
       issues: [{ code: 'xxx', path: [] }],
     });
   });
-
-  test('uses a fallback value if coercion fails', () => {
-    expect(new EnumShape<'aaa' | 'bbb'>(['aaa', 'bbb']).coerce('aaa').parse('AAA')).toEqual('aaa');
-  });
 });

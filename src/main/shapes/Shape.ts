@@ -14,6 +14,7 @@ import {
 import {
   anyTypes,
   appendCheck,
+  callOrGet,
   captureIssues,
   createApplyChecksCallback,
   createIssueFactory,
@@ -394,6 +395,10 @@ export class Shape<I = any, O = I> {
       shape = shape.shape;
     }
     return new ExcludeShape(shape, undefined, options);
+  }
+
+  catch(fallback: O | (() => O)): Shape<I, O> {
+    return new CatchShape(this, fallback);
   }
 
   /**
@@ -1040,6 +1045,90 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
         if (isEqual(output, excludedValue)) {
           return _issueFactory(input, options);
         }
+      }
+
+      if (_applyChecks !== null) {
+        issues = _applyChecks(output, null, options);
+
+        if (issues !== null) {
+          return issues;
+        }
+      }
+      return result;
+    });
+  }
+}
+
+/**
+ * The shape that returns
+ *
+ * @template S The shape that parses the input.
+ */
+export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
+  /**
+   * Creates the new {@linkcode CatchShape} instance.
+   *
+   * @param shape The shape that parses the input.
+   * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
+   * @template S The shape that parses the input.
+   */
+  constructor(
+    /**
+     * The base shape.
+     */
+    readonly shape: S,
+    /**
+     * The value or a callback that returns a value that is returned if parsing has failed.
+     */
+    readonly fallback: S['output'] | (() => S['output'])
+  ) {
+    super();
+  }
+
+  protected _checkAsync(): boolean {
+    return this.shape.async;
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return this.shape['_getInputTypes']();
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output']> {
+    const { _applyChecks } = this;
+
+    let result = this.shape['_apply'](input, options);
+    let issues;
+    let output = input;
+
+    if (result !== null) {
+      if (isArray(result)) {
+        result = ok(callOrGet(this.fallback));
+      }
+      output = result.value;
+    }
+
+    if (_applyChecks !== null) {
+      issues = _applyChecks(output, null, options);
+
+      if (issues !== null) {
+        return issues;
+      }
+    }
+    return result;
+  }
+
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
+    const { _applyChecks } = this;
+
+    return this.shape['_applyAsync'](input, options).then(result => {
+      let issues;
+      let output = input;
+
+      if (result !== null) {
+        if (isArray(result)) {
+          result = ok(callOrGet(this.fallback));
+        }
+        output = result.value;
       }
 
       if (_applyChecks !== null) {

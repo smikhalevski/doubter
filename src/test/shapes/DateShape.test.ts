@@ -33,7 +33,9 @@ describe('DateShape', () => {
     expect(new DateShape().coerce().parse(111)).toEqual(new Date(111));
     expect(new DateShape().coerce().parse('2020-02-02')).toEqual(new Date('2020-02-02'));
     expect(new DateShape().parse('2020-02-02', { coerced: true })).toEqual(new Date('2020-02-02'));
+  });
 
+  test('raises an issue if coercion fails', () => {
     expect(new DateShape().coerce().try('aaa')).toEqual({
       ok: false,
       issues: [
@@ -47,34 +49,28 @@ describe('DateShape', () => {
       ],
     });
   });
-
-  test('uses a fallback value if coercion fails', () => {
-    const fallbackDate = new Date();
-
-    expect(new DateShape().coerce(fallbackDate).parse('aaa')).toBe(fallbackDate);
-  });
 });
 
 describe('coerceDate', () => {
   test('coerces a string', () => {
-    expect(coerceDate('aaa')).toBe('aaa');
-    expect(coerceDate('2020-02-02')).toEqual(new Date('2020-02-02'));
+    expect(coerceDate('aaa', null)).toBe(null);
+    expect(coerceDate('2020-02-02', null)).toEqual(new Date('2020-02-02'));
   });
 
   test('coerces a number', () => {
-    expect(coerceDate(111)).toEqual(new Date(111));
-    expect(coerceDate(NaN)).toBe(NaN);
-    expect(coerceDate(Infinity)).toBe(Infinity);
-    expect(coerceDate(-Infinity)).toBe(-Infinity);
+    expect(coerceDate(111, null)).toEqual(new Date(111));
+    expect(coerceDate(NaN, null)).toBe(null);
+    expect(coerceDate(Infinity, null)).toBe(null);
+    expect(coerceDate(-Infinity, null)).toBe(null);
   });
 
   test('coerces a boolean', () => {
-    expect(coerceDate(true)).toBe(true);
-    expect(coerceDate(false)).toBe(false);
+    expect(coerceDate(true, null)).toBe(null);
+    expect(coerceDate(false, null)).toBe(null);
   });
 
   test('coerces null and undefined values', () => {
-    expect(coerceDate(null)).toBe(null);
-    expect(coerceDate(undefined)).toBe(undefined);
+    expect(coerceDate(null, null)).toBe(null);
+    expect(coerceDate(undefined, null)).toBe(null);
   });
 });
