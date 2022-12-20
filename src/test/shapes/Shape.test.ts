@@ -1,5 +1,6 @@
-import { Ok, Shape, ValidationError } from '../../main';
-import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE } from '../../main/constants';
+import { ExcludeShape, Ok, RedirectShape, Shape, StringShape, TransformShape, ValidationError } from '../../main';
+import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_STRING } from '../../main/constants';
+import { CatchShape } from '../../main/shapes/Shape';
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
@@ -203,6 +204,17 @@ describe('Shape', () => {
     expect(shape.parse(undefined)).toBe(undefined);
   });
 
+  test('result returned by optional can be safely mutated', () => {
+    const shape = new Shape().optional('aaa');
+    const result = shape.try(undefined);
+
+    if (result.ok) {
+      result.value = 'bbb';
+    }
+
+    expect(shape.parse(undefined)).toBe('aaa');
+  });
+
   test('returns default value for an undefined input', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]).optional('aaa');
 
@@ -239,6 +251,22 @@ describe('Shape', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
     expect(shape.parseOrDefault(111, 222)).toBe(222);
+  });
+
+  test('transforms input', () => {
+    expect(new Shape().transform(() => 222).parse(111)).toBe(222);
+  });
+
+  test('redirects input to another shape', () => {
+    const shape = new Shape().transform(() => 222);
+
+    expect(new Shape().to(shape).parse(111)).toBe(222);
+  });
+
+  test('returns the fallback value if parsing fails', () => {
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).catch(222);
+
+    expect(shape.parse(111)).toBe(222);
   });
 
   describe('async', () => {
@@ -290,7 +318,7 @@ describe('TransformShape', () => {
   test('transforms the output', () => {
     const cbMock = jest.fn(() => 111);
 
-    const shape = new Shape().transform(cbMock);
+    const shape = new TransformShape(new Shape(), false, cbMock);
 
     expect(shape.parse('aaa')).toBe(111);
 
@@ -301,7 +329,11 @@ describe('TransformShape', () => {
   test('does not call transform if shape parsing failed', () => {
     const cbMock = jest.fn(() => 111);
 
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).transform(cbMock);
+    const shape = new TransformShape(
+      new Shape().check(() => [{ code: 'xxx' }]),
+      false,
+      cbMock
+    );
 
     shape.try('aaa');
 
@@ -309,7 +341,7 @@ describe('TransformShape', () => {
   });
 
   test('transform callback can throw ValidationError instances', () => {
-    const shape = new Shape().transform(() => {
+    const shape = new TransformShape(new Shape(), false, () => {
       throw new ValidationError([{ code: 'xxx' }]);
     });
 
@@ -320,7 +352,7 @@ describe('TransformShape', () => {
   });
 
   test('does not swallow unrecognized errors', () => {
-    const shape = new Shape().transform(() => {
+    const shape = new TransformShape(new Shape(), false, () => {
       throw new Error('expected');
     });
 
@@ -329,7 +361,7 @@ describe('TransformShape', () => {
 
   test('invokes a check', () => {
     const cbMock = jest.fn(() => null);
-    const shape = new Shape().transform(() => 111).check(cbMock);
+    const shape = new TransformShape(new Shape(), false, () => 111).check(cbMock);
 
     shape.parse('aaa');
 
@@ -341,7 +373,7 @@ describe('TransformShape', () => {
     test('transforms async shape output', async () => {
       const cbMock = jest.fn(() => Promise.resolve(111));
 
-      const shape = new Shape().transformAsync(cbMock);
+      const shape = new TransformShape(new Shape(), true, cbMock);
 
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
@@ -352,7 +384,7 @@ describe('TransformShape', () => {
     test('transforms using an async callback', async () => {
       const cbMock = jest.fn(() => Promise.resolve(111));
 
-      const shape = new Shape().transformAsync(cbMock);
+      const shape = new TransformShape(new Shape(), true, cbMock);
 
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
@@ -361,7 +393,7 @@ describe('TransformShape', () => {
     });
 
     test('transform callback can reject with ValidationError instances', async () => {
-      const shape = new Shape().transformAsync(() => Promise.reject(new ValidationError([{ code: 'xxx' }])));
+      const shape = new TransformShape(new Shape(), true, () => Promise.reject(new ValidationError([{ code: 'xxx' }])));
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
@@ -370,7 +402,7 @@ describe('TransformShape', () => {
     });
 
     test('does not swallow unrecognized errors', async () => {
-      const shape = new Shape().transformAsync(() => Promise.reject('expected'));
+      const shape = new TransformShape(new Shape(), true, () => Promise.reject('expected'));
 
       await expect(shape.tryAsync('aaa')).rejects.toBe('expected');
     });
@@ -385,7 +417,7 @@ describe('RedirectShape', () => {
     const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
     const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
 
-    const shape = shape1.to(shape2);
+    const shape = new RedirectShape(shape1, shape2);
 
     expect(shape.parse('aaa')).toBe('aaa');
 
@@ -402,7 +434,7 @@ describe('RedirectShape', () => {
 
     const applySpy = jest.spyOn<Shape, any>(shape2, '_apply');
 
-    const shape = shape1.to(shape2);
+    const shape = new RedirectShape(shape1, shape2);
 
     shape.try('aaa');
 
@@ -415,7 +447,7 @@ describe('RedirectShape', () => {
 
     const checkMock = jest.fn();
 
-    const shape = shape1.to(shape2).check(checkMock);
+    const shape = new RedirectShape(shape1, shape2).check(checkMock);
 
     shape.try('aaa');
 
@@ -425,19 +457,22 @@ describe('RedirectShape', () => {
 
 describe('ExcludeShape', () => {
   test('returns input as is', () => {
-    const shape = new Shape().nonOptional();
+    const shape = new ExcludeShape(new Shape(), undefined);
 
     expect(shape.try(111)).toEqual({ ok: true, value: 111 });
   });
 
   test('returns output as is', () => {
-    const shape = new Shape().transform(() => 222).nonOptional();
+    const shape = new ExcludeShape(
+      new Shape().transform(() => 222),
+      undefined
+    );
 
     expect(shape.try(111)).toEqual({ ok: true, value: 222 });
   });
 
   test('raises an issue if an input is undefined', () => {
-    const shape = new Shape().nonOptional();
+    const shape = new ExcludeShape(new Shape(), undefined);
 
     expect(shape.try(undefined)).toEqual({
       ok: false,
@@ -452,7 +487,10 @@ describe('ExcludeShape', () => {
   });
 
   test('raises an issue if an output is undefined', () => {
-    const shape = new Shape().transform(() => undefined).nonOptional();
+    const shape = new ExcludeShape(
+      new Shape().transform(() => undefined),
+      undefined
+    );
 
     expect(shape.try(111)).toEqual({
       ok: false,
@@ -469,19 +507,28 @@ describe('ExcludeShape', () => {
 
   describe('async', () => {
     test('returns input as is', async () => {
-      const shape = new Shape().transformAsync(value => Promise.resolve(value)).nonOptional();
+      const shape = new ExcludeShape(
+        new Shape().transformAsync(value => Promise.resolve(value)),
+        undefined
+      );
 
       await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 111 });
     });
 
     test('returns output as is', async () => {
-      const shape = new Shape().transformAsync(() => Promise.resolve(222)).nonOptional();
+      const shape = new ExcludeShape(
+        new Shape().transformAsync(() => Promise.resolve(222)),
+        undefined
+      );
 
       await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 222 });
     });
 
     test('raises an issue if an input is undefined', async () => {
-      const shape = new Shape().transformAsync(value => Promise.resolve(value)).nonOptional();
+      const shape = new ExcludeShape(
+        new Shape().transformAsync(value => Promise.resolve(value)),
+        undefined
+      );
 
       await expect(shape.tryAsync(undefined)).resolves.toEqual({
         ok: false,
@@ -496,7 +543,10 @@ describe('ExcludeShape', () => {
     });
 
     test('raises an issue if an output is undefined', async () => {
-      const shape = new Shape().transformAsync(() => Promise.resolve(undefined)).nonOptional();
+      const shape = new ExcludeShape(
+        new Shape().transformAsync(() => Promise.resolve(undefined)),
+        undefined
+      );
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
@@ -509,6 +559,38 @@ describe('ExcludeShape', () => {
           },
         ],
       });
+    });
+  });
+});
+
+describe('CatchShape', () => {
+  test('returns the value of the underlying shape if parsing succeeds', () => {
+    expect(new CatchShape(new StringShape(), 'aaa').parse('bbb')).toBe('bbb');
+  });
+
+  test('returns fallback value if parsing fails', () => {
+    expect(new CatchShape(new StringShape(), 'aaa').parse(111)).toBe('aaa');
+  });
+
+  test('returns the result of a fallback callback if parsing fails', () => {
+    expect(new CatchShape(new StringShape(), () => 'aaa').parse(111)).toBe('aaa');
+  });
+
+  test('returns input types of the underlying shape', () => {
+    expect(new CatchShape(new StringShape(), 'aaa')['_getInputTypes']()).toEqual([TYPE_STRING]);
+  });
+
+  describe('async', () => {
+    test('returns the value of the underlying shape if parsing succeeds', async () => {
+      await expect(new CatchShape(new StringShape(), 'aaa').parseAsync('bbb')).resolves.toBe('bbb');
+    });
+
+    test('returns fallback value if parsing fails', async () => {
+      await expect(new CatchShape(new StringShape(), 'aaa').parseAsync(111)).resolves.toBe('aaa');
+    });
+
+    test('returns the result of a fallback callback if parsing fails', async () => {
+      await expect(new CatchShape(new StringShape(), () => 'aaa').parseAsync(111)).resolves.toBe('aaa');
     });
   });
 });

@@ -189,7 +189,7 @@ export class NumberShape extends CoercibleShape<number> {
   private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<number> {
     const { _typePredicate, _applyChecks } = this;
 
-    const output = coerceNumber(input, this._fallbackValue);
+    const output = coerceNumber(input, input);
 
     let issues: Issue[] | null = null;
 
@@ -206,7 +206,7 @@ export class NumberShape extends CoercibleShape<number> {
   }
 }
 
-export function coerceNumber(value: unknown, defaultValue = value): any {
+export function coerceNumber(value: unknown, defaultValue: unknown): any {
   const type = typeof value;
 
   if (value == null) {

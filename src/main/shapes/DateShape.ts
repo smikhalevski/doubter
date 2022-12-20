@@ -43,7 +43,7 @@ export class DateShape extends CoercibleShape<Date> {
   private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<Date> {
     const { _applyChecks } = this;
 
-    const output = coerceDate(input, this._fallbackValue);
+    const output = coerceDate(input, input);
 
     let issues: Issue[] | null = null;
 
@@ -65,7 +65,7 @@ export function isValidDate(value: unknown): value is Date {
   return value instanceof Date && (time = value.getTime()) === time;
 }
 
-export function coerceDate(value: unknown, defaultValue = value): unknown {
+export function coerceDate(value: unknown, defaultValue: unknown): unknown {
   if (typeof value === 'string' || typeof value === 'number') {
     const date = new Date(value);
     const time = date.getTime();
