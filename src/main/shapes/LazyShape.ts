@@ -28,11 +28,27 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
   }
 
   protected _checkAsync(): boolean {
-    return this.shape.async;
+    const { _checkAsync } = this;
+
+    this._checkAsync = returnFalse;
+
+    try {
+      return this.shape.async;
+    } finally {
+      this._checkAsync = _checkAsync;
+    }
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']();
+    const { _getInputTypes } = this;
+
+    this._getInputTypes = returnArray;
+
+    try {
+      return this.shape['_getInputTypes']();
+    } finally {
+      this._getInputTypes = _getInputTypes;
+    }
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<S['output']> {
@@ -95,3 +111,11 @@ Object.defineProperty(LazyShape.prototype, 'shape', {
     return shape;
   },
 });
+
+function returnFalse(): boolean {
+  return false;
+}
+
+function returnArray(): [] {
+  return [];
+}
