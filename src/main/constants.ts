@@ -67,4 +67,4 @@ export const MESSAGE_STRING_MAX = 'Must have the maximum length of %s';
 export const MESSAGE_STRING_MIN = 'Must have the minimum length of %s';
 export const MESSAGE_STRING_REGEX = 'Must match the pattern %s';
 export const MESSAGE_TUPLE = 'Must be a tuple of length %s';
-export const MESSAGE_UNION = 'Must conform a union';
+export const MESSAGE_UNION = 'Must conform a union of %s';

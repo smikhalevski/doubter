@@ -1,5 +1,4 @@
 import { ArrayShape, BooleanShape, NumberShape, ObjectShape, Shape, StringShape, UnionShape } from '../../main';
-import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
 
 describe('UnionShape', () => {
   test('distributes buckets', () => {
@@ -88,14 +87,12 @@ describe('UnionShape', () => {
       ok: false,
       issues: [
         {
-          code: CODE_UNION,
+          code: 'xxx',
           path: [],
-          input: 'aaa',
-          message: MESSAGE_UNION,
-          param: [
-            { code: 'xxx', path: [] },
-            { code: 'yyy', path: [] },
-          ],
+        },
+        {
+          code: 'yyy',
+          path: [],
         },
       ],
     });
@@ -236,16 +233,8 @@ describe('UnionShape', () => {
       await expect(orShape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
         issues: [
-          {
-            code: CODE_UNION,
-            path: [],
-            input: 'aaa',
-            message: MESSAGE_UNION,
-            param: [
-              { code: 'xxx', path: [] },
-              { code: 'yyy', path: [] },
-            ],
-          },
+          { code: 'xxx', path: [] },
+          { code: 'yyy', path: [] },
         ],
       });
     });
