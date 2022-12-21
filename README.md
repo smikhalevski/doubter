@@ -40,6 +40,7 @@ npm install --save-prod doubter
     - [Redirections](#redirections)
     - [Fallback values](#fallback-values)
     - [Async shapes](#async-shapes)
+    - [Guarded functions](#guarded-functions)
     - [Localization](#localization)
     - [Parsing context](#parsing-context)
     - [Integrations](#integrations)
@@ -431,6 +432,45 @@ const objShape2 = d.object({
 });
 // ⮕ Shape<{ foo: Promise<string> }>
 ```
+
+## Guarded functions
+
+Returns a function which parses arguments with corresponding shapes:
+
+```ts
+const myFn = d.fn([d.string(), d.boolean()], (arg1, arg2) => {
+  // arg1 is string
+  // arg2 is boolean
+});
+```
+
+Or check all arguments with a shape that parses arrays:
+
+```ts
+const myFn = d.fn(d.array(d.string()), (...args) => {
+  // args is string[]
+});
+```
+
+Or if you have a single non-array argument, you can pass its shape:
+
+```ts
+const myFn = d.fn(d.string(), arg => {
+  // arg is string
+});
+```
+
+To guard multiple functions omit the callback parameter:
+
+```ts
+const myFnFactory = d.fn(d.string());
+
+const myFn = myFnFactory(arg => {
+  // arg is string
+});
+```
+
+If you are want to use async shapes to parse arguments, use `fnAsync` which has the same signatures as `fn`.
 
 ## Localization
 

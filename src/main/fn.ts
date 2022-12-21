@@ -1,61 +1,291 @@
 import { AnyShape, ArrayShape, Shape } from './shapes';
-import * as d from './dsl';
 import { isArray } from './utils';
-import { MESSAGE_ERROR_ASYNC_GUARD } from './constants';
-import type { InferTuple } from './shapes/ArrayShape';
+import { InferTuple } from './shapes/ArrayShape';
+import { ERROR_ASYNC_ARGUMENTS } from './constants';
 
+/**
+ * Guards each argument of a function with a corresponding shape.
+ *
+ * ```
+ * const fnFactory = d.fn([d.string(), d.boolean()]);
+ *
+ * fnFactory((arg1: string, arg2: boolean) => …);
+ * ```
+ *
+ * @param argShapes The array of shapes that parse arguments.
+ * @template U The arguments array.
+ * @returns The factory that guards functions.
+ */
+export function fn<U extends readonly [AnyShape, ...AnyShape[]] | []>(
+  argShapes: U
+): <R, T = any>(
+  callback: (this: T, ...args: InferTuple<U, 'output'>) => R
+) => (this: T, ...args: InferTuple<U, 'input'>) => R;
+
+/**
+ * Guards a function arguments with an array/tuple shape.
+ *
+ * ```
+ * const fnFactory = d.fn(d.array(d.string()));
+ *
+ * fnFactory((...args: string[]) => …);
+ * ```
+ *
+ * @param argsShape The shape that parses an arguments array.
+ * @template I The array of input arguments.
+ * @template O The array of output arguments.
+ * @returns The factory that guards functions.
+ */
+export function fn<I extends readonly any[], O extends readonly any[]>(
+  argsShape: Shape<I, O>
+): <R, T = any>(callback: (this: T, ...args: O) => R) => (this: T, ...args: I) => R;
+
+/**
+ * Guards an argument of an arity 1 function with a shape.
+ *
+ * ```
+ * const fnFactory = d.fn(d.string());
+ *
+ * fnFactory((arg: string) => …);
+ * ```
+ *
+ * @param argShape The shape that parses a single argument.
+ * @template I The input argument.
+ * @template O The output argument.
+ * @returns The factory that guards functions.
+ */
+export function fn<I, O>(
+  argShape: Shape<I, O>
+): <R, T = any>(callback: (this: T, arg: O) => R) => (this: T, arg: I) => R;
+
+/**
+ * Guards each argument of a function with a corresponding shape.
+ *
+ * ```
+ * const fn = d.fn(
+ *   [d.string(), d.boolean()],
+ *   (arg1: string, arg2: boolean) => …
+ * );
+ * ```
+ *
+ * @param argShapes The array of shapes that parse arguments.
+ * @param callback The callback to guard.
+ * @template U The arguments array.
+ * @template R The returned value.
+ * @template T The value of `this`.
+ * @returns The guarded callback.
+ */
 export function fn<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T = any>(
-  shapes: U,
+  argShapes: U,
   callback: (this: T, ...args: InferTuple<U, 'output'>) => R
 ): (this: T, ...args: InferTuple<U, 'input'>) => R;
 
+/**
+ * Guards a function arguments with an array/tuple shape.
+ *
+ * ```
+ * const fn = d.fn(
+ *   d.array(d.string()),
+ *   (...args: string[]) => …
+ * );
+ * ```
+ *
+ * @param argsShape The shape that parses an arguments array.
+ * @param callback The callback to guard.
+ * @template I The array of input arguments.
+ * @template O The array of output arguments.
+ * @template R The returned value.
+ * @template T The value of `this`.
+ * @returns The guarded callback.
+ */
 export function fn<I extends readonly any[], O extends readonly any[], R, T = any>(
-  shape: Shape<I, O>,
+  argsShape: Shape<I, O>,
   callback: (this: T, ...args: O) => R
 ): (this: T, ...args: I) => R;
 
-export function fn(shape: any, callback: (...args: any[]) => any) {
+/**
+ * Guards an argument of an arity 1 function with a shape.
+ *
+ * ```
+ * const fn = d.fn(
+ *   d.string(),
+ *   (arg: string) => …
+ * );
+ * ```
+ *
+ * @param argShape The shape that parses a single argument.
+ * @param callback The callback to guard.
+ * @template I The input argument.
+ * @template O The output argument.
+ * @template R The returned value.
+ * @template T The value of `this`.
+ * @returns The guarded callback.
+ */
+export function fn<I, O, R, T = any>(argShape: Shape<I, O>, callback: (this: T, arg: O) => R): (this: T, arg: I) => R;
+
+export function fn(shape: any, callback?: (...args: any[]) => any) {
   if (isArray(shape)) {
     shape = new ArrayShape(shape, null);
   }
-
+  if (!(shape instanceof ArrayShape)) {
+    shape = new ArrayShape([shape], null);
+  }
   if (shape.async) {
-    throw new Error(MESSAGE_ERROR_ASYNC_GUARD);
+    throw new Error(ERROR_ASYNC_ARGUMENTS);
   }
 
-  return function (this: any, ...args: any[]) {
-    return callback.apply(this, shape.parse(args));
-  };
+  const factory = (callback: Function) =>
+    function (this: any, ...args: any[]) {
+      return callback.apply(this, shape.parse(args));
+    };
+
+  return callback !== undefined ? factory(callback) : factory;
 }
 
+/**
+ * Guards each argument of a function with a corresponding shape.
+ *
+ * ```
+ * const fnFactory = d.fnAsync([d.string(), d.boolean()]);
+ *
+ * fnFactory((arg1: string, arg2: boolean) => …);
+ * ```
+ *
+ * @param argShapes The array of shapes that parse arguments.
+ * @template U The arguments array.
+ * @returns The factory that guards functions.
+ */
+export function fnAsync<U extends readonly [AnyShape, ...AnyShape[]] | []>(
+  argShapes: U
+): <R, T = any>(
+  callback: (this: T, ...args: InferTuple<U, 'output'>) => Promise<R> | R
+) => (this: T, ...args: InferTuple<U, 'input'>) => Promise<R>;
+
+/**
+ * Guards a function arguments with an array/tuple shape.
+ *
+ * ```
+ * const fnFactory = d.fnAsync(d.array(d.string()));
+ *
+ * fnFactory((...args: string[]) => …);
+ * ```
+ *
+ * @param argsShape The shape that parses an arguments array.
+ * @template I The array of input arguments.
+ * @template O The array of output arguments.
+ * @returns The factory that guards functions.
+ */
+export function fnAsync<I extends readonly any[], O extends readonly any[]>(
+  argsShape: Shape<I, O>
+): <R, T = any>(callback: (this: T, ...args: O) => Promise<R> | R) => (this: T, ...args: I) => Promise<R>;
+
+/**
+ * Guards an argument of an arity 1 function with a shape.
+ *
+ * ```
+ * const fnFactory = d.fnAsync(d.string());
+ *
+ * fnFactory((arg: string) => …);
+ * ```
+ *
+ * @param argShape The shape that parses a single argument.
+ * @template I The input argument.
+ * @template O The output argument.
+ * @returns The factory that guards functions.
+ */
+export function fnAsync<I, O>(
+  argShape: Shape<I, O>
+): <R, T = any>(callback: (this: T, arg: O) => Promise<R> | R) => (this: T, arg: I) => Promise<R>;
+
+/**
+ * Guards each argument of a function with a corresponding shape.
+ *
+ * ```
+ * const fn = d.fnAsync(
+ *   [d.string(), d.boolean()],
+ *   (arg1: string, arg2: boolean) => …
+ * );
+ * ```
+ *
+ * @param argShapes The array of shapes that parse arguments.
+ * @param callback The callback to guard.
+ * @template U The arguments array.
+ * @template R The returned value.
+ * @template T The value of `this`.
+ * @returns The guarded callback.
+ */
 export function fnAsync<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T = any>(
-  shapes: U,
+  argShapes: U,
   callback: (this: T, ...args: InferTuple<U, 'output'>) => Promise<R> | R
 ): (this: T, ...args: InferTuple<U, 'input'>) => Promise<R>;
 
+/**
+ * Guards a function arguments with an array/tuple shape.
+ *
+ * ```
+ * const fn = d.fnAsync(
+ *   d.array(d.string()),
+ *   (...args: string[]) => …
+ * );
+ * ```
+ *
+ * @param argsShape The shape that parses an arguments array.
+ * @param callback The callback to guard.
+ * @template I The array of input arguments.
+ * @template O The array of output arguments.
+ * @template R The returned value.
+ * @template T The value of `this`.
+ * @returns The guarded callback.
+ */
 export function fnAsync<I extends readonly any[], O extends readonly any[], R, T = any>(
-  shape: Shape<I, O>,
+  argsShape: Shape<I, O>,
   callback: (this: T, ...args: O) => Promise<R> | R
 ): (this: T, ...args: I) => Promise<R>;
 
-export function fnAsync(shape: any, callback: (...args: any[]) => any) {
+/**
+ * Guards an argument of an arity 1 function with a shape.
+ *
+ * ```
+ * const fn = d.fnAsync(
+ *   d.string(),
+ *   (arg: string) => …
+ * );
+ * ```
+ *
+ * @param argShape The shape that parses a single argument.
+ * @param callback The callback to guard.
+ * @template I The input argument.
+ * @template O The output argument.
+ * @template R The returned value.
+ * @template T The value of `this`.
+ * @returns The guarded callback.
+ */
+export function fnAsync<I, O, R, T = any>(
+  argShape: Shape<I, O>,
+  callback: (this: T, arg: O) => Promise<R> | R
+): (this: T, arg: I) => Promise<R>;
+
+export function fnAsync(shape: any, callback?: (...args: any[]) => any) {
   if (isArray(shape)) {
     shape = new ArrayShape(shape, null);
   }
-
-  if (shape.async) {
-    return function (this: any, ...args: any[]) {
-      return shape.parseAsync(args).then((args: any[]) => callback.apply(this, shape.parse(args)));
-    };
+  if (!(shape instanceof ArrayShape)) {
+    shape = new ArrayShape([shape], null);
   }
 
-  return function (this: any, ...args: any[]) {
-    return new Promise(resolve => resolve(callback.apply(this, shape.parse(args))));
-  };
+  let factory: (callback: Function) => Function;
+
+  if (shape.async) {
+    factory = callback =>
+      function (this: any, ...args: any[]) {
+        return shape.parseAsync(args).then((args: any[]) => callback.apply(this, shape.parse(args)));
+      };
+  } else {
+    factory = callback =>
+      function (this: any, ...args: any[]) {
+        return new Promise(resolve => resolve(callback.apply(this, shape.parse(args))));
+      };
+  }
+
+  return callback !== undefined ? factory(callback) : factory;
 }
-
-const fn2 = fnAsync([d.string(), d.boolean()], function (a, b) {
-  return 123;
-});
-
-fn2('sad', true);
