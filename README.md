@@ -93,7 +93,7 @@ npm install --save-prod doubter
       [`never`](#never)
 
     - Other<br>
-      [`preprocess`](#preprocess)
+      [`transform`](#transform)
       [`lazy`](#lazy)
 
 - [Performance](#performance)
@@ -173,8 +173,8 @@ Checks allow constraining the input value beyond type assertions. For example, i
 to be greater than 5:
 
 ```ts
-const myShape = d.number().check(val => {
-  if (val <= 5) {
+const myShape = d.number().check(value => {
+  if (value <= 5) {
     return { code: 'woops' };
   }
 });
@@ -262,7 +262,7 @@ Refinements are a simplified checks that use a predicate to validate an input. F
 an issue if the input string is less than three characters long.
 
 ```ts
-d.string().refine(val => val.length >= 3)
+d.string().refine(value => value.length >= 3)
 // ⮕ Shape<string>
 ```
 
@@ -270,7 +270,9 @@ Or use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/na
 shape:
 
 ```ts
-d.string().refine((val): val is 'foo' | 'bar' => val === 'foo' || val === 'bar')
+d.string().refine(
+  (value): value is 'foo' | 'bar' => value === 'foo' || value === 'bar'
+)
 // ⮕ Shape<string, 'foo' | 'bar'>
 ```
 
@@ -279,7 +281,7 @@ d.string().refine((val): val is 'foo' | 'bar' => val === 'foo' || val === 'bar')
 Shapes can transform values. Let's consider a shape that takes a string as an input and converts it to number.
 
 ```ts
-const myShape = d.string().transform(val => parseInt(val, 10));
+const myShape = d.string().transform(parseFloat);
 // ⮕ Shape<string, number>
 ```
 
@@ -294,8 +296,8 @@ Throw a `ValidationError` inside the transformation callback to notify parser th
 completed:
 
 ```ts
-d.string().transform(val => {
-  const output = parseInt(val, 10);
+d.string().transform(value => {
+  const output = parseFloat(value);
 
   if (isNaN(output)) {
     throw new d.ValidationError([{ code: 'woops' }]);
@@ -304,12 +306,14 @@ d.string().transform(val => {
 })
 ```
 
+You can apply a transformations [directly to an input value](#transform).
+
 ## Redirections
 
 Redirections allow you to apply a shape to the output of another shape.
 
 ```ts
-const myShape1 = d.string().transform(val => parseFloat(val));
+const myShape1 = d.string().transform(parseFloat);
 // ⮕ Shape<string, number>
 
 const muShape2 = myShape1.to(number().lt(5).gt(10));
@@ -355,7 +359,9 @@ Most of the time your shapes would be sync. But some transformations or promise 
 Let's consider the sync transformation:
 
 ```ts
-const syncShape1 = d.string().transform(val => 'Hello, ' + val);
+const syncShape1 = d.string().transform(
+  value => 'Hello, ' + value
+);
 // ⮕ Shape<string>
 
 syncShape1.async;
@@ -370,7 +376,9 @@ The transformation callback receives and returns a string and so does `syncShape
 Now lets return a promise from the transformation callback:
 
 ```ts
-const syncShape2 = d.string().transform(val => Promise.resolve('Hello, ' + val));
+const syncShape2 = d.string().transform(
+  value => Promise.resolve('Hello, ' + value)
+);
 // ⮕ Shape<string, Promise<string>>
 
 syncShape2.async;
@@ -386,7 +394,9 @@ is still sync, since the transformation callback _synchronously wraps_ a value i
 Now let's create an async shape using the async transformation:
 
 ```ts
-const asyncShape = d.string().transformAsync(val => Promise.resolve('Hello, ' + val));
+const asyncShape = d.string().transformAsync(
+  value => Promise.resolve('Hello, ' + value)
+);
 // ⮕ Shape<string>
 
 asyncShape.async;
@@ -403,7 +413,9 @@ The shape is async if it uses async transformations. Here's an async object shap
 
 ```ts
 const objShape1 = d.object({
-  foo: d.string().transformAsync(val => Promise.resolve(val))
+  foo: d.string().transformAsync(
+    value => Promise.resolve(value)
+  )
 });
 // ⮕ Shape<{ foo: string }>
 
@@ -441,11 +453,14 @@ parsing options and should return a formatted message value. The returned format
 For example, when using with React you may return a JSX element:
 
 ```tsx
-d.number().gt(5, (param, code, input, meta, options) => (
-  <span style={{ color: 'red' }}>
-    Minimum length is {param}
-  </span>
-))
+d.number().gt(
+  5,
+  (param, code, input, meta, options) => (
+    <span style={{ color: 'red' }}>
+      Minimum length is {param}
+    </span>
+  )
+);
 ```
 
 All rules described above are applied to the `message` option as well:
@@ -459,9 +474,9 @@ d.string().length(3, { message: 'Expected length is %s' })
 Inside check and transform callbacks you can access options passed to the parser:
 
 ```ts
-const myShape = d.number().transform((val, options) => {
-  return new Intl.NumberFormat(options.context.locale).format(val);
-});
+const myShape = d.number().transform(
+  (value, options) => new Intl.NumberFormat(options.context.locale).format(value)
+);
 // ⮕ Shape<number, string>
 
 myShape.parse(1000, { context: { locale: 'en-US' } });
@@ -503,7 +518,7 @@ d.any<{ foo: string }>();
 Create a shape that is constrained by the narrowing predicate:
 
 ```ts
-d.any((val): val is string => typeof val === 'string');
+d.any((value): value is string => typeof value === 'string');
 // ⮕ Shape<any, string>
 ```
 
@@ -998,7 +1013,9 @@ If the transformation result extends `undefined` then the output property become
 
 ```ts
 d.object({
-  foo: d.string().transform(val => val === 'foo' ? val : undefined),
+  foo: d.string().transform(
+    value => value === 'foo' ? value : undefined
+  ),
 });
 // ⮕ Shape<{ foo: string }, { foo?: string | undefined }>
 ```
@@ -1202,16 +1219,16 @@ await myShape.parseAsync('Pluto');
 // ⮕ 'Pluto'
 ```
 
-## `preprocess`
+## `transform`
 
-Preprocesses the input value. Useful for input value coercion:
+Transforms the input value:
 
 ```ts
-const myShape = d.preprocess(parseFloat);
-// ⮕ Shape<string, number>
+const myShape = d.transform(parseFloat);
+// ⮕ Shape<any, number>
 ```
 
-Use `preprocess` in conjunction with [redirection](#redirections):
+Use `transform` in conjunction with [redirection](#redirections):
 
 ```ts
 myShape.to(d.number().min(3).max(5));
@@ -1246,9 +1263,9 @@ d.record(myKeyShape, d.number());
 Rename record keys using transformation:
 
 ```ts
-const myKeyShape = d.enum(['foo', 'bar']).transform(val => {
-  return val.toUpperCase() as Uppercase<typeof val>;
-});
+const myKeyShape = d.enum(['foo', 'bar']).transform(
+  value => value.toUpperCase() as 'FOO' | 'BAR'
+);
 // ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
 
 const myShape = d.record(myKeyShape, d.number());
