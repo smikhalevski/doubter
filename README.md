@@ -111,17 +111,17 @@ For example, consider a shape that ensures that an input value is a string.
 ```ts
 import * as d from 'doubter';
 
-const myShape = d.string();
+const shape = d.string();
 // ⮕ Shape<string>
 
-myShape.parse('foo');
+shape.parse('foo');
 // ⮕ 'foo'
 ```
 
 If an input value isn't a string, a `ValidationError` is thrown.
 
 ```ts
-myShape.parse(42);
+shape.parse(42);
 // ❌ Error
 ```
 
@@ -141,29 +141,33 @@ Each error instance has `issues` property that contains issues that occurred dur
 It isn't always convenient to write a try-catch block to handle a validation error. Use `try` method in such cases.
 
 ```ts
-myShape.try('foo');
+shape.try('foo');
 // ⮕ { ok: true, value: 'foo' }
 
-myShape.try(42);
+shape.try(42);
 // ⮕ { ok: false, issues: [{ code: 'type', … }] }
 ```
 
 Sometimes you don't care about issues at all, and want a default value to be returned if things go south:
 
 ```ts
-myShape.parseOrDefault('foo');
+shape.parseOrDefault('foo');
 // ⮕ 'foo'
 
-myShape.parseOrDefault(42, 'bar');
+shape.parseOrDefault(42, 'bar');
 // ⮕ 'bar'
 ```
 
 Infer the input and output types of the shape:
 
 ```ts
-type MyInput = typeof myShape['input'];
+const shape = d.string().transform(parseFloat);
 
-type MyOutput = typeof myShape['output'];
+typeof shape['input'];
+// ⮕ string
+
+typeof shape['output'];
+// ⮕ number
 ```
 
 ## Checks
@@ -172,17 +176,17 @@ Checks allow constraining the input value beyond type assertions. For example, i
 to be greater than 5:
 
 ```ts
-const myShape = d.number().check(value => {
+const shape = d.number().check(value => {
   if (value <= 5) {
     return { code: 'woops' };
   }
 });
 // ⮕ Shape<number>
 
-myShape.parse(10);
+shape.parse(10);
 // ⮕ 10
 
-myShape.parse(3);
+shape.parse(3);
 // ❌ Error
 ```
 
@@ -218,7 +222,10 @@ would be thrown with a single issue:
 If you want a check to be executed even if the previous check failed, pass the `unsafe` option.
 
 ```ts
-d.string().min(5).regex(/bar/, { unsafe: true }).parse('foo', { verbose: true });
+d.string()
+  .min(5)
+  .regex(/bar/, { unsafe: true })
+  .parse('foo', { verbose: true });
 ```
 
 This would throw a validation error with the following issues.
@@ -280,14 +287,14 @@ d.string().refine(
 Shapes can transform values. Let's consider a shape that takes a string as an input and converts it to number.
 
 ```ts
-const myShape = d.string().transform(parseFloat);
+const shape = d.string().transform(parseFloat);
 // ⮕ Shape<string, number>
 ```
 
 This shape ensures that the input value is a string and passes it to a transformation callback.
 
 ```ts
-myShape2.parse('42');
+shape.parse('42');
 // ⮕ 42
 ```
 
@@ -312,10 +319,10 @@ You can apply a transformations [directly to an input value](#transform).
 Redirections allow you to apply a shape to the output of another shape.
 
 ```ts
-const myShape1 = d.string().transform(parseFloat);
+const shape1 = d.string().transform(parseFloat);
 // ⮕ Shape<string, number>
 
-const muShape2 = myShape1.to(number().lt(5).gt(10));
+const shape2 = shape1.to(number().lt(5).gt(10));
 // ⮕ Shape<string, number>
 ```
 
@@ -327,27 +334,27 @@ instance that has a generic API.
 If parsing fails a shape can return a fallback value.
 
 ```ts
-const myShape = d.string().catch('Mars');
+const shape = d.string().catch('Mars');
 
-myShape.parse('Pluto');
+shape.parse('Pluto');
 // ⮕ 'Pluto'
 
-myShape.parse(42);
+shape.parse(42);
 // ⮕ 'Mars'
 ```
 
 Pass a callback as a fallback value, it would be executed every time the catch clause is reached:
 
 ```ts
-const myShape = d.number().catch(Date.now);
+const shape = d.number().catch(Date.now);
 
-myShape.parse(42)
+shape.parse(42)
 // ⮕ 42
 
-myShape.parse('Pluto');
+shape.parse('Pluto');
 // ⮕ 1671565311528
 
-myShape.parse('Mars');
+shape.parse('Mars');
 // ⮕ 1671565326707
 ```
 
@@ -358,15 +365,15 @@ Most of the time your shapes would be sync. But some transformations or promise 
 Let's consider the sync transformation:
 
 ```ts
-const syncShape1 = d.string().transform(
+const shape1 = d.string().transform(
   value => 'Hello, ' + value
 );
 // ⮕ Shape<string>
 
-syncShape1.async;
+shape1.async;
 // ⮕ false
 
-syncShape1.parse('Jill');
+shape1.parse('Jill');
 // ⮕ 'Hello, Jill'
 ```
 
@@ -375,20 +382,20 @@ The transformation callback receives and returns a string and so does `syncShape
 Now lets return a promise from the transformation callback:
 
 ```ts
-const syncShape2 = d.string().transform(
+const shape2 = d.string().transform(
   value => Promise.resolve('Hello, ' + value)
 );
 // ⮕ Shape<string, Promise<string>>
 
-syncShape2.async;
+shape2.async;
 // ⮕ false
 
-syncShape2.parse('Jill');
+shape2.parse('Jill');
 // ⮕ Promise<string>
 ```
 
-Notice that `syncShape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `syncShape2`
-is still sync, since the transformation callback _synchronously wraps_ a value in a promise.
+Notice that `shape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `shape2` is
+still sync, since the transformation callback _synchronously wraps_ a value in a promise.
 
 Now let's create an async shape using the async transformation:
 
@@ -401,7 +408,7 @@ const asyncShape = d.string().transformAsync(
 asyncShape.async;
 // ⮕ true
 
-await syncShape2.parseAsync('Jill');
+await asyncShape.parseAsync('Jill');
 // ⮕ 'Hello, Jill'
 ```
 
@@ -411,21 +418,21 @@ async.
 The shape is async if it uses async transformations. Here's an async object shape:
 
 ```ts
-const objShape1 = d.object({
+const asyncObjShape = d.object({
   foo: d.string().transformAsync(
     value => Promise.resolve(value)
   )
 });
 // ⮕ Shape<{ foo: string }>
 
-objShape1.async;
+asyncObjShape.async;
 // ⮕ true
 ```
 
 Shape also becomes async if it relies on a [`promise`](#promise) shape:
 
 ```ts
-const objShape2 = d.object({
+const asyncObjShape2 = d.object({
   foo: d.promise(d.string())
 });
 // ⮕ Shape<{ foo: Promise<string> }>
@@ -436,7 +443,7 @@ const objShape2 = d.object({
 Returns a function which parses arguments with corresponding shapes:
 
 ```ts
-const myFn = d.fn([d.string(), d.boolean()], (arg1, arg2) => {
+const callback = d.fn([d.string(), d.boolean()], (arg1, arg2) => {
   // arg1 is string
   // arg2 is boolean
 });
@@ -445,7 +452,7 @@ const myFn = d.fn([d.string(), d.boolean()], (arg1, arg2) => {
 Or check all arguments with a shape that parses arrays:
 
 ```ts
-const myFn = d.fn(d.array(d.string()), (...args) => {
+const callback = d.fn(d.array(d.string()), (...args) => {
   // args is string[]
 });
 ```
@@ -453,7 +460,7 @@ const myFn = d.fn(d.array(d.string()), (...args) => {
 Or if you have a single non-array argument, you can pass its shape:
 
 ```ts
-const myFn = d.fn(d.string(), arg => {
+const callback = d.fn(d.string(), arg => {
   // arg is string
 });
 ```
@@ -461,9 +468,9 @@ const myFn = d.fn(d.string(), arg => {
 To guard multiple functions omit the callback parameter:
 
 ```ts
-const myFnFactory = d.fn(d.string());
+const callbackFactory = d.fn(d.string());
 
-const myFn = myFnFactory(arg => {
+const callback = callbackFactory(arg => {
   // arg is string
 });
 ```
@@ -512,12 +519,12 @@ d.string().length(3, { message: 'Expected length is %s' })
 Inside check and transform callbacks you can access options passed to the parser:
 
 ```ts
-const myShape = d.number().transform(
+const shape = d.number().transform(
   (value, options) => new Intl.NumberFormat(options.context.locale).format(value)
 );
 // ⮕ Shape<number, string>
 
-myShape.parse(1000, { context: { locale: 'en-US' } });
+shape.parse(1000, { context: { locale: 'en-US' } });
 // ⮕ '1,000'
 ```
 
@@ -600,10 +607,10 @@ d.array(d.string().transform(parseFloat));
 If an input value isn't an array then it is implicitly wrapped in an array:
 
 ```ts
-const myShape = d.array(d.string()).coerce()
+const shape = d.array(d.string()).coerce()
 // ⮕ Shape<string[]>
 
-myShape.parse('Pluto');
+shape.parse('Pluto');
 // ⮕ ['Pluto']
 ```
 
@@ -625,15 +632,15 @@ d.bigint();
 - Array `[x]` → `x`, rules are recursively applied to `x`
 
 ```ts
-const myShape = d.bigint().coerce();
+const shape = d.bigint().coerce();
 
-myShape.parse(null);
+shape.parse(null);
 // ⮕ 0n
 
-myShape.parse(['42']);
+shape.parse(['42']);
 // ⮕ 42n
 
-myShape.parse('Mars');
+shape.parse('Mars');
 // ❌ Error
 ```
 
@@ -663,12 +670,12 @@ d.boolean();
 - Array `[x]` → `x`, rules are recursively applied to `x`
 
 ```ts
-const myShape = d.boolean().coerce();
+const shape = d.boolean().coerce();
 
-myShape.parse(1);
+shape.parse(1);
 // ⮕ true
 
-myShape.parse(['false']);
+shape.parse(['false']);
 // ⮕ false
 ```
 
@@ -698,15 +705,15 @@ d.date();
 - Array `[x]` → `x`, rules are recursively applied to `x`
 
 ```ts
-const myShape = d.date().coerce();
+const shape = d.date().coerce();
 
-myShape.parse('2020-02-02');
+shape.parse('2020-02-02');
 // ⮕ new Date('2020-02-02T00:00:00Z')
 
-myShape.parse(1580601600000);
+shape.parse(1580601600000);
 // ⮕ new Date('2020-02-02T00:00:00Z')
 
-myShape.parse(null);
+shape.parse(null);
 // ❌ Error
 ```
 
@@ -754,10 +761,10 @@ enum Foo {
   QUX = 'qux'
 }
 
-const myShape = d.enum(Foo).coerce();
+const shape = d.enum(Foo).coerce();
 // ⮕ Shape<Foo>
 
-myShape.parse('BAR');
+shape.parse('BAR');
 // ⮕ Foo.BAR
 ```
 
@@ -765,13 +772,13 @@ If enum is defined as an array of values, then coercion isn't possible. Use [a f
 instead:
 
 ```ts
-const myShape = d.enum(['foo', 'bar']).catch('foo');
+const shape = d.enum(['foo', 'bar']).catch('foo');
 // ⮕ Shape<'foo' | 'bar'>
 
-myShape.parse('bar');
+shape.parse('bar');
 // ⮕ 'bar'
 
-myShape.parse('qux');
+shape.parse('qux');
 // ⮕ 'foo'
 ```
 
@@ -842,13 +849,13 @@ There's a logical difference between extended and intersected objects. Let's con
 same key:
 
 ```ts
-const myShape1 = d.object({
+const shape1 = d.object({
   foo: d.string(),
   bar: d.boolean(),
 });
 
-const myShape2 = d.object({
-  // ⚠️ Notice that the type of foo in myShape2 differs from myShape1.
+const shape2 = d.object({
+  // ⚠️ Notice that the type of foo in shape2 differs from shape1.
   foo: d.number()
 });
 ```
@@ -856,7 +863,7 @@ const myShape2 = d.object({
 Object extensions overwrite properties of the left object with properties of the right object:
 
 ```ts
-const myShape = myShape1.extend(myShape2);
+const shape = shape1.extend(shape2);
 // ⮕ Shape<{ foo: number, bar: boolean }>
 ```
 
@@ -865,7 +872,7 @@ values that can satisfy the `string | number` type. So the type of property `foo
 able to satisfy the resulting intersection shape.
 
 ```ts
-const myShape = d.and([myShape1, myShape2]);
+const shape = d.and([shape1, shape2]);
 // ⮕ Shape<{ foo: never, bar: boolean }>
 ```
 
@@ -889,7 +896,8 @@ const jsonShape: d.Shape<Json> = d.lazy(() =>
     d.boolean(),
     d.null(),
     d.array(jsonShape),
-    d.record(jsonShape)])
+    d.record(jsonShape)
+  ])
 );
 ```
 
@@ -995,15 +1003,15 @@ The integer check is always applied before other checks.
 - Other values, including `NaN` and `±Infinity` aren't coerced.
 
 ```ts
-const myShape = d.number().coerce();
+const shape = d.number().coerce();
 
-myShape.parse(null);
+shape.parse(null);
 // ⮕ 0
 
-myShape.parse(['42']);
+shape.parse(['42']);
 // ⮕ 42
 
-myShape.parse('Mars');
+shape.parse('Mars');
 // ❌ Error
 ```
 
@@ -1064,19 +1072,19 @@ Add an index signature to the object type, so all properties that aren't listed 
 shape:
 
 ```ts
-const myShape = d.object({
+const shape = d.object({
   foo: d.string(),
   bar: d.number()
 });
 // ⮕ Shape<{ foo: string, bar: number }>
 
-const myRestShape = d.or([
+const restShape = d.or([
   d.string(),
   d.number()
 ]);
 // ⮕ Shape<string | number>
 
-myShape.rest(myRestShape);
+shape.rest(restShape);
 // ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
@@ -1113,10 +1121,10 @@ d.object({
 Derive the new shape and override the strategy for unknown keys:
 
 ```ts
-const myShape = d.object({ foo: d.string() }).exact();
+const shape = d.object({ foo: d.string() }).exact();
 
 // Unknonwn keys are now preserved
-myShape.preserve();
+shape.preserve();
 ```
 
 ### Picking and omitting properties
@@ -1124,24 +1132,24 @@ myShape.preserve();
 Picking keys from an object creates the new shape that contains only listed keys:
 
 ```ts
-const myShape1 = d.object({
+const shape1 = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-const myShape2 = myShape1.pick(['foo']);
+const shape2 = shape1.pick(['foo']);
 // ⮕ Shape<{ foo: string }>
 ```
 
 Omitting keys of an object creates the new shape that contains all keys except listed ones:
 
 ```ts
-const myShape = d.object({
+const shape = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-myShape.omit(['foo']);
+shape.omit(['foo']);
 // ⮕ Shape<{ bar: number }>
 ```
 
@@ -1150,12 +1158,12 @@ myShape.omit(['foo']);
 Add new properties to the object shape:
 
 ```ts
-const myShape = d.object({
+const shape = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-myShape.extend({
+shape.extend({
   qux: d.boolean()
 });
 // ⮕ Shape<{ foo: string, bar: number, qux: boolean }>
@@ -1164,15 +1172,15 @@ myShape.extend({
 Merging object shapes preserves the index signature of the left-hand shape:
 
 ```ts
-const myFooShape = d.object({
+const fooShape = d.object({
   foo: d.string()
 }).rest(d.or([d.string(), d.number()]));
 
-const myBarShape = d.object({
+const barShape = d.object({
   bar: d.number()
 });
 
-myFooShape.extend(myBarShape);
+fooShape.extend(barShape);
 // ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
@@ -1182,36 +1190,36 @@ Object properties are optional if their type extends `undefined`. Derive an obje
 all marked as optional:
 
 ```ts
-const myShape = d.object({
+const shape = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-myShape.partial()
+shape.partial()
 // ⮕ Shape<{ foo?: string | undefined, bar?: number | undefined }>
 ```
 
 Specify which fields should be marked as optional:
 
 ```ts
-const myShape = d.object({
+const shape = d.object({
   foo: d.string(),
   bar: d.number()
 });
 
-myShape.partial(['foo'])
+shape.partial(['foo'])
 // ⮕ Shape<{ foo?: string | undefined, bar: number }>
 ```
 
 In the same way, properties that are optional can be made required:
 
 ```ts
-const myShape = d.object({
+const shape = d.object({
   foo: d.string().optional(),
   bar: d.number()
 });
 
-myShape.required(['foo'])
+shape.required(['foo'])
 // ⮕ Shape<{ foo: string, bar: number }>
 ```
 
@@ -1229,17 +1237,17 @@ d.promise(d.string());
 Transform the value inside a promise:
 
 ```ts
-const myShape = d.promise(d.string().transform(parseFloat));
+const shape = d.promise(d.string().transform(parseFloat));
 // ⮕ Shape<Promise<string>, Promise<number>>
 ```
 
 Promise shapes don't support sync parsing, so `tryAsync`, `parseAsync` or `parseOrDefaultAsync` should be used:
 
 ```ts
-await myShape.parseAsync(Promise.resolve('42'));
+await shape.parseAsync(Promise.resolve('42'));
 // ⮕ 42
 
-await myShape.parseAsync('42');
+await shape.parseAsync('42');
 // ❌ Error
 ```
 
@@ -1248,12 +1256,12 @@ await myShape.parseAsync('42');
 If an input value isn't a promise then it is implicitly wrapped in `Promise.resolve`:
 
 ```ts
-const myShape = d.promise(d.string()).coerce();
+const shape = d.promise(d.string()).coerce();
 
-await myShape.parseAsync(Promise.resolve('Mars'));
+await shape.parseAsync(Promise.resolve('Mars'));
 // ⮕ 'Mars'
 
-await myShape.parseAsync('Pluto');
+await shape.parseAsync('Pluto');
 // ⮕ 'Pluto'
 ```
 
@@ -1266,23 +1274,23 @@ d.symbol();
 // ⮕ Shape<symbol>
 ```
 
-To constrain an input to an exact symbol, prefer `const`:
+To constrain an input to an exact symbol, prefer [`const`](#const):
 
 ```ts
-const mySymbol = Symbol();
+const foo = Symbol();
 
-d.const(mySymbol);
-// ⮕ Shape<typeof mySymbol>
+d.const(foo);
+// ⮕ Shape<typeof foo>
 ```
 
-Or use an `enum` to allow several exact symbols:
+Or use an [`enum`](#enum) to allow several exact symbols:
 
 ```ts
-const fooSymbol = Symbol('foo');
-const barSymbol = Symbol('bar');
+const foo = Symbol('foo');
+const bar = Symbol('bar');
 
-d.enum([fooSymbol, barSymbol]);
-// ⮕  Shape<typeof fooSymbol | typeof barSymbol>
+d.enum([foo, bar]);
+// ⮕  Shape<typeof foo | typeof bar>
 ```
 
 ## `transform`
@@ -1290,14 +1298,14 @@ d.enum([fooSymbol, barSymbol]);
 Transforms the input value:
 
 ```ts
-const myShape = d.transform(parseFloat);
+const shape = d.transform(parseFloat);
 // ⮕ Shape<any, number>
 ```
 
 Use `transform` in conjunction with [redirection](#redirections):
 
 ```ts
-myShape.to(d.number().min(3).max(5));
+shape.to(d.number().min(3).max(5));
 ```
 
 ## `record`
@@ -1319,25 +1327,25 @@ d.record(d.string(), d.number())
 Pass any shape that extends `Shape<string>` as a key constraint:
 
 ```ts
-const myKeyShape = d.enum(['foo', 'bar']);
+const keyShape = d.enum(['foo', 'bar']);
 // ⮕ Shape<'foo' | 'bar'>
 
-d.record(myKeyShape, d.number());
+d.record(keyShape, d.number());
 // ⮕ Shape<Record<'foo' | 'bar', number>>
 ```
 
 Rename record keys using transformation:
 
 ```ts
-const myKeyShape = d.enum(['foo', 'bar']).transform(
+const keyShape = d.enum(['foo', 'bar']).transform(
   value => value.toUpperCase() as 'FOO' | 'BAR'
 );
 // ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
 
-const myShape = d.record(myKeyShape, d.number());
+const shape = d.record(keyShape, d.number());
 // ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
 
-myShape.parse({ foo: 1, bar: 2 });
+shape.parse({ foo: 1, bar: 2 });
 // ⮕ { FOO: 1, BAR: 2 }
 ```
 
@@ -1377,15 +1385,15 @@ d.string().regex(/foo|bar/);
 - Array `[x]` → `x`, rules are recursively applied to `x`
 
 ```ts
-const myShape = d.string().coerce();
+const shape = d.string().coerce();
 
-myShape.parse(null);
+shape.parse(null);
 // ⮕ ''
 
-myShape.parse([42]);
+shape.parse([42]);
 // ⮕ '42'
 
-myShape.parse({ foo: 'bar' });
+shape.parse({ foo: 'bar' });
 // ❌ Error
 ```
 
@@ -1408,10 +1416,10 @@ d.tuple([d.string(), d.number()], d.boolean());
 ### Type coercion
 
 ```ts
-const myShape = d.tuple([d.number()]).coerce();
+const shape = d.tuple([d.number()]).coerce();
 // ⮕ Shape<[number]>
 
-myShape.parse(42);
+shape.parse(42);
 // ⮕ [42]
 ```
 
