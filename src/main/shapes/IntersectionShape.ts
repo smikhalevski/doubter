@@ -1,18 +1,13 @@
 import { AnyShape, Shape } from './Shape';
-import { InferUnion } from './UnionShape';
 import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 
-// prettier-ignore
-export type InferIntersection<U extends readonly AnyShape[], C extends 'input' | 'output'> =
-  UnionToIntersection<InferUnion<U, C>>;
-
-export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+export type ToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
 export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
-  InferIntersection<U, 'input'>,
-  InferIntersection<U, 'output'>
+  ToIntersection<U[number]['input']>,
+  ToIntersection<U[number]['output']>
 > {
   protected _issueFactory;
 
@@ -26,7 +21,7 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     return isAsyncShapes(this.shapes);
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferIntersection<U, 'output'>> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<ToIntersection<U[number]['output']>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -62,7 +57,10 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     return intersectOutputs(input, outputs, this._issueFactory, options);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferIntersection<U, 'output'>>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ParseOptions
+  ): Promise<ApplyResult<ToIntersection<U[number]['output']>>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 

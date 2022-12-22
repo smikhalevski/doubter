@@ -229,7 +229,7 @@ export class Shape<I = any, O = I> {
 
     (shape as Mutable<this>).checks = checks;
     shape._applyChecks = createApplyChecksCallback(checks);
-    shape._unsafe ||= unsafe;
+    shape._unsafe = shape._unsafe || unsafe;
 
     return shape;
   }

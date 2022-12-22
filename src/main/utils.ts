@@ -417,14 +417,3 @@ function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
   }
   return issues;
 }
-
-export function getInputTypes(shapes: readonly AnyShape[]): ValueType[] {
-  const types: ValueType[] = [];
-
-  for (const shape of shapes) {
-    for (const type of shape['_getInputTypes']()) {
-      types.push(type);
-    }
-  }
-  return types;
-}
