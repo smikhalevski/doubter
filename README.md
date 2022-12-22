@@ -17,13 +17,13 @@ const userShape = d.object({
 });
 
 type PartialUser = typeof userShape['input'];
-// → { age: number }
+// ⮕ { age: number }
 
 type User = typeof userShape['output'];
-// → { name: string, age: number }
+// ⮕ { name: string, age: number }
 
 const user = userShape.parse({ age: 21 });
-// → { name: 'Anonymous', age: 21 }
+// ⮕ { name: 'Anonymous', age: 21 }
 ```
 
 🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
@@ -40,6 +40,7 @@ npm install --save-prod doubter
     - [Redirections](#redirections)
     - [Fallback values](#fallback-values)
     - [Async shapes](#async-shapes)
+    - [Guarded functions](#guarded-functions)
     - [Localization](#localization)
     - [Parsing context](#parsing-context)
     - [Integrations](#integrations)
@@ -93,7 +94,7 @@ npm install --save-prod doubter
       [`never`](#never)
 
     - Other<br>
-      [`preprocess`](#preprocess)
+      [`transform`](#transform)
       [`lazy`](#lazy)
 
 - [Performance](#performance)
@@ -113,10 +114,10 @@ For example, consider a shape that ensures that an input value is a string.
 import * as d from 'doubter';
 
 const myShape = d.string();
-// → Shape<string>
+// ⮕ Shape<string>
 
 myShape.parse('foo');
-// → 'foo'
+// ⮕ 'foo'
 ```
 
 If an input value isn't a string, a `ValidationError` is thrown.
@@ -143,20 +144,20 @@ It isn't always convenient to write a try-catch block to handle a validation err
 
 ```ts
 myShape.try('foo');
-// → { ok: true, value: 'foo' }
+// ⮕ { ok: true, value: 'foo' }
 
 myShape.try(42);
-// → { ok: false, issues: [{ code: 'type', … }] }
+// ⮕ { ok: false, issues: [{ code: 'type', … }] }
 ```
 
 Sometimes you don't care about issues at all, and want a default value to be returned if things go south:
 
 ```ts
 myShape.parseOrDefault('foo');
-// → 'foo'
+// ⮕ 'foo'
 
 myShape.parseOrDefault(42, 'bar');
-// → 'bar'
+// ⮕ 'bar'
 ```
 
 Infer the input and output types of the shape:
@@ -173,15 +174,15 @@ Checks allow constraining the input value beyond type assertions. For example, i
 to be greater than 5:
 
 ```ts
-const myShape = d.number().check(val => {
-  if (val <= 5) {
+const myShape = d.number().check(value => {
+  if (value <= 5) {
     return { code: 'woops' };
   }
 });
-// → Shape<number>
+// ⮕ Shape<number>
 
 myShape.parse(10);
-// → 10
+// ⮕ 10
 
 myShape.parse(3);
 // ❌ Error
@@ -262,16 +263,18 @@ Refinements are a simplified checks that use a predicate to validate an input. F
 an issue if the input string is less than three characters long.
 
 ```ts
-d.string().refine(val => val.length >= 3)
-// → Shape<string>
+d.string().refine(value => value.length >= 3)
+// ⮕ Shape<string>
 ```
 
 Or use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type of the
 shape:
 
 ```ts
-d.string().refine((val): val is 'foo' | 'bar' => val === 'foo' || val === 'bar')
-// → Shape<string, 'foo' | 'bar'>
+d.string().refine(
+  (value): value is 'foo' | 'bar' => value === 'foo' || value === 'bar'
+)
+// ⮕ Shape<string, 'foo' | 'bar'>
 ```
 
 ## Transformations
@@ -279,23 +282,23 @@ d.string().refine((val): val is 'foo' | 'bar' => val === 'foo' || val === 'bar')
 Shapes can transform values. Let's consider a shape that takes a string as an input and converts it to number.
 
 ```ts
-const myShape = d.string().transform(val => parseInt(val, 10));
-// → Shape<string, number>
+const myShape = d.string().transform(parseFloat);
+// ⮕ Shape<string, number>
 ```
 
 This shape ensures that the input value is a string and passes it to a transformation callback.
 
 ```ts
 myShape2.parse('42');
-// → 42
+// ⮕ 42
 ```
 
 Throw a `ValidationError` inside the transformation callback to notify parser that transformation cannot be successfully
 completed:
 
 ```ts
-d.string().transform(val => {
-  const output = parseInt(val, 10);
+d.string().transform(value => {
+  const output = parseFloat(value);
 
   if (isNaN(output)) {
     throw new d.ValidationError([{ code: 'woops' }]);
@@ -304,16 +307,18 @@ d.string().transform(val => {
 })
 ```
 
+You can apply a transformations [directly to an input value](#transform).
+
 ## Redirections
 
 Redirections allow you to apply a shape to the output of another shape.
 
 ```ts
-const myShape1 = d.string().transform(val => parseFloat(val));
-// → Shape<string, number>
+const myShape1 = d.string().transform(parseFloat);
+// ⮕ Shape<string, number>
 
 const muShape2 = myShape1.to(number().lt(5).gt(10));
-// → Shape<string, number>
+// ⮕ Shape<string, number>
 ```
 
 Redirections are particularly useful along with transformations since the `transform` method returns a `TransformShape`
@@ -327,10 +332,10 @@ If parsing fails a shape can return a fallback value.
 const myShape = d.string().catch('Mars');
 
 myShape.parse('Pluto');
-// → 'Pluto'
+// ⮕ 'Pluto'
 
 myShape.parse(42);
-// → 'Mars'
+// ⮕ 'Mars'
 ```
 
 Pass a callback as a fallback value, it would be executed every time the catch clause is reached:
@@ -339,13 +344,13 @@ Pass a callback as a fallback value, it would be executed every time the catch c
 const myShape = d.number().catch(Date.now);
 
 myShape.parse(42)
-// → 42
+// ⮕ 42
 
 myShape.parse('Pluto');
-// → 1671565311528
+// ⮕ 1671565311528
 
 myShape.parse('Mars');
-// → 1671565326707
+// ⮕ 1671565326707
 ```
 
 ## Async shapes
@@ -355,14 +360,16 @@ Most of the time your shapes would be sync. But some transformations or promise 
 Let's consider the sync transformation:
 
 ```ts
-const syncShape1 = d.string().transform(val => 'Hello, ' + val);
-// → Shape<string>
+const syncShape1 = d.string().transform(
+  value => 'Hello, ' + value
+);
+// ⮕ Shape<string>
 
 syncShape1.async;
-// → false
+// ⮕ false
 
 syncShape1.parse('Jill');
-// → 'Hello, Jill'
+// ⮕ 'Hello, Jill'
 ```
 
 The transformation callback receives and returns a string and so does `syncShape1`.
@@ -370,14 +377,16 @@ The transformation callback receives and returns a string and so does `syncShape
 Now lets return a promise from the transformation callback:
 
 ```ts
-const syncShape2 = d.string().transform(val => Promise.resolve('Hello, ' + val));
-// → Shape<string, Promise<string>>
+const syncShape2 = d.string().transform(
+  value => Promise.resolve('Hello, ' + value)
+);
+// ⮕ Shape<string, Promise<string>>
 
 syncShape2.async;
-// → false
+// ⮕ false
 
 syncShape2.parse('Jill');
-// → Promise<string>
+// ⮕ Promise<string>
 ```
 
 Notice that `syncShape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `syncShape2`
@@ -386,14 +395,16 @@ is still sync, since the transformation callback _synchronously wraps_ a value i
 Now let's create an async shape using the async transformation:
 
 ```ts
-const asyncShape = d.string().transformAsync(val => Promise.resolve('Hello, ' + val));
-// → Shape<string>
+const asyncShape = d.string().transformAsync(
+  value => Promise.resolve('Hello, ' + value)
+);
+// ⮕ Shape<string>
 
 asyncShape.async;
-// → true
+// ⮕ true
 
 await syncShape2.parseAsync('Jill');
-// → 'Hello, Jill'
+// ⮕ 'Hello, Jill'
 ```
 
 Notice that `asyncShape` still transforms the input string value to output string but the transformation itself is
@@ -403,12 +414,14 @@ The shape is async if it uses async transformations. Here's an async object shap
 
 ```ts
 const objShape1 = d.object({
-  foo: d.string().transformAsync(val => Promise.resolve(val))
+  foo: d.string().transformAsync(
+    value => Promise.resolve(value)
+  )
 });
-// → Shape<{ foo: string }>
+// ⮕ Shape<{ foo: string }>
 
 objShape1.async;
-// → true
+// ⮕ true
 ```
 
 Shape also becomes async if it relies on a [`promise`](#promise) shape:
@@ -417,8 +430,47 @@ Shape also becomes async if it relies on a [`promise`](#promise) shape:
 const objShape2 = d.object({
   foo: d.promise(d.string())
 });
-// → Shape<{ foo: Promise<string> }>
+// ⮕ Shape<{ foo: Promise<string> }>
 ```
+
+## Guarded functions
+
+Returns a function which parses arguments with corresponding shapes:
+
+```ts
+const myFn = d.fn([d.string(), d.boolean()], (arg1, arg2) => {
+  // arg1 is string
+  // arg2 is boolean
+});
+```
+
+Or check all arguments with a shape that parses arrays:
+
+```ts
+const myFn = d.fn(d.array(d.string()), (...args) => {
+  // args is string[]
+});
+```
+
+Or if you have a single non-array argument, you can pass its shape:
+
+```ts
+const myFn = d.fn(d.string(), arg => {
+  // arg is string
+});
+```
+
+To guard multiple functions omit the callback parameter:
+
+```ts
+const myFnFactory = d.fn(d.string());
+
+const myFn = myFnFactory(arg => {
+  // arg is string
+});
+```
+
+If you are want to use async shapes to parse arguments, use `fnAsync` which has the same signatures as `fn`.
 
 ## Localization
 
@@ -441,11 +493,14 @@ parsing options and should return a formatted message value. The returned format
 For example, when using with React you may return a JSX element:
 
 ```tsx
-d.number().gt(5, (param, code, input, meta, options) => (
-  <span style={{ color: 'red' }}>
-    Minimum length is {param}
-  </span>
-))
+d.number().gt(
+  5,
+  (param, code, input, meta, options) => (
+    <span style={{ color: 'red' }}>
+      Minimum length is {param}
+    </span>
+  )
+);
 ```
 
 All rules described above are applied to the `message` option as well:
@@ -459,12 +514,13 @@ d.string().length(3, { message: 'Expected length is %s' })
 Inside check and transform callbacks you can access options passed to the parser:
 
 ```ts
-const myShape = d.number().transform((val, options) => {
-  return new Intl.NumberFormat(options.context.locale).format(val);
-});
+const myShape = d.number().transform(
+  (value, options) => new Intl.NumberFormat(options.context.locale).format(value)
+);
+// ⮕ Shape<number, string>
 
 myShape.parse(1000, { context: { locale: 'en-US' } });
-// → '1,000'
+// ⮕ '1,000'
 ```
 
 ## Integrations
@@ -476,7 +532,7 @@ import * as d from 'doubter';
 import isEmail from 'validator/lib/isEmail';
 
 const emailShape = d.string().refine(isEmail, 'Must be an email');
-// → Shape<string>
+// ⮕ Shape<string>
 ```
 
 # API reference
@@ -489,21 +545,21 @@ An unconstrained value that is inferred as `any`:
 
 ```ts
 d.any();
-// → Shape<any>
+// ⮕ Shape<any>
 ```
 
 Use `any` to create shapes that are unconstrained at runtime but constrained at compile time:
 
 ```ts
 d.any<{ foo: string }>();
-// → Shape<{ foo: string }>
+// ⮕ Shape<{ foo: string }>
 ```
 
 Create a shape that is constrained by the narrowing predicate:
 
 ```ts
-d.any((val): val is string => typeof val === 'string');
-// → Shape<any, string>
+d.any((value): value is string => typeof value === 'string');
+// ⮕ Shape<any, string>
 ```
 
 ## `array`
@@ -512,14 +568,14 @@ Constrains a value to be an array of arbitrary elements:
 
 ```ts
 d.array();
-// → Shape<any[]>
+// ⮕ Shape<any[]>
 ```
 
 Constrain the shape of array elements:
 
 ```ts
 d.array(d.number());
-// → Shape<number[]>
+// ⮕ Shape<number[]>
 ```
 
 Constrain the length of an array:
@@ -538,16 +594,19 @@ Transform array values during parsing:
 
 ```ts
 d.array(d.string().transform(parseFloat));
-// → Shape<string[], number[]>
+// ⮕ Shape<string[], number[]>
 ```
 
-### Array type coercion
+### Type coercion
 
-Coerce input values to an array:
+If an input value isn't an array then it is implicitly wrapped in an array:
 
 ```ts
-d.array(d.string()).coerce().parse('Pluto');
-// → ['Pluto']
+const myShape = d.array(d.string()).coerce()
+// ⮕ Shape<string[]>
+
+myShape.parse('Pluto');
+// ⮕ ['Pluto']
 ```
 
 ## `bigint`
@@ -556,33 +615,29 @@ Constrains a value to be a bigint.
 
 ```ts
 d.bigint();
-// → Shape<bigint>
+// ⮕ Shape<bigint>
 ```
 
-### Bigint type coercion
+### Type coercion
 
-Coerce input values to a bigint:
+- `null` and `undefined` → `0n`
+- `false` → `0n`
+- `true` → `1n`
+- Number and string `x` → `BigInt(x)`
+- Array `[x]` → `x`, rules are recursively applied to `x`
 
 ```ts
 const myShape = d.bigint().coerce();
 
 myShape.parse(null);
-// → 0n
+// ⮕ 0n
 
 myShape.parse(['42']);
-// → 42n
+// ⮕ 42n
 
 myShape.parse('Mars');
 // ❌ Error
 ```
-
-Coercion rules:
-
-- `null` and `undefined` → `0n`
-- `false` → `0n`
-- `true` → `1n`
-- Numbers and strings `x` → `BigInt(x)`
-- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
 
 No implicit rounding is performed during coercion:
 
@@ -597,28 +652,27 @@ Constrains a value to be boolean.
 
 ```ts
 d.boolean();
-// → Shape<boolean>
+// ⮕ Shape<boolean>
 ```
 
-### Boolean type coercion
+### Type coercion
 
-Coerce input values to a boolean:
+- `null` and `undefined` → `false`
+- `'false'` → `false`
+- `'true'` → `true`
+- `0` → `false`
+- `1` → `true`
+- Array `[x]` → `x`, rules are recursively applied to `x`
 
 ```ts
 const myShape = d.boolean().coerce();
 
 myShape.parse(1);
-// → true
+// ⮕ true
 
 myShape.parse(['false']);
-// → false
+// ⮕ false
 ```
-
-Coercion rules:
-
-- `0`, `0n`, `'false'`, `null` and `undefined` → `false`
-- `1`, `1n` and `'true'` → `true`
-- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
 
 ## `const`
 
@@ -626,7 +680,7 @@ Constrains a value to be an exact value:
 
 ```ts
 d.const('foo');
-// → Shape<'foo'>
+// ⮕ Shape<'foo'>
 ```
 
 There are shortcuts for [`null`](#null), [`undefined`](#undefined) and [`nan`](#nan) constants.
@@ -637,30 +691,26 @@ Constrains a value to be a valid date.
 
 ```ts
 d.date();
-// → Shape<Date>
+// ⮕ Shape<Date>
 ```
 
-### Date type coercion
+### Type coercion
 
-Coerce input values to a date:
+- Number and string `x` → `new Date(x)`
+- Array `[x]` → `x`, rules are recursively applied to `x`
 
 ```ts
 const myShape = d.date().coerce();
 
 myShape.parse('2020-02-02');
-// → new Date('2020-02-02T00:00:00Z')
+// ⮕ new Date('2020-02-02T00:00:00Z')
 
 myShape.parse(1580601600000);
-// → new Date('2020-02-02T00:00:00Z')
+// ⮕ new Date('2020-02-02T00:00:00Z')
 
 myShape.parse(null);
 // ❌ Error
 ```
-
-Coercion rules:
-
-- Finite number and string `x` → `new Date(x)`
-- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
 
 ## `enum`
 
@@ -668,7 +718,7 @@ Constrains a value to be equal to one of predefined values:
 
 ```ts
 d.enum([1, 'foo', 'bar']);
-// → Shape<1 | 'foo' | 'bar'>
+// ⮕ Shape<1 | 'foo' | 'bar'>
 ```
 
 Or use an enum to limit possible values:
@@ -680,7 +730,7 @@ enum Foo {
 }
 
 d.enum(Foo);
-// → Shape<Foo>
+// ⮕ Shape<Foo>
 ```
 
 Or use
@@ -693,12 +743,10 @@ const Foo = {
 } as const;
 
 d.enum(Foo);
-// → Shape<'bar' | 'qux'>
+// ⮕ Shape<'bar' | 'qux'>
 ```
 
-### Enum type coercion
-
-If enum is defined as an array of values, then no coercion is applied.
+### Type coercion
 
 If an enum is defined as a key-value mapping the keys can be coerced to values:
 
@@ -709,10 +757,24 @@ enum Foo {
 }
 
 const myShape = d.enum(Foo).coerce();
-// → Shape<Foo>
+// ⮕ Shape<Foo>
 
 myShape.parse('BAR');
-// → Foo.BAR
+// ⮕ Foo.BAR
+```
+
+If enum is defined as an array of values, then coercion isn't possible. Use [a fallback value](#fallback-values)
+instead:
+
+```ts
+const myShape = d.enum(['foo', 'bar']).catch('foo');
+// ⮕ Shape<'foo' | 'bar'>
+
+myShape.parse('bar');
+// ⮕ 'bar'
+
+myShape.parse('qux');
+// ⮕ 'foo'
 ```
 
 ## `instanceOf`
@@ -725,7 +787,7 @@ class Foo {
 }
 
 d.instanceOf(Foo);
-// → Shape<Foo>
+// ⮕ Shape<Foo>
 ```
 
 ## `integer`
@@ -734,20 +796,20 @@ Constrains a value to be an integer.
 
 ```ts
 d.integer().min(5);
-// → Shape<number>
+// ⮕ Shape<number>
 
 d.int().max(5);
-// → Shape<number>
+// ⮕ Shape<number>
 ```
 
 This is a shortcut for number shape declaration:
 
 ```ts
 d.number().integer();
-// → Shape<number>
+// ⮕ Shape<number>
 ```
 
-Integers follow the same [type coercion rules](#number-type-coercion) as numbers do.
+Integers follow [number type coercion rules](#number).
 
 ## `intersection`
 
@@ -762,7 +824,7 @@ d.intersection([
     bar: d.number()
   })
 ]);
-// → Shape<{ foo: string, bar: string }>
+// ⮕ Shape<{ foo: string } & { bar: string }>
 ```
 
 Or use a shorter alias `and`:
@@ -772,7 +834,7 @@ d.and([
   d.array(d.string()),
   d.array(d.enum(['foo', 'bar']))
 ]);
-// → Shape<Array<'foo' | 'bar'>>
+// ⮕ Shape<string[] & Array<'foo' | 'bar'>>
 ```
 
 When working with objects, [extend objects](#extending-objects) instead of intersecting them whenever possible, since
@@ -797,7 +859,7 @@ Object extensions overwrite properties of the left object with properties of the
 
 ```ts
 const myShape = myShape1.extend(myShape2);
-// → Shape<{ foo: number, bar: boolean }>
+// ⮕ Shape<{ foo: number, bar: boolean }>
 ```
 
 The intersection requires the input value to conform both shapes at the same time, it's no possible since there are no
@@ -806,25 +868,35 @@ able to satisfy the resulting intersection shape.
 
 ```ts
 const myShape = d.and([myShape1, myShape2]);
-// → Shape<{ foo: never, bar: boolean }>
+// ⮕ Shape<{ foo: never, bar: boolean }>
 ```
 
 ## `lazy`
 
-Creates the lazy-loaded shape. For example, you can create cyclic shapes:
+To showcase how to define a recursive shape, let's create a shape that validates JSON:
 
 ```ts
-type MyType = string | MyType[];
+type Json =
+  | number
+  | string
+  | boolean
+  | null
+  | Json[]
+  | { [key: string]: Json };
 
-const myShape: Shape<MyType> = d.lazy(
-  () => d.or([
-    d.string,
-    d.array(myShape)
-  ])
+const jsonShape: d.Shape<Json> = d.lazy(() =>
+  d.or([
+    d.number(),
+    d.string(),
+    d.boolean(),
+    d.null(),
+    d.array(jsonShape),
+    d.record(jsonShape)])
 );
 ```
 
-Note that you must define the type explicitly, because it cannot be inferred.
+Note that the `Json` type is defined explicitly, because it cannot be inferred from the shape which references itself
+directly in its own initializer.
 
 > **Warning**
 >
@@ -838,14 +910,14 @@ A shape that requires an input to be equal to `NaN`:
 
 ```ts
 d.nan();
-// → Shape<number>
+// ⮕ Shape<number>
 ```
 
 If you want to constrain a number and allow `NaN` values, use [`number`](#number):
 
 ```ts
 d.number().nan();
-// → Shape<number>
+// ⮕ Shape<number>
 ```
 
 ## `never`
@@ -854,7 +926,7 @@ A shape that always raises a validation issue regardless of an input value:
 
 ```ts
 d.never();
-// → Shape<never>
+// ⮕ Shape<never>
 ```
 
 ## `null`
@@ -863,7 +935,7 @@ A shape that requires an input to be `null`:
 
 ```ts
 d.null();
-// → Shape<null>
+// ⮕ Shape<null>
 ```
 
 ## `number`
@@ -872,21 +944,21 @@ Constrains a finite number.
 
 ```ts
 d.number();
-// → Shape<number>
+// ⮕ Shape<number>
 ```
 
 Allow `NaN` input values:
 
 ```ts
 d.number().nan();
-// → Shape<number>
+// ⮕ Shape<number>
 ```
 
 Replace `NaN` with a default value:
 
 ```ts
 d.number().nan(0).parse(NaN);
-// → 0
+// ⮕ 0
 ```
 
 Limit the exclusive `gt` and inclusive `gte` minimum and the exclusive `lt` and inclusive `lte` maximum values:
@@ -894,7 +966,7 @@ Limit the exclusive `gt` and inclusive `gte` minimum and the exclusive `lt` and 
 ```ts
 // The number must be greater than 5 and less then of equal to 10
 d.number().gt(0.5).lte(2.5)
-// → Shape<number>
+// ⮕ Shape<number>
 ```
 
 Constrain a number to be a multiple of a divisor:
@@ -914,32 +986,28 @@ d.int();
 
 The integer check is always applied before other checks.
 
-### Number type coercion
+### Type coercion
 
-Coerce input values to a number:
+- `null` and `undefined` → `0`
+- `false` → `0`
+- `true` → `1`
+- String `x` → `+x`
+- Date `x` → `x.getTime()`
+- Array `[x]` → `x`, rules are recursively applied to `x`
+- Other values, including `NaN` and `±Infinity` aren't coerced.
 
 ```ts
 const myShape = d.number().coerce();
 
 myShape.parse(null);
-// → 0
+// ⮕ 0
 
 myShape.parse(['42']);
-// → 42
+// ⮕ 42
 
 myShape.parse('Mars');
 // ❌ Error
 ```
-
-Coercion rules:
-
-- `null` and `undefined` → `0`
-- `false` → `0`
-- `true` → `1`
-- Date instance `x` → `x.getTime()`
-- String that represent finite numbers `x` → `+x`
-- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
-- Other values, including bigint, `NaN` and `±Infinity` aren't coerced.
 
 No implicit rounding is performed during coercion:
 
@@ -957,7 +1025,7 @@ d.object({
   foo: d.string(),
   bar: d.number()
 });
-// → Shape<{ foo: string, bar: number }>
+// ⮕ Shape<{ foo: string, bar: number }>
 ```
 
 ### Optional properties
@@ -969,7 +1037,7 @@ d.object({
   foo: d.string().optional(),
   bar: d.number()
 });
-// → Shape<{ foo?: string | undefined, bar: number }>
+// ⮕ Shape<{ foo?: string | undefined, bar: number }>
 ```
 
 Or you can define optional properties as a union:
@@ -978,16 +1046,18 @@ Or you can define optional properties as a union:
 d.object({
   foo: d.or([d.string(), d.undefined()]),
 });
-// → Shape<{ foo?: string | undefined }>
+// ⮕ Shape<{ foo?: string | undefined }>
 ```
 
 If the transformation result extends `undefined` then the output property becomes optional:
 
 ```ts
 d.object({
-  foo: d.string().transform(val => val === 'foo' ? val : undefined),
+  foo: d.string().transform(
+    value => value === 'foo' ? value : undefined
+  ),
 });
-// → Shape<{ foo: string }, { foo?: string | undefined }>
+// ⮕ Shape<{ foo: string }, { foo?: string | undefined }>
 ```
 
 ### Index signature
@@ -1000,16 +1070,16 @@ const myShape = d.object({
   foo: d.string(),
   bar: d.number()
 });
-// → Shape<{ foo: string, bar: number }>
+// ⮕ Shape<{ foo: string, bar: number }>
 
 const myRestShape = d.or([
   d.string(),
   d.number()
 ]);
-// → Shape<string | number>
+// ⮕ Shape<string | number>
 
 myShape.rest(myRestShape);
-// → Shape<{ foo: string, bar: number, [key: string]: string | number }>
+// ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
 Unlike an index signature in TypeScript, a rest shape is applied only to keys that aren't explicitly specified among
@@ -1062,7 +1132,7 @@ const myShape1 = d.object({
 });
 
 const myShape2 = myShape1.pick(['foo']);
-// → Shape<{ foo: string }>
+// ⮕ Shape<{ foo: string }>
 ```
 
 Omitting keys of an object creates the new shape that contains all keys except listed ones:
@@ -1074,7 +1144,7 @@ const myShape = d.object({
 });
 
 myShape.omit(['foo']);
-// → Shape<{ bar: number }>
+// ⮕ Shape<{ bar: number }>
 ```
 
 ### Extending objects
@@ -1090,7 +1160,7 @@ const myShape = d.object({
 myShape.extend({
   qux: d.boolean()
 });
-// → Shape<{ foo: string, bar: number, qux: boolean }>
+// ⮕ Shape<{ foo: string, bar: number, qux: boolean }>
 ```
 
 Merging object shapes preserves the index signature of the left-hand shape:
@@ -1105,7 +1175,7 @@ const myBarShape = d.object({
 });
 
 myFooShape.extend(myBarShape);
-// → Shape<{ foo: string, bar: number, [key: string]: string | number }>
+// ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
 ### Making objects partial and required
@@ -1120,7 +1190,7 @@ const myShape = d.object({
 });
 
 myShape.partial()
-// → Shape<{ foo?: string | undefined, bar?: number | undefined }>
+// ⮕ Shape<{ foo?: string | undefined, bar?: number | undefined }>
 ```
 
 Specify which fields should be marked as optional:
@@ -1132,7 +1202,7 @@ const myShape = d.object({
 });
 
 myShape.partial(['foo'])
-// → Shape<{ foo?: string | undefined, bar: number }>
+// ⮕ Shape<{ foo?: string | undefined, bar: number }>
 ```
 
 In the same way, properties that are optional can be made required:
@@ -1144,7 +1214,7 @@ const myShape = d.object({
 });
 
 myShape.required(['foo'])
-// → Shape<{ foo: string, bar: number }>
+// ⮕ Shape<{ foo: string, bar: number }>
 ```
 
 Note that `required` would force the value of both input and output to be non-`undefined`.
@@ -1155,50 +1225,50 @@ A shape that constrains to the resolved value of a `Promise`.
 
 ```ts
 d.promise(d.string());
-// → Shape<Promise<string>>
+// ⮕ Shape<Promise<string>>
 ```
 
 Transform the value inside a promise:
 
 ```ts
 const myShape = d.promise(d.string().transform(parseFloat));
-// → Shape<Promise<string>, Promise<number>>
+// ⮕ Shape<Promise<string>, Promise<number>>
 ```
 
 Promise shapes don't support sync parsing, so `tryAsync`, `parseAsync` or `parseOrDefaultAsync` should be used:
 
 ```ts
 await myShape.parseAsync(Promise.resolve('42'));
-// → 42
+// ⮕ 42
 
 await myShape.parseAsync('42');
 // ❌ Error
 ```
 
-### Promise type coercion
+### Type coercion
 
-If an input value isn't a `Promise` instance then it is wrapped:
+If an input value isn't a promise then it is implicitly wrapped in `Promise.resolve`:
 
 ```ts
 const myShape = d.promise(d.string()).coerce();
 
 await myShape.parseAsync(Promise.resolve('Mars'));
-// → 'Mars'
+// ⮕ 'Mars'
 
 await myShape.parseAsync('Pluto');
-// → 'Pluto'
+// ⮕ 'Pluto'
 ```
 
-## `preprocess`
+## `transform`
 
-Preprocesses the input value. Useful for input value coercion:
+Transforms the input value:
 
 ```ts
-const myShape = d.preprocess(parseFloat);
-// → Shape<string, number>
+const myShape = d.transform(parseFloat);
+// ⮕ Shape<any, number>
 ```
 
-Use `preprocess` in conjunction with [redirection](#redirections):
+Use `transform` in conjunction with [redirection](#redirections):
 
 ```ts
 myShape.to(d.number().min(3).max(5));
@@ -1210,39 +1280,39 @@ Constrain values of a dictionary-like object:
 
 ```ts
 d.record(d.number())
-// → Shape<Record<string, number>>
+// ⮕ Shape<Record<string, number>>
 ```
 
 Constrain both keys and values of a dictionary-like object:
 
 ```ts
 d.record(d.string(), d.number())
-// → Shape<Record<string, number>>
+// ⮕ Shape<Record<string, number>>
 ```
 
 Pass any shape that extends `Shape<string>` as a key constraint:
 
 ```ts
 const myKeyShape = d.enum(['foo', 'bar']);
-// → Shape<'foo' | 'bar'>
+// ⮕ Shape<'foo' | 'bar'>
 
 d.record(myKeyShape, d.number());
-// → Shape<Record<'foo' | 'bar', number>>
+// ⮕ Shape<Record<'foo' | 'bar', number>>
 ```
 
 Rename record keys using transformation:
 
 ```ts
-const myKeyShape = d.enum(['foo', 'bar']).transform(val => {
-  return val.toUpperCase() as Uppercase<typeof val>;
-});
-// → Shape<'foo' | 'bar', 'FOO' | 'BAR'>
+const myKeyShape = d.enum(['foo', 'bar']).transform(
+  value => value.toUpperCase() as 'FOO' | 'BAR'
+);
+// ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
 
 const myShape = d.record(myKeyShape, d.number());
-// → Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
+// ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
 
 myShape.parse({ foo: 1, bar: 2 });
-// → { FOO: 1, BAR: 2 }
+// ⮕ { FOO: 1, BAR: 2 }
 ```
 
 ## `string`
@@ -1251,7 +1321,7 @@ Constrains a value to be string.
 
 ```ts
 d.string();
-// → Shape<string>
+// ⮕ Shape<string>
 ```
 
 Constrain the string length limits:
@@ -1272,30 +1342,26 @@ Constrain a string with a regular expression:
 d.string().regex(/foo|bar/);
 ```
 
-### String type coercion
+### Type coercion
 
-Coerce input values to a string:
+- `null` and `undefined` → `''`
+- `false` → `'false'`
+- `true` → `'true'`
+- Number `x` → `String(x)`
+- Array `[x]` → `x`, rules are recursively applied to `x`
 
 ```ts
 const myShape = d.string().coerce();
 
 myShape.parse(null);
-// → ''
+// ⮕ ''
 
 myShape.parse([42]);
-// → '42'
+// ⮕ '42'
 
 myShape.parse({ foo: 'bar' });
 // ❌ Error
 ```
-
-Coercion rules:
-
-- `null` and `undefined` → `''`
-- `false` → `'false'`
-- `true` → `'true'`
-- Finite number and bigint `x` → `String(x)`
-- Array with a single element `[x]` → `x`, rules are recursively applied to `x`;
 
 ## `tuple`
 
@@ -1303,25 +1369,24 @@ Constrains a value to be a tuple where elements at particular positions have con
 
 ```ts
 d.tuple([d.string(), d.number()]);
-// → Shape<[string, number]>
+// ⮕ Shape<[string, number]>
 ```
 
 Specify a rest tuple elements:
 
 ```ts
 d.tuple([d.string(), d.number()], d.boolean());
-// → Shape<[string, number, ...boolean]>
+// ⮕ Shape<[string, number, ...boolean]>
 ```
 
-### Tuple type coercion
-
-Coerce input values to a tuple:
+### Type coercion
 
 ```ts
-const myShape = d.array([d.number()]).coerce();
+const myShape = d.tuple([d.number()]).coerce();
+// ⮕ Shape<[number]>
 
 myShape.parse(42);
-// → [42]
+// ⮕ [42]
 ```
 
 If a tuple has more than one positioned element then coercion isn't possible.
@@ -1332,7 +1397,7 @@ A constraint that allows a value to be one of the given types:
 
 ```ts
 d.union([d.string(), d.number()]);
-// → Shape<string | number>
+// ⮕ Shape<string | number>
 ```
 
 Use a shorter alias `or`:
@@ -1347,7 +1412,7 @@ A shape that requires an input to be `undefined`:
 
 ```ts
 d.undefined();
-// → Shape<undefined>
+// ⮕ Shape<undefined>
 ```
 
 ## `unknown`
@@ -1356,7 +1421,7 @@ An unconstrained value that is inferred as `unknown`:
 
 ```ts
 d.unknown();
-// → Shape<unknown>
+// ⮕ Shape<unknown>
 ```
 
 ## `void`
@@ -1365,7 +1430,7 @@ A shape that requires an input to be `undefined` that is typed as `void`:
 
 ```ts
 d.void();
-// → Shape<void>
+// ⮕ Shape<void>
 ```
 
 # Performance
