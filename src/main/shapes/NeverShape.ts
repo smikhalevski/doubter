@@ -20,7 +20,7 @@ export class NeverShape extends Shape<never> {
     this._issueFactory = createIssueFactory(CODE_NEVER, MESSAGE_NEVER, options, undefined);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return neverTypes;
   }
 

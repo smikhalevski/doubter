@@ -17,7 +17,7 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     this._issueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return isAsyncShapes(this.shapes);
   }
 

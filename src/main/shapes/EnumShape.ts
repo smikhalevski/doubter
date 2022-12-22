@@ -46,8 +46,12 @@ export class EnumShape<T> extends CoercibleShape<T> {
     this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this.values.map(getValueType);
+  }
+
+  protected _getInputValues(): readonly unknown[] {
+    return this.values;
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<T> {

@@ -1,4 +1,14 @@
-import { ArrayShape, BooleanShape, NumberShape, ObjectShape, Shape, StringShape, UnionShape } from '../../main';
+import {
+  ArrayShape,
+  BooleanShape,
+  ConstShape,
+  NumberShape,
+  ObjectShape,
+  Shape,
+  StringShape,
+  UnionShape,
+} from '../../main';
+import { getDiscriminator } from '../../main/shapes/UnionShape';
 
 describe('UnionShape', () => {
   test('distributes buckets', () => {
@@ -139,6 +149,17 @@ describe('UnionShape', () => {
     expect(orShape.at('key1')).toBe(shape2);
   });
 
+  describe('discriminated union', () => {
+    test('parses discriminated union', () => {
+      const shape = new UnionShape([
+        new ObjectShape({ type: new ConstShape('foo') }, null),
+        new ObjectShape({ type: new ConstShape('bar') }, null),
+      ]);
+
+      expect(shape.parse({ type: 'bar' })).toEqual({ type: 'bar' });
+    });
+  });
+
   describe('async', () => {
     test('distributes buckets', async () => {
       const shape1 = new NumberShape();
@@ -249,6 +270,20 @@ describe('UnionShape', () => {
         ok: false,
         issues: [{ code: 'xxx', path: [] }],
       });
+    });
+  });
+});
+
+describe('getDiscriminator', () => {
+  test('returns the discriminator key and corresponding values for each shape in the union', () => {
+    expect(
+      getDiscriminator([
+        new ObjectShape({ type: new ConstShape('foo') }, null),
+        new ObjectShape({ type: new ConstShape('bar') }, null),
+      ])
+    ).toEqual({
+      key: 'type',
+      values: [['foo'], ['bar']],
     });
   });
 });

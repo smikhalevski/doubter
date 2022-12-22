@@ -410,19 +410,28 @@ export class Shape<I = any, O = I> {
    * Must return `true` is shape must be used in async context only, otherwise shape can be used in both sync and async
    * contexts. Override this method to implement a custom shape.
    */
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return false;
   }
 
   /**
    * Returns the list of runtime value types that can be processed by the shape. Used for various optimizations.
    */
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return anyTypes;
   }
 
   /**
-   * Synchronously parses the input. Override this method to implement a custom shape.
+   * Returns the list of all input values that are known beforehand, or `null` if input values aren't known beforehand.
+   */
+  protected _getInputValues(): readonly unknown[] {
+    return [];
+  }
+
+  /**
+   * Synchronously parses the input.
+   *
+   * Override this method to implement a custom shape.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -438,7 +447,9 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Asynchronously parses the input. Override this method to implement a custom shape.
+   * Asynchronously parses the input.
+   *
+   * Override this method to implement a custom shape that requires an async execution context.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -449,7 +460,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the shallow clone of this shape.
+   * Returns the shallow clone of this shape. Implement
    */
   protected _clone(): this {
     return Object.assign(Object.create(getPrototypeOf(this)), this);
@@ -470,7 +481,7 @@ Object.defineProperty(Shape.prototype, 'output', {
 
 Object.defineProperty(Shape.prototype, 'async', {
   get(this: Shape) {
-    const async = this._checkAsync();
+    const async = this._isAsync();
 
     if (async) {
       this._apply = () => {
@@ -659,12 +670,16 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     this._requiresAsync = requiresAsync;
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shape.async || this._requiresAsync;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this.shape['_getInputTypes']();
+  }
+
+  protected _getInputValues(): readonly unknown[] {
+    return this.shape['_getInputValues']();
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<O> {
@@ -764,12 +779,16 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
     super();
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.inputShape.async || this.outputShape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this.inputShape['_getInputTypes']();
+  }
+
+  protected _getInputValues(): readonly unknown[] {
+    return this.inputShape['_getInputValues']();
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
@@ -891,12 +910,16 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
     this._resultPromise = Promise.resolve(result);
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this.shape['_getInputTypes']().concat(getValueType(this.searchedValue));
+  }
+
+  protected _getInputValues(): readonly unknown[] {
+    return this.shape['_getInputValues']().concat(this.searchedValue);
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
@@ -998,12 +1021,16 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     this._issueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this.shape['_getInputTypes']();
+  }
+
+  protected _getInputValues(): readonly unknown[] {
+    return this.shape['_getInputValues']().filter(value => !isEqual(this.excludedValue, value));
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
@@ -1108,11 +1135,11 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     }
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this.shape['_getInputTypes']();
   }
 

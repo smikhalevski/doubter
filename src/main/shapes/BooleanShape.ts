@@ -21,7 +21,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this._coerced ? coercibleTypes : booleanTypes;
   }
 

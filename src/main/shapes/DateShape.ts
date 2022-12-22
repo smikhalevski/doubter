@@ -21,7 +21,7 @@ export class DateShape extends CoercibleShape<Date> {
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this._coerced ? [TYPE_DATE, TYPE_STRING, TYPE_NUMBER] : dateTypes;
   }
 

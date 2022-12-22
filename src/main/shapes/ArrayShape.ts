@@ -164,11 +164,11 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     });
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return (this.shapes !== null && isAsyncShapes(this.shapes)) || (this.restShape !== null && this.restShape.async);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this._coerced ? anyTypes : arrayTypes;
   }
 

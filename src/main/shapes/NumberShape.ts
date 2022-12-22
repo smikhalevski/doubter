@@ -167,7 +167,7 @@ export class NumberShape extends CoercibleShape<number> {
     return shape;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this._coerced ? coercibleTypes : numberTypes;
   }
 

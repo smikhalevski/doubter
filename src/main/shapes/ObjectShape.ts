@@ -323,11 +323,11 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return shape;
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return (this.restShape !== null && this.restShape.async) || isAsyncShapes(Object.values(this.shapes));
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return objectTypes;
   }
 

@@ -21,7 +21,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return this._coerced ? coercibleTypes : bigintTypes;
   }
 
