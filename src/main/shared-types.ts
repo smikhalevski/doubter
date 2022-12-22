@@ -202,7 +202,7 @@ export interface ParseOptions {
   context?: any;
 }
 
-export type Any = object | string | number | bigint | boolean | null | undefined;
+export type Any = object | string | number | bigint | boolean | symbol | null | undefined;
 
 export interface ReadonlyDict<T = any> {
   readonly [key: string]: T;

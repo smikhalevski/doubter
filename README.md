@@ -3,6 +3,7 @@
 No-hassle runtime validation and transformation.
 
 - TypeScript first;
+- Zero dependencies;
 - Sync and async validation and transformation flows;
 - Type coercion for primitives, arrays, promises and dates;
 - [High performance and low memory consumption](#performance);
@@ -15,12 +16,6 @@ const userShape = d.object({
   name: d.string().optional('Anonymous'),
   age: d.int().gte(18).lt(100)
 });
-
-type PartialUser = typeof userShape['input'];
-// ⮕ { age: number }
-
-type User = typeof userShape['output'];
-// ⮕ { name: string, age: number }
 
 const user = userShape.parse({ age: 21 });
 // ⮕ { name: 'Anonymous', age: 21 }
@@ -45,6 +40,8 @@ npm install --save-prod doubter
     - [Parsing context](#parsing-context)
     - [Integrations](#integrations)
 
+- [Performance](#performance)
+
 - [API reference](#api-reference)
 
     - Arrays<br>
@@ -68,6 +65,9 @@ npm install --save-prod doubter
 
     - Booleans<br>
       [`boolean`](#boolean)
+
+    - Symbols<br>
+      [`symbol`](#symbol)
 
     - Dates<br>
       [`date`](#date)
@@ -96,8 +96,6 @@ npm install --save-prod doubter
     - Other<br>
       [`transform`](#transform)
       [`lazy`](#lazy)
-
-- [Performance](#performance)
 
 # Usage
 
@@ -1257,6 +1255,34 @@ await myShape.parseAsync(Promise.resolve('Mars'));
 
 await myShape.parseAsync('Pluto');
 // ⮕ 'Pluto'
+```
+
+## `symbol`
+
+Constrains a value to be an arbitrary symbol.
+
+```ts
+d.symbol();
+// ⮕ Shape<symbol>
+```
+
+To constrain an input to an exact symbol, prefer `const`:
+
+```ts
+const mySymbol = Symbol();
+
+d.const(mySymbol);
+// ⮕ Shape<typeof mySymbol>
+```
+
+Or use an `enum` to allow several exact symbols:
+
+```ts
+const fooSymbol = Symbol('foo');
+const barSymbol = Symbol('bar');
+
+d.enum([fooSymbol, barSymbol]);
+// ⮕  Shape<typeof fooSymbol | typeof barSymbol>
 ```
 
 ## `transform`
