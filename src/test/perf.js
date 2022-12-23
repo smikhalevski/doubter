@@ -1200,6 +1200,94 @@ describe(
 );
 
 describe(
+  '__or([object({ type: const("foo") }), object({ type: const("bar") })])',
+  () => {
+    const createTests = value => {
+      // test('Ajv', measure => {
+      //   const ajv = new Ajv({ allowUnionTypes: true });
+      //
+      //   const schema = {
+      //     $id: 'test',
+      //     $schema: 'http://json-schema.org/draft-07/schema#',
+      //     anyOf: [
+      //       {
+      //         type: 'object',
+      //         properties: {
+      //           type: { const: 'foo' },
+      //         },
+      //         required: ['type'],
+      //       },
+      //       {
+      //         type: 'object',
+      //         properties: {
+      //           type: { const: 'bar' },
+      //         },
+      //         required: ['type'],
+      //       },
+      //     ],
+      //   };
+      //
+      //   const validate = ajv.compile(schema);
+      //
+      //   measure(() => {
+      //     validate(value);
+      //   });
+      // });
+      //
+      // test('zod', measure => {
+      //   const type = zod.discriminatedUnion('type', [
+      //     zod.object({ type: zod.literal('foo') }).passthrough(),
+      //     zod.object({ type: zod.literal('bar') }).passthrough(),
+      //   ]);
+      //
+      //   measure(() => {
+      //     type.parse(value);
+      //   });
+      // });
+      //
+      // test('myzod', measure => {
+      //   const type = myzod.union([
+      //     myzod.object({ type: myzod.literal('foo') }, { allowUnknown: true }),
+      //     myzod.object({ type: myzod.literal('bar') }, { allowUnknown: true }),
+      //   ]);
+      //
+      //   measure(() => {
+      //     type.parse(value);
+      //   });
+      // });
+
+      test('valita', measure => {
+        const type = valita.union(
+          valita.object({ type: valita.literal('foo') }),
+          valita.object({ type: valita.literal('bar') })
+        );
+        const options = { mode: 'passthrough' };
+
+        measure(() => {
+          type.parse(value, options);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = doubter.or([
+          doubter.object({ type: doubter.const('foo') }),
+          doubter.object({ type: doubter.const('bar') }),
+        ]);
+
+        measure(() => {
+          shape.parse(value);
+        });
+      });
+    };
+
+    describe('{ type: "foo" }', () => createTests({ type: 'foo' }));
+
+    describe('{ type: "bar" }', () => createTests({ type: 'bar' }));
+  },
+  { warmupIterationCount: 100, targetRme: 0.002 }
+);
+
+describe(
   'and([object({ foo: string() }), object({ bar: number() })])',
   () => {
     const value = { foo: 'aaa', bar: 123 };
