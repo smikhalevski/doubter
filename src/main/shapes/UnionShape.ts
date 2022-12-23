@@ -20,9 +20,9 @@ import { ObjectShape } from './ObjectShape';
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['input'], U[number]['output']> {
   protected _options;
   protected _buckets;
+  protected _lookup;
   protected _inputTypes;
   protected _issueFactory;
-  protected _discriminator;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.
@@ -48,9 +48,9 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options, inputTypes);
 
     if (shapes.every(shape => shape instanceof ObjectShape)) {
-      this._discriminator = getDiscriminator(shapes as unknown as readonly ObjectShape<ReadonlyDict<AnyShape>, any>[]);
+      this._lookup = getDiscriminator(shapes as unknown as readonly ObjectShape<ReadonlyDict<AnyShape>, any>[]);
     } else {
-      this._discriminator = null;
+      this._lookup = null;
     }
   }
 
@@ -83,35 +83,37 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<U[number]['output']> {
-    const { _discriminator, _applyChecks } = this;
+    const { _lookup, _applyChecks } = this;
 
     let issues: Issue[] | null = null;
     let result: ApplyResult = null;
     let output = input;
-    let index = 0;
-    let shapeCount = 0;
 
-    if (_discriminator !== null) {
+    if (_lookup !== null) {
       if (isObjectLike(input)) {
-        const shape = _discriminator(input);
+        const shape = _lookup(input);
 
-        if (shape !== null) {
-          index = -1;
-          result = shape['_apply'](input, options);
+        if (shape === null) {
+          return this._issueFactory(input, options);
+        }
 
-          if (result !== null) {
-            if (isArray(result)) {
-              return result;
-            }
-            output = result.value;
+        result = shape['_apply'](input, options);
+
+        if (result !== null) {
+          if (isArray(result)) {
+            return result;
           }
+          output = result.value;
         }
       }
     } else {
       const bucket = this._buckets[getValueType(input)];
 
+      let index = 0;
+      let bucketLength = 0;
+
       if (bucket !== null) {
-        for (shapeCount = bucket.length; index < shapeCount; ++index) {
+        for (bucketLength = bucket.length; index < bucketLength; ++index) {
           result = bucket[index]['_apply'](input, options);
 
           if (result !== null) {
@@ -124,11 +126,11 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
           break;
         }
       }
+      if (index === bucketLength) {
+        return issues !== null ? issues : this._issueFactory(input, options);
+      }
     }
 
-    if (index === shapeCount) {
-      return issues !== null ? issues : this._issueFactory(input, options);
-    }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
 
@@ -221,7 +223,7 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): UnionBuckets {
   };
 
   let anyEnabled = false;
-  let bucketTypes: ValueType[] | undefined;
+  let bucketTypes: ValueType[] = [];
 
   for (const shape of unwrapUnionShapes(shapes)) {
     const inputTypes = shape['_getInputTypes']();
@@ -235,17 +237,32 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): UnionBuckets {
       continue;
     }
 
-    // Populate buckets that require specific input types
     for (const type of inputTypes) {
       buckets[type] = pushUnique(buckets[type], shape);
-      bucketTypes = pushUnique(bucketTypes, type);
+      pushUnique(bucketTypes, type);
     }
   }
 
   return {
     buckets,
-    inputTypes: anyEnabled || !bucketTypes ? anyTypes : bucketTypes,
+    inputTypes: anyEnabled ? anyTypes : bucketTypes,
   };
+}
+
+/**
+ * Unwraps nested union shapes that don't have any checks or lookup.
+ */
+function unwrapUnionShapes(opaqueShapes: readonly AnyShape[]): AnyShape[] {
+  const shapes: AnyShape[] = [];
+
+  for (const shape of opaqueShapes) {
+    if (shape instanceof UnionShape && shape.checks.length === 0 && shape['_lookup'] === null) {
+      shapes.push(...unwrapUnionShapes(shape.shapes));
+    } else {
+      shapes.push(shape);
+    }
+  }
+  return shapes;
 }
 
 function pushUnique<T>(array: T[] | null | undefined, value: T): T[] {
@@ -256,22 +273,6 @@ function pushUnique<T>(array: T[] | null | undefined, value: T): T[] {
     array.push(value);
   }
   return array;
-}
-
-/**
- * Unwraps nested union shapes that don't have any checks.
- */
-function unwrapUnionShapes(opaqueShapes: readonly AnyShape[]): AnyShape[] {
-  const shapes: AnyShape[] = [];
-
-  for (const shape of opaqueShapes) {
-    if (shape instanceof UnionShape && shape.checks.length === 0) {
-      shapes.push(...unwrapUnionShapes(shape.shapes));
-    } else {
-      shapes.push(shape);
-    }
-  }
-  return shapes;
 }
 
 // export interface Discriminator {
