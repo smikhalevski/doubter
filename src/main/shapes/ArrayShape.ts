@@ -42,8 +42,8 @@ export type ToArray<T> = T extends any[] ? T : never;
 /**
  * The shape of an array or a tuple.
  *
- * @template U The list of positioned element shapes or `null` if there are no positioned elements.
- * @template R The shape of rest elements or `null` if there are no rest elements.
+ * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
+ * @template R The shape of rest elements, or `null` if there are no rest elements.
  */
 export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> extends CoercibleShape<
   InferArray<U, R, 'input'>,
@@ -64,6 +64,8 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    * @param shapes The list of positioned element shapes or `null` if there are no positioned elements.
    * @param restShape The shape of rest elements or `null` if there are no rest elements.
    * @param options The type constraint options or the type issue message.
+   * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
+   * @template R The shape of rest elements, or `null` if there are no rest elements.
    */
   constructor(
     /**
