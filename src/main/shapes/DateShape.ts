@@ -1,7 +1,7 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, dateTypes, isArray, ok } from '../utils';
-import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
+import { createIssueFactory, isArray, ok } from '../utils';
+import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
 /**
@@ -21,62 +21,42 @@ export class DateShape extends CoercibleShape<Date> {
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
-    return this._coerced ? [TYPE_DATE, TYPE_STRING, TYPE_NUMBER] : dateTypes;
+  protected _getInputTypes(): ValueType[] {
+    if (this._coerced) {
+      return [TYPE_DATE, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
+    } else {
+      return [TYPE_DATE];
+    }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Date> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<Date> {
     const { _applyChecks } = this;
 
-    if (options.coerced || this._coerced) {
-      return this._applyToCoerced(input, options);
-    }
-    if (!isValidDate(input)) {
-      return this._issueFactory(input, options);
-    }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
-  }
-
-  private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<Date> {
-    const { _applyChecks } = this;
-
-    const output = coerceDate(input, input);
+    const coerced = options.coerced || this._coerced;
+    const output = coerced ? this._coerce(input) : input;
 
     let issues: Issue[] | null = null;
+    let time;
 
-    if (!isValidDate(output)) {
+    if (!(output instanceof Date) || (time = output.getTime()) !== time) {
       return this._issueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (issues === null && input !== output) {
+    if (coerced && issues === null && input !== output) {
       return ok(output);
     }
     return issues;
   }
-}
 
-export function isValidDate(value: unknown): value is Date {
-  let time;
-  return value instanceof Date && (time = value.getTime()) === time;
-}
-
-export function coerceDate(value: unknown, defaultValue: unknown): unknown {
-  if (typeof value === 'string' || typeof value === 'number') {
-    const date = new Date(value);
-    const time = date.getTime();
-
-    if (time !== time) {
-      return defaultValue;
+  protected _coerce(input: unknown): unknown {
+    if (typeof input === 'string' || typeof input === 'number') {
+      return new Date(input);
     }
-    return date;
+    if (isArray(input) && input.length === 1) {
+      return this._coerce(input[0]);
+    }
+    return input;
   }
-  if (isArray(value) && value.length === 1) {
-    return coerceDate(value[0], defaultValue);
-  }
-  return defaultValue;
 }

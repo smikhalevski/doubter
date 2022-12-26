@@ -1,6 +1,6 @@
 import { ReplaceShape, Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, coercibleTypes, createIssueFactory, isArray, numberTypes, ok } from '../utils';
+import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -15,8 +15,14 @@ import {
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
+  TYPE_ARRAY,
+  TYPE_BOOLEAN,
+  TYPE_DATE,
   TYPE_INTEGER,
+  TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_STRING,
+  TYPE_UNDEFINED,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -146,7 +152,7 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Allow `NaN` input values.
    *
-   * @param defaultValue The value that is used instead of `NaN` in the output.
+   * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
    */
   nan(defaultValue = NaN): Shape<number> {
     return new ReplaceShape(this, NaN, defaultValue);
@@ -167,77 +173,47 @@ export class NumberShape extends CoercibleShape<number> {
     return shape;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
-    return this._coerced ? coercibleTypes : numberTypes;
+  protected _getInputTypes(): ValueType[] {
+    if (this._coerced) {
+      return [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
+    } else {
+      return [TYPE_NUMBER];
+    }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<number> {
-    const { _typePredicate, _applyChecks } = this;
+  protected _apply(input: any, options: ParseOptions): ApplyResult<number> {
+    const { _applyChecks } = this;
 
-    if (options.coerced || this._coerced) {
-      return this._applyToCoerced(input, options);
-    }
-    if (!_typePredicate(input)) {
-      return this._issueFactory(input, options);
-    }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
-  }
-
-  private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<number> {
-    const { _typePredicate, _applyChecks } = this;
-
-    const output = coerceNumber(input, input);
+    const coerced = options.coerced || this._coerced;
+    const output = coerced ? this._coerce(input) : input;
 
     let issues: Issue[] | null = null;
 
-    if (!_typePredicate(output)) {
+    if (!this._typePredicate(output)) {
       return this._issueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (issues === null && input !== output) {
+    if (coerced && issues === null && input !== output) {
       return ok(output);
     }
     return issues;
   }
-}
 
-export function coerceNumber(value: unknown, defaultValue: unknown): any {
-  const type = typeof value;
-
-  if (value == null) {
-    return 0;
-  }
-  if (type === 'number') {
-    if (value !== value) {
-      return defaultValue;
+  protected _coerce(input: unknown): unknown {
+    if (typeof input === 'number') {
+      return input;
     }
-    return value;
-  }
-  if (type === 'string') {
-    const result = +value;
-
-    if (result !== result) {
-      return defaultValue;
+    if (input == null) {
+      return 0;
     }
-    return result;
-  }
-  if (type === 'boolean') {
-    return +value;
-  }
-  if (type === 'object') {
-    if (isArray(value) && value.length === 1) {
-      return coerceNumber(value[0], defaultValue);
+    if (typeof input === 'string' || typeof input === 'boolean' || input instanceof Date) {
+      return +input;
     }
-    if (value instanceof Date) {
-      return value.getTime();
+    if (isArray(input) && input.length === 1) {
+      return this._coerce(input[0]);
     }
-    return defaultValue;
+    return input;
   }
-
-  return defaultValue;
 }

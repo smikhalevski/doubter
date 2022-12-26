@@ -1,14 +1,6 @@
 import { AnyShape, Shape, ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
-import {
-  anyTypes,
-  concatIssues,
-  createIssueFactory,
-  getValueType,
-  isArray,
-  isAsyncShapes,
-  isObjectLike,
-} from '../utils';
+import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { concatIssues, createIssueFactory, getValueType, isArray, isAsyncShapes, isObjectLike } from '../utils';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY } from '../constants';
 import { ObjectShape } from './ObjectShape';
 
@@ -20,7 +12,7 @@ import { ObjectShape } from './ObjectShape';
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['input'], U[number]['output']> {
   protected _options;
   protected _buckets;
-  protected _lookup;
+  protected _discriminator;
   protected _inputTypes;
   protected _issueFactory;
 
@@ -48,9 +40,9 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options, inputTypes);
 
     if (shapes.every(shape => shape instanceof ObjectShape)) {
-      this._lookup = getDiscriminator(shapes as unknown as readonly ObjectShape<ReadonlyDict<AnyShape>, any>[]);
+      this._discriminator = getDiscriminator(shapes as unknown as readonly ObjectShape<any, any>[]);
     } else {
-      this._lookup = null;
+      this._discriminator = null;
     }
   }
 
@@ -78,20 +70,20 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     return isAsyncShapes(this.shapes);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
-    return this._inputTypes;
+  protected _getInputTypes(): ValueType[] {
+    return this._inputTypes.slice(0);
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<U[number]['output']> {
-    const { _lookup, _applyChecks } = this;
+    const { _discriminator, _applyChecks } = this;
 
     let issues: Issue[] | null = null;
     let result: ApplyResult = null;
     let output = input;
 
-    if (_lookup !== null) {
+    if (_discriminator !== null) {
       if (isObjectLike(input)) {
-        const shape = _lookup(input);
+        const shape = _discriminator(input);
 
         if (shape === null) {
           return this._issueFactory(input, options);
@@ -245,7 +237,7 @@ export function createUnionBuckets(shapes: readonly AnyShape[]): UnionBuckets {
 
   return {
     buckets,
-    inputTypes: anyEnabled ? anyTypes : bucketTypes,
+    inputTypes: anyEnabled ? [TYPE_ANY] : bucketTypes,
   };
 }
 
@@ -256,7 +248,7 @@ function unwrapUnionShapes(opaqueShapes: readonly AnyShape[]): AnyShape[] {
   const shapes: AnyShape[] = [];
 
   for (const shape of opaqueShapes) {
-    if (shape instanceof UnionShape && shape.checks.length === 0 && shape['_lookup'] === null) {
+    if (shape instanceof UnionShape && shape.checks.length === 0 && shape['_discriminator'] === null) {
       shapes.push(...unwrapUnionShapes(shape.shapes));
     } else {
       shapes.push(shape);
@@ -289,17 +281,17 @@ function pushUnique<T>(array: T[] | null | undefined, value: T): T[] {
 
 export function getDiscriminator(shapes: readonly ObjectShape<any, any>[]): ((input: any) => AnyShape | null) | null {
   const keys = shapes[0].keys.slice(0);
-  const values: Array<readonly unknown[]>[] = [];
+  const values: unknown[][][] = [];
 
   for (let i = 0; i < shapes.length && keys.length !== 0; ++i) {
-    const shapeValues: Array<readonly unknown[]> = [];
+    const shapeValues: unknown[][] = [];
     const { keys: shapeKeys, shapes: shapeShapes } = shapes[i];
 
     values[i] = shapeValues;
 
     for (let j = 0; j < keys.length; ++j) {
       if (shapeKeys.includes(keys[j])) {
-        const keyValues: readonly unknown[] = shapeShapes[keys[j]]['_getInputValues']();
+        const keyValues: unknown[] = shapeShapes[keys[j]]['_getInputValues']();
 
         if (keyValues !== null && keyValues.length !== 0) {
           let duplicated = false;

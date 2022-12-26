@@ -1,7 +1,7 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, getValueType, isArray, ok } from '../utils';
-import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
+import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
 /**
@@ -46,48 +46,52 @@ export class EnumShape<T> extends CoercibleShape<T> {
     this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
-    return this.values.map(getValueType);
+  protected _getInputTypes(): ValueType[] {
+    const valueTypes = this.values.map(getValueType);
+
+    if (this._coerced) {
+      return valueTypes.concat(TYPE_STRING, TYPE_ARRAY);
+    } else {
+      return valueTypes;
+    }
   }
 
-  protected _getInputValues(): readonly unknown[] {
-    return this.values;
+  protected _getInputValues(): unknown[] {
+    return this.values.slice(0);
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 
-    if (!this.values.includes(input)) {
-      if (options.coerced || this._coerced) {
-        return this._applyToCoerced(input, options);
-      }
-      return this._issueFactory(input, options);
-    }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
-  }
+    const coerced = options.coerced || this._coerced;
+    const output = coerced ? this._coerce(input) : input;
 
-  private _applyToCoerced(input: any, options: ParseOptions): ApplyResult<T> {
-    const { _valueMapping, _applyChecks } = this;
-
-    let output;
     let issues: Issue[] | null = null;
 
-    if (_valueMapping === null || !_valueMapping.hasOwnProperty(input)) {
+    if (!this.values.includes(output)) {
       return this._issueFactory(input, options);
     }
-
-    output = _valueMapping[input];
-
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
     }
-    return ok(output);
+    if (coerced && issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
+  }
+
+  protected _coerce(input: any): unknown {
+    const { _valueMapping } = this;
+
+    if (_valueMapping === null || this.values.includes(input)) {
+      return input;
+    }
+    if (_valueMapping.hasOwnProperty(input)) {
+      return _valueMapping[input];
+    }
+    if (isArray(input) && input.length === 1) {
+      return this._coerce(input[0]);
+    }
+    return input;
   }
 }

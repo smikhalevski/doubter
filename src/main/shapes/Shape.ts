@@ -12,7 +12,6 @@ import {
   TypeConstraintOptions,
 } from '../shared-types';
 import {
-  anyTypes,
   appendCheck,
   captureIssues,
   createApplyChecksCallback,
@@ -32,6 +31,7 @@ import {
   ERROR_REQUIRES_ASYNC,
   MESSAGE_EXCLUSION,
   MESSAGE_PREDICATE,
+  TYPE_ANY,
 } from '../constants';
 
 const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
@@ -417,14 +417,14 @@ export class Shape<I = any, O = I> {
   /**
    * Returns the list of runtime value types that can be processed by the shape. Used for various optimizations.
    */
-  protected _getInputTypes(): readonly ValueType[] {
-    return anyTypes;
+  protected _getInputTypes(): ValueType[] {
+    return [TYPE_ANY];
   }
 
   /**
    * Returns the list of all input values that are known beforehand, or `null` if input values aren't known beforehand.
    */
-  protected _getInputValues(): readonly unknown[] {
+  protected _getInputValues(): unknown[] {
     return [];
   }
 
@@ -674,11 +674,11 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     return this.shape.async || this._requiresAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): ValueType[] {
     return this.shape['_getInputTypes']();
   }
 
-  protected _getInputValues(): readonly unknown[] {
+  protected _getInputValues(): unknown[] {
     return this.shape['_getInputValues']();
   }
 
@@ -783,11 +783,11 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
     return this.inputShape.async || this.outputShape.async;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): ValueType[] {
     return this.inputShape['_getInputTypes']();
   }
 
-  protected _getInputValues(): readonly unknown[] {
+  protected _getInputValues(): unknown[] {
     return this.inputShape['_getInputValues']();
   }
 
@@ -914,11 +914,11 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
     return this.shape.async;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): ValueType[] {
     return this.shape['_getInputTypes']().concat(getValueType(this.searchedValue));
   }
 
-  protected _getInputValues(): readonly unknown[] {
+  protected _getInputValues(): unknown[] {
     return this.shape['_getInputValues']().concat(this.searchedValue);
   }
 
@@ -1025,11 +1025,11 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     return this.shape.async;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): ValueType[] {
     return this.shape['_getInputTypes']();
   }
 
-  protected _getInputValues(): readonly unknown[] {
+  protected _getInputValues(): unknown[] {
     return this.shape['_getInputValues']().filter(value => !isEqual(this.excludedValue, value));
   }
 
@@ -1139,8 +1139,12 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     return this.shape.async;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): ValueType[] {
     return this.shape['_getInputTypes']();
+  }
+
+  protected _getInputValues(): unknown[] {
+    return this.shape['_getInputValues']();
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output']> {

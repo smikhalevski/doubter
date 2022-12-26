@@ -7,7 +7,6 @@ import {
   isArray,
   isEqual,
   isObjectLike,
-  objectTypes,
   ok,
   setKeyValue,
   unshiftPath,
@@ -65,8 +64,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return (this.keyShape !== null && this.keyShape.async) || this.valueShape.async;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
-    return objectTypes;
+  protected _getInputTypes(): ValueType[] {
+    return [TYPE_OBJECT];
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {

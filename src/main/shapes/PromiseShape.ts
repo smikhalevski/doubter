@@ -1,7 +1,7 @@
 import { AnyShape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, isEqual, objectTypes, ok } from '../utils';
-import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_PROMISE } from '../constants';
+import { createIssueFactory, isArray, isEqual, ok } from '../utils';
+import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
 /**
@@ -29,8 +29,8 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
     return true;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
-    return objectTypes;
+  protected _getInputTypes(): ValueType[] {
+    return [TYPE_OBJECT];
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Promise<S['output']>> {
@@ -41,7 +41,7 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
     let output = input as Promise<unknown>;
 
     if (!(output instanceof Promise)) {
-      if (!options.coerced && !this._coerced) {
+      if (!(options.coerced || this._coerced)) {
         return Promise.resolve(this._issueFactory(input, options));
       }
       output = Promise.resolve(input);

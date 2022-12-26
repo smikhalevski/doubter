@@ -10,7 +10,6 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
-import { coerceBigInt } from '../../main/shapes/BigIntShape';
 
 describe('BigIntShape', () => {
   test('creates a string shape', () => {
@@ -45,13 +44,13 @@ describe('BigIntShape', () => {
     const shape = new BigIntShape().coerce();
 
     expect(shape['_getInputTypes']()).toEqual([
+      TYPE_BIGINT,
       TYPE_STRING,
       TYPE_NUMBER,
       TYPE_BOOLEAN,
-      TYPE_BIGINT,
       TYPE_ARRAY,
-      TYPE_NULL,
       TYPE_UNDEFINED,
+      TYPE_NULL,
     ]);
   });
 
@@ -75,44 +74,51 @@ describe('BigIntShape', () => {
       ],
     });
   });
-});
 
-describe('coerceBigInt', () => {
-  test('coerces a string', () => {
-    expect(coerceBigInt('111', null)).toBe(BigInt(111));
-    expect(coerceBigInt('aaa', null)).toBe(null);
-  });
+  describe('coercion', () => {
+    test('coerces a string', () => {
+      expect(new BigIntShape()['_coerce']('111')).toBe(BigInt(111));
+      expect(new BigIntShape()['_coerce']('aaa')).toBe('aaa');
+    });
 
-  test('coerces a number', () => {
-    expect(coerceBigInt(111, null)).toBe(BigInt(111));
-    expect(coerceBigInt(111.222, null)).toBe(null);
-    expect(coerceBigInt(NaN, null)).toBe(null);
-    expect(coerceBigInt(Infinity, null)).toBe(null);
-    expect(coerceBigInt(-Infinity, null)).toBe(null);
-  });
+    test('coerces a number', () => {
+      expect(new BigIntShape()['_coerce'](111)).toBe(BigInt(111));
+      expect(new BigIntShape()['_coerce'](111.222)).toBe(111.222);
+      expect(new BigIntShape()['_coerce'](NaN)).toBe(NaN);
+      expect(new BigIntShape()['_coerce'](Infinity)).toBe(Infinity);
+      expect(new BigIntShape()['_coerce'](-Infinity)).toBe(-Infinity);
+    });
 
-  test('coerces a boolean', () => {
-    expect(coerceBigInt(true, null)).toBe(BigInt(1));
-    expect(coerceBigInt(false, null)).toBe(BigInt(0));
-  });
+    test('coerces a boolean', () => {
+      expect(new BigIntShape()['_coerce'](true)).toBe(BigInt(1));
+      expect(new BigIntShape()['_coerce'](false)).toBe(BigInt(0));
+    });
 
-  test('coerces null and undefined values', () => {
-    expect(coerceBigInt(null, null)).toBe(BigInt(0));
-    expect(coerceBigInt(undefined, null)).toBe(BigInt(0));
-  });
+    test('coerces null and undefined values', () => {
+      expect(new BigIntShape()['_coerce'](null)).toBe(BigInt(0));
+      expect(new BigIntShape()['_coerce'](undefined)).toBe(BigInt(0));
+    });
 
-  test('coerces an array with a single bigint element', () => {
-    expect(coerceBigInt([BigInt(111)], null)).toBe(BigInt(111));
-  });
+    test('coerces an array with a single bigint element', () => {
+      expect(new BigIntShape()['_coerce']([BigInt(111)])).toBe(BigInt(111));
+    });
 
-  test('does not coerce unsuitable array', () => {
-    expect(coerceBigInt([BigInt(111), 'aaa'], null)).toBe(null);
-    expect(coerceBigInt([BigInt(111), BigInt(111)], null)).toBe(null);
-    expect(coerceBigInt(['aaa'], null)).toBe(null);
-  });
+    test('does not coerce unsuitable array', () => {
+      const value1 = [BigInt(111), 'aaa'];
+      const value2 = [BigInt(111), BigInt(111)];
+      const value3 = ['aaa'];
 
-  test('does not coerce objects and functions', () => {
-    expect(coerceBigInt({ foo: 111 }, null)).toEqual(null);
-    expect(coerceBigInt(() => undefined, null)).toEqual(null);
+      expect(new BigIntShape()['_coerce'](value1)).toBe(value1);
+      expect(new BigIntShape()['_coerce'](value2)).toBe(value2);
+      expect(new BigIntShape()['_coerce'](value3)).toBe('aaa');
+    });
+
+    test('does not coerce objects and functions', () => {
+      const value1 = { foo: 111 };
+      const value2 = () => undefined;
+
+      expect(new BigIntShape()['_coerce'](value1)).toBe(value1);
+      expect(new BigIntShape()['_coerce'](value2)).toBe(value2);
+    });
   });
 });

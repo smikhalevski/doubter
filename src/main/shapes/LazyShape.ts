@@ -39,7 +39,7 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     }
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): ValueType[] {
     const { _getInputTypes } = this;
 
     this._getInputTypes = returnArray;
@@ -51,8 +51,16 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     }
   }
 
-  protected _getInputValues(): readonly unknown[] {
-    return this.shape['_getInputValues']();
+  protected _getInputValues(): unknown[] {
+    const { _getInputValues } = this;
+
+    this._getInputValues = returnArray;
+
+    try {
+      return this.shape['_getInputValues']();
+    } finally {
+      this._getInputValues = _getInputValues;
+    }
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<S['output']> {

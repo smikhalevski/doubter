@@ -1,7 +1,7 @@
-import { AnyShape, Shape } from './Shape';
+import { AnyShape, Shape, ValueType } from './Shape';
 import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
+import { CODE_INTERSECTION, MESSAGE_INTERSECTION, TYPE_ARRAY, TYPE_DATE, TYPE_NEVER, TYPE_OBJECT } from '../constants';
 
 export type ToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
@@ -19,6 +19,10 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
 
   protected _isAsync(): boolean {
     return isAsyncShapes(this.shapes);
+  }
+
+  protected _getInputTypes(): ValueType[] {
+    return intersectValueTypes(this.shapes.map(shape => shape['_getInputTypes']()));
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<ToIntersection<U[number]['output']>> {
@@ -118,7 +122,7 @@ export function intersectOutputs(
   let value = outputs[0];
 
   for (let i = 1; i < outputsLength; ++i) {
-    value = intersectPair(value, outputs[i]);
+    value = intersectValues(value, outputs[i]);
 
     if (value === NEVER) {
       return issueFactory(input, options);
@@ -128,7 +132,7 @@ export function intersectOutputs(
   return ok(value);
 }
 
-export function intersectPair(a: any, b: any): any {
+export function intersectValues(a: any, b: any): any {
   if (isEqual(a, b)) {
     return a;
   }
@@ -140,19 +144,19 @@ export function intersectPair(a: any, b: any): any {
     return NEVER;
   }
 
-  if (aType === 'date') {
+  if (aType === TYPE_DATE) {
     if (a.getTime() === b.getTime()) {
       return a;
     }
     return NEVER;
   }
 
-  if (aType === 'object') {
+  if (aType === TYPE_OBJECT) {
     const output = Object.assign({}, a, b);
 
     for (const key in a) {
       if (key in b) {
-        const outputValue = intersectPair(a[key], b[key]);
+        const outputValue = intersectValues(a[key], b[key]);
 
         if (outputValue === NEVER) {
           return NEVER;
@@ -163,7 +167,7 @@ export function intersectPair(a: any, b: any): any {
     return output;
   }
 
-  if (aType === 'array') {
+  if (aType === TYPE_ARRAY) {
     const aLength = a.length;
 
     if (aLength !== b.length) {
@@ -182,7 +186,7 @@ export function intersectPair(a: any, b: any): any {
       if (output === a) {
         output = a.slice(0);
       }
-      const outputValue = intersectPair(aValue, bValue);
+      const outputValue = intersectValues(aValue, bValue);
 
       if (outputValue === NEVER) {
         return NEVER;
@@ -194,4 +198,27 @@ export function intersectPair(a: any, b: any): any {
   }
 
   return NEVER;
+}
+
+export function intersectValueTypes(arr: ValueType[][]): ValueType[] {
+  const arrLength = arr.length;
+
+  if (arrLength === 0) {
+    return [TYPE_NEVER];
+  }
+
+  const types = arr[0];
+
+  for (let i = 1; i < arr.length; ++i) {
+    for (let j = 0; j < types.length; ++j) {
+      if (arr[i].includes(types[j])) {
+        continue;
+      }
+      types.splice(j--, 1);
+    }
+  }
+  if (types.length === 0) {
+    return [TYPE_NEVER];
+  }
+  return types;
 }

@@ -1,7 +1,7 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { arrayTypes, createIssueFactory, objectTypes } from '../utils';
-import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
+import { createIssueFactory } from '../utils';
+import { CODE_INSTANCE, MESSAGE_INSTANCE, TYPE_ARRAY, TYPE_OBJECT } from '../constants';
 
 /**
  * The shape of the class instance.
@@ -24,11 +24,11 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     this._issueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): ValueType[] {
     if ((this.ctor as unknown) === Array || Array.prototype.isPrototypeOf(this.ctor.prototype)) {
-      return arrayTypes;
+      return [TYPE_ARRAY];
     } else {
-      return objectTypes;
+      return [TYPE_OBJECT];
     }
   }
 

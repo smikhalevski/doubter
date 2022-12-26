@@ -12,47 +12,9 @@ import {
 } from './shared-types';
 import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
-import {
-  TYPE_ANY,
-  TYPE_ARRAY,
-  TYPE_BIGINT,
-  TYPE_BOOLEAN,
-  TYPE_DATE,
-  TYPE_FUNCTION,
-  TYPE_NEVER,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-  TYPE_SYMBOL,
-  TYPE_UNDEFINED,
-} from './constants';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 
 export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
-
-export const coercibleTypes: readonly ValueType[] = [
-  TYPE_STRING,
-  TYPE_NUMBER,
-  TYPE_BOOLEAN,
-  TYPE_BIGINT,
-  TYPE_ARRAY,
-  TYPE_NULL,
-  TYPE_UNDEFINED,
-];
-
-export const objectTypes: readonly ValueType[] = [TYPE_OBJECT];
-export const arrayTypes: readonly ValueType[] = [TYPE_ARRAY];
-export const functionTypes: readonly ValueType[] = [TYPE_FUNCTION];
-export const stringTypes: readonly ValueType[] = [TYPE_STRING];
-export const symbolTypes: readonly ValueType[] = [TYPE_SYMBOL];
-export const numberTypes: readonly ValueType[] = [TYPE_NUMBER];
-export const bigintTypes: readonly ValueType[] = [TYPE_BIGINT];
-export const booleanTypes: readonly ValueType[] = [TYPE_BOOLEAN];
-export const nullTypes: readonly ValueType[] = [TYPE_NULL];
-export const undefinedTypes: readonly ValueType[] = [TYPE_UNDEFINED];
-export const anyTypes: readonly ValueType[] = [TYPE_ANY];
-export const neverTypes: readonly ValueType[] = [TYPE_NEVER];
-export const dateTypes: readonly ValueType[] = [TYPE_DATE];
 
 export function getValueType(value: unknown): ValueType {
   const type = typeof value;

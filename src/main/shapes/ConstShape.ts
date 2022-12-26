@@ -26,11 +26,11 @@ export class ConstShape<T> extends Shape<T> {
     this._issueFactory = createIssueFactory(CODE_CONST, MESSAGE_CONST, options, value);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): ValueType[] {
     return [getValueType(this.value)];
   }
 
-  protected _getInputValues(): readonly unknown[] {
+  protected _getInputValues(): unknown[] {
     return [this.value];
   }
 
