@@ -1,6 +1,6 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, symbolTypes } from '../utils';
+import { createIssueFactory } from '../utils';
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE, TYPE_SYMBOL } from '../constants';
 
 /**
@@ -21,7 +21,7 @@ export class SymbolShape extends Shape<symbol> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return symbolTypes;
+    return [TYPE_SYMBOL];
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<symbol> {
