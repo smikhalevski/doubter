@@ -5,7 +5,7 @@ import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE, TYPE_BOOLEAN } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
 /**
- * The shape of the bigint value.
+ * The shape of the boolean value.
  */
 export class BooleanShape extends CoercibleShape<boolean> {
   protected _issueFactory;

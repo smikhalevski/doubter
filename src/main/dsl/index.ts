@@ -17,6 +17,7 @@ export * from './object';
 export * from './promise';
 export * from './record';
 export * from './string';
+export * from './symbol';
 export * from './transform';
 export * from './tuple';
 export * from './undefined';

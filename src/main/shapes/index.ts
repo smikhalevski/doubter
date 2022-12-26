@@ -25,4 +25,5 @@ export {
   ValueType,
 } from './Shape';
 export { StringShape } from './StringShape';
+export { SymbolShape } from './SymbolShape';
 export { UnionShape } from './UnionShape';
