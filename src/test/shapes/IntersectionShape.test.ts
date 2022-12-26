@@ -122,11 +122,11 @@ describe('intersectValues', () => {
 });
 
 describe('intersectValueTypes', () => {
-  test('returns the common type', () => {
+  test('returns the shared type', () => {
     expect(intersectValueTypes([[TYPE_STRING], [TYPE_STRING, TYPE_NUMBER]])).toEqual([TYPE_STRING]);
   });
 
-  test('returns never if there are no common types', () => {
+  test('returns never if there are no shared types', () => {
     expect(intersectValueTypes([[TYPE_STRING], [TYPE_NUMBER]])).toEqual([TYPE_NEVER]);
   });
 

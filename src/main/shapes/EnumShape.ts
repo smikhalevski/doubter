@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, getValueType, isArray, ok } from '../utils';
+import { createIssueFactory, getValueType, isArray, ok, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -33,14 +33,13 @@ export class EnumShape<T> extends CoercibleShape<T> {
 
     if (isArray(source)) {
       valueMapping = null;
-      values = source;
+      values = unique(source);
     } else {
       valueMapping = source;
-      values = Object.values(valueMapping).filter(value => typeof valueMapping![value] !== 'number');
+      values = unique(Object.values(valueMapping).filter(value => typeof valueMapping![value] !== 'number'));
     }
 
-    // Ensure uniqueness
-    this.values = values.filter((value, i) => !values.includes(value, i + 1));
+    this.values = values;
 
     this._valueMapping = valueMapping;
     this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);

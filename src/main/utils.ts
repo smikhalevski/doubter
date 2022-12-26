@@ -379,3 +379,22 @@ function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
   }
   return issues;
 }
+
+export function unique<T>(arr: T[]): T[] {
+  let uniqueArr: T[] | null = null;
+
+  for (let i = 0; i < arr.length; ++i) {
+    const value = arr[i];
+
+    if (!arr.includes(value, i + 1)) {
+      if (uniqueArr === null) {
+        uniqueArr = arr.slice(0, i);
+      }
+      continue;
+    }
+    if (uniqueArr !== null) {
+      uniqueArr.push(value);
+    }
+  }
+  return uniqueArr || arr;
+}

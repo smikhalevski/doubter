@@ -1,8 +1,10 @@
 import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createIssueFactory, getValueType, isArray, isAsyncShapes, isObjectLike } from '../utils';
+import { concatIssues, createIssueFactory, getValueType, isArray, isAsyncShapes, isObjectLike, unique } from '../utils';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY } from '../constants';
 import { ObjectShape } from './ObjectShape';
+
+export type LookupCallback = (input: unknown) => AnyShape[];
 
 /**
  * The shape that requires an input to conform at least one of shapes.
@@ -11,10 +13,12 @@ import { ObjectShape } from './ObjectShape';
  */
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['input'], U[number]['output']> {
   protected _options;
-  protected _buckets;
-  protected _discriminator;
-  protected _inputTypes;
   protected _issueFactory;
+
+  /**
+   * Returns the list of shapes that are applicable to the input, or `null` if there are no applicable shapes.
+   */
+  protected declare _lookup: LookupCallback;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.
@@ -32,18 +36,8 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   ) {
     super();
 
-    const { buckets, inputTypes } = createUnionBuckets(shapes);
-
     this._options = options;
-    this._buckets = buckets;
-    this._inputTypes = inputTypes;
-    this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options, inputTypes);
-
-    if (shapes.every(shape => shape instanceof ObjectShape)) {
-      this._discriminator = getDiscriminator(shapes as unknown as readonly ObjectShape<any, any>[]);
-    } else {
-      this._discriminator = null;
-    }
+    this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options, undefined);
   }
 
   at(key: unknown): AnyShape | null {
@@ -71,56 +65,53 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this._inputTypes.slice(0);
+    const inputTypes: ValueType[] = [];
+
+    for (const shape of this.shapes) {
+      inputTypes.push(...shape['_getInputTypes']());
+    }
+    return unique(inputTypes);
+  }
+
+  protected _getInputValues(): unknown[] {
+    const inputValues = [];
+
+    for (const shape of this.shapes) {
+      const values = shape['_getInputValues']();
+      if (values.length === 0) {
+        return [];
+      }
+      inputValues.push(...values);
+    }
+    return unique(inputValues);
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<U[number]['output']> {
-    const { _discriminator, _applyChecks } = this;
+    const { _applyChecks } = this;
 
-    let issues: Issue[] | null = null;
     let result: ApplyResult = null;
+    let issues: Issue[] | null = null;
     let output = input;
+    let index;
 
-    if (_discriminator !== null) {
-      if (isObjectLike(input)) {
-        const shape = _discriminator(input);
+    const shapes = this._lookup(input);
+    const shapesLength = shapes.length;
 
-        if (shape === null) {
-          return this._issueFactory(input, options);
-        }
+    for (index = 0; index < shapesLength; ++index) {
+      result = shapes[index]['_apply'](input, options);
 
-        result = shape['_apply'](input, options);
-
-        if (result !== null) {
-          if (isArray(result)) {
-            return result;
-          }
-          output = result.value;
-        }
+      if (result === null) {
+        break;
       }
-    } else {
-      const bucket = this._buckets[getValueType(input)];
-
-      let index = 0;
-      let bucketLength = 0;
-
-      if (bucket !== null) {
-        for (bucketLength = bucket.length; index < bucketLength; ++index) {
-          result = bucket[index]['_apply'](input, options);
-
-          if (result !== null) {
-            if (isArray(result)) {
-              issues = concatIssues(issues, result);
-              continue;
-            }
-            output = result.value;
-          }
-          break;
-        }
+      if (isArray(result)) {
+        issues = concatIssues(issues, result);
+        continue;
       }
-      if (index === bucketLength) {
-        return issues !== null ? issues : this._issueFactory(input, options);
-      }
+      output = result.value;
+      break;
+    }
+    if (index === shapesLength) {
+      return issues !== null ? issues : this._issueFactory(input, options);
     }
 
     if (_applyChecks !== null) {
@@ -136,19 +127,18 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<U[number]['output']>> {
     const { _applyChecks } = this;
 
-    const bucket = this._buckets[getValueType(input)];
+    const shapes = this._lookup(input);
+    const shapesLength = shapes.length;
 
-    if (bucket === null) {
+    if (shapesLength === 0) {
       return Promise.resolve(this._issueFactory(input, options));
     }
-
-    const bucketLength = bucket.length;
 
     let issues: Issue[] | null = null;
     let index = 0;
 
     const nextShape = (): Promise<ApplyResult<U[number]['output']>> => {
-      return bucket[index]['_applyAsync'](input, options).then(result => {
+      return shapes[index]['_applyAsync'](input, options).then(result => {
         ++index;
 
         let output = input;
@@ -157,7 +147,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
           if (isArray(result)) {
             issues = concatIssues(issues, result);
 
-            if (index === bucketLength) {
+            if (index === shapesLength) {
               return issues;
             }
             return nextShape();
@@ -180,65 +170,42 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   }
 }
 
-export interface UnionBuckets {
-  /**
-   * A list of shapes that are applicable for a particular input value type, or `null` if there are no applicable shapes.
-   */
-  buckets: Record<ValueType, readonly AnyShape[] | null>;
+Object.defineProperty(UnionShape.prototype, '_lookup', {
+  get(this: UnionShape<any>) {
+    const cb = createDiscriminatorLookupCallback(this.shapes) || createBucketLookupCallback(this.shapes);
 
-  /**
-   * The list of input types that the union shape can process.
-   */
-  inputTypes: readonly ValueType[];
-}
+    Object.defineProperty(this, '_lookup', { value: cb });
 
-/**
- * Creates a mapping from the value type to an array of shapes that are applicable.
- *
- * @param shapes The list of united shapes.
- */
-export function createUnionBuckets(shapes: readonly AnyShape[]): UnionBuckets {
-  const buckets: Record<ValueType, AnyShape[] | null> = {
-    object: null,
-    array: null,
-    function: null,
-    string: null,
-    symbol: null,
-    number: null,
-    bigint: null,
-    boolean: null,
-    date: null,
-    null: null,
-    undefined: null,
-    any: null,
-    never: null,
+    return cb;
+  },
+});
+
+export function createBucketLookupCallback(shapes: readonly AnyShape[]): LookupCallback {
+  const buckets: Record<ValueType, AnyShape[]> = {
+    object: [],
+    array: [],
+    function: [],
+    string: [],
+    symbol: [],
+    number: [],
+    bigint: [],
+    boolean: [],
+    date: [],
+    null: [],
+    undefined: [],
+    any: [],
+    never: [],
   };
 
-  let anyEnabled = false;
-  let bucketTypes: ValueType[] = [];
-
-  for (const shape of unwrapUnionShapes(shapes)) {
+  for (const shape of unique(unwrapUnionShapes(shapes))) {
     const inputTypes = shape['_getInputTypes']();
 
-    if (inputTypes.includes(TYPE_ANY)) {
-      anyEnabled = true;
-
-      for (const type in buckets) {
-        buckets[type as ValueType] = pushUnique(buckets[type as ValueType], shape);
-      }
-      continue;
-    }
-
-    for (const type of inputTypes) {
-      buckets[type] = pushUnique(buckets[type], shape);
-      pushUnique(bucketTypes, type);
+    for (const type of inputTypes.includes(TYPE_ANY) ? (Object.keys(buckets) as ValueType[]) : unique(inputTypes)) {
+      buckets[type].push(shape);
     }
   }
 
-  return {
-    buckets,
-    inputTypes: anyEnabled ? [TYPE_ANY] : bucketTypes,
-  };
+  return input => buckets[getValueType(input)];
 }
 
 /**
@@ -248,7 +215,7 @@ function unwrapUnionShapes(opaqueShapes: readonly AnyShape[]): AnyShape[] {
   const shapes: AnyShape[] = [];
 
   for (const shape of opaqueShapes) {
-    if (shape instanceof UnionShape && shape.checks.length === 0 && shape['_discriminator'] === null) {
+    if (shape instanceof UnionShape && shape.checks.length === 0 && shape['_lookup'] === null) {
       shapes.push(...unwrapUnionShapes(shape.shapes));
     } else {
       shapes.push(shape);
@@ -257,29 +224,14 @@ function unwrapUnionShapes(opaqueShapes: readonly AnyShape[]): AnyShape[] {
   return shapes;
 }
 
-function pushUnique<T>(array: T[] | null | undefined, value: T): T[] {
-  if (!array) {
-    return [value];
+/**
+ * Creates a lookup that uses a discriminator property, or returns `null` if discriminator cannot be detected.
+ */
+export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): LookupCallback | null {
+  if (!shapes.every((shape): shape is ObjectShape<any, any> => shape instanceof ObjectShape)) {
+    return null;
   }
-  if (!array.includes(value)) {
-    array.push(value);
-  }
-  return array;
-}
 
-// export interface Discriminator {
-//   /**
-//    * The discriminator key.
-//    */
-//   key: string;
-//
-//   /**
-//    * The set of allowed values for each shape.
-//    */
-//   values: Array<readonly unknown[]>;
-// }
-
-export function getDiscriminator(shapes: readonly ObjectShape<any, any>[]): ((input: any) => AnyShape | null) | null {
   const keys = shapes[0].keys.slice(0);
   const values: unknown[][][] = [];
 
@@ -327,27 +279,37 @@ export function getDiscriminator(shapes: readonly ObjectShape<any, any>[]): ((in
   }
 
   const key = keys[0];
-  const keyValues = values.map(values => values[0]);
+  const shapeValues = values.map(values => values[0]);
 
-  if (keyValues.every(values => values.length === 1 && values[0] === values[0])) {
-    const values = keyValues.map(values => values[0]);
+  if (shapeValues.every(values => values.length === 1 && values[0] === values[0])) {
+    const values = shapeValues.map(values => values[0]);
 
     return input => {
+      if (!isObjectLike(input)) {
+        return [];
+      }
+
       const index = values.indexOf(input[key]);
       if (index === -1) {
-        return null;
+        return [];
       }
-      return shapes[index];
+      return [shapes[index]];
     };
   }
 
   return input => {
+    if (!isObjectLike(input)) {
+      return [];
+    }
+
     const value = input[key];
-    for (let i = 0; i < keyValues.length; ++i) {
-      if (keyValues[i].includes(value)) {
-        return shapes[i];
+    const shapesLength = shapes.length;
+
+    for (let i = 0; i < shapesLength; ++i) {
+      if (shapeValues[i].includes(value)) {
+        return [shapes[i]];
       }
     }
-    return null;
+    return [];
   };
 }
