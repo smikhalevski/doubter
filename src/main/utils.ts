@@ -16,7 +16,7 @@ import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 
 export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 
-export function getValueType(value: unknown): ValueType {
+export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
   const type = typeof value;
 
   if (type !== 'object') {

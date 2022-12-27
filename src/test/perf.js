@@ -1200,61 +1200,61 @@ describe(
 );
 
 describe(
-  '__or([object({ type: const("foo") }), object({ type: const("bar") })])',
+  'or([object({ type: const("foo") }), object({ type: const("bar") })])',
   () => {
     const createTests = value => {
-      // test('Ajv', measure => {
-      //   const ajv = new Ajv({ allowUnionTypes: true });
-      //
-      //   const schema = {
-      //     $id: 'test',
-      //     $schema: 'http://json-schema.org/draft-07/schema#',
-      //     anyOf: [
-      //       {
-      //         type: 'object',
-      //         properties: {
-      //           type: { const: 'foo' },
-      //         },
-      //         required: ['type'],
-      //       },
-      //       {
-      //         type: 'object',
-      //         properties: {
-      //           type: { const: 'bar' },
-      //         },
-      //         required: ['type'],
-      //       },
-      //     ],
-      //   };
-      //
-      //   const validate = ajv.compile(schema);
-      //
-      //   measure(() => {
-      //     validate(value);
-      //   });
-      // });
-      //
-      // test('zod', measure => {
-      //   const type = zod.discriminatedUnion('type', [
-      //     zod.object({ type: zod.literal('foo') }).passthrough(),
-      //     zod.object({ type: zod.literal('bar') }).passthrough(),
-      //   ]);
-      //
-      //   measure(() => {
-      //     type.parse(value);
-      //   });
-      // });
-      //
-      // test('myzod', measure => {
-      //   const type = myzod.union([
-      //     myzod.object({ type: myzod.literal('foo') }, { allowUnknown: true }),
-      //     myzod.object({ type: myzod.literal('bar') }, { allowUnknown: true }),
-      //   ]);
-      //
-      //   measure(() => {
-      //     type.parse(value);
-      //   });
-      // });
+      test('Ajv', measure => {
+        const ajv = new Ajv({ allowUnionTypes: true });
+
+        const schema = {
+          $id: 'test',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          anyOf: [
+            {
+              type: 'object',
+              properties: {
+                type: { const: 'foo' },
+              },
+              required: ['type'],
+            },
+            {
+              type: 'object',
+              properties: {
+                type: { const: 'bar' },
+              },
+              required: ['type'],
+            },
+          ],
+        };
+
+        const validate = ajv.compile(schema);
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('zod', measure => {
+        const type = zod.discriminatedUnion('type', [
+          zod.object({ type: zod.literal('foo') }).passthrough(),
+          zod.object({ type: zod.literal('bar') }).passthrough(),
+        ]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = myzod.union([
+          myzod.object({ type: myzod.literal('foo') }, { allowUnknown: true }),
+          myzod.object({ type: myzod.literal('bar') }, { allowUnknown: true }),
+        ]);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
 
       test('valita', measure => {
         const type = valita.union(
