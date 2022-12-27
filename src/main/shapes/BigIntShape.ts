@@ -1,7 +1,17 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { bigintTypes, coercibleTypes, createIssueFactory, isArray, ok } from '../utils';
-import { CODE_TYPE, MESSAGE_BIGINT_TYPE, TYPE_BIGINT } from '../constants';
+import { createIssueFactory, isArray, ok } from '../utils';
+import {
+  CODE_TYPE,
+  MESSAGE_BIGINT_TYPE,
+  TYPE_ARRAY,
+  TYPE_BIGINT,
+  TYPE_BOOLEAN,
+  TYPE_NULL,
+  TYPE_NUMBER,
+  TYPE_STRING,
+  TYPE_UNDEFINED,
+} from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
 /**
@@ -22,28 +32,18 @@ export class BigIntShape extends CoercibleShape<bigint> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this._coerced ? coercibleTypes : bigintTypes;
+    if (this._coerced) {
+      return [TYPE_BIGINT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
+    } else {
+      return [TYPE_BIGINT];
+    }
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {
     const { _applyChecks } = this;
 
-    if (options.coerced || this._coerced) {
-      return this._applyToCoerced(input, options);
-    }
-    if (typeof input !== 'bigint') {
-      return this._issueFactory(input, options);
-    }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
-  }
-
-  private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<bigint> {
-    const { _applyChecks } = this;
-
-    const output = coerceBigInt(input, input);
+    const coerced = options.coerced || this._coerced;
+    const output = coerced ? this._coerce(input) : input;
 
     let issues: Issue[] | null = null;
 
@@ -53,29 +53,27 @@ export class BigIntShape extends CoercibleShape<bigint> {
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (issues === null && input !== output) {
+    if (coerced && issues === null && input !== output) {
       return ok(output);
     }
     return issues;
   }
-}
 
-export function coerceBigInt(value: any, defaultValue: unknown): unknown {
-  const type = typeof value;
-
-  if (value == null) {
-    return BigInt(0);
+  protected _coerce(input: unknown): unknown {
+    if (typeof input === 'bigint') {
+      return input;
+    }
+    if (input == null) {
+      return BigInt(0);
+    }
+    if (isArray(input) && input.length === 1) {
+      return this._coerce(input[0]);
+    }
+    if (typeof input === 'number' || typeof input === 'string' || typeof input === 'boolean') {
+      try {
+        return BigInt(input);
+      } catch {}
+    }
+    return input;
   }
-  if (type === 'bigint') {
-    return value;
-  }
-  if (isArray(value) && value.length === 1) {
-    return coerceBigInt(value[0], defaultValue);
-  }
-  if (type === 'number' || type === 'string' || type === 'boolean') {
-    try {
-      return BigInt(value);
-    } catch {}
-  }
-  return defaultValue;
 }

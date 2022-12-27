@@ -1,7 +1,7 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, getValueType, isArray, ok } from '../utils';
-import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
+import { createIssueFactory, getValueType, isArray, ok, unique } from '../utils';
+import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
 /**
@@ -15,6 +15,9 @@ export class EnumShape<T> extends CoercibleShape<T> {
    */
   readonly values: readonly T[];
 
+  /**
+   * Key-value mapping passes as a source to constructor, or `null` if the source was a list of values.
+   */
   protected _valueMapping: ReadonlyDict<T> | null;
   protected _issueFactory;
 
@@ -25,7 +28,13 @@ export class EnumShape<T> extends CoercibleShape<T> {
    * @param options The type constraint options or an issue message.
    * @template T Allowed values.
    */
-  constructor(source: readonly T[] | ReadonlyDict<T>, options?: TypeConstraintOptions | Message) {
+  constructor(
+    /**
+     * The list of allowed values, a const key-value mapping, or an enum object.
+     */
+    readonly source: readonly T[] | ReadonlyDict<T>,
+    options?: TypeConstraintOptions | Message
+  ) {
     super();
 
     let valueMapping: ReadonlyDict | null;
@@ -33,57 +42,87 @@ export class EnumShape<T> extends CoercibleShape<T> {
 
     if (isArray(source)) {
       valueMapping = null;
-      values = source;
+      values = unique(source);
     } else {
       valueMapping = source;
-      values = Object.values(valueMapping).filter(value => typeof valueMapping![value] !== 'number');
+      values = unique(getValues(source));
     }
 
-    // Ensure uniqueness
-    this.values = values.filter((value, i) => !values.includes(value, i + 1));
+    this.values = values;
 
     this._valueMapping = valueMapping;
     this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this.values.map(getValueType);
+    const valueTypes = this.values.map(getValueType);
+
+    if (this._coerced) {
+      return valueTypes.concat(TYPE_STRING, TYPE_ARRAY);
+    } else {
+      return valueTypes;
+    }
+  }
+
+  protected _getInputValues(): unknown[] {
+    return this.values.slice(0);
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 
-    if (!this.values.includes(input)) {
-      if (options.coerced || this._coerced) {
-        return this._applyToCoerced(input, options);
-      }
-      return this._issueFactory(input, options);
-    }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
-  }
+    const coerced = options.coerced || this._coerced;
+    const output = coerced ? this._coerce(input) : input;
 
-  private _applyToCoerced(input: any, options: ParseOptions): ApplyResult<T> {
-    const { _valueMapping, _applyChecks } = this;
-
-    let output;
     let issues: Issue[] | null = null;
 
-    if (_valueMapping === null || !_valueMapping.hasOwnProperty(input)) {
+    if (!this.values.includes(output)) {
       return this._issueFactory(input, options);
     }
-
-    output = _valueMapping[input];
-
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
     }
-    return ok(output);
+    if (coerced && issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
   }
+
+  protected _coerce(input: any): unknown {
+    const { _valueMapping } = this;
+
+    if (_valueMapping === null || this.values.includes(input)) {
+      return input;
+    }
+    if (typeof input === 'string' && input in _valueMapping) {
+      return _valueMapping[input];
+    }
+    if (isArray(input) && input.length === 1) {
+      return this._coerce(input[0]);
+    }
+    return input;
+  }
+}
+
+/**
+ * Returns values of the enum. Source must contain key-value and value-key mapping to be considered a native enum.
+ */
+export function getValues(source: ReadonlyDict): any[] {
+  const values: number[] = [];
+
+  for (const key in source) {
+    const a = source[key];
+    const b = source[a];
+
+    const aType = typeof a;
+    const bType = typeof b;
+
+    if (((aType !== 'string' || bType !== 'number') && (aType !== 'number' || bType !== 'string')) || b != key) {
+      return Object.values(source);
+    }
+    if (typeof a === 'number') {
+      values.push(a);
+    }
+  }
+  return values;
 }

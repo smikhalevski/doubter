@@ -1,23 +1,24 @@
 import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createIssueFactory, getInputTypes, getValueType, isArray, isAsyncShapes } from '../utils';
-import { CODE_UNION, MESSAGE_UNION, TYPE_ANY } from '../constants';
-
-// prettier-ignore
-export type InferUnion<U extends readonly AnyShape[], C extends 'input' | 'output'> =
-  { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }[number];
+import { concatIssues, createIssueFactory, getValueType, isArray, isAsyncShapes, isObjectLike, unique } from '../utils';
+import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
+import { ObjectShape } from './ObjectShape';
 
 /**
- * The shape that requires an input to conform at least one of the united shapes.
+ * Returns the list of shapes that are applicable to the input.
+ */
+export type LookupCallback = (input: unknown) => readonly AnyShape[];
+
+/**
+ * The shape that requires an input to conform at least one of shapes.
  *
  * @template U The list of united shapes.
  */
-export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<U, 'input'>, InferUnion<U, 'output'>> {
+export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['input'], U[number]['output']> {
   protected _options;
-  protected _buckets;
-  protected _anyBucket;
-  protected _bucketTypes;
   protected _issueFactory;
+
+  protected declare _lookup: LookupCallback;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.
@@ -35,12 +36,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
   ) {
     super();
 
-    const { buckets, anyBucket, bucketTypes } = createUnionBuckets(shapes);
-
     this._options = options;
-    this._buckets = buckets;
-    this._anyBucket = anyBucket;
-    this._bucketTypes = bucketTypes;
     this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
@@ -64,44 +60,60 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     return new UnionShape(valueShapes);
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return isAsyncShapes(this.shapes);
   }
 
   protected _getInputTypes(): ValueType[] {
-    return getInputTypes(this.shapes);
+    const inputTypes: ValueType[] = [];
+
+    for (const shape of this.shapes) {
+      inputTypes.push(...shape['_getInputTypes']());
+    }
+    return inputTypes;
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferUnion<U, 'output'>> {
-    const { _buckets, _anyBucket, _bucketTypes, _applyChecks } = this;
+  protected _getInputValues(): unknown[] {
+    const inputValues = [];
 
-    const bucket = _buckets !== null ? _buckets[getValueType(input)] || _anyBucket : _anyBucket;
+    for (const shape of this.shapes) {
+      const values = shape['_getInputValues']();
+      if (values.length === 0) {
+        return [];
+      }
+      inputValues.push(...values);
+    }
+    return inputValues;
+  }
 
-    let issues: Issue[] | null = null;
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<U[number]['output']> {
+    const { _applyChecks } = this;
+
     let result: ApplyResult = null;
+    let issues: Issue[] | null = null;
     let output = input;
-    let bucketLength = 0;
-    let index = 0;
+    let index;
 
-    if (bucket !== null) {
-      for (bucketLength = bucket.length; index < bucketLength; ++index) {
-        result = bucket[index]['_apply'](input, options);
+    const shapes = this._lookup(input);
+    const shapesLength = shapes.length;
 
-        if (result === null) {
-          break;
-        }
-        if (isArray(result)) {
-          issues = concatIssues(issues, result);
-          continue;
-        }
-        output = result.value;
+    for (index = 0; index < shapesLength; ++index) {
+      result = shapes[index]['_apply'](input, options);
+
+      if (result === null) {
         break;
       }
+      if (isArray(result)) {
+        issues = concatIssues(issues, result);
+        continue;
+      }
+      output = result.value;
+      break;
+    }
+    if (index === shapesLength) {
+      return issues !== null ? issues : this._issueFactory(input, options, this._getInputTypes());
     }
 
-    if (index === bucketLength) {
-      return issues !== null ? issues : this._issueFactory(input, options, _bucketTypes);
-    }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
 
@@ -112,22 +124,21 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
     return result;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferUnion<U, 'output'>>> {
-    const { _buckets, _anyBucket, _bucketTypes, _applyChecks } = this;
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<U[number]['output']>> {
+    const { _applyChecks } = this;
 
-    const bucket = _buckets !== null ? _buckets[getValueType(input)] || _anyBucket : _anyBucket;
+    const shapes = this._lookup(input);
+    const shapesLength = shapes.length;
 
-    if (bucket === null) {
-      return Promise.resolve(this._issueFactory(input, options, _bucketTypes));
+    if (shapesLength === 0) {
+      return Promise.resolve(this._issueFactory(input, options, this._getInputTypes()));
     }
-
-    const bucketLength = bucket.length;
 
     let issues: Issue[] | null = null;
     let index = 0;
 
-    const nextShape = (): Promise<ApplyResult<InferUnion<U, 'output'>>> => {
-      return bucket[index]['_applyAsync'](input, options).then(result => {
+    const nextShape = (): Promise<ApplyResult<U[number]['output']>> => {
+      return shapes[index]['_applyAsync'](input, options).then(result => {
         ++index;
 
         let output = input;
@@ -136,7 +147,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
           if (isArray(result)) {
             issues = concatIssues(issues, result);
 
-            if (index === bucketLength) {
+            if (index === shapesLength) {
               return issues;
             }
             return nextShape();
@@ -159,81 +170,169 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<InferUnion<
   }
 }
 
+Object.defineProperty(UnionShape.prototype, '_lookup', {
+  get(this: UnionShape<AnyShape[]>) {
+    const cb = createDiscriminatorLookupCallback(this.shapes) || createValueTypeLookupCallback(this.shapes);
+
+    Object.defineProperty(this, '_lookup', { value: cb });
+
+    return cb;
+  },
+});
+
 /**
- * Creates a mapping from the value type to an array of shapes that are applicable.
- *
- * @param shapes The list of united shapes.
+ * Creates a lookup that finds a shape using an input value type.
  */
-export function createUnionBuckets(shapes: readonly AnyShape[]): {
-  buckets: Partial<Record<ValueType, readonly AnyShape[]>> | null;
-  anyBucket: readonly AnyShape[] | null;
-  bucketTypes: ValueType[];
-} {
-  let buckets: Partial<Record<ValueType, AnyShape[]>> | null = {};
-  let anyBucket: AnyShape[] | null = null;
-  let bucketTypes: ValueType[] = [];
+export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): LookupCallback {
+  const buckets: Record<Exclude<ValueType, 'any' | 'never'>, AnyShape[]> = {
+    object: [],
+    array: [],
+    function: [],
+    string: [],
+    symbol: [],
+    number: [],
+    bigint: [],
+    boolean: [],
+    date: [],
+    null: [],
+    undefined: [],
+  };
 
-  for (const shape of unwrapUnionShapes(shapes)) {
-    const inputTypes = shape['_getInputTypes']();
+  const bucketTypes = Object.keys(buckets) as ValueType[];
 
-    // Collect shapes that can parse any input
-    if (inputTypes.includes(TYPE_ANY)) {
-      anyBucket ||= [];
+  for (const shape of unique(shapes)) {
+    const types = shape['_getInputTypes']();
 
-      if (!anyBucket.includes(shape)) {
-        anyBucket.push(shape);
-      }
-      continue;
-    }
-
-    // Populate buckets that require specific input types
-    for (const type of inputTypes) {
-      const bucket = buckets[type];
-
-      if (!bucket) {
-        bucketTypes.push(type);
-        buckets[type] = [shape];
+    for (const type of types.includes(TYPE_ANY) ? bucketTypes : unique(types)) {
+      if (type === TYPE_ANY || type === TYPE_NEVER) {
         continue;
       }
-      if (!bucket.includes(shape)) {
-        bucket.push(shape);
-      }
+      buckets[type].push(shape);
     }
   }
 
-  if (bucketTypes.length === 0) {
-    buckets = null;
-  } else if (anyBucket !== null && buckets !== null) {
-    for (const type of bucketTypes) {
-      const bucket = buckets[type]!;
-
-      for (const shape of anyBucket) {
-        if (!bucket.includes(shape)) {
-          bucket.push(shape);
-        }
-      }
-    }
-  }
-
-  if (anyBucket !== null) {
-    bucketTypes.push(TYPE_ANY);
-  }
-
-  return { buckets, anyBucket, bucketTypes };
+  return input => buckets[getValueType(input)];
 }
 
 /**
- * Unwraps nested union shapes that don't have any checks.
+ * Creates a lookup that uses a discriminator property, or returns `null` if discriminator cannot be detected.
  */
-function unwrapUnionShapes(opaqueShapes: readonly AnyShape[]): AnyShape[] {
-  const shapes: AnyShape[] = [];
+export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): LookupCallback | null {
+  const shapesLength = shapes.length;
 
-  for (const shape of opaqueShapes) {
-    if (shape instanceof UnionShape && shape.checks.length === 0) {
-      shapes.push(...unwrapUnionShapes(shape.shapes));
-    } else {
-      shapes.push(shape);
+  if (shapesLength <= 1 || !shapes.every(isObjectShape)) {
+    return null;
+  }
+
+  const discriminator = getDiscriminator(shapes);
+
+  if (discriminator === null) {
+    return null;
+  }
+
+  const { key, valuesForShape } = discriminator;
+  const shapeArrays = shapes.map(shape => [shape]);
+  const noShapesArray: AnyShape[] = [];
+
+  if (valuesForShape.every(values => values.length === 1 && values[0] === values[0])) {
+    const values = valuesForShape.map(values => values[0]);
+
+    return input => {
+      if (!isObjectLike(input)) {
+        return noShapesArray;
+      }
+
+      const index = values.indexOf(input[key]);
+      if (index === -1) {
+        return noShapesArray;
+      }
+      return shapeArrays[index];
+    };
+  }
+
+  return input => {
+    if (!isObjectLike(input)) {
+      return noShapesArray;
+    }
+
+    const value = input[key];
+
+    for (let i = 0; i < shapesLength; ++i) {
+      if (valuesForShape[i].includes(value)) {
+        return shapeArrays[i];
+      }
+    }
+    return noShapesArray;
+  };
+}
+
+export interface Discriminator {
+  /**
+   * The discriminator property key.
+   */
+  key: string;
+
+  /**
+   * The discriminator property values for each shape.
+   */
+  valuesForShape: unknown[][];
+}
+
+export function getDiscriminator(shapes: readonly ObjectShape<any, any>[]): Discriminator | null {
+  const keys = shapes[0].keys.slice(0);
+  const valuesForShapeForKey: unknown[][][] = [];
+
+  for (let i = 0; i < shapes.length && keys.length !== 0; ++i) {
+    const shapeValues: unknown[][] = [];
+    const { keys: shapeKeys, shapes: shapeShapes } = shapes[i];
+
+    valuesForShapeForKey[i] = shapeValues;
+
+    for (let j = 0; j < keys.length; ++j) {
+      const key = keys[j];
+
+      if (shapeKeys.includes(key)) {
+        const keyValues: unknown[] = shapeShapes[key]['_getInputValues']();
+
+        if (keyValues.length !== 0) {
+          let duplicated = false;
+
+          // Ensure that this set of values wasn't seen for this key in other shapes
+          duplicateLookup: for (let k = 0; k < i; ++k) {
+            for (const value of valuesForShapeForKey[k][j]) {
+              if (keyValues.includes(value)) {
+                duplicated = true;
+                break duplicateLookup;
+              }
+            }
+          }
+
+          if (!duplicated) {
+            shapeValues.push(keyValues);
+            continue;
+          }
+        }
+      }
+
+      keys.splice(j, 1);
+
+      for (let k = 0; k < i; ++k) {
+        valuesForShapeForKey[k].splice(j, 1);
+      }
+      --j;
     }
   }
-  return shapes;
+
+  if (keys.length === 0) {
+    return null;
+  }
+
+  return {
+    key: keys[0],
+    valuesForShape: valuesForShapeForKey.map(values => values[0]),
+  };
+}
+
+export function isObjectShape(shape: AnyShape): shape is ObjectShape<any, any> {
+  return shape instanceof ObjectShape;
 }

@@ -1,4 +1,5 @@
 export const ERROR_REQUIRES_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
+export const ERROR_SHAPE_EXPECTED = 'Provider must return a shape';
 export const ERROR_FORBIDDEN_AT_RUNTIME = 'Must not be accessed at runtime';
 export const ERROR_ASYNC_ARGUMENTS = 'Some of argument shapes are async, consider using fnAsync';
 
@@ -69,4 +70,4 @@ export const MESSAGE_STRING_MIN = 'Must have the minimum length of %s';
 export const MESSAGE_STRING_REGEX = 'Must match the pattern %s';
 export const MESSAGE_SYMBOL_TYPE = 'Must be a symbol';
 export const MESSAGE_TUPLE = 'Must be a tuple of length %s';
-export const MESSAGE_UNION = 'Must conform a union of %s';
+export const MESSAGE_UNION = 'Must conform the union of %s';

@@ -6,6 +6,7 @@ import {
   isEqual,
   isFlagSet,
   setFlag,
+  unique,
 } from '../main/utils';
 import { Issue, ValidationError } from '../main';
 
@@ -387,5 +388,33 @@ describe('createApplyChecksCallback', () => {
       expect(cbMock4).toHaveBeenCalledTimes(1);
       expect(cbMock4).toHaveBeenNthCalledWith(1, 111, { verbose: true });
     });
+  });
+});
+
+describe('unique', () => {
+  test('returns the input array if it contains unique values', () => {
+    const arr = [1, 2, 3];
+    expect(unique(arr)).toBe(arr);
+  });
+
+  test('returns the empty array as is', () => {
+    const arr: any[] = [];
+    expect(unique(arr)).toBe(arr);
+  });
+
+  test('removes duplicates', () => {
+    const arr = [1, 2, 3, 3, 1];
+    const uniqueArr = unique(arr);
+
+    expect(uniqueArr).not.toBe(arr);
+    expect(uniqueArr).toEqual([2, 3, 1]);
+  });
+
+  test('removes NaN duplicates', () => {
+    const arr = [NaN, 1, NaN, 2, NaN];
+    const uniqueArr = unique(arr);
+
+    expect(uniqueArr).not.toBe(arr);
+    expect(uniqueArr).toEqual([1, 2, NaN]);
   });
 });

@@ -8,14 +8,13 @@ import {
   CODE_TYPE,
   MESSAGE_NUMBER_TYPE,
   TYPE_ARRAY,
-  TYPE_BIGINT,
   TYPE_BOOLEAN,
+  TYPE_DATE,
   TYPE_NULL,
   TYPE_NUMBER,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
-import { coerceNumber } from '../../main/shapes/NumberShape';
 
 describe('NumberShape', () => {
   test('parses a number', () => {
@@ -150,13 +149,13 @@ describe('NumberShape', () => {
     const shape = new NumberShape().coerce();
 
     expect(shape['_getInputTypes']()).toEqual([
-      TYPE_STRING,
       TYPE_NUMBER,
+      TYPE_STRING,
       TYPE_BOOLEAN,
-      TYPE_BIGINT,
       TYPE_ARRAY,
-      TYPE_NULL,
+      TYPE_DATE,
       TYPE_UNDEFINED,
+      TYPE_NULL,
     ]);
   });
 
@@ -181,49 +180,58 @@ describe('NumberShape', () => {
       ],
     });
   });
-});
 
-describe('coerceNumber', () => {
-  test('coerces a string', () => {
-    expect(coerceNumber('aaa', null)).toBe(null);
-    expect(coerceNumber('111', null)).toBe(111);
-    expect(coerceNumber('111.222', null)).toBe(111.222);
-  });
+  describe('coercion', () => {
+    test('coerces a string', () => {
+      expect(new NumberShape()['_coerce']('aaa')).toBe(NaN);
+      expect(new NumberShape()['_coerce']('111')).toBe(111);
+      expect(new NumberShape()['_coerce']('111.222')).toBe(111.222);
+    });
 
-  test('coerces a number', () => {
-    expect(coerceNumber(111, null)).toBe(111);
-    expect(coerceNumber(111.222, null)).toBe(111.222);
-    expect(coerceNumber(NaN, null)).toBe(null);
-    expect(coerceNumber(Infinity, null)).toBe(Infinity);
-    expect(coerceNumber(-Infinity, null)).toBe(-Infinity);
-  });
+    test('coerces a number', () => {
+      expect(new NumberShape()['_coerce'](111)).toBe(111);
+      expect(new NumberShape()['_coerce'](111.222)).toBe(111.222);
+      expect(new NumberShape()['_coerce'](NaN)).toBe(NaN);
+      expect(new NumberShape()['_coerce'](Infinity)).toBe(Infinity);
+      expect(new NumberShape()['_coerce'](-Infinity)).toBe(-Infinity);
+    });
 
-  test('coerces a boolean', () => {
-    expect(coerceNumber(true, null)).toBe(1);
-    expect(coerceNumber(false, null)).toBe(0);
-  });
+    test('coerces a boolean', () => {
+      expect(new NumberShape()['_coerce'](true)).toBe(1);
+      expect(new NumberShape()['_coerce'](false)).toBe(0);
+    });
 
-  test('coerces null and undefined values', () => {
-    expect(coerceNumber(null, null)).toBe(0);
-    expect(coerceNumber(undefined, null)).toBe(0);
-  });
+    test('coerces null and undefined values', () => {
+      expect(new NumberShape()['_coerce'](null)).toBe(0);
+      expect(new NumberShape()['_coerce'](undefined)).toBe(0);
+    });
 
-  test('coerces an array with a single number element', () => {
-    expect(coerceNumber([111], null)).toBe(111);
-  });
+    test('coerces an array with a single number element', () => {
+      expect(new NumberShape()['_coerce']([111])).toBe(111);
+    });
 
-  test('does not coerce unsuitable arrays as is', () => {
-    expect(coerceNumber([111, 222], null)).toBe(null);
-    expect(coerceNumber([111, 'aaa'], null)).toBe(null);
-    expect(coerceNumber(['aaa'], null)).toBe(null);
-  });
+    test('does not coerce unsuitable array', () => {
+      const value1 = [BigInt(111), 'aaa'];
+      const value2 = [BigInt(111), BigInt(111)];
+      const value3 = ['aaa'];
 
-  test('does not coerce objects and functions', () => {
-    expect(coerceNumber({ foo: 111 }, null)).toBe(null);
-    expect(coerceNumber(() => undefined, null)).toBe(null);
-  });
+      expect(new NumberShape()['_coerce'](value1)).toBe(value1);
+      expect(new NumberShape()['_coerce'](value2)).toBe(value2);
+      expect(new NumberShape()['_coerce'](value3)).toBe(NaN);
+    });
 
-  test('does not coerce a symbol', () => {
-    expect(coerceNumber(Symbol(), null)).toBe(null);
+    test('does not coerce objects and functions', () => {
+      const value1 = { foo: 111 };
+      const value2 = () => undefined;
+
+      expect(new NumberShape()['_coerce'](value1)).toBe(value1);
+      expect(new NumberShape()['_coerce'](value2)).toBe(value2);
+    });
+
+    test('does not coerce a symbol', () => {
+      const value = Symbol();
+
+      expect(new NumberShape()['_coerce'](value)).toBe(value);
+    });
   });
 });

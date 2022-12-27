@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, coercibleTypes, createIssueFactory, isArray, ok, stringTypes } from '../utils';
+import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -10,7 +10,13 @@ import {
   MESSAGE_STRING_MIN,
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_TYPE,
+  TYPE_ARRAY,
+  TYPE_BIGINT,
+  TYPE_BOOLEAN,
+  TYPE_NULL,
+  TYPE_NUMBER,
   TYPE_STRING,
+  TYPE_UNDEFINED,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -96,28 +102,18 @@ export class StringShape extends CoercibleShape<string> {
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this._coerced ? coercibleTypes : stringTypes;
+    if (this._coerced) {
+      return [TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
+    } else {
+      return [TYPE_STRING];
+    }
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
-    if (options.coerced || this._coerced) {
-      return this._applyToCoerced(input, options);
-    }
-    if (typeof input !== 'string') {
-      return this._issueFactory(input, options);
-    }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
-  }
-
-  private _applyToCoerced(input: unknown, options: ParseOptions): ApplyResult<string> {
-    const { _applyChecks } = this;
-
-    const output = coerceString(input, input);
+    const coerced = options.coerced || this._coerced;
+    const output = coerced ? this._coerce(input) : input;
 
     let issues: Issue[] | null = null;
 
@@ -127,27 +123,29 @@ export class StringShape extends CoercibleShape<string> {
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (issues === null && input !== output) {
+    if (coerced && issues === null && input !== output) {
       return ok(output);
     }
     return issues;
   }
-}
 
-export function coerceString(value: unknown, defaultValue: unknown): unknown {
-  const type = typeof value;
-
-  if (value == null) {
-    return '';
+  protected _coerce(input: unknown): unknown {
+    if (typeof input === 'string') {
+      return input;
+    }
+    if (input == null) {
+      return '';
+    }
+    if (
+      (typeof input === 'number' && input === input && input !== Infinity && input !== -Infinity) ||
+      typeof input === 'boolean' ||
+      typeof input === 'bigint'
+    ) {
+      return '' + input;
+    }
+    if (isArray(input) && input.length === 1) {
+      return this._coerce(input[0]);
+    }
+    return input;
   }
-  if (type === 'string') {
-    return value;
-  }
-  if ((type === 'number' && Number.isFinite(value)) || type === 'boolean' || type === 'bigint') {
-    return '' + value;
-  }
-  if (isArray(value) && value.length === 1) {
-    return coerceString(value[0], defaultValue);
-  }
-  return defaultValue;
 }

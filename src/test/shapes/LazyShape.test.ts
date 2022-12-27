@@ -29,7 +29,7 @@ describe('LazyShape', () => {
 
   describe('async', () => {
     class AsyncShape extends Shape {
-      protected _checkAsync() {
+      protected _isAsync() {
         return true;
       }
 

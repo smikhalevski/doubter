@@ -1,6 +1,5 @@
 import { DateShape } from '../../main';
-import { coerceDate } from '../../main/shapes/DateShape';
-import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
 
 describe('DateShape', () => {
   test('parses date values', () => {
@@ -26,7 +25,7 @@ describe('DateShape', () => {
   test('updates input types when coerced', () => {
     const shape = new DateShape().coerce();
 
-    expect(shape['_getInputTypes']()).toEqual([TYPE_DATE, TYPE_STRING, TYPE_NUMBER]);
+    expect(shape['_getInputTypes']()).toEqual([TYPE_DATE, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
   });
 
   test('coerces an input', () => {
@@ -49,28 +48,24 @@ describe('DateShape', () => {
       ],
     });
   });
-});
 
-describe('coerceDate', () => {
-  test('coerces a string', () => {
-    expect(coerceDate('aaa', null)).toBe(null);
-    expect(coerceDate('2020-02-02', null)).toEqual(new Date('2020-02-02'));
-  });
+  describe('coercion', () => {
+    test('coerces a string', () => {
+      expect(new DateShape()['_coerce']('2020-02-02')).toEqual(new Date('2020-02-02'));
+    });
 
-  test('coerces a number', () => {
-    expect(coerceDate(111, null)).toEqual(new Date(111));
-    expect(coerceDate(NaN, null)).toBe(null);
-    expect(coerceDate(Infinity, null)).toBe(null);
-    expect(coerceDate(-Infinity, null)).toBe(null);
-  });
+    test('coerces a number', () => {
+      expect(new DateShape()['_coerce'](111)).toEqual(new Date(111));
+    });
 
-  test('coerces a boolean', () => {
-    expect(coerceDate(true, null)).toBe(null);
-    expect(coerceDate(false, null)).toBe(null);
-  });
+    test('coerces a boolean', () => {
+      expect(new DateShape()['_coerce'](true)).toBe(true);
+      expect(new DateShape()['_coerce'](false)).toBe(false);
+    });
 
-  test('coerces null and undefined values', () => {
-    expect(coerceDate(null, null)).toBe(null);
-    expect(coerceDate(undefined, null)).toBe(null);
+    test('coerces null and undefined values', () => {
+      expect(new DateShape()['_coerce'](null)).toBe(null);
+      expect(new DateShape()['_coerce'](undefined)).toBe(undefined);
+    });
   });
 });

@@ -1,12 +1,12 @@
-import { ArrayShape, Shape } from '../../main';
+import { ArrayShape, Shape, StringShape } from '../../main';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
   CODE_TUPLE,
   CODE_TYPE,
   MESSAGE_ARRAY_TYPE,
-  TYPE_ANY,
   TYPE_ARRAY,
+  TYPE_STRING,
 } from '../../main/constants';
 
 describe('ArrayShape', () => {
@@ -281,9 +281,9 @@ describe('ArrayShape', () => {
   });
 
   test('updates input types when coerced', () => {
-    const arrShape = new ArrayShape(null, null).coerce();
+    const arrShape = new ArrayShape([new StringShape()], null).coerce();
 
-    expect(arrShape['_getInputTypes']()).toEqual([TYPE_ANY]);
+    expect(arrShape['_getInputTypes']()).toEqual([TYPE_STRING, TYPE_ARRAY]);
   });
 
   test('does not coerce if a tuple has no elements', () => {

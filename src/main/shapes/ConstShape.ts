@@ -30,6 +30,10 @@ export class ConstShape<T> extends Shape<T> {
     return [getValueType(this.value)];
   }
 
+  protected _getInputValues(): unknown[] {
+    return [this.value];
+  }
+
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 

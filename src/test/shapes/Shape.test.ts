@@ -272,7 +272,7 @@ describe('Shape', () => {
   describe('async', () => {
     test('creates an async shape', () => {
       class AsyncShape extends Shape {
-        protected _checkAsync() {
+        protected _isAsync() {
           return true;
         }
       }
@@ -282,7 +282,7 @@ describe('Shape', () => {
 
     test('throws if sync methods are invoked', () => {
       class AsyncShape extends Shape {
-        protected _checkAsync() {
+        protected _isAsync() {
           return true;
         }
       }

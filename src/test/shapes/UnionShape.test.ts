@@ -1,4 +1,15 @@
-import { ArrayShape, BooleanShape, NumberShape, ObjectShape, Shape, StringShape, UnionShape } from '../../main';
+import {
+  ArrayShape,
+  BooleanShape,
+  ConstShape,
+  EnumShape,
+  NumberShape,
+  ObjectShape,
+  Shape,
+  StringShape,
+  UnionShape,
+} from '../../main';
+import { getDiscriminator } from '../../main/shapes/UnionShape';
 
 describe('UnionShape', () => {
   test('distributes buckets', () => {
@@ -17,27 +28,6 @@ describe('UnionShape', () => {
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
     expect(applySpy3).not.toHaveBeenCalled();
-  });
-
-  test('unwraps union shapes into buckets', () => {
-    const shape1 = new NumberShape();
-    const shape2 = new StringShape();
-    const shape3 = new BooleanShape();
-    const orShape1 = new UnionShape([shape2, shape3]);
-
-    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
-    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
-    const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
-    const unionApplySpy = jest.spyOn<Shape, any>(shape3, '_apply');
-
-    const orShape2 = new UnionShape([shape1, orShape1]);
-
-    expect(orShape2['_getInputTypes']()).toEqual(['number', 'string', 'boolean']);
-    expect(orShape2.parse('aaa')).toBe('aaa');
-    expect(applySpy1).not.toHaveBeenCalled();
-    expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy3).not.toHaveBeenCalled();
-    expect(unionApplySpy).not.toHaveBeenCalled();
   });
 
   test('does not unwrap union shapes that have checks', () => {
@@ -139,6 +129,15 @@ describe('UnionShape', () => {
     expect(orShape.at('key1')).toBe(shape2);
   });
 
+  test('parses a discriminated union', () => {
+    const shape = new UnionShape([
+      new ObjectShape({ type: new ConstShape('foo') }, null),
+      new ObjectShape({ type: new ConstShape('bar') }, null),
+    ]);
+
+    expect(shape.parse({ type: 'bar' })).toEqual({ type: 'bar' });
+  });
+
   describe('async', () => {
     test('distributes buckets', async () => {
       const shape1 = new NumberShape();
@@ -157,28 +156,6 @@ describe('UnionShape', () => {
       expect(applyAsyncSpy1).not.toHaveBeenCalled();
       expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
       expect(applyAsyncSpy3).not.toHaveBeenCalled();
-    });
-
-    test('unwraps union shapes into buckets', async () => {
-      const shape1 = new NumberShape();
-      const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
-      const shape3 = new BooleanShape();
-      const orShape1 = new UnionShape([shape2, shape3]);
-
-      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-      const applyAsyncSpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
-      const unionApplyAsyncSpy = jest.spyOn<Shape, any>(shape3, '_applyAsync');
-
-      const orShape2 = new UnionShape([shape1, orShape1]);
-
-      expect(orShape2.async).toBe(true);
-
-      await expect(orShape2.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applyAsyncSpy1).not.toHaveBeenCalled();
-      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy3).not.toHaveBeenCalled();
-      expect(unionApplyAsyncSpy).not.toHaveBeenCalled();
     });
 
     test('does not unwrap union shapes that have checks', async () => {
@@ -250,5 +227,40 @@ describe('UnionShape', () => {
         issues: [{ code: 'xxx', path: [] }],
       });
     });
+  });
+});
+
+describe('getDiscriminator', () => {
+  test('returns the discriminator key and corresponding values for each shape in the union', () => {
+    expect(
+      getDiscriminator([
+        new ObjectShape({ type: new ConstShape('foo') }, null),
+        new ObjectShape({ type: new ConstShape('bar') }, null),
+      ])
+    ).toEqual({
+      key: 'type',
+      valuesForShape: [['foo'], ['bar']],
+    });
+  });
+
+  test('returns the discriminator for enum values', () => {
+    expect(
+      getDiscriminator([
+        new ObjectShape({ type: new EnumShape(['foo', 'bar']) }, null),
+        new ObjectShape({ type: new ConstShape('qux') }, null),
+      ])
+    ).toEqual({
+      key: 'type',
+      valuesForShape: [['foo', 'bar'], ['qux']],
+    });
+  });
+
+  test('returns null if values are not distinct', () => {
+    expect(
+      getDiscriminator([
+        new ObjectShape({ type: new EnumShape(['foo', 'bar']) }, null),
+        new ObjectShape({ type: new ConstShape('bar') }, null),
+      ])
+    ).toBe(null);
   });
 });

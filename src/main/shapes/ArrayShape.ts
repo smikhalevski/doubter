@@ -1,9 +1,7 @@
 import { AnyShape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
-  anyTypes,
   appendCheck,
-  arrayTypes,
   concatIssues,
   createIssueFactory,
   isArray,
@@ -42,8 +40,8 @@ export type ToArray<T> = T extends any[] ? T : never;
 /**
  * The shape of an array or a tuple.
  *
- * @template U The list of positioned element shapes or `null` if there are no positioned elements.
- * @template R The shape of rest elements or `null` if there are no rest elements.
+ * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
+ * @template R The shape of rest elements, or `null` if there are no rest elements.
  */
 export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> extends CoercibleShape<
   InferArray<U, R, 'input'>,
@@ -52,7 +50,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   protected _options;
 
   /**
-   * `true` if an arbitrary input value can be potentially coerced to this array type, or `false` otherwise.
+   * `true` if an array may contain at least one element and has no more than one positioned element, `false` otherwise.
    */
   protected _coercible;
   protected _issueFactory;
@@ -64,6 +62,8 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    * @param shapes The list of positioned element shapes or `null` if there are no positioned elements.
    * @param restShape The shape of rest elements or `null` if there are no rest elements.
    * @param options The type constraint options or the type issue message.
+   * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
+   * @template R The shape of rest elements, or `null` if there are no rest elements.
    */
   constructor(
     /**
@@ -164,12 +164,20 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     });
   }
 
-  protected _checkAsync(): boolean {
+  protected _isAsync(): boolean {
     return (this.shapes !== null && isAsyncShapes(this.shapes)) || (this.restShape !== null && this.restShape.async);
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this._coerced ? anyTypes : arrayTypes;
+    const { shapes } = this;
+
+    const shape = shapes !== null && shapes.length === 1 ? shapes[0] : this.restShape;
+
+    if (this._coerced && shape !== null) {
+      return shape['_getInputTypes']().concat(TYPE_ARRAY);
+    } else {
+      return [TYPE_ARRAY];
+    }
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {

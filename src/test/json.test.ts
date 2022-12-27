@@ -28,7 +28,7 @@ describe('JSON shape', () => {
       issues: [
         {
           code: CODE_UNION,
-          message: 'Must conform a union of number,string,boolean,null,array,object',
+          message: 'Must conform the union of number,string,boolean,null,array,object',
           input: value2,
           path: [],
           param: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
@@ -43,7 +43,7 @@ describe('JSON shape', () => {
         {
           code: CODE_UNION,
           input: value3.aaa.bbb,
-          message: 'Must conform a union of number,string,boolean,null,array,object',
+          message: 'Must conform the union of number,string,boolean,null,array,object',
           param: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
           path: ['aaa', 'bbb'],
         },
