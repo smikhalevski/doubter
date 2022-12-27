@@ -351,6 +351,8 @@ export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback 
   };
 }
 
+function appendIssue(issues: Issue[] | null, result: Partial<Issue>[] | Partial<Issue>): Issue[] | null;
+
 function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
   if (isArray(result)) {
     const resultLength = result.length;
@@ -380,13 +382,17 @@ function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
   return issues;
 }
 
-export function unique<T>(arr: T[]): T[] {
+export function unique<T>(arr: T[]): T[];
+
+export function unique<T>(arr: readonly T[]): readonly T[];
+
+export function unique<T>(arr: readonly T[]): readonly T[] {
   let uniqueArr: T[] | null = null;
 
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i];
 
-    if (!arr.includes(value, i + 1)) {
+    if (arr.includes(value, i + 1)) {
       if (uniqueArr === null) {
         uniqueArr = arr.slice(0, i);
       }

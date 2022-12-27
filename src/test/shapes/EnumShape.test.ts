@@ -1,5 +1,6 @@
 import { EnumShape } from '../../main';
 import { CODE_ENUM } from '../../main/constants';
+import { getValues } from '../../main/shapes/EnumShape';
 
 describe('EnumShape', () => {
   test('creates an enum shape from an array', () => {
@@ -141,5 +142,37 @@ describe('EnumShape', () => {
       ok: false,
       issues: [{ code: 'xxx', path: [] }],
     });
+  });
+});
+
+describe('getValues', () => {
+  test('removes aliases from numerical enums', () => {
+    enum Foo {
+      AAA,
+      BBB,
+    }
+
+    expect(getValues(Foo)).toEqual([0, 1]);
+  });
+
+  test('removes aliases from enum-like objects', () => {
+    const obj = {
+      0: 'AAA',
+      1: 'BBB',
+      AAA: 0,
+      BBB: 1,
+    };
+
+    expect(getValues(obj)).toEqual([0, 1]);
+  });
+
+  test('preserves partial aliases', () => {
+    const obj = {
+      0: 'AAA',
+      AAA: 0,
+      BBB: 1,
+    };
+
+    expect(getValues(obj)).toEqual(['AAA', 0, 1]);
   });
 });
