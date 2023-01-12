@@ -422,7 +422,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the list of all input values that are known beforehand, or `null` if input values aren't known beforehand.
+   * Returns the list of all input values that are known beforehand.
    */
   protected _getInputValues(): unknown[] {
     return [];
