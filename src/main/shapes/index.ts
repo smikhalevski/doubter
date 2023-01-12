@@ -23,6 +23,7 @@ export {
   Shape,
   TransformShape,
   ValueType,
+  CatchShape,
 } from './Shape';
 export { StringShape } from './StringShape';
 export { SymbolShape } from './SymbolShape';
