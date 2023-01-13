@@ -118,7 +118,7 @@ export interface Shape<I, O> {
   parseAsync(input: unknown, options?: ParseOptions): Promise<O>;
 
   /**
-   * Synchronously parses the value.
+   * Synchronously parses the value and returns `undefined` if parsing fails.
    *
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
@@ -138,7 +138,7 @@ export interface Shape<I, O> {
   parseOrDefault<T>(input: unknown, defaultValue: T, options?: ParseOptions): O | T;
 
   /**
-   * Asynchronously parses the value.
+   * Asynchronously parses the value and returns `undefined` value if parsing fails.
    *
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
@@ -549,7 +549,6 @@ Object.defineProperties(Shape.prototype, {
           throw new Error(ERROR_REQUIRES_ASYNC);
         };
       } else if (this._applyAsync !== _applyAsync) {
-        // Downgrade to sync implementation is the shape isn't async
         this._applyAsync = _applyAsync;
       }
 
