@@ -434,26 +434,6 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Prevents an input and output from being `null`.
-   *
-   * @param options The constraint options or an issue message.
-   * @returns The {@linkcode ExcludeShape} instance.
-   */
-  nonNullable(options?: TypeConstraintOptions | Message): OpaqueExclude<this, null> {
-    return this.exclude(null, options);
-  }
-
-  /**
-   * Prevents an input and output from being `undefined` or `null`.
-   *
-   * @param options The constraint options or an issue message.
-   * @returns The {@linkcode ExcludeShape} instance.
-   */
-  nonNullish(options?: TypeConstraintOptions | Message): OpaqueExclude<this, null> {
-    return this.nonNullable(options).nonOptional(options);
-  }
-
-  /**
    * Returns the fallback value if parsing fails.
    *
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
