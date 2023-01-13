@@ -131,6 +131,10 @@ describe('NumberShape', () => {
     });
   });
 
+  test('allows NaN', () => {
+    expect(new NumberShape().nan().try(NaN)).toEqual({ ok: true, value: NaN });
+  });
+
   test('applies checks', () => {
     expect(new NumberShape().check(() => [{ code: 'xxx' }]).try(111)).toEqual({
       ok: false,

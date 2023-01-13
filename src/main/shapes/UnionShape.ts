@@ -18,8 +18,6 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   protected _options;
   protected _issueFactory;
 
-  protected declare _lookup: LookupCallback;
-
   /**
    * Creates a new {@linkcode UnionShape} instance.
    *
@@ -58,6 +56,14 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
       return valueShapes[0];
     }
     return new UnionShape(valueShapes);
+  }
+
+  protected get _lookup(): LookupCallback {
+    const cb = createDiscriminatorLookupCallback(this.shapes) || createValueTypeLookupCallback(this.shapes);
+
+    Object.defineProperty(this, '_lookup', { value: cb });
+
+    return cb;
   }
 
   protected _isAsync(): boolean {
@@ -170,16 +176,6 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   }
 }
 
-Object.defineProperty(UnionShape.prototype, '_lookup', {
-  get(this: UnionShape<AnyShape[]>) {
-    const cb = createDiscriminatorLookupCallback(this.shapes) || createValueTypeLookupCallback(this.shapes);
-
-    Object.defineProperty(this, '_lookup', { value: cb });
-
-    return cb;
-  },
-});
-
 /**
  * Creates a lookup that finds a shape using an input value type.
  */
@@ -201,9 +197,9 @@ export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): Look
   const bucketTypes = Object.keys(buckets) as ValueType[];
 
   for (const shape of unique(shapes)) {
-    const types = shape['_getInputTypes']();
+    const inputTypes = shape['_getInputTypes']();
 
-    for (const type of types.includes(TYPE_ANY) ? bucketTypes : unique(types)) {
+    for (const type of inputTypes.includes(TYPE_ANY) ? bucketTypes : unique(inputTypes)) {
       if (type === TYPE_ANY || type === TYPE_NEVER) {
         continue;
       }

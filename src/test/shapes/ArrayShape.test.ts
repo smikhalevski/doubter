@@ -351,7 +351,7 @@ describe('ArrayShape', () => {
       });
     });
 
-    test('downgrades to sync implementation if there are async element shapes', async () => {
+    test('downgrades to sync implementation if there are no async element shapes', async () => {
       const arrShape = new ArrayShape(null, new Shape());
 
       const arrApplySpy = jest.spyOn<Shape, any>(arrShape, '_apply');

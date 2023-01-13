@@ -14,8 +14,6 @@ import { AnyShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 
-export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
-
 export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
   const type = typeof value;
 
