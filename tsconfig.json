@@ -1,20 +1,14 @@
 {
   "compilerOptions": {
     "importHelpers": true,
-    "declaration": true,
     "moduleResolution": "Node",
     "esModuleInterop": true,
-    "skipLibCheck": true,
     "strict": true,
     "target": "ES5",
-    "module": "ES6",
-    "rootDir": "./src/main",
-    "outDir": "./lib",
-    "lib": [
-      "ES2020"
-    ]
+    "module": "ESNext"
   },
   "include": [
-    "./src/main/**/*"
+    "rollup.config.ts",
+    "./src/**/*"
   ]
 }

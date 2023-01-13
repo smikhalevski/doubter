@@ -1,6 +1,6 @@
 {
   "preset": "ts-jest",
   "testMatch": [
-    "<rootDir>/src/**/*.test.{tsx,ts}"
+    "<rootDir>/src/**/*.test.ts"
   ]
 }

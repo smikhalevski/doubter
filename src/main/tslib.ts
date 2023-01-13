@@ -1,9 +1,9 @@
-export function __extends(ctor: Function, superCtor: Function): void {
+export function __extends(constructor: Function, superConstructor: Function): void {
   const Super = function (this: object) {
-    this.constructor = ctor;
+    this.constructor = constructor;
   };
 
-  Super.prototype = superCtor.prototype;
+  Super.prototype = superConstructor.prototype;
 
-  ctor.prototype = new (Super as unknown as new () => object)();
+  constructor.prototype = new (Super as unknown as new () => object)();
 }
