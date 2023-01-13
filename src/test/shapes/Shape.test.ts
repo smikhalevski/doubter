@@ -227,6 +227,12 @@ describe('Shape', () => {
     expect(shape.parse(null)).toBe(null);
   });
 
+  test('replaces null with undefined', () => {
+    const shape = new Shape().nullable(undefined);
+
+    expect(shape.parse(null)).toBe(undefined);
+  });
+
   test('returns default value for an null input', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]).nullable('aaa');
 
@@ -238,6 +244,20 @@ describe('Shape', () => {
 
     expect(shape.parse(null)).toBe(null);
     expect(shape.parse(undefined)).toBe(undefined);
+  });
+
+  test('replaces null and undefined with undefined', () => {
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish(undefined);
+
+    expect(shape.parse(null)).toBe(undefined);
+    expect(shape.parse(undefined)).toBe(undefined);
+  });
+
+  test('replaces null and undefined with null', () => {
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish(null);
+
+    expect(shape.parse(null)).toBe(null);
+    expect(shape.parse(undefined)).toBe(null);
   });
 
   test('returns default value for both null and undefined inputs', () => {

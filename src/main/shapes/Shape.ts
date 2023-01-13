@@ -388,11 +388,11 @@ export class Shape<I = any, O = I> {
   nullable<T>(defaultValue: T): OpaqueReplace<this, null, T>;
 
   nullable(defaultValue?: any) {
-    return this.replace(null, defaultValue);
+    return this.replace(null, arguments.length === 0 ? null : defaultValue);
   }
 
   /**
-   * Passes `null` and `undefined` input value to the output.
+   * Passes `null` and `undefined` input values directly to the output without parsing.
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
@@ -407,7 +407,7 @@ export class Shape<I = any, O = I> {
   nullish<T>(defaultValue?: T): OpaqueReplace<this, null | undefined, T>;
 
   nullish(defaultValue?: any) {
-    return this.nullable(defaultValue).optional(defaultValue);
+    return this.nullable(arguments.length === 0 ? null : defaultValue).optional(defaultValue);
   }
 
   /**
