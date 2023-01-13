@@ -269,6 +269,13 @@ describe('Shape', () => {
     expect(shape.parse(111)).toBe(222);
   });
 
+  test('wraps in ExcludeShape', () => {
+    const shape = new Shape().nonOptional();
+
+    expect(shape).toBeInstanceOf(ExcludeShape);
+    expect((shape as ExcludeShape<any, any>).excludedValue).toBe(undefined);
+  });
+
   describe('async', () => {
     test('creates an async shape', () => {
       class AsyncShape extends Shape {

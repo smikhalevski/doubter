@@ -20,7 +20,6 @@ import {
   getValueType,
   isArray,
   isEqual,
-  Mutable,
   ok,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
@@ -118,6 +117,15 @@ export interface Shape<I, O> {
   parseAsync(input: unknown, options?: ParseOptions): Promise<O>;
 
   /**
+   * Synchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @returns The value that conforms the output type of the shape.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   */
+  parseOrDefault(input: unknown): O | undefined;
+
+  /**
    * Synchronously parses the value and returns the default value if parsing fails.
    *
    * @param input The value to parse.
@@ -126,7 +134,15 @@ export interface Shape<I, O> {
    * @returns The value that conforms the output type of the shape.
    * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
    */
-  parseOrDefault<T = undefined>(input: unknown, defaultValue?: T, options?: ParseOptions): O | T;
+  parseOrDefault<T>(input: unknown, defaultValue: T, options?: ParseOptions): O | T;
+
+  /**
+   * Asynchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @returns The value that conforms the output type of the shape.
+   */
+  parseOrDefaultAsync(input: unknown): Promise<O | undefined>;
 
   /**
    * Asynchronously parses the value and returns the default value if parsing fails.
@@ -136,7 +152,7 @@ export interface Shape<I, O> {
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
    */
-  parseOrDefaultAsync<T = undefined>(input: unknown, defaultValue?: T, options?: ParseOptions): Promise<O | T>;
+  parseOrDefaultAsync<T>(input: unknown, defaultValue: T, options?: ParseOptions): Promise<O | T>;
 }
 
 /**
@@ -225,9 +241,8 @@ export class Shape<I = any, O = I> {
 
     checks.push({ key, callback: cb, unsafe, param });
 
-    const shape = this._clone();
+    const shape = this._clone({ checks });
 
-    (shape as Mutable<this>).checks = checks;
     shape._applyChecks = createApplyChecksCallback(checks);
     shape._unsafe = shape._unsafe || unsafe;
 
@@ -382,18 +397,13 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Prevents an input and output from being undefined.
+   * Prevents an input and output from being `undefined`.
    *
    * @param options The constraint options or an issue message.
    * @returns The {@linkcode ExcludeShape} instance.
    */
   nonOptional(options?: TypeConstraintOptions | Message): OpaqueExclude<this, undefined> {
-    let shape: Shape = this;
-
-    while (shape instanceof ReplaceShape && shape.checks.length === 0 && shape.searchedValue === undefined) {
-      shape = shape.shape;
-    }
-    return new ExcludeShape(shape, undefined, options);
+    return new ExcludeShape(this, undefined, options);
   }
 
   /**
@@ -460,115 +470,100 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the shallow clone of this shape. Implement
+   * Returns the shallow clone of this shape.
+   *
+   * @param overrides The object which properties are assigned to a cloned instance.
+   * @returns The shape clone.
    */
-  protected _clone(): this {
-    return Object.assign(Object.create(getPrototypeOf(this)), this);
+  protected _clone(overrides?: object): this {
+    return Object.assign(Object.create(getPrototypeOf(this)), this, overrides);
   }
 }
 
-Object.defineProperty(Shape.prototype, 'input', {
-  get() {
-    throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
+Object.defineProperties(Shape.prototype, {
+  input: {
+    get() {
+      throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
+    },
   },
-});
 
-Object.defineProperty(Shape.prototype, 'output', {
-  get() {
-    throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
+  output: {
+    get() {
+      throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
+    },
   },
-});
 
-Object.defineProperty(Shape.prototype, 'async', {
-  get(this: Shape) {
-    const async = this._isAsync();
+  async: {
+    get(this: Shape) {
+      const async = this._isAsync();
+      const _applyAsync = Shape.prototype['_applyAsync'];
 
-    if (async) {
-      this._apply = () => {
-        throw new Error(ERROR_REQUIRES_ASYNC);
-      };
-    } else {
-      this._applyAsync = Shape.prototype['_applyAsync'];
-    }
-
-    Object.defineProperty(this, 'async', { value: async });
-
-    return async;
-  },
-});
-
-Object.defineProperty(Shape.prototype, 'try', {
-  get(this: Shape) {
-    void this.async;
-
-    const cb: Shape['try'] = (input, options) => {
-      const result = this._apply(input, options || defaultParseOptions);
-
-      if (result === null) {
-        return ok(input);
+      if (async) {
+        this._apply = () => {
+          throw new Error(ERROR_REQUIRES_ASYNC);
+        };
+      } else if (this._applyAsync !== _applyAsync) {
+        // Downgrade to sync implementation is the shape isn't async
+        this._applyAsync = _applyAsync;
       }
-      if (isArray(result)) {
-        return { ok: false, issues: result };
-      }
-      return ok(result.value);
-    };
 
-    Object.defineProperty(this, 'try', { value: cb });
+      Object.defineProperty(this, 'async', { value: async });
 
-    return cb;
+      return async;
+    },
   },
-});
 
-Object.defineProperty(Shape.prototype, 'tryAsync', {
-  get(this: Shape) {
-    void this.async;
+  try: {
+    get(this: Shape) {
+      void this.async;
 
-    const cb: Shape['tryAsync'] = (input, options) => {
-      return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      const cb: Shape['try'] = (input, options) => {
+        const result = this._apply(input, options || defaultParseOptions);
+
         if (result === null) {
           return ok(input);
         }
         if (isArray(result)) {
           return { ok: false, issues: result };
         }
-        return result;
-      });
-    };
+        return ok(result.value);
+      };
 
-    Object.defineProperty(this, 'tryAsync', { value: cb });
+      Object.defineProperty(this, 'try', { value: cb });
 
-    return cb;
+      return cb;
+    },
   },
-});
 
-Object.defineProperty(Shape.prototype, 'parse', {
-  get(this: Shape) {
-    void this.async;
+  tryAsync: {
+    get(this: Shape) {
+      void this.async;
 
-    const cb: Shape['parse'] = (input, options) => {
-      const result = this._apply(input, options || defaultParseOptions);
+      const cb: Shape['tryAsync'] = (input, options) => {
+        return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+          if (result === null) {
+            return ok(input);
+          }
+          if (isArray(result)) {
+            return { ok: false, issues: result };
+          }
+          return result;
+        });
+      };
 
-      if (result === null) {
-        return input;
-      }
-      if (isArray(result)) {
-        throw new ValidationError(result);
-      }
-      return result.value;
-    };
+      Object.defineProperty(this, 'tryAsync', { value: cb });
 
-    Object.defineProperty(this, 'parse', { value: cb });
-
-    return cb;
+      return cb;
+    },
   },
-});
 
-Object.defineProperty(Shape.prototype, 'parseAsync', {
-  get(this: Shape) {
-    void this.async;
+  parse: {
+    get(this: Shape) {
+      void this.async;
 
-    const cb: Shape['parseAsync'] = (input, options) => {
-      return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      const cb: Shape['parse'] = (input, options) => {
+        const result = this._apply(input, options || defaultParseOptions);
+
         if (result === null) {
           return input;
         }
@@ -576,43 +571,43 @@ Object.defineProperty(Shape.prototype, 'parseAsync', {
           throw new ValidationError(result);
         }
         return result.value;
-      });
-    };
+      };
 
-    Object.defineProperty(this, 'parseAsync', { value: cb });
+      Object.defineProperty(this, 'parse', { value: cb });
 
-    return cb;
+      return cb;
+    },
   },
-});
 
-Object.defineProperty(Shape.prototype, 'parseOrDefault', {
-  get(this: Shape) {
-    void this.async;
+  parseAsync: {
+    get(this: Shape) {
+      void this.async;
 
-    const cb: Shape['parseOrDefault'] = (input, defaultValue, options) => {
-      const result = this._apply(input, options || defaultParseOptions);
+      const cb: Shape['parseAsync'] = (input, options) => {
+        return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+          if (result === null) {
+            return input;
+          }
+          if (isArray(result)) {
+            throw new ValidationError(result);
+          }
+          return result.value;
+        });
+      };
 
-      if (result === null) {
-        return input;
-      }
-      if (isArray(result)) {
-        return defaultValue;
-      }
-      return result.value;
-    };
+      Object.defineProperty(this, 'parseAsync', { value: cb });
 
-    Object.defineProperty(this, 'parseOrDefault', { value: cb });
-
-    return cb;
+      return cb;
+    },
   },
-});
 
-Object.defineProperty(Shape.prototype, 'parseOrDefaultAsync', {
-  get(this: Shape) {
-    void this.async;
+  parseOrDefault: {
+    get(this: Shape) {
+      void this.async;
 
-    const cb: Shape['parseOrDefaultAsync'] = (input, defaultValue, options) => {
-      return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: any, options?: ParseOptions) => {
+        const result = this._apply(input, options || defaultParseOptions);
+
         if (result === null) {
           return input;
         }
@@ -620,12 +615,34 @@ Object.defineProperty(Shape.prototype, 'parseOrDefaultAsync', {
           return defaultValue;
         }
         return result.value;
-      });
-    };
+      };
 
-    Object.defineProperty(this, 'parseOrDefaultAsync', { value: cb });
+      Object.defineProperty(this, 'parseOrDefault', { value: cb });
 
-    return cb;
+      return cb;
+    },
+  },
+
+  parseOrDefaultAsync: {
+    get(this: Shape) {
+      void this.async;
+
+      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: any, options?: ParseOptions) => {
+        return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
+          if (result === null) {
+            return input;
+          }
+          if (isArray(result)) {
+            return defaultValue;
+          }
+          return result.value;
+        });
+      };
+
+      Object.defineProperty(this, 'parseOrDefaultAsync', { value: cb });
+
+      return cb;
+    },
   },
 });
 
@@ -879,11 +896,16 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
   private _resultPromise: Promise<ApplyResult<B>>;
 
   /**
+   * The replacement value.
+   */
+  readonly value: B;
+
+  /**
    * Creates the new {@linkcode ReplaceShape} instance.
    *
    * @param shape The shape that parses the input without the replaced value.
    * @param searchedValue The input that should be replaced.
-   * @param value The replacement value. If `undefined` then the replaced value is returned as is without any parsing.
+   * @param value The replacement value. If `undefined` then the replaced value is returned as is without being parsed.
    * @template S The shape that parses the input without the replaced value.
    * @template A The searched value.
    * @template B The replacement value.
@@ -897,14 +919,13 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
      * The replaced value.
      */
     readonly searchedValue: A,
-    /**
-     * The replacement value.
-     */
-    readonly value?: B
+    value: B = searchedValue as unknown as B
   ) {
     super();
 
-    const result = value === undefined || isEqual(value, searchedValue) ? null : ok(value);
+    const result = isEqual(value, searchedValue) ? null : ok(value);
+
+    this.value = value;
 
     this._result = result;
     this._resultPromise = Promise.resolve(result);
