@@ -1,4 +1,5 @@
 import {
+  Any,
   ApplyChecksCallback,
   ApplyResult,
   Check,
@@ -340,6 +341,19 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Replaces searched input value with an output value.
+   *
+   * @param searchedValue The replaced value.
+   * @param value The replacement value.
+   * @returns The {@linkcode ReplaceShape} instance.
+   * @template A The searched value.
+   * @template B The replacement value.
+   */
+  replace<A extends Any, B extends Any>(searchedValue: A, value: B): OpaqueReplace<this, A, B> {
+    return new ReplaceShape(this, searchedValue, value);
+  }
+
+  /**
    * Replaces `undefined` input value with an `undefined` output value.
    *
    * @returns The {@linkcode ReplaceShape} instance.
@@ -355,7 +369,7 @@ export class Shape<I = any, O = I> {
   optional<T>(defaultValue: T): OpaqueReplace<this, undefined, T>;
 
   optional(defaultValue?: any) {
-    return new ReplaceShape(this, undefined, defaultValue);
+    return this.replace(undefined, defaultValue);
   }
 
   /**
@@ -374,7 +388,7 @@ export class Shape<I = any, O = I> {
   nullable<T>(defaultValue: T): OpaqueReplace<this, null, T>;
 
   nullable(defaultValue?: any) {
-    return new ReplaceShape(this, null, defaultValue);
+    return this.replace(null, defaultValue);
   }
 
   /**
@@ -392,8 +406,20 @@ export class Shape<I = any, O = I> {
    */
   nullish<T>(defaultValue?: T): OpaqueReplace<this, null | undefined, T>;
 
-  nullish(defaultValue?: unknown) {
+  nullish(defaultValue?: any) {
     return this.nullable(defaultValue).optional(defaultValue);
+  }
+
+  /**
+   * Excludes value from both input and output.
+   *
+   * @param excludedValue The excluded value.
+   * @param options The constraint options or an issue message.
+   * @returns The {@linkcode ExcludeShape} instance.
+   * @template T The excluded value.
+   */
+  exclude<T extends Any>(excludedValue: T, options?: TypeConstraintOptions | Message): OpaqueExclude<this, T> {
+    return new ExcludeShape(this, excludedValue, options);
   }
 
   /**
@@ -403,7 +429,27 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ExcludeShape} instance.
    */
   nonOptional(options?: TypeConstraintOptions | Message): OpaqueExclude<this, undefined> {
-    return new ExcludeShape(this, undefined, options);
+    return this.exclude(undefined, options);
+  }
+
+  /**
+   * Prevents an input and output from being `null`.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The {@linkcode ExcludeShape} instance.
+   */
+  nonNullable(options?: TypeConstraintOptions | Message): OpaqueExclude<this, null> {
+    return this.exclude(null, options);
+  }
+
+  /**
+   * Prevents an input and output from being `undefined` or `null`.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The {@linkcode ExcludeShape} instance.
+   */
+  nonNullish(options?: TypeConstraintOptions | Message): OpaqueExclude<this, null> {
+    return this.nonNullable(options).nonOptional(options);
   }
 
   /**
@@ -885,20 +931,15 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
 }
 
 /**
- * The shape that replaces an input value with another value.
+ * The shape that replaces a searched input value with another value.
  *
  * @template S The shape that parses the input without the replaced value.
  * @template A The replaced value.
  * @template B The replacement value.
  */
-export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input'] | A, Exclude<S['output'], A> | B> {
+export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A, Exclude<S['output'], A> | B> {
   private _result: ApplyResult<B>;
   private _resultPromise: Promise<ApplyResult<B>>;
-
-  /**
-   * The replacement value.
-   */
-  readonly value: B;
 
   /**
    * Creates the new {@linkcode ReplaceShape} instance.
@@ -919,7 +960,10 @@ export class ReplaceShape<S extends AnyShape, A, B = A> extends Shape<S['input']
      * The replaced value.
      */
     readonly searchedValue: A,
-    value: B = searchedValue as unknown as B
+    /**
+     * The replacement value.
+     */
+    readonly value: B
   ) {
     super();
 

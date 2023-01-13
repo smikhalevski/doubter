@@ -1,4 +1,4 @@
-import { ReplaceShape, Shape, ValueType } from './Shape';
+import { Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
 import {
@@ -155,7 +155,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
    */
   nan(defaultValue = NaN): Shape<number> {
-    return new ReplaceShape(this, NaN, defaultValue);
+    return this.replace(NaN, defaultValue);
   }
 
   /**
