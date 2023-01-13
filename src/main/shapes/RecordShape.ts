@@ -60,7 +60,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return typeof key === 'string' || typeof key === 'number' ? this.valueShape : null;
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return (this.keyShape !== null && this.keyShape.async) || this.valueShape.async;
   }
 

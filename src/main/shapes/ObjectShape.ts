@@ -322,7 +322,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return shape;
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return (this.restShape !== null && this.restShape.async) || isAsyncShapes(Object.values(this.shapes));
   }
 

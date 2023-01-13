@@ -66,7 +66,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     return cb;
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return isAsyncShapes(this.shapes);
   }
 

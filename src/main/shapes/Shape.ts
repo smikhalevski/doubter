@@ -22,6 +22,7 @@ import {
   isArray,
   isEqual,
   ok,
+  returnTrue,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -45,8 +46,8 @@ export type AnyShape = Shape | Shape<never>;
  * A shape that replaces a value from an input with an output value.
  *
  * @template S The base shape.
- * @template A The searched value.
- * @template B The value that is used as a replacement.
+ * @template A The input value to replace.
+ * @template B The output value.
  */
 export type OpaqueReplace<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
 
@@ -343,14 +344,14 @@ export class Shape<I = any, O = I> {
   /**
    * Replaces searched input value with an output value.
    *
-   * @param searchedValue The replaced value.
-   * @param value The replacement value.
+   * @param inputValue The input value to replace.
+   * @param outputValue The output value that is returned if an `inputValue` is received.
    * @returns The {@linkcode ReplaceShape} instance.
-   * @template A The searched value.
-   * @template B The replacement value.
+   * @template A The input value to replace.
+   * @template B The output value.
    */
-  replace<A extends Any, B extends Any>(searchedValue: A, value: B): OpaqueReplace<this, A, B> {
-    return new ReplaceShape(this, searchedValue, value);
+  replace<A extends Any, B extends Any>(inputValue: A, outputValue: B): OpaqueReplace<this, A, B> {
+    return new ReplaceShape(this, inputValue, outputValue);
   }
 
   /**
@@ -466,7 +467,7 @@ export class Shape<I = any, O = I> {
    * Must return `true` is shape must be used in async context only, otherwise shape can be used in both sync and async
    * contexts. Override this method to implement a custom shape.
    */
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return false;
   }
 
@@ -541,7 +542,7 @@ Object.defineProperties(Shape.prototype, {
 
   async: {
     get(this: Shape) {
-      const async = this._isAsync();
+      const async = this._requiresAsync();
       const _applyAsync = Shape.prototype['_applyAsync'];
 
       if (async) {
@@ -698,15 +699,12 @@ Object.defineProperties(Shape.prototype, {
  * @template O The transformed value.
  */
 export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> {
-  protected _requiresAsync;
-
   /**
    * Creates the new {@linkcode TransformShape} instance.
    *
    * @param shape The base shape.
-   * @param requiresAsync If `true` then the transformed shape would await for the callback to finish and use the
-   * resolved value as an output. Otherwise, the value that is synchronously returned from the transformer is used as an
-   * output.
+   * @param async If `true` then the transformed shape would await for the callback to finish and use the resolved value
+   * as an output. Otherwise, the value that is synchronously returned from the transformer is used as an output.
    * @param callback The callback that transforms the shape output value.
    * @template S The base shape.
    * @template O The transformed value.
@@ -716,7 +714,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
      * The base shape which output value is transformed.
      */
     readonly shape: S,
-    requiresAsync: boolean,
+    async: boolean,
     /**
      * The callback that transforms the shape output value.
      *
@@ -729,11 +727,13 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   ) {
     super();
 
-    this._requiresAsync = requiresAsync;
+    if (async) {
+      this._requiresAsync = returnTrue;
+    }
   }
 
-  protected _isAsync(): boolean {
-    return this.shape.async || this._requiresAsync;
+  protected _requiresAsync(): boolean {
+    return this.shape.async;
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -841,7 +841,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
     super();
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return this.inputShape.async || this.outputShape.async;
   }
 
@@ -933,22 +933,21 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
  * The shape that replaces a searched input value with another value.
  *
  * @template S The shape that parses the input without the replaced value.
- * @template A The replaced value.
- * @template B The replacement value.
+ * @template A The input value to replace.
+ * @template B The output value.
  */
 export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A, Exclude<S['output'], A> | B> {
   private _result: ApplyResult<B>;
-  private _resultPromise: Promise<ApplyResult<B>>;
 
   /**
    * Creates the new {@linkcode ReplaceShape} instance.
    *
    * @param shape The shape that parses the input without the replaced value.
-   * @param searchedValue The input that should be replaced.
-   * @param value The replacement value. If `undefined` then the replaced value is returned as is without being parsed.
+   * @param inputValue The input value to replace.
+   * @param outputValue The output value that is returned if an `inputValue` is received.
    * @template S The shape that parses the input without the replaced value.
-   * @template A The searched value.
-   * @template B The replacement value.
+   * @template A The input value to replace.
+   * @template B The output value.
    */
   constructor(
     /**
@@ -956,34 +955,29 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
      */
     readonly shape: S,
     /**
-     * The replaced value.
+     * The input value to replace.
      */
-    readonly searchedValue: A,
+    readonly inputValue: A,
     /**
-     * The replacement value.
+     * The output value that is returned if an {@linkcode inputValue} is received.
      */
-    readonly value: B
+    readonly outputValue: B
   ) {
     super();
 
-    const result = isEqual(value, searchedValue) ? null : ok(value);
-
-    this.value = value;
-
-    this._result = result;
-    this._resultPromise = Promise.resolve(result);
+    this._result = isEqual(inputValue, outputValue) ? null : ok(outputValue);
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return this.shape.async;
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']().concat(getValueType(this.searchedValue));
+    return this.shape['_getInputTypes']().concat(getValueType(this.inputValue));
   }
 
   protected _getInputValues(): unknown[] {
-    return this.shape['_getInputValues']().concat(this.searchedValue);
+    return this.shape['_getInputValues']().concat(this.inputValue);
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
@@ -992,7 +986,7 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
     let issues;
     let output = input;
 
-    const result = isEqual(input, this.searchedValue) ? this._result : this.shape['_apply'](input, options);
+    const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1016,16 +1010,16 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
 
     let issues;
 
-    if (isEqual(input, this.searchedValue)) {
+    if (isEqual(input, this.inputValue)) {
       if (_applyChecks !== null) {
         return new Promise(resolve => {
-          issues = _applyChecks(this.value, null, options);
+          issues = _applyChecks(this.outputValue, null, options);
 
           resolve(issues !== null ? issues : this._result);
         });
       }
 
-      return this._resultPromise;
+      return Promise.resolve(this._result);
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
@@ -1085,7 +1079,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     this._issueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return this.shape.async;
   }
 
@@ -1170,7 +1164,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
  * @template S The shape that parses the input.
  */
 export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
-  protected _resultProvider: () => Ok<S['output']>;
+  private _resultProvider: () => Ok<S['output']>;
 
   /**
    * Creates the new {@linkcode CatchShape} instance.
@@ -1199,7 +1193,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     }
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return this.shape.async;
   }
 

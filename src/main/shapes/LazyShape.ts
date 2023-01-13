@@ -1,6 +1,6 @@
 import { AnyShape, Shape, ValueType } from './Shape';
 import { ApplyResult, ParseOptions } from '../shared-types';
-import { isArray } from '../utils';
+import { isArray, returnArray, returnFalse } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 
 /**
@@ -28,15 +28,15 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     this._shapeProvider = shapeProvider;
   }
 
-  protected _isAsync(): boolean {
-    const { _isAsync } = this;
+  protected _requiresAsync(): boolean {
+    const { _requiresAsync } = this;
 
-    this._isAsync = returnFalse;
+    this._requiresAsync = returnFalse;
 
     try {
       return this.shape.async;
     } finally {
-      this._isAsync = _isAsync;
+      this._requiresAsync = _requiresAsync;
     }
   }
 
@@ -128,11 +128,3 @@ Object.defineProperty(LazyShape.prototype, 'shape', {
     return shape;
   },
 });
-
-function returnFalse(): boolean {
-  return false;
-}
-
-function returnArray(): [] {
-  return [];
-}

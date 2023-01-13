@@ -402,3 +402,15 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
   }
   return uniqueArr || arr;
 }
+
+export function returnFalse(): boolean {
+  return false;
+}
+
+export function returnTrue(): boolean {
+  return true;
+}
+
+export function returnArray(): [] {
+  return [];
+}

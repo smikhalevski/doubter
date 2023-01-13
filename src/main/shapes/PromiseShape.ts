@@ -25,7 +25,7 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
     this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return true;
   }
 
