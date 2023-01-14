@@ -9,11 +9,6 @@ import { ERROR_SHAPE_EXPECTED } from '../constants';
  * @template S The base shape.
  */
 export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
-  /**
-   * The base shape.
-   */
-  declare readonly shape: S;
-
   protected _shapeProvider;
 
   /**
@@ -26,6 +21,21 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     super();
 
     this._shapeProvider = shapeProvider;
+  }
+
+  /**
+   * The base shape.
+   */
+  get shape(): S {
+    const shape = this._shapeProvider();
+
+    if (!(shape instanceof Shape)) {
+      throw new Error(ERROR_SHAPE_EXPECTED);
+    }
+
+    Object.defineProperty(this, 'shape', { value: shape });
+
+    return shape;
   }
 
   protected _requiresAsync(): boolean {
@@ -114,17 +124,3 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     });
   }
 }
-
-Object.defineProperty(LazyShape.prototype, 'shape', {
-  get(this: LazyShape<AnyShape>) {
-    const shape = this._shapeProvider();
-
-    if (!(shape instanceof Shape)) {
-      throw new Error(ERROR_SHAPE_EXPECTED);
-    }
-
-    Object.defineProperty(this, 'shape', { value: shape });
-
-    return shape;
-  },
-});

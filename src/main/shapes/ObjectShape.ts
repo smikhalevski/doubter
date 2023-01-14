@@ -17,7 +17,7 @@ import {
   setKeyValue,
   unshiftPath,
 } from '../utils';
-import { AnyShape, OpaqueExclude, OpaqueReplace, Shape, ValueType } from './Shape';
+import { AnyShape, OpaqueExcludeShape, OpaqueReplaceShape, Shape, ValueType } from './Shape';
 import { EnumShape } from './EnumShape';
 
 // prettier-ignore
@@ -38,9 +38,9 @@ export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> 
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueReplace<P[K], undefined> };
+export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueReplaceShape<P[K], undefined> };
 
-export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueExclude<P[K], undefined> };
+export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueExcludeShape<P[K], undefined> };
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 

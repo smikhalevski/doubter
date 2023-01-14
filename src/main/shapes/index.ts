@@ -16,8 +16,8 @@ export { RecordShape } from './RecordShape';
 export {
   AnyShape,
   ExcludeShape,
-  OpaqueExclude,
-  OpaqueReplace,
+  OpaqueExcludeShape,
+  OpaqueReplaceShape,
   RedirectShape,
   ReplaceShape,
   Shape,
