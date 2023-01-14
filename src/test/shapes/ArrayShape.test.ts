@@ -255,6 +255,7 @@ describe('ArrayShape', () => {
     expect(arrShape.at(2)).toBe(null);
 
     expect(arrShape.at('000')).toBe(null);
+    expect(arrShape.at('1e+49')).toBe(null);
     expect(arrShape.at(-111)).toBe(null);
     expect(arrShape.at(111.222)).toBe(null);
     expect(arrShape.at('aaa')).toBe(null);
