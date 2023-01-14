@@ -114,21 +114,21 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<Set<S['output']>> {
-    const { shape, _applyChecks, _unsafe } = this;
-
-    let values: Array<unknown>;
+    let values: unknown[];
     let issues: Issue[] | null = null;
     let changed = false;
 
-    if (!(input instanceof Set)) {
+    if (input instanceof Set) {
+      values = Array.from(input);
+    } else {
       if (!(options.coerced || this._coerced)) {
         return this._issueFactory(input, options);
       }
+      changed = true;
       values = isArray(input) ? input : [input];
-    } else {
-      values = Array.from(input);
     }
 
+    const { shape, _applyChecks, _unsafe } = this;
     const valuesLength = values.length;
 
     for (let i = 0; i < valuesLength; ++i) {
@@ -163,19 +163,19 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Set<S['output']>>> {
     return new Promise(resolve => {
-      const { shape, _applyChecks, _unsafe } = this;
+      let values: unknown[];
 
-      let values: Array<unknown>;
-
-      if (!(input instanceof Set)) {
+      if (input instanceof Set) {
+        values = Array.from(input);
+      } else {
         if (!(options.coerced || this._coerced)) {
-          return this._issueFactory(input, options);
+          resolve(this._issueFactory(input, options));
+          return;
         }
         values = isArray(input) ? input : [input];
-      } else {
-        values = Array.from(input);
       }
 
+      const { shape, _applyChecks, _unsafe } = this;
       const valuesLength = values.length;
       const promises: Promise<ApplyResult>[] = [];
 

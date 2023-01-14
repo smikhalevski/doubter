@@ -34,10 +34,10 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   /**
    * Creates a new {@linkcode RecordShape} instance.
    *
-   * @param keyShape The key shape.
+   * @param keyShape The key shape, or `null` if keys should be preserved intact.
    * @param valueShape The value shape.
    * @param options The type constraint options or an issue message.
-   * @template K The key shape or `null` if keys should be preserved intact.
+   * @template K The key shape.
    * @template V The value shape.
    */
   constructor(

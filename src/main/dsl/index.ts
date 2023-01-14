@@ -8,6 +8,7 @@ export * from './enum';
 export * from './instanceOf';
 export * from './intersection';
 export * from './lazy';
+export * from './map';
 export * from './nan';
 export * from './integer';
 export * from './never';
