@@ -62,6 +62,21 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   return async;
 }
 
+const indexRegex = /^(?:0|[1-9]\d*)$/;
+
+/**
+ * Returns an array index, or -1 if key isn't an index.
+ */
+export function toArrayIndex(key: unknown): number {
+  if (typeof key === 'number') {
+    return Number.isInteger(key) && key >= 0 ? key : -1;
+  }
+  if (typeof key === 'string' && indexRegex.test(key)) {
+    return +key;
+  }
+  return -1;
+}
+
 /**
  * The convenient shortcut to add built-in checks to shapes.
  */

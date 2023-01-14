@@ -16,6 +16,7 @@ export * from './number';
 export * from './object';
 export * from './promise';
 export * from './record';
+export * from './set';
 export * from './string';
 export * from './symbol';
 export * from './transform';

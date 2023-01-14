@@ -8,6 +8,7 @@ import {
   isAsyncShapes,
   isEqual,
   ok,
+  toArrayIndex,
   unshiftPath,
 } from '../utils';
 import {
@@ -22,8 +23,6 @@ import {
   TYPE_ARRAY,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
-
-const integerRegex = /^(?:0|[1-9]\d*)$/;
 
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> = ToArray<{
   [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never;
@@ -94,10 +93,9 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   at(key: unknown): AnyShape | null {
     const { shapes } = this;
 
-    const index =
-      typeof key === 'number' ? key : typeof key !== 'string' ? -1 : integerRegex.test(key) ? parseInt(key, 10) : -1;
+    const index = toArrayIndex(key);
 
-    if (index % 1 !== 0 || index < 0) {
+    if (index === -1) {
       return null;
     }
     if (shapes !== null && index < shapes.length) {

@@ -13,6 +13,7 @@ export { NumberShape } from './NumberShape';
 export { ObjectShape, KeysMode } from './ObjectShape';
 export { PromiseShape } from './PromiseShape';
 export { RecordShape } from './RecordShape';
+export { SetShape } from './SetShape';
 export {
   AnyShape,
   ExcludeShape,
