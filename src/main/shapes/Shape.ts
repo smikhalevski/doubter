@@ -21,6 +21,7 @@ import {
   getValueType,
   isArray,
   isEqual,
+  isUnsafeCheck,
   ok,
   returnTrue,
 } from '../utils';
@@ -93,6 +94,11 @@ export interface Shape<I, O> {
    * `false` if the shape can be used in both sync and async contexts.
    */
   readonly async: boolean;
+
+  /**
+   * The list of checks applied to the shape output.
+   */
+  readonly checks: readonly Check[];
 
   /**
    * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
@@ -181,14 +187,11 @@ export interface Shape<I, O> {
  */
 export class Shape<I = any, O = I> {
   /**
-   * The list of checks applied to the shape output.
-   */
-  readonly checks: readonly Check[] = [];
-
-  /**
    * The human-readable shape description.
    */
   description = '';
+
+  protected _checks: readonly Check[] = [];
 
   /**
    * Applies checks to the output.
@@ -239,14 +242,25 @@ export class Shape<I = any, O = I> {
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
     const { key = cb, unsafe = false, param } = options;
 
-    const checks = this.checks.filter(check => check.key !== key);
+    const checks = this._checks.filter(check => check.key !== key);
 
     checks.push({ key, callback: cb, unsafe, param });
 
-    const shape = this._clone({ checks });
+    return this.replaceChecks(checks);
+  }
 
+  /**
+   * Returns a shape clone with all checks replaced with a new set of checks.
+   *
+   * @param checks The checks that the shape clone should use.
+   * @returns The clone of this shape with a new set of checks.
+   */
+  replaceChecks(checks: readonly Check[]): this {
+    const shape = this._clone();
+
+    shape._checks = Object.freeze(checks.slice(0));
     shape._applyChecks = createApplyChecksCallback(checks);
-    shape._unsafe = shape._unsafe || unsafe;
+    shape._unsafe = checks.some(isUnsafeCheck);
 
     return shape;
   }
@@ -355,6 +369,18 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Excludes value from both input and output.
+   *
+   * @param excludedValue The excluded value.
+   * @param options The constraint options or an issue message.
+   * @returns The {@linkcode ExcludeShape} instance.
+   * @template T The excluded value.
+   */
+  exclude<T extends Any>(excludedValue: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
+    return new ExcludeShape(this, excludedValue, options);
+  }
+
+  /**
    * Replaces `undefined` input value with an `undefined` output value.
    *
    * @returns The {@linkcode ReplaceShape} instance.
@@ -409,18 +435,6 @@ export class Shape<I = any, O = I> {
 
   nullish(defaultValue?: any) {
     return this.nullable(arguments.length === 0 ? null : defaultValue).optional(defaultValue);
-  }
-
-  /**
-   * Excludes value from both input and output.
-   *
-   * @param excludedValue The excluded value.
-   * @param options The constraint options or an issue message.
-   * @returns The {@linkcode ExcludeShape} instance.
-   * @template T The excluded value.
-   */
-  exclude<T extends Any>(excludedValue: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
-    return new ExcludeShape(this, excludedValue, options);
   }
 
   /**
@@ -498,12 +512,9 @@ export class Shape<I = any, O = I> {
 
   /**
    * Returns the shallow clone of this shape.
-   *
-   * @param overrides The object which properties are assigned to the cloned shape.
-   * @returns The shape clone.
    */
-  protected _clone(overrides?: object): this {
-    return Object.assign(Object.create(getPrototypeOf(this)), this, overrides);
+  protected _clone(): this {
+    return Object.assign(Object.create(getPrototypeOf(this)), this);
   }
 }
 
@@ -521,7 +532,7 @@ Object.defineProperties(Shape.prototype, {
   },
 
   async: {
-    get(this: Shape): boolean {
+    get(this: Shape) {
       const async = this._requiresAsync();
       const _applyAsync = Shape.prototype['_applyAsync'];
 
@@ -539,8 +550,14 @@ Object.defineProperties(Shape.prototype, {
     },
   },
 
+  checks: {
+    get(this: Shape) {
+      return this._checks;
+    },
+  },
+
   try: {
-    get(this: Shape): Shape['try'] {
+    get(this: Shape) {
       void this.async;
 
       const cb: Shape['try'] = (input, options) => {
@@ -562,7 +579,7 @@ Object.defineProperties(Shape.prototype, {
   },
 
   tryAsync: {
-    get(this: Shape): Shape['tryAsync'] {
+    get(this: Shape) {
       void this.async;
 
       const cb: Shape['tryAsync'] = (input, options) => {
@@ -584,7 +601,7 @@ Object.defineProperties(Shape.prototype, {
   },
 
   parse: {
-    get(this: Shape): Shape['parse'] {
+    get(this: Shape) {
       void this.async;
 
       const cb: Shape['parse'] = (input, options) => {
@@ -606,7 +623,7 @@ Object.defineProperties(Shape.prototype, {
   },
 
   parseAsync: {
-    get(this: Shape): Shape['parseAsync'] {
+    get(this: Shape) {
       void this.async;
 
       const cb: Shape['parseAsync'] = (input, options) => {
@@ -628,7 +645,7 @@ Object.defineProperties(Shape.prototype, {
   },
 
   parseOrDefault: {
-    get(this: Shape): Shape['parseOrDefault'] {
+    get(this: Shape) {
       void this.async;
 
       const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
@@ -650,7 +667,7 @@ Object.defineProperties(Shape.prototype, {
   },
 
   parseOrDefaultAsync: {
-    get(this: Shape): Shape['parseOrDefaultAsync'] {
+    get(this: Shape) {
       void this.async;
 
       const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
@@ -683,8 +700,8 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
    * Creates the new {@linkcode TransformShape} instance.
    *
    * @param shape The base shape.
-   * @param async If `true` then the transformed shape would await for the callback to finish and use the resolved value
-   * as an output. Otherwise, the value that is synchronously returned from the transformer is used as an output.
+   * @param async If `true` then the transformed shape would wait for the promise returned from the callback to be
+   * fulfilled. Otherwise, the value that is synchronously returned from the callback is used as an output.
    * @param callback The callback that transforms the shape output value.
    * @template S The base shape.
    * @template O The transformed value.
