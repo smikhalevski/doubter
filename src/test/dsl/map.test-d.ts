@@ -1,10 +1,10 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
 
-expectType<Record<string, number>>(d.record(d.number()).output);
+expectType<Map<string, number>>(d.map(d.string(), d.number()).output);
 
-expectType<{ bbb: number }>(
-  d.record(
+expectType<Map<'bbb', number>>(
+  d.map(
     d.string().transform((): 'bbb' => 'bbb'),
     d.number()
   ).output

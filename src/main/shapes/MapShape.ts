@@ -58,22 +58,16 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Map<K['output'], V['output']>> {
-    let entries: [unknown, unknown][];
     let changed = false;
+    let entries: [unknown, unknown][] | null;
 
     if (input instanceof Map) {
       entries = Array.from(input);
     } else {
-      if (!(options.coerced || this._coerced)) {
-        return this._issueFactory(input, options);
-      }
-      if (isObjectLike(input)) {
-        changed = true;
-        entries = Object.entries(input);
-      } else if (isArray(input) && input.every(isMapEntry)) {
-        changed = true;
-        entries = input;
-      } else {
+      changed = options.coerced || this._coerced;
+      entries = changed ? this._coerceEntries(input) : null;
+
+      if (entries === null) {
         return this._issueFactory(input, options);
       }
     }
@@ -120,6 +114,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
       }
 
       if ((_unsafe || issues === null) && (!isEqual(key, outputKey) || !isEqual(value, outputValue))) {
+        changed = true;
         entries[i] = [outputKey, outputValue];
       }
     }
@@ -137,23 +132,18 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Map<K['output'], V['output']>>> {
     return new Promise(resolve => {
-      let entries: [unknown, unknown][];
       let changed = false;
+      let entries: [unknown, unknown][] | null;
 
       if (input instanceof Map) {
         entries = Array.from(input);
       } else {
-        if (!(options.coerced || this._coerced)) {
-          return this._issueFactory(input, options);
-        }
-        if (isObjectLike(input)) {
-          changed = true;
-          entries = Object.entries(input);
-        } else if (isArray(input) && input.every(isMapEntry)) {
-          changed = true;
-          entries = input;
-        } else {
-          return this._issueFactory(input, options);
+        changed = options.coerced || this._coerced;
+        entries = changed ? this._coerceEntries(input) : null;
+
+        if (entries === null) {
+          resolve(this._issueFactory(input, options));
+          return;
         }
       }
 
@@ -172,7 +162,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
           let issues: Issue[] | null = null;
 
           for (let i = 0; i < entriesLength; ++i) {
-            const [key, value] = entries[i];
+            const [key, value] = entries![i];
 
             let outputKey = key;
             let outputValue = value;
@@ -207,7 +197,8 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
             }
 
             if ((_unsafe || issues === null) && (!isEqual(key, outputKey) || !isEqual(value, outputValue))) {
-              entries[i] = [outputKey, outputValue];
+              changed = true;
+              entries![i] = [outputKey, outputValue];
             }
           }
 
@@ -224,8 +215,21 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
       );
     });
   }
+
+  /**
+   * Coerces input to a list of `Map` entries, or returns `null` if input cannot be coerced.
+   */
+  protected _coerceEntries(input: unknown): [unknown, unknown][] | null {
+    if (isArray(input)) {
+      return input.every(isEntry) ? input : null;
+    }
+    if (isObjectLike(input)) {
+      return Object.entries(input);
+    }
+    return null;
+  }
 }
 
-function isMapEntry(value: unknown): boolean {
+function isEntry(value: unknown): boolean {
   return isArray(value) && value.length === 2;
 }
