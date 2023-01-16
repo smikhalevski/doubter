@@ -217,7 +217,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
-      return ok(output as InferArray<U, R, 'output'>);
+      return ok(output);
     }
     return issues;
   }
@@ -282,7 +282,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
             issues = _applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
-            return ok(output as InferArray<U, R, 'output'>);
+            return ok(output);
           }
           return issues;
         })
@@ -291,7 +291,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   /**
-   * Coerces an input value to an array, or returns input as is.
+   * Coerces an input value to an array, or returns an input as is.
    *
    * @param input An input value to coerce.
    */
@@ -302,7 +302,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     if (
       input !== null &&
       typeof input === 'object' &&
-      (input instanceof Set || input instanceof Map || Symbol.iterator in input || typeof input.length === 'number')
+      (typeof input[Symbol.iterator] === 'function' || typeof input.length === 'number')
     ) {
       return Array.from(input);
     }
