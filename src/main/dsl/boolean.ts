@@ -9,3 +9,5 @@ import { Message, TypeConstraintOptions } from '../shared-types';
 export function boolean(options?: TypeConstraintOptions | Message): BooleanShape {
   return new BooleanShape(options);
 }
+
+export { boolean as bool };

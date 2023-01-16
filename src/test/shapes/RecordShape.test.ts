@@ -64,7 +64,7 @@ describe('RecordShape', () => {
     const result: any = objShape.try(obj);
 
     expect(result).toEqual({ ok: true, value: { KEY1: 'aaa', KEY2: 'bbb' } });
-    expect(result.validate).not.toBe(obj);
+    expect(result.value).not.toBe(obj);
   });
 
   test('transforms values', () => {
@@ -78,7 +78,7 @@ describe('RecordShape', () => {
     const result: any = objShape.try(obj);
 
     expect(result).toEqual({ ok: true, value: { key1: 'AAA', key2: 'BBB' } });
-    expect(result.validate).not.toBe(obj);
+    expect(result.value).not.toBe(obj);
   });
 
   test('applies checks', () => {
@@ -164,7 +164,7 @@ describe('RecordShape', () => {
       const result: any = await objShape.tryAsync(obj);
 
       expect(result).toEqual({ ok: true, value: { KEY1: 'aaa', KEY2: 'bbb' } });
-      expect(result.validate).not.toBe(obj);
+      expect(result.value).not.toBe(obj);
     });
 
     test('transforms values', async () => {
@@ -178,7 +178,7 @@ describe('RecordShape', () => {
       const result: any = await objShape.tryAsync(obj);
 
       expect(result).toEqual({ ok: true, value: { key1: 'AAA', key2: 'BBB' } });
-      expect(result.validate).not.toBe(obj);
+      expect(result.value).not.toBe(obj);
     });
 
     test('applies checks', async () => {

@@ -15,13 +15,15 @@ import {
 import {
   appendCheck,
   captureIssues,
+  clone,
   createApplyChecksCallback,
   createIssueFactory,
-  getPrototypeOf,
   getValueType,
   isArray,
   isEqual,
+  isUnsafeCheck,
   ok,
+  returnTrue,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -42,13 +44,13 @@ const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerce
 export type AnyShape = Shape | Shape<never>;
 
 /**
- * A shape that replaces a value from an input with an output value.
+ * A shape that replaces an input value with an output value.
  *
  * @template S The base shape.
- * @template A The searched value.
- * @template B The value that is used as a replacement.
+ * @template A The input value to replace.
+ * @template B The output value.
  */
-export type OpaqueReplace<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
+export type OpaqueReplaceShape<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
 
 /**
  * Excludes a value from both input and output.
@@ -56,7 +58,7 @@ export type OpaqueReplace<S extends AnyShape, A, B = A> = Shape<S['input'] | A, 
  * @template S The base shape.
  * @template T The excluded value.
  */
-export type OpaqueExclude<S extends AnyShape, T> = Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>;
+export type OpaqueExcludeShape<S extends AnyShape, T> = Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>;
 
 /**
  * The detected runtime input value type.
@@ -77,6 +79,27 @@ export type ValueType =
   | 'never';
 
 export interface Shape<I, O> {
+  /**
+   * The shape input type. Accessible only at compile time for type inference.
+   */
+  readonly input: I;
+
+  /**
+   * The shape output type. Accessible only at compile time for type inference.
+   */
+  readonly output: O;
+
+  /**
+   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
+   * `false` if the shape can be used in both sync and async contexts.
+   */
+  readonly async: boolean;
+
+  /**
+   * The list of checks applied to the shape output.
+   */
+  readonly checks: readonly Check[];
+
   /**
    * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
    *
@@ -157,37 +180,21 @@ export interface Shape<I, O> {
 }
 
 /**
- * The base shape.
+ * The baseline shape implementation.
  *
  * @template I The input value.
  * @template O The output value.
  */
 export class Shape<I = any, O = I> {
   /**
-   * The shape input type. Accessible only at compile time for type inference.
-   */
-  declare readonly input: I;
-
-  /**
-   * The shape output type. Accessible only at compile time for type inference.
-   */
-  declare readonly output: O;
-
-  /**
-   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
-   * `false` if the shape can be used in both sync and async contexts.
-   */
-  declare readonly async: boolean;
-
-  /**
-   * The list of checks applied to the shape output.
-   */
-  readonly checks: readonly Check[] = [];
-
-  /**
    * The human-readable shape description.
    */
   description = '';
+
+  /**
+   * Backing property for {@linkcode Shape.checks}.
+   */
+  protected _checks: readonly Check[] = [];
 
   /**
    * Applies checks to the output.
@@ -217,7 +224,7 @@ export class Shape<I = any, O = I> {
    * @returns The clone of this shape with the description added.
    */
   describe(text: string): this {
-    const shape = this._clone();
+    const shape = clone(this);
     shape.description = text;
     return shape;
   }
@@ -238,14 +245,23 @@ export class Shape<I = any, O = I> {
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
     const { key = cb, unsafe = false, param } = options;
 
-    const checks = this.checks.filter(check => check.key !== key);
+    return this.replaceChecks(
+      this._checks.filter(check => check.key !== key).concat({ key, callback: cb, unsafe, param })
+    );
+  }
 
-    checks.push({ key, callback: cb, unsafe, param });
+  /**
+   * Returns a shape clone with all checks replaced with a new set of checks.
+   *
+   * @param checks The checks that the shape clone should use.
+   * @returns The clone of this shape with a new set of checks.
+   */
+  replaceChecks(checks: readonly Check[]): this {
+    const shape = clone(this);
 
-    const shape = this._clone({ checks });
-
+    shape._checks = Object.freeze(checks.slice(0));
     shape._applyChecks = createApplyChecksCallback(checks);
-    shape._unsafe = shape._unsafe || unsafe;
+    shape._unsafe = checks.some(isUnsafeCheck);
 
     return shape;
   }
@@ -341,73 +357,16 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Replaces searched input value with an output value.
+   * Replaces an input value with an output value.
    *
-   * @param searchedValue The replaced value.
-   * @param value The replacement value.
+   * @param inputValue The input value to replace.
+   * @param outputValue The output value that is returned if an `inputValue` is received.
    * @returns The {@linkcode ReplaceShape} instance.
-   * @template A The searched value.
-   * @template B The replacement value.
+   * @template A The input value to replace.
+   * @template B The output value.
    */
-  replace<A extends Any, B extends Any>(searchedValue: A, value: B): OpaqueReplace<this, A, B> {
-    return new ReplaceShape(this, searchedValue, value);
-  }
-
-  /**
-   * Replaces `undefined` input value with an `undefined` output value.
-   *
-   * @returns The {@linkcode ReplaceShape} instance.
-   */
-  optional(): OpaqueReplace<this, undefined>;
-
-  /**
-   * Replaces `undefined` input value with a default output value.
-   *
-   * @param defaultValue The value that should be used if an input value is `undefined`.
-   * @returns The {@linkcode ReplaceShape} instance.
-   */
-  optional<T>(defaultValue: T): OpaqueReplace<this, undefined, T>;
-
-  optional(defaultValue?: any) {
-    return this.replace(undefined, defaultValue);
-  }
-
-  /**
-   * Replaces `null` input value with an `null` output value.
-   *
-   * @returns The {@linkcode ReplaceShape} instance.
-   */
-  nullable(): OpaqueReplace<this, null>;
-
-  /**
-   * Replaces `null` input value with a default output value.
-   *
-   * @param defaultValue The value that should be used if an input value is `null`.
-   * @returns The {@linkcode ReplaceShape} instance.
-   */
-  nullable<T>(defaultValue: T): OpaqueReplace<this, null, T>;
-
-  nullable(defaultValue?: any) {
-    return this.replace(null, arguments.length === 0 ? null : defaultValue);
-  }
-
-  /**
-   * Passes `null` and `undefined` input values directly to the output without parsing.
-   *
-   * @returns The {@linkcode ReplaceShape} instance.
-   */
-  nullish(): OpaqueReplace<this, null | undefined>;
-
-  /**
-   * Replaces `null` and `undefined` input value with a default output value.
-   *
-   * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
-   * @returns The {@linkcode ReplaceShape} instance.
-   */
-  nullish<T>(defaultValue?: T): OpaqueReplace<this, null | undefined, T>;
-
-  nullish(defaultValue?: any) {
-    return this.nullable(arguments.length === 0 ? null : defaultValue).optional(defaultValue);
+  replace<A extends Any, B extends Any>(inputValue: A, outputValue: B): OpaqueReplaceShape<this, A, B> {
+    return new ReplaceShape(this, inputValue, outputValue);
   }
 
   /**
@@ -418,8 +377,65 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ExcludeShape} instance.
    * @template T The excluded value.
    */
-  exclude<T extends Any>(excludedValue: T, options?: TypeConstraintOptions | Message): OpaqueExclude<this, T> {
+  exclude<T extends Any>(excludedValue: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
     return new ExcludeShape(this, excludedValue, options);
+  }
+
+  /**
+   * Replaces `undefined` input value with an `undefined` output value.
+   *
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  optional(): OpaqueReplaceShape<this, undefined>;
+
+  /**
+   * Replaces `undefined` input value with a default output value.
+   *
+   * @param defaultValue The value that should be used if an input value is `undefined`.
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  optional<T extends Any>(defaultValue: T): OpaqueReplaceShape<this, undefined, T>;
+
+  optional(defaultValue?: any) {
+    return this.replace(undefined, defaultValue);
+  }
+
+  /**
+   * Replaces `null` input value with an `null` output value.
+   *
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  nullable(): OpaqueReplaceShape<this, null>;
+
+  /**
+   * Replaces `null` input value with a default output value.
+   *
+   * @param defaultValue The value that should be used if an input value is `null`.
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  nullable<T extends Any>(defaultValue: T): OpaqueReplaceShape<this, null, T>;
+
+  nullable(defaultValue?: any) {
+    return this.replace(null, arguments.length === 0 ? null : defaultValue);
+  }
+
+  /**
+   * Passes `null` and `undefined` input values directly to the output without parsing.
+   *
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  nullish(): OpaqueReplaceShape<this, null | undefined>;
+
+  /**
+   * Replaces `null` and `undefined` input value with a default output value.
+   *
+   * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
+   * @returns The {@linkcode ReplaceShape} instance.
+   */
+  nullish<T>(defaultValue?: T): OpaqueReplaceShape<this, null | undefined, T>;
+
+  nullish(defaultValue?: any) {
+    return this.nullable(arguments.length === 0 ? null : defaultValue).optional(defaultValue);
   }
 
   /**
@@ -428,28 +444,8 @@ export class Shape<I = any, O = I> {
    * @param options The constraint options or an issue message.
    * @returns The {@linkcode ExcludeShape} instance.
    */
-  nonOptional(options?: TypeConstraintOptions | Message): OpaqueExclude<this, undefined> {
+  nonOptional(options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, undefined> {
     return this.exclude(undefined, options);
-  }
-
-  /**
-   * Prevents an input and output from being `null`.
-   *
-   * @param options The constraint options or an issue message.
-   * @returns The {@linkcode ExcludeShape} instance.
-   */
-  nonNullable(options?: TypeConstraintOptions | Message): OpaqueExclude<this, null> {
-    return this.exclude(null, options);
-  }
-
-  /**
-   * Prevents an input and output from being `undefined` or `null`.
-   *
-   * @param options The constraint options or an issue message.
-   * @returns The {@linkcode ExcludeShape} instance.
-   */
-  nonNullish(options?: TypeConstraintOptions | Message): OpaqueExclude<this, null> {
-    return this.nonNullable(options).nonOptional(options);
   }
 
   /**
@@ -463,10 +459,10 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Must return `true` is shape must be used in async context only, otherwise shape can be used in both sync and async
-   * contexts. Override this method to implement a custom shape.
+   * Must return `true` if the shape must be used in async context only, otherwise the shape can be used in both sync
+   * and async contexts. Override this method to implement a custom shape.
    */
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return false;
   }
 
@@ -514,16 +510,6 @@ export class Shape<I = any, O = I> {
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
   }
-
-  /**
-   * Returns the shallow clone of this shape.
-   *
-   * @param overrides The object which properties are assigned to a cloned instance.
-   * @returns The shape clone.
-   */
-  protected _clone(overrides?: object): this {
-    return Object.assign(Object.create(getPrototypeOf(this)), this, overrides);
-  }
 }
 
 Object.defineProperties(Shape.prototype, {
@@ -541,7 +527,7 @@ Object.defineProperties(Shape.prototype, {
 
   async: {
     get(this: Shape) {
-      const async = this._isAsync();
+      const async = this._requiresAsync();
       const _applyAsync = Shape.prototype['_applyAsync'];
 
       if (async) {
@@ -555,6 +541,12 @@ Object.defineProperties(Shape.prototype, {
       Object.defineProperty(this, 'async', { value: async });
 
       return async;
+    },
+  },
+
+  checks: {
+    get(this: Shape) {
+      return this._checks;
     },
   },
 
@@ -650,7 +642,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       void this.async;
 
-      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: any, options?: ParseOptions) => {
+      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
         const result = this._apply(input, options || defaultParseOptions);
 
         if (result === null) {
@@ -672,7 +664,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       void this.async;
 
-      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: any, options?: ParseOptions) => {
+      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
         return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
           if (result === null) {
             return input;
@@ -698,15 +690,12 @@ Object.defineProperties(Shape.prototype, {
  * @template O The transformed value.
  */
 export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> {
-  protected _requiresAsync;
-
   /**
    * Creates the new {@linkcode TransformShape} instance.
    *
    * @param shape The base shape.
-   * @param requiresAsync If `true` then the transformed shape would await for the callback to finish and use the
-   * resolved value as an output. Otherwise, the value that is synchronously returned from the transformer is used as an
-   * output.
+   * @param async If `true` then the transformed shape would wait for the promise returned from the callback to be
+   * fulfilled. Otherwise, the value that is synchronously returned from the callback is used as an output.
    * @param callback The callback that transforms the shape output value.
    * @template S The base shape.
    * @template O The transformed value.
@@ -716,7 +705,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
      * The base shape which output value is transformed.
      */
     readonly shape: S,
-    requiresAsync: boolean,
+    async: boolean,
     /**
      * The callback that transforms the shape output value.
      *
@@ -729,11 +718,13 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   ) {
     super();
 
-    this._requiresAsync = requiresAsync;
+    if (async) {
+      this._requiresAsync = returnTrue;
+    }
   }
 
-  protected _isAsync(): boolean {
-    return this.shape.async || this._requiresAsync;
+  protected _requiresAsync(): boolean {
+    return this.shape.async;
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -841,7 +832,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
     super();
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return this.inputShape.async || this.outputShape.async;
   }
 
@@ -930,25 +921,24 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
 }
 
 /**
- * The shape that replaces a searched input value with another value.
+ * The shape that replaces an input value with an output value.
  *
  * @template S The shape that parses the input without the replaced value.
- * @template A The replaced value.
- * @template B The replacement value.
+ * @template A The input value to replace.
+ * @template B The output value.
  */
 export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A, Exclude<S['output'], A> | B> {
   private _result: ApplyResult<B>;
-  private _resultPromise: Promise<ApplyResult<B>>;
 
   /**
    * Creates the new {@linkcode ReplaceShape} instance.
    *
    * @param shape The shape that parses the input without the replaced value.
-   * @param searchedValue The input that should be replaced.
-   * @param value The replacement value. If `undefined` then the replaced value is returned as is without being parsed.
+   * @param inputValue The input value to replace.
+   * @param outputValue The output value that is returned if an `inputValue` is received.
    * @template S The shape that parses the input without the replaced value.
-   * @template A The searched value.
-   * @template B The replacement value.
+   * @template A The input value to replace.
+   * @template B The output value.
    */
   constructor(
     /**
@@ -956,34 +946,29 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
      */
     readonly shape: S,
     /**
-     * The replaced value.
+     * The input value to replace.
      */
-    readonly searchedValue: A,
+    readonly inputValue: A,
     /**
-     * The replacement value.
+     * The output value that is returned if an {@linkcode inputValue} is received.
      */
-    readonly value: B
+    readonly outputValue: B
   ) {
     super();
 
-    const result = isEqual(value, searchedValue) ? null : ok(value);
-
-    this.value = value;
-
-    this._result = result;
-    this._resultPromise = Promise.resolve(result);
+    this._result = isEqual(inputValue, outputValue) ? null : ok(outputValue);
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return this.shape.async;
   }
 
   protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']().concat(getValueType(this.searchedValue));
+    return this.shape['_getInputTypes']().concat(getValueType(this.inputValue));
   }
 
   protected _getInputValues(): unknown[] {
-    return this.shape['_getInputValues']().concat(this.searchedValue);
+    return this.shape['_getInputValues']().concat(this.inputValue);
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
@@ -992,7 +977,7 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
     let issues;
     let output = input;
 
-    const result = isEqual(input, this.searchedValue) ? this._result : this.shape['_apply'](input, options);
+    const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1016,16 +1001,16 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
 
     let issues;
 
-    if (isEqual(input, this.searchedValue)) {
+    if (isEqual(input, this.inputValue)) {
       if (_applyChecks !== null) {
         return new Promise(resolve => {
-          issues = _applyChecks(this.value, null, options);
+          issues = _applyChecks(this.outputValue, null, options);
 
           resolve(issues !== null ? issues : this._result);
         });
       }
 
-      return this._resultPromise;
+      return Promise.resolve(this._result);
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
@@ -1085,7 +1070,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     this._issueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return this.shape.async;
   }
 
@@ -1170,7 +1155,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
  * @template S The shape that parses the input.
  */
 export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
-  protected _resultProvider: () => Ok<S['output']>;
+  private _resultProvider: () => Ok<S['output']>;
 
   /**
    * Creates the new {@linkcode CatchShape} instance.
@@ -1199,7 +1184,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     }
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return this.shape.async;
   }
 

@@ -2,7 +2,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
 import { ConstShape } from '../shapes';
 
 /**
- * Requires an input to be `NaN`.
+ * Creates the shape that requires an input to equal to `NaN`.
  *
  * @param options The constraint options or an issue message.
  */

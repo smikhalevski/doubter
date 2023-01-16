@@ -22,9 +22,9 @@ export function tuple<U extends readonly [AnyShape, ...AnyShape[]]>(
  * @template U The head tuple elements.
  * @template R The rest tuple elements.
  */
-export function tuple<U extends readonly [AnyShape, ...AnyShape[]], R extends AnyShape | null = null>(
+export function tuple<U extends readonly [AnyShape, ...AnyShape[]], R extends AnyShape | null>(
   shapes: U,
-  restShape?: R | null,
+  restShape: R,
   options?: TypeConstraintOptions | Message
 ): ArrayShape<U, R>;
 

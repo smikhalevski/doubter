@@ -32,8 +32,7 @@ export class DateShape extends CoercibleShape<Date> {
   protected _apply(input: any, options: ParseOptions): ApplyResult<Date> {
     const { _applyChecks } = this;
 
-    const coerced = options.coerced || this._coerced;
-    const output = coerced ? this._coerce(input) : input;
+    const output = options.coerced || this._coerced ? this._coerce(input) : input;
 
     let issues: Issue[] | null = null;
     let time;
@@ -44,7 +43,7 @@ export class DateShape extends CoercibleShape<Date> {
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (coerced && issues === null && input !== output) {
+    if (issues === null && input !== output) {
       return ok(output);
     }
     return issues;

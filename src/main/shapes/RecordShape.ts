@@ -34,10 +34,10 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   /**
    * Creates a new {@linkcode RecordShape} instance.
    *
-   * @param keyShape The key shape.
+   * @param keyShape The key shape, or `null` if keys should be preserved intact.
    * @param valueShape The value shape.
    * @param options The type constraint options or an issue message.
-   * @template K The key shape or `null` if keys should be preserved intact.
+   * @template K The key shape.
    * @template V The value shape.
    */
   constructor(
@@ -60,7 +60,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return typeof key === 'string' || typeof key === 'number' ? this.valueShape : null;
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return (this.keyShape !== null && this.keyShape.async) || this.valueShape.async;
   }
 

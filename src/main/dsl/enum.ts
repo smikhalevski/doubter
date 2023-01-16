@@ -2,7 +2,7 @@ import { Any, Message, ReadonlyDict, TypeConstraintOptions } from '../shared-typ
 import { EnumShape } from '../shapes';
 
 /**
- * The shape that constrains input with the list of values.
+ * Creates the shape that constrains input with the list of values.
  *
  * @param values The list of values allowed for the input.
  * @param options The constraint options or an issue message.
@@ -15,7 +15,7 @@ function enum_<T extends Any, U extends readonly [T, ...T[]]>(
 ): EnumShape<U[number]>;
 
 /**
- * The shape that constrains input with values of [the enum-like object](https://www.typescriptlang.org/docs/handbook/enums.html).
+ * Creates the shape that constrains input with values of [the enum-like object](https://www.typescriptlang.org/docs/handbook/enums.html).
  *
  * @param valueMapping The native enum or a mapping object.
  * @param options The constraint options or an issue message.

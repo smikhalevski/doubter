@@ -2,7 +2,7 @@ const Ajv = require('ajv');
 const zod = require('zod');
 const myzod = require('myzod');
 const valita = require('@badrap/valita');
-const doubter = require('../../lib/index-cjs');
+const doubter = require('../../lib');
 
 beforeBatch(gc);
 

@@ -1,6 +1,7 @@
 import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
+  clone,
   cloneEnumerableKeys,
   cloneKnownKeys,
   concatIssues,
@@ -17,7 +18,7 @@ import {
   setKeyValue,
   unshiftPath,
 } from '../utils';
-import { AnyShape, OpaqueExclude, OpaqueReplace, Shape, ValueType } from './Shape';
+import { AnyShape, OpaqueExcludeShape, OpaqueReplaceShape, Shape, ValueType } from './Shape';
 import { EnumShape } from './EnumShape';
 
 // prettier-ignore
@@ -38,9 +39,9 @@ export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> 
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueReplace<P[K], undefined> };
+export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueReplaceShape<P[K], undefined> };
 
-export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueExclude<P[K], undefined> };
+export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueExcludeShape<P[K], undefined> };
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
@@ -317,12 +318,12 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Constrains an object to be an `Object` instance or to have a `null` prototype.
    */
   plain(): this {
-    const shape = this._clone();
+    const shape = clone(this);
     shape._typePredicate = isPlainObject;
     return shape;
   }
 
-  protected _isAsync(): boolean {
+  protected _requiresAsync(): boolean {
     return (this.restShape !== null && this.restShape.async) || isAsyncShapes(Object.values(this.shapes));
   }
 

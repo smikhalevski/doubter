@@ -62,6 +62,27 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   return async;
 }
 
+export function isUnsafeCheck(check: Check): boolean {
+  return check.unsafe;
+}
+
+/**
+ * Returns an array index, or -1 if key isn't an index.
+ */
+export function toArrayIndex(key: unknown): number {
+  if (typeof key === 'string' && '' + +key === key) {
+    key = +key;
+  }
+  return typeof key === 'number' && Number.isInteger(key) && key >= 0 && key < 0xffffffff ? key : -1;
+}
+
+/**
+ * Returns the shallow clone of the object.
+ */
+export function clone<T extends object>(source: T): T {
+  return Object.assign(Object.create(getPrototypeOf(source)), source);
+}
+
 /**
  * The convenient shortcut to add built-in checks to shapes.
  */
@@ -247,7 +268,7 @@ export function cloneKnownKeys(input: ReadonlyDict, keys: readonly string[]): Re
   return output;
 }
 
-export function createApplyChecksCallback(checks: Check[]): ApplyChecksCallback | null {
+export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecksCallback | null {
   const checksLength = checks.length;
 
   if (checksLength === 0) {
@@ -401,4 +422,16 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
     }
   }
   return uniqueArr || arr;
+}
+
+export function returnFalse(): boolean {
+  return false;
+}
+
+export function returnTrue(): boolean {
+  return true;
+}
+
+export function returnArray(): [] {
+  return [];
 }

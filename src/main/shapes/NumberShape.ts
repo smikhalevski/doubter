@@ -1,6 +1,6 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
+import { appendCheck, clone, createIssueFactory, isArray, ok } from '../utils';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -165,7 +165,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   integer(options?: ConstraintOptions | Message): this {
-    const shape = this._clone();
+    const shape = clone(this);
 
     shape._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
     shape._typePredicate = Number.isInteger;
@@ -184,8 +184,7 @@ export class NumberShape extends CoercibleShape<number> {
   protected _apply(input: any, options: ParseOptions): ApplyResult<number> {
     const { _applyChecks } = this;
 
-    const coerced = options.coerced || this._coerced;
-    const output = coerced ? this._coerce(input) : input;
+    const output = options.coerced || this._coerced ? this._coerce(input) : input;
 
     let issues: Issue[] | null = null;
 
@@ -195,7 +194,7 @@ export class NumberShape extends CoercibleShape<number> {
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (coerced && issues === null && input !== output) {
+    if (issues === null && input !== output) {
       return ok(output);
     }
     return issues;
