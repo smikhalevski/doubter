@@ -20,6 +20,7 @@ import {
   MESSAGE_ARRAY_MIN,
   MESSAGE_ARRAY_TYPE,
   MESSAGE_TUPLE,
+  TYPE_ANY,
   TYPE_ARRAY,
   TYPE_OBJECT,
 } from '../constants';
@@ -49,7 +50,6 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
 > {
   protected _options;
   protected _issueFactory;
-  protected _shapesLength;
 
   /**
    * Creates a new {@linkcode ArrayShape} instance.
@@ -74,7 +74,6 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     super();
 
     this._options = options;
-    this._shapesLength = shapes !== null ? shapes.length : -1;
 
     if (shapes !== null && restShape === null) {
       this._issueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
@@ -107,7 +106,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    * @template T The shape of rest elements.
    */
   rest<T extends AnyShape | null>(restShape: T): ArrayShape<U, T> {
-    return new ArrayShape<U, T>(this.shapes, restShape, this._options);
+    return new ArrayShape(this.shapes, restShape, this._options);
   }
 
   /**
@@ -160,28 +159,38 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   protected _getInputTypes(): ValueType[] {
-    const { shapes } = this;
+    const { shapes, restShape } = this;
 
-    const shape = shapes !== null && shapes.length === 1 ? shapes[0] : this.restShape;
+    const shape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
 
-    if (this._coerced && shape !== null) {
-      return shape['_getInputTypes']().concat(TYPE_ARRAY, TYPE_OBJECT);
-    } else {
+    if (!this._coerced) {
       return [TYPE_ARRAY];
     }
+    if (shapes === null && restShape === null) {
+      // Elements aren't parsed, any value can be wrapped in an array
+      return [TYPE_ANY];
+    }
+    if (shape === null) {
+      // Iterables and array-like objects
+      return [TYPE_OBJECT, TYPE_ARRAY];
+    }
+    return shape['_getInputTypes']().concat(TYPE_OBJECT, TYPE_ARRAY);
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
-    const { shapes, restShape, _shapesLength, _applyChecks, _unsafe } = this;
+    const { shapes, restShape, _applyChecks, _unsafe } = this;
 
     let output = options.coerced || this._coerced ? this._coerce(input) : input;
     let outputLength;
+    let shapesLength = 0;
     let issues: Issue[] | null = null;
 
+    // noinspection CommaExpressionJS
     if (
       !isArray(output) ||
-      (outputLength = output.length) < _shapesLength ||
-      (restShape === null && _shapesLength !== -1 && outputLength !== _shapesLength)
+      ((outputLength = output.length),
+      shapes !== null &&
+        (outputLength < (shapesLength = shapes.length) || (restShape === null && outputLength !== shapesLength)))
     ) {
       return this._issueFactory(input, options);
     }
@@ -189,7 +198,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     if (shapes !== null || restShape !== null) {
       for (let i = 0; i < outputLength; ++i) {
         const value = output[i];
-        const valueShape = i < _shapesLength ? shapes![i] : restShape!;
+        const valueShape = i < shapesLength ? shapes![i] : restShape!;
         const result = valueShape['_apply'](value, options);
 
         if (result === null) {
@@ -224,15 +233,18 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
-      const { shapes, restShape, _shapesLength, _applyChecks, _unsafe } = this;
+      const { shapes, restShape, _applyChecks, _unsafe } = this;
 
       let output = options.coerced || this._coerced ? this._coerce(input) : input;
       let outputLength;
+      let shapesLength = 0;
 
+      // noinspection CommaExpressionJS
       if (
         !isArray(output) ||
-        (outputLength = output.length) < _shapesLength ||
-        (restShape === null && _shapesLength !== -1 && outputLength !== _shapesLength)
+        ((outputLength = output.length),
+        shapes !== null &&
+          (outputLength < (shapesLength = shapes.length) || (restShape === null && outputLength !== shapesLength)))
       ) {
         resolve(this._issueFactory(input, options));
         return;
@@ -243,7 +255,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       if (shapes !== null || restShape !== null) {
         for (let i = 0; i < outputLength; ++i) {
           const value = output[i];
-          const valueShape = i < _shapesLength ? shapes![i] : restShape!;
+          const valueShape = i < shapesLength ? shapes![i] : restShape!;
 
           promises.push(valueShape['_applyAsync'](value, options));
         }

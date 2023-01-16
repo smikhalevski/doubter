@@ -1,10 +1,11 @@
-import { ArrayShape, Shape, StringShape } from '../../main';
+import { ArrayShape, NumberShape, Shape, StringShape } from '../../main';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
   CODE_TUPLE,
   CODE_TYPE,
   MESSAGE_ARRAY_TYPE,
+  TYPE_ANY,
   TYPE_ARRAY,
   TYPE_OBJECT,
   TYPE_STRING,
@@ -283,10 +284,22 @@ describe('ArrayShape', () => {
     expect(arrShape.at(2)).toBe(restShape);
   });
 
-  test('updates input types when coerced', () => {
+  test('allow any input types when coerced and unconstrained', () => {
+    const arrShape = new ArrayShape(null, null).coerce();
+
+    expect(arrShape['_getInputTypes']()).toEqual([TYPE_ANY]);
+  });
+
+  test('allows only array-like types when tuple has two elements', () => {
+    const arrShape = new ArrayShape([new StringShape(), new NumberShape()], null).coerce();
+
+    expect(arrShape['_getInputTypes']()).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
+  });
+
+  test('allows input types of a single tuple element', () => {
     const arrShape = new ArrayShape([new StringShape()], null).coerce();
 
-    expect(arrShape['_getInputTypes']()).toEqual([TYPE_STRING, TYPE_ARRAY, TYPE_OBJECT]);
+    expect(arrShape['_getInputTypes']()).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
   });
 
   test('does not coerce if a tuple has no elements', () => {
@@ -329,6 +342,34 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape([new Shape()], new Shape()).coerce();
 
     expect(arrShape.parse('aaa')).toEqual(['aaa']);
+  });
+
+  test('coerces a Set', () => {
+    const arrShape = new ArrayShape(null, new Shape()).coerce();
+
+    expect(arrShape.parse(new Set(['aaa']))).toEqual(['aaa']);
+  });
+
+  test('coerces a Map to an array of entries', () => {
+    const arrShape = new ArrayShape(null, new Shape()).coerce();
+
+    expect(
+      arrShape.parse(
+        new Map([
+          ['key1', 'aaa'],
+          ['key2', 'bbb'],
+        ])
+      )
+    ).toEqual([
+      ['key1', 'aaa'],
+      ['key2', 'bbb'],
+    ]);
+  });
+
+  test('coerces an array-like object', () => {
+    const arrShape = new ArrayShape(null, new Shape()).coerce();
+
+    expect(arrShape.parse({ length: 1, 0: 'aaa' })).toEqual(['aaa']);
   });
 
   test('does not coerce if a tuple has more than one element with rest elements', () => {
