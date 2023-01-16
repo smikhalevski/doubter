@@ -26,7 +26,7 @@ import { CoercibleShape } from './CoercibleShape';
 /**
  * The shape of a `Set` instance.
  *
- * @template S The shape of set values.
+ * @template S The value shape.
  */
 export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>, Set<S['output']>> {
   protected _options;
@@ -35,13 +35,13 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
   /**
    * Creates a new {@linkcode SetShape} instance.
    *
-   * @param shape The shape of an item in the set.
+   * @param shape The value shape
    * @param options The type constraint options or the type issue message.
-   * @template S The shape of set values.
+   * @template S The value shape.
    */
   constructor(
     /**
-     * The shape of set values.
+     * The value shape
      */
     readonly shape: S,
     options?: TypeConstraintOptions | Message
@@ -114,18 +114,17 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<Set<S['output']>> {
+    let changed = false;
     let values: unknown[];
     let issues: Issue[] | null = null;
-    let changed = false;
 
     if (input instanceof Set) {
       values = Array.from(input);
-    } else {
-      if (!(options.coerced || this._coerced)) {
-        return this._issueFactory(input, options);
-      }
+    } else if (options.coerced || this._coerced) {
       changed = true;
       values = isArray(input) ? input : [input];
+    } else {
+      return this._issueFactory(input, options);
     }
 
     const { shape, _applyChecks, _unsafe } = this;
@@ -163,16 +162,17 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Set<S['output']>>> {
     return new Promise(resolve => {
+      let changed = false;
       let values: unknown[];
 
       if (input instanceof Set) {
         values = Array.from(input);
-      } else {
-        if (!(options.coerced || this._coerced)) {
-          resolve(this._issueFactory(input, options));
-          return;
-        }
+      } else if (options.coerced || this._coerced) {
+        changed = true;
         values = isArray(input) ? input : [input];
+      } else {
+        resolve(this._issueFactory(input, options));
+        return;
       }
 
       const { shape, _applyChecks, _unsafe } = this;
@@ -188,7 +188,6 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
           const resultsLength = results.length;
 
           let issues: Issue[] | null = null;
-          let changed = false;
 
           for (let i = 0; i < resultsLength; ++i) {
             const result = results[i];

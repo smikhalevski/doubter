@@ -71,9 +71,9 @@ export function isUnsafeCheck(check: Check): boolean {
  */
 export function toArrayIndex(key: unknown): number {
   if (typeof key === 'string' && '' + +key === key) {
-    return +key;
+    key = +key;
   }
-  return typeof key === 'number' && Number.isSafeInteger(key) && key >= 0 ? key : -1;
+  return typeof key === 'number' && Number.isInteger(key) && key >= 0 && key < 0xffffffff ? key : -1;
 }
 
 /**

@@ -189,6 +189,7 @@ describe('ArrayShape', () => {
     const arr = [111, 222];
     const result: any = arrShape.try(arr);
 
+    expect(arr).toEqual([111, 222]);
     expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
     expect(result.value).not.toBe(arr);
   });
