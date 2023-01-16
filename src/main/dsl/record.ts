@@ -2,7 +2,7 @@ import { AnyShape, RecordShape, Shape } from '../shapes';
 import { Message, TypeConstraintOptions } from '../shared-types';
 
 /**
- * Creates a shape that describes an object with string keys and values that conform the given shape.
+ * Creates the shape that describes an object with string keys and values that conform the given shape.
  *
  * @param valueShape The shape of the record values.
  * @param options The constraint options or an issue message.
@@ -14,7 +14,7 @@ export function record<V extends AnyShape>(
 ): RecordShape<null, V>;
 
 /**
- * Creates a shape that describes an object with string keys and values that conform the given shape.
+ * Creates the shape that describes an object with string keys and values that conform the given shape.
  *
  * @param keyShape The shape of record keys.
  * @param valueShape The shape of the record values.

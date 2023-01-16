@@ -1,7 +1,7 @@
 import { AnyShape, LazyShape } from '../shapes';
 
 /**
- * Creates the sync lazy-loaded shape.
+ * Creates the shape that resolves the underlying shape on-demand.
  *
  * @param shapeProvider The provider that returns the base shape.
  */

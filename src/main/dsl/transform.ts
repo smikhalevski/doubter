@@ -2,7 +2,7 @@ import { ParseOptions } from '../shared-types';
 import { Shape } from '../shapes';
 
 /**
- * Synchronously transforms the input value.
+ * Creates the shape that synchronously transforms the input value.
  *
  * @param cb The callback that processes the input value.
  * @template I The input value.
@@ -13,7 +13,7 @@ export function transform<I = any, O = any>(cb: (input: I, options: Readonly<Par
 }
 
 /**
- * Asynchronously transforms the input value.
+ * Creates the shape that asynchronously transforms the input value.
  *
  * @param cb The callback that processes the input value.
  * @template I The input value.

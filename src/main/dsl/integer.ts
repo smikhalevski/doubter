@@ -2,7 +2,7 @@ import { NumberShape } from '../shapes';
 import { Message, TypeConstraintOptions } from '../shared-types';
 
 /**
- * Creates the integer shape that rejects `Infinity` and `NaN` values.
+ * Creates the integer shape.
  *
  * @param options The constraint options or an issue message.
  */
