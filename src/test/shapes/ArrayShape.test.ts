@@ -6,6 +6,7 @@ import {
   CODE_TYPE,
   MESSAGE_ARRAY_TYPE,
   TYPE_ARRAY,
+  TYPE_OBJECT,
   TYPE_STRING,
 } from '../../main/constants';
 
@@ -285,7 +286,7 @@ describe('ArrayShape', () => {
   test('updates input types when coerced', () => {
     const arrShape = new ArrayShape([new StringShape()], null).coerce();
 
-    expect(arrShape['_getInputTypes']()).toEqual([TYPE_STRING, TYPE_ARRAY]);
+    expect(arrShape['_getInputTypes']()).toEqual([TYPE_STRING, TYPE_ARRAY, TYPE_OBJECT]);
   });
 
   test('does not coerce if a tuple has no elements', () => {
@@ -443,7 +444,7 @@ describe('ArrayShape', () => {
       await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
     });
 
-    test('does not coerce if not a tuple of one element', async () => {
+    test('does not coerce if a tuple has more than one element with rest elements', async () => {
       const restShape = new Shape().transformAsync(value => Promise.resolve(value));
 
       const arrShape = new ArrayShape([new Shape(), new Shape()], restShape).coerce();
