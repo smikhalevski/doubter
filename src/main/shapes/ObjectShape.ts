@@ -1,6 +1,7 @@
 import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
+  clone,
   cloneEnumerableKeys,
   cloneKnownKeys,
   concatIssues,
@@ -317,7 +318,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Constrains an object to be an `Object` instance or to have a `null` prototype.
    */
   plain(): this {
-    const shape = this._clone();
+    const shape = clone(this);
     shape._typePredicate = isPlainObject;
     return shape;
   }

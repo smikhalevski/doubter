@@ -77,6 +77,13 @@ export function toArrayIndex(key: unknown): number {
 }
 
 /**
+ * Returns the shallow clone of the object.
+ */
+export function clone<T extends object>(source: T): T {
+  return Object.assign(Object.create(getPrototypeOf(source)), source);
+}
+
+/**
  * The convenient shortcut to add built-in checks to shapes.
  */
 export function appendCheck<S extends Shape>(

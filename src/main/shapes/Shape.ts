@@ -15,9 +15,9 @@ import {
 import {
   appendCheck,
   captureIssues,
+  clone,
   createApplyChecksCallback,
   createIssueFactory,
-  getPrototypeOf,
   getValueType,
   isArray,
   isEqual,
@@ -191,6 +191,9 @@ export class Shape<I = any, O = I> {
    */
   description = '';
 
+  /**
+   * Backing property for {@linkcode Shape.checks}.
+   */
   protected _checks: readonly Check[] = [];
 
   /**
@@ -221,7 +224,7 @@ export class Shape<I = any, O = I> {
    * @returns The clone of this shape with the description added.
    */
   describe(text: string): this {
-    const shape = this._clone();
+    const shape = clone(this);
     shape.description = text;
     return shape;
   }
@@ -242,11 +245,9 @@ export class Shape<I = any, O = I> {
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
     const { key = cb, unsafe = false, param } = options;
 
-    const checks = this._checks.filter(check => check.key !== key);
-
-    checks.push({ key, callback: cb, unsafe, param });
-
-    return this.replaceChecks(checks);
+    return this.replaceChecks(
+      this._checks.filter(check => check.key !== key).concat({ key, callback: cb, unsafe, param })
+    );
   }
 
   /**
@@ -256,7 +257,7 @@ export class Shape<I = any, O = I> {
    * @returns The clone of this shape with a new set of checks.
    */
   replaceChecks(checks: readonly Check[]): this {
-    const shape = this._clone();
+    const shape = clone(this);
 
     shape._checks = Object.freeze(checks.slice(0));
     shape._applyChecks = createApplyChecksCallback(checks);
@@ -508,13 +509,6 @@ export class Shape<I = any, O = I> {
    */
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
-  }
-
-  /**
-   * Returns the shallow clone of this shape.
-   */
-  protected _clone(): this {
-    return Object.assign(Object.create(getPrototypeOf(this)), this);
   }
 }
 
