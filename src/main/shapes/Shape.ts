@@ -5,11 +5,11 @@ import {
   Check,
   CheckCallback,
   CheckOptions,
+  ConstraintOptions,
   Err,
   Message,
   Ok,
   ParseOptions,
-  RefineOptions,
   TypeConstraintOptions,
 } from '../shared-types';
 import {
@@ -96,7 +96,10 @@ export interface Shape<I, O> {
   readonly async: boolean;
 
   /**
-   * The list of checks applied to the shape output.
+   * The readonly list of checks applied to the shape output.
+   *
+   * To add a new check or replace all checks, consider using {@linkcode Shape.check} and
+   * {@linkcode Shape.replaceChecks} respectively.
    */
   readonly checks: readonly Check[];
 
@@ -259,7 +262,7 @@ export class Shape<I = any, O = I> {
   replaceChecks(checks: readonly Check[]): this {
     const shape = clone(this);
 
-    shape._checks = Object.freeze(checks.slice(0));
+    shape._checks = checks.slice(0);
     shape._applyChecks = createApplyChecksCallback(checks);
     shape._unsafe = checks.some(isUnsafeCheck);
 
@@ -328,7 +331,7 @@ export class Shape<I = any, O = I> {
      * @param output The shape output value.
      */
     cb: (output: O) => output is T,
-    options?: RefineOptions | Message
+    options?: ConstraintOptions | Message
   ): Shape<I, T>;
 
   /**
@@ -343,10 +346,10 @@ export class Shape<I = any, O = I> {
      * @param output The shape output value.
      */
     cb: (output: O) => boolean,
-    options?: RefineOptions | Message
+    options?: ConstraintOptions | Message
   ): this;
 
-  refine(cb: (output: O) => unknown, options?: RefineOptions | Message) {
+  refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
     const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
     return appendCheck(this, undefined, options, cb, (input, options) => {

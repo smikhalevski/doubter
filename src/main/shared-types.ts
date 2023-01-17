@@ -42,9 +42,9 @@ export type CheckCallback<T = any> = (
  */
 export interface Check {
   /**
-   * The unique key of the check in scope of the shape.
+   * The key of the check.
    */
-  key: unknown;
+  key: any;
 
   /**
    * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
@@ -171,11 +171,6 @@ export interface ConstraintOptions {
    */
   unsafe?: boolean;
 }
-
-/**
- * Options for type narrowing checks.
- */
-export interface RefineOptions extends ConstraintOptions, CheckOptions {}
 
 /**
  * Options applied during parsing.
