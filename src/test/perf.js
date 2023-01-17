@@ -386,6 +386,14 @@ describe(
       });
     });
 
+    test('zod', measure => {
+      const type = zod.number().int();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
     test('doubter', measure => {
       const shape = doubter.integer();
 

@@ -1,16 +1,19 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, clone, createIssueFactory, isArray, ok } from '../utils';
+import { appendCheck, clone, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import {
+  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
+  CODE_NUMBER_INTEGER,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
-  MESSAGE_INTEGER_TYPE,
+  MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
+  MESSAGE_NUMBER_INTEGER,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
@@ -18,7 +21,6 @@ import {
   TYPE_ARRAY,
   TYPE_BOOLEAN,
   TYPE_DATE,
-  TYPE_INTEGER,
   TYPE_NULL,
   TYPE_NUMBER,
   TYPE_STRING,
@@ -27,11 +29,11 @@ import {
 import { CoercibleShape } from './CoercibleShape';
 
 /**
- * The shape of the finite number.
+ * The shape that constrains the input as a number.
  */
 export class NumberShape extends CoercibleShape<number> {
   protected _typeIssueFactory;
-  protected _typePredicate = Number.isFinite;
+  protected _typePredicate = isNumber;
 
   /**
    * Creates a new {@linkcode NumberShape} instance.
@@ -150,16 +152,22 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * Allow `NaN` input values.
+   * Constrains the number to be a finite number.
    *
-   * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
    */
-  nan(defaultValue = NaN): Shape<number> {
-    return this.replace(NaN, defaultValue);
+  finite(options?: ConstraintOptions | Message): this {
+    const shape = clone(this);
+
+    shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
+    shape._typePredicate = Number.isFinite;
+
+    return shape;
   }
 
   /**
-   * Constrains the number to be an integer and rejects `Infinity` and `NaN` values.
+   * Constrains the number to be an integer.
    *
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
@@ -167,10 +175,19 @@ export class NumberShape extends CoercibleShape<number> {
   integer(options?: ConstraintOptions | Message): this {
     const shape = clone(this);
 
-    shape._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
+    shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
     shape._typePredicate = Number.isInteger;
 
     return shape;
+  }
+
+  /**
+   * Allows `NaN` as an input and output value, or replaces an input `NaN` value with a default output value.
+   *
+   * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
+   */
+  nan(defaultValue = NaN): Shape<number> {
+    return this.replace(NaN, defaultValue);
   }
 
   protected _getInputTypes(): ValueType[] {

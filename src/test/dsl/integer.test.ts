@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { CODE_TYPE, MESSAGE_INTEGER_TYPE, TYPE_INTEGER } from '../../main/constants';
+import { CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER } from '../../main/constants';
 
 describe('integer', () => {
   test('returns an integer shape', () => {
@@ -12,15 +12,7 @@ describe('integer', () => {
 
     expect(d.integer().try(0.5)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_TYPE,
-          input: 0.5,
-          message: MESSAGE_INTEGER_TYPE,
-          param: TYPE_INTEGER,
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_NUMBER_INTEGER, input: 0.5, message: MESSAGE_NUMBER_INTEGER, param: undefined, path: [] }],
     });
   });
 });

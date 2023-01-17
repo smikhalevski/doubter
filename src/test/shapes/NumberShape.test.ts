@@ -1,11 +1,13 @@
 import { NumberShape } from '../../main';
 import {
+  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
+  MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_TYPE,
   TYPE_ARRAY,
   TYPE_BOOLEAN,
@@ -35,10 +37,16 @@ describe('NumberShape', () => {
     expect(new NumberShape().gt(2).parse(3)).toBe(3);
   });
 
+  test('allows infinity', () => {
+    expect(new NumberShape().parse(Infinity)).toBe(Infinity);
+  });
+
   test('raises if value is an infinity', () => {
-    expect(new NumberShape().try(Infinity)).toEqual({
+    expect(new NumberShape().finite().try(Infinity)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: Infinity, param: TYPE_NUMBER, message: MESSAGE_NUMBER_TYPE }],
+      issues: [
+        { code: CODE_NUMBER_FINITE, path: [], input: Infinity, param: undefined, message: MESSAGE_NUMBER_FINITE },
+      ],
     });
   });
 
