@@ -270,6 +270,47 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Refines the shape output type with the [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
+   *
+   * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
+   * @param options The constraint options or an issue message.
+   * @returns The shape with the narrowed output.
+   * @template T The narrowed output value.
+   */
+  refine<T extends O>(
+    /**
+     * @param output The shape output value.
+     */
+    cb: (output: O) => output is T,
+    options?: ConstraintOptions | Message
+  ): Shape<I, T>;
+
+  /**
+   * Checks that the output value conforms the predicate.
+   *
+   * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of this shape.
+   */
+  refine(
+    /**
+     * @param output The shape output value.
+     */
+    cb: (output: O) => boolean,
+    options?: ConstraintOptions | Message
+  ): this;
+
+  refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
+    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
+
+    return appendCheck(this, undefined, options, cb, (input, options) => {
+      if (!cb(input)) {
+        return issueFactory(input, options);
+      }
+    });
+  }
+
+  /**
    * Redirects the shape output to another shape.
    *
    * @param shape The shape that validates the output if this shape.
@@ -316,47 +357,6 @@ export class Shape<I = any, O = I> {
     cb: (output: O, options: Readonly<ParseOptions>) => Promise<T>
   ): Shape<I, T> {
     return new TransformShape(this, true, cb);
-  }
-
-  /**
-   * Refines the shape output type with the [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
-   *
-   * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
-   * @param options The constraint options or an issue message.
-   * @returns The shape with the narrowed output.
-   * @template T The narrowed output value.
-   */
-  refine<T extends O>(
-    /**
-     * @param output The shape output value.
-     */
-    cb: (output: O) => output is T,
-    options?: ConstraintOptions | Message
-  ): Shape<I, T>;
-
-  /**
-   * Checks that the output value conforms the predicate.
-   *
-   * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
-   * @param options The constraint options or an issue message.
-   * @returns The clone of this shape.
-   */
-  refine(
-    /**
-     * @param output The shape output value.
-     */
-    cb: (output: O) => boolean,
-    options?: ConstraintOptions | Message
-  ): this;
-
-  refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
-    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
-
-    return appendCheck(this, undefined, options, cb, (input, options) => {
-      if (!cb(input)) {
-        return issueFactory(input, options);
-      }
-    });
   }
 
   /**
