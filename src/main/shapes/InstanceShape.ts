@@ -9,7 +9,7 @@ import { CODE_INSTANCE, MESSAGE_INSTANCE, TYPE_ARRAY, TYPE_OBJECT } from '../con
  * @template C The class constructor.
  */
 export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<InstanceType<C>> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode InstanceShape} instance.
@@ -21,7 +21,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
   constructor(readonly ctor: C, options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
+    this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -36,7 +36,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

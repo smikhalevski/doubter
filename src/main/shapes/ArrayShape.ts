@@ -49,7 +49,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   InferArray<U, R, 'output'>
 > {
   protected _options;
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode ArrayShape} instance.
@@ -76,9 +76,9 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     this._options = options;
 
     if (shapes !== null && restShape === null) {
-      this._issueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
+      this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
     } else {
-      this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
     }
   }
 
@@ -192,7 +192,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       shapes !== null &&
         (outputLength < (shapesLength = shapes.length) || (restShape === null && outputLength !== shapesLength)))
     ) {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
 
     if (shapes !== null || restShape !== null) {
@@ -246,7 +246,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         shapes !== null &&
           (outputLength < (shapesLength = shapes.length) || (restShape === null && outputLength !== shapesLength)))
       ) {
-        resolve(this._issueFactory(input, options));
+        resolve(this._typeIssueFactory(input, options));
         return;
       }
 

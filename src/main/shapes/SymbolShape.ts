@@ -7,7 +7,7 @@ import { CODE_TYPE, MESSAGE_SYMBOL_TYPE, TYPE_SYMBOL } from '../constants';
  * The shape of the arbitrary symbol.
  */
 export class SymbolShape extends Shape<symbol> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode SymbolShape} instance.
@@ -17,7 +17,7 @@ export class SymbolShape extends Shape<symbol> {
   constructor(options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SYMBOL_TYPE, options, TYPE_SYMBOL);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SYMBOL_TYPE, options, TYPE_SYMBOL);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -28,7 +28,7 @@ export class SymbolShape extends Shape<symbol> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'symbol') {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

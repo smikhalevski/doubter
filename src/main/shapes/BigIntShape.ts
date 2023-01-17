@@ -18,7 +18,7 @@ import { CoercibleShape } from './CoercibleShape';
  * The shape of the bigint value.
  */
 export class BigIntShape extends CoercibleShape<bigint> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode BigIntShape} instance.
@@ -28,7 +28,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
   constructor(options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -47,7 +47,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     let issues: Issue[] | null = null;
 
     if (typeof output !== 'bigint') {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);

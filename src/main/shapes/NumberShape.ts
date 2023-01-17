@@ -30,7 +30,7 @@ import { CoercibleShape } from './CoercibleShape';
  * The shape of the finite number.
  */
 export class NumberShape extends CoercibleShape<number> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
   protected _typePredicate = Number.isFinite;
 
   /**
@@ -41,7 +41,7 @@ export class NumberShape extends CoercibleShape<number> {
   constructor(options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
   }
 
   /**
@@ -167,7 +167,7 @@ export class NumberShape extends CoercibleShape<number> {
   integer(options?: ConstraintOptions | Message): this {
     const shape = clone(this);
 
-    shape._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
+    shape._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
     shape._typePredicate = Number.isInteger;
 
     return shape;
@@ -189,7 +189,7 @@ export class NumberShape extends CoercibleShape<number> {
     let issues: Issue[] | null = null;
 
     if (!this._typePredicate(output)) {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);

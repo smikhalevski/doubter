@@ -9,7 +9,7 @@ import { CODE_CONST, MESSAGE_CONST } from '../constants';
  * @template T The value.
  */
 export class ConstShape<T> extends Shape<T> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
   protected _typePredicate: (input: unknown) => boolean;
 
   /**
@@ -23,7 +23,7 @@ export class ConstShape<T> extends Shape<T> {
     super();
 
     this._typePredicate = value !== value ? Number.isNaN : input => value === input;
-    this._issueFactory = createIssueFactory(CODE_CONST, MESSAGE_CONST, options, value);
+    this._typeIssueFactory = createIssueFactory(CODE_CONST, MESSAGE_CONST, options, value);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -38,7 +38,7 @@ export class ConstShape<T> extends Shape<T> {
     const { _applyChecks } = this;
 
     if (!this._typePredicate(input)) {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

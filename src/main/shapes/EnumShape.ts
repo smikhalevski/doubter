@@ -19,7 +19,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
    * Key-value mapping passes as a source to constructor, or `null` if the source was a list of values.
    */
   protected _valueMapping: ReadonlyDict<T> | null;
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode EnumShape} instance.
@@ -51,7 +51,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     this.values = values;
 
     this._valueMapping = valueMapping;
-    this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
+    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -76,7 +76,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     let issues: Issue[] | null = null;
 
     if (!this.values.includes(output)) {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);

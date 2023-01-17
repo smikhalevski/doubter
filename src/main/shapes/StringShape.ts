@@ -24,7 +24,7 @@ import { CoercibleShape } from './CoercibleShape';
  * The shape that constrains the input as a string.
  */
 export class StringShape extends CoercibleShape<string> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode StringShape} instance.
@@ -34,7 +34,7 @@ export class StringShape extends CoercibleShape<string> {
   constructor(options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
   }
 
   /**
@@ -117,7 +117,7 @@ export class StringShape extends CoercibleShape<string> {
     let issues: Issue[] | null = null;
 
     if (typeof output !== 'string') {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);

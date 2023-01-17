@@ -16,7 +16,7 @@ export type LookupCallback = (input: unknown) => readonly AnyShape[];
  */
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['input'], U[number]['output']> {
   protected _options;
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.
@@ -35,7 +35,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     super();
 
     this._options = options;
-    this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
+    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -117,7 +117,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
       break;
     }
     if (index === shapesLength) {
-      return issues !== null ? issues : this._issueFactory(input, options, this._getInputTypes());
+      return issues !== null ? issues : this._typeIssueFactory(input, options, this._getInputTypes());
     }
 
     if (_applyChecks !== null) {
@@ -137,7 +137,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     const shapesLength = shapes.length;
 
     if (shapesLength === 0) {
-      return Promise.resolve(this._issueFactory(input, options, this._getInputTypes()));
+      return Promise.resolve(this._typeIssueFactory(input, options, this._getInputTypes()));
     }
 
     let issues: Issue[] | null = null;
