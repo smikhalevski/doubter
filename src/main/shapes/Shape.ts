@@ -1,5 +1,4 @@
 import {
-  Any,
   ApplyChecksCallback,
   ApplyResult,
   Check,
@@ -7,6 +6,7 @@ import {
   CheckOptions,
   ConstraintOptions,
   Err,
+  Literal,
   Message,
   Ok,
   ParseOptions,
@@ -51,6 +51,14 @@ export type AnyShape = Shape | Shape<never>;
  * @template B The output value.
  */
 export type OpaqueReplaceShape<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
+
+/**
+ * Includes a value in both input and output.
+ *
+ * @template S The base shape.
+ * @template T The included value.
+ */
+export type OpaqueIncludeShape<S extends AnyShape, T> = Shape<S['input'] | T, S['output'] | T>;
 
 /**
  * Excludes a value from both input and output.
@@ -368,20 +376,32 @@ export class Shape<I = any, O = I> {
    * @template A The input value to replace.
    * @template B The output value.
    */
-  replace<A extends Any, B extends Any>(inputValue: A, outputValue: B): OpaqueReplaceShape<this, A, B> {
+  replace<A extends Literal, B extends Literal>(inputValue: A, outputValue: B): OpaqueReplaceShape<this, A, B> {
     return new ReplaceShape(this, inputValue, outputValue);
+  }
+
+  /**
+   * Includes value from both input and output.
+   *
+   * @param value The included value.
+   * @param options The constraint options or an issue message.
+   * @returns The {@linkcode ReplaceShape} instance.
+   * @template T The included value.
+   */
+  include<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): OpaqueIncludeShape<this, T> {
+    return this.replace(value, value);
   }
 
   /**
    * Excludes value from both input and output.
    *
-   * @param excludedValue The excluded value.
+   * @param value The excluded value.
    * @param options The constraint options or an issue message.
    * @returns The {@linkcode ExcludeShape} instance.
    * @template T The excluded value.
    */
-  exclude<T extends Any>(excludedValue: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
-    return new ExcludeShape(this, excludedValue, options);
+  exclude<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
+    return new ExcludeShape(this, value, options);
   }
 
   /**
@@ -397,7 +417,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional<T extends Any>(defaultValue: T): OpaqueReplaceShape<this, undefined, T>;
+  optional<T extends Literal>(defaultValue: T): OpaqueReplaceShape<this, undefined, T>;
 
   optional(defaultValue?: any) {
     return this.replace(undefined, defaultValue);
@@ -416,7 +436,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable<T extends Any>(defaultValue: T): OpaqueReplaceShape<this, null, T>;
+  nullable<T extends Literal>(defaultValue: T): OpaqueReplaceShape<this, null, T>;
 
   nullable(defaultValue?: any) {
     return this.replace(null, arguments.length === 0 ? null : defaultValue);

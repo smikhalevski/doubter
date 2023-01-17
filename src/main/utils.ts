@@ -53,6 +53,10 @@ export function isPlainObject(value: unknown): value is Record<any, any> {
   return isObjectLike(value) && ((prototype = getPrototypeOf(value)) === null || prototype.constructor === Object);
 }
 
+export function isNumber(value: unknown): boolean {
+  return typeof value === 'number' && value === value;
+}
+
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   let async = false;
 
