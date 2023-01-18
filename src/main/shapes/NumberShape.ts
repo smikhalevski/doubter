@@ -233,3 +233,31 @@ export class NumberShape extends CoercibleShape<number> {
     return input;
   }
 }
+
+export interface NumberShape {
+  /**
+   * Alias for {@linkcode gte}.
+   *
+   * Constrains the number to be greater than or equal to the value.
+   *
+   * @param value The inclusive minimum value.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  min(value: number, options?: ConstraintOptions | Message): this;
+
+  /**
+   * Alias for {@linkcode lte}.
+   *
+   * Constrains the number to be less than or equal to the value.
+   *
+   * @param value The inclusive maximum value.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  max(value: number, options?: ConstraintOptions | Message): this;
+}
+
+NumberShape.prototype.min = NumberShape.prototype.gte;
+
+NumberShape.prototype.max = NumberShape.prototype.lte;
