@@ -12,7 +12,7 @@ export type LookupCallback = (input: unknown) => readonly AnyShape[];
 /**
  * The shape that requires an input to conform at least one of shapes.
  *
- * @template U The list of united shapes.
+ * @template U The list of shapes that comprise a union.
  */
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['input'], U[number]['output']> {
   protected _options;
@@ -21,13 +21,13 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   /**
    * Creates a new {@linkcode UnionShape} instance.
    *
-   * @param shapes The list of united shapes.
+   * @param shapes The list of shapes that comprise a union.
    * @param options The union constraint options or an issue message.
-   * @template U The list of united shapes.
+   * @template U The list of shapes that comprise a union.
    */
   constructor(
     /**
-     * The list of united shapes.
+     * The list of shapes that comprise a union.
      */
     readonly shapes: U,
     options?: TypeConstraintOptions | Message
