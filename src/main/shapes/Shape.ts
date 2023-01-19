@@ -39,6 +39,11 @@ import {
 const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
 
 /**
+ * The unique symbol that is used for type branding.
+ */
+export declare const BRAND: unique symbol;
+
+/**
  * An arbitrary shape.
  */
 export type AnyShape = Shape | Shape<never>;
@@ -271,6 +276,16 @@ export class Shape<I = any, O = I> {
     cb: (output: O, options: Readonly<ParseOptions>) => Promise<T>
   ): Shape<I, T> {
     return new TransformShape(this, true, cb);
+  }
+
+  /**
+   * Adds a brand to the output type of the shape.
+   *
+   * @returns An opaque shape with branded output type.
+   * @template T The unique brand marker. By default, this shape is used as a marker.
+   */
+  brand<T = this>(): Shape<I, O & { [BRAND]: T }> {
+    return this as Shape;
   }
 
   /**
