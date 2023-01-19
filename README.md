@@ -5,21 +5,9 @@ No-hassle runtime validation and transformation.
 - TypeScript first;
 - Zero dependencies;
 - Sync and async validation and transformation flows;
-- Type coercion for primitives, arrays, promises and dates;
+- Type coercion;
 - [High performance and low memory consumption](#performance);
-- [Just 7 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
-
-```ts
-import * as d from 'doubter';
-
-const userShape = d.object({
-  name: d.string().optional('Anonymous'),
-  age: d.int().gte(18).lt(100)
-});
-
-const user = userShape.parse({ age: 21 });
-// ⮕ { name: 'Anonymous', age: 21 }
-```
+- [Just 10 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
 🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
 
@@ -27,22 +15,30 @@ const user = userShape.parse({ age: 21 });
 npm install --save-prod doubter
 ```
 
-- [Usage](#usage)
+- **Core features**
 
-    - [Checks](#checks)
-    - [Refinements](#refinements)
-    - [Transformations](#transformations)
-    - [Redirections](#redirections)
-    - [Fallback values](#fallback-values)
-    - [Async shapes](#async-shapes)
-    - [Guarded functions](#guarded-functions)
-    - [Localization](#localization)
-    - [Parsing context](#parsing-context)
-    - [Integrations](#integrations)
+  - [Basics](#basics)
+  - [Shapes](#shapes)
+  - [Parsing and trying](#parsing-and-trying)
+  - [Validation errors](#validation-errors)
+  - [Checks](#checks)
+  - [Refinements](#refinements)
+  - [Transformations](#transformations)
+  - [Parsing context](#parsing-context)
+  - [Localization](#localization)
+  - [Type coercion](#type-coercion)
+  - [Branded types](#branded-types)
+  - [Redirections](#redirections)
+  - [Exclude](#exclude)
+  - [Include](#include)
+  - [Replace](#replace)
+  - [Optional and non-optional](#optional-and-non-optional)
+  - [Nullable and nullish](#nullable-and-nullish)
+  - [Fallback on error](#fallback-on-error)
+  - [Guarded functions](#guarded-functions)
+  - [Integrations](#integrations)
 
-- [Performance](#performance)
-
-- [API reference](#api-reference)
+- **Data types**
 
     - Arrays<br>
       [`array`](#array)
@@ -52,6 +48,8 @@ npm install --save-prod doubter
       [`object`](#object)
       [`record`](#record)
       [`instanceOf`](#instanceof)
+      [`set`](#set)
+      [`map`](#map)
 
     - Numbers<br>
       [`number`](#number)
@@ -98,80 +96,265 @@ npm install --save-prod doubter
       [`lazy`](#lazy)
       [`json`](#json)
 
-# Usage
+# Basics
 
-Doubter provides an API to compose runtime shapes that validate and transform data. Shapes can be treated as pipelines
-that have an input and an output. The `Shape` type may have zero, one or two parameters.
-
-- `Shape<I, O>` is a shape that has an input of the type `I` and output of the type `O`.
-- `Shape<T>` is a shortcut for `Shape<T, T>`.
-- `Shape` is a shortcut for `Shape<any, any>`.
-
-For example, consider a shape that ensures that an input value is a string.
+Let's create a simple shape of a user object:
 
 ```ts
 import * as d from 'doubter';
 
-const shape = d.string();
+const userShape = d.object({
+  name: d.string(),
+  age: d.int().gte(18).lt(100)
+});
+// ⮕ Shape<{ username: string, age: number }>
+```
+
+This shape can be used to validate a value:
+
+```ts
+userShape.parse({
+  name: 'John Belushi',
+  age: 30,
+});
+// ⮕ { name: 'John Belushi', age: 31 }
+```
+
+If an incorrect value is provided, a validation error is thrown:
+
+```ts
+userShape.parse({
+  name: 'Peter Parker',
+  age: 17,
+});
+// ❌ ValidationError: numberGreaterThanOrEqual at /age: Must be greater than or equal to 18
+```
+
+Infer user type from the shape:
+
+```ts
+type User = typeof userShape['output'];
+
+const user: User = {
+  name: 'Dan Aykroyd',
+  age: 27,
+};
+```
+
+# Shapes
+
+Shapes are validation and transformation pipelines that have an input and an output. Here's a shape that restricts an
+input to a string and produces a string as an output:
+
+```ts
+d.string();
 // ⮕ Shape<string>
-
-shape.parse('foo');
-// ⮕ 'foo'
 ```
 
-If an input value isn't a string, a `ValidationError` is thrown.
+Shapes can have different input and output types. For example, the shape below allows strings and replaces `undefined`
+input values with a default value "Mars":
 
 ```ts
-shape.parse(42);
-// ❌ Error
-```
+const shape = d.string().optional('Mars');
+// ⮕ Shape<string | undefined, string>
 
-Each error instance has `issues` property that contains issues that occurred during parsing.
+shape.parse('Pluto');
+// ⮕ 'Pluto'
 
-```ts
-[{
-  code: 'type',
-  path: [],
-  input: 42,
-  message: 'Must be a string',
-  param: 'string',
-  meta: undefied
-}]
-```
-
-It isn't always convenient to write a try-catch block to handle a validation error. Use `try` method in such cases.
-
-```ts
-shape.try('foo');
-// ⮕ { ok: true, value: 'foo' }
-
-shape.try(42);
-// ⮕ { ok: false, issues: [{ code: 'type', … }] }
-```
-
-Sometimes you don't care about issues at all, and want a default value to be returned if things go south:
-
-```ts
-shape.parseOrDefault('foo');
-// ⮕ 'foo'
-
-shape.parseOrDefault(42, 'bar');
-// ⮕ 'bar'
+shape.parse(undefined);
+// ⮕ 'Mars'
 ```
 
 Infer the input and output types of the shape:
 
 ```ts
-const shape = d.string().transform(parseFloat);
+const shape = d.string().optional('Mars');
+// ⮕ Shape<string | undefined, string>
 
-typeof shape['input'];
+type ShapeInput = typeof shape['input'];
+// ⮕ string | undefined
+
+type ShapeOutput = typeof shape['output'];
 // ⮕ string
-
-typeof shape['output'];
-// ⮕ number
 ```
 
-## Checks
+[Transformations](#transformations) and reliance on [promise shapes](#promise) make your shapes async. Here's a shape of
+a promise that is expected to be fulfilled with a number:
+
+```ts
+const asyncShape = d.promise(d.number());
+// ⮕ Shape<Promise<number>>
+```
+
+You can check that the shape is async:
+
+```ts
+asyncShape.async // ⮕ true
+```
+
+Async shapes don't support synchronous `parse` method, and would throw an error if it is called:
+
+```ts
+asyncShape.parse(Promise.resolve(42));
+// ❌ Error: Shape is async
+```
+
+Use `parseAsync` with async shapes instead:
+
+```ts
+asyncShape.parseAsync(Promise.resolve(42));
+// ⮕ Promise<42>
+```
+
+Any shape that relies on an async shape becomes async as well:
+
+```ts
+const otherShape = d.object({
+  foo: asyncShape,
+});
+// ⮕ Shape<{ foo: Promise<number> }>
+
+otherShape.async // ⮕ true
+```
+
+# Parsing and trying
+
+Each shape can parse input values and provides several methods for that purpose.
+
+## `parse`
+
+You're already familiar with `parse` that takes an input value and returns an output value or throws a validation error
+is parsing fails:
+
+```ts
+const shape = d.number();
+// ⮕ Shape<number>
+
+shape.parse(42);
+// ⮕ 42
+
+shape.parse('Mars');
+// ❌ ValidationError: type at /: Must be a number
+```
+
+`parseAsync` works the same way but returns a promise that is eiter fulfilled with an output value or rejects with a
+validation error.
+
+## `parseOrDefault`
+
+Sometimes you don't care about validation errors, and want a default value to be returned if things go south:
+
+```ts
+const shape = d.number();
+// ⮕ Shape<number>
+
+shape.parseOrDefault(42);
+// ⮕ 42
+
+shape.parseOrDefault('Mars');
+// ⮕ undefined
+
+shape.parseOrDefault('Pluto', 5.3361);
+// ⮕ 5.3361
+```
+
+`parseOrDefaultAsync` has the same semantics and returns a promise.
+
+## `try`
+
+It isn't always convenient to write a try-catch blocks to handle a validation errors. Use `try` method in such cases:
+
+```ts
+const shape = d.number();
+// ⮕ Shape<number>
+
+shape.try(42);
+// ⮕ { ok: true, value: 42 }
+
+shape.try('Mars');
+// ⮕ { ok: false, issues: [{ code: 'type', … }] }
+```
+
+`tryAsync` has the same semantics and returns a promise.
+
+# Validation errors
+
+Validation errors which are thrown by the `parse` method, and `Err` objects returned by the `try` method have an
+`issues` property which holds an array of validation issues:
+
+```ts
+const shape = d.object({
+  age: d.number()
+});
+// ⮕ Shape<{ age: number }>
+
+const result = shape.try({ age: 'Seventeen' });
+// ⮕ { ok: false, issues: … }
+```
+
+In the example above `result.issues` would contain a single issue:
+
+```ts
+[{
+  code: 'type',
+  path: ['age'],
+  input: 'Seventeen',
+  message: 'Must be a number',
+  param: 'number',
+  meta: undefied
+}]
+```
+
+`code` is a code of the validation issue. There are multiple checks that shapes provide, and each check has a unique
+code. In the example above, `type` refers to a failed type check. Refer to a `param` property for expected type name.
+
+| Code | Caused by | Param |
+| :-- | :-- | :--  |
+| `arrayMinLength` | `d.array().min(n)` | The minimum length `n` |
+| `arrayMaxLength` | `d.array().max(n)` | The maximum length `n` |
+| `const` | `d.const(x)` | The expected constant value `x` |
+| `enum` | `d.enum([x, y, z])` | The list of unique expected values `[x, y, z]` |
+| `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
+| `instance` | `instanceOf(Class)` | The class constructor `Class` |
+| `intersection` | `d.and(…)` | — |
+| `json` | `d.json()` | The message from `JSON.parse()` |
+| `predicate` | [`shape.refine(…)`](#refinements) | The callback passed to `refine`  |
+| `numberInteger` | `d.integer()` | — |
+| `numberFinite` | `d.number().finite()` | — |
+| `numberGreaterThan` | `d.number().gt(x)` | The exclusive minimum value `x` |
+| `numberGreaterThanOrEqual` | `d.number().gte(x)` | The minimum value `x` |
+| `numberLessThan` | `d.number().lt(x)` | The exclusive maximum value `x` |
+| `numberLessThanOrEqual` | `d.number().lte(x)` | The maximum value `x` |
+| `numberMultipleOf` | `d.number().multipleOf(x)` | The divisor `x` |
+| `setMinSize` | `d.set().min(n)` | The minimum size `n` |
+| `setMaxSize` | `d.set().max(n)` | The maximum size `n` |
+| `stringMinLength` | `d.string().min(n)` | The minimum length `n` |
+| `stringMaxLength` | `d.string().max(n)` | The maximum length `n` |
+| `stringRegex` | `d.string().regex(re)` | The regular expression `re` |
+| `type` | All shapes | The expected input value type [<sup>✱</sup>](#value-types) |
+| `tuple` | `d.tuple([…])` | The expected tuple length |
+| `union` | `d.or(…)` | The array of expected input value types |
+| `unknownKeys` | `d.object().exact()` | The array of unknown keys |
+
+<a href="#value-types" name="value-types"><sup>✱</sup></a> The list of known value types:
+
+- `array`
+- `bigint`
+- `boolean`
+- `date`
+- `function`
+- `object`
+- `map`
+- `never`
+- `null`
+- `number`
+- `promise`
+- `set`
+- `string`
+- `symbol`
+- `undefined`
+
+# Checks
 
 Checks allow constraining the input value beyond type assertions. For example, if you want to constrain an input number
 to be greater than 5:
@@ -179,7 +362,7 @@ to be greater than 5:
 ```ts
 const shape = d.number().check(value => {
   if (value <= 5) {
-    return { code: 'woops' };
+    return { code: 'kaputs' };
   }
 });
 // ⮕ Shape<number>
@@ -188,11 +371,11 @@ shape.parse(10);
 // ⮕ 10
 
 shape.parse(3);
-// ❌ Error
+// ❌ ValidationError: kaputs at /
 ```
 
-A check callback receives an input value and returns an issue or an array of issues if the value isn't valid. If value
-is valid, a check callback must return `null` or `undefined`.
+A check callback receives an input value and returns an issue or an array of issues if the value is invalid. If value is
+valid, a check callback must return `null` or `undefined`.
 
 Most shapes have a set of built-in checks. The check we've just implemented is called `gt` (greater than):
 
@@ -200,22 +383,21 @@ Most shapes have a set of built-in checks. The check we've just implemented is c
 d.number().gt(5);
 ```
 
-Add as many checks as you want to the shape. They are executed the same order they are defined.
+Add as many checks as you need to the shape. They are executed the same order they are defined.
 
 ```ts
-d.string().min(5).regex(/a/).parse('foo');
+d.string().max(4).regex(/a/).parse('Pluto');
 ```
 
-By default, if a check returned an issue, all consequent checks are ignored. In the example above, a validation error
-would be thrown with a single issue:
+In the example above, a validation error would be thrown with a single issue:
 
 ```ts
 [{
-  code: 'stringMinLength',
+  code: 'stringMaxLength',
   path: [],
-  input: 'foo',
-  message: 'Must have the minimum length of 5',
-  param: 'string',
+  input: 'Pluto',
+  message: 'Must have the maximum length of 4',
+  param: 4,
   meta: undefied
 }]
 ```
@@ -224,29 +406,29 @@ If you want a check to be executed even if the previous check failed, pass the `
 
 ```ts
 d.string()
-  .min(5)
-  .regex(/bar/, { unsafe: true })
-  .parse('foo', { verbose: true });
+  .max(4)
+  .regex(/a/, { unsafe: true })
+  .parse('Pluto', { verbose: true });
 ```
 
-This would throw a validation error with the following issues.
+This would throw a validation error with following issues:
 
 ```ts
 [
   {
-    code: 'stringMinLength',
+    code: 'stringMaxLength',
     path: [],
-    input: 'foo',
-    message: 'Must have the minimum length of 5',
-    param: 'string',
+    input: 'Pluto',
+    message: 'Must have the maximum length of 4',
+    param: 4,
     meta: undefied
   },
   {
     code: 'stringRegex',
     path: [],
-    input: 'foo',
-    message: 'Must regex the pattern /bar/',
-    param: /bar/,
+    input: 'Pluto',
+    message: 'Must regex the pattern /a/',
+    param: /a/,
     meta: undefied
   },
 ]
@@ -260,7 +442,15 @@ At this point you may be wondering what is that `meta` field of the issue object
 built-in check, and it would be added to an issue.
 
 ```ts
-d.number().gt(5, { meta: 'Any useful data here' });
+const shape = d.number().gt(5, { meta: 'Useful data' });
+// ⮕ Shape<number>
+
+const result = shape.try(2);
+// ⮕ { ok: false, issues: … }
+
+if (!result.ok) {
+  result.issues[0].meta // ⮕ 'Useful data'
+}
 ```
 
 ## Refinements
@@ -269,53 +459,156 @@ Refinements are a simplified checks that use a predicate to validate an input. F
 an issue if the input string is less than three characters long.
 
 ```ts
-d.string().refine(value => value.length >= 3)
+d.string().refine(value => value.length >= 3);
 // ⮕ Shape<string>
 ```
 
-Or use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type of the
-shape:
+Use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type of the shape:
 
 ```ts
-d.string().refine(
-  (value): value is 'foo' | 'bar' => value === 'foo' || value === 'bar'
-)
-// ⮕ Shape<string, 'foo' | 'bar'>
+function isMarsOrPluto(value: string): 'Mars' | 'Pluto' {
+  return value === 'Mars' || value === 'Pluto';
+}
+
+d.string().refine(isMarsOrPluto)
+// ⮕ Shape<string, 'Mars' | 'Pluto'>
 ```
 
-## Transformations
+# Transformations
 
-Shapes can transform values. Let's consider a shape that takes a string as an input and converts it to number.
+Shapes can transform values. Let's consider a shape that takes a string as an input and converts it to number:
 
 ```ts
 const shape = d.string().transform(parseFloat);
 // ⮕ Shape<string, number>
 ```
 
-This shape ensures that the input value is a string and passes it to a transformation callback.
+This shape ensures that the input value is a string and passes it to a transformation callback:
 
 ```ts
 shape.parse('42');
 // ⮕ 42
+
+shape.parse('Seventeen');
+// ⮕ NaN
 ```
 
 Throw a `ValidationError` inside the transformation callback to notify parser that transformation cannot be successfully
 completed:
 
 ```ts
-d.string().transform(value => {
-  const output = parseFloat(value);
+function toNumber(input: string): number {
+  const output = parseFloat(input);
 
   if (isNaN(output)) {
-    throw new d.ValidationError([{ code: 'woops' }]);
+    throw new d.ValidationError([{ code: 'kaputs' }]);
   }
   return output;
-})
+}
+
+const shape = d.string().transform(toNumber);
+
+shape.parse('42');
+// ⮕ 42
+
+shape.parse('Seventeen');
+// ❌ ValidationError: kaputs at /
 ```
 
-You can apply a transformations [directly to an input value](#transform).
+## Async transformations
 
-## Redirections
+Let's consider a sync transformation:
+
+```ts
+const shape1 = d.string().transform(
+  value => 'Hello, ' + value
+);
+// ⮕ Shape<string>
+
+shape1.async;
+// ⮕ false
+
+shape1.parse('Jill');
+// ⮕ 'Hello, Jill'
+```
+
+The transformation callback receives and returns a string and so does `shape1`.
+
+Now lets return a promise from the transformation callback:
+
+```ts
+const shape2 = d.string().transform(
+  value => Promise.resolve('Hello, ' + value)
+);
+// ⮕ Shape<string, Promise<string>>
+
+shape2.async;
+// ⮕ false
+
+shape2.parse('Jill');
+// ⮕ Promise<string>
+```
+
+Notice that `shape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `shape2` is
+still sync, since the transformation callback _synchronously wraps_ a value in a promise.
+
+Now let's create an async shape using the async transformation:
+
+```ts
+const asyncShape1 = d.string().transformAsync(
+  value => Promise.resolve('Hello, ' + value)
+);
+// ⮕ Shape<string>
+
+// 🟡 Notice that the shape is async
+asyncShape1.async;
+// ⮕ true
+
+await asyncShape1.parseAsync('Jill');
+// ⮕ 'Hello, Jill'
+```
+
+Notice that `asyncShape1` still transforms the input string value to output string but the transformation itself is
+async.
+
+A shape is async if it uses async transformations. Here's an async object shape:
+
+```ts
+const asyncShape2 = d.object({
+  foo: d.string().transformAsync(
+    value => Promise.resolve(value)
+  )
+});
+// ⮕ Shape<{ foo: string }>
+
+asyncShape2.async;
+// ⮕ true
+```
+
+Shape also becomes async if it relies on a [`promise`](#promises) shape:
+
+```ts
+d.object({
+  foo: d.promise(d.string())
+});
+// ⮕ Shape<{ foo: Promise<string> }>
+```
+
+# Parsing context
+
+Inside check and transform callbacks you can access options passed to the parser:
+
+```ts
+const shape = d.number().transform(
+  (value, options) => new Intl.NumberFormat(options.context.locale).format(value)
+);
+// ⮕ Shape<number, string>
+
+shape.parse(1000, { context: { locale: 'en-US' } });
+// ⮕ '1,000'
+```
+
+# Redirections
 
 Redirections allow you to apply a shape to the output of another shape.
 
@@ -330,7 +623,170 @@ const shape2 = shape1.to(number().lt(5).gt(10));
 Redirections are particularly useful along with transformations since the `transform` method returns a `TransformShape`
 instance that has a generic API.
 
-## Fallback values
+# Exclude
+
+Consider an enum shape:
+
+```ts
+const shape1 = d.enum(['Mars', 'Pluto', 'Jupiter']);
+// ⮕ Shape<'Mars' | 'Pluto' | 'Jupiter'>
+```
+
+To exclude a value from this enum you can use `exclude`:
+
+```ts
+shape1.exclude('Pluto');
+// ⮕ Shape<'Mars' | 'Jupiter'>
+```
+
+This works with any shape. For example, you can exclude a number:
+
+```ts
+const shape2 = d.number().exclude(42);
+// ⮕ Shape<number>
+
+shape2.parse(33);
+// ⮕ 33
+
+shape2.parse(42);
+// ❌ ValidationError: exclusion at /: Must not be equal to 42
+```
+
+Exclude prohibits value at _both input and output_:
+
+```ts
+const shape3 = d.number().transform(() => 42).exclude(42);
+// ⮕ Shape<number>
+
+shape3.parse(33);
+// ❌ ValidationError: exclusion at /: Must not be equal to 42
+```
+
+# Include
+
+You can include a value in multitude of input values:
+
+```ts
+d.const('Mars').include('Pluto');
+// ⮕ Shape<'Mars' | 'Pluto'>
+```
+
+Included values don't go through checks and transformations of the underlying shape:
+
+```ts
+const shape = d.number().gt(3).include('Seventeen');
+// ⮕ Shape<number | 'Seventeen'>
+
+shape.parse(2);
+// ❌ ValidationError: numberGreaterThan at /: Must be greater than 3
+
+shape.parse(100);
+// ⮕ Shape<100>
+
+// 🟡 Notice that parsed value doesn't satisfy the number type constraint
+shape.parse('Seventeen');
+// ⮕ 'Seventeen'
+```
+
+# Replace
+
+Include a value as an input and replace it with another value on the output side:
+
+```ts
+const shape = d.const('Mars').replace('Pluto', 'Jupiter');
+// ⮕ Shape<'Mars' | 'Pluto', 'Mars' | 'Jupiter'>
+
+shape.parse('Mars');
+// ⮕ 'Mars'
+
+shape.parse('Pluto');
+// ⮕ 'Jupiter'
+```
+
+Note that `replace` treats passed values as literals but not all values can be literals. For example, there's no literal
+type for `NaN` values which may cause unexpected typing:
+
+```ts
+d.number().replace(NaN, 0);
+// ⮕ Shape<number, 0>
+```
+
+This occurs because `typeof NaN` is `number` and it is excluded from the output type of the shape. For this particular
+case use `nan` method of number shape:
+
+```ts
+const shape = d.number().nan(0);
+// ⮕ Shape<number, 0>
+
+shape.parse(NaN);
+// ⮕ 0
+```
+
+# Optional and non-optional
+
+Marking a shape as optional allows `undefined` in both its input and output:
+
+```ts
+d.string().optional();
+// ⮕ Shape<string | undefined>
+```
+
+You can provide a default value, so it would be used as an output if input value is `undefined`:
+
+```ts
+d.string().optional(42);
+// ⮕ Shape<string | undefined, string | 42>
+```
+
+As you can see, default value can have an arbitrary type.
+
+You can mark any shape as non-optional. For example, lets consider a union of optional string and number:
+
+```ts
+const shape1 = d.or([
+  d.string().optional(),
+  d.number()
+]);
+// ⮕ Shape<string | undefined | number>
+
+shape1.parse(undefined);
+// ⮕ undefined
+```
+
+Now let's mark this shape as non-optional:
+
+```ts
+const shape2 = shape1.nonOptional();
+// ⮕ Shape<string | number>
+
+shape2.parse(undefined);
+// ❌ ValidationError: exclusion at /: Must not be equal to undefined
+```
+
+# Nullable and nullish
+
+Marking a shape as nullable allows `null` in both its input and output:
+
+```ts
+d.string().nullable();
+// ⮕ Shape<string | null>
+```
+
+You can provide a default value, so it would be used as an output if input value is `null`:
+
+```ts
+d.string().nullable(42);
+// ⮕ Shape<string | null, string | 42>
+```
+
+To allow both `null` and `undefined` values an input use `nullish`:
+
+```ts
+d.string().nullish();
+// ⮕ Shape<string | null | undefined>
+```
+
+# Fallback on error
 
 If parsing fails a shape can return a fallback value.
 
@@ -359,87 +815,59 @@ shape.parse('Mars');
 // ⮕ 1671565326707
 ```
 
-## Async shapes
+# Localization
 
-Most of the time your shapes would be sync. But some transformations or promise values would make them async.
-
-Let's consider the sync transformation:
+All shapes and built-in checks support custom messages:
 
 ```ts
-const shape1 = d.string().transform(
-  value => 'Hello, ' + value
-);
-// ⮕ Shape<string>
-
-shape1.async;
-// ⮕ false
-
-shape1.parse('Jill');
-// ⮕ 'Hello, Jill'
+d.string('Hey, string here').min(3, 'Too short');
 ```
 
-The transformation callback receives and returns a string and so does `syncShape1`.
-
-Now lets return a promise from the transformation callback:
+Checks that have a param, such as `min` constraint in the example above, can use a `%s` placeholder that would be
+interpolated with the param value.
 
 ```ts
-const shape2 = d.string().transform(
-  value => Promise.resolve('Hello, ' + value)
-);
-// ⮕ Shape<string, Promise<string>>
-
-shape2.async;
-// ⮕ false
-
-shape2.parse('Jill');
-// ⮕ Promise<string>
+d.string().min(3, 'Minimum length is %s');
 ```
 
-Notice that `shape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `shape2` is
-still sync, since the transformation callback _synchronously wraps_ a value in a promise.
+Pass a function as a message, then it would receive a check param, an issue code, an input value, a metadata, and
+parsing options and should return a formatted message value. The returned formatted message can be of any type.
 
-Now let's create an async shape using the async transformation:
+For example, when using with React you may return a JSX element:
 
-```ts
-const asyncShape = d.string().transformAsync(
-  value => Promise.resolve('Hello, ' + value)
-);
-// ⮕ Shape<string>
-
-asyncShape.async;
-// ⮕ true
-
-await asyncShape.parseAsync('Jill');
-// ⮕ 'Hello, Jill'
-```
-
-Notice that `asyncShape` still transforms the input string value to output string but the transformation itself is
-async.
-
-The shape is async if it uses async transformations. Here's an async object shape:
-
-```ts
-const asyncObjShape = d.object({
-  foo: d.string().transformAsync(
-    value => Promise.resolve(value)
+```tsx
+d.number().gt(
+  5,
+  (param, code, input, meta, options) => (
+    <span style={{ color: 'red' }}>
+      Minimum length is {param}
+    </span>
   )
-});
-// ⮕ Shape<{ foo: string }>
-
-asyncObjShape.async;
-// ⮕ true
+);
 ```
 
-Shape also becomes async if it relies on a [`promise`](#promise) shape:
+All rules described above are applied to the `message` option as well:
 
 ```ts
-const asyncObjShape2 = d.object({
-  foo: d.promise(d.string())
-});
-// ⮕ Shape<{ foo: Promise<string> }>
+d.string().length(3, { message: 'Expected length is %s' })
 ```
 
-## Guarded functions
+# Integrations
+
+Combine Doubter with any predicate library.
+
+```ts
+import * as d from 'doubter';
+import isEmail from 'validator/lib/isEmail';
+
+const emailShape = d.string().refine(isEmail, 'Must be an email');
+// ⮕ Shape<string>
+
+emailShape.parse('Not an email');
+// ❌ ValidationError: predicate at /: Must be an email
+```
+
+# Guarded functions
 
 Returns a function which parses arguments with corresponding shapes:
 
@@ -478,70 +906,7 @@ const callback = callbackFactory(arg => {
 
 If you are want to use async shapes to parse arguments, use `fnAsync` which has the same signatures as `fn`.
 
-## Localization
-
-All shapes and built-in checks support custom messages:
-
-```ts
-d.string('Hey, string here').min(3, 'Too short');
-```
-
-Checks that have a param, such as `min` constraint in the example above, can use a `%s` placeholder that would be
-interpolated with the param value.
-
-```ts
-d.string().min(3, 'Minimum length is %s');
-```
-
-Pass a function as a message, then it would receive a check param, an issue code, an input value, a metadata, and
-parsing options and should return a formatted message value. The returned formatted message can be of any type.
-
-For example, when using with React you may return a JSX element:
-
-```tsx
-d.number().gt(
-  5,
-  (param, code, input, meta, options) => (
-    <span style={{ color: 'red' }}>
-      Minimum length is {param}
-    </span>
-  )
-);
-```
-
-All rules described above are applied to the `message` option as well:
-
-```ts
-d.string().length(3, { message: 'Expected length is %s' })
-```
-
-## Parsing context
-
-Inside check and transform callbacks you can access options passed to the parser:
-
-```ts
-const shape = d.number().transform(
-  (value, options) => new Intl.NumberFormat(options.context.locale).format(value)
-);
-// ⮕ Shape<number, string>
-
-shape.parse(1000, { context: { locale: 'en-US' } });
-// ⮕ '1,000'
-```
-
-## Integrations
-
-Combine Doubter with any predicate library.
-
-```ts
-import * as d from 'doubter';
-import isEmail from 'validator/lib/isEmail';
-
-const emailShape = d.string().refine(isEmail, 'Must be an email');
-// ⮕ Shape<string>
-```
-
-# API reference
+# Data types
 
 🔎 [API documentation is available here.](https://smikhalevski.github.io/doubter/)
 
