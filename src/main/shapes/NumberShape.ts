@@ -96,7 +96,7 @@ export class NumberShape extends CoercibleShape<number> {
   gt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-    return setCheck(this, CODE_NUMBER_GT, options, value, (input, options) => {
+    return setCheck(this.deleteCheck(CODE_NUMBER_GTE), CODE_NUMBER_GT, options, value, (input, options) => {
       if (input <= value) {
         return issueFactory(input, options);
       }
@@ -113,7 +113,7 @@ export class NumberShape extends CoercibleShape<number> {
   lt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-    return setCheck(this, CODE_NUMBER_LT, options, value, (input, options) => {
+    return setCheck(this.deleteCheck(CODE_NUMBER_LTE), CODE_NUMBER_LT, options, value, (input, options) => {
       if (input >= value) {
         return issueFactory(input, options);
       }
@@ -130,7 +130,7 @@ export class NumberShape extends CoercibleShape<number> {
   gte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-    return setCheck(this, CODE_NUMBER_GTE, options, value, (input, options) => {
+    return setCheck(this.deleteCheck(CODE_NUMBER_GT), CODE_NUMBER_GTE, options, value, (input, options) => {
       if (input < value) {
         return issueFactory(input, options);
       }
@@ -147,7 +147,7 @@ export class NumberShape extends CoercibleShape<number> {
   lte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-    return setCheck(this, CODE_NUMBER_LTE, options, value, (input, options) => {
+    return setCheck(this.deleteCheck(CODE_NUMBER_LT), CODE_NUMBER_LTE, options, value, (input, options) => {
       if (input > value) {
         return issueFactory(input, options);
       }
