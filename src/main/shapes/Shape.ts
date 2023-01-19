@@ -53,7 +53,7 @@ export type AnyShape = Shape | Shape<never>;
 export type OpaqueReplaceShape<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
 
 /**
- * Includes a value in both input and output.
+ * Input value is passed directly to the output without any checks.
  *
  * @template S The base shape.
  * @template T The included value.
@@ -86,110 +86,6 @@ export type ValueType =
   | 'any'
   | 'never';
 
-export interface Shape<I, O> {
-  /**
-   * The shape input type. Accessible only at compile time for type inference.
-   */
-  readonly input: I;
-
-  /**
-   * The shape output type. Accessible only at compile time for type inference.
-   */
-  readonly output: O;
-
-  /**
-   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
-   * `false` if the shape can be used in both sync and async contexts.
-   */
-  readonly async: boolean;
-
-  /**
-   * The readonly list of checks applied to the shape output.
-   *
-   * To add a new check or replace all checks, consider using {@linkcode Shape.check} and
-   * {@linkcode Shape.replaceChecks} respectively.
-   */
-  readonly checks: readonly Check[];
-
-  /**
-   * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
-   */
-  try(input: unknown, options?: ParseOptions): Ok<O> | Err;
-
-  /**
-   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   */
-  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err>;
-
-  /**
-   * Synchronously parses the value.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
-   */
-  parse(input: unknown, options?: ParseOptions): O;
-
-  /**
-   * Asynchronously parses the value.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
-   */
-  parseAsync(input: unknown, options?: ParseOptions): Promise<O>;
-
-  /**
-   * Synchronously parses the value and returns `undefined` if parsing fails.
-   *
-   * @param input The value to parse.
-   * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
-   */
-  parseOrDefault(input: unknown): O | undefined;
-
-  /**
-   * Synchronously parses the value and returns the default value if parsing fails.
-   *
-   * @param input The value to parse.
-   * @param defaultValue The default value that is returned if parsing fails.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
-   */
-  parseOrDefault<T>(input: unknown, defaultValue: T, options?: ParseOptions): O | T;
-
-  /**
-   * Asynchronously parses the value and returns `undefined` value if parsing fails.
-   *
-   * @param input The value to parse.
-   * @returns The value that conforms the output type of the shape.
-   */
-  parseOrDefaultAsync(input: unknown): Promise<O | undefined>;
-
-  /**
-   * Asynchronously parses the value and returns the default value if parsing fails.
-   *
-   * @param input The value to parse.
-   * @param defaultValue The default value that is returned if parsing fails.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   */
-  parseOrDefaultAsync<T>(input: unknown, defaultValue: T, options?: ParseOptions): Promise<O | T>;
-}
-
 /**
  * The baseline shape implementation.
  *
@@ -208,7 +104,7 @@ export class Shape<I = any, O = I> {
   protected _checks: readonly Check[] = [];
 
   /**
-   * Applies checks to the output.
+   * A callback that applies checks to the given value.
    */
   protected _applyChecks: ApplyChecksCallback | null = null;
 
@@ -381,7 +277,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Includes value from both input and output.
+   * Input value is passed directly to the output without any checks.
    *
    * @param value The included value.
    * @param options The constraint options or an issue message.
@@ -533,6 +429,102 @@ export class Shape<I = any, O = I> {
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
   }
+}
+
+export interface Shape<I, O> {
+  /**
+   * The shape input type. Accessible only at compile time for type inference.
+   */
+  readonly input: I;
+
+  /**
+   * The shape output type. Accessible only at compile time for type inference.
+   */
+  readonly output: O;
+
+  /**
+   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
+   * `false` if the shape can be used in both sync and async contexts.
+   */
+  readonly async: boolean;
+
+  /**
+   * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   */
+  try(input: unknown, options?: ParseOptions): Ok<O> | Err;
+
+  /**
+   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
+   */
+  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err>;
+
+  /**
+   * Synchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   */
+  parse(input: unknown, options?: ParseOptions): O;
+
+  /**
+   * Asynchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   */
+  parseAsync(input: unknown, options?: ParseOptions): Promise<O>;
+
+  /**
+   * Synchronously parses the value and returns `undefined` if parsing fails.
+   *
+   * @param input The value to parse.
+   * @returns The value that conforms the output type of the shape.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   */
+  parseOrDefault(input: unknown): O | undefined;
+
+  /**
+   * Synchronously parses the value and returns the default value if parsing fails.
+   *
+   * @param input The value to parse.
+   * @param defaultValue The default value that is returned if parsing fails.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   */
+  parseOrDefault<T>(input: unknown, defaultValue: T, options?: ParseOptions): O | T;
+
+  /**
+   * Asynchronously parses the value and returns `undefined` value if parsing fails.
+   *
+   * @param input The value to parse.
+   * @returns The value that conforms the output type of the shape.
+   */
+  parseOrDefaultAsync(input: unknown): Promise<O | undefined>;
+
+  /**
+   * Asynchronously parses the value and returns the default value if parsing fails.
+   *
+   * @param input The value to parse.
+   * @param defaultValue The default value that is returned if parsing fails.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   */
+  parseOrDefaultAsync<T>(input: unknown, defaultValue: T, options?: ParseOptions): Promise<O | T>;
 }
 
 Object.defineProperties(Shape.prototype, {
@@ -758,7 +750,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     return this.shape['_getInputValues']();
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<O> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<O> {
     const { shape, callback, _applyChecks } = this;
 
     let issues;
@@ -789,7 +781,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     if (isEqual(input, output)) {
       return null;
     }
-    return ok(output as O);
+    return ok(output);
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {

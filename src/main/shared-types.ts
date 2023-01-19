@@ -78,8 +78,7 @@ export interface CheckOptions {
   unsafe?: boolean;
 
   /**
-   * An optional param that would be associated with the checker and can be accessed at {@linkcode Shape.checks} using
-   * {@linkcode Check.param}.
+   * An optional param associated with the check.
    */
   param?: any;
 }
