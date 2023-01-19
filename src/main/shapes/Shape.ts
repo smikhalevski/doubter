@@ -441,9 +441,9 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns a shape clone with all checks replaced with new checks.
+   * Returns a shape clone with new set of checks.
    *
-   * @param checkMap The map from a key to a corresponding check.
+   * @param checkMap The map from a check key to a corresponding check.
    * @returns The clone of the shape.
    */
   protected _replaceChecks(checkMap: ReadonlyMap<unknown, Check>): this {
