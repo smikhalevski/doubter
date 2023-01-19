@@ -42,24 +42,19 @@ export type CheckCallback<T = any> = (
  */
 export interface Check {
   /**
-   * The key of the check.
-   */
-  key: any;
-
-  /**
    * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
    */
-  callback: CheckCallback;
+  readonly callback: CheckCallback;
 
   /**
    * `true` if the {@linkcode callback} is invoked even if previous processors failed, or `false` otherwise.
    */
-  unsafe: boolean;
+  readonly unsafe: boolean;
 
   /**
    * The optional parameter used by the {@linkcode callback}.
    */
-  param: any;
+  readonly param: any;
 }
 
 /**

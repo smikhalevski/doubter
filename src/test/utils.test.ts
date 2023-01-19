@@ -250,9 +250,7 @@ describe('createApplyChecksCallback', () => {
     test('returns issues', () => {
       const cbMock = jest.fn(() => [{ code: 'xxx' }]);
 
-      const applyChecks = createApplyChecksCallback([
-        { callback: cbMock, param: undefined, key: 'aaa', unsafe: false },
-      ]);
+      const applyChecks = createApplyChecksCallback([{ callback: cbMock, param: undefined, unsafe: false }]);
 
       expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
@@ -262,7 +260,7 @@ describe('createApplyChecksCallback', () => {
     test('unsafe check merges issues', () => {
       const cbMock = jest.fn(() => [{ code: 'xxx' }]);
 
-      const applyChecks = createApplyChecksCallback([{ callback: cbMock, param: undefined, key: 'aaa', unsafe: true }]);
+      const applyChecks = createApplyChecksCallback([{ callback: cbMock, param: undefined, unsafe: true }]);
 
       const issues: Issue[] = [];
 
@@ -275,9 +273,7 @@ describe('createApplyChecksCallback', () => {
     test('safe check is not called when issues present', () => {
       const cbMock = jest.fn(() => [{ code: 'xxx' }]);
 
-      const applyChecks = createApplyChecksCallback([
-        { callback: cbMock, param: undefined, key: 'aaa', unsafe: false },
-      ]);
+      const applyChecks = createApplyChecksCallback([{ callback: cbMock, param: undefined, unsafe: false }]);
 
       const issues: Issue[] = [];
 
@@ -291,9 +287,7 @@ describe('createApplyChecksCallback', () => {
         throw new Error('expected');
       });
 
-      const applyChecks = createApplyChecksCallback([
-        { callback: cbMock, param: undefined, key: 'aaa', unsafe: false },
-      ]);
+      const applyChecks = createApplyChecksCallback([{ callback: cbMock, param: undefined, unsafe: false }]);
 
       expect(() => applyChecks!(111, null, {})).toThrow(new Error('expected'));
     });
@@ -303,9 +297,7 @@ describe('createApplyChecksCallback', () => {
         throw new ValidationError([{ code: 'xxx' }]);
       });
 
-      const applyChecks = createApplyChecksCallback([
-        { callback: cbMock, param: undefined, key: 'aaa', unsafe: false },
-      ]);
+      const applyChecks = createApplyChecksCallback([{ callback: cbMock, param: undefined, unsafe: false }]);
 
       expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
     });
@@ -319,10 +311,10 @@ describe('createApplyChecksCallback', () => {
       const cbMock4 = jest.fn(() => [{ code: 'DDD' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { callback: cbMock1, param: undefined, key: 'aaa', unsafe: true },
-        { callback: cbMock2, param: undefined, key: 'bbb', unsafe: true },
-        { callback: cbMock3, param: undefined, key: 'ccc', unsafe: true },
-        { callback: cbMock4, param: undefined, key: 'ddd', unsafe: true },
+        { callback: cbMock1, param: undefined, unsafe: true },
+        { callback: cbMock2, param: undefined, unsafe: true },
+        { callback: cbMock3, param: undefined, unsafe: true },
+        { callback: cbMock4, param: undefined, unsafe: true },
       ]);
 
       expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'BBB', path: [] }]);
@@ -341,10 +333,10 @@ describe('createApplyChecksCallback', () => {
       const cbMock4 = jest.fn(() => [{ code: 'DDD' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { callback: cbMock1, param: undefined, key: 'aaa', unsafe: true },
-        { callback: cbMock2, param: undefined, key: 'bbb', unsafe: true },
-        { callback: cbMock3, param: undefined, key: 'ccc', unsafe: true },
-        { callback: cbMock4, param: undefined, key: 'ddd', unsafe: true },
+        { callback: cbMock1, param: undefined, unsafe: true },
+        { callback: cbMock2, param: undefined, unsafe: true },
+        { callback: cbMock3, param: undefined, unsafe: true },
+        { callback: cbMock4, param: undefined, unsafe: true },
       ]);
 
       expect(applyChecks!(111, null, { verbose: true })).toEqual([
@@ -369,10 +361,10 @@ describe('createApplyChecksCallback', () => {
       const cbMock4 = jest.fn(() => [{ code: 'DDD' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { callback: cbMock1, param: undefined, key: 'aaa', unsafe: false },
-        { callback: cbMock2, param: undefined, key: 'bbb', unsafe: true },
-        { callback: cbMock3, param: undefined, key: 'ccc', unsafe: false },
-        { callback: cbMock4, param: undefined, key: 'ddd', unsafe: true },
+        { callback: cbMock1, param: undefined, unsafe: false },
+        { callback: cbMock2, param: undefined, unsafe: true },
+        { callback: cbMock3, param: undefined, unsafe: false },
+        { callback: cbMock4, param: undefined, unsafe: true },
       ]);
 
       expect(applyChecks!(111, null, { verbose: true })).toEqual([

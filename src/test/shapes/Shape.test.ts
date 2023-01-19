@@ -8,12 +8,14 @@ describe('Shape', () => {
   });
 
   test('clones shape when check is added', () => {
+    const cb = () => null;
+
     const shape1 = new Shape();
-    const shape2 = shape1.check(() => null);
+    const shape2 = shape1.check(cb);
 
     expect(shape1).not.toBe(shape2);
-    expect(shape1.checks.length).toBe(0);
-    expect(shape2.checks.length).toBe(1);
+    expect(shape1.getCheck(cb)).toBe(undefined);
+    expect(shape2.getCheck(cb)).toEqual({ callback: cb, unsafe: false });
   });
 
   test('invokes a check', () => {
@@ -38,23 +40,30 @@ describe('Shape', () => {
   });
 
   test('does not add the same check callback without a key', () => {
-    const cb = () => null;
-    const shape = new Shape().check(cb).check(cb);
+    const cbMock = jest.fn();
+    const shape = new Shape().check(cbMock).check(cbMock);
 
-    expect(shape.checks.length).toBe(1);
+    shape.parse(111);
+
+    expect(cbMock).toHaveBeenCalledTimes(1);
   });
 
   test('adds the same check callback with a key', () => {
-    const cb = () => null;
-    const shape = new Shape().check(cb, { key: 'aaa' }).check(cb);
+    const cbMock = jest.fn();
+    const shape = new Shape().check(cbMock, { key: 'aaa' }).check(cbMock);
 
-    expect(shape.checks.length).toBe(2);
+    shape.parse(111);
+
+    expect(cbMock).toHaveBeenCalledTimes(2);
   });
 
   test('replaces check callback with the same key', () => {
-    const shape = new Shape().check(() => null, { key: 'aaa' }).check(() => null, { key: 'aaa' });
+    const cbMock = jest.fn();
+    const shape = new Shape().check(cbMock, { key: 'aaa' }).check(cbMock, { key: 'aaa' });
 
-    expect(shape.checks.length).toBe(1);
+    shape.parse(111);
+
+    expect(cbMock).toHaveBeenCalledTimes(1);
   });
 
   test('returns ok when input was parsed', () => {

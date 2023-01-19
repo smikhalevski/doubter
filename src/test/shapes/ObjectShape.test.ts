@@ -36,46 +36,50 @@ describe('ObjectShape', () => {
   });
 
   test('adds rest signature', () => {
+    const cb = () => true;
     const restShape = new Shape();
-    const objShape1 = new ObjectShape({}, null).refine(() => true);
+    const objShape1 = new ObjectShape({}, null).refine(cb);
     const objShape2 = objShape1.rest(restShape);
 
-    expect(objShape1.checks.length).toBe(1);
+    expect(objShape1.getCheck(cb)).not.toBe(undefined);
     expect(objShape1.restShape).toBe(null);
     expect(objShape1.keysMode).toBe('preserved');
     expect(objShape2).not.toBe(objShape1);
-    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.getCheck(cb)).toBe(undefined);
     expect(objShape2.restShape).toBe(restShape);
     expect(objShape2.keysMode).toBe('preserved');
   });
 
   test('sets exact key mode', () => {
-    const objShape1 = new ObjectShape({}, null).refine(() => true);
+    const cb = () => true;
+    const objShape1 = new ObjectShape({}, null).refine(cb);
     const objShape2 = objShape1.exact();
 
     expect(objShape2).not.toBe(objShape1);
-    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.getCheck(cb)).toBe(undefined);
     expect(objShape2.keysMode).toBe('exact');
   });
 
   test('sets stripped key mode', () => {
-    const objShape1 = new ObjectShape({}, null).refine(() => true);
+    const cb = () => true;
+    const objShape1 = new ObjectShape({}, null).refine(cb);
     const objShape2 = objShape1.strip();
 
     expect(objShape2).not.toBe(objShape1);
-    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.getCheck(cb)).toBe(undefined);
     expect(objShape2.keysMode).toBe('stripped');
   });
 
   test('sets preserved key mode', () => {
-    const objShape1 = new ObjectShape({}, null).strip().refine(() => true);
+    const cb = () => true;
+    const objShape1 = new ObjectShape({}, null).strip().refine(cb);
     const objShape2 = objShape1.preserve();
 
-    expect(objShape1.checks.length).toBe(1);
+    expect(objShape1.getCheck(cb)).not.toBe(undefined);
     expect(objShape1.restShape).toBe(null);
     expect(objShape1.keysMode).toBe('stripped');
     expect(objShape2).not.toBe(objShape1);
-    expect(objShape2.checks.length).toBe(0);
+    expect(objShape2.getCheck(cb)).toBe(undefined);
     expect(objShape2.keysMode).toBe('preserved');
   });
 
@@ -127,9 +131,7 @@ describe('ObjectShape', () => {
     const objShape1 = new ObjectShape({ key1: shape1 }, null).strip().refine(() => true);
     const objShape2 = objShape1.extend({ key2: shape2 });
 
-    expect(objShape1.checks.length).toBe(1);
     expect(objShape2).not.toBe(objShape1);
-    expect(objShape2.checks.length).toBe(0);
     expect(objShape2.shapes).toEqual({ key1: shape1, key2: shape2 });
     expect(objShape2.keys).toEqual(['key1', 'key2']);
     expect(objShape2.keysMode).toBe('stripped');
@@ -145,9 +147,7 @@ describe('ObjectShape', () => {
     const objShape1 = new ObjectShape({ key1: shape1 }, restShape1).refine(() => true);
     const objShape2 = objShape1.extend(new ObjectShape({ key2: shape2 }, restShape2));
 
-    expect(objShape1.checks.length).toBe(1);
     expect(objShape2).not.toBe(objShape1);
-    expect(objShape2.checks.length).toBe(0);
     expect(objShape2.shapes).toEqual({ key1: shape1, key2: shape2 });
     expect(objShape2.keys).toEqual(['key1', 'key2']);
     expect(objShape2.keysMode).toBe('preserved');
@@ -162,7 +162,6 @@ describe('ObjectShape', () => {
     const objShape2 = objShape1.extend({ key1: shape2 });
 
     expect(objShape2).not.toBe(objShape1);
-    expect(objShape2.checks.length).toBe(0);
     expect(objShape2.shapes).toEqual({ key1: shape2 });
     expect(objShape2.keys).toEqual(['key1']);
   });

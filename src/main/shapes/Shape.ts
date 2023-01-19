@@ -99,9 +99,9 @@ export class Shape<I = any, O = I> {
   description = '';
 
   /**
-   * Backing property for {@linkcode Shape.checks}.
+   * The map from a check key to {@linkcode Check} object, or `undefined` if this shape has no associated checks.
    */
-  protected _checks: readonly Check[] = [];
+  protected _checkMap: ReadonlyMap<unknown, Check> | undefined;
 
   /**
    * A callback that applies checks to the given value.
@@ -128,7 +128,7 @@ export class Shape<I = any, O = I> {
    * Adds a human-readable description text to the shape.
    *
    * @param text The description text.
-   * @returns The clone of this shape with the description added.
+   * @returns The clone of the shape with the description added.
    */
   describe(text: string): this {
     const shape = clone(this);
@@ -137,40 +137,50 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Appends the check that is applied to the shape output.
+   * Adds the check that is applied to the shape output.
    *
-   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then, it is removed
-   * and a new check is appended to the list of shape checks. If the key is `undefined` then the `cb` identity is used
-   * as a key.
+   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then it is replaced.
+   * If the key is `undefined` then the `cb` identity is used as a key.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
-   * @returns The clone of this shape with the check added.
+   * @returns The clone of the shape with the check added.
    */
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
     const { key = cb, unsafe = false, param } = options;
 
-    return this.replaceChecks(
-      this._checks.filter(check => check.key !== key).concat({ key, callback: cb, unsafe, param })
-    );
+    return this._replaceChecks(new Map(this._checkMap).set(key, { callback: cb, unsafe, param }));
   }
 
   /**
-   * Returns a shape clone with all checks replaced with a new set of checks.
+   * Returns the {@linkcode Check} by its key.
    *
-   * @param checks The checks that the shape clone should use.
-   * @returns The clone of this shape with a new set of checks.
+   * @param key The check key.
+   * @returns The check or `undefined` if there's no check associated with the key.
    */
-  replaceChecks(checks: readonly Check[]): this {
-    const shape = clone(this);
+  getCheck(key: unknown): Check | undefined {
+    return this._checkMap?.get(key);
+  }
 
-    shape._checks = checks.slice(0);
-    shape._applyChecks = createApplyChecksCallback(checks);
-    shape._unsafe = checks.some(isUnsafeCheck);
+  /**
+   * Deletes the check from the shape.
+   *
+   * @param key The check key.
+   * @returns The clone of the shape if check was deleted or this shape if there are no matching check.
+   */
+  deleteCheck(key: unknown): this {
+    const { _checkMap } = this;
 
-    return shape;
+    if (_checkMap === undefined || !_checkMap.has(key)) {
+      return this;
+    }
+    const checkMap = new Map(_checkMap);
+
+    checkMap.delete(key);
+
+    return this._replaceChecks(checkMap);
   }
 
   /**
@@ -194,7 +204,7 @@ export class Shape<I = any, O = I> {
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The constraint options or an issue message.
-   * @returns The clone of this shape.
+   * @returns The clone of the shape.
    */
   refine(
     /**
@@ -207,7 +217,7 @@ export class Shape<I = any, O = I> {
   refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
     const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
-    return appendCheck(this, undefined, options, cb, (input, options) => {
+    return appendCheck(this, cb, options, cb, (input, options) => {
       if (!cb(input)) {
         return issueFactory(input, options);
       }
@@ -429,6 +439,23 @@ export class Shape<I = any, O = I> {
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
   }
+
+  /**
+   * Returns a shape clone with all checks replaced with new checks.
+   *
+   * @param checkMap The map from a key to a corresponding check.
+   * @returns The clone of the shape.
+   */
+  protected _replaceChecks(checkMap: ReadonlyMap<unknown, Check>): this {
+    const checks = Array.from(checkMap.values());
+    const shape = clone(this);
+
+    shape._checkMap = checkMap;
+    shape._applyChecks = createApplyChecksCallback(checks);
+    shape._unsafe = checks.some(isUnsafeCheck);
+
+    return shape;
+  }
 }
 
 export interface Shape<I, O> {
@@ -556,12 +583,6 @@ Object.defineProperties(Shape.prototype, {
       Object.defineProperty(this, 'async', { value: async });
 
       return async;
-    },
-  },
-
-  checks: {
-    get(this: Shape) {
-      return this._checks;
     },
   },
 

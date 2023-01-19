@@ -92,7 +92,7 @@ export function clone<T extends object>(source: T): T {
  */
 export function appendCheck<S extends Shape>(
   shape: S,
-  key: string | undefined,
+  key: unknown,
   options: ConstraintOptions | Message | undefined,
   param: unknown,
   cb: CheckCallback<S['output']>
