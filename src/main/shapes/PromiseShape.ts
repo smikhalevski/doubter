@@ -10,7 +10,7 @@ import { CoercibleShape } from './CoercibleShape';
  * @template S The shape of the resolved value.
  */
 export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['input']>, Promise<S['output']>> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode PromiseShape} instance.
@@ -22,7 +22,7 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
   constructor(readonly shape: S, options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
   }
 
   protected _requiresAsync(): boolean {
@@ -42,7 +42,7 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
 
     if (!(output instanceof Promise)) {
       if (!(options.coerced || this._coerced)) {
-        return Promise.resolve(this._issueFactory(input, options));
+        return Promise.resolve(this._typeIssueFactory(input, options));
       }
       output = Promise.resolve(input);
     }

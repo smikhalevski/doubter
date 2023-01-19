@@ -1,16 +1,19 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, clone, createIssueFactory, isArray, ok } from '../utils';
+import { clone, createIssueFactory, isArray, isNumber, ok, setCheck } from '../utils';
 import {
+  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
+  CODE_NUMBER_INTEGER,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
-  MESSAGE_INTEGER_TYPE,
+  MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
+  MESSAGE_NUMBER_INTEGER,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
@@ -18,7 +21,6 @@ import {
   TYPE_ARRAY,
   TYPE_BOOLEAN,
   TYPE_DATE,
-  TYPE_INTEGER,
   TYPE_NULL,
   TYPE_NUMBER,
   TYPE_STRING,
@@ -27,11 +29,11 @@ import {
 import { CoercibleShape } from './CoercibleShape';
 
 /**
- * The shape of the finite number.
+ * The shape that constrains the input as a number.
  */
 export class NumberShape extends CoercibleShape<number> {
-  protected _issueFactory;
-  protected _typePredicate = Number.isFinite;
+  protected _typeIssueFactory;
+  protected _typePredicate = isNumber;
 
   /**
    * Creates a new {@linkcode NumberShape} instance.
@@ -41,7 +43,7 @@ export class NumberShape extends CoercibleShape<number> {
   constructor(options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
   }
 
   /**
@@ -65,6 +67,26 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
+   * Constrains the number to be less or equal to zero.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  nonPositive(options?: ConstraintOptions | Message): this {
+    return this.lte(0, options);
+  }
+
+  /**
+   * Constrains the number to be greater or equal to zero.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  nonNegative(options?: ConstraintOptions | Message): this {
+    return this.gte(0, options);
+  }
+
+  /**
    * Constrains the number to be greater than the value.
    *
    * @param value The exclusive minimum value.
@@ -74,7 +96,7 @@ export class NumberShape extends CoercibleShape<number> {
   gt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-    return appendCheck(this, CODE_NUMBER_GT, options, value, (input, options) => {
+    return setCheck(this.deleteCheck(CODE_NUMBER_GTE), CODE_NUMBER_GT, options, value, (input, options) => {
       if (input <= value) {
         return issueFactory(input, options);
       }
@@ -91,7 +113,7 @@ export class NumberShape extends CoercibleShape<number> {
   lt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-    return appendCheck(this, CODE_NUMBER_LT, options, value, (input, options) => {
+    return setCheck(this.deleteCheck(CODE_NUMBER_LTE), CODE_NUMBER_LT, options, value, (input, options) => {
       if (input >= value) {
         return issueFactory(input, options);
       }
@@ -108,7 +130,7 @@ export class NumberShape extends CoercibleShape<number> {
   gte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-    return appendCheck(this, CODE_NUMBER_GTE, options, value, (input, options) => {
+    return setCheck(this.deleteCheck(CODE_NUMBER_GT), CODE_NUMBER_GTE, options, value, (input, options) => {
       if (input < value) {
         return issueFactory(input, options);
       }
@@ -125,7 +147,7 @@ export class NumberShape extends CoercibleShape<number> {
   lte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-    return appendCheck(this, CODE_NUMBER_LTE, options, value, (input, options) => {
+    return setCheck(this.deleteCheck(CODE_NUMBER_LT), CODE_NUMBER_LTE, options, value, (input, options) => {
       if (input > value) {
         return issueFactory(input, options);
       }
@@ -142,7 +164,7 @@ export class NumberShape extends CoercibleShape<number> {
   multipleOf(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
 
-    return appendCheck(this, CODE_NUMBER_MULTIPLE_OF, options, value, (input, options) => {
+    return setCheck(this, CODE_NUMBER_MULTIPLE_OF, options, value, (input, options) => {
       if (input % value !== 0) {
         return issueFactory(input, options);
       }
@@ -150,16 +172,22 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * Allow `NaN` input values.
+   * Constrains the number to be a finite number.
    *
-   * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
    */
-  nan(defaultValue = NaN): Shape<number> {
-    return this.replace(NaN, defaultValue);
+  finite(options?: ConstraintOptions | Message): this {
+    const shape = clone(this);
+
+    shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
+    shape._typePredicate = Number.isFinite;
+
+    return shape;
   }
 
   /**
-   * Constrains the number to be an integer and rejects `Infinity` and `NaN` values.
+   * Constrains the number to be an integer.
    *
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
@@ -167,10 +195,19 @@ export class NumberShape extends CoercibleShape<number> {
   integer(options?: ConstraintOptions | Message): this {
     const shape = clone(this);
 
-    shape._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_INTEGER_TYPE, options, TYPE_INTEGER);
+    shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
     shape._typePredicate = Number.isInteger;
 
     return shape;
+  }
+
+  /**
+   * Allows `NaN` as an input and output value, or replaces an input `NaN` value with a default output value.
+   *
+   * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
+   */
+  nan(defaultValue = NaN): Shape<number> {
+    return this.replace(NaN, defaultValue);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -189,7 +226,7 @@ export class NumberShape extends CoercibleShape<number> {
     let issues: Issue[] | null = null;
 
     if (!this._typePredicate(output)) {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
@@ -216,3 +253,31 @@ export class NumberShape extends CoercibleShape<number> {
     return input;
   }
 }
+
+export interface NumberShape {
+  /**
+   * Alias for {@linkcode gte}.
+   *
+   * Constrains the number to be greater than or equal to the value.
+   *
+   * @param value The inclusive minimum value.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  min(value: number, options?: ConstraintOptions | Message): this;
+
+  /**
+   * Alias for {@linkcode lte}.
+   *
+   * Constrains the number to be less than or equal to the value.
+   *
+   * @param value The inclusive maximum value.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  max(value: number, options?: ConstraintOptions | Message): this;
+}
+
+NumberShape.prototype.min = NumberShape.prototype.gte;
+
+NumberShape.prototype.max = NumberShape.prototype.lte;

@@ -11,7 +11,7 @@ import { CoercibleShape } from './CoercibleShape';
  */
 export class EnumShape<T> extends CoercibleShape<T> {
   /**
-   * The list of values allowed for the input.
+   * The list of unique values allowed as an input.
    */
   readonly values: readonly T[];
 
@@ -19,7 +19,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
    * Key-value mapping passes as a source to constructor, or `null` if the source was a list of values.
    */
   protected _valueMapping: ReadonlyDict<T> | null;
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode EnumShape} instance.
@@ -45,13 +45,13 @@ export class EnumShape<T> extends CoercibleShape<T> {
       values = unique(source);
     } else {
       valueMapping = source;
-      values = unique(getValues(source));
+      values = unique(getEnumValues(source));
     }
 
     this.values = values;
 
     this._valueMapping = valueMapping;
-    this._issueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
+    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -76,7 +76,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     let issues: Issue[] | null = null;
 
     if (!this.values.includes(output)) {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
@@ -106,7 +106,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
 /**
  * Returns values of the enum. Source must contain key-value and value-key mapping to be considered a native enum.
  */
-export function getValues(source: ReadonlyDict): any[] {
+export function getEnumValues(source: ReadonlyDict): any[] {
   const values: number[] = [];
 
   for (const key in source) {

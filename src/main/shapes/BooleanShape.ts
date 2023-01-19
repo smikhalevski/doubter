@@ -17,7 +17,7 @@ import { CoercibleShape } from './CoercibleShape';
  * The shape of the boolean value.
  */
 export class BooleanShape extends CoercibleShape<boolean> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode BooleanShape} instance.
@@ -27,7 +27,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   constructor(options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -46,7 +46,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     let issues: Issue[] | null = null;
 
     if (typeof output !== 'boolean') {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);

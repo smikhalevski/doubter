@@ -1,11 +1,13 @@
 import { NumberShape } from '../../main';
 import {
+  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   CODE_TYPE,
+  MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_TYPE,
   TYPE_ARRAY,
   TYPE_BOOLEAN,
@@ -35,10 +37,16 @@ describe('NumberShape', () => {
     expect(new NumberShape().gt(2).parse(3)).toBe(3);
   });
 
+  test('allows infinity', () => {
+    expect(new NumberShape().parse(Infinity)).toBe(Infinity);
+  });
+
   test('raises if value is an infinity', () => {
-    expect(new NumberShape().try(Infinity)).toEqual({
+    expect(new NumberShape().finite().try(Infinity)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: Infinity, param: TYPE_NUMBER, message: MESSAGE_NUMBER_TYPE }],
+      issues: [
+        { code: CODE_NUMBER_FINITE, path: [], input: Infinity, param: undefined, message: MESSAGE_NUMBER_FINITE },
+      ],
     });
   });
 
@@ -131,6 +139,14 @@ describe('NumberShape', () => {
     });
   });
 
+  test('respects mutually exclusive checks', () => {
+    expect(new NumberShape().gt(0).gte(0).getCheck(CODE_NUMBER_GT)).toBe(undefined);
+    expect(new NumberShape().gte(0).gt(0).getCheck(CODE_NUMBER_GTE)).toBe(undefined);
+
+    expect(new NumberShape().lt(0).lte(0).getCheck(CODE_NUMBER_LT)).toBe(undefined);
+    expect(new NumberShape().lte(0).lt(0).getCheck(CODE_NUMBER_LTE)).toBe(undefined);
+  });
+
   test('allows NaN', () => {
     expect(new NumberShape().nan().try(NaN)).toEqual({ ok: true, value: NaN });
   });
@@ -140,6 +156,22 @@ describe('NumberShape', () => {
       ok: false,
       issues: [{ code: 'xxx', path: [] }],
     });
+  });
+
+  test('raises if value is not positive', () => {
+    expect(new NumberShape().positive().try(-111).ok).toBe(false);
+    expect(new NumberShape().nonNegative().try(-111).ok).toBe(false);
+
+    expect(new NumberShape().positive().try(222).ok).toBe(true);
+    expect(new NumberShape().nonNegative().try(222).ok).toBe(true);
+  });
+
+  test('raises if value is not negative', () => {
+    expect(new NumberShape().negative().try(111).ok).toBe(false);
+    expect(new NumberShape().nonPositive().try(111).ok).toBe(false);
+
+    expect(new NumberShape().negative().try(-222).ok).toBe(true);
+    expect(new NumberShape().nonPositive().try(-222).ok).toBe(true);
   });
 
   test('supports async validation', async () => {

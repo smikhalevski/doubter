@@ -1,4 +1,4 @@
-import { Any, Message, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
+import { Literal, Message, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
 import { EnumShape } from '../shapes';
 
 /**
@@ -9,7 +9,7 @@ import { EnumShape } from '../shapes';
  * @template T Allowed values.
  * @template U The list of allowed values.
  */
-function enum_<T extends Any, U extends readonly [T, ...T[]]>(
+function enum_<T extends Literal, U extends readonly [T, ...T[]]>(
   values: U,
   options?: TypeConstraintOptions | Message
 ): EnumShape<U[number]>;
@@ -22,7 +22,7 @@ function enum_<T extends Any, U extends readonly [T, ...T[]]>(
  * @template T Allowed values.
  * @template U The object that maps from the key to an enum value.
  */
-function enum_<T extends Any, U extends ReadonlyDict<T>>(
+function enum_<T extends Literal, U extends ReadonlyDict<T>>(
   valueMapping: U,
   options?: TypeConstraintOptions | Message
 ): EnumShape<U[keyof U]>;

@@ -12,22 +12,22 @@ export type LookupCallback = (input: unknown) => readonly AnyShape[];
 /**
  * The shape that requires an input to conform at least one of shapes.
  *
- * @template U The list of united shapes.
+ * @template U The list of shapes that comprise a union.
  */
 export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['input'], U[number]['output']> {
   protected _options;
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode UnionShape} instance.
    *
-   * @param shapes The list of united shapes.
+   * @param shapes The list of shapes that comprise a union.
    * @param options The union constraint options or an issue message.
-   * @template U The list of united shapes.
+   * @template U The list of shapes that comprise a union.
    */
   constructor(
     /**
-     * The list of united shapes.
+     * The list of shapes that comprise a union.
      */
     readonly shapes: U,
     options?: TypeConstraintOptions | Message
@@ -35,7 +35,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     super();
 
     this._options = options;
-    this._issueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
+    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -117,7 +117,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
       break;
     }
     if (index === shapesLength) {
-      return issues !== null ? issues : this._issueFactory(input, options, this._getInputTypes());
+      return issues !== null ? issues : this._typeIssueFactory(input, options, this._getInputTypes());
     }
 
     if (_applyChecks !== null) {
@@ -137,7 +137,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     const shapesLength = shapes.length;
 
     if (shapesLength === 0) {
-      return Promise.resolve(this._issueFactory(input, options, this._getInputTypes()));
+      return Promise.resolve(this._typeIssueFactory(input, options, this._getInputTypes()));
     }
 
     let issues: Issue[] | null = null;

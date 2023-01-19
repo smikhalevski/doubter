@@ -42,24 +42,19 @@ export type CheckCallback<T = any> = (
  */
 export interface Check {
   /**
-   * The unique key of the check in scope of the shape.
-   */
-  key: unknown;
-
-  /**
    * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
    */
-  callback: CheckCallback;
+  readonly callback: CheckCallback;
 
   /**
    * `true` if the {@linkcode callback} is invoked even if previous processors failed, or `false` otherwise.
    */
-  unsafe: boolean;
+  readonly unsafe: boolean;
 
   /**
    * The optional parameter used by the {@linkcode callback}.
    */
-  param: any;
+  readonly param: any;
 }
 
 /**
@@ -78,8 +73,7 @@ export interface CheckOptions {
   unsafe?: boolean;
 
   /**
-   * An optional param that would be associated with the checker and can be accessed at {@linkcode Shape.checks} using
-   * {@linkcode Check.param}.
+   * An optional param associated with the check.
    */
   param?: any;
 }
@@ -143,7 +137,7 @@ export interface TypeConstraintOptions {
   /**
    * The custom issue message.
    */
-  message?: Message | Any;
+  message?: Message | Literal;
 
   /**
    * An arbitrary metadata that is added to an issue.
@@ -158,7 +152,7 @@ export interface ConstraintOptions {
   /**
    * The custom issue message.
    */
-  message?: Message | Any;
+  message?: Message | Literal;
 
   /**
    * An arbitrary metadata that is added to an issue.
@@ -171,11 +165,6 @@ export interface ConstraintOptions {
    */
   unsafe?: boolean;
 }
-
-/**
- * Options for type narrowing checks.
- */
-export interface RefineOptions extends ConstraintOptions, CheckOptions {}
 
 /**
  * Options applied during parsing.
@@ -202,7 +191,7 @@ export interface ParseOptions {
   context?: any;
 }
 
-export type Any = object | string | number | bigint | boolean | symbol | null | undefined;
+export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;
 
 export interface ReadonlyDict<T = any> {
   readonly [key: string]: T;

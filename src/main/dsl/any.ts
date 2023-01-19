@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from '../shapes';
-import { Message, RefineOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the unconstrained shape.
@@ -21,7 +21,7 @@ export function any<T = any>(): Shape<T>;
  */
 export function any<I = any, O extends I = I>(
   cb: (value: I) => value is O,
-  options?: RefineOptions | Message
+  options?: ConstraintOptions | Message
 ): Shape<I, O>;
 
 /**
@@ -32,9 +32,9 @@ export function any<I = any, O extends I = I>(
  * @template I The input value.
  * @template O The output value.
  */
-export function any<I = any, O = I>(cb: (value: I) => boolean, options?: RefineOptions | Message): Shape<I, O>;
+export function any<I = any, O = I>(cb: (value: I) => boolean, options?: ConstraintOptions | Message): Shape<I, O>;
 
-export function any(cb?: (value: unknown) => boolean, options?: RefineOptions | Message): AnyShape {
+export function any(cb?: (value: unknown) => boolean, options?: ConstraintOptions | Message): AnyShape {
   const shape = new Shape();
 
   return cb != null ? shape.refine(cb, options) : shape;

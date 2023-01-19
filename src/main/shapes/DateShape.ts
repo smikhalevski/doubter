@@ -8,7 +8,7 @@ import { CoercibleShape } from './CoercibleShape';
  * The shape of the `Date` object.
  */
 export class DateShape extends CoercibleShape<Date> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode DateShape} instance.
@@ -18,7 +18,7 @@ export class DateShape extends CoercibleShape<Date> {
   constructor(options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);
   }
 
   protected _getInputTypes(): ValueType[] {
@@ -38,7 +38,7 @@ export class DateShape extends CoercibleShape<Date> {
     let time;
 
     if (!(output instanceof Date) || (time = output.getTime()) !== time) {
-      return this._issueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);

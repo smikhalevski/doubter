@@ -53,6 +53,10 @@ export function isPlainObject(value: unknown): value is Record<any, any> {
   return isObjectLike(value) && ((prototype = getPrototypeOf(value)) === null || prototype.constructor === Object);
 }
 
+export function isNumber(value: unknown): boolean {
+  return typeof value === 'number' && value === value;
+}
+
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   let async = false;
 
@@ -86,9 +90,9 @@ export function clone<T extends object>(source: T): T {
 /**
  * The convenient shortcut to add built-in checks to shapes.
  */
-export function appendCheck<S extends Shape>(
+export function setCheck<S extends Shape>(
   shape: S,
-  key: string | undefined,
+  key: unknown,
   options: ConstraintOptions | Message | undefined,
   param: unknown,
   cb: CheckCallback<S['output']>

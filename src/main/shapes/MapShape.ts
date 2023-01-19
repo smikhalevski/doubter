@@ -14,7 +14,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
   Map<K['input'], V['input']>,
   Map<K['output'], V['output']>
 > {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode MapShape} instance.
@@ -38,7 +38,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
   ) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_TYPE, MESSAGE_MAP_TYPE, options, TYPE_MAP);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_MAP_TYPE, options, TYPE_MAP);
   }
 
   at(key: unknown): AnyShape | null {
@@ -68,7 +68,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
       entries = changed ? this._coerceEntries(input) : null;
 
       if (entries === null) {
-        return this._issueFactory(input, options);
+        return this._typeIssueFactory(input, options);
       }
     }
 
@@ -142,7 +142,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
         entries = changed ? this._coerceEntries(input) : null;
 
         if (entries === null) {
-          resolve(this._issueFactory(input, options));
+          resolve(this._typeIssueFactory(input, options));
           return;
         }
       }

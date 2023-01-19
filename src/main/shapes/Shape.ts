@@ -1,19 +1,18 @@
 import {
-  Any,
   ApplyChecksCallback,
   ApplyResult,
   Check,
   CheckCallback,
   CheckOptions,
+  ConstraintOptions,
   Err,
+  Literal,
   Message,
   Ok,
   ParseOptions,
-  RefineOptions,
   TypeConstraintOptions,
 } from '../shared-types';
 import {
-  appendCheck,
   captureIssues,
   clone,
   createApplyChecksCallback,
@@ -24,6 +23,7 @@ import {
   isUnsafeCheck,
   ok,
   returnTrue,
+  setCheck,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -53,6 +53,14 @@ export type AnyShape = Shape | Shape<never>;
 export type OpaqueReplaceShape<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
 
 /**
+ * Input value is passed directly to the output without any checks.
+ *
+ * @template S The base shape.
+ * @template T The included value.
+ */
+export type OpaqueIncludeShape<S extends AnyShape, T> = Shape<S['input'] | T, S['output'] | T>;
+
+/**
  * Excludes a value from both input and output.
  *
  * @template S The base shape.
@@ -78,107 +86,6 @@ export type ValueType =
   | 'any'
   | 'never';
 
-export interface Shape<I, O> {
-  /**
-   * The shape input type. Accessible only at compile time for type inference.
-   */
-  readonly input: I;
-
-  /**
-   * The shape output type. Accessible only at compile time for type inference.
-   */
-  readonly output: O;
-
-  /**
-   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
-   * `false` if the shape can be used in both sync and async contexts.
-   */
-  readonly async: boolean;
-
-  /**
-   * The list of checks applied to the shape output.
-   */
-  readonly checks: readonly Check[];
-
-  /**
-   * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
-   */
-  try(input: unknown, options?: ParseOptions): Ok<O> | Err;
-
-  /**
-   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   */
-  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err>;
-
-  /**
-   * Synchronously parses the value.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
-   */
-  parse(input: unknown, options?: ParseOptions): O;
-
-  /**
-   * Asynchronously parses the value.
-   *
-   * @param input The value to parse.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
-   */
-  parseAsync(input: unknown, options?: ParseOptions): Promise<O>;
-
-  /**
-   * Synchronously parses the value and returns `undefined` if parsing fails.
-   *
-   * @param input The value to parse.
-   * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
-   */
-  parseOrDefault(input: unknown): O | undefined;
-
-  /**
-   * Synchronously parses the value and returns the default value if parsing fails.
-   *
-   * @param input The value to parse.
-   * @param defaultValue The default value that is returned if parsing fails.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
-   */
-  parseOrDefault<T>(input: unknown, defaultValue: T, options?: ParseOptions): O | T;
-
-  /**
-   * Asynchronously parses the value and returns `undefined` value if parsing fails.
-   *
-   * @param input The value to parse.
-   * @returns The value that conforms the output type of the shape.
-   */
-  parseOrDefaultAsync(input: unknown): Promise<O | undefined>;
-
-  /**
-   * Asynchronously parses the value and returns the default value if parsing fails.
-   *
-   * @param input The value to parse.
-   * @param defaultValue The default value that is returned if parsing fails.
-   * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   */
-  parseOrDefaultAsync<T>(input: unknown, defaultValue: T, options?: ParseOptions): Promise<O | T>;
-}
-
 /**
  * The baseline shape implementation.
  *
@@ -192,12 +99,12 @@ export class Shape<I = any, O = I> {
   description = '';
 
   /**
-   * Backing property for {@linkcode Shape.checks}.
+   * The map from a check key to {@linkcode Check} object, or `undefined` if this shape has no associated checks.
    */
-  protected _checks: readonly Check[] = [];
+  protected _checkMap: ReadonlyMap<unknown, Check> | undefined;
 
   /**
-   * Applies checks to the output.
+   * A callback that applies checks to the given value.
    */
   protected _applyChecks: ApplyChecksCallback | null = null;
 
@@ -221,7 +128,7 @@ export class Shape<I = any, O = I> {
    * Adds a human-readable description text to the shape.
    *
    * @param text The description text.
-   * @returns The clone of this shape with the description added.
+   * @returns The clone of the shape with the description added.
    */
   describe(text: string): this {
     const shape = clone(this);
@@ -230,40 +137,91 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Appends the check that is applied to the shape output.
+   * Adds the check that is applied to the shape output.
    *
-   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then, it is removed
-   * and a new check is appended to the list of shape checks. If the key is `undefined` then the `cb` identity is used
-   * as a key.
+   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then it is replaced.
+   * If the key is `undefined` then the `cb` identity is used as a key.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
-   * @returns The clone of this shape with the check added.
+   * @returns The clone of the shape with the check added.
    */
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
     const { key = cb, unsafe = false, param } = options;
 
-    return this.replaceChecks(
-      this._checks.filter(check => check.key !== key).concat({ key, callback: cb, unsafe, param })
-    );
+    return this._replaceChecks(new Map(this._checkMap).set(key, { callback: cb, unsafe, param }));
   }
 
   /**
-   * Returns a shape clone with all checks replaced with a new set of checks.
+   * Returns the {@linkcode Check} by its key.
    *
-   * @param checks The checks that the shape clone should use.
-   * @returns The clone of this shape with a new set of checks.
+   * @param key The check key.
+   * @returns The check or `undefined` if there's no check associated with the key.
    */
-  replaceChecks(checks: readonly Check[]): this {
-    const shape = clone(this);
+  getCheck(key: unknown): Check | undefined {
+    return this._checkMap?.get(key);
+  }
 
-    shape._checks = Object.freeze(checks.slice(0));
-    shape._applyChecks = createApplyChecksCallback(checks);
-    shape._unsafe = checks.some(isUnsafeCheck);
+  /**
+   * Deletes the check from the shape.
+   *
+   * @param key The check key.
+   * @returns The clone of the shape if check was deleted or this shape if there are no matching check.
+   */
+  deleteCheck(key: unknown): this {
+    const { _checkMap } = this;
 
-    return shape;
+    if (_checkMap === undefined || !_checkMap.has(key)) {
+      return this;
+    }
+    const checkMap = new Map(_checkMap);
+
+    checkMap.delete(key);
+
+    return this._replaceChecks(checkMap);
+  }
+
+  /**
+   * Refines the shape output type with the [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
+   *
+   * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
+   * @param options The constraint options or an issue message.
+   * @returns The shape with the narrowed output.
+   * @template T The narrowed output value.
+   */
+  refine<T extends O>(
+    /**
+     * @param output The shape output value.
+     */
+    cb: (output: O) => output is T,
+    options?: ConstraintOptions | Message
+  ): Shape<I, T>;
+
+  /**
+   * Checks that the output value conforms the predicate.
+   *
+   * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  refine(
+    /**
+     * @param output The shape output value.
+     */
+    cb: (output: O) => boolean,
+    options?: ConstraintOptions | Message
+  ): this;
+
+  refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
+    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
+
+    return setCheck(this, cb, options, cb, (input, options) => {
+      if (!cb(input)) {
+        return issueFactory(input, options);
+      }
+    });
   }
 
   /**
@@ -316,47 +274,6 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Refines the shape output type with the [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
-   *
-   * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
-   * @param options The constraint options or an issue message.
-   * @returns The shape with the narrowed output.
-   * @template T The narrowed output value.
-   */
-  refine<T extends O>(
-    /**
-     * @param output The shape output value.
-     */
-    cb: (output: O) => output is T,
-    options?: RefineOptions | Message
-  ): Shape<I, T>;
-
-  /**
-   * Checks that the output value conforms the predicate.
-   *
-   * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
-   * @param options The constraint options or an issue message.
-   * @returns The clone of this shape.
-   */
-  refine(
-    /**
-     * @param output The shape output value.
-     */
-    cb: (output: O) => boolean,
-    options?: RefineOptions | Message
-  ): this;
-
-  refine(cb: (output: O) => unknown, options?: RefineOptions | Message) {
-    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
-
-    return appendCheck(this, undefined, options, cb, (input, options) => {
-      if (!cb(input)) {
-        return issueFactory(input, options);
-      }
-    });
-  }
-
-  /**
    * Replaces an input value with an output value.
    *
    * @param inputValue The input value to replace.
@@ -365,20 +282,32 @@ export class Shape<I = any, O = I> {
    * @template A The input value to replace.
    * @template B The output value.
    */
-  replace<A extends Any, B extends Any>(inputValue: A, outputValue: B): OpaqueReplaceShape<this, A, B> {
+  replace<A extends Literal, B extends Literal>(inputValue: A, outputValue: B): OpaqueReplaceShape<this, A, B> {
     return new ReplaceShape(this, inputValue, outputValue);
+  }
+
+  /**
+   * Input value is passed directly to the output without any checks.
+   *
+   * @param value The included value.
+   * @param options The constraint options or an issue message.
+   * @returns The {@linkcode ReplaceShape} instance.
+   * @template T The included value.
+   */
+  include<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): OpaqueIncludeShape<this, T> {
+    return this.replace(value, value);
   }
 
   /**
    * Excludes value from both input and output.
    *
-   * @param excludedValue The excluded value.
+   * @param value The excluded value.
    * @param options The constraint options or an issue message.
    * @returns The {@linkcode ExcludeShape} instance.
    * @template T The excluded value.
    */
-  exclude<T extends Any>(excludedValue: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
-    return new ExcludeShape(this, excludedValue, options);
+  exclude<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
+    return new ExcludeShape(this, value, options);
   }
 
   /**
@@ -394,7 +323,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional<T extends Any>(defaultValue: T): OpaqueReplaceShape<this, undefined, T>;
+  optional<T extends Literal>(defaultValue: T): OpaqueReplaceShape<this, undefined, T>;
 
   optional(defaultValue?: any) {
     return this.replace(undefined, defaultValue);
@@ -413,7 +342,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable<T extends Any>(defaultValue: T): OpaqueReplaceShape<this, null, T>;
+  nullable<T extends Literal>(defaultValue: T): OpaqueReplaceShape<this, null, T>;
 
   nullable(defaultValue?: any) {
     return this.replace(null, arguments.length === 0 ? null : defaultValue);
@@ -510,6 +439,119 @@ export class Shape<I = any, O = I> {
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
   }
+
+  /**
+   * Returns a shape clone with new set of checks.
+   *
+   * @param checkMap The map from a check key to a corresponding check.
+   * @returns The clone of the shape.
+   */
+  protected _replaceChecks(checkMap: ReadonlyMap<unknown, Check>): this {
+    const checks = Array.from(checkMap.values());
+    const shape = clone(this);
+
+    shape._checkMap = checkMap;
+    shape._applyChecks = createApplyChecksCallback(checks);
+    shape._unsafe = checks.some(isUnsafeCheck);
+
+    return shape;
+  }
+}
+
+export interface Shape<I, O> {
+  /**
+   * The shape input type. Accessible only at compile time for type inference.
+   */
+  readonly input: I;
+
+  /**
+   * The shape output type. Accessible only at compile time for type inference.
+   */
+  readonly output: O;
+
+  /**
+   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
+   * `false` if the shape can be used in both sync and async contexts.
+   */
+  readonly async: boolean;
+
+  /**
+   * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   */
+  try(input: unknown, options?: ParseOptions): Ok<O> | Err;
+
+  /**
+   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
+   */
+  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err>;
+
+  /**
+   * Synchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   */
+  parse(input: unknown, options?: ParseOptions): O;
+
+  /**
+   * Asynchronously parses the value.
+   *
+   * @param input The value to parse.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   */
+  parseAsync(input: unknown, options?: ParseOptions): Promise<O>;
+
+  /**
+   * Synchronously parses the value and returns `undefined` if parsing fails.
+   *
+   * @param input The value to parse.
+   * @returns The value that conforms the output type of the shape.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   */
+  parseOrDefault(input: unknown): O | undefined;
+
+  /**
+   * Synchronously parses the value and returns the default value if parsing fails.
+   *
+   * @param input The value to parse.
+   * @param defaultValue The default value that is returned if parsing fails.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   */
+  parseOrDefault<T>(input: unknown, defaultValue: T, options?: ParseOptions): O | T;
+
+  /**
+   * Asynchronously parses the value and returns `undefined` value if parsing fails.
+   *
+   * @param input The value to parse.
+   * @returns The value that conforms the output type of the shape.
+   */
+  parseOrDefaultAsync(input: unknown): Promise<O | undefined>;
+
+  /**
+   * Asynchronously parses the value and returns the default value if parsing fails.
+   *
+   * @param input The value to parse.
+   * @param defaultValue The default value that is returned if parsing fails.
+   * @param options Parsing options.
+   * @returns The value that conforms the output type of the shape.
+   */
+  parseOrDefaultAsync<T>(input: unknown, defaultValue: T, options?: ParseOptions): Promise<O | T>;
 }
 
 Object.defineProperties(Shape.prototype, {
@@ -541,12 +583,6 @@ Object.defineProperties(Shape.prototype, {
       Object.defineProperty(this, 'async', { value: async });
 
       return async;
-    },
-  },
-
-  checks: {
-    get(this: Shape) {
-      return this._checks;
     },
   },
 
@@ -735,7 +771,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     return this.shape['_getInputValues']();
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<O> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<O> {
     const { shape, callback, _applyChecks } = this;
 
     let issues;
@@ -766,7 +802,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     if (isEqual(input, output)) {
       return null;
     }
-    return ok(output as O);
+    return ok(output);
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
@@ -1043,7 +1079,7 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
  * @template T The excluded value.
  */
 export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   /**
    * Creates the new {@linkcode ExcludeShape} instance.
@@ -1067,7 +1103,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
   ) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
+    this._typeIssueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
   }
 
   protected _requiresAsync(): boolean {
@@ -1083,13 +1119,13 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
-    const { excludedValue, _issueFactory, _applyChecks } = this;
+    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
 
     let issues;
     let output = input;
 
     if (isEqual(input, excludedValue)) {
-      return _issueFactory(input, options);
+      return _typeIssueFactory(input, options);
     }
 
     const result = this.shape['_apply'](input, options);
@@ -1101,7 +1137,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       output = result.value;
 
       if (isEqual(output, excludedValue)) {
-        return _issueFactory(input, options);
+        return _typeIssueFactory(input, options);
       }
     }
 
@@ -1116,10 +1152,10 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
-    const { excludedValue, _issueFactory, _applyChecks } = this;
+    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
 
     if (isEqual(input, excludedValue)) {
-      return Promise.resolve(_issueFactory(input, options));
+      return Promise.resolve(_typeIssueFactory(input, options));
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
@@ -1133,7 +1169,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
         output = result.value;
 
         if (isEqual(output, excludedValue)) {
-          return _issueFactory(input, options);
+          return _typeIssueFactory(input, options);
         }
       }
 

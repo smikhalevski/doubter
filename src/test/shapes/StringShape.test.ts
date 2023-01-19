@@ -18,7 +18,6 @@ describe('StringShape', () => {
   test('creates a string shape', () => {
     const shape = new StringShape();
 
-    expect(shape.checks.length).toBe(0);
     expect(shape.async).toBe(false);
     expect(shape['_getInputTypes']()).toEqual([TYPE_STRING]);
   });

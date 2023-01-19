@@ -9,12 +9,12 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
   ToIntersection<U[number]['input']>,
   ToIntersection<U[number]['output']>
 > {
-  protected _issueFactory;
+  protected _typeIssueFactory;
 
   constructor(readonly shapes: U, options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
+    this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
   protected _requiresAsync(): boolean {
@@ -58,7 +58,7 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     if (outputs.length !== shapesLength) {
       outputs.push(input);
     }
-    return intersectOutputs(input, outputs, this._issueFactory, options);
+    return intersectOutputs(input, outputs, this._typeIssueFactory, options);
   }
 
   protected _applyAsync(
@@ -104,7 +104,7 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
       if (outputs.length !== shapesLength) {
         outputs.push(input);
       }
-      return intersectOutputs(input, outputs, this._issueFactory, options);
+      return intersectOutputs(input, outputs, this._typeIssueFactory, options);
     });
   }
 }
