@@ -11,7 +11,7 @@ import { CoercibleShape } from './CoercibleShape';
  */
 export class EnumShape<T> extends CoercibleShape<T> {
   /**
-   * The list of values allowed for the input.
+   * The list of unique values allowed as an input.
    */
   readonly values: readonly T[];
 
@@ -45,7 +45,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
       values = unique(source);
     } else {
       valueMapping = source;
-      values = unique(getValues(source));
+      values = unique(getEnumValues(source));
     }
 
     this.values = values;
@@ -106,7 +106,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
 /**
  * Returns values of the enum. Source must contain key-value and value-key mapping to be considered a native enum.
  */
-export function getValues(source: ReadonlyDict): any[] {
+export function getEnumValues(source: ReadonlyDict): any[] {
   const values: number[] = [];
 
   for (const key in source) {

@@ -1,6 +1,6 @@
 import { EnumShape } from '../../main';
 import { CODE_ENUM } from '../../main/constants';
-import { getValues } from '../../main/shapes/EnumShape';
+import { getEnumValues } from '../../main/shapes/EnumShape';
 
 describe('EnumShape', () => {
   test('creates an enum shape from an array', () => {
@@ -145,14 +145,14 @@ describe('EnumShape', () => {
   });
 });
 
-describe('getValues', () => {
+describe('getEnumValues', () => {
   test('removes aliases from numerical enums', () => {
     enum Foo {
       AAA,
       BBB,
     }
 
-    expect(getValues(Foo)).toEqual([0, 1]);
+    expect(getEnumValues(Foo)).toEqual([0, 1]);
   });
 
   test('removes aliases from enum-like objects', () => {
@@ -163,7 +163,7 @@ describe('getValues', () => {
       BBB: 1,
     };
 
-    expect(getValues(obj)).toEqual([0, 1]);
+    expect(getEnumValues(obj)).toEqual([0, 1]);
   });
 
   test('preserves partial aliases', () => {
@@ -173,6 +173,6 @@ describe('getValues', () => {
       BBB: 1,
     };
 
-    expect(getValues(obj)).toEqual(['AAA', 0, 1]);
+    expect(getEnumValues(obj)).toEqual(['AAA', 0, 1]);
   });
 });
