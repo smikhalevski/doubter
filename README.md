@@ -96,6 +96,7 @@ npm install --save-prod doubter
     - Other<br>
       [`transform`](#transform)
       [`lazy`](#lazy)
+      [`json`](#json)
 
 # Usage
 
@@ -874,6 +875,29 @@ able to satisfy the resulting intersection shape.
 ```ts
 const shape = d.and([shape1, shape2]);
 // ⮕ Shape<{ foo: never, bar: boolean }>
+```
+
+## `json`
+
+Parses input strings as JSON:
+
+```ts
+d.json();
+// ⮕ Shape<string, any>
+```
+
+Works best with redirections:
+
+```ts
+const shape = d.json().to(
+  d.object({
+    foo: d.number()
+  })
+);
+// ⮕ Shape<string, { foo: number }>
+
+shape.parse('{"foo":42}');
+// ⮕ { foo: 42 }
 ```
 
 ## `lazy`
