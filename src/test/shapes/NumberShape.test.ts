@@ -150,6 +150,22 @@ describe('NumberShape', () => {
     });
   });
 
+  test('raises if value is not positive', () => {
+    expect(new NumberShape().positive().try(-111).ok).toBe(false);
+    expect(new NumberShape().nonNegative().try(-111).ok).toBe(false);
+
+    expect(new NumberShape().positive().try(222).ok).toBe(true);
+    expect(new NumberShape().nonNegative().try(222).ok).toBe(true);
+  });
+
+  test('raises if value is not negative', () => {
+    expect(new NumberShape().negative().try(111).ok).toBe(false);
+    expect(new NumberShape().nonPositive().try(111).ok).toBe(false);
+
+    expect(new NumberShape().negative().try(-222).ok).toBe(true);
+    expect(new NumberShape().nonPositive().try(-222).ok).toBe(true);
+  });
+
   test('supports async validation', async () => {
     await expect(new NumberShape().gt(3).tryAsync(2)).resolves.toEqual({
       ok: false,

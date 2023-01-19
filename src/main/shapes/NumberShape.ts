@@ -67,6 +67,26 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
+   * Constrains the number to be less or equal to zero.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  nonPositive(options?: ConstraintOptions | Message): this {
+    return this.lte(0, options);
+  }
+
+  /**
+   * Constrains the number to be greater or equal to zero.
+   *
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   */
+  nonNegative(options?: ConstraintOptions | Message): this {
+    return this.gte(0, options);
+  }
+
+  /**
    * Constrains the number to be greater than the value.
    *
    * @param value The exclusive minimum value.
