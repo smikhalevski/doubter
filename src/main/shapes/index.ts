@@ -7,6 +7,7 @@ export { DateShape } from './DateShape';
 export { EnumShape } from './EnumShape';
 export { InstanceShape } from './InstanceShape';
 export { IntersectionShape } from './IntersectionShape';
+export { JSONShape } from './JSONShape';
 export { LazyShape } from './LazyShape';
 export { MapShape } from './MapShape';
 export { NeverShape } from './NeverShape';

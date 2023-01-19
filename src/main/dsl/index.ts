@@ -7,6 +7,7 @@ export * from './date';
 export * from './enum';
 export * from './instanceOf';
 export * from './intersection';
+export * from './json';
 export * from './lazy';
 export * from './map';
 export * from './nan';
