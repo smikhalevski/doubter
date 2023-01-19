@@ -18,6 +18,20 @@ describe('Shape', () => {
     expect(shape2.getCheck(cb)).toEqual({ callback: cb, unsafe: false });
   });
 
+  test('deletes a check', () => {
+    const cbMock = jest.fn();
+
+    const shape1 = new Shape().check(cbMock);
+    const shape2 = shape1.deleteCheck(cbMock);
+
+    shape2.parse(111);
+
+    expect(shape1).not.toBe(shape2);
+    expect(shape1.getCheck(cbMock)).not.toBe(undefined);
+    expect(shape2.getCheck(cbMock)).toBe(undefined);
+    expect(cbMock).not.toHaveBeenCalled();
+  });
+
   test('invokes a check', () => {
     const cbMock = jest.fn(() => null);
     const shape = new Shape().check(cbMock);
