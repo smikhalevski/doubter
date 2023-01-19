@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { appendCheck, createIssueFactory, isArray, ok } from '../utils';
+import { createIssueFactory, isArray, ok, setCheck } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -58,7 +58,7 @@ export class StringShape extends CoercibleShape<string> {
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-    return appendCheck(this, CODE_STRING_MIN, options, length, (input, options) => {
+    return setCheck(this, CODE_STRING_MIN, options, length, (input, options) => {
       if (input.length < length) {
         return issueFactory(input, options);
       }
@@ -75,7 +75,7 @@ export class StringShape extends CoercibleShape<string> {
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-    return appendCheck(this, CODE_STRING_MAX, options, length, (input, options) => {
+    return setCheck(this, CODE_STRING_MAX, options, length, (input, options) => {
       if (input.length > length) {
         return issueFactory(input, options);
       }
@@ -92,7 +92,7 @@ export class StringShape extends CoercibleShape<string> {
   regex(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-    return appendCheck(this, CODE_STRING_REGEX, options, re, (input, options) => {
+    return setCheck(this, CODE_STRING_REGEX, options, re, (input, options) => {
       re.lastIndex = 0;
 
       if (!re.test(input)) {

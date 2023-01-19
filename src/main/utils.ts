@@ -90,7 +90,7 @@ export function clone<T extends object>(source: T): T {
 /**
  * The convenient shortcut to add built-in checks to shapes.
  */
-export function appendCheck<S extends Shape>(
+export function setCheck<S extends Shape>(
   shape: S,
   key: unknown,
   options: ConstraintOptions | Message | undefined,

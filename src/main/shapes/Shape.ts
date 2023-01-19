@@ -13,7 +13,6 @@ import {
   TypeConstraintOptions,
 } from '../shared-types';
 import {
-  appendCheck,
   captureIssues,
   clone,
   createApplyChecksCallback,
@@ -24,6 +23,7 @@ import {
   isUnsafeCheck,
   ok,
   returnTrue,
+  setCheck,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -217,7 +217,7 @@ export class Shape<I = any, O = I> {
   refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
     const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
-    return appendCheck(this, cb, options, cb, (input, options) => {
+    return setCheck(this, cb, options, cb, (input, options) => {
       if (!cb(input)) {
         return issueFactory(input, options);
       }
