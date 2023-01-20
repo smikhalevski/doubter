@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, isFinite, ok, setCheck } from '../utils';
+import { createIssueFactory, isArray, ok, setCheck } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -140,7 +140,7 @@ export class StringShape extends CoercibleShape<string> {
     if (value == null) {
       return '';
     }
-    if (isFinite(value) || typeof value === 'boolean' || typeof value === 'bigint') {
+    if (Number.isFinite(value) || typeof value === 'boolean' || typeof value === 'bigint') {
       return '' + value;
     }
     return null;

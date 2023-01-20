@@ -37,12 +37,6 @@ export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
 
-export const isFinite = Number.isFinite;
-
-export const isInteger = Number.isInteger;
-
-export const isNaN = Number.isNaN;
-
 export const isArray = Array.isArray;
 
 export const getPrototypeOf = Object.getPrototypeOf;
@@ -84,7 +78,7 @@ export function toArrayIndex(key: unknown): number {
   if (typeof key === 'string' && '' + +key === key) {
     key = +key;
   }
-  return typeof key === 'number' && isInteger(key) && key >= 0 && key < 0xffffffff ? key : -1;
+  return typeof key === 'number' && key % 1 === 0 && key >= 0 && key < 0xffffffff ? key : -1;
 }
 
 /**

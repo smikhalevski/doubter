@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, isInteger, ok } from '../utils';
+import { createIssueFactory, isArray, ok } from '../utils';
 import {
   CODE_TYPE,
   MESSAGE_BIGINT_TYPE,
@@ -65,7 +65,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     if (value === null || value === undefined) {
       return BigInt(0);
     }
-    if (isInteger(value) || typeof value === 'string' || typeof value === 'boolean') {
+    if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
       try {
         return BigInt(value);
       } catch {}
