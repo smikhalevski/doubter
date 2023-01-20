@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok, setCheck } from '../utils';
+import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { createIssueFactory, isArray, isFinite, NEVER, ok, setCheck } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -19,7 +19,6 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER } from './IntersectionShape';
 
 /**
  * The shape that constrains the input as a string.
@@ -114,7 +113,7 @@ export class StringShape extends CoercibleShape<string> {
     const { _applyChecks } = this;
 
     let output = input;
-    let issues: Issue[] | null = null;
+    let issues = null;
     let changed = false;
 
     if (
@@ -123,31 +122,26 @@ export class StringShape extends CoercibleShape<string> {
     ) {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-    }
-    if (changed && issues === null) {
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _coerce(input: unknown): unknown {
-    if (typeof input === 'string') {
-      return input;
+  /**
+   * Coerces value to a string or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   *
+   * @param value The non-string value to coerce.
+   */
+  protected _coerce(value: any): string | NEVER {
+    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'string') {
+      return value;
     }
-    if (input == null) {
+    if (value == null) {
       return '';
     }
-    if (
-      (typeof input === 'number' && input === input && input !== Infinity && input !== -Infinity) ||
-      typeof input === 'boolean' ||
-      typeof input === 'bigint'
-    ) {
-      return '' + input;
-    }
-    if (isArray(input) && input.length === 1) {
-      return this._coerce(input[0]);
+    if (isFinite(value) || typeof value === 'boolean' || typeof value === 'bigint') {
+      return '' + value;
     }
     return NEVER;
   }

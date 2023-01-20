@@ -13,6 +13,7 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
+import { NEVER } from '../../main/utils';
 
 describe('StringShape', () => {
   test('creates a string shape', () => {
@@ -194,16 +195,13 @@ describe('StringShape', () => {
   });
 
   describe('coercion', () => {
-    test('coerces a string', () => {
-      expect(new StringShape()['_coerce']('aaa')).toBe('aaa');
-    });
-
     test('coerces a number', () => {
       expect(new StringShape()['_coerce'](111)).toBe('111');
       expect(new StringShape()['_coerce'](111.222)).toBe('111.222');
-      expect(new StringShape()['_coerce'](NaN)).toBe(NaN);
-      expect(new StringShape()['_coerce'](Infinity)).toBe(Infinity);
-      expect(new StringShape()['_coerce'](-Infinity)).toBe(-Infinity);
+
+      expect(new StringShape()['_coerce'](NaN)).toBe(NEVER);
+      expect(new StringShape()['_coerce'](Infinity)).toBe(NEVER);
+      expect(new StringShape()['_coerce'](-Infinity)).toBe(NEVER);
     });
 
     test('coerces a boolean', () => {
@@ -219,28 +217,20 @@ describe('StringShape', () => {
     test('coerces an array with a single string element', () => {
       expect(new StringShape()['_coerce'](['aaa'])).toBe('aaa');
       expect(new StringShape()['_coerce']([111])).toBe('111');
-    });
 
-    test('does not coerce unsuitable arrays as is', () => {
-      const value1 = ['aaa', 'bbb'];
-      const value2 = ['aaa', 111];
-
-      expect(new StringShape()['_coerce'](value1)).toBe(value1);
-      expect(new StringShape()['_coerce'](value2)).toBe(value2);
+      expect(new StringShape()['_coerce']([['aaa']])).toBe(NEVER);
+      expect(new StringShape()['_coerce']([[111]])).toBe(NEVER);
+      expect(new StringShape()['_coerce'](['aaa', 'bbb'])).toBe(NEVER);
+      expect(new StringShape()['_coerce'](['aaa', 111])).toBe(NEVER);
     });
 
     test('does not coerce objects and functions', () => {
-      const value1 = { foo: 111 };
-      const value2 = () => undefined;
-
-      expect(new StringShape()['_coerce'](value1)).toBe(value1);
-      expect(new StringShape()['_coerce'](value2)).toBe(value2);
+      expect(new StringShape()['_coerce']({ foo: 111 })).toBe(NEVER);
+      expect(new StringShape()['_coerce'](() => undefined)).toBe(NEVER);
     });
 
     test('does not coerce a symbol', () => {
-      const value = Symbol();
-
-      expect(new StringShape()['_coerce'](value)).toBe(value);
+      expect(new StringShape()['_coerce'](Symbol())).toBe(NEVER);
     });
   });
 });
