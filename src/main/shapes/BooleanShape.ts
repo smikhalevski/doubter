@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok } from '../utils';
+import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { createIssueFactory, isArray, NEVER, ok } from '../utils';
 import {
   CODE_TYPE,
   MESSAGE_BOOLEAN_TYPE,
@@ -12,7 +12,6 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER } from './IntersectionShape';
 
 /**
  * The shape of the boolean value.
@@ -43,7 +42,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     const { _applyChecks } = this;
 
     let output = input;
-    let issues: Issue[] | null = null;
+    let issues = null;
     let changed = false;
 
     if (
@@ -52,27 +51,26 @@ export class BooleanShape extends CoercibleShape<boolean> {
     ) {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-    }
-    if (changed && issues === null) {
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _coerce(input: unknown): unknown {
-    if (typeof input === 'boolean') {
-      return input;
+  /**
+   * Coerces value to a boolean or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   *
+   * @param value The non-boolean value to coerce.
+   */
+  protected _coerce(value: unknown): boolean | NEVER {
+    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'boolean') {
+      return value;
     }
-    if (input == null || input === false || input === 0 || input === 'false') {
+    if (value === null || value === undefined || value === false || value === 0 || value === 'false') {
       return false;
     }
-    if (input === true || input === 1 || input === 'true') {
+    if (value === true || value === 1 || value === 'true') {
       return true;
-    }
-    if (isArray(input) && input.length === 1) {
-      return this._coerce(input[0]);
     }
     return NEVER;
   }
