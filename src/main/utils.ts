@@ -5,6 +5,7 @@ import {
   ConstraintOptions,
   Issue,
   Message,
+  MessageCallback,
   Ok,
   ParseOptions,
   ReadonlyDict,
@@ -121,7 +122,7 @@ export function setCheck<S extends Shape>(
  */
 export function createIssueFactory(
   code: unknown,
-  defaultMessage: unknown,
+  defaultMessage: MessageCallback | string,
   options: TypeConstraintOptions | Message | undefined,
   param: unknown
 ): (input: unknown, options: Readonly<ParseOptions>) => Issue[];
@@ -136,13 +137,13 @@ export function createIssueFactory(
  */
 export function createIssueFactory(
   code: unknown,
-  defaultMessage: unknown,
+  defaultMessage: Message,
   options: TypeConstraintOptions | Message | undefined
 ): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[];
 
 export function createIssueFactory(
   code: unknown,
-  defaultMessage: unknown,
+  defaultMessage: Message,
   options: TypeConstraintOptions | Message | undefined,
   param?: any
 ): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[] {
