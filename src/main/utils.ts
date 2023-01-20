@@ -97,13 +97,13 @@ export function setCheck<S extends Shape>(
 }
 
 /**
- * Returns a function that creates a new issue.
+ * Returns a function that creates a new array with a single issue.
  *
  * @param code The code of the issue.
  * @param defaultMessage The default message that is used if message isn't provided through options.
  * @param options Options provided by the user.
  * @param param The param that is added to the issue.
- * @returns The callback that takes an input and returns an issue.
+ * @returns The callback that takes an input and returns an array with a single issue.
  */
 export function createIssueFactory(
   code: unknown,
@@ -113,12 +113,12 @@ export function createIssueFactory(
 ): (input: unknown, options: Readonly<ParseOptions>) => Issue[];
 
 /**
- * Returns a function that creates a new issue.
+ * Returns a function that creates a new array with a single issue.
  *
  * @param code The code of the issue.
  * @param defaultMessage The default message that is used if message isn't provided through options.
  * @param options Options provided by the user.
- * @returns The callback that takes an input and a param, and returns an issue.
+ * @returns The callback that takes an input and a param, and returns an array with a single issue.
  */
 export function createIssueFactory(
   code: unknown,
@@ -198,25 +198,26 @@ export function captureIssues(error: unknown): Issue[] {
   throw error;
 }
 
-export type Flags = number[] | number;
+export type Bits = number[] | number;
 
-export function setFlag(flags: Flags, index: number): Flags {
-  if (typeof flags === 'number') {
+export function enableBitAt(bits: Bits, index: number): Bits {
+  if (typeof bits === 'number') {
     if (index < 32) {
-      return flags | (1 << index);
+      return bits | (1 << index);
     }
-    flags = [flags, 0, 0];
+    bits = [bits, 0, 0];
   }
 
-  flags[index >> 5] |= 1 << index % 32;
-  return flags;
+  bits[index >> 5] |= 1 << index % 32;
+
+  return bits;
 }
 
-export function isFlagSet(flag: Flags, index: number): boolean {
-  if (typeof flag === 'number') {
-    return 0 !== flag >>> index;
+export function isBitEnabledAt(bits: Bits, index: number): boolean {
+  if (typeof bits === 'number') {
+    return bits >>> index !== 0;
   } else {
-    return 0 !== flag[index >> 5] >>> index % 32;
+    return bits[index >> 5] >>> index % 32 !== 0;
   }
 }
 

@@ -3,9 +3,9 @@ import {
   cloneObjectKnownKeys,
   createApplyChecksCallback,
   createIssueFactory,
+  enableBitAt,
+  isBitEnabledAt,
   isEqual,
-  isFlagSet,
-  setFlag,
   unique,
 } from '../main/utils';
 import { Issue, ValidationError } from '../main';
@@ -189,23 +189,23 @@ describe('createIssueFactory', () => {
   });
 });
 
-describe('setFlag', () => {
+describe('enableBitAt', () => {
   test('sets bit', () => {
-    expect(setFlag(0b0, 5)).toBe(0b100000);
-    expect(setFlag(0b1, 5)).toBe(0b100001);
-    expect(setFlag(0b100, 5)).toBe(0b100100);
-    expect(setFlag(0b1, 31)).toBe(-2147483647);
-    expect(setFlag(0b1, 35)).toEqual([1, 0b1000, 0]);
+    expect(enableBitAt(0b0, 5)).toBe(0b100000);
+    expect(enableBitAt(0b1, 5)).toBe(0b100001);
+    expect(enableBitAt(0b100, 5)).toBe(0b100100);
+    expect(enableBitAt(0b1, 31)).toBe(-2147483647);
+    expect(enableBitAt(0b1, 35)).toEqual([1, 0b1000, 0]);
   });
 });
 
-describe('isFlagSet', () => {
+describe('isBitEnabledAt', () => {
   test('reads bit', () => {
-    expect(isFlagSet(setFlag(0b0, 5), 5)).toBe(true);
-    expect(isFlagSet(setFlag(0b1, 5), 5)).toBe(true);
-    expect(isFlagSet(setFlag(0b100, 5), 5)).toBe(true);
-    expect(isFlagSet(setFlag(0b1, 31), 31)).toBe(true);
-    expect(isFlagSet(setFlag(0b1, 35), 35)).toEqual(true);
+    expect(isBitEnabledAt(enableBitAt(0b0, 5), 5)).toBe(true);
+    expect(isBitEnabledAt(enableBitAt(0b1, 5), 5)).toBe(true);
+    expect(isBitEnabledAt(enableBitAt(0b100, 5), 5)).toBe(true);
+    expect(isBitEnabledAt(enableBitAt(0b1, 31), 31)).toBe(true);
+    expect(isBitEnabledAt(enableBitAt(0b1, 35), 35)).toEqual(true);
   });
 });
 

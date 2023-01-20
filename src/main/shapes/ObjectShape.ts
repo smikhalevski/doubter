@@ -1,20 +1,20 @@
 import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
+  Bits,
   cloneObject,
   cloneObjectEnumerableKeys,
   cloneObjectKnownKeys,
   concatIssues,
   createIssueFactory,
-  Flags,
+  enableBitAt,
   isArray,
   isAsyncShapes,
+  isBitEnabledAt,
   isEqual,
-  isFlagSet,
   isObjectLike,
   isPlainObject,
   ok,
-  setFlag,
   setKeyValue,
   unshiftPath,
 } from '../utils';
@@ -358,7 +358,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let output = input;
 
       let seenCount = 0;
-      let seenFlags: Flags = 0;
+      let seenBits: Bits = 0;
 
       let unknownKeys: string[] | null = null;
 
@@ -370,7 +370,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
         if (index !== -1) {
           seenCount++;
-          seenFlags = setFlag(seenFlags, index);
+          seenBits = enableBitAt(seenBits, index);
 
           valueShape = _valueShapes[index];
         }
@@ -411,7 +411,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       if (seenCount !== keysLength) {
         for (let i = 0; i < keysLength; ++i) {
-          if (isFlagSet(seenFlags, i)) {
+          if (isBitEnabledAt(seenBits, i)) {
             continue;
           }
 
@@ -519,7 +519,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     let output = input;
 
     let seenCount = 0;
-    let seenFlags: Flags = 0;
+    let seenBits: Bits = 0;
 
     let unknownKeys = null;
 
@@ -532,7 +532,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       // The key is known
       if (index !== -1) {
         seenCount++;
-        seenFlags = setFlag(seenFlags, index);
+        seenBits = enableBitAt(seenBits, index);
 
         valueShape = _valueShapes[index];
       }
@@ -596,7 +596,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     // Parse absent known keys
     if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
-        if (isFlagSet(seenFlags, i)) {
+        if (isBitEnabledAt(seenBits, i)) {
           continue;
         }
 
