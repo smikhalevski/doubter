@@ -1214,7 +1214,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     const { _applyChecks } = this;
 
     let result = this.shape['_apply'](input, options);
-    let issues;
+    let issues = null;
     let output = input;
 
     if (result !== null) {
@@ -1224,21 +1224,17 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
       output = result.value;
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
     const { _applyChecks } = this;
 
     return this.shape['_applyAsync'](input, options).then(result => {
-      let issues;
+      let issues = null;
       let output = input;
 
       if (result !== null) {
@@ -1248,14 +1244,10 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
         output = result.value;
       }
 
-      if (_applyChecks !== null) {
-        issues = _applyChecks(output, null, options);
-
-        if (issues !== null) {
-          return issues;
-        }
+      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+        return result;
       }
-      return result;
+      return issues;
     });
   }
 }
