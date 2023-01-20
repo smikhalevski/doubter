@@ -1,11 +1,12 @@
 import { AnyShape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
   concatIssues,
   createIssueFactory,
   isArray,
   isAsyncShapes,
   isEqual,
+  NEVER,
   ok,
   setCheck,
   toArrayIndex,
@@ -180,14 +181,16 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
     const { shapes, restShape, _applyChecks, _unsafe } = this;
 
-    let output = options.coerced || this._coerced ? this._coerce(input) : input;
+    let output = input;
     let outputLength;
     let shapesLength = 0;
-    let issues: Issue[] | null = null;
+    let issues = null;
 
     // noinspection CommaExpressionJS
     if (
-      !isArray(output) ||
+      // Not an array or not coercible
+      (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)) ||
+      // Invalid tuple length
       ((outputLength = output.length),
       shapes !== null &&
         (outputLength < (shapesLength = shapes.length) || (restShape === null && outputLength !== shapesLength)))
@@ -235,13 +238,15 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return new Promise(resolve => {
       const { shapes, restShape, _applyChecks, _unsafe } = this;
 
-      let output = options.coerced || this._coerced ? this._coerce(input) : input;
+      let output = input;
       let outputLength;
       let shapesLength = 0;
 
       // noinspection CommaExpressionJS
       if (
-        !isArray(output) ||
+        // Not an array or not coercible
+        (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)) ||
+        // Invalid tuple length
         ((outputLength = output.length),
         shapes !== null &&
           (outputLength < (shapesLength = shapes.length) || (restShape === null && outputLength !== shapesLength)))
@@ -265,7 +270,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         Promise.all(promises).then(results => {
           const resultsLength = results.length;
 
-          let issues: Issue[] | null = null;
+          let issues = null;
 
           for (let i = 0; i < resultsLength; ++i) {
             const result = results[i];
@@ -303,21 +308,18 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   /**
-   * Coerces an input value to an array, or returns an input as is.
+   * Coerces value to an array or returns {@linkcode Shape._NEVER} if coercion isn't possible.
    *
-   * @param input An input value to coerce.
+   * @param value The non-array value to coerce.
    */
-  protected _coerce(input: any): unknown {
-    if (isArray(input)) {
-      return input;
-    }
+  protected _coerce(value: any): any[] | NEVER {
     if (
-      input !== null &&
-      typeof input === 'object' &&
-      (typeof input[Symbol.iterator] === 'function' || typeof input.length === 'number')
+      value !== null &&
+      typeof value === 'object' &&
+      (typeof value[Symbol.iterator] === 'function' || typeof value.length === 'number')
     ) {
-      return Array.from(input);
+      return Array.from(value);
     }
-    return [input];
+    return [value];
   }
 }
