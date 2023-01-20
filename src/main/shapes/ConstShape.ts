@@ -1,6 +1,6 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, getValueType } from '../utils';
+import { createIssueFactory, getValueType, isNaN } from '../utils';
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
 
 /**
@@ -22,7 +22,7 @@ export class ConstShape<T> extends Shape<T> {
   constructor(readonly value: T, options?: TypeConstraintOptions | Message) {
     super();
 
-    this._typePredicate = value !== value ? Number.isNaN : input => value === input;
+    this._typePredicate = value !== value ? isNaN : input => value === input;
     this._typeIssueFactory = createIssueFactory(CODE_CONST, MESSAGE_CONST, options, value);
   }
 
