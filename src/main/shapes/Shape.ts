@@ -1006,7 +1006,7 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
     const { _applyChecks } = this;
 
-    let issues;
+    let issues = null;
     let output = input;
 
     const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
@@ -1018,25 +1018,19 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
       output = result.value;
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
     const { _applyChecks } = this;
 
-    let issues;
-
     if (isEqual(input, this.inputValue)) {
       if (_applyChecks !== null) {
         return new Promise(resolve => {
-          issues = _applyChecks(this.outputValue, null, options);
+          const issues = _applyChecks(this.outputValue, null, options);
 
           resolve(issues !== null ? issues : this._result);
         });
@@ -1046,7 +1040,7 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
-      let issues;
+      let issues = null;
       let output = input;
 
       if (result !== null) {
@@ -1056,14 +1050,10 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
         output = result.value;
       }
 
-      if (_applyChecks !== null) {
-        issues = _applyChecks(output, null, options);
-
-        if (issues !== null) {
-          return issues;
-        }
+      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+        return result;
       }
-      return result;
+      return issues;
     });
   }
 }
