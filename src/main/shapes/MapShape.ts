@@ -213,14 +213,16 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
   }
 
   /**
-   * Coerces input to a list of `Map` entries, or returns `null` if input cannot be coerced.
+   * Coerces value to a list of `Map` entries, or returns `null` if coercion isn't possible.
+   *
+   * @param value The non-`Map` value to coerce.
    */
-  protected _coerceEntries(input: unknown): [unknown, unknown][] | null {
-    if (isArray(input)) {
-      return input.every(isEntry) ? input : null;
+  protected _coerceEntries(value: unknown): [unknown, unknown][] | null {
+    if (isArray(value)) {
+      return value.every(isEntry) ? value : null;
     }
-    if (isObjectLike(input)) {
-      return Object.entries(input);
+    if (isObjectLike(value)) {
+      return Object.entries(value);
     }
     return null;
   }
