@@ -1,8 +1,10 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, getValueType, isArray, NEVER, ok, unique } from '../utils';
+import { createIssueFactory, getValueType, isArray, ok, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
+
+export const UNRECOGNIZED = Symbol();
 
 /**
  * The shape that constrains an input to one of values.
@@ -77,7 +79,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
 
     if (
       !this.values.includes(output) &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === UNRECOGNIZED)
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -88,7 +90,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
   }
 
   /**
-   * Coerces value to an enum value or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   * Coerces value to an enum value or returns {@linkcode UNRECOGNIZED} if coercion isn't possible.
    *
    * @param value The non-enum value to coerce.
    */
@@ -101,7 +103,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     if (_valueMapping !== null && typeof value === 'string' && value in _valueMapping) {
       return _valueMapping[value];
     }
-    return NEVER;
+    return UNRECOGNIZED;
   }
 }
 

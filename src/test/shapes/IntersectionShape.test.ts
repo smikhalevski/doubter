@@ -8,8 +8,7 @@ import {
   TYPE_NUMBER,
   TYPE_STRING,
 } from '../../main/constants';
-import { intersectValues, intersectValueTypes } from '../../main/shapes/IntersectionShape';
-import { NEVER } from '../../main/utils';
+import { intersectValues, intersectValueTypes, NEVER } from '../../main/shapes/IntersectionShape';
 
 describe('IntersectionShape', () => {
   test('returns the input that matches all shapes as is', () => {

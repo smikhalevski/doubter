@@ -1,6 +1,6 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { clone, createIssueFactory, isArray, isFinite, isInteger, isNumber, NEVER, ok, setCheck } from '../utils';
+import { clone, createIssueFactory, isArray, isFinite, isInteger, isNumber, ok, setCheck } from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -227,7 +227,7 @@ export class NumberShape extends CoercibleShape<number> {
 
     if (
       !this._typePredicate(output) &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -238,11 +238,11 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * Coerces value to a number (non-`NaN`) or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   * Coerces value to a number (not `NaN`) or returns `null` if coercion isn't possible.
    *
    * @param value The non-number value to coerce.
    */
-  protected _coerce(value: any): number | NEVER {
+  protected _coerce(value: any): number | null {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number' && value === value) {
       return value;
     }
@@ -255,7 +255,7 @@ export class NumberShape extends CoercibleShape<number> {
     ) {
       return value;
     }
-    return NEVER;
+    return null;
   }
 }
 

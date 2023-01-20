@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
 import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, isFinite, NEVER, ok, setCheck } from '../utils';
+import { createIssueFactory, isArray, isFinite, ok, setCheck } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -118,7 +118,7 @@ export class StringShape extends CoercibleShape<string> {
 
     if (
       typeof output !== 'string' &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -129,11 +129,11 @@ export class StringShape extends CoercibleShape<string> {
   }
 
   /**
-   * Coerces value to a string or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   * Coerces value to a string or returns `null` if coercion isn't possible.
    *
    * @param value The non-string value to coerce.
    */
-  protected _coerce(value: any): string | NEVER {
+  protected _coerce(value: any): string | null {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'string') {
       return value;
     }
@@ -143,6 +143,6 @@ export class StringShape extends CoercibleShape<string> {
     if (isFinite(value) || typeof value === 'boolean' || typeof value === 'bigint') {
       return '' + value;
     }
-    return NEVER;
+    return null;
   }
 }

@@ -6,7 +6,6 @@ import {
   isArray,
   isAsyncShapes,
   isEqual,
-  NEVER,
   ok,
   setCheck,
   toArrayIndex,
@@ -189,7 +188,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     // noinspection CommaExpressionJS
     if (
       // Not an array or not coercible
-      (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)) ||
+      (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === null)) ||
       // Invalid tuple length
       ((outputLength = output.length),
       shapes !== null &&
@@ -245,7 +244,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       // noinspection CommaExpressionJS
       if (
         // Not an array or not coercible
-        (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)) ||
+        (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === null)) ||
         // Invalid tuple length
         ((outputLength = output.length),
         shapes !== null &&
@@ -308,11 +307,11 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   /**
-   * Coerces value to an array or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   * Coerces value to an array or returns `null` if coercion isn't possible.
    *
    * @param value The non-array value to coerce.
    */
-  protected _coerce(value: any): any[] | NEVER {
+  protected _coerce(value: any): any[] | null {
     if (
       value !== null &&
       typeof value === 'object' &&

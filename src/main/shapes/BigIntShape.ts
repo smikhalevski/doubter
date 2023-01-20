@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, isInteger, NEVER, ok } from '../utils';
+import { createIssueFactory, isArray, isInteger, ok } from '../utils';
 import {
   CODE_TYPE,
   MESSAGE_BIGINT_TYPE,
@@ -48,7 +48,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
 
     if (
       typeof output !== 'bigint' &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -58,7 +58,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     return issues;
   }
 
-  protected _coerce(value: any): bigint | NEVER {
+  protected _coerce(value: any): bigint | null {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {
       return value;
     }
@@ -70,6 +70,6 @@ export class BigIntShape extends CoercibleShape<bigint> {
         return BigInt(value);
       } catch {}
     }
-    return NEVER;
+    return null;
   }
 }

@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, NEVER, ok } from '../utils';
+import { createIssueFactory, isArray, ok } from '../utils';
 import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -36,7 +36,7 @@ export class DateShape extends CoercibleShape<Date> {
     let issues = null;
     let changed = false;
 
-    if (!isDate(input) && (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)) {
+    if (!isDate(input) && (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)) {
       return this._typeIssueFactory(input, options);
     }
     if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
@@ -46,18 +46,18 @@ export class DateShape extends CoercibleShape<Date> {
   }
 
   /**
-   * Coerces value to a `Date` or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   * Coerces value to a `Date` or returns `null` if coercion isn't possible.
    *
    * @param value The non-`Date` value to coerce.
    */
-  protected _coerce(value: unknown): Date | NEVER {
+  protected _coerce(value: unknown): Date | null {
     if (isArray(value) && value.length === 1 && isDate((value = value[0]))) {
       return value;
     }
     if ((typeof value === 'string' || typeof value === 'number') && isDate((value = new Date(value)))) {
       return value;
     }
-    return NEVER;
+    return null;
   }
 }
 

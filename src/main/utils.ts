@@ -446,7 +446,3 @@ export function returnTrue(): boolean {
 export function returnArray(): [] {
   return [];
 }
-
-export const NEVER = Symbol();
-
-export type NEVER = typeof NEVER;

@@ -1,5 +1,5 @@
 import { AnyShape, Shape, ValueType } from './Shape';
-import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, NEVER, ok } from '../utils';
+import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
 import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION, TYPE_ARRAY, TYPE_DATE, TYPE_NEVER, TYPE_OBJECT } from '../constants';
 
@@ -108,6 +108,8 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
     });
   }
 }
+
+export const NEVER = Symbol();
 
 export function intersectOutputs(
   input: unknown,
