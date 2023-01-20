@@ -120,14 +120,10 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
       return issues !== null ? issues : this._typeIssueFactory(input, options, this._getInputTypes());
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<U[number]['output']>> {
@@ -161,14 +157,10 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
           output = result.value;
         }
 
-        if (_applyChecks !== null) {
-          issues = _applyChecks(output, null, options);
-
-          if (issues !== null) {
-            return issues;
-          }
+        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+          return result;
         }
-        return result;
+        return issues;
       });
     };
 
