@@ -1107,7 +1107,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
     const { excludedValue, _typeIssueFactory, _applyChecks } = this;
 
-    let issues;
+    let issues = null;
     let output = input;
 
     if (isEqual(input, excludedValue)) {
@@ -1127,14 +1127,10 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       }
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
@@ -1145,7 +1141,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
-      let issues;
+      let issues = null;
       let output = input;
 
       if (result !== null) {
@@ -1159,14 +1155,10 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
         }
       }
 
-      if (_applyChecks !== null) {
-        issues = _applyChecks(output, null, options);
-
-        if (issues !== null) {
-          return issues;
-        }
+      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+        return result;
       }
-      return result;
+      return issues;
     });
   }
 }
