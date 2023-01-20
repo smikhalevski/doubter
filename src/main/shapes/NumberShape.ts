@@ -242,11 +242,11 @@ export class NumberShape extends CoercibleShape<number> {
    *
    * @param value The non-number value to coerce.
    */
-  protected _coerce(value: unknown): unknown {
+  protected _coerce(value: any): number | NEVER {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number' && value === value) {
       return value;
     }
-    if (value == null) {
+    if (value === null || value === undefined) {
       return 0;
     }
     if (

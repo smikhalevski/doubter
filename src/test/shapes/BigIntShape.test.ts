@@ -10,6 +10,7 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
+import { NEVER } from '../../main/utils';
 
 describe('BigIntShape', () => {
   test('creates a string shape', () => {
@@ -77,15 +78,17 @@ describe('BigIntShape', () => {
   describe('coercion', () => {
     test('coerces a string', () => {
       expect(new BigIntShape()['_coerce']('111')).toBe(BigInt(111));
-      expect(new BigIntShape()['_coerce']('aaa')).toBe('aaa');
+
+      expect(new BigIntShape()['_coerce']('aaa')).toBe(NEVER);
     });
 
     test('coerces a number', () => {
       expect(new BigIntShape()['_coerce'](111)).toBe(BigInt(111));
-      expect(new BigIntShape()['_coerce'](111.222)).toBe(111.222);
-      expect(new BigIntShape()['_coerce'](NaN)).toBe(NaN);
-      expect(new BigIntShape()['_coerce'](Infinity)).toBe(Infinity);
-      expect(new BigIntShape()['_coerce'](-Infinity)).toBe(-Infinity);
+
+      expect(new BigIntShape()['_coerce'](111.222)).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](NaN)).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](Infinity)).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](-Infinity)).toBe(NEVER);
     });
 
     test('coerces a boolean', () => {
@@ -103,21 +106,14 @@ describe('BigIntShape', () => {
     });
 
     test('does not coerce unsuitable array', () => {
-      const value1 = [BigInt(111), 'aaa'];
-      const value2 = [BigInt(111), BigInt(111)];
-      const value3 = ['aaa'];
-
-      expect(new BigIntShape()['_coerce'](value1)).toBe(value1);
-      expect(new BigIntShape()['_coerce'](value2)).toBe(value2);
-      expect(new BigIntShape()['_coerce'](value3)).toBe('aaa');
+      expect(new BigIntShape()['_coerce']([BigInt(111), 'aaa'])).toBe(NEVER);
+      expect(new BigIntShape()['_coerce']([BigInt(111), BigInt(111)])).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](['aaa'])).toBe(NEVER);
     });
 
     test('does not coerce objects and functions', () => {
-      const value1 = { foo: 111 };
-      const value2 = () => undefined;
-
-      expect(new BigIntShape()['_coerce'](value1)).toBe(value1);
-      expect(new BigIntShape()['_coerce'](value2)).toBe(value2);
+      expect(new BigIntShape()['_coerce']({ foo: 111 })).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](() => undefined)).toBe(NEVER);
     });
   });
 });

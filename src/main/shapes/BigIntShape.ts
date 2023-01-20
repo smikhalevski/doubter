@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok } from '../utils';
+import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { createIssueFactory, isArray, isInteger, NEVER, ok } from '../utils';
 import {
   CODE_TYPE,
   MESSAGE_BIGINT_TYPE,
@@ -39,40 +39,37 @@ export class BigIntShape extends CoercibleShape<bigint> {
     }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<bigint> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<bigint> {
     const { _applyChecks } = this;
 
-    const output = options.coerced || this._coerced ? this._coerce(input) : input;
+    let output = input;
+    let issues = null;
+    let changed = false;
 
-    let issues: Issue[] | null = null;
-
-    if (typeof output !== 'bigint') {
+    if (
+      typeof output !== 'bigint' &&
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+    ) {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-    }
-    if (issues === null && input !== output) {
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _coerce(input: unknown): unknown {
-    if (typeof input === 'bigint') {
-      return input;
+  protected _coerce(value: any): bigint | NEVER {
+    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {
+      return value;
     }
-    if (input == null) {
+    if (value === null || value === undefined) {
       return BigInt(0);
     }
-    if (isArray(input) && input.length === 1) {
-      return this._coerce(input[0]);
-    }
-    if (typeof input === 'number' || typeof input === 'string' || typeof input === 'boolean') {
+    if (isInteger(value) || typeof value === 'string' || typeof value === 'boolean') {
       try {
-        return BigInt(input);
+        return BigInt(value);
       } catch {}
     }
-    return input;
+    return NEVER;
   }
 }
