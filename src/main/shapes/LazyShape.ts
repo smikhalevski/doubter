@@ -88,15 +88,10 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
       }
       output = result.value;
     }
-
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
@@ -112,15 +107,10 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
         }
         output = result.value;
       }
-
-      if (_applyChecks !== null) {
-        issues = _applyChecks(output, null, options);
-
-        if (issues !== null) {
-          return issues;
-        }
+      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+        return result;
       }
-      return result;
+      return issues;
     });
   }
 }
