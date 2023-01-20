@@ -1,6 +1,6 @@
 import { Shape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { clone, createIssueFactory, isArray, isNumber, ok, setCheck } from '../utils';
+import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { clone, createIssueFactory, isArray, isNumber, NEVER, ok, setCheck } from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -27,7 +27,6 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER } from './IntersectionShape';
 
 /**
  * The shape that constrains the input as a number.
@@ -223,7 +222,7 @@ export class NumberShape extends CoercibleShape<number> {
     const { _applyChecks } = this;
 
     let output = input;
-    let issues: Issue[] | null = null;
+    let issues = null;
     let changed = false;
 
     if (
@@ -232,27 +231,29 @@ export class NumberShape extends CoercibleShape<number> {
     ) {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-    }
-    if (changed && issues === null) {
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _coerce(input: unknown): unknown {
-    if (typeof input === 'number') {
-      return input;
+  /**
+   * Coerces value to a number (non-`NaN`) or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   *
+   * @param value The non-number value to coerce.
+   */
+  protected _coerce(value: unknown): unknown {
+    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number' && value === value) {
+      return value;
     }
-    if (input == null) {
+    if (value == null) {
       return 0;
     }
-    if (typeof input === 'string' || typeof input === 'boolean' || input instanceof Date) {
-      return +input;
-    }
-    if (isArray(input) && input.length === 1) {
-      return this._coerce(input[0]);
+    if (
+      (typeof value === 'string' || typeof value === 'boolean' || value instanceof Date) &&
+      (value = +value) === value
+    ) {
+      return value;
     }
     return NEVER;
   }
@@ -260,9 +261,9 @@ export class NumberShape extends CoercibleShape<number> {
 
 export interface NumberShape {
   /**
-   * Alias for {@linkcode gte}.
-   *
    * Constrains the number to be greater than or equal to the value.
+   *
+   * Alias for {@linkcode gte}.
    *
    * @param value The inclusive minimum value.
    * @param options The constraint options or an issue message.
@@ -271,9 +272,9 @@ export interface NumberShape {
   min(value: number, options?: ConstraintOptions | Message): this;
 
   /**
-   * Alias for {@linkcode lte}.
-   *
    * Constrains the number to be less than or equal to the value.
+   *
+   * Alias for {@linkcode lte}.
    *
    * @param value The inclusive maximum value.
    * @param options The constraint options or an issue message.
