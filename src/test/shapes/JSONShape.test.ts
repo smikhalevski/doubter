@@ -1,5 +1,5 @@
 import { JSONShape } from '../../main';
-import { CODE_JSON, MESSAGE_JSON } from '../../main/constants';
+import { CODE_JSON, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING } from '../../main/constants';
 
 describe('JSONShape', () => {
   test('parses JSON values', () => {
@@ -9,7 +9,7 @@ describe('JSONShape', () => {
   test('raises an issue if an input is not a string', () => {
     expect(new JSONShape().try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_JSON, path: [], input: 111, param: undefined, message: MESSAGE_JSON }],
+      issues: [{ code: CODE_TYPE, path: [], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
     });
   });
 
@@ -21,8 +21,8 @@ describe('JSONShape', () => {
           code: CODE_JSON,
           path: [],
           input: 'aaa',
-          param: new SyntaxError('Unexpected token a in JSON at position 0'),
-          message: MESSAGE_JSON,
+          message: 'Unexpected token a in JSON at position 0',
+          param: 'Unexpected token a in JSON at position 0',
         },
       ],
     });
@@ -31,7 +31,7 @@ describe('JSONShape', () => {
   test('overrides a message for a type issue', () => {
     expect(new JSONShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_JSON, path: [], input: 111, param: undefined, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, path: [], input: 111, param: TYPE_STRING, message: 'aaa', meta: 'bbb' }],
     });
   });
 

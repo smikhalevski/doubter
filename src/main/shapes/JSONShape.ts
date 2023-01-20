@@ -1,13 +1,14 @@
 import { Shape, ValueType } from './Shape';
 import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { clone, createIssueFactory, ok } from '../utils';
-import { CODE_JSON, MESSAGE_JSON, TYPE_STRING } from '../constants';
+import { CODE_JSON, CODE_TYPE, MESSAGE_JSON, MESSAGE_STRING_TYPE, TYPE_STRING } from '../constants';
 
 /**
  * The shape of a value deserialized from a JSON string.
  */
 export class JSONShape extends Shape<string, any> {
-  protected _issueFactory;
+  protected _typeIssueFactory;
+  protected _jsonIssueFactory;
   protected _reviver?: (this: any, key: string, value: any) => any;
 
   /**
@@ -18,7 +19,8 @@ export class JSONShape extends Shape<string, any> {
   constructor(options?: TypeConstraintOptions | Message) {
     super();
 
-    this._issueFactory = createIssueFactory(CODE_JSON, MESSAGE_JSON, options);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
+    this._jsonIssueFactory = createIssueFactory(CODE_JSON, MESSAGE_JSON, options);
   }
 
   /**
@@ -53,22 +55,16 @@ export class JSONShape extends Shape<string, any> {
     let issues;
 
     if (typeof input !== 'string') {
-      return this._issueFactory(input, options, undefined);
+      return this._typeIssueFactory(input, options);
     }
-
     try {
       output = JSON.parse(input, this._reviver);
-    } catch (error) {
-      return this._issueFactory(input, options, error);
+    } catch (error: any) {
+      return this._jsonIssueFactory(input, options, error.message);
     }
-
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return ok(output);
     }
-    return ok(output);
+    return issues;
   }
 }
