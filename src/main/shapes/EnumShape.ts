@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, getValueType, isArray, ok, unique } from '../utils';
+import { ApplyResult, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
+import { createIssueFactory, getValueType, isArray, NEVER, ok, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -71,35 +71,37 @@ export class EnumShape<T> extends CoercibleShape<T> {
   protected _apply(input: any, options: ParseOptions): ApplyResult<T> {
     const { _applyChecks } = this;
 
-    const output = options.coerced || this._coerced ? this._coerce(input) : input;
+    let output = input;
+    let issues = null;
+    let changed = false;
 
-    let issues: Issue[] | null = null;
-
-    if (!this.values.includes(output)) {
+    if (
+      !this.values.includes(output) &&
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+    ) {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-    }
-    if (issues === null && input !== output) {
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _coerce(input: any): unknown {
+  /**
+   * Coerces value to an enum value or returns {@linkcode Shape._NEVER} if coercion isn't possible.
+   *
+   * @param value The non-enum value to coerce.
+   */
+  protected _coerce(value: any): unknown {
     const { _valueMapping } = this;
 
-    if (_valueMapping === null || this.values.includes(input)) {
-      return input;
+    if (isArray(value) && value.length === 1 && this.values.includes((value = value[0]))) {
+      return value;
     }
-    if (typeof input === 'string' && input in _valueMapping) {
-      return _valueMapping[input];
+    if (_valueMapping !== null && typeof value === 'string' && value in _valueMapping) {
+      return _valueMapping[value];
     }
-    if (isArray(input) && input.length === 1) {
-      return this._coerce(input[0]);
-    }
-    return input;
+    return NEVER;
   }
 }
 
