@@ -1,7 +1,7 @@
 import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
 import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
-  cloneEnumerableKeys,
+  cloneObjectEnumerableKeys,
   concatIssues,
   createIssueFactory,
   isArray,
@@ -119,7 +119,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
       if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
         if (input === output) {
-          output = cloneEnumerableKeys(input, keyCount);
+          output = cloneObjectEnumerableKeys(input, keyCount);
         }
         setKeyValue(output, outputKey, outputValue);
       }
@@ -201,7 +201,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
             if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
               if (input === output) {
-                output = cloneEnumerableKeys(input, keyCount);
+                output = cloneObjectEnumerableKeys(input, keyCount);
               }
 
               output[outputKey as string] = outputValue;

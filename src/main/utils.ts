@@ -80,13 +80,6 @@ export function toArrayIndex(key: unknown): number {
 }
 
 /**
- * Returns the shallow clone of the object.
- */
-export function clone<T extends object>(source: T): T {
-  return Object.assign(Object.create(getPrototypeOf(source)), source);
-}
-
-/**
  * The convenient shortcut to add built-in checks to shapes.
  */
 export function setCheck<S extends Shape>(
@@ -235,7 +228,17 @@ export function setKeyValue(obj: Record<any, any>, key: PropertyKey, value: unkn
   }
 }
 
-export function cloneEnumerableKeys(input: ReadonlyDict, keyCount = -1): ReadonlyDict {
+/**
+ * Returns the shallow clone of the instance object.
+ */
+export function cloneObject<T extends object>(instance: T): T {
+  return Object.assign(Object.create(getPrototypeOf(instance)), instance);
+}
+
+/**
+ * Clones the first `keyCount` keys of a plain object.
+ */
+export function cloneObjectEnumerableKeys(input: ReadonlyDict, keyCount = -1): ReadonlyDict {
   const output: ReadonlyDict = {};
 
   if (keyCount < 0) {
@@ -257,7 +260,10 @@ export function cloneEnumerableKeys(input: ReadonlyDict, keyCount = -1): Readonl
   return output;
 }
 
-export function cloneKnownKeys(input: ReadonlyDict, keys: readonly string[]): ReadonlyDict {
+/**
+ * Clones known keys of the object.
+ */
+export function cloneObjectKnownKeys(input: ReadonlyDict, keys: readonly string[]): ReadonlyDict {
   const output: ReadonlyDict = {};
   const keysLength = keys.length;
 

@@ -1,9 +1,9 @@
 import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
-  clone,
-  cloneEnumerableKeys,
-  cloneKnownKeys,
+  cloneObject,
+  cloneObjectEnumerableKeys,
+  cloneObjectKnownKeys,
   concatIssues,
   createIssueFactory,
   Flags,
@@ -318,7 +318,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Constrains an object to be an `Object` instance or to have a `null` prototype.
    */
   plain(): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
     shape._typePredicate = isPlainObject;
     return shape;
   }
@@ -395,7 +395,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
 
         if (input === output && keysMode === 'stripped') {
-          output = cloneKnownKeys(input, keys);
+          output = cloneObjectKnownKeys(input, keys);
         }
       }
 
@@ -444,7 +444,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
             }
             if ((_unsafe || issues === null) && !isEqual(input[key], result.value)) {
               if (input === output) {
-                output = cloneEnumerableKeys(input);
+                output = cloneObjectEnumerableKeys(input);
               }
               setKeyValue(output, key, result.value);
             }
@@ -492,7 +492,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
       if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
-          output = cloneEnumerableKeys(input);
+          output = cloneObjectEnumerableKeys(input);
         }
         setKeyValue(output, key, result.value);
       }
@@ -555,7 +555,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = restShape === null ? cloneKnownKeys(input, keys) : cloneEnumerableKeys(input);
+            output = restShape === null ? cloneObjectKnownKeys(input, keys) : cloneObjectEnumerableKeys(input);
           }
           setKeyValue(output, key, result.value);
         }
@@ -579,7 +579,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       // Unknown keys are stripped
       if (input === output && (_unsafe || issues === null)) {
-        output = cloneKnownKeys(input, keys);
+        output = cloneObjectKnownKeys(input, keys);
       }
     }
 
@@ -618,7 +618,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = cloneEnumerableKeys(input);
+            output = cloneObjectEnumerableKeys(input);
           }
           setKeyValue(output, key, result.value);
         }

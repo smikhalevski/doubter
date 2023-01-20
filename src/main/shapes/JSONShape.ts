@@ -1,6 +1,6 @@
 import { ApplyResult, Shape, ValueType } from './Shape';
 import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { clone, createIssueFactory, ok } from '../utils';
+import { cloneObject, createIssueFactory, ok } from '../utils';
 import { CODE_JSON, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING } from '../constants';
 
 /**
@@ -39,7 +39,7 @@ export class JSONShape extends Shape<string, any> {
      */
     reviver: (this: any, key: string, value: any) => any
   ): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
     shape._reviver = reviver;
     return shape;
   }

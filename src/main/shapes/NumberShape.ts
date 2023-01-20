@@ -1,6 +1,6 @@
 import { ApplyResult, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { clone, createIssueFactory, isArray, isNumber, ok, setCheck } from '../utils';
+import { cloneObject, createIssueFactory, isArray, isNumber, ok, setCheck } from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -178,7 +178,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   finite(options?: ConstraintOptions | Message): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
     shape._typePredicate = Number.isFinite;
@@ -193,7 +193,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   integer(options?: ConstraintOptions | Message): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
     shape._typePredicate = Number.isInteger;

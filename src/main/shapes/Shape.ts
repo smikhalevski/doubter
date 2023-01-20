@@ -13,7 +13,7 @@ import {
 } from '../shared-types';
 import {
   captureIssues,
-  clone,
+  cloneObject,
   createApplyChecksCallback,
   createIssueFactory,
   getValueType,
@@ -148,7 +148,7 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape with the description added.
    */
   describe(text: string): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
     shape.description = text;
     return shape;
   }
@@ -475,7 +475,7 @@ export class Shape<I = any, O = I> {
    */
   protected _replaceChecks(checkMap: ReadonlyMap<unknown, Check>): this {
     const checks = Array.from(checkMap.values());
-    const shape = clone(this);
+    const shape = cloneObject(this);
 
     shape._checkMap = checkMap;
     shape._applyChecks = createApplyChecksCallback(checks);

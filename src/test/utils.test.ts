@@ -1,6 +1,6 @@
 import {
-  cloneEnumerableKeys,
-  cloneKnownKeys,
+  cloneObjectEnumerableKeys,
+  cloneObjectKnownKeys,
   createApplyChecksCallback,
   createIssueFactory,
   isEqual,
@@ -209,10 +209,10 @@ describe('isFlagSet', () => {
   });
 });
 
-describe('cloneEnumerableKeys', () => {
+describe('cloneObjectEnumerableKeys', () => {
   test('clones all keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneEnumerableKeys(obj1);
+    const obj2 = cloneObjectEnumerableKeys(obj1);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ aaa: 111, bbb: 222 });
@@ -220,7 +220,7 @@ describe('cloneEnumerableKeys', () => {
 
   test('clones limited number of leading keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneEnumerableKeys(obj1, 1);
+    const obj2 = cloneObjectEnumerableKeys(obj1, 1);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ aaa: 111 });
@@ -228,17 +228,17 @@ describe('cloneEnumerableKeys', () => {
 
   test('clones no keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneEnumerableKeys(obj1, 0);
+    const obj2 = cloneObjectEnumerableKeys(obj1, 0);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({});
   });
 });
 
-describe('cloneKnownKeys', () => {
+describe('cloneObjectKnownKeys', () => {
   test('clones known keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneKnownKeys(obj1, ['bbb']);
+    const obj2 = cloneObjectKnownKeys(obj1, ['bbb']);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ bbb: 222 });
