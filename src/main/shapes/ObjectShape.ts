@@ -332,9 +332,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
-    const { _typePredicate } = this;
-
-    if (!_typePredicate(input)) {
+    if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
@@ -346,9 +344,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
-      const { _typePredicate } = this;
-
-      if (!_typePredicate(input)) {
+      if (!this._typePredicate(input)) {
         resolve(this._typeIssueFactory(input, options));
         return;
       }
@@ -474,7 +470,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     const keysLength = keys.length;
 
-    let issues: Issue[] | null = null;
+    let issues = null;
     let output = input;
 
     for (let i = 0; i < keysLength; ++i) {
@@ -519,13 +515,13 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     const keysLength = keys.length;
 
-    let issues: Issue[] | null = null;
+    let issues = null;
     let output = input;
 
     let seenCount = 0;
     let seenFlags: Flags = 0;
 
-    let unknownKeys: string[] | null = null;
+    let unknownKeys = null;
 
     for (const key in input) {
       const value = input[key];
