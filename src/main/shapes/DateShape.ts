@@ -1,6 +1,6 @@
 import { ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok } from '../utils';
+import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { createIssueFactory, isArray, NEVER, ok } from '../utils';
 import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -32,30 +32,30 @@ export class DateShape extends CoercibleShape<Date> {
   protected _apply(input: any, options: ParseOptions): ApplyResult<Date> {
     const { _applyChecks } = this;
 
-    const output = options.coerced || this._coerced ? this._coerce(input) : input;
+    let output = input;
+    let issues = null;
+    let changed = false;
 
-    let issues: Issue[] | null = null;
-    let time;
-
-    if (!(output instanceof Date) || (time = output.getTime()) !== time) {
+    if (!isDate(input) && (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)) {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-    }
-    if (issues === null && input !== output) {
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _coerce(input: unknown): unknown {
-    if (typeof input === 'string' || typeof input === 'number') {
-      return new Date(input);
+  protected _coerce(value: unknown): Date | NEVER {
+    if (isArray(value) && value.length === 1 && isDate((value = value[0]))) {
+      return value;
     }
-    if (isArray(input) && input.length === 1) {
-      return this._coerce(input[0]);
+    if ((typeof value === 'string' || typeof value === 'number') && isDate((value = new Date(value)))) {
+      return value;
     }
-    return input;
+    return NEVER;
   }
+}
+
+function isDate(value: unknown): value is Date {
+  return value instanceof Date && (value = value.getTime()) === value;
 }

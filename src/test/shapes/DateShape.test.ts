@@ -1,5 +1,6 @@
 import { DateShape } from '../../main';
 import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
+import { NEVER } from '../../main/utils';
 
 describe('DateShape', () => {
   test('parses date values', () => {
@@ -59,13 +60,13 @@ describe('DateShape', () => {
     });
 
     test('coerces a boolean', () => {
-      expect(new DateShape()['_coerce'](true)).toBe(true);
-      expect(new DateShape()['_coerce'](false)).toBe(false);
+      expect(new DateShape()['_coerce'](true)).toBe(NEVER);
+      expect(new DateShape()['_coerce'](false)).toBe(NEVER);
     });
 
     test('coerces null and undefined values', () => {
-      expect(new DateShape()['_coerce'](null)).toBe(null);
-      expect(new DateShape()['_coerce'](undefined)).toBe(undefined);
+      expect(new DateShape()['_coerce'](null)).toBe(NEVER);
+      expect(new DateShape()['_coerce'](undefined)).toBe(NEVER);
     });
   });
 });
