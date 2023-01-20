@@ -789,7 +789,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   protected _apply(input: any, options: ParseOptions): ApplyResult<O> {
     const { shape, callback, _applyChecks } = this;
 
-    let issues;
+    let issues = null;
     let output = input;
 
     const result = shape['_apply'](input, options);
@@ -807,17 +807,10 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
       return captureIssues(error);
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && !isEqual(input, output)) {
+      return ok(output);
     }
-    if (isEqual(input, output)) {
-      return null;
-    }
-    return ok(output);
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
@@ -834,19 +827,15 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
       }
 
       return new Promise<O>(resolve => resolve(callback(output, options))).then(output => {
-        let issues;
+        let issues = null;
 
-        if (_applyChecks !== null) {
-          issues = _applyChecks(output, null, options);
-
-          if (issues !== null) {
-            return issues;
-          }
+        if (
+          (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
+          !isEqual(input, output)
+        ) {
+          return ok(output);
         }
-        if (isEqual(input, output)) {
-          return null;
-        }
-        return ok(output);
+        return issues;
       }, captureIssues);
     });
   }
