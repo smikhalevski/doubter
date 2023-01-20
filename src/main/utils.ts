@@ -36,6 +36,12 @@ export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
 
+export const isFinite = Number.isFinite;
+
+export const isInteger = Number.isInteger;
+
+export const isNaN = Number.isNaN;
+
 export const isArray = Array.isArray;
 
 export const getPrototypeOf = Object.getPrototypeOf;
@@ -439,3 +445,7 @@ export function returnTrue(): boolean {
 export function returnArray(): [] {
   return [];
 }
+
+export const NEVER = Symbol();
+
+export type NEVER = typeof NEVER;
