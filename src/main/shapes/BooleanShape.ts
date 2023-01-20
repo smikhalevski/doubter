@@ -12,6 +12,7 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER } from './IntersectionShape';
 
 /**
  * The shape of the boolean value.
@@ -38,20 +39,23 @@ export class BooleanShape extends CoercibleShape<boolean> {
     }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
-    const output = options.coerced || this._coerced ? this._coerce(input) : input;
-
+    let output = input;
     let issues: Issue[] | null = null;
+    let changed = false;
 
-    if (typeof output !== 'boolean') {
+    if (
+      typeof output !== 'boolean' &&
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+    ) {
       return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (issues === null && input !== output) {
+    if (changed && issues === null) {
       return ok(output);
     }
     return issues;
@@ -70,6 +74,6 @@ export class BooleanShape extends CoercibleShape<boolean> {
     if (isArray(input) && input.length === 1) {
       return this._coerce(input[0]);
     }
-    return input;
+    return NEVER;
   }
 }

@@ -27,6 +27,7 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER } from './IntersectionShape';
 
 /**
  * The shape that constrains the input as a number.
@@ -221,17 +222,20 @@ export class NumberShape extends CoercibleShape<number> {
   protected _apply(input: any, options: ParseOptions): ApplyResult<number> {
     const { _applyChecks } = this;
 
-    const output = options.coerced || this._coerced ? this._coerce(input) : input;
-
+    let output = input;
     let issues: Issue[] | null = null;
+    let changed = false;
 
-    if (!this._typePredicate(output)) {
+    if (
+      !this._typePredicate(output) &&
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+    ) {
       return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (issues === null && input !== output) {
+    if (changed && issues === null) {
       return ok(output);
     }
     return issues;
@@ -250,7 +254,7 @@ export class NumberShape extends CoercibleShape<number> {
     if (isArray(input) && input.length === 1) {
       return this._coerce(input[0]);
     }
-    return input;
+    return NEVER;
   }
 }
 

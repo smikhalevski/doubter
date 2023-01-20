@@ -19,6 +19,7 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER } from './IntersectionShape';
 
 /**
  * The shape that constrains the input as a string.
@@ -109,20 +110,23 @@ export class StringShape extends CoercibleShape<string> {
     }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<string> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<string> {
     const { _applyChecks } = this;
 
-    const output = options.coerced || this._coerced ? this._coerce(input) : input;
-
+    let output = input;
     let issues: Issue[] | null = null;
+    let changed = false;
 
-    if (typeof output !== 'string') {
+    if (
+      typeof output !== 'string' &&
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === NEVER)
+    ) {
       return this._typeIssueFactory(input, options);
     }
     if (_applyChecks !== null) {
       issues = _applyChecks(output, null, options);
     }
-    if (issues === null && input !== output) {
+    if (changed && issues === null) {
       return ok(output);
     }
     return issues;
@@ -145,6 +149,6 @@ export class StringShape extends CoercibleShape<string> {
     if (isArray(input) && input.length === 1) {
       return this._coerce(input[0]);
     }
-    return input;
+    return NEVER;
   }
 }

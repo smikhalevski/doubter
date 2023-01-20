@@ -171,32 +171,32 @@ describe(
   () => {
     const value = 'aaa';
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'string',
-      });
-
-      measure(() => {
-        validate(value);
-      });
-    });
-
-    test('zod', measure => {
-      const type = zod.string();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = myzod.string();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
+    // test('Ajv', measure => {
+    //   const validate = new Ajv().compile({
+    //     $schema: 'http://json-schema.org/draft-07/schema#',
+    //     type: 'string',
+    //   });
+    //
+    //   measure(() => {
+    //     validate(value);
+    //   });
+    // });
+    //
+    // test('zod', measure => {
+    //   const type = zod.string();
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
+    //
+    // test('myzod', measure => {
+    //   const type = myzod.string();
+    //
+    //   measure(() => {
+    //     type.parse(value);
+    //   });
+    // });
 
     test('valita', measure => {
       const type = valita.string();
@@ -217,34 +217,34 @@ describe(
     describe('invalid input', () => {
       const value = 111;
 
-      test('Ajv', measure => {
-        const validate = new Ajv().compile({
-          $schema: 'http://json-schema.org/draft-07/schema#',
-          type: 'string',
-        });
-
-        measure(() => {
-          validate(value);
-        });
-      });
-
-      test('zod', measure => {
-        const type = zod.string();
-
-        measure(() => {
-          type.safeParse(value);
-        });
-      });
-
-      test('myzod', measure => {
-        const type = myzod.string();
-
-        measure(() => {
-          try {
-            type.parse(value);
-          } catch {}
-        });
-      });
+      // test('Ajv', measure => {
+      //   const validate = new Ajv().compile({
+      //     $schema: 'http://json-schema.org/draft-07/schema#',
+      //     type: 'string',
+      //   });
+      //
+      //   measure(() => {
+      //     validate(value);
+      //   });
+      // });
+      //
+      // test('zod', measure => {
+      //   const type = zod.string();
+      //
+      //   measure(() => {
+      //     type.safeParse(value);
+      //   });
+      // });
+      //
+      // test('myzod', measure => {
+      //   const type = myzod.string();
+      //
+      //   measure(() => {
+      //     try {
+      //       type.parse(value);
+      //     } catch {}
+      //   });
+      // });
 
       test('valita', measure => {
         const type = valita.string();
