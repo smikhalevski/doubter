@@ -95,8 +95,8 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<U[number]['output']> {
     const { _applyChecks } = this;
 
-    let result: ApplyResult = null;
-    let issues: Issue[] | null = null;
+    let result = null;
+    let issues = null;
     let output = input;
     let index;
 

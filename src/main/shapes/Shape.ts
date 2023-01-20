@@ -887,7 +887,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
     const { inputShape, outputShape, _applyChecks } = this;
 
-    let issues = null;
+    let issues;
     let output = input;
 
     let result = inputShape['_apply'](input, options);
@@ -934,7 +934,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
         return outputShape['_applyAsync'](output, options);
       })
       .then(outputResult => {
-        let issues = null;
+        let issues;
 
         if (outputResult !== null) {
           if (isArray(outputResult)) {
@@ -1006,7 +1006,7 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
     const { _applyChecks } = this;
 
-    let issues = null;
+    let issues;
     let output = input;
 
     const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
@@ -1040,7 +1040,7 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
-      let issues = null;
+      let issues;
       let output = input;
 
       if (result !== null) {
@@ -1107,7 +1107,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
     const { excludedValue, _typeIssueFactory, _applyChecks } = this;
 
-    let issues = null;
+    let issues;
     let output = input;
 
     if (isEqual(input, excludedValue)) {
@@ -1141,7 +1141,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
-      let issues = null;
+      let issues;
       let output = input;
 
       if (result !== null) {
@@ -1214,7 +1214,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     const { _applyChecks } = this;
 
     let result = this.shape['_apply'](input, options);
-    let issues = null;
+    let issues;
     let output = input;
 
     if (result !== null) {
@@ -1234,7 +1234,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     const { _applyChecks } = this;
 
     return this.shape['_applyAsync'](input, options).then(result => {
-      let issues = null;
+      let issues;
       let output = input;
 
       if (result !== null) {
