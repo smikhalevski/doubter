@@ -76,7 +76,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     const { keyShape, valueShape, _applyChecks, _unsafe } = this;
 
     let keyCount = 0;
-    let issues: Issue[] | null = null;
+    let issues = null;
     let output = input;
 
     for (const key in input) {
@@ -160,7 +160,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
           const resultsLength = results.length;
 
           let keyCount = 0;
-          let issues: Issue[] | null = null;
+          let issues = null;
           let output = input;
 
           for (let i = 0; i < resultsLength; i += 3) {
