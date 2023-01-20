@@ -1,5 +1,5 @@
-import { ValueType } from './Shape';
-import { ApplyResult, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, ReadonlyDict, ValueType } from './Shape';
+import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, getValueType, isArray, ok, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';

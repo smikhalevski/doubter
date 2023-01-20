@@ -1,5 +1,5 @@
-import { AnyShape, Shape, ValueType } from './Shape';
-import { ApplyResult, ParseOptions } from '../shared-types';
+import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
+import { ParseOptions } from '../shared-types';
 import { isArray, returnArray, returnFalse } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 

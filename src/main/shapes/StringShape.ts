@@ -1,5 +1,5 @@
-import { ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, ValueType } from './Shape';
+import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, isArray, ok, setCheck } from '../utils';
 import {
   CODE_STRING_MAX,

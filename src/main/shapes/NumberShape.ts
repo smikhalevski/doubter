@@ -1,5 +1,5 @@
-import { Shape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, Shape, ValueType } from './Shape';
+import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { clone, createIssueFactory, isArray, isNumber, ok, setCheck } from '../utils';
 import {
   CODE_NUMBER_FINITE,

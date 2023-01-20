@@ -1,5 +1,5 @@
-import { Shape, ValueType } from './Shape';
-import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, Shape, ValueType } from './Shape';
+import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { clone, createIssueFactory, ok } from '../utils';
 import { CODE_JSON, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING } from '../constants';
 

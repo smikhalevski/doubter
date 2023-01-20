@@ -1,5 +1,4 @@
 import {
-  ApplyChecksCallback,
   Check,
   CheckCallback,
   ConstraintOptions,
@@ -8,10 +7,9 @@ import {
   MessageCallback,
   Ok,
   ParseOptions,
-  ReadonlyDict,
   TypeConstraintOptions,
 } from './shared-types';
-import { AnyShape, Shape, ValueType } from './shapes/Shape';
+import { AnyShape, ApplyChecksCallback, ReadonlyDict, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 

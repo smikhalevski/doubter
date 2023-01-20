@@ -1,5 +1,5 @@
-import { AnyShape, Shape, ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
+import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
   cloneEnumerableKeys,
   concatIssues,

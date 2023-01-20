@@ -1,5 +1,5 @@
-import { Literal, Message, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
-import { EnumShape } from '../shapes';
+import { Literal, Message, TypeConstraintOptions } from '../shared-types';
+import { EnumShape, ReadonlyDict } from '../shapes';
 
 /**
  * Creates the shape that constrains input with the list of values.

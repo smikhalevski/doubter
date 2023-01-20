@@ -1,11 +1,10 @@
 import {
-  ApplyChecksCallback,
-  ApplyResult,
   Check,
   CheckCallback,
   CheckOptions,
   ConstraintOptions,
   Err,
+  Issue,
   Literal,
   Message,
   Ok,
@@ -90,6 +89,19 @@ export type ValueType =
   | 'undefined'
   | 'any'
   | 'never';
+
+/**
+ * The result of shape application. This is the part of the internal API required for creating custom shapes.
+ */
+export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
+/**
+ * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.
+ */
+export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
+
+export interface ReadonlyDict<T = any> {
+  readonly [key: string]: T;
+}
 
 /**
  * The baseline shape implementation.

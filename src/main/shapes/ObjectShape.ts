@@ -1,4 +1,4 @@
-import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
+import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
   clone,
@@ -18,7 +18,7 @@ import {
   setKeyValue,
   unshiftPath,
 } from '../utils';
-import { AnyShape, OpaqueExcludeShape, OpaqueReplaceShape, Shape, ValueType } from './Shape';
+import { AnyShape, ApplyResult, OpaqueExcludeShape, OpaqueReplaceShape, ReadonlyDict, Shape, ValueType } from './Shape';
 import { EnumShape } from './EnumShape';
 
 // prettier-ignore

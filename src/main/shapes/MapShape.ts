@@ -1,5 +1,5 @@
-import { AnyShape, ValueType } from './Shape';
-import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { AnyShape, ApplyResult, ValueType } from './Shape';
+import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { concatIssues, createIssueFactory, isArray, isEqual, isObjectLike, ok, unshiftPath } from '../utils';
 import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
 import { CoercibleShape } from './CoercibleShape';

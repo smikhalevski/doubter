@@ -1,5 +1,5 @@
-import { Shape, ValueType } from './Shape';
-import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, Shape, ValueType } from './Shape';
+import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, getValueType } from '../utils';
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
 

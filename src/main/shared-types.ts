@@ -17,16 +17,6 @@ export interface Err {
 }
 
 /**
- * The result of shape application. This is the part of the internal API required for creating custom shapes.
- */
-export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
-
-/**
- * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.
- */
-export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
-
-/**
  * A callback that takes a value and returns `undefined` if it satisfies the requirements. If a value doesn't satisfy
  * the check requirements then issues can be returned or a {@linkcode ValidationError} can be thrown.
  *
@@ -192,7 +182,3 @@ export interface ParseOptions {
 }
 
 export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;
-
-export interface ReadonlyDict<T = any> {
-  readonly [key: string]: T;
-}
