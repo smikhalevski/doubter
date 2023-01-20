@@ -887,7 +887,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<O['output']> {
     const { inputShape, outputShape, _applyChecks } = this;
 
-    let issues;
+    let issues = null;
     let output = input;
 
     let result = inputShape['_apply'](input, options);
@@ -909,14 +909,10 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
       output = outputResult.value;
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O['output']>> {
@@ -938,7 +934,7 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
         return outputShape['_applyAsync'](output, options);
       })
       .then(outputResult => {
-        let issues;
+        let issues = null;
 
         if (outputResult !== null) {
           if (isArray(outputResult)) {
@@ -948,14 +944,10 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
           output = outputResult.value;
         }
 
-        if (_applyChecks !== null) {
-          issues = _applyChecks(output, null, options);
-
-          if (issues !== null) {
-            return issues;
-          }
+        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+          return result;
         }
-        return result;
+        return issues;
       });
   }
 }
