@@ -59,13 +59,13 @@ describe('DateShape', () => {
     });
 
     test('coerces a boolean', () => {
-      expect(new DateShape()['_coerce'](true)).toBe(true);
-      expect(new DateShape()['_coerce'](false)).toBe(false);
+      expect(new DateShape()['_coerce'](true)).toBe(null);
+      expect(new DateShape()['_coerce'](false)).toBe(null);
     });
 
     test('coerces null and undefined values', () => {
       expect(new DateShape()['_coerce'](null)).toBe(null);
-      expect(new DateShape()['_coerce'](undefined)).toBe(undefined);
+      expect(new DateShape()['_coerce'](undefined)).toBe(null);
     });
   });
 });

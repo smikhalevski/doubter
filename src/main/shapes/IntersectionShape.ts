@@ -1,6 +1,6 @@
-import { AnyShape, Shape, ValueType } from './Shape';
+import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
 import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
-import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION, TYPE_ARRAY, TYPE_DATE, TYPE_NEVER, TYPE_OBJECT } from '../constants';
 
 export type ToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;

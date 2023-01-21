@@ -23,13 +23,13 @@ describe('ObjectShape', () => {
   });
 
   test('creates a shape', () => {
-    const shapes = { foo: new Shape() };
+    const shapes = { key1: new Shape() };
     const restShape = new Shape();
 
     const objShape = new ObjectShape(shapes, restShape);
 
     expect(objShape.keysMode).toBe('preserved');
-    expect(objShape.keys).toEqual(['foo']);
+    expect(objShape.keys).toEqual(['key1']);
     expect(objShape.restShape).toBe(restShape);
     expect(objShape.shapes).toBe(shapes);
     expect(objShape.async).toBe(false);

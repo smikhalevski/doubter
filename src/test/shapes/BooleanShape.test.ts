@@ -65,17 +65,19 @@ describe('BooleanShape', () => {
 
   describe('coercion', () => {
     test('coerces a string', () => {
-      expect(new BooleanShape()['_coerce']('aaa')).toBe('aaa');
       expect(new BooleanShape()['_coerce']('true')).toBe(true);
+
+      expect(new BooleanShape()['_coerce']('aaa')).toBe(null);
     });
 
     test('coerces a number', () => {
       expect(new BooleanShape()['_coerce'](1)).toBe(true);
       expect(new BooleanShape()['_coerce'](0)).toBe(false);
-      expect(new BooleanShape()['_coerce'](111)).toBe(111);
-      expect(new BooleanShape()['_coerce'](NaN)).toBe(NaN);
-      expect(new BooleanShape()['_coerce'](Infinity)).toBe(Infinity);
-      expect(new BooleanShape()['_coerce'](-Infinity)).toBe(-Infinity);
+
+      expect(new BooleanShape()['_coerce'](111)).toBe(null);
+      expect(new BooleanShape()['_coerce'](NaN)).toBe(null);
+      expect(new BooleanShape()['_coerce'](Infinity)).toBe(null);
+      expect(new BooleanShape()['_coerce'](-Infinity)).toBe(null);
     });
 
     test('coerces a boolean', () => {
@@ -91,30 +93,20 @@ describe('BooleanShape', () => {
     test('coerces an array with a single boolean element', () => {
       expect(new BooleanShape()['_coerce']([true])).toBe(true);
       expect(new BooleanShape()['_coerce']([false])).toBe(false);
-    });
 
-    test('does not coerce unsuitable array', () => {
-      const value1 = [BigInt(111), 'aaa'];
-      const value2 = [BigInt(111), BigInt(111)];
-      const value3 = ['aaa'];
-
-      expect(new BooleanShape()['_coerce'](value1)).toBe(value1);
-      expect(new BooleanShape()['_coerce'](value2)).toBe(value2);
-      expect(new BooleanShape()['_coerce'](value3)).toBe('aaa');
+      expect(new BooleanShape()['_coerce']([[true]])).toBe(null);
+      expect(new BooleanShape()['_coerce']([BigInt(111), 'aaa'])).toBe(null);
+      expect(new BooleanShape()['_coerce']([BigInt(111), BigInt(111)])).toBe(null);
+      expect(new BooleanShape()['_coerce'](['aaa'])).toBe(null);
     });
 
     test('does not coerce objects and functions', () => {
-      const value1 = { foo: 111 };
-      const value2 = () => undefined;
-
-      expect(new BooleanShape()['_coerce'](value1)).toBe(value1);
-      expect(new BooleanShape()['_coerce'](value2)).toBe(value2);
+      expect(new BooleanShape()['_coerce']({ key1: 111 })).toBe(null);
+      expect(new BooleanShape()['_coerce'](() => undefined)).toBe(null);
     });
 
     test('does not coerce a symbol', () => {
-      const value = Symbol();
-
-      expect(new BooleanShape()['_coerce'](value)).toBe(value);
+      expect(new BooleanShape()['_coerce'](Symbol())).toBe(null);
     });
   });
 });

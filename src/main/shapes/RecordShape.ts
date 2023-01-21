@@ -1,7 +1,7 @@
-import { AnyShape, Shape, ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
+import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import {
-  cloneEnumerableKeys,
+  cloneObjectEnumerableKeys,
   concatIssues,
   createIssueFactory,
   isArray,
@@ -76,7 +76,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     const { keyShape, valueShape, _applyChecks, _unsafe } = this;
 
     let keyCount = 0;
-    let issues: Issue[] | null = null;
+    let issues = null;
     let output = input;
 
     for (const key in input) {
@@ -119,7 +119,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
       if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
         if (input === output) {
-          output = cloneEnumerableKeys(input, keyCount);
+          output = cloneObjectEnumerableKeys(input, keyCount);
         }
         setKeyValue(output, outputKey, outputValue);
       }
@@ -160,7 +160,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
           const resultsLength = results.length;
 
           let keyCount = 0;
-          let issues: Issue[] | null = null;
+          let issues = null;
           let output = input;
 
           for (let i = 0; i < resultsLength; i += 3) {
@@ -201,7 +201,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
             if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
               if (input === output) {
-                output = cloneEnumerableKeys(input, keyCount);
+                output = cloneObjectEnumerableKeys(input, keyCount);
               }
 
               output[outputKey as string] = outputValue;

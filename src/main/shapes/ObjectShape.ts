@@ -1,24 +1,24 @@
-import { ApplyResult, Issue, Message, ParseOptions, ReadonlyDict, TypeConstraintOptions } from '../shared-types';
+import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
-  clone,
-  cloneEnumerableKeys,
-  cloneKnownKeys,
+  Bits,
+  cloneObject,
+  cloneObjectEnumerableKeys,
+  cloneObjectKnownKeys,
   concatIssues,
   createIssueFactory,
-  Flags,
+  enableBitAt,
   isArray,
   isAsyncShapes,
+  isBitEnabledAt,
   isEqual,
-  isFlagSet,
   isObjectLike,
   isPlainObject,
   ok,
-  setFlag,
   setKeyValue,
   unshiftPath,
 } from '../utils';
-import { AnyShape, OpaqueExcludeShape, OpaqueReplaceShape, Shape, ValueType } from './Shape';
+import { AnyShape, ApplyResult, OpaqueExcludeShape, OpaqueReplaceShape, ReadonlyDict, Shape, ValueType } from './Shape';
 import { EnumShape } from './EnumShape';
 
 // prettier-ignore
@@ -318,7 +318,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Constrains an object to be an `Object` instance or to have a `null` prototype.
    */
   plain(): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
     shape._typePredicate = isPlainObject;
     return shape;
   }
@@ -332,9 +332,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
-    const { _typePredicate } = this;
-
-    if (!_typePredicate(input)) {
+    if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
@@ -346,9 +344,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
-      const { _typePredicate } = this;
-
-      if (!_typePredicate(input)) {
+      if (!this._typePredicate(input)) {
         resolve(this._typeIssueFactory(input, options));
         return;
       }
@@ -362,7 +358,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let output = input;
 
       let seenCount = 0;
-      let seenFlags: Flags = 0;
+      let seenBits: Bits = 0;
 
       let unknownKeys: string[] | null = null;
 
@@ -374,7 +370,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
         if (index !== -1) {
           seenCount++;
-          seenFlags = setFlag(seenFlags, index);
+          seenBits = enableBitAt(seenBits, index);
 
           valueShape = _valueShapes[index];
         }
@@ -399,7 +395,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
 
         if (input === output && keysMode === 'stripped') {
-          output = cloneKnownKeys(input, keys);
+          output = cloneObjectKnownKeys(input, keys);
         }
       }
 
@@ -415,7 +411,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       if (seenCount !== keysLength) {
         for (let i = 0; i < keysLength; ++i) {
-          if (isFlagSet(seenFlags, i)) {
+          if (isBitEnabledAt(seenBits, i)) {
             continue;
           }
 
@@ -448,7 +444,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
             }
             if ((_unsafe || issues === null) && !isEqual(input[key], result.value)) {
               if (input === output) {
-                output = cloneEnumerableKeys(input);
+                output = cloneObjectEnumerableKeys(input);
               }
               setKeyValue(output, key, result.value);
             }
@@ -474,7 +470,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     const keysLength = keys.length;
 
-    let issues: Issue[] | null = null;
+    let issues = null;
     let output = input;
 
     for (let i = 0; i < keysLength; ++i) {
@@ -496,7 +492,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
       if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
-          output = cloneEnumerableKeys(input);
+          output = cloneObjectEnumerableKeys(input);
         }
         setKeyValue(output, key, result.value);
       }
@@ -519,13 +515,13 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     const keysLength = keys.length;
 
-    let issues: Issue[] | null = null;
+    let issues = null;
     let output = input;
 
     let seenCount = 0;
-    let seenFlags: Flags = 0;
+    let seenBits: Bits = 0;
 
-    let unknownKeys: string[] | null = null;
+    let unknownKeys = null;
 
     for (const key in input) {
       const value = input[key];
@@ -536,7 +532,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       // The key is known
       if (index !== -1) {
         seenCount++;
-        seenFlags = setFlag(seenFlags, index);
+        seenBits = enableBitAt(seenBits, index);
 
         valueShape = _valueShapes[index];
       }
@@ -559,7 +555,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = restShape === null ? cloneKnownKeys(input, keys) : cloneEnumerableKeys(input);
+            output = restShape === null ? cloneObjectKnownKeys(input, keys) : cloneObjectEnumerableKeys(input);
           }
           setKeyValue(output, key, result.value);
         }
@@ -583,7 +579,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       // Unknown keys are stripped
       if (input === output && (_unsafe || issues === null)) {
-        output = cloneKnownKeys(input, keys);
+        output = cloneObjectKnownKeys(input, keys);
       }
     }
 
@@ -600,7 +596,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     // Parse absent known keys
     if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
-        if (isFlagSet(seenFlags, i)) {
+        if (isBitEnabledAt(seenBits, i)) {
           continue;
         }
 
@@ -622,7 +618,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = cloneEnumerableKeys(input);
+            output = cloneObjectEnumerableKeys(input);
           }
           setKeyValue(output, key, result.value);
         }

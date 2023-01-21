@@ -1,5 +1,5 @@
-import { AnyShape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { AnyShape, ApplyResult, ValueType } from './Shape';
+import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { concatIssues, createIssueFactory, isArray, isEqual, ok, setCheck, toArrayIndex, unshiftPath } from '../utils';
 import {
   CODE_SET_MAX,
@@ -106,15 +106,15 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<Set<S['output']>> {
     let changed = false;
-    let values: unknown[];
-    let issues: Issue[] | null = null;
+    let values;
+    let issues = null;
 
-    if (input instanceof Set) {
-      values = Array.from(input);
-    } else if (options.coerced || this._coerced) {
-      changed = true;
-      values = isArray(input) ? input : [input];
-    } else {
+    if (
+      // Not a Set
+      !(input instanceof Set && (values = Array.from(input.values()))) &&
+      // No coercion or not coercible
+      (!(options.coerced || this._coerced) || !(changed = (values = this._coerceValues(input)) !== null))
+    ) {
       return this._typeIssueFactory(input, options);
     }
 
@@ -154,14 +154,14 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Set<S['output']>>> {
     return new Promise(resolve => {
       let changed = false;
-      let values: unknown[];
+      let values: unknown[] | null;
 
-      if (input instanceof Set) {
-        values = Array.from(input);
-      } else if (options.coerced || this._coerced) {
-        changed = true;
-        values = isArray(input) ? input : [input];
-      } else {
+      if (
+        // Not a Set
+        !(input instanceof Set && (values = Array.from(input.values()))) &&
+        // No coercion or not coercible
+        (!(options.coerced || this._coerced) || !(changed = (values = this._coerceValues(input)) !== null))
+      ) {
         resolve(this._typeIssueFactory(input, options));
         return;
       }
@@ -178,7 +178,7 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
         Promise.all(promises).then(results => {
           const resultsLength = results.length;
 
-          let issues: Issue[] | null = null;
+          let issues = null;
 
           for (let i = 0; i < resultsLength; ++i) {
             const result = results[i];
@@ -195,7 +195,7 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
               issues = concatIssues(issues, result);
               continue;
             }
-            changed = !isEqual(values[i], (values[i] = result.value));
+            changed = !isEqual(values![i], (values![i] = result.value));
           }
 
           const output = changed ? new Set(values) : input;
@@ -210,5 +210,24 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
         })
       );
     });
+  }
+
+  /**
+   * Coerces value to a list of `Set` values, or returns `null` if coercion isn't possible.
+   *
+   * @param value The non-`Set` value to coerce.
+   */
+  protected _coerceValues(value: any): unknown[] | null {
+    if (isArray(value)) {
+      return value;
+    }
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      (typeof value[Symbol.iterator] === 'function' || typeof value.length === 'number')
+    ) {
+      return Array.from(value);
+    }
+    return [value];
   }
 }

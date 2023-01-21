@@ -1,5 +1,5 @@
 import { Shape } from './Shape';
-import { clone } from '../utils';
+import { cloneObject } from '../utils';
 
 /**
  * The shape which value can be coerced to a proper type during parsing.
@@ -16,7 +16,7 @@ export class CoercibleShape<I = any, O = I> extends Shape<I, O> {
    * @returns The clone of the shape.
    */
   coerce(): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
     shape._coerced = true;
     return shape;
   }

@@ -1,5 +1,5 @@
-import { AnyShape, Shape, ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
+import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { concatIssues, createIssueFactory, getValueType, isArray, isAsyncShapes, isObjectLike, unique } from '../utils';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
 import { ObjectShape } from './ObjectShape';
@@ -95,8 +95,8 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<U[number]['output']> {
     const { _applyChecks } = this;
 
-    let result: ApplyResult = null;
-    let issues: Issue[] | null = null;
+    let result = null;
+    let issues = null;
     let output = input;
     let index;
 
@@ -120,14 +120,10 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
       return issues !== null ? issues : this._typeIssueFactory(input, options, this._getInputTypes());
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<U[number]['output']>> {
@@ -161,14 +157,10 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
           output = result.value;
         }
 
-        if (_applyChecks !== null) {
-          issues = _applyChecks(output, null, options);
-
-          if (issues !== null) {
-            return issues;
-          }
+        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+          return result;
         }
-        return result;
+        return issues;
       });
     };
 

@@ -12,18 +12,18 @@ import { intersectValues, intersectValueTypes, NEVER } from '../../main/shapes/I
 
 describe('IntersectionShape', () => {
   test('returns the input that matches all shapes as is', () => {
-    const obj = { foo: 'aaa', bar: 111 };
+    const obj = { key1: 'aaa', key2: 111 };
 
     const andShape = new IntersectionShape([
       new ObjectShape(
         {
-          foo: new StringShape(),
+          key1: new StringShape(),
         },
         null
       ),
       new ObjectShape(
         {
-          bar: new NumberShape(),
+          key2: new NumberShape(),
         },
         null
       ),

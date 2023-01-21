@@ -1,11 +1,10 @@
 import {
-  ApplyChecksCallback,
-  ApplyResult,
   Check,
   CheckCallback,
   CheckOptions,
   ConstraintOptions,
   Err,
+  Issue,
   Literal,
   Message,
   Ok,
@@ -14,7 +13,7 @@ import {
 } from '../shared-types';
 import {
   captureIssues,
-  clone,
+  cloneObject,
   createApplyChecksCallback,
   createIssueFactory,
   getValueType,
@@ -92,6 +91,19 @@ export type ValueType =
   | 'never';
 
 /**
+ * The result of shape application. This is the part of the internal API required for creating custom shapes.
+ */
+export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
+/**
+ * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.
+ */
+export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
+
+export interface ReadonlyDict<T = any> {
+  readonly [key: string]: T;
+}
+
+/**
  * The baseline shape implementation.
  *
  * @template I The input value.
@@ -136,7 +148,7 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape with the description added.
    */
   describe(text: string): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
     shape.description = text;
     return shape;
   }
@@ -463,7 +475,7 @@ export class Shape<I = any, O = I> {
    */
   protected _replaceChecks(checkMap: ReadonlyMap<unknown, Check>): this {
     const checks = Array.from(checkMap.values());
-    const shape = clone(this);
+    const shape = cloneObject(this);
 
     shape._checkMap = checkMap;
     shape._applyChecks = createApplyChecksCallback(checks);
@@ -789,7 +801,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   protected _apply(input: any, options: ParseOptions): ApplyResult<O> {
     const { shape, callback, _applyChecks } = this;
 
-    let issues;
+    let issues = null;
     let output = input;
 
     const result = shape['_apply'](input, options);
@@ -807,17 +819,10 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
       return captureIssues(error);
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && !isEqual(input, output)) {
+      return ok(output);
     }
-    if (isEqual(input, output)) {
-      return null;
-    }
-    return ok(output);
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
@@ -834,19 +839,15 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
       }
 
       return new Promise<O>(resolve => resolve(callback(output, options))).then(output => {
-        let issues;
+        let issues = null;
 
-        if (_applyChecks !== null) {
-          issues = _applyChecks(output, null, options);
-
-          if (issues !== null) {
-            return issues;
-          }
+        if (
+          (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
+          !isEqual(input, output)
+        ) {
+          return ok(output);
         }
-        if (isEqual(input, output)) {
-          return null;
-        }
-        return ok(output);
+        return issues;
       }, captureIssues);
     });
   }
@@ -920,14 +921,10 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
       output = outputResult.value;
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O['output']>> {
@@ -959,14 +956,10 @@ export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>
           output = outputResult.value;
         }
 
-        if (_applyChecks !== null) {
-          issues = _applyChecks(output, null, options);
-
-          if (issues !== null) {
-            return issues;
-          }
+        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+          return result;
         }
-        return result;
+        return issues;
       });
   }
 }
@@ -1037,25 +1030,19 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
       output = result.value;
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
     const { _applyChecks } = this;
 
-    let issues;
-
     if (isEqual(input, this.inputValue)) {
       if (_applyChecks !== null) {
         return new Promise(resolve => {
-          issues = _applyChecks(this.outputValue, null, options);
+          const issues = _applyChecks(this.outputValue, null, options);
 
           resolve(issues !== null ? issues : this._result);
         });
@@ -1075,14 +1062,10 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
         output = result.value;
       }
 
-      if (_applyChecks !== null) {
-        issues = _applyChecks(output, null, options);
-
-        if (issues !== null) {
-          return issues;
-        }
+      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+        return result;
       }
-      return result;
+      return issues;
     });
   }
 }
@@ -1156,14 +1139,10 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
       }
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
@@ -1188,14 +1167,10 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
         }
       }
 
-      if (_applyChecks !== null) {
-        issues = _applyChecks(output, null, options);
-
-        if (issues !== null) {
-          return issues;
-        }
+      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+        return result;
       }
-      return result;
+      return issues;
     });
   }
 }
@@ -1261,14 +1236,10 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
       output = result.value;
     }
 
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-
-      if (issues !== null) {
-        return issues;
-      }
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
@@ -1285,14 +1256,10 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
         output = result.value;
       }
 
-      if (_applyChecks !== null) {
-        issues = _applyChecks(output, null, options);
-
-        if (issues !== null) {
-          return issues;
-        }
+      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+        return result;
       }
-      return result;
+      return issues;
     });
   }
 }

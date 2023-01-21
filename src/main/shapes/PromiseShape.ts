@@ -1,5 +1,5 @@
-import { AnyShape, ValueType } from './Shape';
-import { ApplyResult, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { AnyShape, ApplyResult, ValueType } from './Shape';
+import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, isArray, isEqual, ok } from '../utils';
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
@@ -37,8 +37,8 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
     throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
-    let output = input as Promise<unknown>;
+  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
+    let output: Promise<unknown> = input;
 
     if (!(output instanceof Promise)) {
       if (!(options.coerced || this._coerced)) {
@@ -71,14 +71,10 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
           }
         }
 
-        if (_applyChecks !== null) {
-          issues = _applyChecks(output, null, options);
-
-          if (issues !== null) {
-            return issues;
-          }
+        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+          return ok(output);
         }
-        return ok(output);
+        return issues;
       });
   }
 }

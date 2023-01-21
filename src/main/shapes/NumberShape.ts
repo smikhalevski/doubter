@@ -1,6 +1,6 @@
-import { Shape, ValueType } from './Shape';
-import { ApplyResult, ConstraintOptions, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { clone, createIssueFactory, isArray, isNumber, ok, setCheck } from '../utils';
+import { ApplyResult, Shape, ValueType } from './Shape';
+import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { cloneObject, createIssueFactory, isArray, isNumber, ok, setCheck } from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -178,7 +178,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   finite(options?: ConstraintOptions | Message): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
     shape._typePredicate = Number.isFinite;
@@ -193,7 +193,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   integer(options?: ConstraintOptions | Message): this {
-    const shape = clone(this);
+    const shape = cloneObject(this);
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
     shape._typePredicate = Number.isInteger;
@@ -221,44 +221,49 @@ export class NumberShape extends CoercibleShape<number> {
   protected _apply(input: any, options: ParseOptions): ApplyResult<number> {
     const { _applyChecks } = this;
 
-    const output = options.coerced || this._coerced ? this._coerce(input) : input;
+    let output = input;
+    let issues = null;
+    let changed = false;
 
-    let issues: Issue[] | null = null;
-
-    if (!this._typePredicate(output)) {
+    if (
+      !this._typePredicate(output) &&
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
+    ) {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-    }
-    if (issues === null && input !== output) {
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _coerce(input: unknown): unknown {
-    if (typeof input === 'number') {
-      return input;
+  /**
+   * Coerces value to a number (not `NaN`) or returns `null` if coercion isn't possible.
+   *
+   * @param value The non-number value to coerce.
+   */
+  protected _coerce(value: any): number | null {
+    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number' && value === value) {
+      return value;
     }
-    if (input == null) {
+    if (value === null || value === undefined) {
       return 0;
     }
-    if (typeof input === 'string' || typeof input === 'boolean' || input instanceof Date) {
-      return +input;
+    if (
+      (typeof value === 'string' || typeof value === 'boolean' || value instanceof Date) &&
+      (value = +value) === value
+    ) {
+      return value;
     }
-    if (isArray(input) && input.length === 1) {
-      return this._coerce(input[0]);
-    }
-    return input;
+    return null;
   }
 }
 
 export interface NumberShape {
   /**
-   * Alias for {@linkcode gte}.
-   *
    * Constrains the number to be greater than or equal to the value.
+   *
+   * Alias for {@linkcode gte}.
    *
    * @param value The inclusive minimum value.
    * @param options The constraint options or an issue message.
@@ -267,9 +272,9 @@ export interface NumberShape {
   min(value: number, options?: ConstraintOptions | Message): this;
 
   /**
-   * Alias for {@linkcode lte}.
-   *
    * Constrains the number to be less than or equal to the value.
+   *
+   * Alias for {@linkcode lte}.
    *
    * @param value The inclusive maximum value.
    * @param options The constraint options or an issue message.

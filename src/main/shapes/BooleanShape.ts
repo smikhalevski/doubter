@@ -1,5 +1,5 @@
-import { ValueType } from './Shape';
-import { ApplyResult, Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ApplyResult, ValueType } from './Shape';
+import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
 import { createIssueFactory, isArray, ok } from '../utils';
 import {
   CODE_TYPE,
@@ -38,38 +38,40 @@ export class BooleanShape extends CoercibleShape<boolean> {
     }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<boolean> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<boolean> {
     const { _applyChecks } = this;
 
-    const output = options.coerced || this._coerced ? this._coerce(input) : input;
+    let output = input;
+    let issues = null;
+    let changed = false;
 
-    let issues: Issue[] | null = null;
-
-    if (typeof output !== 'boolean') {
+    if (
+      typeof output !== 'boolean' &&
+      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
+    ) {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks !== null) {
-      issues = _applyChecks(output, null, options);
-    }
-    if (issues === null && input !== output) {
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _coerce(input: unknown): unknown {
-    if (typeof input === 'boolean') {
-      return input;
+  /**
+   * Coerces value to a boolean or returns `null` if coercion isn't possible.
+   *
+   * @param value The non-boolean value to coerce.
+   */
+  protected _coerce(value: unknown): boolean | null {
+    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'boolean') {
+      return value;
     }
-    if (input == null || input === false || input === 0 || input === 'false') {
+    if (value === null || value === undefined || value === false || value === 0 || value === 'false') {
       return false;
     }
-    if (input === true || input === 1 || input === 'true') {
+    if (value === true || value === 1 || value === 'true') {
       return true;
     }
-    if (isArray(input) && input.length === 1) {
-      return this._coerce(input[0]);
-    }
-    return input;
+    return null;
   }
 }

@@ -77,15 +77,17 @@ describe('BigIntShape', () => {
   describe('coercion', () => {
     test('coerces a string', () => {
       expect(new BigIntShape()['_coerce']('111')).toBe(BigInt(111));
-      expect(new BigIntShape()['_coerce']('aaa')).toBe('aaa');
+
+      expect(new BigIntShape()['_coerce']('aaa')).toBe(null);
     });
 
     test('coerces a number', () => {
       expect(new BigIntShape()['_coerce'](111)).toBe(BigInt(111));
-      expect(new BigIntShape()['_coerce'](111.222)).toBe(111.222);
-      expect(new BigIntShape()['_coerce'](NaN)).toBe(NaN);
-      expect(new BigIntShape()['_coerce'](Infinity)).toBe(Infinity);
-      expect(new BigIntShape()['_coerce'](-Infinity)).toBe(-Infinity);
+
+      expect(new BigIntShape()['_coerce'](111.222)).toBe(null);
+      expect(new BigIntShape()['_coerce'](NaN)).toBe(null);
+      expect(new BigIntShape()['_coerce'](Infinity)).toBe(null);
+      expect(new BigIntShape()['_coerce'](-Infinity)).toBe(null);
     });
 
     test('coerces a boolean', () => {
@@ -103,21 +105,14 @@ describe('BigIntShape', () => {
     });
 
     test('does not coerce unsuitable array', () => {
-      const value1 = [BigInt(111), 'aaa'];
-      const value2 = [BigInt(111), BigInt(111)];
-      const value3 = ['aaa'];
-
-      expect(new BigIntShape()['_coerce'](value1)).toBe(value1);
-      expect(new BigIntShape()['_coerce'](value2)).toBe(value2);
-      expect(new BigIntShape()['_coerce'](value3)).toBe('aaa');
+      expect(new BigIntShape()['_coerce']([BigInt(111), 'aaa'])).toBe(null);
+      expect(new BigIntShape()['_coerce']([BigInt(111), BigInt(111)])).toBe(null);
+      expect(new BigIntShape()['_coerce'](['aaa'])).toBe(null);
     });
 
     test('does not coerce objects and functions', () => {
-      const value1 = { foo: 111 };
-      const value2 = () => undefined;
-
-      expect(new BigIntShape()['_coerce'](value1)).toBe(value1);
-      expect(new BigIntShape()['_coerce'](value2)).toBe(value2);
+      expect(new BigIntShape()['_coerce']({ key1: 111 })).toBe(null);
+      expect(new BigIntShape()['_coerce'](() => undefined)).toBe(null);
     });
   });
 });

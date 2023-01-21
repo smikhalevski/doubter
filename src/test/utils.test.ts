@@ -1,11 +1,11 @@
 import {
-  cloneEnumerableKeys,
-  cloneKnownKeys,
+  cloneObjectEnumerableKeys,
+  cloneObjectKnownKeys,
   createApplyChecksCallback,
   createIssueFactory,
+  enableBitAt,
+  isBitEnabledAt,
   isEqual,
-  isFlagSet,
-  setFlag,
   unique,
 } from '../main/utils';
 import { Issue, ValidationError } from '../main';
@@ -189,30 +189,30 @@ describe('createIssueFactory', () => {
   });
 });
 
-describe('setFlag', () => {
+describe('enableBitAt', () => {
   test('sets bit', () => {
-    expect(setFlag(0b0, 5)).toBe(0b100000);
-    expect(setFlag(0b1, 5)).toBe(0b100001);
-    expect(setFlag(0b100, 5)).toBe(0b100100);
-    expect(setFlag(0b1, 31)).toBe(-2147483647);
-    expect(setFlag(0b1, 35)).toEqual([1, 0b1000, 0]);
+    expect(enableBitAt(0b0, 5)).toBe(0b100000);
+    expect(enableBitAt(0b1, 5)).toBe(0b100001);
+    expect(enableBitAt(0b100, 5)).toBe(0b100100);
+    expect(enableBitAt(0b1, 31)).toBe(-2147483647);
+    expect(enableBitAt(0b1, 35)).toEqual([1, 0b1000, 0]);
   });
 });
 
-describe('isFlagSet', () => {
+describe('isBitEnabledAt', () => {
   test('reads bit', () => {
-    expect(isFlagSet(setFlag(0b0, 5), 5)).toBe(true);
-    expect(isFlagSet(setFlag(0b1, 5), 5)).toBe(true);
-    expect(isFlagSet(setFlag(0b100, 5), 5)).toBe(true);
-    expect(isFlagSet(setFlag(0b1, 31), 31)).toBe(true);
-    expect(isFlagSet(setFlag(0b1, 35), 35)).toEqual(true);
+    expect(isBitEnabledAt(enableBitAt(0b0, 5), 5)).toBe(true);
+    expect(isBitEnabledAt(enableBitAt(0b1, 5), 5)).toBe(true);
+    expect(isBitEnabledAt(enableBitAt(0b100, 5), 5)).toBe(true);
+    expect(isBitEnabledAt(enableBitAt(0b1, 31), 31)).toBe(true);
+    expect(isBitEnabledAt(enableBitAt(0b1, 35), 35)).toEqual(true);
   });
 });
 
-describe('cloneEnumerableKeys', () => {
+describe('cloneObjectEnumerableKeys', () => {
   test('clones all keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneEnumerableKeys(obj1);
+    const obj2 = cloneObjectEnumerableKeys(obj1);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ aaa: 111, bbb: 222 });
@@ -220,7 +220,7 @@ describe('cloneEnumerableKeys', () => {
 
   test('clones limited number of leading keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneEnumerableKeys(obj1, 1);
+    const obj2 = cloneObjectEnumerableKeys(obj1, 1);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ aaa: 111 });
@@ -228,17 +228,17 @@ describe('cloneEnumerableKeys', () => {
 
   test('clones no keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneEnumerableKeys(obj1, 0);
+    const obj2 = cloneObjectEnumerableKeys(obj1, 0);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({});
   });
 });
 
-describe('cloneKnownKeys', () => {
+describe('cloneObjectKnownKeys', () => {
   test('clones known keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneKnownKeys(obj1, ['bbb']);
+    const obj2 = cloneObjectKnownKeys(obj1, ['bbb']);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ bbb: 222 });
