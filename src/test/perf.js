@@ -4,166 +4,269 @@ const myzod = require('myzod');
 const valita = require('@badrap/valita');
 const doubter = require('../../lib');
 
-beforeBatch(gc);
+if (typeof gc !== 'undefined') {
+  beforeBatch(gc);
+}
+
+// https://github.com/smikhalevski/toofast#test
+const perfOptions = {
+  warmupIterationCount: 100,
+  targetRme: 0.002,
+};
 
 describe(
-  'string().optional()',
+  'Overall',
   () => {
-    const value = 'aaa';
+    const value = {
+      a1: [1, 2, 3],
+      a2: 'foo',
+      a3: false,
+      a4: {
+        a41: 'bar',
+        a42: 3.1415,
+      },
+    };
 
-    test('zod', measure => {
-      const type = zod.string().optional();
+    describe('Loose object assertion', () => {
+      test('Ajv', measure => {
+        const ajv = new Ajv();
 
-      measure(() => {
-        type.parse(value);
+        const schema = {
+          $id: 'test',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'object',
+          properties: {
+            a1: {
+              type: 'array',
+              items: {
+                type: 'integer',
+              },
+            },
+            a2: {
+              type: 'string',
+            },
+            a3: {
+              type: 'boolean',
+            },
+            a4: {
+              type: 'object',
+              properties: {
+                a41: {
+                  enum: ['foo', 'bar'],
+                },
+                a42: {
+                  type: 'number',
+                },
+              },
+              required: ['a41', 'a42'],
+            },
+          },
+          required: ['a1', 'a2', 'a3', 'a4'],
+        };
+
+        const validate = ajv.compile(schema);
+
+        measure(() => {
+          validate(value);
+        });
       });
-    });
 
-    test('myzod', measure => {
-      const type = myzod.string().optional();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('valita', measure => {
-      const type = valita.string().optional();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('doubter', measure => {
-      const shape = doubter.string().optional();
-
-      measure(() => {
-        shape.parse(value);
-      });
-    });
-  },
-  { warmupIterationCount: 100, targetRme: 0.002 }
-);
-
-describe(
-  'string().to(string())',
-  () => {
-    const value = 'aaa';
-
-    test('zod', measure => {
-      const type = zod.string().pipe(zod.string());
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('doubter', measure => {
-      const shape = doubter.string().to(doubter.string());
-
-      measure(() => {
-        shape.parse(value);
-      });
-    });
-  },
-  { warmupIterationCount: 100, targetRme: 0.002 }
-);
-
-describe(
-  'string().transform(() => 111)',
-  () => {
-    const value = 'aaa';
-
-    test('zod', measure => {
-      const type = zod.string().transform(() => 111);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = myzod.string().map(() => 111);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('valita', measure => {
-      const type = valita.string().map(() => 111);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('doubter', measure => {
-      const shape = doubter.string().transform(() => 111);
-
-      measure(() => {
-        shape.parse(value);
-      });
-    });
-  },
-  { warmupIterationCount: 100, targetRme: 0.002 }
-);
-
-describe(
-  'string().coerce()',
-  () => {
-    const createTests = value => {
       test('zod', measure => {
-        const type = zod.coerce.string();
+        const type = zod
+          .object({
+            a1: zod.array(zod.number().int()),
+            a2: zod.string().min(3),
+            a3: zod.boolean(),
+            a4: zod
+              .object({
+                a41: zod.enum(['foo', 'bar']),
+                a42: zod.number(),
+              })
+              .passthrough(),
+          })
+          .passthrough();
 
         measure(() => {
           type.parse(value);
         });
       });
 
-      test('doubter', measure => {
-        const shape = doubter.string().coerce();
-
-        measure(() => {
-          shape.parse(value);
-        });
-      });
-    };
-
-    createTests('aaa');
-
-    describe('invalid input', () => createTests(111));
-  },
-  { warmupIterationCount: 100, targetRme: 0.002 }
-);
-
-describe(
-  'string().catch("foo")',
-  () => {
-    const createTests = value => {
-      test('zod', measure => {
-        const type = zod.string().catch('foo');
+      test('myzod', measure => {
+        const type = myzod.object(
+          {
+            a1: myzod.array(myzod.number().withPredicate(Number.isInteger)),
+            a2: myzod.string().min(3),
+            a3: myzod.boolean(),
+            a4: myzod.object(
+              {
+                a41: myzod.enum(['foo', 'bar']),
+                a42: myzod.number(),
+              },
+              { allowUnknown: true }
+            ),
+          },
+          { allowUnknown: true }
+        );
 
         measure(() => {
           type.parse(value);
         });
       });
 
+      test('valita', measure => {
+        const type = valita.object({
+          a1: valita.array(valita.number().assert(Number.isInteger)),
+          a2: valita.string().assert(value => value.length >= 3),
+          a3: valita.boolean(),
+          a4: valita.object({
+            a41: valita.union(valita.literal('foo'), valita.literal('bar')),
+            a42: valita.number(),
+          }),
+        });
+        const options = { mode: 'passthrough' };
+
+        measure(() => {
+          type.parse(value, options);
+        });
+      });
+
       test('doubter', measure => {
-        const shape = doubter.string().catch('foo');
+        const shape = doubter.object({
+          a1: doubter.array(doubter.integer()),
+          a2: doubter.string().min(3),
+          a3: doubter.boolean(),
+          a4: doubter.object({
+            a41: doubter.enum(['foo', 'bar']),
+            a42: doubter.number(),
+          }),
+        });
 
         measure(() => {
           shape.parse(value);
         });
       });
-    };
+    });
 
-    createTests('aaa');
+    describe('Strict object assertion', () => {
+      test('Ajv', measure => {
+        const ajv = new Ajv();
 
-    describe('invalid input', () => createTests(111));
+        const schema = {
+          $id: 'test',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'object',
+          properties: {
+            a1: {
+              type: 'array',
+              items: {
+                type: 'integer',
+              },
+            },
+            a2: {
+              type: 'string',
+            },
+            a3: {
+              type: 'boolean',
+            },
+            a4: {
+              type: 'object',
+              properties: {
+                a41: {
+                  enum: ['foo', 'bar'],
+                },
+                a42: {
+                  type: 'number',
+                },
+              },
+              required: ['a41', 'a42'],
+              additionalProperties: false,
+            },
+          },
+          required: ['a1', 'a2', 'a3', 'a4'],
+          additionalProperties: false,
+        };
+
+        const validate = ajv.compile(schema);
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('zod', measure => {
+        const type = zod
+          .object({
+            a1: zod.array(zod.number().int()),
+            a2: zod.string().min(3),
+            a3: zod.boolean(),
+            a4: zod
+              .object({
+                a41: zod.enum(['foo', 'bar']),
+                a42: zod.number(),
+              })
+              .passthrough(),
+          })
+          .passthrough();
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = myzod.object({
+          a1: myzod.array(myzod.number().withPredicate(Number.isInteger)),
+          a2: myzod.string().min(3),
+          a3: myzod.boolean(),
+          a4: myzod.object({
+            a41: myzod.enum(['foo', 'bar']),
+            a42: myzod.number(),
+          }),
+        });
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('valita', measure => {
+        const type = valita.object({
+          a1: valita.array(valita.number().assert(Number.isInteger)),
+          a2: valita.string().assert(value => value.length >= 3),
+          a3: valita.boolean(),
+          a4: valita.object({
+            a41: valita.union(valita.literal('foo'), valita.literal('bar')),
+            a42: valita.number(),
+          }),
+        });
+
+        measure(() => {
+          type.parse(value, options);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = doubter
+          .object({
+            a1: doubter.array(doubter.integer()),
+            a2: doubter.string().min(3),
+            a3: doubter.boolean(),
+            a4: doubter
+              .object({
+                a41: doubter.enum(['foo', 'bar']),
+                a42: doubter.number(),
+              })
+              .exact(),
+          })
+          .exact();
+
+        measure(() => {
+          shape.parse(value);
+        });
+      });
+    });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -171,32 +274,32 @@ describe(
   () => {
     const value = 'aaa';
 
-    // test('Ajv', measure => {
-    //   const validate = new Ajv().compile({
-    //     $schema: 'http://json-schema.org/draft-07/schema#',
-    //     type: 'string',
-    //   });
-    //
-    //   measure(() => {
-    //     validate(value);
-    //   });
-    // });
-    //
-    // test('zod', measure => {
-    //   const type = zod.string();
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
-    //
-    // test('myzod', measure => {
-    //   const type = myzod.string();
-    //
-    //   measure(() => {
-    //     type.parse(value);
-    //   });
-    // });
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'string',
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('zod', measure => {
+      const type = zod.string();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.string();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
 
     test('valita', measure => {
       const type = valita.string();
@@ -217,34 +320,34 @@ describe(
     describe('invalid input', () => {
       const value = 111;
 
-      // test('Ajv', measure => {
-      //   const validate = new Ajv().compile({
-      //     $schema: 'http://json-schema.org/draft-07/schema#',
-      //     type: 'string',
-      //   });
-      //
-      //   measure(() => {
-      //     validate(value);
-      //   });
-      // });
-      //
-      // test('zod', measure => {
-      //   const type = zod.string();
-      //
-      //   measure(() => {
-      //     type.safeParse(value);
-      //   });
-      // });
-      //
-      // test('myzod', measure => {
-      //   const type = myzod.string();
-      //
-      //   measure(() => {
-      //     try {
-      //       type.parse(value);
-      //     } catch {}
-      //   });
-      // });
+      test('Ajv', measure => {
+        const validate = new Ajv().compile({
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'string',
+        });
+
+        measure(() => {
+          validate(value);
+        });
+      });
+
+      test('zod', measure => {
+        const type = zod.string();
+
+        measure(() => {
+          type.safeParse(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = myzod.string();
+
+        measure(() => {
+          try {
+            type.parse(value);
+          } catch {}
+        });
+      });
 
       test('valita', measure => {
         const type = valita.string();
@@ -263,7 +366,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -367,42 +470,35 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
-  'integer()',
+  'string().coerce()',
   () => {
-    const value = 4;
+    const createTests = value => {
+      test('zod', measure => {
+        const type = zod.coerce.string();
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'integer',
+        measure(() => {
+          type.parse(value);
+        });
       });
 
-      measure(() => {
-        validate(value);
+      test('doubter', measure => {
+        const shape = doubter.string().coerce();
+
+        measure(() => {
+          shape.parse(value);
+        });
       });
-    });
+    };
 
-    test('zod', measure => {
-      const type = zod.number().int();
+    createTests('aaa');
 
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('doubter', measure => {
-      const shape = doubter.integer();
-
-      measure(() => {
-        shape.parse(value);
-      });
-    });
+    describe('invalid input', () => createTests(111));
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -453,7 +549,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -498,7 +594,174 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
+);
+
+describe(
+  'integer()',
+  () => {
+    const value = 4;
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'integer',
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('zod', measure => {
+      const type = zod.number().int();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = doubter.integer();
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  perfOptions
+);
+
+describe(
+  'string().optional()',
+  () => {
+    const value = 'aaa';
+
+    test('zod', measure => {
+      const type = zod.string().optional();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.string().optional();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = valita.string().optional();
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = doubter.string().optional();
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  perfOptions
+);
+
+describe(
+  'string().to(string())',
+  () => {
+    const value = 'aaa';
+
+    test('zod', measure => {
+      const type = zod.string().pipe(zod.string());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = doubter.string().to(doubter.string());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  perfOptions
+);
+
+describe(
+  'string().transform(() => 111)',
+  () => {
+    const value = 'aaa';
+
+    test('zod', measure => {
+      const type = zod.string().transform(() => 111);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.string().map(() => 111);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = valita.string().map(() => 111);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = doubter.string().transform(() => 111);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  perfOptions
+);
+
+describe(
+  'string().catch("foo")',
+  () => {
+    const createTests = value => {
+      test('zod', measure => {
+        const type = zod.string().catch('foo');
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = doubter.string().catch('foo');
+
+        measure(() => {
+          shape.parse(value);
+        });
+      });
+    };
+
+    createTests('aaa');
+
+    describe('invalid input', () => createTests(111));
+  },
+  perfOptions
 );
 
 describe(
@@ -550,7 +813,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -596,7 +859,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -645,7 +908,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -699,7 +962,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -752,7 +1015,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -834,7 +1097,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -900,7 +1163,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -979,7 +1242,7 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -1041,7 +1304,7 @@ describe(
 
     describe('boolean input', () => createTests(true));
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -1126,7 +1389,7 @@ describe(
 
     describe('{ bar: 123 }', () => createTests({ bar: 123 }));
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -1204,7 +1467,7 @@ describe(
 
     describe('[123]', () => createTests([123]));
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -1292,7 +1555,7 @@ describe(
 
     describe('{ type: "bar" }', () => createTests({ type: 'bar' }));
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
@@ -1330,11 +1593,11 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 100, targetRme: 0.002 }
+  perfOptions
 );
 
 describe(
-  'overall',
+  'https://moltar.github.io/typescript-runtime-type-benchmarks/',
   () => {
     const value = {
       a1: 1,
@@ -1350,7 +1613,7 @@ describe(
       },
     };
 
-    describe('loose', () => {
+    describe('Loose object assertion', () => {
       test('Ajv', measure => {
         const ajv = new Ajv();
 
@@ -1495,7 +1758,7 @@ describe(
       });
     });
 
-    describe('strict', () => {
+    describe('Strict object assertion', () => {
       test('Ajv', measure => {
         const ajv = new Ajv();
 
@@ -1635,5 +1898,5 @@ describe(
       });
     });
   },
-  { warmupIterationCount: 1000, targetRme: 0.002 }
+  perfOptions
 );
