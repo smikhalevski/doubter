@@ -76,7 +76,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     for (const shape of this.shapes) {
       inputTypes.push(...shape['_getInputTypes']());
     }
-    return inputTypes;
+    return unique(inputTypes);
   }
 
   protected _getInputValues(): unknown[] {

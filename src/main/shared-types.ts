@@ -73,7 +73,7 @@ export interface CheckOptions {
  */
 export interface Issue {
   /**
-   * The unique code of the validation issue.
+   * The code of the validation issue.
    */
   code: any;
 
