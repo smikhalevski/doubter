@@ -17,6 +17,7 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
+import { isMultipleOf } from '../../main/shapes/NumberShape';
 
 describe('NumberShape', () => {
   test('parses a number', () => {
@@ -89,6 +90,24 @@ describe('NumberShape', () => {
     });
 
     expect(new NumberShape().multipleOf(2).parse(4)).toBe(4);
+  });
+
+  test('multiple of considers IEEE 754 representation issues', () => {
+    expect(new NumberShape().multipleOf(0.1).parse(49.9)).toBe(49.9);
+    expect(new NumberShape().multipleOf(0.000000001).parse(49.900000001)).toBe(49.900000001);
+    expect(new NumberShape().multipleOf(0.0000000015).try(49.900000001)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_NUMBER_MULTIPLE_OF,
+          input: 49.900000001,
+          message: 'Must be a multiple of 1.5e-9',
+          meta: undefined,
+          param: 1.5e-9,
+          path: [],
+        },
+      ],
+    });
   });
 
   test('overrides message for type issue', () => {
@@ -260,5 +279,35 @@ describe('NumberShape', () => {
     test('does not coerce a symbol', () => {
       expect(new NumberShape()['_coerce'](Symbol())).toBe(null);
     });
+  });
+});
+
+describe('isMultipleOf', () => {
+  test('returns false for invalid input', () => {
+    expect(isMultipleOf(5, -1)).toBe(false);
+    expect(isMultipleOf(NaN, 1)).toBe(false);
+    expect(isMultipleOf(1, NaN)).toBe(false);
+    expect(isMultipleOf(Infinity, Infinity)).toBe(false);
+    expect(isMultipleOf(Infinity, 100)).toBe(false);
+    expect(isMultipleOf(100, Infinity)).toBe(false);
+  });
+
+  test('checks that value is divisible', () => {
+    expect(isMultipleOf(Number.MAX_VALUE, 1)).toBe(true);
+    expect(isMultipleOf(Number.MAX_SAFE_INTEGER, 1)).toBe(true);
+    expect(isMultipleOf(Number.MAX_SAFE_INTEGER, 2)).toBe(false);
+    expect(isMultipleOf(1, 1)).toBe(true);
+    expect(isMultipleOf(50, 5)).toBe(true);
+
+    expect(isMultipleOf(49.9, 0.1)).toBe(true);
+    expect(isMultipleOf(-49.9, 0.1)).toBe(true);
+    expect(isMultipleOf(49.9, 0.11)).toBe(false);
+    expect(isMultipleOf(49.90000001, 0.00000001)).toBe(true);
+    expect(isMultipleOf(49.90000001, 0.0000000156)).toBe(false);
+    expect(isMultipleOf(49.90000001, 0.00000002)).toBe(false);
+  });
+
+  test('handles overflow', () => {
+    expect(isMultipleOf(100000000.05, 0.100000002)).toBe(false);
   });
 });

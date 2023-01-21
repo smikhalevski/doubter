@@ -553,6 +553,42 @@ describe(
 );
 
 describe(
+  'number().multipleOf(0.1)',
+  () => {
+    const value = 49.9;
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'number',
+        multipleOf: 0.1,
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('zod', measure => {
+      const type = zod.number().multipleOf(0.1);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = doubter.number().multipleOf(0.1);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  perfOptions
+);
+
+describe(
   'number().gte(1).lte(5)',
   () => {
     const value = 4;
