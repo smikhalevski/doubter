@@ -157,7 +157,7 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Constrains the number to be a multiple of the divisor.
    *
-   * @param value The number by which the input should be divisible without a remainder.
+   * @param value The positive number by which the input should be divisible without a remainder.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
@@ -165,7 +165,7 @@ export class NumberShape extends CoercibleShape<number> {
     const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
 
     return setCheck(this, CODE_NUMBER_MULTIPLE_OF, options, value, (input, options) => {
-      if (input % value !== 0) {
+      if (!isMultipleOf(input, value)) {
         return issueFactory(input, options);
       }
     });
@@ -286,3 +286,45 @@ export interface NumberShape {
 NumberShape.prototype.min = NumberShape.prototype.gte;
 
 NumberShape.prototype.max = NumberShape.prototype.lte;
+
+/**
+ * Checks that `a` is divisible without a remainder by `b`.
+ */
+export function isMultipleOf(a: number, b: number): boolean {
+  if (b <= 0 || a !== a || b !== b || a === Infinity || a === -Infinity || b === Infinity) {
+    return false;
+  }
+  if (a === b || a % b === 0) {
+    return true;
+  }
+  if (Math.abs(a) < b || a === Math.floor(a) || b === Math.floor(b)) {
+    // Integers had their chance
+    return false;
+  }
+
+  const aStr = a.toString();
+  const bStr = b.toString();
+
+  const aExpIndex = aStr.indexOf('e');
+  const bExpIndex = bStr.indexOf('e');
+
+  const aDotIndex = aStr.indexOf('.');
+  const bDotIndex = bStr.indexOf('.');
+
+  // The exponent extracted from e+XXX plus the number of decimal digits
+  const aDecLength =
+    (~aExpIndex && Math.abs(+aStr.substring(aExpIndex + 1))) +
+    (~aDotIndex && ~(~aExpIndex || ~aStr.length) + ~aDotIndex);
+
+  const bDecLength =
+    (~bExpIndex && Math.abs(+bStr.substring(bExpIndex + 1))) +
+    (~bDotIndex && ~(~bExpIndex || ~bStr.length) + ~bDotIndex);
+
+  const decLength = Math.max(aDecLength, bDecLength);
+
+  // Undefined behaviour if long overflow occurs
+  const aLong = +a.toFixed(decLength).replace('.', '');
+  const bLong = +b.toFixed(decLength).replace('.', '');
+
+  return aLong % bLong === 0;
+}
