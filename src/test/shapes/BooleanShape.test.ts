@@ -101,7 +101,7 @@ describe('BooleanShape', () => {
     });
 
     test('does not coerce objects and functions', () => {
-      expect(new BooleanShape()['_coerce']({ foo: 111 })).toBe(null);
+      expect(new BooleanShape()['_coerce']({ key1: 111 })).toBe(null);
       expect(new BooleanShape()['_coerce'](() => undefined)).toBe(null);
     });
 

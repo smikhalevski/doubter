@@ -131,11 +131,11 @@ describe('UnionShape', () => {
 
   test('parses a discriminated union', () => {
     const shape = new UnionShape([
-      new ObjectShape({ type: new ConstShape('foo') }, null),
-      new ObjectShape({ type: new ConstShape('bar') }, null),
+      new ObjectShape({ type: new ConstShape('aaa') }, null),
+      new ObjectShape({ type: new ConstShape('bbb') }, null),
     ]);
 
-    expect(shape.parse({ type: 'bar' })).toEqual({ type: 'bar' });
+    expect(shape.parse({ type: 'bbb' })).toEqual({ type: 'bbb' });
   });
 
   describe('async', () => {
@@ -234,32 +234,32 @@ describe('getDiscriminator', () => {
   test('returns the discriminator key and corresponding values for each shape in the union', () => {
     expect(
       getDiscriminator([
-        new ObjectShape({ type: new ConstShape('foo') }, null),
-        new ObjectShape({ type: new ConstShape('bar') }, null),
+        new ObjectShape({ type: new ConstShape('aaa') }, null),
+        new ObjectShape({ type: new ConstShape('bbb') }, null),
       ])
     ).toEqual({
       key: 'type',
-      valuesForShape: [['foo'], ['bar']],
+      valuesForShape: [['aaa'], ['bbb']],
     });
   });
 
   test('returns the discriminator for enum values', () => {
     expect(
       getDiscriminator([
-        new ObjectShape({ type: new EnumShape(['foo', 'bar']) }, null),
-        new ObjectShape({ type: new ConstShape('qux') }, null),
+        new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null),
+        new ObjectShape({ type: new ConstShape('ccc') }, null),
       ])
     ).toEqual({
       key: 'type',
-      valuesForShape: [['foo', 'bar'], ['qux']],
+      valuesForShape: [['aaa', 'bbb'], ['ccc']],
     });
   });
 
   test('returns null if values are not distinct', () => {
     expect(
       getDiscriminator([
-        new ObjectShape({ type: new EnumShape(['foo', 'bar']) }, null),
-        new ObjectShape({ type: new ConstShape('bar') }, null),
+        new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null),
+        new ObjectShape({ type: new ConstShape('bbb') }, null),
       ])
     ).toBe(null);
   });

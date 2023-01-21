@@ -111,7 +111,7 @@ describe('BigIntShape', () => {
     });
 
     test('does not coerce objects and functions', () => {
-      expect(new BigIntShape()['_coerce']({ foo: 111 })).toBe(null);
+      expect(new BigIntShape()['_coerce']({ key1: 111 })).toBe(null);
       expect(new BigIntShape()['_coerce'](() => undefined)).toBe(null);
     });
   });

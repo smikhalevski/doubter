@@ -3,6 +3,6 @@ import * as d from '../../main';
 
 expectType<number | string>(d.or([d.number(), d.string()]).output);
 
-expectType<{ foo: string } | { foo: number }>(
-  d.or([d.object({ foo: d.string() }), d.object({ foo: d.number() })]).output
+expectType<{ key1: string } | { key2: number }>(
+  d.or([d.object({ key1: d.string() }), d.object({ key2: d.number() })]).output
 );

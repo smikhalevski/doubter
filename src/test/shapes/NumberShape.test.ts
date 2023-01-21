@@ -253,7 +253,7 @@ describe('NumberShape', () => {
     });
 
     test('does not coerce objects and functions', () => {
-      expect(new NumberShape()['_coerce']({ foo: 111 })).toBe(null);
+      expect(new NumberShape()['_coerce']({ key1: 111 })).toBe(null);
       expect(new NumberShape()['_coerce'](() => undefined)).toBe(null);
     });
 

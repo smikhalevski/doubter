@@ -224,7 +224,7 @@ describe('StringShape', () => {
     });
 
     test('does not coerce objects and functions', () => {
-      expect(new StringShape()['_coerce']({ foo: 111 })).toBe(null);
+      expect(new StringShape()['_coerce']({ key1: 111 })).toBe(null);
       expect(new StringShape()['_coerce'](() => undefined)).toBe(null);
     });
 
