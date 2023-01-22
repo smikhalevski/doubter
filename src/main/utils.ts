@@ -56,6 +56,10 @@ export function isNumber(value: unknown): boolean {
   return typeof value === 'number' && value === value;
 }
 
+export function isDate(value: unknown): value is Date {
+  return value instanceof Date && (value = value.getTime()) === value;
+}
+
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   let async = false;
 
