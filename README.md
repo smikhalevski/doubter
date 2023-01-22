@@ -25,9 +25,6 @@ npm install --save-prod doubter
     - [Refinements](#refinements)
     - [Transformations](#transformations)
     - [Parsing context](#parsing-context)
-    - [Localization](#localization)
-    - [Type coercion](#type-coercion)
-    - [Branded types](#branded-types)
     - [Shape piping](#shape-piping)
     - [Exclude](#exclude)
     - [Include](#include)
@@ -35,21 +32,16 @@ npm install --save-prod doubter
     - [Optional and non-optional](#optional-and-non-optional)
     - [Nullable and nullish](#nullable-and-nullish)
     - [Fallback on error](#fallback-on-error)
-    - [Guarded functions](#guarded-functions)
+    - [Type coercion](#type-coercion)
+    - [Branded types](#branded-types)
+    - [Localization](#localization)
     - [Integrations](#integrations)
+    - [Guarded functions](#guarded-functions)
 
 - **Data types**
 
-    - Arrays<br>
-      [`array`](#array)
-      [`tuple`](#tuple)
-
-    - Objects<br>
-      [`object`](#object)
-      [`record`](#record)
-      [`instanceOf`](#instanceof)
-      [`set`](#set)
-      [`map`](#map)
+    - Strings<br>
+      [`string`](#string)
 
     - Numbers<br>
       [`number`](#number)
@@ -58,17 +50,11 @@ npm install --save-prod doubter
       [`nan`](#nan)
       [`bigint`](#bigint)
 
-    - Strings<br>
-      [`string`](#string)
-
     - Booleans<br>
       [`boolean`](#boolean)
 
     - Symbols<br>
       [`symbol`](#symbol)
-
-    - Dates<br>
-      [`date`](#date)
 
     - Literal values<br>
       [`enum`](#enum)
@@ -76,6 +62,20 @@ npm install --save-prod doubter
       [`null`](#null)
       [`undefined`](#undefined)
       [`void`](#void)
+
+    - Objects<br>
+      [`object`](#object)
+      [`record`](#record)
+      [`instanceOf`](#instanceof)
+
+    - Collections<br>
+      [`array`](#array)
+      [`tuple`](#tuple)
+      [`set`](#set)
+      [`map`](#map)
+
+    - Dates<br>
+      [`date`](#date)
 
     - Promises<br>
       [`promise`](#promise)
@@ -877,6 +877,52 @@ shape2.parse('Pluto');
 shape2.parse('Mars');
 // ⮕ 1671565326707
 ```
+
+# Branded types
+
+TypeScript's type system is structural, which means that any two types that are structurally equivalent are considered
+the same.
+
+```ts
+interface Cat {
+  name: string;
+}
+
+interface Dog {
+  name: string;
+}
+
+declare function petCat(cat: Cat): void;
+
+const fidoDog: Dog = {
+  name: 'Fido'
+};
+
+petCat(fidoDog);
+// ✅ Ok yet types are different
+```
+
+In some cases, its can be desirable to simulate nominal typing inside TypeScript. For instance, you may wish to write a
+function that only accepts an input that has been validated by Doubter. This can be achieved with branded types:
+
+```ts
+const catShape = d.object({ name: d.string() }).brand<'Cat'>();
+
+type Cat = typeof catShape['input'];
+
+declare function petCat(cat: Cat): void;
+
+petCat(catShape.parse({ name: 'Simba' }));
+// ✅ Ok, since the cat was validated
+
+petCat({ name: 'Fido' });
+// ❌ Error: Expected BRAND to be Cat
+```
+
+Under the hood, this works by attaching a "brand" to the inferred type using an intersection type. This way,
+plain/unbranded data structures are no longer assignable to the inferred type of the shape.
+
+Note that branded types do not affect the runtime result of `parse`. It is a static-only construct.
 
 # Localization
 
