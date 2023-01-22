@@ -31,7 +31,7 @@ npm install --save-prod doubter
     - [Replace](#replace)
     - [Optional and non-optional](#optional-and-non-optional)
     - [Nullable and nullish](#nullable-and-nullish)
-    - [Fallback on error](#fallback-on-error)
+    - [Fallback value](#fallback-value)
     - [Branded types](#branded-types)
     - [Localization](#localization)
     - [Integrations](#integrations)
@@ -944,7 +944,7 @@ d.string().nullish(8080);
 // ⮕ Shape<string | null | undefined, string | 8080>
 ```
 
-# Fallback on error
+# Fallback value
 
 If issues were detected during parsing a shape can return a fallback value.
 
