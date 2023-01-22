@@ -17,26 +17,26 @@ npm install --save-prod doubter
 
 - **Core features**
 
-  - [Basics](#basics)
-  - [Shapes](#shapes)
-  - [Parsing and trying](#parsing-and-trying)
-  - [Validation errors](#validation-errors)
-  - [Checks](#checks)
-  - [Refinements](#refinements)
-  - [Transformations](#transformations)
-  - [Parsing context](#parsing-context)
-  - [Localization](#localization)
-  - [Type coercion](#type-coercion)
-  - [Branded types](#branded-types)
-  - [Redirections](#redirections)
-  - [Exclude](#exclude)
-  - [Include](#include)
-  - [Replace](#replace)
-  - [Optional and non-optional](#optional-and-non-optional)
-  - [Nullable and nullish](#nullable-and-nullish)
-  - [Fallback on error](#fallback-on-error)
-  - [Guarded functions](#guarded-functions)
-  - [Integrations](#integrations)
+    - [Basics](#basics)
+    - [Shapes](#shapes)
+    - [Parsing and trying](#parsing-and-trying)
+    - [Validation errors](#validation-errors)
+    - [Checks](#checks)
+    - [Refinements](#refinements)
+    - [Transformations](#transformations)
+    - [Parsing context](#parsing-context)
+    - [Localization](#localization)
+    - [Type coercion](#type-coercion)
+    - [Branded types](#branded-types)
+    - [Shape piping](#shape-piping)
+    - [Exclude](#exclude)
+    - [Include](#include)
+    - [Replace](#replace)
+    - [Optional and non-optional](#optional-and-non-optional)
+    - [Nullable and nullish](#nullable-and-nullish)
+    - [Fallback on error](#fallback-on-error)
+    - [Guarded functions](#guarded-functions)
+    - [Integrations](#integrations)
 
 - **Data types**
 
@@ -178,6 +178,8 @@ type ShapeOutput = typeof shape['output'];
 // ⮕ string
 ```
 
+## Async shapes
+
 [Transformations](#transformations) and reliance on [promise shapes](#promise) make your shapes async. Here's a shape of
 a promise that is expected to be fulfilled with a number:
 
@@ -305,15 +307,28 @@ In the example above `result.issues` would contain a single issue:
 }]
 ```
 
-`code` is a code of the validation issue. There are multiple checks that shapes provide, and each check has a unique
-code. In the example above, `type` refers to a failed type check. Refer to a `param` property for expected type name.
+`code` is a code of the validation issue. Shapes provide [various checks](#checks) and each check has a unique code.
+In the example above, `type` code refers to a failed number type check. See the table of known codes below.
+
+`path` is the object path, an array that may contain strings, numbers (for array indices and such), symbols, and any
+other values since they can be `Map` keys.
+
+`input` is the input value that caused a validation issue. Note that if coercion is enabled this contains a coerced
+value.
+
+`message` is the human-readable issue message. Refer to [Localization](#localization) section for more details.
+
+`param` is the parameter value associated with the issue. Parameter value usually depends on `code`, see the table
+below.
+
+`meta` is the optional metadata associated with the issue. Refer to [Metadata](#metadata) section for more details.
 
 | Code | Caused by | Param |
-| :-- | :-- | :--  |
+| :-- | :-- | :-- |
 | `arrayMinLength` | `d.array().min(n)` | The minimum length `n` |
 | `arrayMaxLength` | `d.array().max(n)` | The maximum length `n` |
 | `const` | `d.const(x)` | The expected constant value `x` |
-| `enum` | `d.enum([x, y, z])` | The list of unique expected values `[x, y, z]` |
+| `enum` | `d.enum([x, y, z])` | The list of unique expected values`[x, y, z]` |
 | `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
 | `instance` | `instanceOf(Class)` | The class constructor `Class` |
 | `intersection` | `d.and(…)` | — |
@@ -374,8 +389,14 @@ shape.parse(3);
 // ❌ ValidationError: kaputs at /
 ```
 
-A check callback receives an input value and returns an issue or an array of issues if the value is invalid. If value is
-valid, a check callback must return `null` or `undefined`.
+A check callback receives an input value and returns a partial issue or an array of partial issues if the value is
+invalid.
+
+Check callbacks can safely throw a `ValidationError` to notify Doubter that parsing issues occurred. While this has the
+same effect as returning an array of issues, it is recommended to throw a `ValidationError` as the last resort since
+catching errors has a high performance penalty.
+
+If value is valid, a check callback must return `null` or `undefined`.
 
 Most shapes have a set of built-in checks. The check we've just implemented is called `gt` (greater than):
 
@@ -434,12 +455,14 @@ This would throw a validation error with following issues:
 ]
 ```
 
-Doubter halts parsing and raises an error as soon as the first issue was encountered. Sometimes you may want to collect
-all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option as seen in the example
-above.
+Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
+to collect all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option as seen in
+the example above.
 
-At this point you may be wondering what is that `meta` field of the issue object anyway? Pass a `meta` option to any
-built-in check, and it would be added to an issue.
+## Metadata
+
+You may be wondering what is the `meta` property of the issue object? Pass a `meta` option to any built-in check, and it
+would be added to an issue.
 
 ```ts
 const shape = d.number().gt(5, { meta: 'Useful data' });
@@ -453,7 +476,10 @@ if (!result.ok) {
 }
 ```
 
-## Refinements
+This comes handy if you want to enhance an issue with additional data that can be used during issues post-processing,
+such as [localization](#localization).
+
+# Refinements
 
 Refinements are a simplified checks that use a predicate to validate an input. For example, the shape below would raise
 an issue if the input string is less than three characters long.
@@ -476,7 +502,8 @@ d.string().refine(isMarsOrPluto)
 
 # Transformations
 
-Shapes can transform values. Let's consider a shape that takes a string as an input and converts it to number:
+Along with validation, shapes can transform values. Let's consider a shape that takes a string as an input and converts
+it to number:
 
 ```ts
 const shape = d.string().transform(parseFloat);
@@ -517,7 +544,7 @@ shape.parse('Seventeen');
 
 ## Async transformations
 
-Let's consider a sync transformation:
+Let's consider a _sync_ transformation:
 
 ```ts
 const shape1 = d.string().transform(
@@ -585,7 +612,7 @@ asyncShape2.async;
 // ⮕ true
 ```
 
-Shape also becomes async if it relies on a [`promise`](#promises) shape:
+Shape also becomes async if it relies on a [`promise`](#promise) shape:
 
 ```ts
 d.object({
@@ -596,7 +623,10 @@ d.object({
 
 # Parsing context
 
-Inside check and transform callbacks you can access options passed to the parser:
+Inside [check](#checks) and [transform](#transformations) callbacks you can access options passed to the parser. The
+`context` option may store arbitrary data. By default, context is `undefined`.
+
+The example below shows how you can transform numbers to formatted strings using context:
 
 ```ts
 const shape = d.number().transform(
@@ -604,13 +634,19 @@ const shape = d.number().transform(
 );
 // ⮕ Shape<number, string>
 
-shape.parse(1000, { context: { locale: 'en-US' } });
+shape.parse(
+  1000,
+  {
+    // 🟡 Pass a context during parsing
+    context: { locale: 'en-US' }
+  }
+);
 // ⮕ '1,000'
 ```
 
-# Redirections
+# Shape piping
 
-Redirections allow you to apply a shape to the output of another shape.
+With shape piping you to can pass the shape output to another shape.
 
 ```ts
 const shape1 = d.string().transform(parseFloat);
@@ -620,12 +656,21 @@ const shape2 = shape1.to(number().lt(5).gt(10));
 // ⮕ Shape<string, number>
 ```
 
-Redirections are particularly useful along with transformations since the `transform` method returns a `TransformShape`
-instance that has a generic API.
+Piping is particularly useful in conjunction with transformations and JSON. The example below shows how you can
+parse input JSON string and ensure that the output is an object:
+
+```ts
+const shape3 = d.json().to(
+  d.object({ foo: d.bigint() }).coerce()
+);
+
+shape3.parse('{"foo":"6889063"}');
+// ⮕ { foo: BigInt(6889063) }
+```
 
 # Exclude
 
-Consider an enum shape:
+Consider the enum shape:
 
 ```ts
 const shape1 = d.enum(['Mars', 'Pluto', 'Jupiter']);
@@ -655,10 +700,10 @@ shape2.parse(42);
 Exclude prohibits value at _both input and output_:
 
 ```ts
-const shape3 = d.number().transform(() => 42).exclude(42);
+const shape3 = d.number().transform(value => value * 2).exclude(42);
 // ⮕ Shape<number>
 
-shape3.parse(33);
+shape3.parse(21);
 // ❌ ValidationError: exclusion at /: Must not be equal to 42
 ```
 
@@ -703,20 +748,22 @@ shape.parse('Pluto');
 // ⮕ 'Jupiter'
 ```
 
-Note that `replace` treats passed values as literals but not all values can be literals. For example, there's no literal
-type for `NaN` values which may cause unexpected typing:
+Note that `replace` treats passed values as literals but in TypeScript type system not all values can be literals. For
+example, there's no literal type for `NaN` which may cause unexpected result:
 
 ```ts
+// 🔴 Note that the shape output is typed 0
 d.number().replace(NaN, 0);
 // ⮕ Shape<number, 0>
 ```
 
-This occurs because `typeof NaN` is `number` and it is excluded from the output type of the shape. For this particular
-case use `nan` method of number shape:
+Why is output inferred as 0 and not as a `number`? This occurs because `typeof NaN` is `number` and it is excluded from
+the output type of the shape. For this particular case use `nan` method of number shape:
 
 ```ts
+// 🟡 Note that the shape output is a number
 const shape = d.number().nan(0);
-// ⮕ Shape<number, 0>
+// ⮕ Shape<number>
 
 shape.parse(NaN);
 // ⮕ 0
@@ -731,16 +778,25 @@ d.string().optional();
 // ⮕ Shape<string | undefined>
 ```
 
-You can provide a default value, so it would be used as an output if input value is `undefined`:
+You can provide a default value of any type, so it would be used as an output if input value is `undefined`:
 
 ```ts
 d.string().optional(42);
 // ⮕ Shape<string | undefined, string | 42>
 ```
 
-As you can see, default value can have an arbitrary type.
+You can achieve the same behaviour as `optional` using a union:
 
-You can mark any shape as non-optional. For example, lets consider a union of optional string and number:
+```ts
+d.or([
+  d.string(),
+  d.undefined()
+]);
+// ⮕ Shape<string | undefined>
+```
+
+You can mark any shape as non-optional which effectively [excludes](#exclude) `undefined` values from both input and
+output. For example, lets consider a union of optional string and number:
 
 ```ts
 const shape1 = d.or([
@@ -765,7 +821,7 @@ shape2.parse(undefined);
 
 # Nullable and nullish
 
-Marking a shape as nullable allows `null` in both its input and output:
+Marking a shape as nullable allows `null` for both input and output:
 
 ```ts
 d.string().nullable();
@@ -786,38 +842,45 @@ d.string().nullish();
 // ⮕ Shape<string | null | undefined>
 ```
 
-# Fallback on error
-
-If parsing fails a shape can return a fallback value.
+`nullish` also supports the default value:
 
 ```ts
-const shape = d.string().catch('Mars');
+d.string().nullish(8080);
+// ⮕ Shape<string | null | undefined, string | 8080>
+```
 
-shape.parse('Pluto');
+# Fallback on error
+
+If issues were detected during parsing a shape can return a fallback value.
+
+```ts
+const shape1 = d.string().catch('Mars');
+
+shape1.parse('Pluto');
 // ⮕ 'Pluto'
 
-shape.parse(42);
+shape1.parse(42);
 // ⮕ 'Mars'
 ```
 
 Pass a callback as a fallback value, it would be executed every time the catch clause is reached:
 
 ```ts
-const shape = d.number().catch(Date.now);
+const shape2 = d.number().catch(Date.now);
 
-shape.parse(42)
+shape2.parse(42)
 // ⮕ 42
 
-shape.parse('Pluto');
+shape2.parse('Pluto');
 // ⮕ 1671565311528
 
-shape.parse('Mars');
+shape2.parse('Mars');
 // ⮕ 1671565326707
 ```
 
 # Localization
 
-All shapes and built-in checks support custom messages:
+All shapes factories and built-in checks support custom messages:
 
 ```ts
 d.string('Hey, string here').min(3, 'Too short');
@@ -830,8 +893,9 @@ interpolated with the param value.
 d.string().min(3, 'Minimum length is %s');
 ```
 
-Pass a function as a message, then it would receive a check param, an issue code, an input value, a metadata, and
-parsing options and should return a formatted message value. The returned formatted message can be of any type.
+Pass a function as a message, and it would receive a check param, an [issue code](#validation-errors), an input value,
+[a metadata](#metadata), and parsing options and should return a formatted message value. The returned formatted message
+can be of any type.
 
 For example, when using with React you may return a JSX element:
 
@@ -854,7 +918,7 @@ d.string().length(3, { message: 'Expected length is %s' })
 
 # Integrations
 
-Combine Doubter with any predicate library.
+How to validate an email or UUID? Combine Doubter with your favourite predicate library:
 
 ```ts
 import * as d from 'doubter';
@@ -869,7 +933,7 @@ emailShape.parse('Not an email');
 
 # Guarded functions
 
-Returns a function which parses arguments with corresponding shapes:
+Returns a function which parses arguments using provided shapes:
 
 ```ts
 const callback = d.fn([d.string(), d.boolean()], (arg1, arg2) => {
@@ -894,7 +958,7 @@ const callback = d.fn(d.string(), arg => {
 });
 ```
 
-To guard multiple functions omit the callback parameter:
+To guard multiple functions omit the callback parameter and a factory function would be returned:
 
 ```ts
 const callbackFactory = d.fn(d.string());
@@ -1251,7 +1315,7 @@ d.json();
 // ⮕ Shape<string, any>
 ```
 
-Works best with redirections:
+Works best with [shape piping](#shape-piping):
 
 ```ts
 const shape = d.json().to(
@@ -1691,7 +1755,7 @@ const shape = d.transform(parseFloat);
 // ⮕ Shape<any, number>
 ```
 
-Use `transform` in conjunction with [redirection](#redirections):
+Use `transform` in conjunction with [shape-piping](#shape-piping):
 
 ```ts
 shape.to(d.number().min(3).max(5));
