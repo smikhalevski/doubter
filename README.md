@@ -1,13 +1,30 @@
-# Doubter&ensp;🤔&ensp;[![build](https://github.com/smikhalevski/doubter/actions/workflows/master.yml/badge.svg?branch=master&event=push)](https://github.com/smikhalevski/doubter/actions/workflows/master.yml)
+<p align="center">
+  <br/>
+  <img
+    src="./images/logo.png"
+    alt="Doubter"
+    width="400"
+  />
+  <br/>
+  <br/>
+  <a href="https://github.com/smikhalevski/doubter/actions/workflows/master.yml">
+    <img
+      src="https://github.com/smikhalevski/doubter/actions/workflows/master.yml/badge.svg?branch=master&event=push"
+      alt="build"
+    />
+  </a>
+</p>
 
-No-hassle runtime validation and transformation.
+<br/>
+
+No-hassle runtime validation and transformation library.
 
 - TypeScript first;
 - Zero dependencies;
 - Sync and async validation and transformation flows;
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
-- [Just 10 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- [Just 11 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
 🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
 

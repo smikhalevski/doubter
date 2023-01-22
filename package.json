@@ -1,7 +1,7 @@
 {
   "name": "doubter",
   "version": "1.0.1",
-  "description": "No-hassle runtime type validation and parsing.",
+  "description": "No-hassle runtime validation and transformation library.",
   "main": "./lib/index.js",
   "module": "./lib/index.mjs",
   "types": "./lib/index.d.ts",
