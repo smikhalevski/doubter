@@ -51,6 +51,8 @@ npm install --save-prod doubter
 
 - [**Cookbook**](#cookbook)
 
+- [**Performance**](#performance)
+
 - **Data types**
 
     - Strings<br>
@@ -1437,6 +1439,43 @@ shape.parse({ foo: 1, bar: 2 });
 // ⮕ { FOO: 1, BAR: 2 }
 ```
 
+# Performance
+
+Validation performance was measured for the following object:
+
+```ts
+const value = {
+  a1: [1, 2, 3],
+  a2: 'foo',
+  a3: false,
+  a4: {
+    a41: 'bar',
+    a42: 3.1415
+  }
+};
+```
+
+The Doubter shape under test:
+
+```ts
+const shape = d.object({
+  a1: d.array(d.int()),
+  a2: d.string().min(3),
+  a3: d.boolean(),
+  a4: d.object({
+    a41: d.enum(['foo', 'bar']),
+    a42: d.number()
+  })
+});
+```
+
+The chart below showcases the performance comparison in terms of operation per second (greater is better). Tests were
+conducted using [TooFast](https://github.com/smikhalevski/toofast).
+
+![Parsing performance chart](./images/perf.svg)
+
+Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
+
 # Data types
 
 🔎 [API documentation is available here.](https://smikhalevski.github.io/doubter/)
@@ -2307,9 +2346,3 @@ A shape that requires an input to be `undefined` that is typed as `void`:
 d.void();
 // ⮕ Shape<void>
 ```
-
-# Performance
-
-Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
-
-![Parsing performance chart](./images/perf.svg)
