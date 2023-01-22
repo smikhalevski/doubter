@@ -982,7 +982,7 @@ emailShape.parse('Not an email');
 Returns a function which parses arguments using provided shapes:
 
 ```ts
-const callback = d.fn([d.string(), d.boolean()], (arg1, arg2) => {
+const callback = d.guard([d.string(), d.boolean()], (arg1, arg2) => {
   // arg1 is string
   // arg2 is boolean
 });
@@ -991,7 +991,7 @@ const callback = d.fn([d.string(), d.boolean()], (arg1, arg2) => {
 Or check all arguments with a shape that parses arrays:
 
 ```ts
-const callback = d.fn(d.array(d.string()), (...args) => {
+const callback = d.guard(d.array(d.string()), (...args) => {
   // args is string[]
 });
 ```
@@ -999,7 +999,7 @@ const callback = d.fn(d.array(d.string()), (...args) => {
 Or if you have a single non-array argument, you can pass its shape:
 
 ```ts
-const callback = d.fn(d.string(), arg => {
+const callback = d.guard(d.string(), arg => {
   // arg is string
 });
 ```
@@ -1007,14 +1007,14 @@ const callback = d.fn(d.string(), arg => {
 To guard multiple functions omit the callback parameter and a factory function would be returned:
 
 ```ts
-const callbackFactory = d.fn(d.string());
+const callbackFactory = d.guard(d.string());
 
 const callback = callbackFactory(arg => {
   // arg is string
 });
 ```
 
-If you are want to use async shapes to parse arguments, use `fnAsync` which has the same signatures as `fn`.
+If you are want to use async shapes to parse arguments, use `guardAsync` which has the same signatures as `guard`.
 
 # Data types
 
