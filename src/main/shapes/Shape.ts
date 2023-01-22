@@ -242,14 +242,14 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Redirects the shape output to another shape.
+   * Pipes the shape output to another shape.
    *
    * @param shape The shape that validates the output if this shape.
-   * @returns The {@linkcode RedirectShape} instance.
+   * @returns The {@linkcode PipeShape} instance.
    * @template T The output value.
    */
   to<T>(shape: Shape<O, T>): Shape<I, T> {
-    return new RedirectShape(this, shape);
+    return new PipeShape(this, shape);
   }
 
   /**
@@ -859,12 +859,9 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
  * @template I The input shape.
  * @template O The output shape.
  */
-export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<
-  I['input'],
-  O['output']
-> {
+export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
   /**
-   * Creates the new {@linkcode RedirectShape} instance.
+   * Creates the new {@linkcode PipeShape} instance.
    *
    * @param inputShape The shape that parses the input value.
    * @param outputShape The shape that parses the output of `inputShape`.
