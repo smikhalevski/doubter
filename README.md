@@ -5,8 +5,8 @@ No-hassle runtime validation and transformation.
 - TypeScript first;
 - Zero dependencies;
 - Sync and async validation and transformation flows;
-- Type coercion;
-- [High performance and low memory consumption](#performance);
+- [Human-oriented type coercion;](#type-coercion)
+- [High performance and low memory consumption;](#performance)
 - [Just 10 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
 🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
@@ -128,7 +128,7 @@ userShape.parse({
   name: 'John Belushi',
   age: 30,
 });
-// ⮕ { name: 'John Belushi', age: 31 }
+// ⮕ { name: 'John Belushi', age: 30 }
 ```
 
 If an incorrect value is provided, a validation error is thrown:
@@ -162,8 +162,8 @@ d.string();
 // ⮕ Shape<string>
 ```
 
-Shapes can have different input and output types. For example, the shape below allows strings and replaces `undefined`
-input values with a default value "Mars":
+Shapes can have different input and output types. For example, the shape below allows strings and
+[replaces `undefined`](#optional-and-non-optional) input values with a default value "Mars":
 
 ```ts
 const shape = d.string().optional('Mars');
@@ -222,12 +222,12 @@ asyncShape.parseAsync(Promise.resolve(42));
 Any shape that relies on an async shape becomes async as well:
 
 ```ts
-const otherShape = d.object({
+const objectShape = d.object({
   foo: asyncShape,
 });
 // ⮕ Shape<{ foo: Promise<number> }>
 
-otherShape.async // ⮕ true
+objectShape.async // ⮕ true
 ```
 
 # Parsing and trying
@@ -236,7 +236,7 @@ Each shape can parse input values and provides several methods for that purpose.
 
 ## `parse`
 
-You're already familiar with `parse` that takes an input value and returns an output value or throws a validation error
+You're already familiar with `parse` that takes an input value and returns an output value, or throws a validation error
 is parsing fails:
 
 ```ts
@@ -271,11 +271,11 @@ shape.parseOrDefault('Pluto', 5.3361);
 // ⮕ 5.3361
 ```
 
-`parseOrDefaultAsync` has the same semantics and returns a promise.
+Use `parseOrDefaultAsync` with [async shapes](#async-shapes). It has the same semantics and returns a promise.
 
 ## `try`
 
-It isn't always convenient to write a try-catch blocks to handle a validation errors. Use `try` method in such cases:
+It isn't always convenient to write a try-catch blocks to handle validation errors. Use `try` method in such cases:
 
 ```ts
 const shape = d.number();
@@ -288,11 +288,12 @@ shape.try('Mars');
 // ⮕ { ok: false, issues: [{ code: 'type', … }] }
 ```
 
-`tryAsync` has the same semantics and returns a promise.
+Use `tryAsync` with [async shapes](#async-shapes). It has the same semantics and returns a promise.
 
 # Validation errors
 
-Validation errors which are thrown by the `parse` method, and `Err` objects returned by the `try` method have an
+Validation errors which are thrown by the `parse*` methods, and
+[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by the `try*` methods have an
 `issues` property which holds an array of validation issues:
 
 ```ts
@@ -318,49 +319,77 @@ In the example above `result.issues` would contain a single issue:
 }]
 ```
 
-`code` is a code of the validation issue. Shapes provide [various checks](#checks) and each check has a unique code.
-In the example above, `type` code refers to a failed number type check. See the table of known codes below.
+<dl>
+<dt><code>code</code></dt>
+<dd>
 
-`path` is the object path, an array that may contain strings, numbers (for array indices and such), symbols, and any
+Is a code of the validation issue. Shapes provide [various checks](#checks) and each check has a unique code.
+In the example above, `type` code refers to a failed number type check. See the table of known codes below. You can
+add a custom check to any shape and return an issue (or throw a `ValidationError`) with your custom code.
+
+</dd>
+<dt><code>path</code></dt>
+<dd>
+
+Is the object path, an array that may contain strings, numbers (for array indices and such), symbols, and any
 other values since they can be `Map` keys.
 
-`input` is the input value that caused a validation issue. Note that if coercion is enabled this contains a coerced
-value.
+</dd>
+<dt><code>input</code></dt>
+<dd>
 
-`message` is the human-readable issue message. Refer to [Localization](#localization) section for more details.
+Is the input value that caused a validation issue. Note that if coercion is enabled this contains a coerced value.
 
-`param` is the parameter value associated with the issue. Parameter value usually depends on `code`, see the table
-below.
+</dd>
+<dt><code>message</code></dt>
+<dd>
 
-`meta` is the optional metadata associated with the issue. Refer to [Metadata](#metadata) section for more details.
+Is the human-readable issue message. Refer to [Localization](#localization) section for more details.
+
+</dd>
+<dt><code>param</code></dt>
+<dd>
+
+Is the parameter value associated with the issue. Parameter value usually depends on `code`, see the table below.
+
+</dd>
+<dt><code>meta</code></dt>
+<dd>
+
+Is the optional metadata associated with the issue. Refer to [Metadata](#metadata) section for more details.
+
+</dd>
+</dl>
+
+<br/>
 
 | Code | Caused by | Param |
 | :-- | :-- | :-- |
-| `arrayMinLength` | `d.array().min(n)` | The minimum length `n` |
-| `arrayMaxLength` | `d.array().max(n)` | The maximum length `n` |
-| `const` | `d.const(x)` | The expected constant value `x` |
-| `enum` | `d.enum([x, y, z])` | The list of unique expected values`[x, y, z]` |
+| `arrayMinLength` | [`d.array().min(n)`](#array) | The minimum length `n` |
+| `arrayMaxLength` | [`d.array().max(n)`](#array) | The maximum length `n` |
+| `const` | [`d.const(x)`](#const) | The expected constant value `x` |
+| `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
 | `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
-| `instance` | `instanceOf(Class)` | The class constructor `Class` |
-| `intersection` | `d.and(…)` | — |
-| `json` | `d.json()` | The message from `JSON.parse()` |
+| `instance` | [`instanceOf(Class)`](#instanceof) | The class constructor `Class` |
+| `intersection` | [`d.and(…)`](#intersection) | — |
+| `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
 | `predicate` | [`shape.refine(…)`](#refinements) | The callback passed to `refine`  |
-| `numberInteger` | `d.integer()` | — |
-| `numberFinite` | `d.number().finite()` | — |
-| `numberGreaterThan` | `d.number().gt(x)` | The exclusive minimum value `x` |
-| `numberGreaterThanOrEqual` | `d.number().gte(x)` | The minimum value `x` |
-| `numberLessThan` | `d.number().lt(x)` | The exclusive maximum value `x` |
-| `numberLessThanOrEqual` | `d.number().lte(x)` | The maximum value `x` |
-| `numberMultipleOf` | `d.number().multipleOf(x)` | The divisor `x` |
-| `setMinSize` | `d.set().min(n)` | The minimum size `n` |
-| `setMaxSize` | `d.set().max(n)` | The maximum size `n` |
-| `stringMinLength` | `d.string().min(n)` | The minimum length `n` |
-| `stringMaxLength` | `d.string().max(n)` | The maximum length `n` |
-| `stringRegex` | `d.string().regex(re)` | The regular expression `re` |
+| `numberInteger` | [`d.integer()`](#integer) | — |
+| `numberFinite` | [`d.number().finite()`](#number) | — |
+| `numberGreaterThan` | [`d.number().gt(x)`](#number) | The exclusive minimum value `x` |
+| `numberGreaterThanOrEqual` | [`d.number().gte(x)`](#number) | The minimum value `x` |
+| `numberLessThan` | [`d.number().lt(x)`](#number) | The exclusive maximum value `x` |
+| `numberLessThanOrEqual` | [`d.number().lte(x)`](#number) | The maximum value `x` |
+| `numberMultipleOf` | [`d.number().multipleOf(x)`](#number) | The divisor `x` |
+| `setMinSize` | [`d.set().min(n)`](#set) | The minimum size `n` |
+| `setMaxSize` | [`d.set().max(n)`](#set) | The maximum size `n` |
+| `stringMinLength` | [`d.string().min(n)`](#string) | The minimum length `n` |
+| `stringMaxLength` | [`d.string().max(n)`](#string) | The maximum length `n` |
+| `stringRegex` | [`d.string().regex(re)`](#string) | The regular expression `re` |
 | `type` | All shapes | The expected input value type [<sup>✱</sup>](#value-types) |
-| `tuple` | `d.tuple([…])` | The expected tuple length |
-| `union` | `d.or(…)` | The array of expected input value types |
-| `unknownKeys` | `d.object().exact()` | The array of unknown keys |
+| `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
+| `union` | [`d.or(…)`](#union) | The array of expected input value types [<sup>✱</sup>](#value-types) |
+| `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
 
 <a href="#value-types" name="value-types"><sup>✱</sup></a> The list of known value types:
 
@@ -388,6 +417,7 @@ to be greater than 5:
 ```ts
 const shape = d.number().check(value => {
   if (value <= 5) {
+    // 🟡 Return a partial issue
     return { code: 'kaputs' };
   }
 });
@@ -409,7 +439,7 @@ catching errors has a high performance penalty.
 
 If value is valid, a check callback must return `null` or `undefined`.
 
-Most shapes have a set of built-in checks. The check we've just implemented is called `gt` (greater than):
+Most shapes have a set of built-in checks. The check we've just implemented above is called `gt` (greater than):
 
 ```ts
 d.number().gt(5);
@@ -434,11 +464,20 @@ In the example above, a validation error would be thrown with a single issue:
 }]
 ```
 
-If you want a check to be executed even if the previous check failed, pass the `unsafe` option.
+> **Note**&ensp;You can find the list of issue codes and corresponding param values in
+> [Validation errors](#validation-errors) section.
+
+Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
+to collect all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option to a parse
+method.
+
+If you want a check to be executed even if the previous check on the shape has failed, pass the `unsafe` option to the
+check method:
 
 ```ts
 d.string()
   .max(4)
+  // 🟡 Unsafe regex check is executed even if max fails
   .regex(/a/, { unsafe: true })
   .parse('Pluto', { verbose: true });
 ```
@@ -466,14 +505,57 @@ This would throw a validation error with following issues:
 ]
 ```
 
-Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
-to collect all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option as seen in
-the example above.
+## Add, get and delete checks
+
+Let's consider the same check being added to the shape twice:
+
+```ts
+function checkEmail(value: string): Partial<d.Issue> | undefined {
+  if (!value.includes('@')) {
+    return { code: 'email' }
+  }
+}
+
+const shape = d.string().check(checkEmail).check(checkEmail);
+// ⮕ Shape<string>
+```
+
+`checkEmail` check would be added to the shape only once, because Doubter wants checks to be distinct.
+
+You can later delete a check you've added:
+
+```ts
+shape.deleteCheck(checkEmail);
+// ⮕ Shape<string>
+```
+
+Using a check callback as an identity isn't always convenient, in this case, you can pass a `key` option to the check:
+
+```ts
+shape.check(checkEmail, { key: 'okay' });
+// ⮕ Shape<string>
+```
+
+Now you should use the key you provided to delete the check:
+
+```ts
+shape.deleteCheck('okay');
+// ⮕ Shape<string>
+```
+
+You can retrieve a check by its key. If `key` option was omitted, the check callback identity is used as a key:
+
+```ts
+shape.check(checkEmail);
+
+shape.getCheck(checkEmail);
+// ⮕ { callback: checkEmail, unsafe: false, param: undefined }
+```
 
 ## Metadata
 
-You may be wondering what is the `meta` property of the issue object? Pass a `meta` option to any built-in check, and it
-would be added to an issue.
+Built-in checks allow passing the `meta` option. The value of this option is later assigned to the `meta` property of
+the raised [validation issue](#validation-errors).
 
 ```ts
 const shape = d.number().gt(5, { meta: 'Useful data' });
@@ -487,8 +569,8 @@ if (!result.ok) {
 }
 ```
 
-This comes handy if you want to enhance an issue with additional data that can be used during issues post-processing,
-such as [localization](#localization).
+This comes handy if you want to enhance an issue with additional data that can be used later during issues processing.
+For example, during [localization](#localization).
 
 # Refinements
 
