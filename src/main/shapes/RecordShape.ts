@@ -68,7 +68,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -134,7 +134,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         resolve(this._typeIssueFactory(input, options));

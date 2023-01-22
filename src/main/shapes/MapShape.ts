@@ -1,6 +1,15 @@
 import { AnyShape, ApplyResult, ValueType } from './Shape';
 import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createIssueFactory, isArray, isEqual, isObjectLike, ok, unshiftPath } from '../utils';
+import {
+  concatIssues,
+  createIssueFactory,
+  isArray,
+  isEqual,
+  isIterable,
+  isObjectLike,
+  ok,
+  unshiftPath,
+} from '../utils';
 import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -217,8 +226,13 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
    *
    * @param value The non-`Map` value to coerce.
    */
-  protected _coerceEntries(value: unknown): [unknown, unknown][] | null {
+  protected _coerceEntries(value: any): [unknown, unknown][] | null {
     if (isArray(value)) {
+      return value.every(isEntry) ? value : null;
+    }
+    if (isIterable(value)) {
+      value = Array.from(value);
+
       return value.every(isEntry) ? value : null;
     }
     if (isObjectLike(value)) {
@@ -228,6 +242,6 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
   }
 }
 
-function isEntry(value: unknown): boolean {
+function isEntry(value: unknown): value is [unknown, unknown] {
   return isArray(value) && value.length === 2;
 }

@@ -331,7 +331,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
     if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -342,7 +342,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
         resolve(this._typeIssueFactory(input, options));

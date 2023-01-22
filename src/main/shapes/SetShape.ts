@@ -1,6 +1,16 @@
 import { AnyShape, ApplyResult, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { concatIssues, createIssueFactory, isArray, isEqual, ok, setCheck, toArrayIndex, unshiftPath } from '../utils';
+import {
+  concatIssues,
+  createIssueFactory,
+  isArray,
+  isEqual,
+  isIterable,
+  ok,
+  setCheck,
+  toArrayIndex,
+  unshiftPath,
+} from '../utils';
 import {
   CODE_SET_MAX,
   CODE_SET_MIN,
@@ -50,26 +60,26 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
   /**
    * Constrains the set size.
    *
-   * @param length The minimum set size.
+   * @param size The minimum set size.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  size(length: number, options?: ConstraintOptions | Message): this {
-    return this.min(length, options).max(length, options);
+  size(size: number, options?: ConstraintOptions | Message): this {
+    return this.min(size, options).max(size, options);
   }
 
   /**
    * Constrains the minimum set size.
    *
-   * @param length The minimum set size.
+   * @param size The minimum set size.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  min(length: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, length);
+  min(size: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-    return setCheck(this, CODE_SET_MIN, options, length, (input, options) => {
-      if (input.size < length) {
+    return setCheck(this, CODE_SET_MIN, options, size, (input, options) => {
+      if (input.size < size) {
         return issueFactory(input, options);
       }
     });
@@ -78,15 +88,15 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
   /**
    * Constrains the maximum set size.
    *
-   * @param length The maximum set size.
+   * @param size The maximum set size.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  max(length: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, length);
+  max(size: number, options?: ConstraintOptions | Message): this {
+    const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-    return setCheck(this, CODE_SET_MAX, options, length, (input, options) => {
-      if (input.size > length) {
+    return setCheck(this, CODE_SET_MAX, options, size, (input, options) => {
+      if (input.size > size) {
         return issueFactory(input, options);
       }
     });
@@ -217,15 +227,11 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
    *
    * @param value The non-`Set` value to coerce.
    */
-  protected _coerceValues(value: any): unknown[] | null {
+  protected _coerceValues(value: unknown): unknown[] | null {
     if (isArray(value)) {
       return value;
     }
-    if (
-      value !== null &&
-      typeof value === 'object' &&
-      (typeof value[Symbol.iterator] === 'function' || typeof value.length === 'number')
-    ) {
+    if (isIterable(value)) {
       return Array.from(value);
     }
     return [value];
