@@ -16,3 +16,9 @@ const brandedShape = d.any<string>().brand();
 expectType<typeof brandedShape['output']>(brandedShape.output);
 
 expectNotType<typeof brandedShape['output']>('aaa');
+
+expectType<number | undefined>(d.number().catch().output);
+
+expectType<number | 'aaa'>(d.number().catch('aaa').output);
+
+expectType<number | 'aaa'>(d.number().catch(() => 'aaa').output);

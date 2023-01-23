@@ -388,7 +388,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish<T>(defaultValue?: T): OpaqueReplaceShape<this, null | undefined, T>;
+  nullish<T extends Literal>(defaultValue?: T): OpaqueReplaceShape<this, null | undefined, T>;
 
   nullish(defaultValue?: any) {
     return this.nullable(arguments.length === 0 ? null : defaultValue).optional(defaultValue);
@@ -405,12 +405,21 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Returns `undefined` if parsing fails.
+   *
+   * @returns The {@linkcode CatchShape} instance.
+   */
+  catch(): Shape<I, O | undefined>;
+
+  /**
    * Returns the fallback value if parsing fails.
    *
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
    * @returns The {@linkcode CatchShape} instance.
    */
-  catch(fallback: O | (() => O)): Shape<I, O> {
+  catch<T extends Literal>(fallback: T | (() => T)): Shape<I, O | T>;
+
+  catch(fallback?: unknown): Shape {
     return new CatchShape(this, fallback);
   }
 
@@ -1177,8 +1186,8 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
  *
  * @template S The shape that parses the input.
  */
-export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
-  private _resultProvider: () => Ok<S['output']>;
+export class CatchShape<S extends AnyShape, T> extends Shape<S['input'], S['output'] | T> {
+  private _resultProvider: () => Ok<T>;
 
   /**
    * Creates the new {@linkcode CatchShape} instance.
@@ -1195,7 +1204,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     /**
      * The value or a callback that returns a value that is returned if parsing has failed.
      */
-    readonly fallback: S['output'] | (() => S['output'])
+    readonly fallback: T | (() => T)
   ) {
     super();
 
@@ -1219,7 +1228,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     return this.shape['_getInputValues']();
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output']> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | T> {
     const { _applyChecks } = this;
 
     let result = this.shape['_apply'](input, options);
@@ -1239,7 +1248,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | T>> {
     const { _applyChecks } = this;
 
     return this.shape['_applyAsync'](input, options).then(result => {
