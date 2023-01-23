@@ -1,17 +1,10 @@
 <p align="center">
   <br/>
-  <img
-    src="./images/logo.png"
-    alt="Doubter"
-    width="400"
-  />
+  <img src="./images/logo.png" alt="Doubter" width="400"/>
   <br/>
   <br/>
   <a href="https://github.com/smikhalevski/doubter/actions/workflows/master.yml">
-    <img
-      src="https://github.com/smikhalevski/doubter/actions/workflows/master.yml/badge.svg?branch=master&event=push"
-      alt="build"
-    />
+    <img src="https://github.com/smikhalevski/doubter/actions/workflows/master.yml/badge.svg?branch=master&event=push" alt="build"/>
   </a>
 </p>
 
@@ -24,7 +17,7 @@ No-hassle runtime validation and transformation library.
 - Sync and async validation and transformation flows;
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
-- [Just 11 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- [Just 10 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
 🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
 
@@ -50,7 +43,7 @@ npm install --save-prod doubter
     - [Nullable and nullish](#nullable-and-nullish)
     - [Fallback value](#fallback-value)
     - [Branded types](#branded-types)
-    - [Shape at key](#shape-at-key)
+    - [Sub-shape at key](#sub-shape-at-key)
     - [Localization](#localization)
     - [Integrations](#integrations)
     - [Guarded functions](#guarded-functions)
@@ -67,7 +60,10 @@ npm install --save-prod doubter
     - [Coerce to `Map`](#coerce-to-map)
     - [Coerce to `Set`](#coerce-to-set)
 
-- [**Cookbook**](#cookbook)
+- **Cookbook**
+
+    - [Rename object keys](#rename-object-keys)
+    - [Type-safe query params](#type-safe-query-params)
 
 - [**Performance**](#performance)
 
@@ -85,6 +81,7 @@ npm install --save-prod doubter
 
     - Booleans<br>
       [`boolean`](#boolean)
+      [`bool`](#boolean)
 
     - Symbols<br>
       [`symbol`](#symbol)
@@ -140,7 +137,7 @@ const userShape = d.object({
   name: d.string(),
   age: d.int().gte(18).lt(100)
 });
-// ⮕ Shape<{ username: string, age: number }>
+// ⮕ Shape<{ name: string, age: number }>
 ```
 
 This shape can be used to validate a value:
@@ -148,7 +145,7 @@ This shape can be used to validate a value:
 ```ts
 userShape.parse({
   name: 'John Belushi',
-  age: 30,
+  age: 30
 });
 // ⮕ { name: 'John Belushi', age: 30 }
 ```
@@ -158,7 +155,7 @@ If an incorrect value is provided, a validation error is thrown:
 ```ts
 userShape.parse({
   name: 'Peter Parker',
-  age: 17,
+  age: 17
 });
 // ❌ ValidationError: numberGreaterThanOrEqual at /age: Must be greater than or equal to 18
 ```
@@ -170,7 +167,7 @@ type User = typeof userShape['output'];
 
 const user: User = {
   name: 'Dan Aykroyd',
-  age: 27,
+  age: 27
 };
 ```
 
@@ -201,9 +198,6 @@ shape.parse(undefined);
 Infer the input and output types of the shape:
 
 ```ts
-const shape = d.string().optional('Mars');
-// ⮕ Shape<string | undefined, string>
-
 type ShapeInput = typeof shape['input'];
 // ⮕ string | undefined
 
@@ -213,8 +207,9 @@ type ShapeOutput = typeof shape['output'];
 
 ## Async shapes
 
-[Transformations](#transformations) and reliance on [promise shapes](#promise) make your shapes async. Here's a shape of
-a promise that is expected to be fulfilled with a number:
+[Transformations](#transformations) and reliance on [promise shapes](#promise) make your shapes async.
+
+Here's a shape of a promise that is expected to be fulfilled with a number:
 
 ```ts
 const asyncShape = d.promise(d.number());
@@ -224,8 +219,7 @@ const asyncShape = d.promise(d.number());
 You can check that the shape is async:
 
 ```ts
-asyncShape.async;
-// ⮕ true
+asyncShape.async // ⮕ true
 ```
 
 Async shapes don't support synchronous `parse` method, and would throw an error if it is called:
@@ -246,17 +240,28 @@ Any shape that relies on an async shape becomes async as well:
 
 ```ts
 const objectShape = d.object({
-  foo: asyncShape,
+  foo: asyncShape
 });
 // ⮕ Shape<{ foo: Promise<number> }>
 
-objectShape.async;
-// ⮕ true
+objectShape.async // ⮕ true
 ```
 
 # Parsing and trying
 
-Each shape can parse input values and provides several methods for that purpose.
+Each shape can parse input values and there are several methods for that purpose.
+
+Methods listed in this section can be safely detached from the shape instance:
+
+```ts
+const { parseOrDefault } = d.string();
+
+parseOrDefault('Jill');
+// ⮕ 'Jill'
+
+parseOrDefault(42);
+// ⮕ undefined
+```
 
 ## `parse`
 
@@ -274,8 +279,7 @@ shape.parse('Mars');
 // ❌ ValidationError: type at /: Must be a number
 ```
 
-`parseAsync` works the same way but returns a promise that is eiter fulfilled with an output value or rejects with a
-validation error.
+Use `parseAsync` with [async shapes](#async-shapes). It has the same semantics and returns a promise.
 
 ## `parseOrDefault`
 
@@ -294,6 +298,8 @@ shape.parseOrDefault('Mars');
 shape.parseOrDefault('Pluto', 5.3361);
 // ⮕ 5.3361
 ```
+
+If you need a fallback value for a nested shape [consider using `catch`](#fallback-value).
 
 Use `parseOrDefaultAsync` with [async shapes](#async-shapes). It has the same semantics and returns a promise.
 
@@ -317,13 +323,11 @@ Use `tryAsync` with [async shapes](#async-shapes). It has the same semantics and
 # Validation errors
 
 Validation errors which are thrown by the `parse*` methods, and
-[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by the `try*` methods have an
+[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by the `try*` methods have the
 `issues` property which holds an array of validation issues:
 
 ```ts
-const shape = d.object({
-  age: d.number()
-});
+const shape = d.object({ age: d.number() });
 // ⮕ Shape<{ age: number }>
 
 const result = shape.try({ age: 'Seventeen' });
@@ -347,22 +351,23 @@ In the example above `result.issues` would contain a single issue:
 <dt><code>code</code></dt>
 <dd>
 
-Is a code of the validation issue. Shapes provide [various checks](#checks) and each check has a unique code.
+Is the code of the validation issue. Shapes provide various checks and each check has a unique code.
 In the example above, `type` code refers to a failed number type check. See the table of known codes below. You can
-add a custom check to any shape and return an issue (or throw a `ValidationError`) with your custom code.
+add [a custom check](#checks) to any shape and return an issue with your custom code.
 
 </dd>
 <dt><code>path</code></dt>
 <dd>
 
-Is the object path, an array that may contain strings, numbers (for array indices and such), symbols, and any
-other values since they can be `Map` keys.
+Is the object path, represented as an array that may contain strings, numbers (array indices and such), symbols, and
+any other values (since they can be `Map` keys).
 
 </dd>
 <dt><code>input</code></dt>
 <dd>
 
-Is the input value that caused a validation issue. Note that if coercion is enabled this contains a coerced value.
+Is the input value that caused a validation issue. Note that if [coercion](#type-coercion) is enabled this contains a
+coerced value.
 
 </dd>
 <dt><code>message</code></dt>
@@ -389,8 +394,8 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 
 | Code | Caused by | Param |
 | :-- | :-- | :-- |
-| `arrayMinLength` | [`d.array().min(n)`](#array) | The minimum length `n` |
-| `arrayMaxLength` | [`d.array().max(n)`](#array) | The maximum length `n` |
+| `arrayMinLength` | [`d.array().min(n)`](#array) | The minimum array length `n` |
+| `arrayMaxLength` | [`d.array().max(n)`](#array) | The maximum array length `n` |
 | `const` | [`d.const(x)`](#const) | The expected constant value `x` |
 | `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
 | `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
@@ -405,10 +410,10 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `numberLessThan` | [`d.number().lt(x)`](#number) | The exclusive maximum value `x` |
 | `numberLessThanOrEqual` | [`d.number().lte(x)`](#number) | The maximum value `x` |
 | `numberMultipleOf` | [`d.number().multipleOf(x)`](#number) | The divisor `x` |
-| `setMinSize` | [`d.set().min(n)`](#set) | The minimum size `n` |
-| `setMaxSize` | [`d.set().max(n)`](#set) | The maximum size `n` |
-| `stringMinLength` | [`d.string().min(n)`](#string) | The minimum length `n` |
-| `stringMaxLength` | [`d.string().max(n)`](#string) | The maximum length `n` |
+| `setMinSize` | [`d.set().min(n)`](#set) | The minimum `Set` size `n` |
+| `setMaxSize` | [`d.set().max(n)`](#set) | The maximum `Set` size `n` |
+| `stringMinLength` | [`d.string().min(n)`](#string) | The minimum string length `n` |
+| `stringMaxLength` | [`d.string().max(n)`](#string) | The maximum string length `n` |
 | `stringRegex` | [`d.string().regex(re)`](#string) | The regular expression `re` |
 | `type` | All shapes | The expected input value type <a href="#value-types"><sup>✱</sup></a> |
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
@@ -439,7 +444,7 @@ Checks allow constraining the input value beyond type assertions. For example, i
 to be greater than 5:
 
 ```ts
-const shape = d.number().check(value => {
+const shape1 = d.number().check(value => {
   if (value <= 5) {
     // 🟡 Return a partial issue
     return { code: 'kaputs' };
@@ -447,19 +452,19 @@ const shape = d.number().check(value => {
 });
 // ⮕ Shape<number>
 
-shape.parse(10);
+shape1.parse(10);
 // ⮕ 10
 
-shape.parse(3);
+shape1.parse(3);
 // ❌ ValidationError: kaputs at /
 ```
 
 A check callback receives an input value and returns a partial issue or an array of partial issues if the value is
 invalid.
 
-Check callbacks can safely throw a `ValidationError` to notify Doubter that parsing issues occurred. While this has the
-same effect as returning an array of issues, it is recommended to throw a `ValidationError` as the last resort since
-catching errors has a high performance penalty.
+> **Note**&ensp; Check callbacks can safely throw a `ValidationError` to notify Doubter that parsing issues occurred.
+> While this has the same effect as returning an array of issues, it is recommended to throw a `ValidationError` as the
+> last resort since catching errors has a high performance penalty.
 
 If value is valid, a check callback must return `null` or `undefined`.
 
@@ -499,14 +504,16 @@ If you want a check to be executed even if the previous check on the shape has f
 check method:
 
 ```ts
-d.string()
+const shape2 = d.string()
   .max(4)
   // 🟡 Unsafe regex check is executed even if max fails
-  .regex(/a/, { unsafe: true })
-  .parse('Pluto', { verbose: true });
+  .regex(/a/, { unsafe: true });
+
+shape.parse('Pluto', { verbose: true });
+// ❌ ValidationError
 ```
 
-This would throw a validation error with following issues:
+The validation error contains following issues:
 
 ```ts
 [
@@ -525,7 +532,7 @@ This would throw a validation error with following issues:
     message: 'Must regex the pattern /a/',
     param: /a/,
     meta: undefied
-  },
+  }
 ]
 ```
 
@@ -534,33 +541,33 @@ This would throw a validation error with following issues:
 Let's consider the same check being added to the shape twice:
 
 ```ts
-function checkEmail(value: string): Partial<d.Issue> | undefined {
+const emailCheck: d.CheckCallback = (value, options) => {
   if (!value.includes('@')) {
-    return { code: 'email' }
+    return { code: 'email' };
   }
-}
+};
 
-const shape = d.string().check(checkEmail).check(checkEmail);
+const shape = d.string().check(emailCheck).check(emailCheck);
 // ⮕ Shape<string>
 ```
 
-`checkEmail` check would be added to the shape only once, because Doubter wants checks to be distinct.
+`emailCheck` check would be added to the shape only once, because Doubter makes checks to be distinct.
 
 You can later delete a check you've added:
 
 ```ts
-shape.deleteCheck(checkEmail);
+shape.deleteCheck(emailCheck);
 // ⮕ Shape<string>
 ```
 
-Using a check callback as an identity isn't always convenient, in this case, you can pass a `key` option to the check:
+Using a check callback as an identity isn't always convenient, so you can pass a `key` option:
 
 ```ts
-shape.check(checkEmail, { key: 'okay' });
+shape.check(emailCheck, { key: 'okay' });
 // ⮕ Shape<string>
 ```
 
-Now you should use the key you provided to delete the check:
+Now you should use this key to delete the check:
 
 ```ts
 shape.deleteCheck('okay');
@@ -570,10 +577,10 @@ shape.deleteCheck('okay');
 You can retrieve a check by its key. If `key` option was omitted, the check callback identity is used as a key:
 
 ```ts
-shape.check(checkEmail);
+shape.check(emailCheck);
 
-shape.getCheck(checkEmail);
-// ⮕ { callback: checkEmail, unsafe: false, param: undefined }
+shape.getCheck(emailCheck);
+// ⮕ { callback: emailCheck, unsafe: false, param: undefined }
 ```
 
 ## Metadata
@@ -593,8 +600,8 @@ if (!result.ok) {
 }
 ```
 
-This comes handy if you want to enhance an issue with additional data that can be used later during issues processing.
-For example, during [localization](#localization).
+This comes handy if you want to enhance an issue with an additional data that can be used later during issues
+processing. For example, during [localization](#localization).
 
 # Refinements
 
@@ -664,39 +671,37 @@ shape.parse('Seventeen');
 Let's consider a _sync_ transformation:
 
 ```ts
-const shape1 = d.string().transform(
+const syncShape1 = d.string().transform(
   value => 'Hello, ' + value
 );
 // ⮕ Shape<string>
 
-shape1.async;
-// ⮕ false
+syncShape1.async // ⮕ false
 
-shape1.parse('Jill');
+syncShape1.parse('Jill');
 // ⮕ 'Hello, Jill'
 ```
 
-The transformation callback receives and returns a string and so does `shape1`.
+The transformation callback receives and returns a string and so does `syncShape1`.
 
 Now lets return a promise from the transformation callback:
 
 ```ts
-const shape2 = d.string().transform(
+const syncShape2 = d.string().transform(
   value => Promise.resolve('Hello, ' + value)
 );
 // ⮕ Shape<string, Promise<string>>
 
-shape2.async;
-// ⮕ false
+syncShape2.async // ⮕ false
 
-shape2.parse('Jill');
+syncShape2.parse('Jill');
 // ⮕ Promise<string>
 ```
 
-Notice that `shape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `shape2` is
-still sync, since the transformation callback _synchronously wraps_ a value in a promise.
+Notice that `syncShape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `syncShape2`
+is still sync, since the transformation callback _synchronously wraps_ a value in a promise.
 
-Now let's create an async shape using the async transformation:
+Now let's create an _async_ shape using the async transformation:
 
 ```ts
 const asyncShape1 = d.string().transformAsync(
@@ -705,8 +710,7 @@ const asyncShape1 = d.string().transformAsync(
 // ⮕ Shape<string>
 
 // 🟡 Notice that the shape is async
-asyncShape1.async;
-// ⮕ true
+asyncShape1.async // ⮕ true
 
 await asyncShape1.parseAsync('Jill');
 // ⮕ 'Hello, Jill'
@@ -725,23 +729,24 @@ const asyncShape2 = d.object({
 });
 // ⮕ Shape<{ foo: string }>
 
-asyncShape2.async;
-// ⮕ true
+asyncShape2.async // ⮕ true
 ```
 
-Shape also becomes async if it relies on a [`promise`](#promise) shape:
-
-```ts
-d.object({
-  foo: d.promise(d.string())
-});
-// ⮕ Shape<{ foo: Promise<string> }>
-```
+> **Note**&ensp;Composite shapes are async if they rely on a [`promise`](#promise) shape:
+>
+> ```ts
+> const shape = d.object({
+>   foo: d.promise(d.string())
+> });
+> // ⮕ Shape<{ foo: Promise<string> }>
+> 
+> shape.async // ⮕ true
+> ```
 
 # Parsing context
 
 Inside [check](#checks) and [transform](#transformations) callbacks you can access options passed to the parser. The
-`context` option may store arbitrary data. By default, context is `undefined`.
+`context` option may store arbitrary data, which is `undefined` by default.
 
 The example below shows how you can transform numbers to formatted strings using context:
 
@@ -754,7 +759,7 @@ const shape = d.number().transform(
 shape.parse(
   1000,
   {
-    // 🟡 Pass a context during parsing
+    // 🟡 Pass a context
     context: { locale: 'en-US' }
   }
 );
@@ -769,7 +774,7 @@ With shape piping you to can pass the shape output to another shape.
 const shape1 = d.string().transform(parseFloat);
 // ⮕ Shape<string, number>
 
-const shape2 = shape1.to(number().lt(5).gt(10));
+shape1.to(number().lt(5).gt(10));
 // ⮕ Shape<string, number>
 ```
 
@@ -777,11 +782,11 @@ Piping is particularly useful in conjunction with [transformations](#transformat
 example below shows how you can parse input JSON string and ensure that the output is an object:
 
 ```ts
-const shape3 = d.json().to(
+const shape2 = d.json().to(
   d.object({ foo: d.bigint() }).coerce()
 );
 
-shape3.parse('{"foo":"6889063"}');
+shape2.parse('{"foo":"6889063"}');
 // ⮕ { foo: BigInt(6889063) }
 ```
 
@@ -845,7 +850,7 @@ shape.parse(2);
 shape.parse(100);
 // ⮕ Shape<100>
 
-// 🟡 Notice that parsed value doesn't satisfy the number type constraint
+// 🟡 Notice that parsed value doesn't satisfy the number type and gt constraints
 shape.parse('Seventeen');
 // ⮕ 'Seventeen'
 ```
@@ -869,7 +874,7 @@ Note that `replace` treats passed values as literals but in TypeScript type syst
 example, there's no literal type for `NaN` which may cause unexpected result:
 
 ```ts
-// 🔴 Note that the shape output is typed 0
+// 🔴 Note that the shape output is unexpectedly typed as 0
 d.number().replace(NaN, 0);
 // ⮕ Shape<number, 0>
 ```
@@ -912,8 +917,15 @@ d.or([
 // ⮕ Shape<string | undefined>
 ```
 
-You can mark any shape as non-optional which effectively [excludes](#exclude) `undefined` values from both input and
-output. For example, lets consider a union of optional string and number:
+Or using an inclusion:
+
+```ts
+d.string().include(undefined);
+// ⮕ Shape<string | undefined>
+```
+
+You can mark any shape as non-optional which effectively [excludes `undefined`](#exclude) values from both input and
+output. For example, lets consider a union of an optional string and a number:
 
 ```ts
 const shape1 = d.or([
@@ -952,7 +964,7 @@ d.string().nullable(42);
 // ⮕ Shape<string | null, string | 42>
 ```
 
-To allow both `null` and `undefined` values an input use `nullish`:
+To allow both `null` and `undefined` values use `nullish`:
 
 ```ts
 d.string().nullish();
@@ -1041,7 +1053,7 @@ plain/unbranded data structures are no longer assignable to the inferred type of
 
 Note that branded types do not affect the runtime result of `parse`. It is a static-only construct.
 
-# Shape at key
+# Sub-shape at key
 
 Object, array, union ond other shapes provide access to their nested shapes:
 
@@ -1052,17 +1064,15 @@ const objectShape = d.object({
 });
 // ⮕ Shape<{ name: string, age: number }>
 
-objectShape.shapes.name;
-// ⮕ Shape<number>
+objectShape.shapes.name // ⮕ Shape<number>
 
 const unionShape = d.or([d.string(), objectShape]);
 // ⮕ Shape<string | { name: string, age: number }>
 
-unionShape.shapes[1];
-// ⮕ objectShape
+unionShape.shapes[1] // ⮕ objectShape
 ```
 
-`at` method derives a shape at a given key, and if there's no key `null` is returned:
+`at` method derives a sub-shape at the given key, and if there's no key `null` is returned:
 
 ```ts
 objectShape.at('age');
@@ -1072,15 +1082,15 @@ objectShape.at('unknownKey');
 // ⮕ null
 ```
 
-This works with composite shapes:
+This is especially useful with composite shapes:
 
 ```ts
 const shape = d.or([
   d.object({
-    foo: d.string(),
+    foo: d.string()
   }),
   d.object({
-    foo: d.number(),
+    foo: d.number()
   })
 ]);
 
@@ -1093,7 +1103,7 @@ shape.at('bar')
 
 # Localization
 
-All shapes factories and built-in checks support custom messages:
+All shape factories and built-in checks support custom issue messages:
 
 ```ts
 d.string('Hey, string here').min(3, 'Too short');
@@ -1113,14 +1123,13 @@ can be of any type.
 For example, when using with React you may return a JSX element:
 
 ```tsx
-d.number().gt(
-  5,
-  (param, code, input, meta, options) => (
-    <span style={{ color: 'red' }}>
-      Minimum length is {param}
-    </span>
-  )
+const gtMessage: d.Message = (param, code, input, meta, options) => (
+  <span style={{ color: 'red' }}>
+    Minimum length is {param}
+  </span>
 );
+
+d.number().gt(5, gtMessage);
 ```
 
 All rules described above are applied to the `message` option as well:
@@ -1188,8 +1197,11 @@ If you are want to use async shapes to parse arguments, use `guardAsync` which h
 
 # Type coercion
 
-When type coercion is enabled, input values can be implicitly converted to the required input type. For example, coerce
-input values to string:
+Type coercion is the process of converting value from one type to another (such as string to number, array to `Set`,
+and so on).
+
+When coercion is enabled, input values are implicitly converted to the required input type whenever possible.
+For example, you can coerce input values to string type:
 
 ```ts
 const shape1 = d.string().coerce();
@@ -1220,7 +1232,7 @@ shape2.parse(
 // ⮕ { name: 'Jake', birthday: new Date(-660700800000) }
 ```
 
-Coercion rules differ from JavaScript so the behavior is more predictable and evident.
+Coercion rules differ from JavaScript so the behavior is more predictable and human-like.
 
 ## Coerce to string
 
@@ -1494,7 +1506,9 @@ shape.parse('J');
 
 # Cookbook
 
-Rename record keys using a transformation:
+Tasty recipes from the chef!
+
+## Rename object keys
 
 ```ts
 const keyShape = d.enum(['foo', 'bar']).transform(
@@ -1509,7 +1523,34 @@ shape.parse({ foo: 1, bar: 2 });
 // ⮕ { FOO: 1, BAR: 2 }
 ```
 
+## Type-safe query params
+
+```ts
+import qs from 'qs';
+
+const queryShape = d.object({
+  name: d.string().optional().catch(),
+  age: d.int().coerce().gt(0).optional().catch()
+});
+// ⮕ Shape<{ name: string | undefined, age: number | undefined }>
+
+queryShape.parse(qs.parse('name=Frodo&age=50'));
+// ⮕ { name: 'Frodo', age: 50 }
+
+queryShape.parse(qs.parse('age=-33'));
+// ⮕ { age: undefined }
+```
+
 # Performance
+
+The chart below showcases the performance comparison in terms of millions of operations per second (greater is better).
+Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast).
+
+<p align="center">
+  <img src="./images/perf.svg" alt="Performance comparison chart"/>
+</p>
+
+Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
 
 Validation performance was measured for the following object:
 
@@ -1538,13 +1579,6 @@ const shape = d.object({
   })
 });
 ```
-
-The chart below showcases the performance comparison in terms of operation per second (greater is better). Tests were
-conducted using [TooFast](https://github.com/smikhalevski/toofast).
-
-![Parsing performance chart](./images/perf.svg)
-
-Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
 
 # Data types
 
