@@ -50,6 +50,7 @@ npm install --save-prod doubter
     - [Nullable and nullish](#nullable-and-nullish)
     - [Fallback value](#fallback-value)
     - [Branded types](#branded-types)
+    - [Shape at key](#shape-at-key)
     - [Localization](#localization)
     - [Integrations](#integrations)
     - [Guarded functions](#guarded-functions)
@@ -223,7 +224,8 @@ const asyncShape = d.promise(d.number());
 You can check that the shape is async:
 
 ```ts
-asyncShape.async // ⮕ true
+asyncShape.async;
+// ⮕ true
 ```
 
 Async shapes don't support synchronous `parse` method, and would throw an error if it is called:
@@ -248,7 +250,8 @@ const objectShape = d.object({
 });
 // ⮕ Shape<{ foo: Promise<number> }>
 
-objectShape.async // ⮕ true
+objectShape.async;
+// ⮕ true
 ```
 
 # Parsing and trying
@@ -1037,6 +1040,56 @@ Under the hood, this works by attaching a "brand" to the inferred type using an 
 plain/unbranded data structures are no longer assignable to the inferred type of the shape.
 
 Note that branded types do not affect the runtime result of `parse`. It is a static-only construct.
+
+# Shape at key
+
+Object, array, union ond other shapes provide access to their nested shapes:
+
+```ts
+const objectShape = d.object({
+  name: d.string(),
+  age: d.number()
+});
+// ⮕ Shape<{ name: string, age: number }>
+
+objectShape.shapes.name;
+// ⮕ Shape<number>
+
+const unionShape = d.or([d.string(), objectShape]);
+// ⮕ Shape<string | { name: string, age: number }>
+
+unionShape.shapes[1];
+// ⮕ objectShape
+```
+
+`at` method derives a shape at a given key, and if there's no key `null` is returned:
+
+```ts
+objectShape.at('age');
+// ⮕ Shape<number>
+
+objectShape.at('unknownKey');
+// ⮕ null
+```
+
+This works with composite shapes:
+
+```ts
+const shape = d.or([
+  d.object({
+    foo: d.string(),
+  }),
+  d.object({
+    foo: d.number(),
+  })
+]);
+
+shape.at('foo')
+// ⮕ Shape<string | number>
+
+shape.at('bar')
+// ⮕ null
+```
 
 # Localization
 
