@@ -9,6 +9,14 @@ expectType<number>(d.number().replace(222, 'aaa').input);
 
 expectType<number | 'aaa'>(d.number().replace(222, 'aaa').output);
 
+expectType<number>(d.number().replace(NaN, 0).input);
+
+expectType<0>(d.number().replace(NaN, 0).output);
+
 expectType<number>(d.number().nan().output);
 
 expectType<number>(d.number().include(Infinity).output);
+
+expectType<number>(d.number().exclude(111).input);
+
+expectType<number>(d.number().exclude(111).output);

@@ -6,6 +6,7 @@ import {
   isArray,
   isAsyncShapes,
   isEqual,
+  isIterable,
   ok,
   setCheck,
   toArrayIndex,
@@ -311,12 +312,8 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    *
    * @param value The non-array value to coerce.
    */
-  protected _coerce(value: any): any[] | null {
-    if (
-      value !== null &&
-      typeof value === 'object' &&
-      (typeof value[Symbol.iterator] === 'function' || typeof value.length === 'number')
-    ) {
+  protected _coerce(value: unknown): unknown[] | null {
+    if (isIterable(value)) {
       return Array.from(value);
     }
     return [value];

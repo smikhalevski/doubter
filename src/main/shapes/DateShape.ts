@@ -1,6 +1,6 @@
 import { ApplyResult, ValueType } from './Shape';
 import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok } from '../utils';
+import { createIssueFactory, isArray, isDate, ok } from '../utils';
 import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -59,8 +59,4 @@ export class DateShape extends CoercibleShape<Date> {
     }
     return null;
   }
-}
-
-function isDate(value: unknown): value is Date {
-  return value instanceof Date && (value = value.getTime()) === value;
 }

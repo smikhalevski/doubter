@@ -242,14 +242,14 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Redirects the shape output to another shape.
+   * Pipes the shape output to another shape.
    *
    * @param shape The shape that validates the output if this shape.
-   * @returns The {@linkcode RedirectShape} instance.
+   * @returns The {@linkcode PipeShape} instance.
    * @template T The output value.
    */
   to<T>(shape: Shape<O, T>): Shape<I, T> {
-    return new RedirectShape(this, shape);
+    return new PipeShape(this, shape);
   }
 
   /**
@@ -388,7 +388,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish<T>(defaultValue?: T): OpaqueReplaceShape<this, null | undefined, T>;
+  nullish<T extends Literal>(defaultValue?: T): OpaqueReplaceShape<this, null | undefined, T>;
 
   nullish(defaultValue?: any) {
     return this.nullable(arguments.length === 0 ? null : defaultValue).optional(defaultValue);
@@ -405,12 +405,21 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Returns `undefined` if parsing fails.
+   *
+   * @returns The {@linkcode CatchShape} instance.
+   */
+  catch(): Shape<I, O | undefined>;
+
+  /**
    * Returns the fallback value if parsing fails.
    *
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
    * @returns The {@linkcode CatchShape} instance.
    */
-  catch(fallback: O | (() => O)): Shape<I, O> {
+  catch<T extends Literal>(fallback: T | (() => T)): Shape<I, O | T>;
+
+  catch(fallback?: unknown): Shape {
     return new CatchShape(this, fallback);
   }
 
@@ -859,12 +868,9 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
  * @template I The input shape.
  * @template O The output shape.
  */
-export class RedirectShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<
-  I['input'],
-  O['output']
-> {
+export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
   /**
-   * Creates the new {@linkcode RedirectShape} instance.
+   * Creates the new {@linkcode PipeShape} instance.
    *
    * @param inputShape The shape that parses the input value.
    * @param outputShape The shape that parses the output of `inputShape`.
@@ -1180,8 +1186,8 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
  *
  * @template S The shape that parses the input.
  */
-export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
-  private _resultProvider: () => Ok<S['output']>;
+export class CatchShape<S extends AnyShape, T> extends Shape<S['input'], S['output'] | T> {
+  private _resultProvider: () => Ok<T>;
 
   /**
    * Creates the new {@linkcode CatchShape} instance.
@@ -1198,7 +1204,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     /**
      * The value or a callback that returns a value that is returned if parsing has failed.
      */
-    readonly fallback: S['output'] | (() => S['output'])
+    readonly fallback: T | (() => T)
   ) {
     super();
 
@@ -1222,7 +1228,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     return this.shape['_getInputValues']();
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output']> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | T> {
     const { _applyChecks } = this;
 
     let result = this.shape['_apply'](input, options);
@@ -1242,7 +1248,7 @@ export class CatchShape<S extends AnyShape> extends Shape<S['input'], S['output'
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | T>> {
     const { _applyChecks } = this;
 
     return this.shape['_applyAsync'](input, options).then(result => {

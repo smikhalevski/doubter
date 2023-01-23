@@ -3,28 +3,28 @@ import * as d from '../main';
 
 expectType<
   <R, T = any>(callback: (this: T, arg0: string, arg1: boolean) => R) => (this: T, arg0: string, arg1: boolean) => R
->(d.fn([d.string(), d.boolean()]));
+>(d.guard([d.string(), d.boolean()]));
 
 expectType<
   <R, T = any>(callback: (this: T, arg0: string, arg1: boolean) => R) => (this: T, arg0: string, arg1: boolean) => R
->(d.fn(d.tuple([d.string(), d.boolean()])));
+>(d.guard(d.tuple([d.string(), d.boolean()])));
 
-expectType<<R, T = any>(callback: (this: T, arg: string) => R) => (this: T, arg: string) => R>(d.fn(d.string()));
+expectType<<R, T = any>(callback: (this: T, arg: string) => R) => (this: T, arg: string) => R>(d.guard(d.string()));
 
 expectType<(this: number, arg0: string, arg1: boolean) => symbol>(
-  d.fn([d.string(), d.boolean()], function (this: number) {
+  d.guard([d.string(), d.boolean()], function (this: number) {
     return Symbol();
   })
 );
 
 expectType<(this: number, arg: [string, boolean]) => symbol>(
-  d.fn(d.tuple([d.string(), d.boolean()]), function (this: number) {
+  d.guard(d.tuple([d.string(), d.boolean()]), function (this: number) {
     return Symbol();
   })
 );
 
 expectType<(this: number, arg: string) => symbol>(
-  d.fn(d.string(), function (this: number) {
+  d.guard(d.string(), function (this: number) {
     return Symbol();
   })
 );
@@ -33,32 +33,32 @@ expectType<
   <R, T = any>(
     callback: (this: T, arg0: string, arg1: boolean) => Promise<R> | R
   ) => (this: T, arg0: string, arg1: boolean) => Promise<R>
->(d.fnAsync([d.string(), d.boolean()]));
+>(d.guardAsync([d.string(), d.boolean()]));
 
 expectType<
   <R, T = any>(
     callback: (this: T, arg0: string, arg1: boolean) => Promise<R> | R
   ) => (this: T, arg0: string, arg1: boolean) => Promise<R>
->(d.fnAsync(d.tuple([d.string(), d.boolean()])));
+>(d.guardAsync(d.tuple([d.string(), d.boolean()])));
 
 expectType<<R, T = any>(callback: (this: T, arg: string) => Promise<R> | R) => (this: T, arg: string) => Promise<R>>(
-  d.fnAsync(d.string())
+  d.guardAsync(d.string())
 );
 
 expectType<(this: number, arg0: string, arg1: boolean) => Promise<symbol>>(
-  d.fnAsync([d.string(), d.boolean()], function (this: number) {
+  d.guardAsync([d.string(), d.boolean()], function (this: number) {
     return Symbol();
   })
 );
 
 expectType<(this: number, arg: [string, boolean]) => Promise<symbol>>(
-  d.fnAsync(d.tuple([d.string(), d.boolean()]), function (this: number) {
+  d.guardAsync(d.tuple([d.string(), d.boolean()]), function (this: number) {
     return Symbol();
   })
 );
 
 expectType<(this: number, arg: string) => Promise<symbol>>(
-  d.fnAsync(d.string(), function (this: number) {
+  d.guardAsync(d.string(), function (this: number) {
     return Symbol();
   })
 );

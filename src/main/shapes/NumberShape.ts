@@ -251,7 +251,7 @@ export class NumberShape extends CoercibleShape<number> {
     }
     if (
       (typeof value === 'string' || typeof value === 'boolean' || value instanceof Date) &&
-      (value = +value) === value
+      this._typePredicate((value = +value))
     ) {
       return value;
     }

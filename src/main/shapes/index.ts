@@ -21,7 +21,7 @@ export {
   ExcludeShape,
   OpaqueExcludeShape,
   OpaqueReplaceShape,
-  RedirectShape,
+  PipeShape,
   ReplaceShape,
   Shape,
   TransformShape,

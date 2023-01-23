@@ -7,7 +7,7 @@ import { ObjectShape } from './ObjectShape';
 /**
  * Returns the list of shapes that are applicable to the input.
  */
-export type LookupCallback = (input: unknown) => readonly AnyShape[];
+export type LookupCallback = (input: any) => readonly AnyShape[];
 
 /**
  * The shape that requires an input to conform at least one of shapes.
@@ -76,7 +76,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     for (const shape of this.shapes) {
       inputTypes.push(...shape['_getInputTypes']());
     }
-    return inputTypes;
+    return unique(inputTypes);
   }
 
   protected _getInputValues(): unknown[] {

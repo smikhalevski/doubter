@@ -241,7 +241,7 @@ describe(
         });
 
         measure(() => {
-          type.parse(value, options);
+          type.parse(value);
         });
       });
 

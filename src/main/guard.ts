@@ -7,16 +7,16 @@ import { ERROR_ASYNC_ARGUMENTS } from './constants';
  * Guards each argument of a function with a corresponding shape.
  *
  * ```
- * const fnFactory = d.fn([d.string(), d.boolean()]);
+ * const callbackFactory = d.guard([d.string(), d.boolean()]);
  *
- * fnFactory((arg1: string, arg2: boolean) => …);
+ * callbackFactory((arg1: string, arg2: boolean) => …);
  * ```
  *
  * @param argShapes The array of shapes that parse arguments.
  * @template U The arguments array.
  * @returns The factory that guards functions.
  */
-export function fn<U extends readonly [AnyShape, ...AnyShape[]] | []>(
+export function guard<U extends readonly [AnyShape, ...AnyShape[]] | []>(
   argShapes: U
 ): <R, T = any>(
   callback: (this: T, ...args: InferTuple<U, 'output'>) => R
@@ -26,9 +26,9 @@ export function fn<U extends readonly [AnyShape, ...AnyShape[]] | []>(
  * Guards a function arguments with an array/tuple shape.
  *
  * ```
- * const fnFactory = d.fn(d.array(d.string()));
+ * const callbackFactory = d.guard(d.array(d.string()));
  *
- * fnFactory((...args: string[]) => …);
+ * callbackFactory((...args: string[]) => …);
  * ```
  *
  * @param argsShape The shape that parses an arguments array.
@@ -36,7 +36,7 @@ export function fn<U extends readonly [AnyShape, ...AnyShape[]] | []>(
  * @template O The array of output arguments.
  * @returns The factory that guards functions.
  */
-export function fn<I extends readonly any[], O extends readonly any[]>(
+export function guard<I extends readonly any[], O extends readonly any[]>(
   argsShape: Shape<I, O>
 ): <R, T = any>(callback: (this: T, ...args: O) => R) => (this: T, ...args: I) => R;
 
@@ -44,9 +44,9 @@ export function fn<I extends readonly any[], O extends readonly any[]>(
  * Guards an argument of an arity 1 function with a shape.
  *
  * ```
- * const fnFactory = d.fn(d.string());
+ * const callbackFactory = d.guard(d.string());
  *
- * fnFactory((arg: string) => …);
+ * callbackFactory((arg: string) => …);
  * ```
  *
  * @param argShape The shape that parses a single argument.
@@ -54,7 +54,7 @@ export function fn<I extends readonly any[], O extends readonly any[]>(
  * @template O The output argument.
  * @returns The factory that guards functions.
  */
-export function fn<I, O>(
+export function guard<I, O>(
   argShape: Shape<I, O>
 ): <R, T = any>(callback: (this: T, arg: O) => R) => (this: T, arg: I) => R;
 
@@ -62,7 +62,7 @@ export function fn<I, O>(
  * Guards each argument of a function with a corresponding shape.
  *
  * ```
- * const fn = d.fn(
+ * const callback = d.guard(
  *   [d.string(), d.boolean()],
  *   (arg1: string, arg2: boolean) => …
  * );
@@ -75,7 +75,7 @@ export function fn<I, O>(
  * @template T The value of `this`.
  * @returns The guarded callback.
  */
-export function fn<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T = any>(
+export function guard<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T = any>(
   argShapes: U,
   callback: (this: T, ...args: InferTuple<U, 'output'>) => R
 ): (this: T, ...args: InferTuple<U, 'input'>) => R;
@@ -84,7 +84,7 @@ export function fn<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T = any
  * Guards a function arguments with an array/tuple shape.
  *
  * ```
- * const fn = d.fn(
+ * const callback = d.guard(
  *   d.array(d.string()),
  *   (...args: string[]) => …
  * );
@@ -98,7 +98,7 @@ export function fn<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T = any
  * @template T The value of `this`.
  * @returns The guarded callback.
  */
-export function fn<I extends readonly any[], O extends readonly any[], R, T = any>(
+export function guard<I extends readonly any[], O extends readonly any[], R, T = any>(
   argsShape: Shape<I, O>,
   callback: (this: T, ...args: O) => R
 ): (this: T, ...args: I) => R;
@@ -107,7 +107,7 @@ export function fn<I extends readonly any[], O extends readonly any[], R, T = an
  * Guards an argument of an arity 1 function with a shape.
  *
  * ```
- * const fn = d.fn(
+ * const callback = d.guard(
  *   d.string(),
  *   (arg: string) => …
  * );
@@ -121,9 +121,12 @@ export function fn<I extends readonly any[], O extends readonly any[], R, T = an
  * @template T The value of `this`.
  * @returns The guarded callback.
  */
-export function fn<I, O, R, T = any>(argShape: Shape<I, O>, callback: (this: T, arg: O) => R): (this: T, arg: I) => R;
+export function guard<I, O, R, T = any>(
+  argShape: Shape<I, O>,
+  callback: (this: T, arg: O) => R
+): (this: T, arg: I) => R;
 
-export function fn(shape: any, callback?: (...args: any[]) => any) {
+export function guard(shape: any, callback?: (...args: any[]) => any) {
   if (isArray(shape)) {
     shape = new ArrayShape(shape, null);
   }
@@ -146,16 +149,16 @@ export function fn(shape: any, callback?: (...args: any[]) => any) {
  * Guards each argument of a function with a corresponding shape.
  *
  * ```
- * const fnFactory = d.fnAsync([d.string(), d.boolean()]);
+ * const callbackFactory = d.guardAsync([d.string(), d.boolean()]);
  *
- * fnFactory((arg1: string, arg2: boolean) => …);
+ * callbackFactory((arg1: string, arg2: boolean) => …);
  * ```
  *
  * @param argShapes The array of shapes that parse arguments.
  * @template U The arguments array.
  * @returns The factory that guards functions.
  */
-export function fnAsync<U extends readonly [AnyShape, ...AnyShape[]] | []>(
+export function guardAsync<U extends readonly [AnyShape, ...AnyShape[]] | []>(
   argShapes: U
 ): <R, T = any>(
   callback: (this: T, ...args: InferTuple<U, 'output'>) => Promise<R> | R
@@ -165,9 +168,9 @@ export function fnAsync<U extends readonly [AnyShape, ...AnyShape[]] | []>(
  * Guards a function arguments with an array/tuple shape.
  *
  * ```
- * const fnFactory = d.fnAsync(d.array(d.string()));
+ * const callbackFactory = d.guardAsync(d.array(d.string()));
  *
- * fnFactory((...args: string[]) => …);
+ * callbackFactory((...args: string[]) => …);
  * ```
  *
  * @param argsShape The shape that parses an arguments array.
@@ -175,7 +178,7 @@ export function fnAsync<U extends readonly [AnyShape, ...AnyShape[]] | []>(
  * @template O The array of output arguments.
  * @returns The factory that guards functions.
  */
-export function fnAsync<I extends readonly any[], O extends readonly any[]>(
+export function guardAsync<I extends readonly any[], O extends readonly any[]>(
   argsShape: Shape<I, O>
 ): <R, T = any>(callback: (this: T, ...args: O) => Promise<R> | R) => (this: T, ...args: I) => Promise<R>;
 
@@ -183,9 +186,9 @@ export function fnAsync<I extends readonly any[], O extends readonly any[]>(
  * Guards an argument of an arity 1 function with a shape.
  *
  * ```
- * const fnFactory = d.fnAsync(d.string());
+ * const callbackFactory = d.guardAsync(d.string());
  *
- * fnFactory((arg: string) => …);
+ * callbackFactory((arg: string) => …);
  * ```
  *
  * @param argShape The shape that parses a single argument.
@@ -193,7 +196,7 @@ export function fnAsync<I extends readonly any[], O extends readonly any[]>(
  * @template O The output argument.
  * @returns The factory that guards functions.
  */
-export function fnAsync<I, O>(
+export function guardAsync<I, O>(
   argShape: Shape<I, O>
 ): <R, T = any>(callback: (this: T, arg: O) => Promise<R> | R) => (this: T, arg: I) => Promise<R>;
 
@@ -201,7 +204,7 @@ export function fnAsync<I, O>(
  * Guards each argument of a function with a corresponding shape.
  *
  * ```
- * const fn = d.fnAsync(
+ * const callback = d.guardAsync(
  *   [d.string(), d.boolean()],
  *   (arg1: string, arg2: boolean) => …
  * );
@@ -214,7 +217,7 @@ export function fnAsync<I, O>(
  * @template T The value of `this`.
  * @returns The guarded callback.
  */
-export function fnAsync<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T = any>(
+export function guardAsync<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T = any>(
   argShapes: U,
   callback: (this: T, ...args: InferTuple<U, 'output'>) => Promise<R> | R
 ): (this: T, ...args: InferTuple<U, 'input'>) => Promise<R>;
@@ -223,7 +226,7 @@ export function fnAsync<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T 
  * Guards a function arguments with an array/tuple shape.
  *
  * ```
- * const fn = d.fnAsync(
+ * const callback = d.guardAsync(
  *   d.array(d.string()),
  *   (...args: string[]) => …
  * );
@@ -237,7 +240,7 @@ export function fnAsync<U extends readonly [AnyShape, ...AnyShape[]] | [], R, T 
  * @template T The value of `this`.
  * @returns The guarded callback.
  */
-export function fnAsync<I extends readonly any[], O extends readonly any[], R, T = any>(
+export function guardAsync<I extends readonly any[], O extends readonly any[], R, T = any>(
   argsShape: Shape<I, O>,
   callback: (this: T, ...args: O) => Promise<R> | R
 ): (this: T, ...args: I) => Promise<R>;
@@ -246,7 +249,7 @@ export function fnAsync<I extends readonly any[], O extends readonly any[], R, T
  * Guards an argument of an arity 1 function with a shape.
  *
  * ```
- * const fn = d.fnAsync(
+ * const callback = d.guardAsync(
  *   d.string(),
  *   (arg: string) => …
  * );
@@ -260,12 +263,12 @@ export function fnAsync<I extends readonly any[], O extends readonly any[], R, T
  * @template T The value of `this`.
  * @returns The guarded callback.
  */
-export function fnAsync<I, O, R, T = any>(
+export function guardAsync<I, O, R, T = any>(
   argShape: Shape<I, O>,
   callback: (this: T, arg: O) => Promise<R> | R
 ): (this: T, arg: I) => Promise<R>;
 
-export function fnAsync(shape: any, callback?: (...args: any[]) => any) {
+export function guardAsync(shape: any, callback?: (...args: any[]) => any) {
   if (isArray(shape)) {
     shape = new ArrayShape(shape, null);
   }

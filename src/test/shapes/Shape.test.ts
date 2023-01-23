@@ -1,4 +1,4 @@
-import { ExcludeShape, Ok, RedirectShape, Shape, StringShape, TransformShape, ValidationError } from '../../main';
+import { ExcludeShape, Ok, PipeShape, Shape, StringShape, TransformShape, ValidationError } from '../../main';
 import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_STRING } from '../../main/constants';
 import { CatchShape } from '../../main/shapes/Shape';
 
@@ -300,7 +300,7 @@ describe('Shape', () => {
     expect(new Shape().transform(() => 222).parse(111)).toBe(222);
   });
 
-  test('redirects input to another shape', () => {
+  test('pipes input to another shape', () => {
     const shape = new Shape().transform(() => 222);
 
     expect(new Shape().to(shape).parse(111)).toBe(222);
@@ -459,15 +459,15 @@ describe('TransformShape', () => {
   });
 });
 
-describe('RedirectShape', () => {
-  test('redirects the output of one shape to the other', () => {
+describe('PipeShape', () => {
+  test('pipes the output of one shape to the other', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
     const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
     const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
 
-    const shape = new RedirectShape(shape1, shape2);
+    const shape = new PipeShape(shape1, shape2);
 
     expect(shape.parse('aaa')).toBe('aaa');
 
@@ -484,7 +484,7 @@ describe('RedirectShape', () => {
 
     const applySpy = jest.spyOn<Shape, any>(shape2, '_apply');
 
-    const shape = new RedirectShape(shape1, shape2);
+    const shape = new PipeShape(shape1, shape2);
 
     shape.try('aaa');
 
@@ -497,7 +497,7 @@ describe('RedirectShape', () => {
 
     const checkMock = jest.fn();
 
-    const shape = new RedirectShape(shape1, shape2).check(checkMock);
+    const shape = new PipeShape(shape1, shape2).check(checkMock);
 
     shape.try('aaa');
 

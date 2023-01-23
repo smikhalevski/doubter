@@ -43,17 +43,25 @@ export function isEqual(a: unknown, b: unknown): boolean {
   return a === b || (a !== a && b !== b);
 }
 
-export function isObjectLike(value: unknown): value is Record<any, any> {
+export function isObjectLike(value: unknown): boolean {
   return value !== null && typeof value === 'object';
 }
 
-export function isPlainObject(value: unknown): value is Record<any, any> {
+export function isPlainObject(value: unknown): boolean {
   let prototype;
   return isObjectLike(value) && ((prototype = getPrototypeOf(value)) === null || prototype.constructor === Object);
 }
 
+export function isIterable(value: any): value is Iterable<any> {
+  return isObjectLike(value) && (typeof value[Symbol.iterator] === 'function' || typeof value.length === 'number');
+}
+
 export function isNumber(value: unknown): boolean {
   return typeof value === 'number' && value === value;
+}
+
+export function isDate(value: unknown): value is Date {
+  return value instanceof Date && (value = value.getTime()) === value;
 }
 
 export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
