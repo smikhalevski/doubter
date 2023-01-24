@@ -19,112 +19,114 @@ No-hassle runtime validation and transformation library.
 - [High performance and low memory consumption;](#performance)
 - [Just 10 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
-🔥&ensp;[**Try it on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
+🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
 
 ```shell
 npm install --save-prod doubter
 ```
 
-- **Core features**
+**Core features**
 
-    - [Basics](#basics)
-    - [Shapes](#shapes)
-    - [Parsing and trying](#parsing-and-trying)
-    - [Validation errors](#validation-errors)
-    - [Checks](#checks)
-    - [Refinements](#refinements)
-    - [Transformations](#transformations)
-    - [Parsing context](#parsing-context)
-    - [Shape piping](#shape-piping)
-    - [Exclude](#exclude)
-    - [Include](#include)
-    - [Replace](#replace)
-    - [Optional and non-optional](#optional-and-non-optional)
-    - [Nullable and nullish](#nullable-and-nullish)
-    - [Fallback value](#fallback-value)
-    - [Branded types](#branded-types)
-    - [Sub-shape at key](#sub-shape-at-key)
-    - [Localization](#localization)
-    - [Integrations](#integrations)
-    - [Guarded functions](#guarded-functions)
+- [Basics](#basics)
+- [Shapes](#shapes)
+- [Parsing and trying](#parsing-and-trying)
+- [Validation errors](#validation-errors)
+- [Checks](#checks)
+- [Refinements](#refinements)
+- [Transformations](#transformations)
+- [Parsing context](#parsing-context)
+- [Shape piping](#shape-piping)
+- [Exclude](#exclude)
+- [Include](#include)
+- [Replace](#replace)
+- [Optional and non-optional](#optional-and-non-optional)
+- [Nullable and nullish](#nullable-and-nullish)
+- [Fallback value](#fallback-value)
+- [Branded types](#branded-types)
+- [Sub-shape at key](#sub-shape-at-key)
+- [Localization](#localization)
+- [Integrations](#integrations)
+- [Guarded functions](#guarded-functions)
 
-- [**Type coercion**](#type-coercion)
-    - [Coerce to string](#coerce-to-string)
-    - [Coerce to number](#coerce-to-number)
-    - [Coerce to boolean](#coerce-to-boolean)
-    - [Coerce to bigint](#coerce-to-bigint)
-    - [Coerce to enum](#coerce-to-enum)
-    - [Coerce to array](#coerce-to-array)
-    - [Coerce to `Date`](#coerce-to-date)
-    - [Coerce to `Promise`](#coerce-to-promise)
-    - [Coerce to `Map`](#coerce-to-map)
-    - [Coerce to `Set`](#coerce-to-set)
+[**Type coercion**](#type-coercion)
+- [Coerce to string](#coerce-to-string)
+- [Coerce to number](#coerce-to-number)
+- [Coerce to boolean](#coerce-to-boolean)
+- [Coerce to bigint](#coerce-to-bigint)
+- [Coerce to enum](#coerce-to-enum)
+- [Coerce to array](#coerce-to-array)
+- [Coerce to `Date`](#coerce-to-date)
+- [Coerce to `Promise`](#coerce-to-promise)
+- [Coerce to `Map`](#coerce-to-map)
+- [Coerce to `Set`](#coerce-to-set)
 
-- **Cookbook**
+[**Cookbook**](#cookbook)
 
-    - [Rename object keys](#rename-object-keys)
-    - [Type-safe query params](#type-safe-query-params)
+- [Rename object keys](#rename-object-keys)
+- [Type-safe URL query params](#type-safe-url-query-params)
 
-- [**Performance**](#performance)
+[**Performance**](#performance)
 
-- **Data types**
+[**Data types**](#data-types)
 
-    - Strings<br>
-      [`string`](#string)
+- Strings<br>
+  [`string`](#string)
 
-    - Numbers<br>
-      [`number`](#number)
-      [`integer`](#integer)
-      [`int`](#integer)
-      [`nan`](#nan)
-      [`bigint`](#bigint)
+- Numbers<br>
+  [`number`](#number)
+  [`integer`](#integer)
+  [`int`](#integer)
+  [`finite`](#finite)
+  [`real`](#finite)
+  [`nan`](#nan)
+  [`bigint`](#bigint)
 
-    - Booleans<br>
-      [`boolean`](#boolean)
-      [`bool`](#boolean)
+- Booleans<br>
+  [`boolean`](#boolean)
+  [`bool`](#boolean)
 
-    - Symbols<br>
-      [`symbol`](#symbol)
+- Symbols<br>
+  [`symbol`](#symbol)
 
-    - Literal values<br>
-      [`enum`](#enum)
-      [`const`](#const)
-      [`null`](#null)
-      [`undefined`](#undefined)
-      [`void`](#void)
+- Literal values<br>
+  [`enum`](#enum)
+  [`const`](#const)
+  [`null`](#null)
+  [`undefined`](#undefined)
+  [`void`](#void)
 
-    - Objects<br>
-      [`object`](#object)
-      [`record`](#record)
-      [`instanceOf`](#instanceof)
+- Objects<br>
+  [`object`](#object)
+  [`record`](#record)
+  [`instanceOf`](#instanceof)
 
-    - Collections<br>
-      [`array`](#array)
-      [`tuple`](#tuple)
-      [`set`](#set)
-      [`map`](#map)
+- Collections<br>
+  [`array`](#array)
+  [`tuple`](#tuple)
+  [`set`](#set)
+  [`map`](#map)
 
-    - Dates<br>
-      [`date`](#date)
+- Dates<br>
+  [`date`](#date)
 
-    - Promises<br>
-      [`promise`](#promise)
+- Promises<br>
+  [`promise`](#promise)
 
-    - Shape composition<br>
-      [`union`](#union)
-      [`or`](#union)
-      [`intersection`](#intersection)
-      [`and`](#intersection)
+- Shape composition<br>
+  [`union`](#union)
+  [`or`](#union)
+  [`intersection`](#intersection)
+  [`and`](#intersection)
 
-    - Unconstrained values<br>
-      [`any`](#any)
-      [`unknown`](#unknown)
-      [`never`](#never)
+- Unconstrained values<br>
+  [`any`](#any)
+  [`unknown`](#unknown)
+  [`never`](#never)
 
-    - Other<br>
-      [`transform`](#transform)
-      [`lazy`](#lazy)
-      [`json`](#json)
+- Other<br>
+  [`transform`](#transform)
+  [`lazy`](#lazy)
+  [`json`](#json)
 
 # Basics
 
@@ -404,7 +406,7 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
 | `predicate` | [`shape.refine(…)`](#refinements) | The callback passed to `refine`  |
 | `numberInteger` | [`d.integer()`](#integer) | — |
-| `numberFinite` | [`d.number().finite()`](#number) | — |
+| `numberFinite` | [`d.finite()`](#finite) | — |
 | `numberGreaterThan` | [`d.number().gt(x)`](#number) | The exclusive minimum value `x` |
 | `numberGreaterThanOrEqual` | [`d.number().gte(x)`](#number) | The minimum value `x` |
 | `numberLessThan` | [`d.number().lt(x)`](#number) | The exclusive maximum value `x` |
@@ -1506,7 +1508,7 @@ shape.parse('J');
 
 # Cookbook
 
-Tasty recipes from the chef!
+Tasty recipes from the chef.
 
 ## Rename object keys
 
@@ -1523,14 +1525,14 @@ shape.parse({ foo: 1, bar: 2 });
 // ⮕ { FOO: 1, BAR: 2 }
 ```
 
-## Type-safe query params
+## Type-safe URL query params
 
 ```ts
 import qs from 'qs';
 
 const queryShape = d.object({
-  name: d.string().optional().catch(),
-  age: d.int().coerce().gt(0).optional().catch()
+  name: d.string().optional(),
+  age: d.int().gt(0).coerce().catch().optional()
 });
 // ⮕ Shape<{ name: string | undefined, age: number | undefined }>
 
@@ -1719,6 +1721,17 @@ const planets = {
 
 d.enum(plants);
 // ⮕ Shape<'Mars', 'Pluto', 'Jupiter'>
+```
+
+## `finite`
+
+Constrains a value to be a finite number.
+
+```ts
+d.finite();
+// or
+d.real();
+// ⮕ Shape<number>
 ```
 
 ## `instanceOf`
