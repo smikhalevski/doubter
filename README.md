@@ -77,7 +77,6 @@ npm install --save-prod doubter
   [`integer`](#integer)
   [`int`](#integer)
   [`finite`](#finite)
-  [`real`](#finite)
   [`nan`](#nan)
   [`bigint`](#bigint)
 
@@ -1729,8 +1728,6 @@ Constrains a value to be a finite number.
 
 ```ts
 d.finite();
-// or
-d.real();
 // ⮕ Shape<number>
 ```
 
