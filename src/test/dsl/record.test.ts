@@ -1,7 +1,7 @@
 import * as d from '../../main';
 
 describe('record', () => {
-  test('returns an record shape', () => {
+  test('returns a record shape', () => {
     expect(d.record(d.string(), d.number())).toBeInstanceOf(d.RecordShape);
   });
 });

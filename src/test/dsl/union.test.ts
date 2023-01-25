@@ -1,7 +1,7 @@
 import * as d from '../../main';
 
 describe('union', () => {
-  test('returns an boolean shape', () => {
+  test('returns a union shape', () => {
     const shape = d.union([d.string(), d.number()]);
 
     expect(shape).toBeInstanceOf(d.UnionShape);
