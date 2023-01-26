@@ -1,7 +1,7 @@
 import * as d from '../../main';
 
 describe('void', () => {
-  test('returns an const shape', () => {
+  test('returns a const shape', () => {
     const shape = d.void();
 
     expect(shape).toBeInstanceOf(d.ConstShape);

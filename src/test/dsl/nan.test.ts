@@ -1,7 +1,7 @@
 import * as d from '../../main';
 
 describe('nan', () => {
-  test('returns an const shape', () => {
+  test('returns a const shape', () => {
     const shape = d.nan();
 
     expect(shape).toBeInstanceOf(d.ConstShape);

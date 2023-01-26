@@ -1,7 +1,7 @@
 import * as d from '../../main';
 
 describe('string', () => {
-  test('returns an string shape', () => {
+  test('returns a string shape', () => {
     expect(d.string()).toBeInstanceOf(d.StringShape);
   });
 });
