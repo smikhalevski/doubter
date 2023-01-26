@@ -19,10 +19,11 @@
   ],
   "scripts": {
     "build": "rollup --config --configPlugin typescript",
-    "clean": "rimraf './lib' './docs' './coverage'",
-    "test": "tsd --files './src/test/**/*.test-d.ts' && jest",
+    "clean": "rimraf ./lib ./docs ./coverage",
+    "test": "jest",
+    "test:definitions": "ln -nsf .. ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
     "perf": "[ -d ./lib ] || npm run build && node --expose-gc --max-old-space-size=4096 ./node_modules/.bin/toofast ./src/test/perf.js",
-    "docs:build": "typedoc 'src/main/index.ts' && cp -R ./images ./docs",
+    "docs:build": "typedoc ./src/main/index.ts && cp -R ./images ./docs",
     "docs:release": "npm run docs:build && SHA=$(git rev-parse --short HEAD) && ORIGIN=$(git config --get remote.origin.url) && TEMP=$(mktemp -d) && FROM=$(pwd) && git clone -b ghpages --single-branch $ORIGIN $TEMP && cd $TEMP && ls -A | grep -wv .git | xargs rm -rf && cp -R $FROM/docs/ $TEMP && git add . && git commit -m \"Updated docs ($SHA)\" && git push && rm -rf $TEMP"
   },
   "repository": {
@@ -45,7 +46,6 @@
   "homepage": "https://github.com/smikhalevski/doubter#readme",
   "devDependencies": {
     "@badrap/valita": "^0.1.9",
-    "@rollup/plugin-alias": "^4.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-typescript": "^11.0.0",
     "@types/jest": "^29.2.5",

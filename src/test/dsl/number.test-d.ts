@@ -1,5 +1,5 @@
 import { expectType } from 'tsd';
-import * as d from '../../main';
+import * as d from 'doubter';
 
 expectType<number | 'aaa'>(d.number().replace('aaa', true).input);
 
