@@ -126,7 +126,7 @@ export class Shape<I = any, O = I> {
   protected _applyChecks: ApplyChecksCallback | null = null;
 
   /**
-   * `true` if some checks from {@linkcode checks} were marked as unsafe, `false` otherwise.
+   * `true` if some checks from {@linkcode _checkMap} were marked as unsafe, `false` otherwise.
    */
   protected _unsafe = false;
 
