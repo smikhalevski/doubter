@@ -1,0 +1,26 @@
+name: Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test-node:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [ "18" ]
+        typescript: [ "4.9" ]
+    name: typescript@${{ matrix.typescript }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm i typescript@${{ matrix.typescript }}
+      - run: npm run build
+      - run: npm test
