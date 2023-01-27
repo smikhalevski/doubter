@@ -1,5 +1,5 @@
 import { expectType } from 'tsd';
-import * as d from '../main';
+import * as d from 'doubter';
 
 expectType<
   <R, T = any>(callback: (this: T, arg0: string, arg1: boolean) => R) => (this: T, arg0: string, arg1: boolean) => R

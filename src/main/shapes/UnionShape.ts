@@ -38,6 +38,14 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
     this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
+  protected get _lookup(): LookupCallback {
+    const cb = createDiscriminatorLookupCallback(this.shapes) || createValueTypeLookupCallback(this.shapes);
+
+    Object.defineProperty(this, '_lookup', { value: cb });
+
+    return cb;
+  }
+
   at(key: unknown): AnyShape | null {
     const valueShapes: AnyShape[] = [];
 
@@ -56,14 +64,6 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
       return valueShapes[0];
     }
     return new UnionShape(valueShapes);
-  }
-
-  protected get _lookup(): LookupCallback {
-    const cb = createDiscriminatorLookupCallback(this.shapes) || createValueTypeLookupCallback(this.shapes);
-
-    Object.defineProperty(this, '_lookup', { value: cb });
-
-    return cb;
   }
 
   protected _requiresAsync(): boolean {

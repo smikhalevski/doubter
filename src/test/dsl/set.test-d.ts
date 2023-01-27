@@ -1,5 +1,5 @@
 import { expectType } from 'tsd';
-import * as d from '../../main';
+import * as d from 'doubter';
 
 expectType<Set<string | number>>(d.set(d.or([d.string(), d.number()])).output);
 

@@ -1,5 +1,5 @@
 import { expectNotType, expectType } from 'tsd';
-import * as d from '../../main';
+import * as d from 'doubter';
 
 expectType<111>(d.any((value): value is 111 => true).output);
 
@@ -13,9 +13,9 @@ expectType<string | true>(d.any<string>().parseOrDefault(111, true));
 
 const brandedShape = d.any<string>().brand();
 
-expectType<typeof brandedShape['output']>(brandedShape.output);
+expectType<(typeof brandedShape)['output']>(brandedShape.output);
 
-expectNotType<typeof brandedShape['output']>('aaa');
+expectNotType<(typeof brandedShape)['output']>('aaa');
 
 expectType<number | undefined>(d.number().catch().output);
 
