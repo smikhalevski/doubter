@@ -1,4 +1,12 @@
-import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
+import {
+  AnyShape,
+  ApplyResult,
+  InferPartialDeepShape,
+  PartialDeepProtocol,
+  Shape,
+  toPartialDeep,
+  ValueType,
+} from './Shape';
 import { ParseOptions } from '../shared-types';
 import { isArray, returnArray, returnFalse } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
@@ -8,7 +16,10 @@ import { ERROR_SHAPE_EXPECTED } from '../constants';
  *
  * @template S The base shape.
  */
-export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
+export class LazyShape<S extends AnyShape>
+  extends Shape<S['input'], S['output']>
+  implements PartialDeepProtocol<InferPartialDeepShape<S>>
+{
   protected _shapeProvider;
 
   /**
@@ -36,6 +47,10 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     Object.defineProperty(this, 'shape', { value: shape });
 
     return shape;
+  }
+
+  partialDeep(): InferPartialDeepShape<S> {
+    return toPartialDeep(this.shape);
   }
 
   protected _requiresAsync(): boolean {

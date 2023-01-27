@@ -46,30 +46,15 @@ export declare const BRAND: unique symbol;
  */
 export type AnyShape = Shape | Shape<never>;
 
-/**
- * A shape that replaces an input value with an output value.
- *
- * @template S The base shape.
- * @template A The input value to replace.
- * @template B The output value.
- */
-export type OpaqueReplaceShape<S extends AnyShape, A, B = A> = Shape<S['input'] | A, Exclude<S['output'], A> | B>;
+export interface PartialDeepProtocol<S extends AnyShape> {
+  partialDeep(): S;
+}
 
-/**
- * Input value is passed directly to the output without any checks.
- *
- * @template S The base shape.
- * @template T The included value.
- */
-export type OpaqueIncludeShape<S extends AnyShape, T> = Shape<S['input'] | T, S['output'] | T>;
+export type InferPartialDeepShape<S extends AnyShape> = S extends PartialDeepProtocol<infer S1> ? S1 : S;
 
-/**
- * Excludes a value from both input and output.
- *
- * @template S The base shape.
- * @template T The excluded value.
- */
-export type OpaqueExcludeShape<S extends AnyShape, T> = Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>;
+export function toPartialDeep<S extends AnyShape>(shape: S): InferPartialDeepShape<S> {
+  return 'partialDeep' in shape && typeof shape.partialDeep === 'function' ? shape.partialDeep() : shape;
+}
 
 /**
  * The detected runtime input value type.
@@ -100,6 +85,10 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
 
 export interface ReadonlyDict<T = any> {
   readonly [key: string]: T;
+}
+
+export interface Dict<T = any> {
+  [key: string]: T;
 }
 
 /**
@@ -311,7 +300,7 @@ export class Shape<I = any, O = I> {
    * @template A The input value to replace.
    * @template B The output value.
    */
-  replace<A extends Literal, B extends Literal>(inputValue: A, outputValue: B): OpaqueReplaceShape<this, A, B> {
+  replace<A extends Literal, B extends Literal>(inputValue: A, outputValue: B): ReplaceShape<this, A, B> {
     return new ReplaceShape(this, inputValue, outputValue);
   }
 
@@ -323,7 +312,10 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ReplaceShape} instance.
    * @template T The included value.
    */
-  include<T extends Literal>(value: T, options?: ConstraintOptions | Message): OpaqueIncludeShape<this, T> {
+  include<T extends Literal>(
+    value: T,
+    options?: ConstraintOptions | Message
+  ): Shape<this['input'] | T, this['output'] | T> {
     return this.replace(value, value);
   }
 
@@ -335,7 +327,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ExcludeShape} instance.
    * @template T The excluded value.
    */
-  exclude<T extends Literal>(value: T, options?: ConstraintOptions | Message): OpaqueExcludeShape<this, T> {
+  exclude<T extends Literal>(value: T, options?: ConstraintOptions | Message): ExcludeShape<this, T> {
     return new ExcludeShape(this, value, options);
   }
 
@@ -344,7 +336,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional(): OpaqueReplaceShape<this, undefined>;
+  optional(): ReplaceShape<this, undefined, undefined>;
 
   /**
    * Replaces `undefined` input value with a default output value.
@@ -352,7 +344,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional<T extends Literal>(defaultValue: T): OpaqueReplaceShape<this, undefined, T>;
+  optional<T extends Literal>(defaultValue: T): ReplaceShape<this, undefined, T>;
 
   optional(defaultValue?: any) {
     return this.replace(undefined, defaultValue);
@@ -363,7 +355,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable(): OpaqueReplaceShape<this, null>;
+  nullable(): ReplaceShape<this, null, null>;
 
   /**
    * Replaces `null` input value with a default output value.
@@ -371,7 +363,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable<T extends Literal>(defaultValue: T): OpaqueReplaceShape<this, null, T>;
+  nullable<T extends Literal>(defaultValue: T): ReplaceShape<this, null, T>;
 
   nullable(defaultValue?: any) {
     return this.replace(null, arguments.length === 0 ? null : defaultValue);
@@ -382,7 +374,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish(): OpaqueReplaceShape<this, null | undefined>;
+  nullish(): ReplaceShape<ReplaceShape<this, null, null>, undefined, undefined>;
 
   /**
    * Replaces `null` and `undefined` input value with a default output value.
@@ -390,7 +382,7 @@ export class Shape<I = any, O = I> {
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish<T extends Literal>(defaultValue?: T): OpaqueReplaceShape<this, null | undefined, T>;
+  nullish<T extends Literal>(defaultValue?: T): ReplaceShape<ReplaceShape<this, null, T>, undefined, T>;
 
   nullish(defaultValue?: any) {
     return this.nullable(arguments.length === 0 ? null : defaultValue).optional(defaultValue);
@@ -402,7 +394,7 @@ export class Shape<I = any, O = I> {
    * @param options The constraint options or an issue message.
    * @returns The {@linkcode ExcludeShape} instance.
    */
-  nonOptional(options?: ConstraintOptions | Message): OpaqueExcludeShape<this, undefined> {
+  nonOptional(options?: ConstraintOptions | Message): ExcludeShape<this, undefined> {
     return this.exclude(undefined, options);
   }
 
@@ -869,7 +861,10 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
  * @template I The input shape.
  * @template O The output shape.
  */
-export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>> extends Shape<I['input'], O['output']> {
+export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
+  extends Shape<I['input'], O['output']>
+  implements PartialDeepProtocol<PipeShape<InferPartialDeepShape<I>, InferPartialDeepShape<O>>>
+{
   /**
    * Creates the new {@linkcode PipeShape} instance.
    *
@@ -889,6 +884,10 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>> ex
     readonly outputShape: O
   ) {
     super();
+  }
+
+  partialDeep(): PipeShape<InferPartialDeepShape<I>, InferPartialDeepShape<O>> {
+    return new PipeShape(toPartialDeep(this.inputShape), toPartialDeep(this.outputShape));
   }
 
   protected _requiresAsync(): boolean {
@@ -978,7 +977,10 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>> ex
  * @template A The input value to replace.
  * @template B The output value.
  */
-export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A, Exclude<S['output'], A> | B> {
+export class ReplaceShape<S extends AnyShape, A, B>
+  extends Shape<S['input'] | A, Exclude<S['output'], A> | B>
+  implements PartialDeepProtocol<ReplaceShape<InferPartialDeepShape<S>, A, B>>
+{
   private _result: ApplyResult<B>;
 
   /**
@@ -1008,6 +1010,10 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
     super();
 
     this._result = isEqual(inputValue, outputValue) ? null : ok(outputValue);
+  }
+
+  partialDeep(): ReplaceShape<InferPartialDeepShape<S>, A, B> {
+    return new ReplaceShape(toPartialDeep(this.shape), this.inputValue, this.outputValue);
   }
 
   protected _requiresAsync(): boolean {
@@ -1083,8 +1089,12 @@ export class ReplaceShape<S extends AnyShape, A, B> extends Shape<S['input'] | A
  * @template S The base shape.
  * @template T The excluded value.
  */
-export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>> {
+export class ExcludeShape<S extends AnyShape, T>
+  extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>
+  implements PartialDeepProtocol<ExcludeShape<InferPartialDeepShape<S>, T>>
+{
   protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates the new {@linkcode ExcludeShape} instance.
@@ -1109,6 +1119,11 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
+    this._options = options;
+  }
+
+  partialDeep(): ExcludeShape<InferPartialDeepShape<S>, T> {
+    return new ExcludeShape(toPartialDeep(this.shape), this.excludedValue, this._options);
   }
 
   protected _requiresAsync(): boolean {
@@ -1187,7 +1202,10 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
  *
  * @template S The shape that parses the input.
  */
-export class CatchShape<S extends AnyShape, T> extends Shape<S['input'], S['output'] | T> {
+export class CatchShape<S extends AnyShape, T>
+  extends Shape<S['input'], S['output'] | T>
+  implements PartialDeepProtocol<CatchShape<InferPartialDeepShape<S>, T>>
+{
   private _resultProvider: () => Ok<T>;
 
   /**
@@ -1215,6 +1233,10 @@ export class CatchShape<S extends AnyShape, T> extends Shape<S['input'], S['outp
       const result = ok(fallback);
       this._resultProvider = () => result;
     }
+  }
+
+  partialDeep(): CatchShape<InferPartialDeepShape<S>, T> {
+    return new CatchShape(toPartialDeep(this.shape), this.fallback);
   }
 
   protected _requiresAsync(): boolean {

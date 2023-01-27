@@ -1,19 +1,36 @@
-import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
+import {
+  AnyShape,
+  ApplyResult,
+  InferPartialDeepShape,
+  PartialDeepProtocol,
+  Shape,
+  toPartialDeep,
+  ValueType,
+} from './Shape';
 import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION, TYPE_ARRAY, TYPE_DATE, TYPE_NEVER, TYPE_OBJECT } from '../constants';
+import { ToArray } from './ArrayShape';
 
 export type ToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
-export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
-  ToIntersection<U[number]['input']>,
-  ToIntersection<U[number]['output']>
-> {
+export type PartialDeepIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<
+  ToArray<{
+    [K in keyof U]: U[K] extends AnyShape ? InferPartialDeepShape<U[K]> : never;
+  }>
+>;
+
+export class IntersectionShape<U extends readonly AnyShape[]>
+  extends Shape<ToIntersection<U[number]['input']>, ToIntersection<U[number]['output']>>
+  implements PartialDeepProtocol<PartialDeepIntersectionShape<U>>
+{
+  protected _options;
   protected _typeIssueFactory;
 
   constructor(readonly shapes: U, options?: ConstraintOptions | Message) {
     super();
 
+    this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
@@ -23,6 +40,10 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
 
   protected _getInputTypes(): ValueType[] {
     return intersectValueTypes(this.shapes.map(shape => shape['_getInputTypes']()));
+  }
+
+  partialDeep(): PartialDeepIntersectionShape<U> {
+    return new IntersectionShape(this.shapes.map(toPartialDeep), this._options) as any;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<ToIntersection<U[number]['output']>> {

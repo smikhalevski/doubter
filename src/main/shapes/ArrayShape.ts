@@ -1,4 +1,12 @@
-import { AnyShape, ApplyResult, ValueType } from './Shape';
+import {
+  AnyShape,
+  ApplyResult,
+  InferPartialDeepShape,
+  PartialDeepProtocol,
+  ReplaceShape,
+  toPartialDeep,
+  ValueType,
+} from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -37,7 +45,16 @@ export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape 
     ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
     : R extends AnyShape ? R[C][] : any[];
 
-export type ToArray<T> = T extends any[] ? T : never;
+export type ToArray<T> = T extends readonly any[] ? T : never;
+
+export type PartialDeepArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
+  U extends readonly AnyShape[]
+    ? ToArray<{
+        [K in keyof U]: U[K] extends AnyShape ? ReplaceShape<InferPartialDeepShape<U[K]>, undefined, undefined> : never;
+      }>
+    : null,
+  R extends AnyShape ? ReplaceShape<InferPartialDeepShape<R>, undefined, undefined> : null
+>;
 
 /**
  * The shape of an array or a tuple.
@@ -45,10 +62,10 @@ export type ToArray<T> = T extends any[] ? T : never;
  * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
  * @template R The shape of rest elements, or `null` if there are no rest elements.
  */
-export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> extends CoercibleShape<
-  InferArray<U, R, 'input'>,
-  InferArray<U, R, 'output'>
-> {
+export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null>
+  extends CoercibleShape<InferArray<U, R, 'input'>, InferArray<U, R, 'output'>>
+  implements PartialDeepProtocol<PartialDeepArrayShape<U, R>>
+{
   protected _options;
   protected _typeIssueFactory;
 
@@ -153,6 +170,20 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         return issueFactory(input, options);
       }
     });
+  }
+
+  partialDeep(): PartialDeepArrayShape<U, R> {
+    let shapes: AnyShape[] | null = null;
+
+    if (this.shapes !== null) {
+      shapes = [];
+
+      for (const shape of this.shapes) {
+        shapes.push(toPartialDeep(shape).optional());
+      }
+    }
+
+    return new ArrayShape<any, any>(shapes, this.restShape === null ? null : this.restShape.optional(), this._options);
   }
 
   protected _requiresAsync(): boolean {
