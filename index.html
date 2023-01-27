@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Doubter - v1.1.0</title><meta name="description" content="Documentation for Doubter - v1.1.0"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>Doubter - v1.1.1</title><meta name="description" content="Documentation for Doubter - v1.1.1"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script async src="assets/search.js" id="search-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base=".">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M15.7824 13.833L12.6666 10.7177C12.5259 10.5771 12.3353 10.499 12.1353 10.499H11.6259C12.4884 9.39596 13.001 8.00859 13.001 6.49937C13.001 2.90909 10.0914 0 6.50048 0C2.90959 0 0 2.90909 0 6.49937C0 10.0896 2.90959 12.9987 6.50048 12.9987C8.00996 12.9987 9.39756 12.4863 10.5008 11.6239V12.1332C10.5008 12.3332 10.5789 12.5238 10.7195 12.6644L13.8354 15.7797C14.1292 16.0734 14.6042 16.0734 14.8948 15.7797L15.7793 14.8954C16.0731 14.6017 16.0731 14.1267 15.7824 13.833ZM6.50048 10.499C4.29094 10.499 2.50018 8.71165 2.50018 6.49937C2.50018 4.29021 4.28781 2.49976 6.50048 2.49976C8.71001 2.49976 10.5008 4.28708 10.5008 6.49937C10.5008 8.70852 8.71314 10.499 6.50048 10.499Z" fill="var(--color-text)"></path></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -6,12 +6,12 @@
 <div id="tsd-toolbar-links"></div></div>
 <ul class="results">
 <li class="state loading">Preparing search index...</li>
-<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">Doubter - v1.1.0</a></div>
+<li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">Doubter - v1.1.1</a></div>
 <div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="7" width="14" height="2" fill="var(--color-text)"></rect><rect x="1" y="11" width="14" height="2" fill="var(--color-text)"></rect></svg></a></div></div></header>
 <div class="container container-main">
 <div class="col-8 col-content">
 <div class="tsd-page-title">
-<h2>Doubter - v1.1.0</h2></div>
+<h2>Doubter - v1.1.1</h2></div>
 <div class="tsd-panel tsd-typography"><p align="center">
   <br/>
   <img src="./images/logo.png" alt="Doubter" width="400"/>
@@ -33,11 +33,10 @@
 <li><a href="#performance">High performance and low memory consumption;</a></li>
 <li><a href="https://bundlephobia.com/result?p=doubter">Just 10 kB gzipped</a> and tree-shakable;</li>
 </ul>
-<p>🔥&ensp;<a href="https://codesandbox.io/s/doubter-example-y5kec4"><strong>Try it on CodeSandbox</strong></a></p>
+<p>🔥&ensp;<a href="https://codesandbox.io/s/doubter-example-y5kec4"><strong>Try Doubter on CodeSandbox</strong></a></p>
 <pre><code class="language-shell"><span class="hl-0">npm </span><span class="hl-1">install</span><span class="hl-0"> </span><span class="hl-1">--save-prod</span><span class="hl-0"> </span><span class="hl-1">doubter</span>
 </code></pre>
-<ul>
-<li><p><strong>Core features</strong></p>
+<p><strong>Core features</strong></p>
 <ul>
 <li><a href="#basics">Basics</a></li>
 <li><a href="#shapes">Shapes</a></li>
@@ -60,8 +59,7 @@
 <li><a href="#integrations">Integrations</a></li>
 <li><a href="#guarded-functions">Guarded functions</a></li>
 </ul>
-</li>
-<li><p><a href="#type-coercion"><strong>Type coercion</strong></a></p>
+<p><a href="#type-coercion"><strong>Type coercion</strong></a></p>
 <ul>
 <li><a href="#coerce-to-string">Coerce to string</a></li>
 <li><a href="#coerce-to-number">Coerce to number</a></li>
@@ -74,16 +72,13 @@
 <li><a href="#coerce-to-map">Coerce to <code>Map</code></a></li>
 <li><a href="#coerce-to-set">Coerce to <code>Set</code></a></li>
 </ul>
-</li>
-<li><p><strong>Cookbook</strong></p>
+<p><a href="#cookbook"><strong>Cookbook</strong></a></p>
 <ul>
 <li><a href="#rename-object-keys">Rename object keys</a></li>
-<li><a href="#type-safe-query-params">Type-safe query params</a></li>
+<li><a href="#type-safe-url-query-params">Type-safe URL query params</a></li>
 </ul>
-</li>
-<li><p><a href="#performance"><strong>Performance</strong></a></p>
-</li>
-<li><p><strong>Data types</strong></p>
+<p><a href="#performance"><strong>Performance</strong></a></p>
+<p><a href="#data-types"><strong>Data types</strong></a></p>
 <ul>
 <li><p>Strings<br>
 <a href="#string"><code>string</code></a></p>
@@ -92,6 +87,7 @@
 <a href="#number"><code>number</code></a>
 <a href="#integer"><code>integer</code></a>
 <a href="#integer"><code>int</code></a>
+<a href="#finite"><code>finite</code></a>
 <a href="#nan"><code>nan</code></a>
 <a href="#bigint"><code>bigint</code></a></p>
 </li>
@@ -141,8 +137,6 @@
 <a href="#transform"><code>transform</code></a>
 <a href="#lazy"><code>lazy</code></a>
 <a href="#json"><code>json</code></a></p>
-</li>
-</ul>
 </li>
 </ul>
 
@@ -341,7 +335,7 @@ coerced value.</p>
 </tr>
 <tr>
 <td align="left"><code>numberFinite</code></td>
-<td align="left"><a href="#number"><code>d.number().finite()</code></a></td>
+<td align="left"><a href="#finite"><code>d.finite()</code></a></td>
 <td align="left">—</td>
 </tr>
 <tr>
@@ -869,7 +863,7 @@ corresponding values:</p>
 <a href="#cookbook" id="cookbook" style="color: inherit; text-decoration: none;">
   <h1>Cookbook</h1>
 </a>
-<p>Tasty recipes from the chef!</p>
+<p>Tasty recipes from the chef.</p>
 
 <a href="#rename-object-keys" id="rename-object-keys" style="color: inherit; text-decoration: none;">
   <h2>Rename object keys</h2>
@@ -877,10 +871,10 @@ corresponding values:</p>
 <pre><code class="language-ts"><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-5">keyShape</span><span class="hl-0"> = </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">enum</span><span class="hl-0">([</span><span class="hl-1">&#39;foo&#39;</span><span class="hl-0">, </span><span class="hl-1">&#39;bar&#39;</span><span class="hl-0">]).</span><span class="hl-6">transform</span><span class="hl-0">(</span><br/><span class="hl-0">  </span><span class="hl-4">value</span><span class="hl-0"> </span><span class="hl-3">=&gt;</span><span class="hl-0"> </span><span class="hl-4">value</span><span class="hl-0">.</span><span class="hl-6">toUpperCase</span><span class="hl-0">() </span><span class="hl-2">as</span><span class="hl-0"> </span><span class="hl-1">&#39;FOO&#39;</span><span class="hl-0"> | </span><span class="hl-1">&#39;BAR&#39;</span><br/><span class="hl-0">);</span><br/><span class="hl-8">// ⮕ Shape&lt;&#39;foo&#39; | &#39;bar&#39;, &#39;FOO&#39; | &#39;BAR&#39;&gt;</span><br/><br/><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-5">shape</span><span class="hl-0"> = </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">record</span><span class="hl-0">(</span><span class="hl-4">keyShape</span><span class="hl-0">, </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">number</span><span class="hl-0">());</span><br/><span class="hl-8">// ⮕ Shape&lt;Record&lt;&#39;foo&#39; | &#39;bar&#39;, number&gt;, Record&lt;&#39;FOO&#39; | &#39;BAR&#39;, number&gt;&gt;</span><br/><br/><span class="hl-4">shape</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">({ </span><span class="hl-4">foo:</span><span class="hl-0"> </span><span class="hl-7">1</span><span class="hl-0">, </span><span class="hl-4">bar:</span><span class="hl-0"> </span><span class="hl-7">2</span><span class="hl-0"> });</span><br/><span class="hl-8">// ⮕ { FOO: 1, BAR: 2 }</span>
 </code></pre>
 
-<a href="#type-safe-query-params" id="type-safe-query-params" style="color: inherit; text-decoration: none;">
-  <h2>Type-safe query params</h2>
+<a href="#type-safe-url-query-params" id="type-safe-url-query-params" style="color: inherit; text-decoration: none;">
+  <h2>Type-safe URL query params</h2>
 </a>
-<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> </span><span class="hl-4">qs</span><span class="hl-0"> </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;qs&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-5">queryShape</span><span class="hl-0"> = </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-4">name:</span><span class="hl-0"> </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">().</span><span class="hl-6">optional</span><span class="hl-0">().</span><span class="hl-6">catch</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-4">age:</span><span class="hl-0"> </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">int</span><span class="hl-0">().</span><span class="hl-6">coerce</span><span class="hl-0">().</span><span class="hl-6">gt</span><span class="hl-0">(</span><span class="hl-7">0</span><span class="hl-0">).</span><span class="hl-6">optional</span><span class="hl-0">().</span><span class="hl-6">catch</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><span class="hl-8">// ⮕ Shape&lt;{ name: string | undefined, age: number | undefined }&gt;</span><br/><br/><span class="hl-4">queryShape</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">(</span><span class="hl-4">qs</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">(</span><span class="hl-1">&#39;name=Frodo&amp;age=50&#39;</span><span class="hl-0">));</span><br/><span class="hl-8">// ⮕ { name: &#39;Frodo&#39;, age: 50 }</span><br/><br/><span class="hl-4">queryShape</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">(</span><span class="hl-4">qs</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">(</span><span class="hl-1">&#39;age=-33&#39;</span><span class="hl-0">));</span><br/><span class="hl-8">// ⮕ { age: undefined }</span>
+<pre><code class="language-ts"><span class="hl-2">import</span><span class="hl-0"> </span><span class="hl-4">qs</span><span class="hl-0"> </span><span class="hl-2">from</span><span class="hl-0"> </span><span class="hl-1">&#39;qs&#39;</span><span class="hl-0">;</span><br/><br/><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-5">queryShape</span><span class="hl-0"> = </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">object</span><span class="hl-0">({</span><br/><span class="hl-0">  </span><span class="hl-4">name:</span><span class="hl-0"> </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">string</span><span class="hl-0">().</span><span class="hl-6">optional</span><span class="hl-0">(),</span><br/><span class="hl-0">  </span><span class="hl-4">age:</span><span class="hl-0"> </span><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">int</span><span class="hl-0">().</span><span class="hl-6">gt</span><span class="hl-0">(</span><span class="hl-7">0</span><span class="hl-0">).</span><span class="hl-6">coerce</span><span class="hl-0">().</span><span class="hl-6">catch</span><span class="hl-0">().</span><span class="hl-6">optional</span><span class="hl-0">()</span><br/><span class="hl-0">});</span><br/><span class="hl-8">// ⮕ Shape&lt;{ name: string | undefined, age: number | undefined }&gt;</span><br/><br/><span class="hl-4">queryShape</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">(</span><span class="hl-4">qs</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">(</span><span class="hl-1">&#39;name=Frodo&amp;age=50&#39;</span><span class="hl-0">));</span><br/><span class="hl-8">// ⮕ { name: &#39;Frodo&#39;, age: 50 }</span><br/><br/><span class="hl-4">queryShape</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">(</span><span class="hl-4">qs</span><span class="hl-0">.</span><span class="hl-6">parse</span><span class="hl-0">(</span><span class="hl-1">&#39;age=-33&#39;</span><span class="hl-0">));</span><br/><span class="hl-8">// ⮕ { age: undefined }</span>
 </code></pre>
 
 <a href="#performance" id="performance" style="color: inherit; text-decoration: none;">
@@ -980,6 +974,13 @@ Tests were conducted using <a href="https://github.com/smikhalevski/toofast">Too
 <p>Or use
 <a href="https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-4.html#const-assertions">an object with a <code>const</code> assertion</a>:</p>
 <pre><code class="language-ts"><span class="hl-3">const</span><span class="hl-0"> </span><span class="hl-5">planets</span><span class="hl-0"> = {</span><br/><span class="hl-0">  </span><span class="hl-4">MARS:</span><span class="hl-0"> </span><span class="hl-1">&#39;Mars&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-4">PLUTO:</span><span class="hl-0"> </span><span class="hl-1">&#39;Pluto&#39;</span><span class="hl-0">,</span><br/><span class="hl-0">  </span><span class="hl-4">JUPITER:</span><span class="hl-0"> </span><span class="hl-1">&#39;Jupiter&#39;</span><br/><span class="hl-0">} </span><span class="hl-2">as</span><span class="hl-0"> </span><span class="hl-3">const</span><span class="hl-0">;</span><br/><br/><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">enum</span><span class="hl-0">(</span><span class="hl-4">plants</span><span class="hl-0">);</span><br/><span class="hl-8">// ⮕ Shape&lt;&#39;Mars&#39;, &#39;Pluto&#39;, &#39;Jupiter&#39;&gt;</span>
+</code></pre>
+
+<a href="#finite" id="finite" style="color: inherit; text-decoration: none;">
+  <h2><code>finite</code></h2>
+</a>
+<p>Constrains a value to be a finite number.</p>
+<pre><code class="language-ts"><span class="hl-4">d</span><span class="hl-0">.</span><span class="hl-6">finite</span><span class="hl-0">();</span><br/><span class="hl-8">// ⮕ Shape&lt;number&gt;</span>
 </code></pre>
 
 <a href="#instanceof" id="instanceof" style="color: inherit; text-decoration: none;">
@@ -1362,7 +1363,7 @@ enable a discriminated union optimization.</p>
 <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z" fill="var(--color-text)"></path></svg> Modules</h3></summary>
 <div class="tsd-accordion-details">
 <ul>
-<li class="current selected"><a href="modules.html">Doubter -<wbr/> v1.1.0</a>
+<li class="current selected"><a href="modules.html">Doubter -<wbr/> v1.1.1</a>
 <ul></ul></li></ul></div></details></nav>
 <nav class="tsd-navigation secondary menu-sticky">
 <ul>
@@ -1423,6 +1424,7 @@ enable a discriminated union optimization.</p>
 <li class="tsd-kind-function"><a href="functions/createIssueFactory.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>create<wbr/>Issue<wbr/>Factory</a></li>
 <li class="tsd-kind-function"><a href="functions/date.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>date</a></li>
 <li class="tsd-kind-function"><a href="functions/enum.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>enum</a></li>
+<li class="tsd-kind-function"><a href="functions/finite.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>finite</a></li>
 <li class="tsd-kind-function"><a href="functions/guard.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>guard</a></li>
 <li class="tsd-kind-function"><a href="functions/guardAsync.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>guard<wbr/>Async</a></li>
 <li class="tsd-kind-function"><a href="functions/instanceOf.html" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-64-path"></use><use href="#icon-64-text"></use></svg>instance<wbr/>Of</a></li>
