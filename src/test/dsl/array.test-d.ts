@@ -9,4 +9,4 @@ expectType<111[]>(d.array(d.const(111)).input);
 
 expectType<111[]>(d.array(d.const(111)).output);
 
-expectType<Array<number | undefined>>(d.array(d.number()).partialDeep().output);
+expectType<Array<number | undefined>>(d.array(d.number()).deepPartial().output);

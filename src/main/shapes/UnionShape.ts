@@ -1,10 +1,10 @@
 import {
   AnyShape,
   ApplyResult,
-  InferPartialDeepShape,
-  PartialDeepProtocol,
+  InferDeepPartialShape,
+  DeepPartialProtocol,
   Shape,
-  toPartialDeep,
+  toDeepPartial,
   ValueType,
 } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
@@ -18,9 +18,9 @@ import { ToArray } from './ArrayShape';
  */
 export type LookupCallback = (input: any) => readonly AnyShape[];
 
-export type PartialDeepUnionShape<U extends readonly AnyShape[]> = UnionShape<
+export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<
   ToArray<{
-    [K in keyof U]: U[K] extends AnyShape ? InferPartialDeepShape<U[K]> : never;
+    [K in keyof U]: U[K] extends AnyShape ? InferDeepPartialShape<U[K]> : never;
   }>
 >;
 
@@ -31,7 +31,7 @@ export type PartialDeepUnionShape<U extends readonly AnyShape[]> = UnionShape<
  */
 export class UnionShape<U extends readonly AnyShape[]>
   extends Shape<U[number]['input'], U[number]['output']>
-  implements PartialDeepProtocol<PartialDeepUnionShape<U>>
+  implements DeepPartialProtocol<DeepPartialUnionShape<U>>
 {
   protected _options;
   protected _typeIssueFactory;
@@ -64,8 +64,8 @@ export class UnionShape<U extends readonly AnyShape[]>
     return cb;
   }
 
-  partialDeep(): PartialDeepUnionShape<U> {
-    return new UnionShape(this.shapes.map(toPartialDeep), this._options) as any;
+  deepPartial(): DeepPartialUnionShape<U> {
+    return new UnionShape(this.shapes.map(toDeepPartial), this._options) as any;
   }
 
   at(key: unknown): AnyShape | null {

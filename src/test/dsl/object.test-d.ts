@@ -23,7 +23,7 @@ expectType<{ aaa?: string; bbb?: number }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .partialDeep().output
+    .deepPartial().output
 );
 
 expectType<{ aaa?: string; bbb?: { ccc?: number } }>(
@@ -32,7 +32,7 @@ expectType<{ aaa?: string; bbb?: { ccc?: number } }>(
       aaa: d.string(),
       bbb: d.object({ ccc: d.number() }),
     })
-    .partialDeep().output
+    .deepPartial().output
 );
 
 expectType<{ aaa?: string; bbb?: Array<number | undefined> }>(
@@ -41,5 +41,5 @@ expectType<{ aaa?: string; bbb?: Array<number | undefined> }>(
       aaa: d.string(),
       bbb: d.array(d.number()),
     })
-    .partialDeep().output
+    .deepPartial().output
 );

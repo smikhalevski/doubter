@@ -46,14 +46,14 @@ export declare const BRAND: unique symbol;
  */
 export type AnyShape = Shape | Shape<never>;
 
-export interface PartialDeepProtocol<S extends AnyShape> {
-  partialDeep(): S;
+export interface DeepPartialProtocol<S extends AnyShape> {
+  deepPartial(): S;
 }
 
-export type InferPartialDeepShape<S extends AnyShape> = S extends PartialDeepProtocol<infer S1> ? S1 : S;
+export type InferDeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer S1> ? S1 : S;
 
-export function toPartialDeep<S extends AnyShape>(shape: S): InferPartialDeepShape<S> {
-  return 'partialDeep' in shape && typeof shape.partialDeep === 'function' ? shape.partialDeep() : shape;
+export function toDeepPartial<S extends AnyShape>(shape: S): InferDeepPartialShape<S> {
+  return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
 /**
@@ -863,7 +863,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
  */
 export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
   extends Shape<I['input'], O['output']>
-  implements PartialDeepProtocol<PipeShape<InferPartialDeepShape<I>, InferPartialDeepShape<O>>>
+  implements DeepPartialProtocol<PipeShape<InferDeepPartialShape<I>, InferDeepPartialShape<O>>>
 {
   /**
    * Creates the new {@linkcode PipeShape} instance.
@@ -886,8 +886,8 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
     super();
   }
 
-  partialDeep(): PipeShape<InferPartialDeepShape<I>, InferPartialDeepShape<O>> {
-    return new PipeShape(toPartialDeep(this.inputShape), toPartialDeep(this.outputShape));
+  deepPartial(): PipeShape<InferDeepPartialShape<I>, InferDeepPartialShape<O>> {
+    return new PipeShape(toDeepPartial(this.inputShape), toDeepPartial(this.outputShape));
   }
 
   protected _requiresAsync(): boolean {
@@ -979,7 +979,7 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
  */
 export class ReplaceShape<S extends AnyShape, A, B>
   extends Shape<S['input'] | A, Exclude<S['output'], A> | B>
-  implements PartialDeepProtocol<ReplaceShape<InferPartialDeepShape<S>, A, B>>
+  implements DeepPartialProtocol<ReplaceShape<InferDeepPartialShape<S>, A, B>>
 {
   private _result: ApplyResult<B>;
 
@@ -1012,8 +1012,8 @@ export class ReplaceShape<S extends AnyShape, A, B>
     this._result = isEqual(inputValue, outputValue) ? null : ok(outputValue);
   }
 
-  partialDeep(): ReplaceShape<InferPartialDeepShape<S>, A, B> {
-    return new ReplaceShape(toPartialDeep(this.shape), this.inputValue, this.outputValue);
+  deepPartial(): ReplaceShape<InferDeepPartialShape<S>, A, B> {
+    return new ReplaceShape(toDeepPartial(this.shape), this.inputValue, this.outputValue);
   }
 
   protected _requiresAsync(): boolean {
@@ -1091,7 +1091,7 @@ export class ReplaceShape<S extends AnyShape, A, B>
  */
 export class ExcludeShape<S extends AnyShape, T>
   extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>
-  implements PartialDeepProtocol<ExcludeShape<InferPartialDeepShape<S>, T>>
+  implements DeepPartialProtocol<ExcludeShape<InferDeepPartialShape<S>, T>>
 {
   protected _typeIssueFactory;
   protected _options;
@@ -1122,8 +1122,8 @@ export class ExcludeShape<S extends AnyShape, T>
     this._options = options;
   }
 
-  partialDeep(): ExcludeShape<InferPartialDeepShape<S>, T> {
-    return new ExcludeShape(toPartialDeep(this.shape), this.excludedValue, this._options);
+  deepPartial(): ExcludeShape<InferDeepPartialShape<S>, T> {
+    return new ExcludeShape(toDeepPartial(this.shape), this.excludedValue, this._options);
   }
 
   protected _requiresAsync(): boolean {
@@ -1204,7 +1204,7 @@ export class ExcludeShape<S extends AnyShape, T>
  */
 export class CatchShape<S extends AnyShape, T>
   extends Shape<S['input'], S['output'] | T>
-  implements PartialDeepProtocol<CatchShape<InferPartialDeepShape<S>, T>>
+  implements DeepPartialProtocol<CatchShape<InferDeepPartialShape<S>, T>>
 {
   private _resultProvider: () => Ok<T>;
 
@@ -1235,8 +1235,8 @@ export class CatchShape<S extends AnyShape, T>
     }
   }
 
-  partialDeep(): CatchShape<InferPartialDeepShape<S>, T> {
-    return new CatchShape(toPartialDeep(this.shape), this.fallback);
+  deepPartial(): CatchShape<InferDeepPartialShape<S>, T> {
+    return new CatchShape(toDeepPartial(this.shape), this.fallback);
   }
 
   protected _requiresAsync(): boolean {

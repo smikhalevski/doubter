@@ -15,7 +15,7 @@ expectType<{ aaa?: string } & { bbb?: number }>(
         bbb: d.number(),
       }),
     ])
-    .partialDeep().output
+    .deepPartial().output
 );
 
 expectType<{ aaa?: Array<string | undefined> } & { bbb?: number }>(
@@ -28,5 +28,5 @@ expectType<{ aaa?: Array<string | undefined> } & { bbb?: number }>(
         bbb: d.number(),
       }),
     ])
-    .partialDeep().output
+    .deepPartial().output
 );

@@ -1,10 +1,10 @@
 import {
   AnyShape,
   ApplyResult,
-  InferPartialDeepShape,
-  PartialDeepProtocol,
+  InferDeepPartialShape,
+  DeepPartialProtocol,
   Shape,
-  toPartialDeep,
+  toDeepPartial,
   ValueType,
 } from './Shape';
 import { ParseOptions } from '../shared-types';
@@ -18,7 +18,7 @@ import { ERROR_SHAPE_EXPECTED } from '../constants';
  */
 export class LazyShape<S extends AnyShape>
   extends Shape<S['input'], S['output']>
-  implements PartialDeepProtocol<InferPartialDeepShape<S>>
+  implements DeepPartialProtocol<InferDeepPartialShape<S>>
 {
   protected _shapeProvider;
 
@@ -49,8 +49,8 @@ export class LazyShape<S extends AnyShape>
     return shape;
   }
 
-  partialDeep(): InferPartialDeepShape<S> {
-    return toPartialDeep(this.shape);
+  deepPartial(): InferDeepPartialShape<S> {
+    return toDeepPartial(this.shape);
   }
 
   protected _requiresAsync(): boolean {

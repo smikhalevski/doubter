@@ -23,12 +23,12 @@ import {
   ApplyResult,
   Dict,
   ExcludeShape,
-  InferPartialDeepShape,
-  PartialDeepProtocol,
+  InferDeepPartialShape,
+  DeepPartialProtocol,
   ReadonlyDict,
   ReplaceShape,
   Shape,
-  toPartialDeep,
+  toDeepPartial,
   ValueType,
 } from './Shape';
 import { EnumShape } from './EnumShape';
@@ -57,9 +57,9 @@ export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: Exclu
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
-export type PartialDeepObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null> = ObjectShape<
-  { [K in keyof P]: ReplaceShape<InferPartialDeepShape<P[K]>, undefined, undefined> },
-  R extends AnyShape ? ReplaceShape<InferPartialDeepShape<R>, undefined, undefined> : null
+export type DeepPartialObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null> = ObjectShape<
+  { [K in keyof P]: ReplaceShape<InferDeepPartialShape<P[K]>, undefined, undefined> },
+  R extends AnyShape ? ReplaceShape<InferDeepPartialShape<R>, undefined, undefined> : null
 >;
 
 /**
@@ -71,7 +71,7 @@ export type PartialDeepObjectShape<P extends ReadonlyDict<AnyShape>, R extends A
  */
 export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null>
   extends Shape<InferObject<P, R, 'input'>, InferObject<P, R, 'output'>>
-  implements PartialDeepProtocol<PartialDeepObjectShape<P, R>>
+  implements DeepPartialProtocol<DeepPartialObjectShape<P, R>>
 {
   /**
    * The array of known object keys.
@@ -237,12 +237,12 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape where its keys and keys of all nested shapes are marked as optional.
    */
-  partialDeep(): PartialDeepObjectShape<P, R> {
+  deepPartial(): DeepPartialObjectShape<P, R> {
     const shapes: Dict<AnyShape> = {};
     const restShape = this.restShape === null ? null : this.restShape.optional();
 
     for (const key in this.shapes) {
-      shapes[key] = toPartialDeep(this.shapes[key]).optional();
+      shapes[key] = toDeepPartial(this.shapes[key]).optional();
     }
     return new ObjectShape<any, any>(shapes, restShape, this._options, this.keysMode);
   }

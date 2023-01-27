@@ -1,10 +1,10 @@
 import {
   AnyShape,
   ApplyResult,
-  InferPartialDeepShape,
-  PartialDeepProtocol,
+  InferDeepPartialShape,
+  DeepPartialProtocol,
   ReplaceShape,
-  toPartialDeep,
+  toDeepPartial,
   ValueType,
 } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
@@ -47,13 +47,13 @@ export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape 
 
 export type ToArray<T> = T extends readonly any[] ? T : never;
 
-export type PartialDeepArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
+export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
   U extends readonly AnyShape[]
     ? ToArray<{
-        [K in keyof U]: U[K] extends AnyShape ? ReplaceShape<InferPartialDeepShape<U[K]>, undefined, undefined> : never;
+        [K in keyof U]: U[K] extends AnyShape ? ReplaceShape<InferDeepPartialShape<U[K]>, undefined, undefined> : never;
       }>
     : null,
-  R extends AnyShape ? ReplaceShape<InferPartialDeepShape<R>, undefined, undefined> : null
+  R extends AnyShape ? ReplaceShape<InferDeepPartialShape<R>, undefined, undefined> : null
 >;
 
 /**
@@ -64,7 +64,7 @@ export type PartialDeepArrayShape<U extends readonly AnyShape[] | null, R extend
  */
 export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null>
   extends CoercibleShape<InferArray<U, R, 'input'>, InferArray<U, R, 'output'>>
-  implements PartialDeepProtocol<PartialDeepArrayShape<U, R>>
+  implements DeepPartialProtocol<DeepPartialArrayShape<U, R>>
 {
   protected _options;
   protected _typeIssueFactory;
@@ -172,14 +172,14 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     });
   }
 
-  partialDeep(): PartialDeepArrayShape<U, R> {
+  deepPartial(): DeepPartialArrayShape<U, R> {
     let shapes: AnyShape[] | null = null;
 
     if (this.shapes !== null) {
       shapes = [];
 
       for (const shape of this.shapes) {
-        shapes.push(toPartialDeep(shape).optional());
+        shapes.push(toDeepPartial(shape).optional());
       }
     }
 

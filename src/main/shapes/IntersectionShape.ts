@@ -1,10 +1,10 @@
 import {
   AnyShape,
   ApplyResult,
-  InferPartialDeepShape,
-  PartialDeepProtocol,
+  InferDeepPartialShape,
+  DeepPartialProtocol,
   Shape,
-  toPartialDeep,
+  toDeepPartial,
   ValueType,
 } from './Shape';
 import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
@@ -14,15 +14,15 @@ import { ToArray } from './ArrayShape';
 
 export type ToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
-export type PartialDeepIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<
+export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<
   ToArray<{
-    [K in keyof U]: U[K] extends AnyShape ? InferPartialDeepShape<U[K]> : never;
+    [K in keyof U]: U[K] extends AnyShape ? InferDeepPartialShape<U[K]> : never;
   }>
 >;
 
 export class IntersectionShape<U extends readonly AnyShape[]>
   extends Shape<ToIntersection<U[number]['input']>, ToIntersection<U[number]['output']>>
-  implements PartialDeepProtocol<PartialDeepIntersectionShape<U>>
+  implements DeepPartialProtocol<DeepPartialIntersectionShape<U>>
 {
   protected _options;
   protected _typeIssueFactory;
@@ -42,8 +42,8 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return intersectValueTypes(this.shapes.map(shape => shape['_getInputTypes']()));
   }
 
-  partialDeep(): PartialDeepIntersectionShape<U> {
-    return new IntersectionShape(this.shapes.map(toPartialDeep), this._options) as any;
+  deepPartial(): DeepPartialIntersectionShape<U> {
+    return new IntersectionShape(this.shapes.map(toDeepPartial), this._options) as any;
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<ToIntersection<U[number]['output']>> {
