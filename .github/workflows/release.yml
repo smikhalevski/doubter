@@ -1,0 +1,56 @@
+name: release
+
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+
+jobs:
+
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run docs
+      - run: npm test
+      - run: npm run test:definitions
+
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Push docs to ghpages
+        run: |
+          set -x
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          TEMP_DIR=$(mktemp -d)
+          mv ./docs $TEMP_DIR
+
+          git fetch origin ghpages:ghpages
+          git checkout ghpages
+          git rm -rf .
+          git clean -fxd
+          
+          cp -R $TEMP_DIR/docs/. .
+
+          git add .
+          sleep 2
+          ls -la
+          sleep 2
+          git commit -m "Updated docs ($(git rev-parse --short $GITHUB_SHA))"
+          git push origin ghpages
+
+      - run: gh release create ${{ github.ref_name }} --generate-notes --draft
+        env:
+          GH_TOKEN: ${{ github.token }}
