@@ -2,8 +2,7 @@ name: release
 
 on:
   push:
-    tags:
-      - v[0-9]+.[0-9]+.[0-9]+
+    tags: [ "v[0-9]+.[0-9]+.[0-9]+" ]
 
 jobs:
 
@@ -45,9 +44,6 @@ jobs:
           cp -R $TEMP_DIR/docs/. .
 
           git add .
-          sleep 2
-          ls -la
-          sleep 2
           git commit -m "Updated docs ($(git rev-parse --short $GITHUB_SHA))"
           git push origin ghpages
 
