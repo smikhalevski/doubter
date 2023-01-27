@@ -1,12 +1,4 @@
-import {
-  AnyShape,
-  ApplyResult,
-  InferDeepPartialShape,
-  DeepPartialProtocol,
-  ReplaceShape,
-  toDeepPartial,
-  ValueType,
-} from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, InferDeepPartialShape, ReplaceShape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -18,6 +10,7 @@ import {
   isIterable,
   ok,
   toArrayIndex,
+  toDeepPartial,
   unshiftPath,
 } from '../utils';
 import {

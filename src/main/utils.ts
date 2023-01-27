@@ -1,5 +1,5 @@
 import { Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from './shared-types';
-import { AnyShape, ApplyChecksCallback, ReadonlyDict, Shape, ValueType } from './shapes/Shape';
+import { AnyShape, ApplyChecksCallback, InferDeepPartialShape, ReadonlyDict, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 
@@ -75,6 +75,10 @@ export function toArrayIndex(key: any): number {
     key = +key;
   }
   return Number.isInteger(key) && key >= 0 && key < 0xffffffff ? key : -1;
+}
+
+export function toDeepPartial<S extends AnyShape>(shape: S): InferDeepPartialShape<S> {
+  return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
 /**

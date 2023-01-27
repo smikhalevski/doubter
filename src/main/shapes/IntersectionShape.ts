@@ -1,13 +1,5 @@
-import {
-  AnyShape,
-  ApplyResult,
-  InferDeepPartialShape,
-  DeepPartialProtocol,
-  Shape,
-  toDeepPartial,
-  ValueType,
-} from './Shape';
-import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
+import { AnyShape, ApplyResult, DeepPartialProtocol, InferDeepPartialShape, Shape, ValueType } from './Shape';
+import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok, toDeepPartial } from '../utils';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION, TYPE_ARRAY, TYPE_DATE, TYPE_NEVER, TYPE_OBJECT } from '../constants';
 import { ToArray } from './ArrayShape';

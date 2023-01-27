@@ -22,6 +22,7 @@ import {
   isUnsafeCheck,
   ok,
   returnTrue,
+  toDeepPartial,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -46,15 +47,15 @@ export declare const BRAND: unique symbol;
  */
 export type AnyShape = Shape | Shape<never>;
 
+export interface IncludeShape<S extends AnyShape, T>
+  extends Shape<S['input'] | T, S['output'] | T>,
+    DeepPartialProtocol<IncludeShape<InferDeepPartialShape<S>, T>> {}
+
 export interface DeepPartialProtocol<S extends AnyShape> {
   deepPartial(): S;
 }
 
-export type InferDeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer S1> ? S1 : S;
-
-export function toDeepPartial<S extends AnyShape>(shape: S): InferDeepPartialShape<S> {
-  return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
-}
+export type InferDeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer T> ? T : S;
 
 /**
  * The detected runtime input value type.
@@ -312,10 +313,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ReplaceShape} instance.
    * @template T The included value.
    */
-  include<T extends Literal>(
-    value: T,
-    options?: ConstraintOptions | Message
-  ): Shape<this['input'] | T, this['output'] | T> {
+  include<T extends Literal>(value: T, options?: ConstraintOptions | Message): IncludeShape<this, T> {
     return this.replace(value, value);
   }
 

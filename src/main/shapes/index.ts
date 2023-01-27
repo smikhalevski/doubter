@@ -16,7 +16,18 @@ export { ObjectShape, KeysMode } from './ObjectShape';
 export { PromiseShape } from './PromiseShape';
 export { RecordShape } from './RecordShape';
 export { SetShape } from './SetShape';
-export { AnyShape, ExcludeShape, PipeShape, ReplaceShape, Shape, TransformShape, ValueType, CatchShape } from './Shape';
+export {
+  AnyShape,
+  DeepPartialProtocol,
+  ExcludeShape,
+  IncludeShape,
+  PipeShape,
+  ReplaceShape,
+  Shape,
+  TransformShape,
+  ValueType,
+  CatchShape,
+} from './Shape';
 export { StringShape } from './StringShape';
 export { SymbolShape } from './SymbolShape';
 export { UnionShape } from './UnionShape';

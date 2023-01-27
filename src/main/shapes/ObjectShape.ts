@@ -16,19 +16,19 @@ import {
   isPlainObject,
   ok,
   setKeyValue,
+  toDeepPartial,
   unshiftPath,
 } from '../utils';
 import {
   AnyShape,
   ApplyResult,
+  DeepPartialProtocol,
   Dict,
   ExcludeShape,
   InferDeepPartialShape,
-  DeepPartialProtocol,
   ReadonlyDict,
   ReplaceShape,
   Shape,
-  toDeepPartial,
   ValueType,
 } from './Shape';
 import { EnumShape } from './EnumShape';

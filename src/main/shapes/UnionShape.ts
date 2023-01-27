@@ -1,14 +1,15 @@
-import {
-  AnyShape,
-  ApplyResult,
-  InferDeepPartialShape,
-  DeepPartialProtocol,
-  Shape,
-  toDeepPartial,
-  ValueType,
-} from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, InferDeepPartialShape, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
-import { concatIssues, createIssueFactory, getValueType, isArray, isAsyncShapes, isObjectLike, unique } from '../utils';
+import {
+  concatIssues,
+  createIssueFactory,
+  getValueType,
+  isArray,
+  isAsyncShapes,
+  isObjectLike,
+  toDeepPartial,
+  unique,
+} from '../utils';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
 import { ObjectShape } from './ObjectShape';
 import { ToArray } from './ArrayShape';

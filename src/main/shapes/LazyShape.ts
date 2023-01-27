@@ -1,14 +1,6 @@
-import {
-  AnyShape,
-  ApplyResult,
-  InferDeepPartialShape,
-  DeepPartialProtocol,
-  Shape,
-  toDeepPartial,
-  ValueType,
-} from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, InferDeepPartialShape, Shape, ValueType } from './Shape';
 import { ParseOptions } from '../shared-types';
-import { isArray, returnArray, returnFalse } from '../utils';
+import { isArray, returnArray, returnFalse, toDeepPartial } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 
 /**
