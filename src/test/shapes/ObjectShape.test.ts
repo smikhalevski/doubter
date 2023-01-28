@@ -1,4 +1,4 @@
-import { ObjectShape, Shape, StringShape } from '../../main';
+import { DeepPartialProtocol, NumberShape, ObjectShape, Shape, StringShape } from '../../main';
 import {
   CODE_ENUM,
   CODE_EXCLUSION,
@@ -239,6 +239,38 @@ describe('ObjectShape', () => {
     expect(objShape.try(new Foo())).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: {}, message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+    });
+  });
+
+  describe('deepPartial', () => {
+    test('marks property and rest shapes as deep partial', () => {
+      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
+        deepPartial = jest.fn(() => this);
+      }
+
+      const shape1 = new MockShape();
+      const shape2 = new Shape();
+      const shape3 = new MockShape();
+
+      new ObjectShape(
+        {
+          key1: shape1,
+          key2: shape2,
+        },
+        shape3
+      ).deepPartial();
+
+      expect(shape1.deepPartial).toHaveBeenCalledTimes(1);
+      expect(shape3.deepPartial).toHaveBeenCalledTimes(1);
+    });
+
+    test('parses deep partial objects', () => {
+      const arrShape = new ObjectShape({ key1: new StringShape() }, new NumberShape()).deepPartial();
+
+      expect(arrShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(arrShape.parse({ key1: 'aaa' })).toEqual({ key1: 'aaa' });
+      expect(arrShape.parse({ key2: undefined })).toEqual({ key2: undefined });
+      expect(arrShape.parse({ key2: 111 })).toEqual({ key2: 111 });
     });
   });
 

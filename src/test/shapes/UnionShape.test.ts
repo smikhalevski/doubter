@@ -2,6 +2,7 @@ import {
   ArrayShape,
   BooleanShape,
   ConstShape,
+  DeepPartialProtocol,
   EnumShape,
   NumberShape,
   ObjectShape,
@@ -136,6 +137,34 @@ describe('UnionShape', () => {
     ]);
 
     expect(shape.parse({ type: 'bbb' })).toEqual({ type: 'bbb' });
+  });
+
+  describe('deepPartial', () => {
+    test('marks all shapes as deep partial', () => {
+      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
+        deepPartial = jest.fn(() => this);
+      }
+
+      const shape1 = new MockShape();
+      const shape2 = new MockShape();
+
+      new UnionShape([shape1, shape2]).deepPartial();
+
+      expect(shape1.deepPartial).toHaveBeenCalledTimes(1);
+      expect(shape2.deepPartial).toHaveBeenCalledTimes(1);
+    });
+
+    test('parses united deep partial objects', () => {
+      const andShape = new UnionShape([
+        new ObjectShape({ key1: new StringShape() }, null),
+        new ObjectShape({ key2: new StringShape() }, null),
+      ]).deepPartial();
+
+      expect(andShape.parse({})).toEqual({});
+      expect(andShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(andShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
+      expect(andShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+    });
   });
 
   describe('async', () => {

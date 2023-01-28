@@ -7,6 +7,7 @@ import {
   cloneObjectKnownKeys,
   concatIssues,
   createIssueFactory,
+  Dict,
   enableBitAt,
   isArray,
   isAsyncShapes,
@@ -15,18 +16,17 @@ import {
   isObjectLike,
   isPlainObject,
   ok,
+  ReadonlyDict,
   setKeyValue,
-  toDeepPartial,
+  toDeepPartialShape,
   unshiftPath,
 } from '../utils';
 import {
   AnyShape,
   ApplyResult,
   DeepPartialProtocol,
-  DeepPartialShape,
-  Dict,
   ExcludeShape,
-  ReadonlyDict,
+  OptionalDeepPartialShape,
   ReplaceShape,
   Shape,
   ValueType,
@@ -58,8 +58,8 @@ export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: Exclu
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
 export type DeepPartialObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null> = ObjectShape<
-  { [K in keyof P]: ReplaceShape<DeepPartialShape<P[K]>, undefined, undefined> },
-  R extends AnyShape ? ReplaceShape<DeepPartialShape<R>, undefined, undefined> : null
+  { [K in keyof P]: OptionalDeepPartialShape<P[K]> },
+  R extends AnyShape ? OptionalDeepPartialShape<R> : null
 >;
 
 /**
@@ -234,16 +234,15 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
   }
 
-  /**
-   * Returns an object shape where its keys and keys of all nested shapes are marked as optional.
-   */
   deepPartial(): DeepPartialObjectShape<P, R> {
     const shapes: Dict<AnyShape> = {};
-    const restShape = this.restShape === null ? null : this.restShape.optional();
 
     for (const key in this.shapes) {
-      shapes[key] = toDeepPartial(this.shapes[key]).optional();
+      shapes[key] = toDeepPartialShape(this.shapes[key]).optional();
     }
+
+    const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
+
     return new ObjectShape<any, any>(shapes, restShape, this._options, this.keysMode);
   }
 

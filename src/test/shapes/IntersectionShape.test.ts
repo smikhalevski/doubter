@@ -1,4 +1,13 @@
-import { ArrayShape, IntersectionShape, NumberShape, ObjectShape, Shape, StringShape, UnionShape } from '../../main';
+import {
+  ArrayShape,
+  DeepPartialProtocol,
+  IntersectionShape,
+  NumberShape,
+  ObjectShape,
+  Shape,
+  StringShape,
+  UnionShape,
+} from '../../main';
 import {
   CODE_INTERSECTION,
   CODE_TYPE,
@@ -85,6 +94,76 @@ describe('IntersectionShape', () => {
           path: [],
         },
       ],
+    });
+  });
+
+  describe('deepPartial', () => {
+    test('marks all shapes as deep partial', () => {
+      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
+        deepPartial = jest.fn(() => this);
+      }
+
+      const shape1 = new MockShape();
+      const shape2 = new MockShape();
+
+      new IntersectionShape([shape1, shape2]).deepPartial();
+
+      expect(shape1.deepPartial).toHaveBeenCalledTimes(1);
+      expect(shape2.deepPartial).toHaveBeenCalledTimes(1);
+    });
+
+    test('parses intersected deep partial objects', () => {
+      const andShape = new IntersectionShape([
+        new ObjectShape({ key1: new StringShape() }, null),
+        new ObjectShape({ key2: new StringShape() }, null),
+      ]).deepPartial();
+
+      expect(andShape.parse({})).toEqual({});
+      expect(andShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(andShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
+      expect(andShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+    });
+  });
+
+  describe('async', () => {
+    test('returns the input that matches all shapes as is', async () => {
+      const obj = { key1: 'aaa', key2: 111 };
+
+      const andShape = new IntersectionShape([
+        new ObjectShape(
+          {
+            key1: new StringShape(),
+          },
+          null
+        ).transformAsync(value => Promise.resolve(value)),
+        new ObjectShape(
+          {
+            key2: new NumberShape().transformAsync(value => Promise.resolve(value)),
+          },
+          null
+        ),
+      ]);
+
+      await expect(andShape.parseAsync(obj)).resolves.toBe(obj);
+    });
+
+    test('raises an issue if child outputs cannot be intersected', async () => {
+      const andShape = new IntersectionShape([
+        new ArrayShape(null, new StringShape()),
+        new ArrayShape(null, new StringShape().transformAsync(value => Promise.resolve(value)).transform(parseFloat)),
+      ]);
+
+      await expect(andShape.tryAsync(['111.222'])).resolves.toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_INTERSECTION,
+            input: ['111.222'],
+            message: MESSAGE_INTERSECTION,
+            path: [],
+          },
+        ],
+      });
     });
   });
 });

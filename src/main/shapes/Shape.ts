@@ -22,7 +22,7 @@ import {
   isUnsafeCheck,
   ok,
   returnTrue,
-  toDeepPartial,
+  toDeepPartialShape,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -77,6 +77,11 @@ export interface DeepPartialProtocol<T extends AnyShape> {
 export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer T> ? T : S;
 
 /**
+ * Shape that is both optional and deep partial.
+ */
+export type OptionalDeepPartialShape<S extends AnyShape> = ReplaceShape<DeepPartialShape<S>, undefined, undefined>;
+
+/**
  * The detected runtime input value type.
  */
 export type ValueType =
@@ -102,14 +107,6 @@ export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
  * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.
  */
 export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
-
-export interface ReadonlyDict<T = any> {
-  readonly [key: string]: T;
-}
-
-export interface Dict<T = any> {
-  [key: string]: T;
-}
 
 /**
  * The baseline shape implementation.
@@ -259,7 +256,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode PipeShape} instance.
    * @template T The output value.
    */
-  to<T>(shape: Shape<O, T>): Shape<I, T> {
+  to<S extends AnyShape>(shape: S): PipeShape<this, S> {
     return new PipeShape(this, shape);
   }
 
@@ -302,7 +299,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Brands the output with this shape as a brand value.
+   * Brands the output. The shape itself is used as a brand value.
    *
    * @returns A shape with branded output type.
    * @template T The brand value.
@@ -313,13 +310,13 @@ export class Shape<I = any, O = I> {
    * Adds a brand to the output type of the shape.
    *
    * @param brandValue The literal value to add as a brand.
-   * @returns An opaque shape with branded output type.
+   * @returns A shape with branded output type.
    * @template T The brand value.
    */
   brand<T extends Literal>(brandValue: T): BrandShape<this, T>;
 
   brand(brandValue?: unknown): BrandShape<this, unknown> {
-    return new BrandShape(this, brandValue);
+    return new BrandShape(this, arguments.length === 0 ? this : brandValue);
   }
 
   /**
@@ -364,7 +361,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional(): ReplaceShape<this, undefined, undefined>;
+  optional(): IncludeShape<this, undefined>;
 
   /**
    * Replaces `undefined` input value with a default output value.
@@ -383,7 +380,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable(): ReplaceShape<this, null, null>;
+  nullable(): IncludeShape<this, null>;
 
   /**
    * Replaces `null` input value with a default output value.
@@ -402,7 +399,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish(): ReplaceShape<ReplaceShape<this, null, null>, undefined, undefined>;
+  nullish(): IncludeShape<IncludeShape<this, null>, undefined>;
 
   /**
    * Replaces `null` and `undefined` input value with a default output value.
@@ -431,7 +428,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode CatchShape} instance.
    */
-  catch(): Shape<I, O | undefined>;
+  catch(): CatchShape<this, undefined>;
 
   /**
    * Returns the fallback value if parsing fails.
@@ -439,7 +436,7 @@ export class Shape<I = any, O = I> {
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
    * @returns The {@linkcode CatchShape} instance.
    */
-  catch<T extends Literal>(fallback: T | (() => T)): Shape<I, O | T>;
+  catch<T extends Literal>(fallback: T | (() => T)): CatchShape<this, T>;
 
   catch(fallback?: unknown): Shape {
     return new CatchShape(this, fallback);
@@ -915,7 +912,7 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
   }
 
   deepPartial(): PipeShape<DeepPartialShape<I>, DeepPartialShape<O>> {
-    return new PipeShape(toDeepPartial(this.inputShape), toDeepPartial(this.outputShape));
+    return new PipeShape(toDeepPartialShape(this.inputShape), toDeepPartialShape(this.outputShape));
   }
 
   protected _requiresAsync(): boolean {
@@ -1041,7 +1038,7 @@ export class ReplaceShape<S extends AnyShape, A, B>
   }
 
   deepPartial(): ReplaceShape<DeepPartialShape<S>, A, B> {
-    return new ReplaceShape(toDeepPartial(this.shape), this.inputValue, this.outputValue);
+    return new ReplaceShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue);
   }
 
   protected _requiresAsync(): boolean {
@@ -1121,8 +1118,8 @@ export class ExcludeShape<S extends AnyShape, T>
   extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>
   implements DeepPartialProtocol<ExcludeShape<DeepPartialShape<S>, T>>
 {
-  protected _typeIssueFactory;
   protected _options;
+  protected _typeIssueFactory;
 
   /**
    * Creates the new {@linkcode ExcludeShape} instance.
@@ -1146,12 +1143,12 @@ export class ExcludeShape<S extends AnyShape, T>
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
     this._options = options;
+    this._typeIssueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
   }
 
   deepPartial(): ExcludeShape<DeepPartialShape<S>, T> {
-    return new ExcludeShape(toDeepPartial(this.shape), this.excludedValue, this._options);
+    return new ExcludeShape(toDeepPartialShape(this.shape), this.excludedValue, this._options);
   }
 
   protected _requiresAsync(): boolean {
@@ -1245,7 +1242,7 @@ export class CatchShape<S extends AnyShape, T>
    */
   constructor(
     /**
-     * The base shape.
+     * The shape that parses the input.
      */
     readonly shape: S,
     /**
@@ -1264,7 +1261,7 @@ export class CatchShape<S extends AnyShape, T>
   }
 
   deepPartial(): CatchShape<DeepPartialShape<S>, T> {
-    return new CatchShape(toDeepPartial(this.shape), this.fallback);
+    return new CatchShape(toDeepPartialShape(this.shape), this.fallback);
   }
 
   protected _requiresAsync(): boolean {
@@ -1321,15 +1318,38 @@ export class CatchShape<S extends AnyShape, T>
   }
 }
 
+/**
+ * The shape that has a brand attached to its output type.
+ *
+ * @template S The shape that parses the input.
+ * @template T The brand value.
+ */
 export class BrandShape<S extends AnyShape, T>
   extends Shape<S['input'], S['output'] & { [BRAND]: T }>
   implements DeepPartialProtocol<BrandShape<DeepPartialShape<S>, T>>
 {
-  constructor(readonly shape: S, readonly brandValue: T) {
+  /**
+   * Creates the new {@linkcode BrandShape} instance.
+   *
+   * @param shape The shape that parses the input.
+   * @param brandValue The brand value.
+   * @template S The shape that parses the input.
+   * @template T The brand value.
+   */
+  constructor(
+    /**
+     * The shape that parses the input.
+     */
+    readonly shape: S,
+    /**
+     * The brand value.
+     */
+    readonly brandValue: T
+  ) {
     super();
   }
 
   deepPartial(): BrandShape<DeepPartialShape<S>, T> {
-    return new BrandShape(toDeepPartial(this.shape), this.brandValue);
+    return new BrandShape(toDeepPartialShape(this.shape), this.brandValue);
   }
 }

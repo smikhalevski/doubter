@@ -1,6 +1,6 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
 import { ParseOptions } from '../shared-types';
-import { isArray, returnArray, returnFalse, toDeepPartial } from '../utils';
+import { isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 
 /**
@@ -42,7 +42,7 @@ export class LazyShape<S extends AnyShape>
   }
 
   deepPartial(): DeepPartialShape<S> {
-    return toDeepPartial(this.shape);
+    return toDeepPartialShape(this.shape);
   }
 
   protected _requiresAsync(): boolean {

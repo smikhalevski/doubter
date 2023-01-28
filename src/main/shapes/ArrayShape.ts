@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, ReplaceShape, ValueType } from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -9,8 +9,9 @@ import {
   isEqual,
   isIterable,
   ok,
+  ToArray,
   toArrayIndex,
-  toDeepPartial,
+  toDeepPartialShape,
   unshiftPath,
 } from '../utils';
 import {
@@ -38,15 +39,11 @@ export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape 
     ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
     : R extends AnyShape ? R[C][] : any[];
 
-export type ToArray<T> = T extends readonly any[] ? T : never;
-
 export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
   U extends readonly AnyShape[]
-    ? ToArray<{
-        [K in keyof U]: U[K] extends AnyShape ? ReplaceShape<DeepPartialShape<U[K]>, undefined, undefined> : never;
-      }>
+    ? ToArray<{ [K in keyof U]: U[K] extends AnyShape ? OptionalDeepPartialShape<U[K]> : never }>
     : null,
-  R extends AnyShape ? ReplaceShape<DeepPartialShape<R>, undefined, undefined> : null
+  R extends AnyShape ? OptionalDeepPartialShape<R> : null
 >;
 
 /**
@@ -86,7 +83,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
 
     this._options = options;
 
-    if (shapes !== null && restShape === null) {
+    if (shapes !== null) {
       this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
     } else {
       this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
@@ -166,9 +163,9 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   deepPartial(): DeepPartialArrayShape<U, R> {
-    const shapes = this.shapes !== null ? this.shapes.map(shape => toDeepPartial(shape).optional()) : null;
+    const shapes = this.shapes !== null ? this.shapes.map(shape => toDeepPartialShape(shape).optional()) : null;
 
-    const restShape = this.restShape !== null ? toDeepPartial(this.restShape).optional() : null;
+    const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
     return new ArrayShape<any, any>(shapes, restShape, this._options);
   }

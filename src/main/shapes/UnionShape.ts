@@ -7,12 +7,12 @@ import {
   isArray,
   isAsyncShapes,
   isObjectLike,
-  toDeepPartial,
+  ToArray,
+  toDeepPartialShape,
   unique,
 } from '../utils';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
 import { ObjectShape } from './ObjectShape';
-import { ToArray } from './ArrayShape';
 
 /**
  * Returns the list of shapes that are applicable to the input.
@@ -20,9 +20,7 @@ import { ToArray } from './ArrayShape';
 export type LookupCallback = (input: any) => readonly AnyShape[];
 
 export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<
-  ToArray<{
-    [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
-  }>
+  ToArray<{ [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never }>
 >;
 
 /**
@@ -68,7 +66,7 @@ export class UnionShape<U extends readonly AnyShape[]>
   deepPartial(): DeepPartialUnionShape<U>;
 
   deepPartial(): AnyShape {
-    return new UnionShape(this.shapes.map(toDeepPartial), this._options);
+    return new UnionShape(this.shapes.map(toDeepPartialShape), this._options);
   }
 
   at(key: unknown): AnyShape | null {

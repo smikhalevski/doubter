@@ -7,17 +7,19 @@ import {
   Ok,
   ParseOptions,
 } from './shared-types';
-import {
-  AnyShape,
-  ApplyChecksCallback,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  ReadonlyDict,
-  Shape,
-  ValueType,
-} from './shapes/Shape';
+import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
+
+export interface ReadonlyDict<T = any> {
+  readonly [key: string]: T;
+}
+
+export interface Dict<T = any> {
+  [key: string]: T;
+}
+
+export type ToArray<T> = T extends readonly any[] ? T : never;
 
 export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
   const type = typeof value;
@@ -97,7 +99,9 @@ export function toArrayIndex(key: any): number {
  * Converts the shape to its deep partial alternative if shape implements {@linkcode DeepPartialProtocol}, or returns
  * the shape as is.
  */
-export function toDeepPartial<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(shape: S): DeepPartialShape<S> {
+export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(
+  shape: S
+): DeepPartialShape<S> {
   return typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 

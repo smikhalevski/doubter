@@ -1,6 +1,6 @@
 import { ConstraintOptions, Message } from '../shared-types';
 import { AnyShape, ObjectShape } from '../shapes';
-import { ReadonlyDict } from '../shapes/Shape';
+import { ReadonlyDict } from '../utils';
 
 /**
  * Creates the object shape.
