@@ -79,7 +79,7 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
 /**
  * Shape that is both optional and deep partial.
  */
-export type OptionalDeepPartialShape<S extends AnyShape> = ReplaceShape<DeepPartialShape<S>, undefined, undefined>;
+export type OptionalDeepPartialShape<S extends AnyShape> = IncludeShape<DeepPartialShape<S>, undefined>;
 
 /**
  * The detected runtime input value type.

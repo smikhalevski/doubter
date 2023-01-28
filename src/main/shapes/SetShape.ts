@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, ValueType } from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -9,6 +9,7 @@ import {
   isIterable,
   ok,
   toArrayIndex,
+  toDeepPartialShape,
   unshiftPath,
 } from '../utils';
 import {
@@ -29,7 +30,10 @@ import { CoercibleShape } from './CoercibleShape';
  *
  * @template S The value shape.
  */
-export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>, Set<S['output']>> {
+export class SetShape<S extends AnyShape>
+  extends CoercibleShape<Set<S['input']>, Set<S['output']>>
+  implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<S>>>
+{
   protected _options;
   protected _typeIssueFactory;
 
@@ -100,6 +104,10 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
         return issueFactory(input, options);
       }
     });
+  }
+
+  deepPartial(): SetShape<OptionalDeepPartialShape<S>> {
+    return new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options);
   }
 
   protected _requiresAsync(): boolean {
