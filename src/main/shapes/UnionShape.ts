@@ -1,5 +1,5 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, InferDeepPartialShape, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
+import { Issue, Message, ParseOptions, ConstraintOptions } from '../shared-types';
 import {
   concatIssues,
   createIssueFactory,
@@ -21,7 +21,7 @@ export type LookupCallback = (input: any) => readonly AnyShape[];
 
 export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<
   ToArray<{
-    [K in keyof U]: U[K] extends AnyShape ? InferDeepPartialShape<U[K]> : never;
+    [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
   }>
 >;
 
@@ -65,8 +65,10 @@ export class UnionShape<U extends readonly AnyShape[]>
     return cb;
   }
 
-  deepPartial(): DeepPartialUnionShape<U> {
-    return new UnionShape(this.shapes.map(toDeepPartial), this._options) as any;
+  deepPartial(): DeepPartialUnionShape<U>;
+
+  deepPartial(): AnyShape {
+    return new UnionShape(this.shapes.map(toDeepPartial), this._options);
   }
 
   at(key: unknown): AnyShape | null {

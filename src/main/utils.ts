@@ -1,5 +1,21 @@
-import { Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from './shared-types';
-import { AnyShape, ApplyChecksCallback, InferDeepPartialShape, ReadonlyDict, Shape, ValueType } from './shapes/Shape';
+import {
+  Check,
+  CheckCallback,
+  ConstraintOptions,
+  Issue,
+  Message,
+  Ok,
+  ParseOptions,
+} from './shared-types';
+import {
+  AnyShape,
+  ApplyChecksCallback,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  ReadonlyDict,
+  Shape,
+  ValueType,
+} from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 
@@ -77,8 +93,12 @@ export function toArrayIndex(key: any): number {
   return Number.isInteger(key) && key >= 0 && key < 0xffffffff ? key : -1;
 }
 
-export function toDeepPartial<S extends AnyShape>(shape: S): InferDeepPartialShape<S> {
-  return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
+/**
+ * Converts the shape to its deep partial alternative if shape implements {@linkcode DeepPartialProtocol}, or returns
+ * the shape as is.
+ */
+export function toDeepPartial<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(shape: S): DeepPartialShape<S> {
+  return typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
 /**

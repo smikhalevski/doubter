@@ -19,6 +19,7 @@ export { SetShape } from './SetShape';
 export {
   AnyShape,
   DeepPartialProtocol,
+  DeepPartialShape,
   ExcludeShape,
   IncludeShape,
   PipeShape,

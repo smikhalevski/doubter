@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, InferDeepPartialShape, ReplaceShape, ValueType } from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, ReplaceShape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -43,10 +43,10 @@ export type ToArray<T> = T extends readonly any[] ? T : never;
 export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
   U extends readonly AnyShape[]
     ? ToArray<{
-        [K in keyof U]: U[K] extends AnyShape ? ReplaceShape<InferDeepPartialShape<U[K]>, undefined, undefined> : never;
+        [K in keyof U]: U[K] extends AnyShape ? ReplaceShape<DeepPartialShape<U[K]>, undefined, undefined> : never;
       }>
     : null,
-  R extends AnyShape ? ReplaceShape<InferDeepPartialShape<R>, undefined, undefined> : null
+  R extends AnyShape ? ReplaceShape<DeepPartialShape<R>, undefined, undefined> : null
 >;
 
 /**
@@ -166,17 +166,11 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   deepPartial(): DeepPartialArrayShape<U, R> {
-    let shapes: AnyShape[] | null = null;
+    const shapes = this.shapes !== null ? this.shapes.map(shape => toDeepPartial(shape).optional()) : null;
 
-    if (this.shapes !== null) {
-      shapes = [];
+    const restShape = this.restShape !== null ? toDeepPartial(this.restShape).optional() : null;
 
-      for (const shape of this.shapes) {
-        shapes.push(toDeepPartial(shape).optional());
-      }
-    }
-
-    return new ArrayShape<any, any>(shapes, this.restShape === null ? null : this.restShape.optional(), this._options);
+    return new ArrayShape<any, any>(shapes, restShape, this._options);
   }
 
   protected _requiresAsync(): boolean {

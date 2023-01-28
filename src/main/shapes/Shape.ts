@@ -47,15 +47,34 @@ export declare const BRAND: unique symbol;
  */
 export type AnyShape = Shape | Shape<never>;
 
+/**
+ * An alias for {@linkcode ReplaceShape} that allows the same value as both an input and an output.
+ */
 export interface IncludeShape<S extends AnyShape, T>
   extends Shape<S['input'] | T, S['output'] | T>,
-    DeepPartialProtocol<IncludeShape<InferDeepPartialShape<S>, T>> {}
+    DeepPartialProtocol<IncludeShape<DeepPartialShape<S>, T>> {}
 
-export interface DeepPartialProtocol<S extends AnyShape> {
-  deepPartial(): S;
+/**
+ * A shape should implement {@linkcode DeepPartialProtocol} to be converted to deep partial.
+ *
+ * @template T The deep partial alternative of the shape.
+ */
+export interface DeepPartialProtocol<T extends AnyShape> {
+  /**
+   * Converts the shape and its child shapes to deep partial alternatives.
+   *
+   * @returns The deep partial clone of the shape.
+   */
+  deepPartial(): T;
 }
 
-export type InferDeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer T> ? T : S;
+/**
+ * Returns the deep partial alternative of the shape if it implements {@linkcode DeepPartialProtocol}, or returns shape
+ * as is if it doesn't.
+ *
+ * @template S The shape to convert to deep partial alternative.
+ */
+export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer T> ? T : S;
 
 /**
  * The detected runtime input value type.
@@ -283,13 +302,24 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Brands the output with this shape as a brand value.
+   *
+   * @returns A shape with branded output type.
+   * @template T The brand value.
+   */
+  brand(): BrandShape<this, this>;
+
+  /**
    * Adds a brand to the output type of the shape.
    *
+   * @param brandValue The literal value to add as a brand.
    * @returns An opaque shape with branded output type.
-   * @template T The unique brand marker. By default, this shape is used as a marker.
+   * @template T The brand value.
    */
-  brand<T = this>(): Shape<I, O & { [BRAND]: T }> {
-    return this as Shape;
+  brand<T extends Literal>(brandValue: T): BrandShape<this, T>;
+
+  brand(brandValue?: unknown): BrandShape<this, unknown> {
+    return new BrandShape(this, brandValue);
   }
 
   /**
@@ -861,7 +891,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
  */
 export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
   extends Shape<I['input'], O['output']>
-  implements DeepPartialProtocol<PipeShape<InferDeepPartialShape<I>, InferDeepPartialShape<O>>>
+  implements DeepPartialProtocol<PipeShape<DeepPartialShape<I>, DeepPartialShape<O>>>
 {
   /**
    * Creates the new {@linkcode PipeShape} instance.
@@ -884,7 +914,7 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
     super();
   }
 
-  deepPartial(): PipeShape<InferDeepPartialShape<I>, InferDeepPartialShape<O>> {
+  deepPartial(): PipeShape<DeepPartialShape<I>, DeepPartialShape<O>> {
     return new PipeShape(toDeepPartial(this.inputShape), toDeepPartial(this.outputShape));
   }
 
@@ -977,7 +1007,7 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
  */
 export class ReplaceShape<S extends AnyShape, A, B>
   extends Shape<S['input'] | A, Exclude<S['output'], A> | B>
-  implements DeepPartialProtocol<ReplaceShape<InferDeepPartialShape<S>, A, B>>
+  implements DeepPartialProtocol<ReplaceShape<DeepPartialShape<S>, A, B>>
 {
   private _result: ApplyResult<B>;
 
@@ -1010,7 +1040,7 @@ export class ReplaceShape<S extends AnyShape, A, B>
     this._result = isEqual(inputValue, outputValue) ? null : ok(outputValue);
   }
 
-  deepPartial(): ReplaceShape<InferDeepPartialShape<S>, A, B> {
+  deepPartial(): ReplaceShape<DeepPartialShape<S>, A, B> {
     return new ReplaceShape(toDeepPartial(this.shape), this.inputValue, this.outputValue);
   }
 
@@ -1089,7 +1119,7 @@ export class ReplaceShape<S extends AnyShape, A, B>
  */
 export class ExcludeShape<S extends AnyShape, T>
   extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>
-  implements DeepPartialProtocol<ExcludeShape<InferDeepPartialShape<S>, T>>
+  implements DeepPartialProtocol<ExcludeShape<DeepPartialShape<S>, T>>
 {
   protected _typeIssueFactory;
   protected _options;
@@ -1120,7 +1150,7 @@ export class ExcludeShape<S extends AnyShape, T>
     this._options = options;
   }
 
-  deepPartial(): ExcludeShape<InferDeepPartialShape<S>, T> {
+  deepPartial(): ExcludeShape<DeepPartialShape<S>, T> {
     return new ExcludeShape(toDeepPartial(this.shape), this.excludedValue, this._options);
   }
 
@@ -1202,7 +1232,7 @@ export class ExcludeShape<S extends AnyShape, T>
  */
 export class CatchShape<S extends AnyShape, T>
   extends Shape<S['input'], S['output'] | T>
-  implements DeepPartialProtocol<CatchShape<InferDeepPartialShape<S>, T>>
+  implements DeepPartialProtocol<CatchShape<DeepPartialShape<S>, T>>
 {
   private _resultProvider: () => Ok<T>;
 
@@ -1233,7 +1263,7 @@ export class CatchShape<S extends AnyShape, T>
     }
   }
 
-  deepPartial(): CatchShape<InferDeepPartialShape<S>, T> {
+  deepPartial(): CatchShape<DeepPartialShape<S>, T> {
     return new CatchShape(toDeepPartial(this.shape), this.fallback);
   }
 
@@ -1288,5 +1318,18 @@ export class CatchShape<S extends AnyShape, T>
       }
       return issues;
     });
+  }
+}
+
+export class BrandShape<S extends AnyShape, T>
+  extends Shape<S['input'], S['output'] & { [BRAND]: T }>
+  implements DeepPartialProtocol<BrandShape<DeepPartialShape<S>, T>>
+{
+  constructor(readonly shape: S, readonly brandValue: T) {
+    super();
+  }
+
+  deepPartial(): BrandShape<DeepPartialShape<S>, T> {
+    return new BrandShape(toDeepPartial(this.shape), this.brandValue);
   }
 }

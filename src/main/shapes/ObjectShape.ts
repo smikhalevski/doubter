@@ -23,9 +23,9 @@ import {
   AnyShape,
   ApplyResult,
   DeepPartialProtocol,
+  DeepPartialShape,
   Dict,
   ExcludeShape,
-  InferDeepPartialShape,
   ReadonlyDict,
   ReplaceShape,
   Shape,
@@ -58,8 +58,8 @@ export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: Exclu
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
 export type DeepPartialObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null> = ObjectShape<
-  { [K in keyof P]: ReplaceShape<InferDeepPartialShape<P[K]>, undefined, undefined> },
-  R extends AnyShape ? ReplaceShape<InferDeepPartialShape<R>, undefined, undefined> : null
+  { [K in keyof P]: ReplaceShape<DeepPartialShape<P[K]>, undefined, undefined> },
+  R extends AnyShape ? ReplaceShape<DeepPartialShape<R>, undefined, undefined> : null
 >;
 
 /**
