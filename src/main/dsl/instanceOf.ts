@@ -1,5 +1,5 @@
 import { InstanceShape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the class instance shape.
@@ -10,7 +10,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  */
 export function instanceOf<C extends new (...args: any[]) => any>(
   ctor: C,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): InstanceShape<C> {
   return new InstanceShape(ctor, options);
 }

@@ -109,7 +109,7 @@ describe('StringShape', () => {
   });
 
   test('raises multiple issues in verbose mode', () => {
-    expect(new StringShape({}).min(3).regex(/aaaa/, { unsafe: true }).try('aa', { verbose: true })).toEqual({
+    expect(new StringShape({}).min(3).regex(/aaaa/).try('aa', { verbose: true })).toEqual({
       ok: false,
       issues: [
         {
@@ -133,7 +133,7 @@ describe('StringShape', () => {
   });
 
   test('raises a single issue', () => {
-    expect(new StringShape().min(3).regex(/aaaa/, { unsafe: true }).try('aa')).toEqual({
+    expect(new StringShape().min(3).regex(/aaaa/).try('aa')).toEqual({
       ok: false,
       issues: [
         {

@@ -1,4 +1,4 @@
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 import { ConstShape } from '../shapes';
 
 /**
@@ -6,6 +6,6 @@ import { ConstShape } from '../shapes';
  *
  * @param options The constraint options or an issue message.
  */
-export function nan(options?: TypeConstraintOptions | Message): ConstShape<number> {
+export function nan(options?: ConstraintOptions | Message): ConstShape<number> {
   return new ConstShape(NaN, options);
 }

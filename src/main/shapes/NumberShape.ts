@@ -1,6 +1,6 @@
 import { ApplyResult, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { cloneObject, createIssueFactory, isArray, isNumber, ok, setCheck } from '../utils';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { addConstraint, cloneObject, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -40,7 +40,7 @@ export class NumberShape extends CoercibleShape<number> {
    *
    * @param options The type constraint options or the type issue message.
    */
-  constructor(options?: TypeConstraintOptions | Message) {
+  constructor(options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
@@ -96,7 +96,7 @@ export class NumberShape extends CoercibleShape<number> {
   gt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-    return setCheck(this.deleteCheck(CODE_NUMBER_GTE), CODE_NUMBER_GT, options, value, (input, options) => {
+    return addConstraint(this.deleteCheck(CODE_NUMBER_GTE), CODE_NUMBER_GT, value, (input, options) => {
       if (input <= value) {
         return issueFactory(input, options);
       }
@@ -113,7 +113,7 @@ export class NumberShape extends CoercibleShape<number> {
   lt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-    return setCheck(this.deleteCheck(CODE_NUMBER_LTE), CODE_NUMBER_LT, options, value, (input, options) => {
+    return addConstraint(this.deleteCheck(CODE_NUMBER_LTE), CODE_NUMBER_LT, value, (input, options) => {
       if (input >= value) {
         return issueFactory(input, options);
       }
@@ -130,7 +130,7 @@ export class NumberShape extends CoercibleShape<number> {
   gte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-    return setCheck(this.deleteCheck(CODE_NUMBER_GT), CODE_NUMBER_GTE, options, value, (input, options) => {
+    return addConstraint(this.deleteCheck(CODE_NUMBER_GT), CODE_NUMBER_GTE, value, (input, options) => {
       if (input < value) {
         return issueFactory(input, options);
       }
@@ -147,7 +147,7 @@ export class NumberShape extends CoercibleShape<number> {
   lte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-    return setCheck(this.deleteCheck(CODE_NUMBER_LT), CODE_NUMBER_LTE, options, value, (input, options) => {
+    return addConstraint(this.deleteCheck(CODE_NUMBER_LT), CODE_NUMBER_LTE, value, (input, options) => {
       if (input > value) {
         return issueFactory(input, options);
       }
@@ -164,7 +164,7 @@ export class NumberShape extends CoercibleShape<number> {
   multipleOf(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
 
-    return setCheck(this, CODE_NUMBER_MULTIPLE_OF, options, value, (input, options) => {
+    return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, value, (input, options) => {
       if (!isMultipleOf(input, value)) {
         return issueFactory(input, options);
       }

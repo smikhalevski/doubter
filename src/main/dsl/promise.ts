@@ -1,5 +1,5 @@
 import { AnyShape, PromiseShape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the `Promise` instance shape.
@@ -8,6 +8,6 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  * @param options The constraint options or an issue message.
  * @template S The shape of the resolved value.
  */
-export function promise<S extends AnyShape>(shape: S, options?: TypeConstraintOptions | Message): PromiseShape<S> {
+export function promise<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): PromiseShape<S> {
   return new PromiseShape(shape, options);
 }

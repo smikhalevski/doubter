@@ -9,10 +9,9 @@ import {
   Message,
   Ok,
   ParseOptions,
-  TypeConstraintOptions,
+  RefineOptions,
 } from '../shared-types';
 import {
-  appendCheck,
   captureIssues,
   cloneObject,
   createApplyChecksCallback,
@@ -199,9 +198,10 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Refines the shape output type with the [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
+   * Refines the shape output type with the
+   * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
    *
-   * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
+   * @param predicate The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The constraint options or an issue message.
    * @returns The shape with the narrowed output.
    * @template T The narrowed output value.
@@ -210,14 +210,14 @@ export class Shape<I = any, O = I> {
     /**
      * @param output The shape output value.
      */
-    cb: (output: O) => output is T,
-    options?: ConstraintOptions | Message
+    predicate: (output: O) => output is T,
+    options?: RefineOptions | Message
   ): Shape<I, T>;
 
   /**
    * Checks that the output value conforms the predicate.
    *
-   * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
+   * @param predicate The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
@@ -225,18 +225,22 @@ export class Shape<I = any, O = I> {
     /**
      * @param output The shape output value.
      */
-    cb: (output: O) => boolean,
-    options?: ConstraintOptions | Message
+    predicate: (output: O) => boolean,
+    options?: RefineOptions | Message
   ): this;
 
-  refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
-    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
+  refine(predicate: (output: O) => unknown, options?: RefineOptions | Message) {
+    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, predicate);
 
-    return appendCheck(this, cb, options, cb, true, (input, options) => {
-      if (!cb(input)) {
+    const cb: CheckCallback<O> = (input, options) => {
+      if (!predicate(input)) {
         return issueFactory(input, options);
       }
-    });
+    };
+
+    const unsafe = options !== null && typeof options === 'object' && options.unsafe;
+
+    return this.check(cb, { key: predicate, unsafe, param: predicate });
   }
 
   /**
@@ -319,7 +323,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ReplaceShape} instance.
    * @template T The included value.
    */
-  include<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): OpaqueIncludeShape<this, T> {
+  include<T extends Literal>(value: T, options?: ConstraintOptions | Message): OpaqueIncludeShape<this, T> {
     return this.replace(value, value);
   }
 
@@ -331,7 +335,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ExcludeShape} instance.
    * @template T The excluded value.
    */
-  exclude<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
+  exclude<T extends Literal>(value: T, options?: ConstraintOptions | Message): OpaqueExcludeShape<this, T> {
     return new ExcludeShape(this, value, options);
   }
 
@@ -398,7 +402,7 @@ export class Shape<I = any, O = I> {
    * @param options The constraint options or an issue message.
    * @returns The {@linkcode ExcludeShape} instance.
    */
-  nonOptional(options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, undefined> {
+  nonOptional(options?: ConstraintOptions | Message): OpaqueExcludeShape<this, undefined> {
     return this.exclude(undefined, options);
   }
 
@@ -1100,7 +1104,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
      * The excluded value.
      */
     readonly excludedValue: T,
-    options?: TypeConstraintOptions | Message
+    options?: ConstraintOptions | Message
   ) {
     super();
 

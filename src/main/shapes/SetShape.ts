@@ -1,13 +1,13 @@
 import { AnyShape, ApplyResult, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
+  addConstraint,
   concatIssues,
   createIssueFactory,
   isArray,
   isEqual,
   isIterable,
   ok,
-  setCheck,
   toArrayIndex,
   unshiftPath,
 } from '../utils';
@@ -45,7 +45,7 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
      * The value shape
      */
     readonly shape: S,
-    options?: TypeConstraintOptions | Message
+    options?: ConstraintOptions | Message
   ) {
     super();
 
@@ -78,7 +78,7 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
   min(size: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-    return setCheck(this, CODE_SET_MIN, options, size, (input, options) => {
+    return addConstraint(this, CODE_SET_MIN, size, (input, options) => {
       if (input.size < size) {
         return issueFactory(input, options);
       }
@@ -95,7 +95,7 @@ export class SetShape<S extends AnyShape> extends CoercibleShape<Set<S['input']>
   max(size: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-    return setCheck(this, CODE_SET_MAX, options, size, (input, options) => {
+    return addConstraint(this, CODE_SET_MAX, size, (input, options) => {
       if (input.size > size) {
         return issueFactory(input, options);
       }

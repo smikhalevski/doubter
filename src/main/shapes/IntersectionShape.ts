@@ -1,6 +1,6 @@
 import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
 import { createIssueFactory, getValueType, isArray, isAsyncShapes, isEqual, ok } from '../utils';
-import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION, TYPE_ARRAY, TYPE_DATE, TYPE_NEVER, TYPE_OBJECT } from '../constants';
 
 export type ToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
@@ -11,7 +11,7 @@ export class IntersectionShape<U extends readonly AnyShape[]> extends Shape<
 > {
   protected _typeIssueFactory;
 
-  constructor(readonly shapes: U, options?: TypeConstraintOptions | Message) {
+  constructor(readonly shapes: U, options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);

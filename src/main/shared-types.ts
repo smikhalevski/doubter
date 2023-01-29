@@ -126,21 +126,6 @@ export type MessageCallback = (param: any, code: any, input: any, meta: any, opt
 export type Message = MessageCallback | string;
 
 /**
- * Options that are applicable for the type constraint.
- */
-export interface TypeConstraintOptions {
-  /**
-   * The custom issue message.
-   */
-  message?: Message | Literal;
-
-  /**
-   * An arbitrary metadata that is added to an issue.
-   */
-  meta?: any;
-}
-
-/**
  * Options that are applicable for the built-in type-specific constraints.
  */
 export interface ConstraintOptions {
@@ -153,9 +138,11 @@ export interface ConstraintOptions {
    * An arbitrary metadata that is added to an issue.
    */
   meta?: any;
+}
 
+export interface RefineOptions extends ConstraintOptions {
   /**
-   * If `true` then the constraint would be executed even if the preceding check failed, otherwise the constraint is
+   * If `true` then the predicate would be executed even if the preceding check failed, otherwise the predicate is
    * ignored.
    */
   unsafe?: boolean;

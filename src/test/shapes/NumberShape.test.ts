@@ -142,7 +142,7 @@ describe('NumberShape', () => {
   });
 
   test('raises multiple issues in verbose mode', () => {
-    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).try(1, { verbose: true })).toEqual({
+    expect(new NumberShape().gt(2).multipleOf(3).try(1, { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: CODE_NUMBER_GT, path: [], input: 1, param: 2, message: 'Must be greater than 2' },
@@ -152,7 +152,7 @@ describe('NumberShape', () => {
   });
 
   test('raises a single issue', () => {
-    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).try(1)).toEqual({
+    expect(new NumberShape().gt(2).multipleOf(3).try(1)).toEqual({
       ok: false,
       issues: [{ code: CODE_NUMBER_GT, path: [], input: 1, param: 2, message: 'Must be greater than 2' }],
     });

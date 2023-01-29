@@ -1,4 +1,4 @@
-import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
   Bits,
@@ -95,7 +95,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
      */
     readonly restShape: R,
-    options?: TypeConstraintOptions | Message,
+    options?: ConstraintOptions | Message,
     keysMode: KeysMode = 'preserved'
   ) {
     super();
@@ -264,7 +264,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @param options The constraint options or an issue message.
    * @returns The new object shape.
    */
-  exact(options?: TypeConstraintOptions | Message): ObjectShape<P, null> {
+  exact(options?: ConstraintOptions | Message): ObjectShape<P, null> {
     const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
 
     shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options);

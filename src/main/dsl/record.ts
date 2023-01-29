@@ -1,5 +1,5 @@
 import { AnyShape, RecordShape, Shape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the shape that describes an object with string keys and values that conform the given shape.
@@ -8,10 +8,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  * @param options The constraint options or an issue message.
  * @template V The value shape.
  */
-export function record<V extends AnyShape>(
-  valueShape: V,
-  options?: TypeConstraintOptions | Message
-): RecordShape<null, V>;
+export function record<V extends AnyShape>(valueShape: V, options?: ConstraintOptions | Message): RecordShape<null, V>;
 
 /**
  * Creates the shape that describes an object with string keys and values that conform the given shape.
@@ -25,13 +22,13 @@ export function record<V extends AnyShape>(
 export function record<K extends Shape<string, PropertyKey>, V extends AnyShape>(
   keyShape: K,
   valueShape: V,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): RecordShape<K, V>;
 
 export function record(
   keyShape: AnyShape,
-  valueShape?: AnyShape | TypeConstraintOptions | Message,
-  options?: TypeConstraintOptions | Message
+  valueShape?: AnyShape | ConstraintOptions | Message,
+  options?: ConstraintOptions | Message
 ) {
   if (valueShape instanceof Shape) {
     return new RecordShape(keyShape, valueShape, options);

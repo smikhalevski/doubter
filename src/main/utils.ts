@@ -7,7 +7,6 @@ import {
   MessageCallback,
   Ok,
   ParseOptions,
-  TypeConstraintOptions,
 } from './shared-types';
 import { AnyShape, ApplyChecksCallback, ReadonlyDict, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
@@ -88,34 +87,15 @@ export function toArrayIndex(key: any): number {
 }
 
 /**
- * The convenient shortcut to add built-in checks to shapes.
+ * The shortcut to add built-in constraints to shapes.
  */
-export function setCheck<S extends Shape>(
+export function addConstraint<S extends Shape>(
   shape: S,
-  key: unknown,
-  options: ConstraintOptions | Message | undefined,
+  key: string,
   param: unknown,
   cb: CheckCallback<S['output']>
 ): S {
-  return appendCheck(shape, key, options, param, true, cb);
-}
-
-/**
- * The convenient shortcut to add built-in checks to shapes.
- */
-export function appendCheck<S extends Shape>(
-  shape: S,
-  key: unknown,
-  options: ConstraintOptions | Message | undefined,
-  param: unknown,
-  unsafe: boolean,
-  cb: CheckCallback<S['output']>
-): S {
-  return shape.check(cb, {
-    key,
-    unsafe: options !== null && typeof options === 'object' && options.unsafe,
-    param,
-  });
+  return shape.check(cb, { key, unsafe: true, param });
 }
 
 /**
@@ -128,9 +108,9 @@ export function appendCheck<S extends Shape>(
  * @returns The callback that takes an input and returns an array with a single issue.
  */
 export function createIssueFactory(
-  code: unknown,
+  code: string,
   defaultMessage: MessageCallback | string,
-  options: TypeConstraintOptions | Message | undefined,
+  options: ConstraintOptions | Message | undefined,
   param: unknown
 ): (input: unknown, options: Readonly<ParseOptions>) => Issue[];
 
@@ -143,15 +123,15 @@ export function createIssueFactory(
  * @returns The callback that takes an input and a param, and returns an array with a single issue.
  */
 export function createIssueFactory(
-  code: unknown,
-  defaultMessage: Message,
-  options: TypeConstraintOptions | Message | undefined
+  code: string,
+  defaultMessage: MessageCallback | string,
+  options: ConstraintOptions | Message | undefined
 ): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[];
 
 export function createIssueFactory(
-  code: unknown,
-  defaultMessage: Message,
-  options: TypeConstraintOptions | Message | undefined,
+  code: string,
+  defaultMessage: MessageCallback | string,
+  options: ConstraintOptions | Message | undefined,
   param?: any
 ): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[] {
   const paramKnown = arguments.length === 4;

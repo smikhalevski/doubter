@@ -1,5 +1,5 @@
 import { AnyShape, UnionShape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates a union shape that tries to parse the input with one of the provided shapes.
@@ -10,7 +10,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  */
 export function union<U extends [AnyShape, ...AnyShape[]]>(
   shapes: U,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): UnionShape<U> {
   return new UnionShape<U>(shapes, options);
 }

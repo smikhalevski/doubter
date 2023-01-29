@@ -1,5 +1,5 @@
 import { ApplyResult, Shape, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, getValueType } from '../utils';
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
 
@@ -19,7 +19,7 @@ export class ConstShape<T> extends Shape<T> {
    * @param options The type constraint options or an issue message.
    * @template T Allowed values.
    */
-  constructor(readonly value: T, options?: TypeConstraintOptions | Message) {
+  constructor(readonly value: T, options?: ConstraintOptions | Message) {
     super();
 
     this._typePredicate = value !== value ? Number.isNaN : input => value === input;

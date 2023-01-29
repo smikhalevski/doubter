@@ -1,5 +1,5 @@
 import { AnyShape, ApplyResult, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   concatIssues,
   createIssueFactory,
@@ -43,7 +43,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
      * The value shape.
      */
     readonly valueShape: V,
-    options?: TypeConstraintOptions | Message
+    options?: ConstraintOptions | Message
   ) {
     super();
 

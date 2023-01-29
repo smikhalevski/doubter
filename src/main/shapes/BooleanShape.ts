@@ -1,5 +1,5 @@
 import { ApplyResult, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, isArray, ok } from '../utils';
 import {
   CODE_TYPE,
@@ -24,7 +24,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
    *
    * @param options The type constraint options or the type issue message.
    */
-  constructor(options?: TypeConstraintOptions | Message) {
+  constructor(options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);

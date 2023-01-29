@@ -1,6 +1,7 @@
 import { AnyShape, ApplyResult, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
+  addConstraint,
   concatIssues,
   createIssueFactory,
   isArray,
@@ -8,7 +9,6 @@ import {
   isEqual,
   isIterable,
   ok,
-  setCheck,
   toArrayIndex,
   unshiftPath,
 } from '../utils';
@@ -70,7 +70,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
      * The shape of rest elements or `null` if there are no rest elements.
      */
     readonly restShape: R,
-    options?: TypeConstraintOptions | Message
+    options?: ConstraintOptions | Message
   ) {
     super();
 
@@ -131,7 +131,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-    return setCheck(this, CODE_ARRAY_MIN, options, length, (input, options) => {
+    return addConstraint(this, CODE_ARRAY_MIN, length, (input, options) => {
       if (input.length < length) {
         return issueFactory(input, options);
       }
@@ -148,7 +148,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-    return setCheck(this, CODE_ARRAY_MAX, options, length, (input, options) => {
+    return addConstraint(this, CODE_ARRAY_MAX, length, (input, options) => {
       if (input.length > length) {
         return issueFactory(input, options);
       }

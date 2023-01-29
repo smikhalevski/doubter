@@ -1,5 +1,5 @@
 import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
-import { Issue, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import { concatIssues, createIssueFactory, getValueType, isArray, isAsyncShapes, isObjectLike, unique } from '../utils';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
 import { ObjectShape } from './ObjectShape';
@@ -30,7 +30,7 @@ export class UnionShape<U extends readonly AnyShape[]> extends Shape<U[number]['
      * The list of shapes that comprise a union.
      */
     readonly shapes: U,
-    options?: TypeConstraintOptions | Message
+    options?: ConstraintOptions | Message
   ) {
     super();
 

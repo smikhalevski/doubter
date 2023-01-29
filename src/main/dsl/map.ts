@@ -1,5 +1,5 @@
 import { AnyShape, MapShape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the `Map` instance shape.
@@ -13,7 +13,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
 export function map<K extends AnyShape, V extends AnyShape>(
   keyShape: K,
   valueShape: V,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): MapShape<K, V> {
   return new MapShape(keyShape, valueShape, options);
 }

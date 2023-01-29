@@ -1,4 +1,4 @@
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 import { AnyShape, ObjectShape } from '../shapes';
 import { ReadonlyDict } from '../shapes/Shape';
 
@@ -10,7 +10,7 @@ import { ReadonlyDict } from '../shapes/Shape';
  */
 export function object<P extends ReadonlyDict<AnyShape>>(
   shapes: P,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): ObjectShape<P, null> {
   return new ObjectShape(shapes, null, options);
 }
