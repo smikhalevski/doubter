@@ -1,6 +1,6 @@
 import { ApplyResult, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
-import { createIssueFactory, isArray, isDate, ok, setCheck } from '../utils';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { addConstraint, createIssueFactory, isArray, isDate, ok } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -31,7 +31,7 @@ export class StringShape extends CoercibleShape<string> {
    *
    * @param options The type constraint options or the type issue message.
    */
-  constructor(options?: TypeConstraintOptions | Message) {
+  constructor(options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
@@ -58,7 +58,7 @@ export class StringShape extends CoercibleShape<string> {
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-    return setCheck(this, CODE_STRING_MIN, options, length, (input, options) => {
+    return addConstraint(this, CODE_STRING_MIN, length, (input, options) => {
       if (input.length < length) {
         return issueFactory(input, options);
       }
@@ -75,7 +75,7 @@ export class StringShape extends CoercibleShape<string> {
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-    return setCheck(this, CODE_STRING_MAX, options, length, (input, options) => {
+    return addConstraint(this, CODE_STRING_MAX, length, (input, options) => {
       if (input.length > length) {
         return issueFactory(input, options);
       }
@@ -92,7 +92,7 @@ export class StringShape extends CoercibleShape<string> {
   regex(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-    return setCheck(this, CODE_STRING_REGEX, options, re, (input, options) => {
+    return addConstraint(this, CODE_STRING_REGEX, re, (input, options) => {
       re.lastIndex = 0;
 
       if (!re.test(input)) {

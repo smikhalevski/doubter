@@ -59,6 +59,7 @@ export const MESSAGE_ENUM = 'Must be equal to one of %s';
 export const MESSAGE_EXCLUSION = 'Must not be equal to %s';
 export const MESSAGE_INSTANCE = 'Must be a class instance';
 export const MESSAGE_INTERSECTION = 'Must conform the intersection';
+export const MESSAGE_JSON = 'Must be a JSON string: %s';
 export const MESSAGE_PREDICATE = 'Must conform the predicate';
 export const MESSAGE_MAP_TYPE = 'Must be a Map';
 export const MESSAGE_NEVER_TYPE = 'Must not be used';

@@ -1,4 +1,4 @@
-import { Literal, Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Literal, Message } from '../shared-types';
 import { ConstShape } from '../shapes';
 
 /**
@@ -8,7 +8,7 @@ import { ConstShape } from '../shapes';
  * @param options The constraint options or an issue message.
  * @template T The value type.
  */
-function const_<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): ConstShape<T> {
+function const_<T extends Literal>(value: T, options?: ConstraintOptions | Message): ConstShape<T> {
   return new ConstShape(value, options);
 }
 

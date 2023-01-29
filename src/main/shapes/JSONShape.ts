@@ -1,7 +1,7 @@
 import { ApplyResult, Shape, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { cloneObject, createIssueFactory, ok } from '../utils';
-import { CODE_JSON, CODE_TYPE, MESSAGE_STRING_TYPE, TYPE_STRING } from '../constants';
+import { CODE_JSON, CODE_TYPE, MESSAGE_JSON, MESSAGE_STRING_TYPE, TYPE_STRING } from '../constants';
 
 /**
  * The shape of a value deserialized from a JSON string.
@@ -16,11 +16,11 @@ export class JSONShape extends Shape<string, any> {
    *
    * @param options The type constraint options or the type issue message.
    */
-  constructor(options?: TypeConstraintOptions | Message) {
+  constructor(options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
-    this._jsonIssueFactory = createIssueFactory(CODE_JSON, param => param, options);
+    this._jsonIssueFactory = createIssueFactory(CODE_JSON, MESSAGE_JSON, options);
   }
 
   /**

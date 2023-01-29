@@ -1,12 +1,12 @@
 import { AnyShape, ArrayShape, Shape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the unconstrained array shape.
  *
  * @param options The constraint options or an issue message.
  */
-export function array(options?: TypeConstraintOptions | Message): ArrayShape<null, null>;
+export function array(options?: ConstraintOptions | Message): ArrayShape<null, null>;
 
 /**
  * Creates the array shape with elements that conform the element shape.
@@ -15,14 +15,11 @@ export function array(options?: TypeConstraintOptions | Message): ArrayShape<nul
  * @param options The constraint options or an issue message.
  * @template S The shape of array elements.
  */
-export function array<S extends AnyShape | null>(
-  shape: S,
-  options?: TypeConstraintOptions | Message
-): ArrayShape<null, S>;
+export function array<S extends AnyShape | null>(shape: S, options?: ConstraintOptions | Message): ArrayShape<null, S>;
 
 export function array(
-  shape?: AnyShape | TypeConstraintOptions | Message,
-  options?: TypeConstraintOptions | Message
+  shape?: AnyShape | ConstraintOptions | Message,
+  options?: ConstraintOptions | Message
 ): ArrayShape<any, any> {
   if (shape == null || shape instanceof Shape) {
     return new ArrayShape(null, shape || null, options);

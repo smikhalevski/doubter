@@ -1,5 +1,5 @@
 import { ApplyResult, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, isArray, isDate, ok } from '../utils';
 import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
@@ -15,7 +15,7 @@ export class DateShape extends CoercibleShape<Date> {
    *
    * @param options The type constraint options or the type issue message.
    */
-  constructor(options?: TypeConstraintOptions | Message) {
+  constructor(options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);

@@ -1,5 +1,5 @@
 import { AnyShape, IntersectionShape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates an intersection shape that tries to parse the input with all provided shapes.
@@ -10,7 +10,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  */
 export function intersection<U extends [AnyShape, ...AnyShape[]]>(
   shapes: U,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): IntersectionShape<U> {
   return new IntersectionShape<U>(shapes, options);
 }

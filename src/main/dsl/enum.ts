@@ -1,4 +1,4 @@
-import { Literal, Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Literal, Message } from '../shared-types';
 import { EnumShape } from '../shapes';
 import { ReadonlyDict } from '../shapes/Shape';
 
@@ -12,7 +12,7 @@ import { ReadonlyDict } from '../shapes/Shape';
  */
 function enum_<T extends Literal, U extends readonly [T, ...T[]]>(
   values: U,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): EnumShape<U[number]>;
 
 /**
@@ -25,10 +25,10 @@ function enum_<T extends Literal, U extends readonly [T, ...T[]]>(
  */
 function enum_<T extends Literal, U extends ReadonlyDict<T>>(
   valueMapping: U,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): EnumShape<U[keyof U]>;
 
-function enum_(source: any[] | ReadonlyDict, options?: TypeConstraintOptions | Message): EnumShape<any> {
+function enum_(source: any[] | ReadonlyDict, options?: ConstraintOptions | Message): EnumShape<any> {
   return new EnumShape(source, options);
 }
 

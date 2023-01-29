@@ -1,12 +1,12 @@
 import { NumberShape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the integer shape.
  *
  * @param options The constraint options or an issue message.
  */
-export function integer(options?: TypeConstraintOptions | Message): NumberShape {
+export function integer(options?: ConstraintOptions | Message): NumberShape {
   return new NumberShape(options).integer(options);
 }
 

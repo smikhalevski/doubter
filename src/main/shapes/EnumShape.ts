@@ -1,5 +1,5 @@
 import { ApplyResult, ReadonlyDict, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, getValueType, isArray, ok, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
@@ -35,7 +35,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
      * The list of allowed values, a const key-value mapping, or an enum object.
      */
     readonly source: readonly T[] | ReadonlyDict<T>,
-    options?: TypeConstraintOptions | Message
+    options?: ConstraintOptions | Message
   ) {
     super();
 

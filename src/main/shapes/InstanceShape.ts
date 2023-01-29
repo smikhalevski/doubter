@@ -1,5 +1,5 @@
 import { ApplyResult, Shape, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE, TYPE_ARRAY, TYPE_OBJECT } from '../constants';
 
@@ -18,7 +18,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
    * @param options The type constraint options or the type issue message.
    * @template C The class constructor.
    */
-  constructor(readonly ctor: C, options?: TypeConstraintOptions | Message) {
+  constructor(readonly ctor: C, options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);

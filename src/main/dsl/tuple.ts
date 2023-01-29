@@ -1,5 +1,5 @@
 import { AnyShape, ArrayShape, Shape } from '../shapes';
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the tuple shape.
@@ -10,7 +10,7 @@ import { Message, TypeConstraintOptions } from '../shared-types';
  */
 export function tuple<U extends readonly [AnyShape, ...AnyShape[]]>(
   shapes: U,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): ArrayShape<U, null>;
 
 /**
@@ -25,13 +25,13 @@ export function tuple<U extends readonly [AnyShape, ...AnyShape[]]>(
 export function tuple<U extends readonly [AnyShape, ...AnyShape[]], R extends AnyShape | null>(
   shapes: U,
   restShape: R,
-  options?: TypeConstraintOptions | Message
+  options?: ConstraintOptions | Message
 ): ArrayShape<U, R>;
 
 export function tuple(
   shapes: [AnyShape, ...AnyShape[]],
-  restShape?: AnyShape | TypeConstraintOptions | Message | null,
-  options?: TypeConstraintOptions | Message
+  restShape?: AnyShape | ConstraintOptions | Message | null,
+  options?: ConstraintOptions | Message
 ): ArrayShape<[AnyShape, ...AnyShape[]], AnyShape | null> {
   if (restShape == null || restShape instanceof Shape) {
     return new ArrayShape(shapes, restShape || null, options);

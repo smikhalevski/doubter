@@ -21,7 +21,7 @@ describe('JSONShape', () => {
           code: CODE_JSON,
           path: [],
           input: 'aaa',
-          message: 'Unexpected token a in JSON at position 0',
+          message: 'Must be a JSON string: Unexpected token a in JSON at position 0',
           param: 'Unexpected token a in JSON at position 0',
         },
       ],

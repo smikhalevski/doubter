@@ -142,7 +142,7 @@ describe('NumberShape', () => {
   });
 
   test('raises multiple issues in verbose mode', () => {
-    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).try(1, { verbose: true })).toEqual({
+    expect(new NumberShape().gt(2).multipleOf(3).try(1, { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: CODE_NUMBER_GT, path: [], input: 1, param: 2, message: 'Must be greater than 2' },
@@ -152,18 +152,10 @@ describe('NumberShape', () => {
   });
 
   test('raises a single issue', () => {
-    expect(new NumberShape().gt(2).multipleOf(3, { unsafe: true }).try(1)).toEqual({
+    expect(new NumberShape().gt(2).multipleOf(3).try(1)).toEqual({
       ok: false,
       issues: [{ code: CODE_NUMBER_GT, path: [], input: 1, param: 2, message: 'Must be greater than 2' }],
     });
-  });
-
-  test('respects mutually exclusive checks', () => {
-    expect(new NumberShape().gt(0).gte(0).getCheck(CODE_NUMBER_GT)).toBe(undefined);
-    expect(new NumberShape().gte(0).gt(0).getCheck(CODE_NUMBER_GTE)).toBe(undefined);
-
-    expect(new NumberShape().lt(0).lte(0).getCheck(CODE_NUMBER_LT)).toBe(undefined);
-    expect(new NumberShape().lte(0).lt(0).getCheck(CODE_NUMBER_LTE)).toBe(undefined);
   });
 
   test('allows NaN', () => {

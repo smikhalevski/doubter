@@ -15,7 +15,7 @@ describe('Shape', () => {
 
     expect(shape1).not.toBe(shape2);
     expect(shape1.getCheck(cb)).toBe(undefined);
-    expect(shape2.getCheck(cb)).toEqual({ callback: cb, unsafe: false });
+    expect(shape2.getCheck(cb)).toEqual({ key: cb, callback: cb, unsafe: false });
   });
 
   test('deletes a check', () => {
@@ -179,6 +179,36 @@ describe('Shape', () => {
     const cbMock = jest.fn(value => value === 'aaa');
 
     expect(new Shape().refine(cbMock).try('aaa')).toEqual<Ok<string>>({ ok: true, value: 'aaa' });
+
+    expect(cbMock).toHaveBeenCalledTimes(1);
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
+  });
+
+  test('does not invoke safe predicate if the preceding check failed', () => {
+    const cbMock = jest.fn().mockReturnValue(false);
+
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock);
+
+    expect(shape.try('aaa', { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+
+    expect(cbMock).toHaveBeenCalledTimes(0);
+  });
+
+  test('invokes an unsafe predicate', () => {
+    const cbMock = jest.fn().mockReturnValue(false);
+
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock, { unsafe: true });
+
+    expect(shape.try('aaa', { verbose: true })).toEqual({
+      ok: false,
+      issues: [
+        { code: 'xxx', path: [] },
+        { code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cbMock },
+      ],
+    });
 
     expect(cbMock).toHaveBeenCalledTimes(1);
     expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');

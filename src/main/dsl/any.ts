@@ -11,7 +11,8 @@ import { ConstraintOptions, Message } from '../shared-types';
 export function any<T = any>(): Shape<T>;
 
 /**
- * Creates a shape that is constrained with a [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
+ * Creates a shape that is constrained with a
+ * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
  *
  * @param cb The type predicate that returns `true` if value conforms the required type, or `false` otherwise.
  * @param options The constraint options or an issue message.

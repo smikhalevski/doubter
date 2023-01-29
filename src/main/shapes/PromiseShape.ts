@@ -1,5 +1,5 @@
 import { AnyShape, ApplyResult, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, isArray, isEqual, ok } from '../utils';
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
@@ -19,7 +19,7 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
    * @param options The type constraint options or the type issue message.
    * @template S The shape of the resolved value.
    */
-  constructor(readonly shape: S, options?: TypeConstraintOptions | Message) {
+  constructor(readonly shape: S, options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);

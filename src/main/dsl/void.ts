@@ -1,4 +1,4 @@
-import { Message, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message } from '../shared-types';
 import { ConstShape } from '../shapes';
 
 /**
@@ -6,7 +6,7 @@ import { ConstShape } from '../shapes';
  *
  * @param options The constraint options or an issue message.
  */
-function void_(options?: TypeConstraintOptions | Message): ConstShape<void> {
+function void_(options?: ConstraintOptions | Message): ConstShape<void> {
   return new ConstShape(undefined, options);
 }
 

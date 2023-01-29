@@ -9,7 +9,7 @@ import {
   Message,
   Ok,
   ParseOptions,
-  TypeConstraintOptions,
+  RefineOptions,
 } from '../shared-types';
 import {
   captureIssues,
@@ -22,7 +22,6 @@ import {
   isUnsafeCheck,
   ok,
   returnTrue,
-  setCheck,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -116,9 +115,9 @@ export class Shape<I = any, O = I> {
   description = '';
 
   /**
-   * The map from a check key to {@linkcode Check} object, or `undefined` if this shape has no associated checks.
+   * The array of checks that were used to produce {@linkcode _applyChecks}.
    */
-  protected _checkMap: ReadonlyMap<unknown, Check> | undefined;
+  protected _checks: readonly Check[] | null = null;
 
   /**
    * A callback that applies checks to the given value.
@@ -126,7 +125,7 @@ export class Shape<I = any, O = I> {
   protected _applyChecks: ApplyChecksCallback | null = null;
 
   /**
-   * `true` if some checks from {@linkcode _checkMap} were marked as unsafe, `false` otherwise.
+   * `true` if some checks from {@linkcode _checks} were marked as unsafe, `false` otherwise.
    */
   protected _unsafe = false;
 
@@ -156,19 +155,23 @@ export class Shape<I = any, O = I> {
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then it is replaced.
-   * If the key is `undefined` then the `cb` identity is used as a key.
+   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then the existing
+   * check is deleted and the new one is appended. If the key is `undefined` then the `cb` identity is used as a key.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
-   * @returns The clone of the shape with the check added.
+   * @returns The clone of the shape.
    */
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
     const { key = cb, unsafe = false, param } = options;
 
-    return this._replaceChecks(new Map(this._checkMap).set(key, { callback: cb, unsafe, param }));
+    const check: Check = { key, callback: cb, unsafe, param };
+
+    return this._replaceChecks(
+      this._checks !== null ? this._checks.filter(check => check.key !== key).concat(check) : [check]
+    );
   }
 
   /**
@@ -178,32 +181,27 @@ export class Shape<I = any, O = I> {
    * @returns The check or `undefined` if there's no check associated with the key.
    */
   getCheck(key: unknown): Check | undefined {
-    return this._checkMap?.get(key);
+    return this._checks?.find(check => check.key === key);
   }
 
   /**
    * Deletes the check from the shape.
    *
    * @param key The check key.
-   * @returns The clone of the shape if check was deleted or this shape if there are no matching check.
+   * @returns The clone of the shape if the matching check was deleted, or this shape if there is no matching check.
    */
   deleteCheck(key: unknown): this {
-    const { _checkMap } = this;
-
-    if (_checkMap === undefined || !_checkMap.has(key)) {
+    if (this.getCheck(key) === undefined) {
       return this;
     }
-    const checkMap = new Map(_checkMap);
-
-    checkMap.delete(key);
-
-    return this._replaceChecks(checkMap);
+    return this._replaceChecks(this._checks!.filter(check => check.key !== key));
   }
 
   /**
-   * Refines the shape output type with the [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
+   * Refines the shape output type with the
+   * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
    *
-   * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
+   * @param predicate The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The constraint options or an issue message.
    * @returns The shape with the narrowed output.
    * @template T The narrowed output value.
@@ -212,14 +210,14 @@ export class Shape<I = any, O = I> {
     /**
      * @param output The shape output value.
      */
-    cb: (output: O) => output is T,
-    options?: ConstraintOptions | Message
+    predicate: (output: O) => output is T,
+    options?: RefineOptions | Message
   ): Shape<I, T>;
 
   /**
    * Checks that the output value conforms the predicate.
    *
-   * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
+   * @param predicate The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
@@ -227,18 +225,22 @@ export class Shape<I = any, O = I> {
     /**
      * @param output The shape output value.
      */
-    cb: (output: O) => boolean,
-    options?: ConstraintOptions | Message
+    predicate: (output: O) => boolean,
+    options?: RefineOptions | Message
   ): this;
 
-  refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
-    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
+  refine(predicate: (output: O) => unknown, options?: RefineOptions | Message) {
+    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, predicate);
 
-    return setCheck(this, cb, options, cb, (input, options) => {
-      if (!cb(input)) {
+    const cb: CheckCallback<O> = (input, options) => {
+      if (!predicate(input)) {
         return issueFactory(input, options);
       }
-    });
+    };
+
+    const unsafe = options !== null && typeof options === 'object' && options.unsafe;
+
+    return this.check(cb, { key: predicate, unsafe, param: predicate });
   }
 
   /**
@@ -321,7 +323,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ReplaceShape} instance.
    * @template T The included value.
    */
-  include<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): OpaqueIncludeShape<this, T> {
+  include<T extends Literal>(value: T, options?: ConstraintOptions | Message): OpaqueIncludeShape<this, T> {
     return this.replace(value, value);
   }
 
@@ -333,7 +335,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ExcludeShape} instance.
    * @template T The excluded value.
    */
-  exclude<T extends Literal>(value: T, options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, T> {
+  exclude<T extends Literal>(value: T, options?: ConstraintOptions | Message): OpaqueExcludeShape<this, T> {
     return new ExcludeShape(this, value, options);
   }
 
@@ -400,7 +402,7 @@ export class Shape<I = any, O = I> {
    * @param options The constraint options or an issue message.
    * @returns The {@linkcode ExcludeShape} instance.
    */
-  nonOptional(options?: TypeConstraintOptions | Message): OpaqueExcludeShape<this, undefined> {
+  nonOptional(options?: ConstraintOptions | Message): OpaqueExcludeShape<this, undefined> {
     return this.exclude(undefined, options);
   }
 
@@ -421,6 +423,22 @@ export class Shape<I = any, O = I> {
 
   catch(fallback?: unknown): Shape {
     return new CatchShape(this, fallback);
+  }
+
+  /**
+   * Returns a shape clone with new set of checks.
+   *
+   * @param checks The map from a check key to a corresponding check.
+   * @returns The clone of the shape.
+   */
+  protected _replaceChecks(checks: readonly Check[]): this {
+    const shape = cloneObject(this);
+
+    shape._checks = checks;
+    shape._applyChecks = createApplyChecksCallback(checks);
+    shape._unsafe = checks.some(isUnsafeCheck);
+
+    return shape;
   }
 
   /**
@@ -474,23 +492,6 @@ export class Shape<I = any, O = I> {
    */
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
-  }
-
-  /**
-   * Returns a shape clone with new set of checks.
-   *
-   * @param checkMap The map from a check key to a corresponding check.
-   * @returns The clone of the shape.
-   */
-  protected _replaceChecks(checkMap: ReadonlyMap<unknown, Check>): this {
-    const checks = Array.from(checkMap.values());
-    const shape = cloneObject(this);
-
-    shape._checkMap = checkMap;
-    shape._applyChecks = createApplyChecksCallback(checks);
-    shape._unsafe = checks.some(isUnsafeCheck);
-
-    return shape;
   }
 }
 
@@ -1103,7 +1104,7 @@ export class ExcludeShape<S extends AnyShape, T> extends Shape<Exclude<S['input'
      * The excluded value.
      */
     readonly excludedValue: T,
-    options?: TypeConstraintOptions | Message
+    options?: ConstraintOptions | Message
   ) {
     super();
 

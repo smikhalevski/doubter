@@ -1,5 +1,5 @@
 import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
-import { Message, ParseOptions, TypeConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   cloneObjectEnumerableKeys,
   concatIssues,
@@ -49,7 +49,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
      * The value shape.
      */
     readonly valueShape: V,
-    options?: TypeConstraintOptions | Message
+    options?: ConstraintOptions | Message
   ) {
     super();
 
