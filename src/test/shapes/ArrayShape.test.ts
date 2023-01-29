@@ -5,8 +5,10 @@ import {
   CODE_TUPLE,
   CODE_TYPE,
   MESSAGE_ARRAY_TYPE,
+  MESSAGE_NUMBER_TYPE,
   TYPE_ANY,
   TYPE_ARRAY,
+  TYPE_NUMBER,
   TYPE_OBJECT,
   TYPE_STRING,
 } from '../../main/constants';
@@ -407,20 +409,40 @@ describe('ArrayShape', () => {
 
       expect(arrShape.try([])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: [], message: 'Must be a tuple of length 1', param: 1, path: [] }],
+        issues: [{ code: CODE_TUPLE, path: [], input: [], message: 'Must be a tuple of length 1', param: 1 }],
       });
     });
 
-    test('parses deep partial arrays', () => {
+    test('raises an issue if deep partial element is invalid', () => {
+      const arrShape = new ArrayShape(null, new NumberShape()).deepPartial();
+
+      expect(arrShape.try(['aaa'])).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, path: [0], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
+      });
+    });
+
+    test('parses deep partial tuple with rest elements', () => {
       const arrShape = new ArrayShape(
         [new ObjectShape({ key1: new StringShape() }, null)],
         new NumberShape()
       ).deepPartial();
 
+      expect(arrShape.parse([undefined])).toEqual([undefined]);
       expect(arrShape.parse([{}])).toEqual([{}]);
       expect(arrShape.parse([{}, undefined])).toEqual([{}, undefined]);
+      expect(arrShape.parse([undefined, undefined])).toEqual([undefined, undefined]);
       expect(arrShape.parse([{}, 111, undefined])).toEqual([{}, 111, undefined]);
       expect(arrShape.parse([{ key1: undefined }])).toEqual([{ key1: undefined }]);
+    });
+
+    test('parses deep partial array', () => {
+      const arrShape = new ArrayShape(null, new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
+
+      expect(arrShape.parse([undefined])).toEqual([undefined]);
+      expect(arrShape.parse([{}])).toEqual([{}]);
+      expect(arrShape.parse([{}, undefined])).toEqual([{}, undefined]);
+      expect(arrShape.parse([undefined, { key1: undefined }])).toEqual([undefined, { key1: undefined }]);
     });
   });
 

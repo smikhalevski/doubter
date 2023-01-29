@@ -83,7 +83,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
 
     this._options = options;
 
-    if (shapes !== null) {
+    if (shapes !== null && (shapes.length !== 0 || restShape === null)) {
       this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
     } else {
       this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
