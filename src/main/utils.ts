@@ -1,13 +1,4 @@
-import {
-  Check,
-  CheckCallback,
-  ConstraintOptions,
-  Issue,
-  Message,
-  MessageCallback,
-  Ok,
-  ParseOptions,
-} from './shared-types';
+import { Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from './shared-types';
 import { AnyShape, ApplyChecksCallback, ReadonlyDict, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
@@ -109,7 +100,7 @@ export function addConstraint<S extends Shape>(
  */
 export function createIssueFactory(
   code: string,
-  defaultMessage: MessageCallback | string,
+  defaultMessage: string,
   options: ConstraintOptions | Message | undefined,
   param: unknown
 ): (input: unknown, options: Readonly<ParseOptions>) => Issue[];
@@ -124,13 +115,13 @@ export function createIssueFactory(
  */
 export function createIssueFactory(
   code: string,
-  defaultMessage: MessageCallback | string,
+  defaultMessage: string,
   options: ConstraintOptions | Message | undefined
 ): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[];
 
 export function createIssueFactory(
   code: string,
-  defaultMessage: MessageCallback | string,
+  defaultMessage: string,
   options: ConstraintOptions | Message | undefined,
   param?: any
 ): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[] {
