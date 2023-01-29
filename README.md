@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="./images/logo.png" alt="Doubter" width="400"/>
+  <a href="#readme">
+    <img src="./images/logo.png" alt="Doubter" width="400"/>
+  </a>
 </p>
 
 No-hassle runtime validation and transformation library.
