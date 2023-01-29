@@ -1,5 +1,5 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
-import { Issue, Message, ParseOptions, ConstraintOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   concatIssues,
   createIssueFactory,

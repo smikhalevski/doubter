@@ -1,12 +1,4 @@
-import {
-  Check,
-  CheckCallback,
-  ConstraintOptions,
-  Issue,
-  Message,
-  Ok,
-  ParseOptions,
-} from './shared-types';
+import { Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from './shared-types';
 import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
