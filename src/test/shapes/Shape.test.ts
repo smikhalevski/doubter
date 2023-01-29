@@ -184,6 +184,36 @@ describe('Shape', () => {
     expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
   });
 
+  test('does not invoke safe predicate if the preceding check failed', () => {
+    const cbMock = jest.fn().mockReturnValue(false);
+
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock);
+
+    expect(shape.try('aaa', { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+
+    expect(cbMock).toHaveBeenCalledTimes(0);
+  });
+
+  test('invokes an unsafe predicate', () => {
+    const cbMock = jest.fn().mockReturnValue(false);
+
+    const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock, { unsafe: true });
+
+    expect(shape.try('aaa', { verbose: true })).toEqual({
+      ok: false,
+      issues: [
+        { code: 'xxx', path: [] },
+        { code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cbMock },
+      ],
+    });
+
+    expect(cbMock).toHaveBeenCalledTimes(1);
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
+  });
+
   test('returns issues if predicate fails', () => {
     const cb = () => false;
 
