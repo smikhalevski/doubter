@@ -15,7 +15,7 @@ describe('Shape', () => {
 
     expect(shape1).not.toBe(shape2);
     expect(shape1.getCheck(cb)).toBe(undefined);
-    expect(shape2.getCheck(cb)).toEqual({ callback: cb, unsafe: false });
+    expect(shape2.getCheck(cb)).toEqual({ key: cb, callback: cb, unsafe: false });
   });
 
   test('deletes a check', () => {

@@ -97,6 +97,20 @@ export function setCheck<S extends Shape>(
   param: unknown,
   cb: CheckCallback<S['output']>
 ): S {
+  return appendCheck(shape, key, options, param, true, cb);
+}
+
+/**
+ * The convenient shortcut to add built-in checks to shapes.
+ */
+export function appendCheck<S extends Shape>(
+  shape: S,
+  key: unknown,
+  options: ConstraintOptions | Message | undefined,
+  param: unknown,
+  unsafe: boolean,
+  cb: CheckCallback<S['output']>
+): S {
   return shape.check(cb, {
     key,
     unsafe: options !== null && typeof options === 'object' && options.unsafe,

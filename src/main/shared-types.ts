@@ -32,6 +32,11 @@ export type CheckCallback<T = any> = (
  */
 export interface Check {
   /**
+   * The check key, unique in the scope of the shape.
+   */
+  readonly key: any;
+
+  /**
    * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
    */
   readonly callback: CheckCallback;

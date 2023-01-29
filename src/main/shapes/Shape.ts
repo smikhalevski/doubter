@@ -12,6 +12,7 @@ import {
   TypeConstraintOptions,
 } from '../shared-types';
 import {
+  appendCheck,
   captureIssues,
   cloneObject,
   createApplyChecksCallback,
@@ -22,7 +23,6 @@ import {
   isUnsafeCheck,
   ok,
   returnTrue,
-  setCheck,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -116,9 +116,9 @@ export class Shape<I = any, O = I> {
   description = '';
 
   /**
-   * The map from a check key to {@linkcode Check} object, or `undefined` if this shape has no associated checks.
+   * The array of checks that were used to produce {@linkcode _applyChecks}.
    */
-  protected _checkMap: ReadonlyMap<unknown, Check> | undefined;
+  protected _checks: readonly Check[] | null = null;
 
   /**
    * A callback that applies checks to the given value.
@@ -126,7 +126,7 @@ export class Shape<I = any, O = I> {
   protected _applyChecks: ApplyChecksCallback | null = null;
 
   /**
-   * `true` if some checks from {@linkcode _checkMap} were marked as unsafe, `false` otherwise.
+   * `true` if some checks from {@linkcode _checks} were marked as unsafe, `false` otherwise.
    */
   protected _unsafe = false;
 
@@ -156,19 +156,23 @@ export class Shape<I = any, O = I> {
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then it is replaced.
-   * If the key is `undefined` then the `cb` identity is used as a key.
+   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then the existing
+   * check is deleted and the new one is appended. If the key is `undefined` then the `cb` identity is used as a key.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
-   * @returns The clone of the shape with the check added.
+   * @returns The clone of the shape.
    */
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
     const { key = cb, unsafe = false, param } = options;
 
-    return this._replaceChecks(new Map(this._checkMap).set(key, { callback: cb, unsafe, param }));
+    const check: Check = { key, callback: cb, unsafe, param };
+
+    return this._replaceChecks(
+      this._checks !== null ? this._checks.filter(check => check.key !== key).concat(check) : [check]
+    );
   }
 
   /**
@@ -178,26 +182,20 @@ export class Shape<I = any, O = I> {
    * @returns The check or `undefined` if there's no check associated with the key.
    */
   getCheck(key: unknown): Check | undefined {
-    return this._checkMap?.get(key);
+    return this._checks?.find(check => check.key === key);
   }
 
   /**
    * Deletes the check from the shape.
    *
    * @param key The check key.
-   * @returns The clone of the shape if check was deleted or this shape if there are no matching check.
+   * @returns The clone of the shape if the matching check was deleted, or this shape if there is no matching check.
    */
   deleteCheck(key: unknown): this {
-    const { _checkMap } = this;
-
-    if (_checkMap === undefined || !_checkMap.has(key)) {
+    if (this.getCheck(key) === undefined) {
       return this;
     }
-    const checkMap = new Map(_checkMap);
-
-    checkMap.delete(key);
-
-    return this._replaceChecks(checkMap);
+    return this._replaceChecks(this._checks!.filter(check => check.key !== key));
   }
 
   /**
@@ -234,7 +232,7 @@ export class Shape<I = any, O = I> {
   refine(cb: (output: O) => unknown, options?: ConstraintOptions | Message) {
     const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
-    return setCheck(this, cb, options, cb, (input, options) => {
+    return appendCheck(this, cb, options, cb, true, (input, options) => {
       if (!cb(input)) {
         return issueFactory(input, options);
       }
@@ -424,6 +422,22 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Returns a shape clone with new set of checks.
+   *
+   * @param checks The map from a check key to a corresponding check.
+   * @returns The clone of the shape.
+   */
+  protected _replaceChecks(checks: readonly Check[]): this {
+    const shape = cloneObject(this);
+
+    shape._checks = checks;
+    shape._applyChecks = createApplyChecksCallback(checks);
+    shape._unsafe = checks.some(isUnsafeCheck);
+
+    return shape;
+  }
+
+  /**
    * Must return `true` if the shape must be used in async context only, otherwise the shape can be used in both sync
    * and async contexts. Override this method to implement a custom shape.
    */
@@ -474,23 +488,6 @@ export class Shape<I = any, O = I> {
    */
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
-  }
-
-  /**
-   * Returns a shape clone with new set of checks.
-   *
-   * @param checkMap The map from a check key to a corresponding check.
-   * @returns The clone of the shape.
-   */
-  protected _replaceChecks(checkMap: ReadonlyMap<unknown, Check>): this {
-    const checks = Array.from(checkMap.values());
-    const shape = cloneObject(this);
-
-    shape._checkMap = checkMap;
-    shape._applyChecks = createApplyChecksCallback(checks);
-    shape._unsafe = checks.some(isUnsafeCheck);
-
-    return shape;
   }
 }
 
