@@ -332,20 +332,24 @@ const shape = d.object({ age: d.number() });
 // ⮕ Shape<{ age: number }>
 
 const result = shape.try({ age: 'Seventeen' });
-// ⮕ { ok: false, issues: … }
 ```
 
-In the example above `result.issues` would contain a single issue:
+The `result` contains the [`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) object:
 
 ```ts
-[{
-  code: 'type',
-  path: ['age'],
-  input: 'Seventeen',
-  message: 'Must be a number',
-  param: 'number',
-  meta: undefied
-}]
+{
+  ok: false,
+  issues: [
+    {
+      code: 'type',
+      path: ['age'],
+      input: 'Seventeen',
+      message: 'Must be a number',
+      param: 'number',
+      meta: undefied
+    }
+  ]
+}
 ```
 
 <dl>
@@ -460,8 +464,8 @@ shape1.parse(3);
 // ❌ ValidationError: kaputs at /
 ```
 
-A check callback receives an input value and returns a partial issue or an array of partial issues if the value is
-invalid.
+A check callback receives the shape output value and must return a partial issue or an array of partial issues if the
+value is invalid.
 
 > **Note**&ensp; Check callbacks can safely throw a `ValidationError` to notify Doubter that parsing issues occurred.
 > While this has the same effect as returning an array of issues, it is recommended to throw a `ValidationError` as the
@@ -478,20 +482,25 @@ d.number().gt(5);
 Add as many checks as you need to the shape. They are executed the same order they are defined.
 
 ```ts
-d.string().max(4).regex(/a/).parse('Pluto');
+d.string().max(4).regex(/a/).try('Pluto');
 ```
 
-In the example above, a validation error would be thrown with a single issue:
+In the example above, an [`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) object is returned:
 
 ```ts
-[{
-  code: 'stringMaxLength',
-  path: [],
-  input: 'Pluto',
-  message: 'Must have the maximum length of 4',
-  param: 4,
-  meta: undefied
-}]
+{
+  ok: false,
+  issues: [
+    {
+      code: 'stringMaxLength',
+      path: [],
+      input: 'Pluto',
+      message: 'Must have the maximum length of 4',
+      param: 4,
+      meta: undefied
+    }
+  ]
+}
 ```
 
 > **Note**&ensp;You can find the list of issue codes and corresponding param values in
@@ -501,40 +510,74 @@ Doubter halts parsing and raises a validation error as soon as the first issue w
 to collect all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option to a parse
 method.
 
-If you want a check to be executed even if the previous check on the shape has failed, pass the `unsafe` option to the
-check method:
+```ts
+d.string().max(4).regex(/a/).try('Pluto', { verbose: true });
+```
+
+This would return the [`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) object with two issues:
 
 ```ts
-const shape2 = d.string()
-  .max(4)
-  // 🟡 Unsafe regex check is executed even if max fails
-  .regex(/a/, { unsafe: true });
+{
+  ok: false,
+  issues: [
+    {
+      code: 'stringMaxLength',
+      path: [],
+      input: 'Pluto',
+      message: 'Must have the maximum length of 4',
+      param: 4,
+      meta: undefied
+    },
+    {
+      code: 'stringRegex',
+      path: [],
+      input: 'Pluto',
+      message: 'Must match the pattern /a/',
+      param: /a/,
+      meta: undefied
+    }
+  ]
+}
+```
+
+## Safe and unsafe checks
+
+Checks that you add using a `check` method are marked as "safe" which means they aren't executed if any of the preceding
+checks failed. Consider an object with a custom check:
+
+```ts
+const userShape = d.object({
+  age: d.string(),
+  yearsOfExperience: d.number()
+}).check(value => {
+  if (value.yearsOfExperience > value.age) {
+    return { code: 'inconsistentAge' };
+  }
+});
+```
+
+The check callback relies on `value` to be an object with the valid set of properties. So if any issues are detected in
+the input object the check won't be called:
+
+```ts
+// Check isn't called since yearsOfExperience is missing
+nameShape.parse({ age: 18 });
+```
+
+To force the check to be executed even if the preceding check has failed, pass the `unsafe` option to the check method:
+
+```ts
+const shape = d.string().max(3).check(
+  value => {
+    if (value.toUpperCase() !== value) {
+      return { message: 'Must be all caps' }
+    }
+  },
+  { unsafe: true }
+);
 
 shape.parse('Pluto', { verbose: true });
 // ❌ ValidationError
-```
-
-The validation error contains following issues:
-
-```ts
-[
-  {
-    code: 'stringMaxLength',
-    path: [],
-    input: 'Pluto',
-    message: 'Must have the maximum length of 4',
-    param: 4,
-    meta: undefied
-  },
-  {
-    code: 'stringRegex',
-    path: [],
-    input: 'Pluto',
-    message: 'Must regex the pattern /a/',
-    param: /a/,
-    meta: undefied
-  }
-]
 ```
 
 ## Add, get and delete checks
