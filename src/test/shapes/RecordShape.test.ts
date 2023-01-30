@@ -1,4 +1,4 @@
-import { ObjectShape, RecordShape, Shape, StringShape } from '../../main';
+import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
 
 describe('RecordShape', () => {
@@ -61,7 +61,7 @@ describe('RecordShape', () => {
 
     const obj = { key1: 'aaa', key2: 'bbb' };
 
-    const result: any = objShape.try(obj);
+    const result = objShape.try(obj) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: { KEY1: 'aaa', KEY2: 'bbb' } });
     expect(result.value).not.toBe(obj);
@@ -75,7 +75,7 @@ describe('RecordShape', () => {
 
     const obj = { key1: 'aaa', key2: 'bbb' };
 
-    const result: any = objShape.try(obj);
+    const result = objShape.try(obj) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: { key1: 'AAA', key2: 'BBB' } });
     expect(result.value).not.toBe(obj);
@@ -195,7 +195,7 @@ describe('RecordShape', () => {
 
       const obj = { key1: 'aaa', key2: 'bbb' };
 
-      const result: any = await objShape.tryAsync(obj);
+      const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { KEY1: 'aaa', KEY2: 'bbb' } });
       expect(result.value).not.toBe(obj);
@@ -209,7 +209,7 @@ describe('RecordShape', () => {
 
       const obj = { key1: 'aaa', key2: 'bbb' };
 
-      const result: any = await objShape.tryAsync(obj);
+      const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { key1: 'AAA', key2: 'BBB' } });
       expect(result.value).not.toBe(obj);

@@ -1,4 +1,4 @@
-import { ObjectShape, SetShape, Shape, StringShape } from '../../main';
+import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
 import {
   CODE_SET_MAX,
   CODE_SET_MIN,
@@ -40,7 +40,7 @@ describe('SetShape', () => {
     const setShape = new SetShape(shape);
 
     const set = new Set([111, 222]);
-    const result: any = setShape.try(set);
+    const result = setShape.try(set) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: set });
     expect(result.value).toBe(set);
@@ -84,7 +84,7 @@ describe('SetShape', () => {
     const setShape = new SetShape(shape);
 
     const set = new Set([111, 222]);
-    const result: any = setShape.try(set);
+    const result = setShape.try(set) as Ok<unknown>;
 
     expect(set).toEqual(new Set([111, 222]));
     expect(result).toEqual({ ok: true, value: new Set(['aaa', 'bbb']) });
@@ -226,7 +226,7 @@ describe('SetShape', () => {
       const setShape = new SetShape(shape);
 
       const set = new Set([111, 222]);
-      const result: any = await setShape.tryAsync(set);
+      const result = (await setShape.tryAsync(set)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: set });
       expect(result.value).toBe(set);
@@ -245,7 +245,7 @@ describe('SetShape', () => {
       const setShape = new SetShape(shape);
 
       const set = new Set([111, 222]);
-      const result: any = await setShape.tryAsync(set);
+      const result = (await setShape.tryAsync(set)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: new Set(['aaa', 'bbb']) });
       expect(result.value).not.toBe(set);

@@ -1,4 +1,13 @@
-import { ArrayShape, IntersectionShape, NumberShape, ObjectShape, Shape, StringShape, UnionShape } from '../../main';
+import {
+  AnyShape,
+  ArrayShape,
+  IntersectionShape,
+  NumberShape,
+  ObjectShape,
+  Shape,
+  StringShape,
+  UnionShape,
+} from '../../main';
 import {
   CODE_INTERSECTION,
   CODE_TYPE,
@@ -98,7 +107,7 @@ describe('IntersectionShape', () => {
 
       const andShape = new IntersectionShape([objShape, arrShape]);
 
-      const shape: any = andShape.at(1);
+      const shape = andShape.at(1) as IntersectionShape<AnyShape[]>;
 
       expect(shape instanceof IntersectionShape).toBe(true);
       expect(shape.shapes.length).toBe(2);

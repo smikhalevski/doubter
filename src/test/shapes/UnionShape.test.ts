@@ -1,4 +1,5 @@
 import {
+  AnyShape,
   ArrayShape,
   BooleanShape,
   ConstShape,
@@ -120,7 +121,7 @@ describe('UnionShape', () => {
 
       const orShape = new UnionShape([objShape, arrShape]);
 
-      const shape: any = orShape.at(1);
+      const shape = orShape.at(1) as UnionShape<AnyShape[]>;
 
       expect(shape instanceof UnionShape).toBe(true);
       expect(shape.shapes.length).toBe(2);

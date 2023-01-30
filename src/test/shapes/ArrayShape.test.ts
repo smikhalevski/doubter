@@ -1,4 +1,4 @@
-import { ArrayShape, NumberShape, ObjectShape, Shape, StringShape } from '../../main';
+import { ArrayShape, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -40,7 +40,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape(null, null);
 
     const arr = [111, 222];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
@@ -56,7 +56,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape([shape1, shape2], null);
 
     const arr = [111, 222];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
@@ -74,7 +74,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape(null, restShape);
 
     const arr = [111, 222];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
@@ -95,7 +95,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape([shape1, shape2], restShape);
 
     const arr = [111, 222, 333, 444];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
@@ -191,7 +191,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape([shape1, shape2], null);
 
     const arr = [111, 222];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(arr).toEqual([111, 222]);
     expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
@@ -470,7 +470,7 @@ describe('ArrayShape', () => {
       const arrShape = new ArrayShape([shape1, shape2], null);
 
       const arr = [111, 222];
-      const result: any = await arrShape.tryAsync(arr);
+      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
@@ -488,7 +488,7 @@ describe('ArrayShape', () => {
       const arrShape = new ArrayShape(null, restShape);
 
       const arr = [111, 222];
-      const result: any = await arrShape.tryAsync(arr);
+      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
@@ -504,7 +504,7 @@ describe('ArrayShape', () => {
       const arrShape = new ArrayShape([shape1, shape2], null);
 
       const arr = [111, 222];
-      const result: any = await arrShape.tryAsync(arr);
+      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
       expect(result.value).not.toBe(arr);

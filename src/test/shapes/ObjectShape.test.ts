@@ -1,4 +1,4 @@
-import { ObjectShape, Shape, StringShape } from '../../main';
+import { ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_ENUM,
   CODE_EXCLUSION,
@@ -291,7 +291,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1 }, null);
 
       const obj = { key1: 'aaa' };
-      const result: any = objShape.try(obj);
+      const result = objShape.try(obj) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: obj });
       expect(result.value).toBe(obj);
@@ -305,7 +305,7 @@ describe('ObjectShape', () => {
 
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
 
-      const result: any = objShape.try({});
+      const result = objShape.try({}) as Ok<unknown>;
 
       expect(result).toEqual({
         ok: false,
@@ -319,7 +319,7 @@ describe('ObjectShape', () => {
 
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
 
-      const result: any = objShape.try({}, { verbose: true });
+      const result = objShape.try({}, { verbose: true }) as Ok<unknown>;
 
       expect(result).toEqual({
         ok: false,
@@ -337,7 +337,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
 
       const obj = { key1: 'aaa', key2: 'bbb' };
-      const result: any = objShape.try(obj);
+      const result = objShape.try(obj) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { key1: 'aaa', key2: 111 } });
       expect(result.value).not.toBe(obj);
@@ -351,7 +351,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape(shapes, null);
 
       const obj = {};
-      const result: any = objShape.try(obj);
+      const result = objShape.try(obj) as Ok<object>;
 
       expect(result).toEqual({
         ok: true,
@@ -384,7 +384,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, restShape);
 
       const obj = { key1: 'aaa', yay: 'bbb' };
-      const result: any = objShape.try(obj);
+      const result = objShape.try(obj) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: obj });
       expect(result.value).toBe(obj);
@@ -402,7 +402,7 @@ describe('ObjectShape', () => {
 
       const objShape = new ObjectShape({ key1: shape1 }, restShape);
 
-      const result: any = objShape.try({ key2: 'aaa' }, { verbose: true });
+      const result = objShape.try({ key2: 'aaa' }, { verbose: true }) as Ok<unknown>;
 
       expect(result).toEqual({
         ok: false,
@@ -420,7 +420,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1 }, restShape);
 
       const obj = { key1: 'aaa', yay: 'bbb' };
-      const result: any = objShape.try(obj);
+      const result = objShape.try(obj) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { key1: 'aaa', yay: 111 } });
       expect(result.value).not.toBe(obj);
@@ -438,7 +438,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1 }, null).strip();
 
       const obj = { key1: 'aaa', yay: 'bbb' };
-      const result: any = objShape.try(obj);
+      const result = objShape.try(obj) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { key1: 'aaa' } });
       expect(result.value).not.toBe(obj);
@@ -450,7 +450,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1 }, null).strip();
 
       const obj = { key1: 'aaa', yay: 'bbb' };
-      const result: any = objShape.try(obj);
+      const result = objShape.try(obj) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { key1: 111 } });
       expect(result.value).not.toBe(obj);
@@ -538,7 +538,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, restShape);
 
       const obj = { key1: 'aaa', yay: 'bbb' };
-      const result: any = await objShape.tryAsync(obj);
+      const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: obj });
       expect(result.value).toBe(obj);
@@ -574,7 +574,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1 }, restShape);
 
       const obj = { key1: 'aaa', yay: 'bbb' };
-      const result: any = await objShape.tryAsync(obj);
+      const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { key1: 'aaa', yay: 111 } });
       expect(result.value).not.toBe(obj);
@@ -586,7 +586,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1 }, null).strip();
 
       const obj = { key1: 'aaa', yay: 'bbb' };
-      const result: any = await objShape.tryAsync(obj);
+      const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { key1: 'aaa' } });
       expect(result.value).not.toBe(obj);
@@ -598,7 +598,7 @@ describe('ObjectShape', () => {
       const objShape = new ObjectShape({ key1: shape1 }, null).strip();
 
       const obj = { key1: 'aaa', yay: 'bbb' };
-      const result: any = await objShape.tryAsync(obj);
+      const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: { key1: 111 } });
       expect(result.value).not.toBe(obj);
