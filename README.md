@@ -1236,7 +1236,7 @@ How to validate an email or UUID? Combine Doubter with your favourite predicate 
 import * as d from 'doubter';
 import isEmail from 'validator/lib/isEmail';
 
-const emailShape = d.string().refine(isEmail, 'Must be an email');
+const emailShape = d.any<string>(isEmail, 'Must be an email');
 // ⮕ Shape<string>
 
 emailShape.parse('Not an email');
