@@ -1042,7 +1042,7 @@ shape1.deepPartial();
 // ⮕ Shape<Array<{ name?: string, age?: number } | undefined>>
 ```
 
-Even unions, intersections and lazy shapes can be converted to deep partial:
+Unions, intersections and lazy shapes can also be converted to deep partial:
 
 ```ts
 const shape2 = d.or([
