@@ -6,6 +6,7 @@ import {
   cloneObjectEnumerableKeys,
   cloneObjectKnownKeys,
   concatIssues,
+  copyUnsafeChecks,
   createIssueFactory,
   Dict,
   enableBitAt,
@@ -162,7 +163,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   extend(shape: ObjectShape<any, any> | ReadonlyDict) {
     const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
 
-    return new ObjectShape(shapes, this.restShape, this._options, this.keysMode);
+    return copyUnsafeChecks(this, new ObjectShape(shapes, this.restShape, this._options, this.keysMode));
   }
 
   /**
@@ -182,7 +183,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         shapes[key] = this.shapes[key];
       }
     }
-    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
+    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
   }
 
   /**
@@ -202,7 +203,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         shapes[key] = this.shapes[key];
       }
     }
-    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
+    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
   }
 
   /**
@@ -231,7 +232,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     for (const key in this.shapes) {
       shapes[key] = keys === undefined || keys.includes(key) ? this.shapes[key].optional() : this.shapes[key];
     }
-    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
+    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
   }
 
   deepPartial(): DeepPartialObjectShape<P, R> {
@@ -243,7 +244,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
-    return new ObjectShape<any, any>(shapes, restShape, this._options, this.keysMode);
+    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, restShape, this._options, this.keysMode));
   }
 
   /**
@@ -272,7 +273,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     for (const key in this.shapes) {
       shapes[key] = keys === undefined || keys.includes(key) ? this.shapes[key].nonOptional() : this.shapes[key];
     }
-    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
+    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
   }
 
   /**
@@ -288,7 +289,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options);
 
-    return shape;
+    return copyUnsafeChecks(this, shape);
   }
 
   /**
@@ -299,7 +300,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    */
   strip(): ObjectShape<P, null> {
-    return new ObjectShape(this.shapes, null, this._options, 'stripped');
+    return copyUnsafeChecks(this, new ObjectShape(this.shapes, null, this._options, 'stripped'));
   }
 
   /**
@@ -310,7 +311,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    */
   preserve(): ObjectShape<P, null> {
-    return new ObjectShape(this.shapes, null, this._options);
+    return copyUnsafeChecks(this, new ObjectShape(this.shapes, null, this._options));
   }
 
   /**
@@ -323,7 +324,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @template T The index signature shape.
    */
   rest<T extends AnyShape>(restShape: T): ObjectShape<P, T> {
-    return new ObjectShape(this.shapes, restShape, this._options);
+    return copyUnsafeChecks(this, new ObjectShape(this.shapes, restShape, this._options));
   }
 
   /**

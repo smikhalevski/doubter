@@ -1,6 +1,6 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
 import { ParseOptions } from '../shared-types';
-import { isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
+import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 
 /**
@@ -44,7 +44,7 @@ export class LazyShape<S extends AnyShape>
   deepPartial(): LazyShape<DeepPartialShape<S>> {
     const { _shapeProvider } = this;
 
-    return new LazyShape(() => toDeepPartialShape(_shapeProvider()));
+    return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_shapeProvider())));
   }
 
   protected _requiresAsync(): boolean {

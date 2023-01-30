@@ -1,6 +1,6 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, isArray, isEqual, ok, toDeepPartialShape } from '../utils';
+import { copyUnsafeChecks, createIssueFactory, isArray, isEqual, ok, toDeepPartialShape } from '../utils';
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -31,7 +31,7 @@ export class PromiseShape<S extends AnyShape>
   }
 
   deepPartial(): PromiseShape<OptionalDeepPartialShape<S>> {
-    return new PromiseShape<any>(toDeepPartialShape(this.shape).optional(), this._options);
+    return copyUnsafeChecks(this, new PromiseShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
   }
 
   protected _requiresAsync(): boolean {

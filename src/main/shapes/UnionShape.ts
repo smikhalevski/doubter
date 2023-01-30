@@ -2,6 +2,7 @@ import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, Va
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   concatIssues,
+  copyUnsafeChecks,
   createIssueFactory,
   getValueType,
   isArray,
@@ -63,10 +64,6 @@ export class UnionShape<U extends readonly AnyShape[]>
     return cb;
   }
 
-  deepPartial(): DeepPartialUnionShape<U> {
-    return new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
-  }
-
   at(key: unknown): AnyShape | null {
     const valueShapes: AnyShape[] = [];
 
@@ -77,7 +74,6 @@ export class UnionShape<U extends readonly AnyShape[]>
         valueShapes.push(valueShape);
       }
     }
-
     if (valueShapes.length === 0) {
       return null;
     }
@@ -85,6 +81,10 @@ export class UnionShape<U extends readonly AnyShape[]>
       return valueShapes[0];
     }
     return new UnionShape(valueShapes);
+  }
+
+  deepPartial(): DeepPartialUnionShape<U> {
+    return copyUnsafeChecks(this, new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
   }
 
   protected _requiresAsync(): boolean {

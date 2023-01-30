@@ -9,6 +9,7 @@ import {
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   concatIssues,
+  copyUnsafeChecks,
   createIssueFactory,
   isArray,
   isEqual,
@@ -65,11 +66,10 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
   }
 
   deepPartial(): MapShape<DeepPartialShape<K>, OptionalDeepPartialShape<V>> {
-    return new MapShape<any, any>(
-      toDeepPartialShape(this.keyShape),
-      toDeepPartialShape(this.valueShape).optional(),
-      this._options
-    );
+    const keyShape = toDeepPartialShape(this.keyShape);
+    const valueShape = toDeepPartialShape(this.valueShape).optional();
+
+    return copyUnsafeChecks(this, new MapShape<any, any>(keyShape, valueShape, this._options));
   }
 
   protected _requiresAsync(): boolean {

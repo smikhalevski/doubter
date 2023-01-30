@@ -3,6 +3,7 @@ import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   cloneObjectEnumerableKeys,
   concatIssues,
+  copyUnsafeChecks,
   createIssueFactory,
   isArray,
   isEqual,
@@ -64,7 +65,9 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   }
 
   deepPartial(): RecordShape<K, OptionalDeepPartialShape<V>> {
-    return new RecordShape<any, any>(this.keyShape, toDeepPartialShape(this.valueShape).optional(), this._options);
+    const valueShape = toDeepPartialShape(this.valueShape).optional();
+
+    return copyUnsafeChecks(this, new RecordShape<any, any>(this.keyShape, valueShape, this._options));
   }
 
   protected _requiresAsync(): boolean {

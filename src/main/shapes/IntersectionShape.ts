@@ -1,5 +1,6 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
 import {
+  copyUnsafeChecks,
   createIssueFactory,
   getValueType,
   isArray,
@@ -33,7 +34,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   deepPartial(): DeepPartialIntersectionShape<U> {
-    return new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
+    return copyUnsafeChecks(this, new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
   }
 
   protected _requiresAsync(): boolean {

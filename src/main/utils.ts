@@ -119,6 +119,18 @@ export function addConstraint<S extends Shape>(
 }
 
 /**
+ * Replaces checks of the target shape with unsafe checks from the source shape.
+ */
+export function copyUnsafeChecks<S extends Shape>(sourceShape: AnyShape, targetShape: S): S {
+  const checks = sourceShape['_checks']?.filter(isUnsafeCheck);
+
+  if (checks === undefined || checks.length === 0) {
+    return targetShape;
+  }
+  return targetShape['_replaceChecks'](checks);
+}
+
+/**
  * Returns a function that creates a new array with a single issue.
  *
  * @param code The code of the issue.
