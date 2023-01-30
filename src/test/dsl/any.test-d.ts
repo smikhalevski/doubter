@@ -1,7 +1,17 @@
 import { expectNotType, expectType } from 'tsd';
 import * as d from 'doubter';
 
+expectType<111>(d.any((value): value is 111 => true).input);
+
 expectType<111>(d.any((value): value is 111 => true).output);
+
+expectType<string>(d.any<string>().input);
+
+expectType<string>(d.any<string>().output);
+
+expectType<string>(d.any<string>(() => true).input);
+
+expectType<string>(d.any<string>(() => true).output);
 
 expectType<string | null>(d.any<string>().nullable().output);
 
