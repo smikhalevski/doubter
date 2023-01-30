@@ -13,6 +13,9 @@ export interface Dict<T = any> {
 
 export type ToArray<T> = T extends readonly any[] ? T : never;
 
+/**
+ * Returns the extended value type.
+ */
 export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
   const type = typeof value;
 
@@ -39,6 +42,9 @@ export const isArray = Array.isArray;
 
 export const getPrototypeOf = Object.getPrototypeOf;
 
+/**
+ * [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero) comparison.
+ */
 export function isEqual(a: unknown, b: unknown): boolean {
   return a === b || (a !== a && b !== b);
 }
@@ -106,7 +112,7 @@ export function addConstraint<S extends Shape>(
   param: unknown,
   cb: CheckCallback<S['output']>
 ): S {
-  return shape.check(cb, { key, unsafe: true, param });
+  return shape.check(cb, { key, param, unsafe: true });
 }
 
 /**

@@ -187,9 +187,9 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape.
    */
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
-    const { key = cb, unsafe = false, param } = options;
+    const { key = cb, param, unsafe = false } = options;
 
-    const check: Check = { key, callback: cb, unsafe, param };
+    const check: Check = { key, callback: cb, param, unsafe };
 
     return this._replaceChecks(
       this._checks !== null ? this._checks.filter(check => check.key !== key).concat(check) : [check]
@@ -262,7 +262,7 @@ export class Shape<I = any, O = I> {
 
     const unsafe = options !== null && typeof options === 'object' && options.unsafe;
 
-    return this.check(cb, { key: predicate, unsafe, param: predicate });
+    return this.check(cb, { key: predicate, param: predicate, unsafe });
   }
 
   /**
