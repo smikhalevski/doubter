@@ -1,9 +1,10 @@
-import { SetShape, Shape, StringShape } from '../../main';
+import { ObjectShape, SetShape, Shape, StringShape } from '../../main';
 import {
   CODE_SET_MAX,
   CODE_SET_MIN,
   CODE_TYPE,
   MESSAGE_SET_TYPE,
+  MESSAGE_STRING_TYPE,
   TYPE_ARRAY,
   TYPE_OBJECT,
   TYPE_SET,
@@ -168,6 +169,27 @@ describe('SetShape', () => {
     const setShape = new SetShape(new Shape()).coerce();
 
     expect(setShape.parse(['aaa'])).toEqual(new Set(['aaa']));
+  });
+
+  describe('deepPartial', () => {
+    test('marks value as optional', () => {
+      const setShape = new SetShape(new StringShape()).deepPartial();
+
+      expect(setShape.parse(new Set(['aaa']))).toEqual(new Set(['aaa']));
+      expect(setShape.parse(new Set([undefined]))).toEqual(new Set([undefined]));
+    });
+
+    test('makes value deep partial', () => {
+      const setShape = new SetShape(new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
+
+      expect(setShape.parse(new Set([{}]))).toEqual(new Set([{}]));
+      expect(setShape.parse(new Set([{ key1: undefined }]))).toEqual(new Set([{ key1: undefined }]));
+
+      expect(setShape.try(new Set([{ key1: 111 }]))).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [0, 'key1'] }],
+      });
+    });
   });
 
   describe('async', () => {

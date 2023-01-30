@@ -9,3 +9,9 @@ expectType<Map<'bbb', number>>(
     d.number()
   ).output
 );
+
+expectType<Map<string, number | undefined>>(d.map(d.string(), d.number()).deepPartial().output);
+
+expectType<Map<{ aaa?: string }, { bbb?: number } | undefined>>(
+  d.map(d.object({ aaa: d.string() }), d.object({ bbb: d.number() })).deepPartial().output
+);

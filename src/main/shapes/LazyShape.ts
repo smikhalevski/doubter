@@ -10,7 +10,7 @@ import { ERROR_SHAPE_EXPECTED } from '../constants';
  */
 export class LazyShape<S extends AnyShape>
   extends Shape<S['input'], S['output']>
-  implements DeepPartialProtocol<DeepPartialShape<S>>
+  implements DeepPartialProtocol<LazyShape<DeepPartialShape<S>>>
 {
   protected _shapeProvider;
 
@@ -41,8 +41,10 @@ export class LazyShape<S extends AnyShape>
     return shape;
   }
 
-  deepPartial(): DeepPartialShape<S> {
-    return toDeepPartialShape(this.shape);
+  deepPartial(): LazyShape<DeepPartialShape<S>> {
+    const { _shapeProvider } = this;
+
+    return new LazyShape(() => toDeepPartialShape(_shapeProvider()));
   }
 
   protected _requiresAsync(): boolean {

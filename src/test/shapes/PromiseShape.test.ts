@@ -1,5 +1,12 @@
-import { ArrayShape, PromiseShape, StringShape } from '../../main';
-import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_PROMISE } from '../../main/constants';
+import { ArrayShape, ObjectShape, PromiseShape, StringShape } from '../../main';
+import {
+  CODE_TYPE,
+  ERROR_REQUIRES_ASYNC,
+  MESSAGE_PROMISE_TYPE,
+  MESSAGE_STRING_TYPE,
+  TYPE_PROMISE,
+  TYPE_STRING,
+} from '../../main/constants';
 
 describe('PromiseShape', () => {
   test('create a promise shape', () => {
@@ -61,5 +68,33 @@ describe('PromiseShape', () => {
 
     expect(await output[0]).toBe(111.222);
     expect(await output[1]).toBe(333);
+  });
+
+  describe('deepPartial', () => {
+    test('marks value as optional', async () => {
+      const promiseShape = new PromiseShape(new StringShape()).deepPartial();
+
+      await expect(promiseShape.parseAsync(Promise.resolve(undefined))).resolves.toBe(undefined);
+      await expect(promiseShape.parseAsync(Promise.resolve('aaa'))).resolves.toBe('aaa');
+
+      await expect(promiseShape.tryAsync(Promise.resolve(111))).resolves.toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [] }],
+      });
+    });
+
+    test('parses deep optional object', async () => {
+      const promiseShape = new PromiseShape(new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
+
+      await expect(promiseShape.parseAsync(Promise.resolve(undefined))).resolves.toBe(undefined);
+      await expect(promiseShape.parseAsync(Promise.resolve({}))).resolves.toEqual({});
+      await expect(promiseShape.parseAsync(Promise.resolve({ key1: undefined }))).resolves.toEqual({ key1: undefined });
+      await expect(promiseShape.parseAsync(Promise.resolve({ key1: 'aaa' }))).resolves.toEqual({ key1: 'aaa' });
+
+      await expect(promiseShape.tryAsync(Promise.resolve({ key1: 111 }))).resolves.toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1'] }],
+      });
+    });
   });
 });

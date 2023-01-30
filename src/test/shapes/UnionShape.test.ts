@@ -2,7 +2,6 @@ import {
   ArrayShape,
   BooleanShape,
   ConstShape,
-  DeepPartialProtocol,
   EnumShape,
   NumberShape,
   ObjectShape,
@@ -11,6 +10,7 @@ import {
   UnionShape,
 } from '../../main';
 import { getDiscriminator } from '../../main/shapes/UnionShape';
+import { CODE_UNION, TYPE_NUMBER } from '../../main/constants';
 
 describe('UnionShape', () => {
   test('distributes buckets', () => {
@@ -140,20 +140,6 @@ describe('UnionShape', () => {
   });
 
   describe('deepPartial', () => {
-    test('marks all shapes as deep partial', () => {
-      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
-        deepPartial = jest.fn(() => this);
-      }
-
-      const shape1 = new MockShape();
-      const shape2 = new MockShape();
-
-      new UnionShape([shape1, shape2]).deepPartial();
-
-      expect(shape1.deepPartial).toHaveBeenCalledTimes(1);
-      expect(shape2.deepPartial).toHaveBeenCalledTimes(1);
-    });
-
     test('parses united deep partial objects', () => {
       const orShape = new UnionShape([
         new ObjectShape({ key1: new StringShape() }, null),
@@ -164,6 +150,16 @@ describe('UnionShape', () => {
       expect(orShape.parse({ key1: undefined })).toEqual({ key1: undefined });
       expect(orShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
       expect(orShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+    });
+
+    test('does not make shapes optional', () => {
+      const orShape = new UnionShape([new NumberShape()]).deepPartial();
+
+      expect(orShape.parse(111)).toBe(111);
+      expect(orShape.try(undefined)).toEqual({
+        ok: false,
+        issues: [{ code: CODE_UNION, message: 'Must conform the union of number', param: [TYPE_NUMBER], path: [] }],
+      });
     });
   });
 

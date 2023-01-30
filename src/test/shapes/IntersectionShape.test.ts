@@ -1,13 +1,4 @@
-import {
-  ArrayShape,
-  DeepPartialProtocol,
-  IntersectionShape,
-  NumberShape,
-  ObjectShape,
-  Shape,
-  StringShape,
-  UnionShape,
-} from '../../main';
+import { ArrayShape, IntersectionShape, NumberShape, ObjectShape, Shape, StringShape, UnionShape } from '../../main';
 import {
   CODE_INTERSECTION,
   CODE_TYPE,
@@ -98,20 +89,6 @@ describe('IntersectionShape', () => {
   });
 
   describe('deepPartial', () => {
-    test('marks all shapes as deep partial', () => {
-      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
-        deepPartial = jest.fn(() => this);
-      }
-
-      const shape1 = new MockShape();
-      const shape2 = new MockShape();
-
-      new IntersectionShape([shape1, shape2]).deepPartial();
-
-      expect(shape1.deepPartial).toHaveBeenCalledTimes(1);
-      expect(shape2.deepPartial).toHaveBeenCalledTimes(1);
-    });
-
     test('parses intersected deep partial objects', () => {
       const andShape = new IntersectionShape([
         new ObjectShape({ key1: new StringShape() }, null),
@@ -122,6 +99,16 @@ describe('IntersectionShape', () => {
       expect(andShape.parse({ key1: undefined })).toEqual({ key1: undefined });
       expect(andShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
       expect(andShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+    });
+
+    test('does not make shapes optional', () => {
+      const andShape = new IntersectionShape([new NumberShape()]).deepPartial();
+
+      expect(andShape.parse(111)).toBe(111);
+      expect(andShape.try(undefined)).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
+      });
     });
   });
 

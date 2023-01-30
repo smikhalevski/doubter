@@ -1,4 +1,4 @@
-import { ArrayShape, DeepPartialProtocol, NumberShape, ObjectShape, Shape, StringShape } from '../../main';
+import { ArrayShape, NumberShape, ObjectShape, Shape, StringShape } from '../../main';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -384,21 +384,6 @@ describe('ArrayShape', () => {
   });
 
   describe('deepPartial', () => {
-    test('marks element shapes as deep partial', () => {
-      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
-        deepPartial = jest.fn(() => this);
-      }
-
-      const shape1 = new MockShape();
-      const shape2 = new Shape();
-      const shape3 = new MockShape();
-
-      new ArrayShape([shape1, shape2], shape3).deepPartial();
-
-      expect(shape1.deepPartial).toHaveBeenCalledTimes(1);
-      expect(shape3.deepPartial).toHaveBeenCalledTimes(1);
-    });
-
     test('raises an issue if deep partial tuple length is invalid', () => {
       const arrShape = new ArrayShape(
         [new ObjectShape({ key1: new StringShape() }, null)],

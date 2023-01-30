@@ -36,8 +36,14 @@ describe('LazyShape', () => {
       }
 
       const deepPartialShape = new MockShape();
+      const shapeProviderMock = jest.fn(() => new MockShape());
 
-      expect(new LazyShape(() => new MockShape()).deepPartial()).toBe(deepPartialShape);
+      const shape = new LazyShape(shapeProviderMock).deepPartial();
+
+      expect(shapeProviderMock).not.toHaveBeenCalled();
+
+      expect(shape.shape).toBe(deepPartialShape);
+      expect(shapeProviderMock).toHaveBeenCalledTimes(1);
     });
   });
 

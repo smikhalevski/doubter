@@ -1,4 +1,4 @@
-import { DeepPartialProtocol, ObjectShape, Shape, StringShape } from '../../main';
+import { ObjectShape, Shape, StringShape } from '../../main';
 import {
   CODE_ENUM,
   CODE_EXCLUSION,
@@ -243,27 +243,6 @@ describe('ObjectShape', () => {
   });
 
   describe('deepPartial', () => {
-    test('marks property and rest shapes as deep partial', () => {
-      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
-        deepPartial = jest.fn(() => this);
-      }
-
-      const shape1 = new MockShape();
-      const shape2 = new Shape();
-      const shape3 = new MockShape();
-
-      new ObjectShape(
-        {
-          key1: shape1,
-          key2: shape2,
-        },
-        shape3
-      ).deepPartial();
-
-      expect(shape1.deepPartial).toHaveBeenCalledTimes(1);
-      expect(shape3.deepPartial).toHaveBeenCalledTimes(1);
-    });
-
     test('parses deep partial properties', () => {
       const objShape = new ObjectShape(
         { key1: new ObjectShape({ key2: new StringShape() }, null) },

@@ -1,5 +1,5 @@
-import { RecordShape, Shape } from '../../main';
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../../main/constants';
+import { ObjectShape, RecordShape, Shape, StringShape } from '../../main';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
 
 describe('RecordShape', () => {
   test('raises non object values', () => {
@@ -99,6 +99,38 @@ describe('RecordShape', () => {
     expect(objShape.at(111.222)).toBe(valueShape);
     expect(objShape.at(null)).toBe(null);
     expect(objShape.at(Symbol())).toBe(null);
+  });
+
+  describe('deepPartial', () => {
+    test('marks values as optional', () => {
+      const objShape = new RecordShape(new StringShape(), new StringShape()).deepPartial();
+
+      expect(objShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(objShape.parse({ key1: 'aaa' })).toEqual({ key1: 'aaa' });
+
+      expect(objShape.try({ key1: 111 })).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1'] }],
+      });
+    });
+
+    test('parses deep partial values', () => {
+      const objShape = new RecordShape(
+        new StringShape(),
+        new ObjectShape({ key1: new StringShape() }, null)
+      ).deepPartial();
+
+      expect(objShape.parse({ aaa: undefined })).toEqual({ aaa: undefined });
+      expect(objShape.parse({ aaa: { key1: undefined } })).toEqual({ aaa: { key1: undefined } });
+      expect(objShape.parse({ aaa: { key1: 'aaa' } })).toEqual({ aaa: { key1: 'aaa' } });
+
+      expect(objShape.try({ aaa: { key1: 111 } })).toEqual({
+        ok: false,
+        issues: [
+          { code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['aaa', 'key1'] },
+        ],
+      });
+    });
   });
 
   describe('async', () => {

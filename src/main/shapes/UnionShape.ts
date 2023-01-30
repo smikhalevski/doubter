@@ -63,10 +63,8 @@ export class UnionShape<U extends readonly AnyShape[]>
     return cb;
   }
 
-  deepPartial(): DeepPartialUnionShape<U>;
-
-  deepPartial(): AnyShape {
-    return new UnionShape(this.shapes.map(toDeepPartialShape), this._options);
+  deepPartial(): DeepPartialUnionShape<U> {
+    return new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
   }
 
   at(key: unknown): AnyShape | null {
