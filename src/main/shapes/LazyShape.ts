@@ -6,7 +6,7 @@ import { ERROR_SHAPE_EXPECTED } from '../constants';
 /**
  * Lazily resolves a shape using the provider.
  *
- * @template S The base shape.
+ * @template S The resolved shape.
  */
 export class LazyShape<S extends AnyShape>
   extends Shape<S['input'], S['output']>
@@ -17,8 +17,8 @@ export class LazyShape<S extends AnyShape>
   /**
    * Creates a new {@linkcode LazyShape} instance.
    *
-   * @param shapeProvider The provider that returns the base shape.
-   * @template S The base shape.
+   * @param shapeProvider The provider that returns the resolved shape.
+   * @template S The resolved shape.
    */
   constructor(shapeProvider: () => S) {
     super();
@@ -27,7 +27,7 @@ export class LazyShape<S extends AnyShape>
   }
 
   /**
-   * The base shape.
+   * The resolved shape.
    */
   get shape(): S {
     const shape = this._shapeProvider();

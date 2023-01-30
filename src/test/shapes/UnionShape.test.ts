@@ -155,15 +155,15 @@ describe('UnionShape', () => {
     });
 
     test('parses united deep partial objects', () => {
-      const andShape = new UnionShape([
+      const orShape = new UnionShape([
         new ObjectShape({ key1: new StringShape() }, null),
         new ObjectShape({ key2: new StringShape() }, null),
       ]).deepPartial();
 
-      expect(andShape.parse({})).toEqual({});
-      expect(andShape.parse({ key1: undefined })).toEqual({ key1: undefined });
-      expect(andShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
-      expect(andShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+      expect(orShape.parse({})).toEqual({});
+      expect(orShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(orShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
+      expect(orShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
     });
   });
 

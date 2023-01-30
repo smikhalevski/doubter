@@ -32,10 +32,8 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
-  deepPartial(): DeepPartialIntersectionShape<U>;
-
-  deepPartial(): Shape {
-    return new IntersectionShape(this.shapes.map(toDeepPartialShape), this._options);
+  deepPartial(): DeepPartialIntersectionShape<U> {
+    return new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
   }
 
   protected _requiresAsync(): boolean {

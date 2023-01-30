@@ -4,22 +4,28 @@ import { createIssueFactory, getValueType } from '../utils';
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
 
 /**
- * The shape that constrains an input to be the exact value.
+ * The shape that constrains an input to exactly equal to the expected value.
  *
- * @template T The value.
+ * @template T The expected value.
  */
 export class ConstShape<T> extends Shape<T> {
-  protected _typeIssueFactory;
   protected _typePredicate: (input: unknown) => boolean;
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode ConstShape} instance.
    *
-   * @param value The exact value.
+   * @param value The expected value.
    * @param options The type constraint options or an issue message.
-   * @template T Allowed values.
+   * @template T The expected value.
    */
-  constructor(readonly value: T, options?: ConstraintOptions | Message) {
+  constructor(
+    /**
+     * The expected value.
+     */
+    readonly value: T,
+    options?: ConstraintOptions | Message
+  ) {
     super();
 
     this._typePredicate = value !== value ? Number.isNaN : input => value === input;

@@ -467,7 +467,9 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the list of runtime value types that can be processed by the shape. Used for various optimizations.
+   * Returns the list of runtime value types that can be processed by the shape.
+   *
+   * Used for various optimizations. Elements of the returned array don't have to be unique.
    */
   protected _getInputTypes(): ValueType[] {
     return [TYPE_ANY];
