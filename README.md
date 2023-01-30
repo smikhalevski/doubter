@@ -1,14 +1,8 @@
 <p align="center">
-  <br/>
-  <img src="./images/logo.png" alt="Doubter" width="400"/>
-  <br/>
-  <br/>
-  <a href="https://github.com/smikhalevski/doubter/actions/workflows/master.yml">
-    <img src="https://github.com/smikhalevski/doubter/actions/workflows/master.yml/badge.svg?branch=master&event=push" alt="build"/>
+  <a href="#readme">
+    <img src="./images/logo.png" alt="Doubter" width="400"/>
   </a>
 </p>
-
-<br/>
 
 No-hassle runtime validation and transformation library.
 
