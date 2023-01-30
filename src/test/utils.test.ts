@@ -1,6 +1,7 @@
 import {
   cloneObjectEnumerableKeys,
   cloneObjectKnownKeys,
+  copyUnsafeChecks,
   createApplyChecksCallback,
   createIssueFactory,
   enableBitAt,
@@ -9,7 +10,7 @@ import {
   toArrayIndex,
   unique,
 } from '../main/utils';
-import { Issue, ValidationError } from '../main';
+import { Issue, Shape, ValidationError } from '../main';
 
 describe('isEqual', () => {
   test('checks equality', () => {
@@ -46,6 +47,29 @@ describe('toArrayIndex', () => {
     expect(toArrayIndex(new Date())).toBe(-1);
     expect(toArrayIndex({ valueOf: () => 2 })).toBe(-1);
     expect(toArrayIndex({ toString: () => '2' })).toBe(-1);
+  });
+});
+
+describe('copyUnsafeChecks', () => {
+  test('returns target shape is there are no unsafe check on the source shape', () => {
+    const sourceShape = new Shape().check(() => undefined);
+    const targetShape = new Shape();
+
+    expect(copyUnsafeChecks(sourceShape, targetShape)).toBe(targetShape);
+  });
+
+  test('copies unsafe checks from source to a target clone', () => {
+    const safeCheck = () => undefined;
+    const unsafeCheck = () => undefined;
+
+    const sourceShape = new Shape().check(safeCheck).check(unsafeCheck, { unsafe: true });
+    const targetShape = new Shape();
+
+    const shape = copyUnsafeChecks(sourceShape, targetShape);
+
+    expect(shape).not.toBe(targetShape);
+    expect(shape['_checks']!.length).toBe(1);
+    expect(shape['_checks']![0].callback).toBe(unsafeCheck);
   });
 });
 
