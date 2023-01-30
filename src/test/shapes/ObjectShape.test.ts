@@ -1,4 +1,4 @@
-import { DeepPartialProtocol, NumberShape, ObjectShape, Shape, StringShape } from '../../main';
+import { DeepPartialProtocol, ObjectShape, Shape, StringShape } from '../../main';
 import {
   CODE_ENUM,
   CODE_EXCLUSION,
@@ -264,13 +264,41 @@ describe('ObjectShape', () => {
       expect(shape3.deepPartial).toHaveBeenCalledTimes(1);
     });
 
-    test('parses deep partial objects', () => {
-      const arrShape = new ObjectShape({ key1: new StringShape() }, new NumberShape()).deepPartial();
+    test('parses deep partial properties', () => {
+      const objShape = new ObjectShape(
+        { key1: new ObjectShape({ key2: new StringShape() }, null) },
+        null
+      ).deepPartial();
 
-      expect(arrShape.parse({ key1: undefined })).toEqual({ key1: undefined });
-      expect(arrShape.parse({ key1: 'aaa' })).toEqual({ key1: 'aaa' });
-      expect(arrShape.parse({ key2: undefined })).toEqual({ key2: undefined });
-      expect(arrShape.parse({ key2: 111 })).toEqual({ key2: 111 });
+      expect(objShape.parse({})).toEqual({});
+      expect(objShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(objShape.parse({ key1: {} })).toEqual({ key1: {} });
+      expect(objShape.parse({ key1: { key2: undefined } })).toEqual({ key1: { key2: undefined } });
+      expect(objShape.parse({ key1: { key2: 'aaa' } })).toEqual({ key1: { key2: 'aaa' } });
+
+      expect(objShape.try({ key1: { key2: 111 } })).toEqual({
+        ok: false,
+        issues: [
+          { code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1', 'key2'] },
+        ],
+      });
+    });
+
+    test('parses deep partial rest properties', () => {
+      const objShape = new ObjectShape({}, new ObjectShape({ key2: new StringShape() }, null)).deepPartial();
+
+      expect(objShape.parse({})).toEqual({});
+      expect(objShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(objShape.parse({ key1: {} })).toEqual({ key1: {} });
+      expect(objShape.parse({ key1: { key2: undefined } })).toEqual({ key1: { key2: undefined } });
+      expect(objShape.parse({ key1: { key2: 'aaa' } })).toEqual({ key1: { key2: 'aaa' } });
+
+      expect(objShape.try({ key1: { key2: 111 } })).toEqual({
+        ok: false,
+        issues: [
+          { code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1', 'key2'] },
+        ],
+      });
     });
   });
 
