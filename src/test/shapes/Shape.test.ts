@@ -359,6 +359,12 @@ describe('Shape', () => {
     expect((shape as ExcludeShape<any, any>).excludedValue).toBe(undefined);
   });
 
+  test('branding does not change shape identity', () => {
+    const shape = new Shape();
+
+    expect(shape.brand()).toBe(shape);
+  });
+
   describe('async', () => {
     test('creates an async shape', () => {
       class AsyncShape extends Shape {

@@ -38,21 +38,35 @@ import {
 const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
 
 /**
- * The unique symbol that is used for type branding.
- */
-export declare const BRAND: unique symbol;
-
-/**
  * An arbitrary shape.
  */
 export type AnyShape = Shape | Shape<never>;
 
 /**
  * An alias for {@linkcode ReplaceShape} that allows the same value as both an input and an output.
+ *
+ * @template S The shape that parses the input without the replaced value.
+ * @template T The value that is allows as an input and output.
  */
 export interface IncludeShape<S extends AnyShape, T>
   extends Shape<S['input'] | T, S['output'] | T>,
     DeepPartialProtocol<IncludeShape<DeepPartialShape<S>, T>> {}
+
+/**
+ * The unique symbol that is used for type branding.
+ */
+export declare const BRAND: unique symbol;
+
+/**
+ * An opaque shape that adds a brand to the output type.
+ *
+ * @template S The shape which output must be branded.
+ * @template T The brand value.
+ */
+// prettier-ignore
+export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, T> =
+  & Shape<S['input'], S['output'] & { [BRAND]: T }>
+  & Pick<S, keyof DeepPartialProtocol<AnyShape>>;
 
 /**
  * A shape should implement {@linkcode DeepPartialProtocol} to be converted to deep partial.
@@ -72,12 +86,14 @@ export interface DeepPartialProtocol<T extends AnyShape> {
  * Returns the deep partial alternative of the shape if it implements {@linkcode DeepPartialProtocol}, or returns shape
  * as is if it doesn't.
  *
- * @template S The shape to convert to deep partial alternative.
+ * @template S The shape to convert to a deep partial alternative.
  */
 export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer T> ? T : S;
 
 /**
  * Shape that is both optional and deep partial.
+ *
+ * @template S The shape to convert to an optional deep partial alternative.
  */
 export type OptionalDeepPartialShape<S extends AnyShape> = IncludeShape<DeepPartialShape<S>, undefined>;
 
@@ -299,24 +315,13 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Brands the output. The shape itself is used as a brand value.
+   * Returns an opaque shape that adds a brand to the output type.
    *
-   * @returns A shape with branded output type.
+   * @returns A shape with the branded output type.
    * @template T The brand value.
    */
-  brand(): BrandShape<this, this>;
-
-  /**
-   * Adds a brand to the output type of the shape.
-   *
-   * @param brandValue The literal value to add as a brand.
-   * @returns A shape with branded output type.
-   * @template T The brand value.
-   */
-  brand<T extends Literal>(brandValue: T): BrandShape<this, T>;
-
-  brand(brandValue?: unknown): BrandShape<this, unknown> {
-    return new BrandShape(this, arguments.length === 0 ? this : brandValue);
+  brand<T = this>(): BrandShape<this, T> {
+    return this as BrandShape<this, T>;
   }
 
   /**
@@ -1317,41 +1322,5 @@ export class CatchShape<S extends AnyShape, T>
       }
       return issues;
     });
-  }
-}
-
-/**
- * The shape that has a brand attached to its output type.
- *
- * @template S The shape that parses the input.
- * @template T The brand value.
- */
-export class BrandShape<S extends AnyShape, T>
-  extends Shape<S['input'], S['output'] & { [BRAND]: T }>
-  implements DeepPartialProtocol<BrandShape<DeepPartialShape<S>, T>>
-{
-  /**
-   * Creates the new {@linkcode BrandShape} instance.
-   *
-   * @param shape The shape that parses the input.
-   * @param brandValue The brand value.
-   * @template S The shape that parses the input.
-   * @template T The brand value.
-   */
-  constructor(
-    /**
-     * The shape that parses the input.
-     */
-    readonly shape: S,
-    /**
-     * The brand value.
-     */
-    readonly brandValue: T
-  ) {
-    super();
-  }
-
-  deepPartial(): BrandShape<DeepPartialShape<S>, T> {
-    return new BrandShape(toDeepPartialShape(this.shape), this.brandValue);
   }
 }
