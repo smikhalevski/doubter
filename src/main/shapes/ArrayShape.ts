@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, ValueType } from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -9,7 +9,9 @@ import {
   isEqual,
   isIterable,
   ok,
+  ToArray,
   toArrayIndex,
+  toDeepPartialShape,
   unshiftPath,
 } from '../utils';
 import {
@@ -37,7 +39,12 @@ export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape 
     ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
     : R extends AnyShape ? R[C][] : any[];
 
-export type ToArray<T> = T extends any[] ? T : never;
+export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
+  U extends readonly AnyShape[]
+    ? ToArray<{ [K in keyof U]: U[K] extends AnyShape ? OptionalDeepPartialShape<U[K]> : never }>
+    : null,
+  R extends AnyShape ? OptionalDeepPartialShape<R> : null
+>;
 
 /**
  * The shape of an array or a tuple.
@@ -45,10 +52,10 @@ export type ToArray<T> = T extends any[] ? T : never;
  * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
  * @template R The shape of rest elements, or `null` if there are no rest elements.
  */
-export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> extends CoercibleShape<
-  InferArray<U, R, 'input'>,
-  InferArray<U, R, 'output'>
-> {
+export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null>
+  extends CoercibleShape<InferArray<U, R, 'input'>, InferArray<U, R, 'output'>>
+  implements DeepPartialProtocol<DeepPartialArrayShape<U, R>>
+{
   protected _options;
   protected _typeIssueFactory;
 
@@ -76,7 +83,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
 
     this._options = options;
 
-    if (shapes !== null && restShape === null) {
+    if (shapes !== null && (shapes.length !== 0 || restShape === null)) {
       this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
     } else {
       this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
@@ -153,6 +160,14 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         return issueFactory(input, options);
       }
     });
+  }
+
+  deepPartial(): DeepPartialArrayShape<U, R> {
+    const shapes = this.shapes !== null ? this.shapes.map(shape => toDeepPartialShape(shape).optional()) : null;
+
+    const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
+
+    return new ArrayShape<any, any>(shapes, restShape, this._options);
   }
 
   protected _requiresAsync(): boolean {

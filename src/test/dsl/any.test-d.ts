@@ -11,14 +11,54 @@ expectType<string | undefined>(d.any<string>().parseOrDefault(111));
 
 expectType<string | true>(d.any<string>().parseOrDefault(111, true));
 
-const brandedShape = d.any<string>().brand();
-
-expectType<(typeof brandedShape)['output']>(brandedShape.output);
-
-expectNotType<(typeof brandedShape)['output']>('aaa');
-
 expectType<number | undefined>(d.number().catch().output);
 
 expectType<number | 'aaa'>(d.number().catch('aaa').output);
 
 expectType<number | 'aaa'>(d.number().catch(() => 'aaa').output);
+
+// TransformShape is opaque for deepPartial
+expectType<{ aaa?: { bbb: number } }>(
+  d.object({ aaa: d.object({ bbb: d.number() }).transform(value => value) }).deepPartial().output
+);
+
+expectType<{ aaa?: string }>(
+  d
+    .object({ aaa: d.string().transform(parseFloat) })
+    .to(d.object({ aaa: d.number() }))
+    .deepPartial().input
+);
+
+expectType<{ aaa?: number }>(
+  d
+    .object({ aaa: d.string().transform(parseFloat) })
+    .to(d.object({ aaa: d.number() }))
+    .deepPartial().output
+);
+
+expectType<{ aaa?: string }>(
+  d
+    .or([d.object({ aaa: d.string() }), d.const(111)])
+    .exclude(111)
+    .deepPartial().output
+);
+
+expectType<{ aaa?: string } | undefined>(d.object({ aaa: d.string() }).catch().deepPartial().output);
+
+expectType<{ aaa?: string } | 111>(d.object({ aaa: d.string() }).catch(111).deepPartial().output);
+
+const brandShape = d.any<string>().brand();
+
+expectType<(typeof brandShape)['output']>(brandShape.output);
+
+expectType<(typeof brandShape)['output']>(brandShape.parse('aaa'));
+
+expectNotType<(typeof brandShape)['output']>('aaa');
+
+expectNotType<(typeof brandShape)['output']>(d.any<string>().brand<'bbb'>().output);
+
+// deepPartial is visible on branded shapes
+expectType<{ aaa?: string }>(d.object({ aaa: d.string() }).brand().deepPartial().output);
+
+// Branded shapes are transparent for deepPartial
+expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string() }).brand() }).deepPartial().output);

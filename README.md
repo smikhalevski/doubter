@@ -41,6 +41,7 @@ npm install --save-prod doubter
 - [Replace](#replace)
 - [Optional and non-optional](#optional-and-non-optional)
 - [Nullable and nullish](#nullable-and-nullish)
+- [Deep partial](#deep-partial)
 - [Fallback value](#fallback-value)
 - [Branded types](#branded-types)
 - [Sub-shape at key](#sub-shape-at-key)
@@ -49,6 +50,7 @@ npm install --save-prod doubter
 - [Guarded functions](#guarded-functions)
 
 [**Type coercion**](#type-coercion)
+
 - [Coerce to string](#coerce-to-string)
 - [Coerce to number](#coerce-to-number)
 - [Coerce to boolean](#coerce-to-boolean)
@@ -1020,6 +1022,55 @@ d.string().nullish();
 ```ts
 d.string().nullish(8080);
 // ⮕ Shape<string | null | undefined, string | 8080>
+```
+
+# Deep partial
+
+All object-like shapes (objects, arrays, maps, sets, promises, etc.) can be converted to a deep partial alternative
+using `deepPartial` method:
+
+```ts
+const shape1 = d.array(
+  d.object({
+    name: d.string(),
+    age: d.number()
+  })
+);
+// ⮕ Shape<{ name: string, age: number }[]>
+
+shape1.deepPartial();
+// ⮕ Shape<Array<{ name?: string, age?: number } | undefined>>
+```
+
+Unions, intersections and lazy shapes can also be converted to deep partial:
+
+```ts
+const shape2 = d.or([
+  d.number(),
+  d.object({ name: d.string() })
+]).deepPartial()
+// ⮕ Shape<number | { name?: string }>
+
+shape2.parse(42);
+// ⮕ 42
+
+shape2.parse({ name: undefined });
+// ⮕ { name: undefined }
+
+shape2.parse({ name: 'Frodo' });
+// ⮕ { name: 'Frodo' }
+
+shape2.parse({ name: 8080 });
+// ❌ ValidationError: type at /name: Must be a string
+```
+
+Deep partial isn't applied to transformed shapes:
+
+```ts
+const shape2 = d.object({
+  years: d.array(d.string()).transform(parseFloat)
+}).deepPartial();
+// ⮕ Shape<{ years?: string[] }, { years?: number[] }>
 ```
 
 # Fallback value

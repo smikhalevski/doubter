@@ -18,9 +18,11 @@ export { RecordShape } from './RecordShape';
 export { SetShape } from './SetShape';
 export {
   AnyShape,
+  BrandShape,
+  DeepPartialProtocol,
+  DeepPartialShape,
   ExcludeShape,
-  OpaqueExcludeShape,
-  OpaqueReplaceShape,
+  IncludeShape,
   PipeShape,
   ReplaceShape,
   Shape,

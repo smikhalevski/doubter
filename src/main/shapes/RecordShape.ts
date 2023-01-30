@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   cloneObjectEnumerableKeys,
@@ -9,6 +9,7 @@ import {
   isObjectLike,
   ok,
   setKeyValue,
+  toDeepPartialShape,
   unshiftPath,
 } from '../utils';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
@@ -25,10 +26,11 @@ export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends A
  * @template K The key shape.
  * @template V The value shape.
  */
-export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends AnyShape> extends Shape<
-  InferRecord<K, V, 'input'>,
-  InferRecord<K, V, 'output'>
-> {
+export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends AnyShape>
+  extends Shape<InferRecord<K, V, 'input'>, InferRecord<K, V, 'output'>>
+  implements DeepPartialProtocol<RecordShape<K, OptionalDeepPartialShape<V>>>
+{
+  protected _options;
   protected _typeIssueFactory;
 
   /**
@@ -53,11 +55,16 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   ) {
     super();
 
+    this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
     return typeof key === 'string' || typeof key === 'number' ? this.valueShape : null;
+  }
+
+  deepPartial(): RecordShape<K, OptionalDeepPartialShape<V>> {
+    return new RecordShape<any, any>(this.keyShape, toDeepPartialShape(this.valueShape).optional(), this._options);
   }
 
   protected _requiresAsync(): boolean {

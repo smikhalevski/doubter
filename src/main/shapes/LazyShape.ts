@@ -1,21 +1,24 @@
-import { AnyShape, ApplyResult, Shape, ValueType } from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
 import { ParseOptions } from '../shared-types';
-import { isArray, returnArray, returnFalse } from '../utils';
+import { isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 
 /**
  * Lazily resolves a shape using the provider.
  *
- * @template S The base shape.
+ * @template S The resolved shape.
  */
-export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']> {
+export class LazyShape<S extends AnyShape>
+  extends Shape<S['input'], S['output']>
+  implements DeepPartialProtocol<LazyShape<DeepPartialShape<S>>>
+{
   protected _shapeProvider;
 
   /**
    * Creates a new {@linkcode LazyShape} instance.
    *
-   * @param shapeProvider The provider that returns the base shape.
-   * @template S The base shape.
+   * @param shapeProvider The provider that returns the resolved shape.
+   * @template S The resolved shape.
    */
   constructor(shapeProvider: () => S) {
     super();
@@ -24,7 +27,7 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
   }
 
   /**
-   * The base shape.
+   * The resolved shape.
    */
   get shape(): S {
     const shape = this._shapeProvider();
@@ -36,6 +39,12 @@ export class LazyShape<S extends AnyShape> extends Shape<S['input'], S['output']
     Object.defineProperty(this, 'shape', { value: shape });
 
     return shape;
+  }
+
+  deepPartial(): LazyShape<DeepPartialShape<S>> {
+    const { _shapeProvider } = this;
+
+    return new LazyShape(() => toDeepPartialShape(_shapeProvider()));
   }
 
   protected _requiresAsync(): boolean {

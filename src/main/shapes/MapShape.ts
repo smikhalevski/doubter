@@ -1,4 +1,11 @@
-import { AnyShape, ApplyResult, ValueType } from './Shape';
+import {
+  AnyShape,
+  ApplyResult,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  OptionalDeepPartialShape,
+  ValueType,
+} from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   concatIssues,
@@ -8,6 +15,7 @@ import {
   isIterable,
   isObjectLike,
   ok,
+  toDeepPartialShape,
   unshiftPath,
 } from '../utils';
 import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
@@ -19,10 +27,11 @@ import { CoercibleShape } from './CoercibleShape';
  * @template K The key shape.
  * @template V The value shape.
  */
-export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleShape<
-  Map<K['input'], V['input']>,
-  Map<K['output'], V['output']>
-> {
+export class MapShape<K extends AnyShape, V extends AnyShape>
+  extends CoercibleShape<Map<K['input'], V['input']>, Map<K['output'], V['output']>>
+  implements DeepPartialProtocol<MapShape<DeepPartialShape<K>, OptionalDeepPartialShape<V>>>
+{
+  protected _options;
   protected _typeIssueFactory;
 
   /**
@@ -47,11 +56,20 @@ export class MapShape<K extends AnyShape, V extends AnyShape> extends CoercibleS
   ) {
     super();
 
+    this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_MAP_TYPE, options, TYPE_MAP);
   }
 
   at(key: unknown): AnyShape | null {
     return this.valueShape;
+  }
+
+  deepPartial(): MapShape<DeepPartialShape<K>, OptionalDeepPartialShape<V>> {
+    return new MapShape<any, any>(
+      toDeepPartialShape(this.keyShape),
+      toDeepPartialShape(this.valueShape).optional(),
+      this._options
+    );
   }
 
   protected _requiresAsync(): boolean {

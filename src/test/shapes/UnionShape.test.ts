@@ -10,6 +10,7 @@ import {
   UnionShape,
 } from '../../main';
 import { getDiscriminator } from '../../main/shapes/UnionShape';
+import { CODE_UNION, TYPE_NUMBER } from '../../main/constants';
 
 describe('UnionShape', () => {
   test('distributes buckets', () => {
@@ -136,6 +137,30 @@ describe('UnionShape', () => {
     ]);
 
     expect(shape.parse({ type: 'bbb' })).toEqual({ type: 'bbb' });
+  });
+
+  describe('deepPartial', () => {
+    test('parses united deep partial objects', () => {
+      const orShape = new UnionShape([
+        new ObjectShape({ key1: new StringShape() }, null),
+        new ObjectShape({ key2: new StringShape() }, null),
+      ]).deepPartial();
+
+      expect(orShape.parse({})).toEqual({});
+      expect(orShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(orShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
+      expect(orShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+    });
+
+    test('does not make shapes optional', () => {
+      const orShape = new UnionShape([new NumberShape()]).deepPartial();
+
+      expect(orShape.parse(111)).toBe(111);
+      expect(orShape.try(undefined)).toEqual({
+        ok: false,
+        issues: [{ code: CODE_UNION, message: 'Must conform the union of number', param: [TYPE_NUMBER], path: [] }],
+      });
+    });
   });
 
   describe('async', () => {

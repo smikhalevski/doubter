@@ -1,4 +1,4 @@
-import { LazyShape, Shape, StringShape } from '../../main';
+import { DeepPartialProtocol, LazyShape, Shape, StringShape } from '../../main';
 
 describe('LazyShape', () => {
   test('parses values with a shape', () => {
@@ -25,6 +25,26 @@ describe('LazyShape', () => {
     });
     expect(checkMock).toHaveBeenCalledTimes(1);
     expect(checkMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+  });
+
+  describe('deepPartial', () => {
+    test('marks shape as deep partial', () => {
+      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
+        deepPartial() {
+          return deepPartialShape;
+        }
+      }
+
+      const deepPartialShape = new MockShape();
+      const shapeProviderMock = jest.fn(() => new MockShape());
+
+      const shape = new LazyShape(shapeProviderMock).deepPartial();
+
+      expect(shapeProviderMock).not.toHaveBeenCalled();
+
+      expect(shape.shape).toBe(deepPartialShape);
+      expect(shapeProviderMock).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('async', () => {

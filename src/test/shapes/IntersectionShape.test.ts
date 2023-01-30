@@ -87,6 +87,72 @@ describe('IntersectionShape', () => {
       ],
     });
   });
+
+  describe('deepPartial', () => {
+    test('parses intersected deep partial objects', () => {
+      const andShape = new IntersectionShape([
+        new ObjectShape({ key1: new StringShape() }, null),
+        new ObjectShape({ key2: new StringShape() }, null),
+      ]).deepPartial();
+
+      expect(andShape.parse({})).toEqual({});
+      expect(andShape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(andShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
+      expect(andShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+    });
+
+    test('does not make shapes optional', () => {
+      const andShape = new IntersectionShape([new NumberShape()]).deepPartial();
+
+      expect(andShape.parse(111)).toBe(111);
+      expect(andShape.try(undefined)).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
+      });
+    });
+  });
+
+  describe('async', () => {
+    test('returns the input that matches all shapes as is', async () => {
+      const obj = { key1: 'aaa', key2: 111 };
+
+      const andShape = new IntersectionShape([
+        new ObjectShape(
+          {
+            key1: new StringShape(),
+          },
+          null
+        ).transformAsync(value => Promise.resolve(value)),
+        new ObjectShape(
+          {
+            key2: new NumberShape().transformAsync(value => Promise.resolve(value)),
+          },
+          null
+        ),
+      ]);
+
+      await expect(andShape.parseAsync(obj)).resolves.toBe(obj);
+    });
+
+    test('raises an issue if child outputs cannot be intersected', async () => {
+      const andShape = new IntersectionShape([
+        new ArrayShape(null, new StringShape()),
+        new ArrayShape(null, new StringShape().transformAsync(value => Promise.resolve(value)).transform(parseFloat)),
+      ]);
+
+      await expect(andShape.tryAsync(['111.222'])).resolves.toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_INTERSECTION,
+            input: ['111.222'],
+            message: MESSAGE_INTERSECTION,
+            path: [],
+          },
+        ],
+      });
+    });
+  });
 });
 
 describe('intersectValues', () => {

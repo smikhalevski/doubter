@@ -1,6 +1,6 @@
-import { AnyShape, ApplyResult, ValueType } from './Shape';
+import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, isArray, isEqual, ok } from '../utils';
+import { createIssueFactory, isArray, isEqual, ok, toDeepPartialShape } from '../utils';
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -9,7 +9,11 @@ import { CoercibleShape } from './CoercibleShape';
  *
  * @template S The shape of the resolved value.
  */
-export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['input']>, Promise<S['output']>> {
+export class PromiseShape<S extends AnyShape>
+  extends CoercibleShape<Promise<S['input']>, Promise<S['output']>>
+  implements DeepPartialProtocol<PromiseShape<OptionalDeepPartialShape<S>>>
+{
+  protected _options;
   protected _typeIssueFactory;
 
   /**
@@ -22,7 +26,12 @@ export class PromiseShape<S extends AnyShape> extends CoercibleShape<Promise<S['
   constructor(readonly shape: S, options?: ConstraintOptions | Message) {
     super();
 
+    this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
+  }
+
+  deepPartial(): PromiseShape<OptionalDeepPartialShape<S>> {
+    return new PromiseShape<any>(toDeepPartialShape(this.shape).optional(), this._options);
   }
 
   protected _requiresAsync(): boolean {

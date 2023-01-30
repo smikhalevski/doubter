@@ -1,5 +1,12 @@
-import { MapShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_MAP, TYPE_OBJECT } from '../../main/constants';
+import { MapShape, ObjectShape, Shape, StringShape } from '../../main';
+import {
+  CODE_TYPE,
+  MESSAGE_MAP_TYPE,
+  MESSAGE_STRING_TYPE,
+  TYPE_MAP,
+  TYPE_OBJECT,
+  TYPE_STRING,
+} from '../../main/constants';
 
 describe('MapShape', () => {
   test('creates a Map shape', () => {
@@ -176,6 +183,71 @@ describe('MapShape', () => {
           param: TYPE_MAP,
         },
       ],
+    });
+  });
+
+  describe('deepPartial', () => {
+    test('does not mark key as optional', () => {
+      const mapShape = new MapShape(new StringShape(), new StringShape()).deepPartial();
+
+      expect(mapShape.try(new Map([[undefined, 'bbb']]))).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, path: [undefined], message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
+      });
+
+      expect(mapShape.parse(new Map([['aaa', 'bbb']]))).toEqual(new Map([['aaa', 'bbb']]));
+    });
+
+    test('marks value as optional', () => {
+      const mapShape = new MapShape(new StringShape(), new StringShape()).deepPartial();
+
+      expect(mapShape.parse(new Map([['aaa', undefined]]))).toEqual(new Map([['aaa', undefined]]));
+    });
+
+    test('makes key deep partial', () => {
+      const mapShape = new MapShape(
+        new ObjectShape({ key1: new StringShape() }, null),
+        new StringShape()
+      ).deepPartial();
+
+      expect(mapShape.parse(new Map([[{}, 'aaa']]))).toEqual(new Map([[{}, 'aaa']]));
+      expect(mapShape.parse(new Map([[{ key1: undefined }, 'aaa']]))).toEqual(new Map([[{ key1: undefined }, 'aaa']]));
+
+      expect(mapShape.try(new Map([[{ key1: 111 }, 'aaa']]))).toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_TYPE,
+            input: 111,
+            message: MESSAGE_STRING_TYPE,
+            param: TYPE_STRING,
+            path: [{ key1: 111 }, 'key1'],
+          },
+        ],
+      });
+    });
+
+    test('makes value deep partial', () => {
+      const mapShape = new MapShape(
+        new StringShape(),
+        new ObjectShape({ key1: new StringShape() }, null)
+      ).deepPartial();
+
+      expect(mapShape.parse(new Map([['aaa', {}]]))).toEqual(new Map([['aaa', {}]]));
+      expect(mapShape.parse(new Map([['aaa', { key1: undefined }]]))).toEqual(new Map([['aaa', { key1: undefined }]]));
+
+      expect(mapShape.try(new Map([['aaa', { key1: 111 }]]))).toEqual({
+        ok: false,
+        issues: [
+          {
+            code: CODE_TYPE,
+            input: 111,
+            message: MESSAGE_STRING_TYPE,
+            param: TYPE_STRING,
+            path: ['aaa', 'key1'],
+          },
+        ],
+      });
     });
   });
 

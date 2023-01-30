@@ -7,6 +7,7 @@ import {
   cloneObjectKnownKeys,
   concatIssues,
   createIssueFactory,
+  Dict,
   enableBitAt,
   isArray,
   isAsyncShapes,
@@ -15,10 +16,21 @@ import {
   isObjectLike,
   isPlainObject,
   ok,
+  ReadonlyDict,
   setKeyValue,
+  toDeepPartialShape,
   unshiftPath,
 } from '../utils';
-import { AnyShape, ApplyResult, OpaqueExcludeShape, OpaqueReplaceShape, ReadonlyDict, Shape, ValueType } from './Shape';
+import {
+  AnyShape,
+  ApplyResult,
+  DeepPartialProtocol,
+  ExcludeShape,
+  OptionalDeepPartialShape,
+  ReplaceShape,
+  Shape,
+  ValueType,
+} from './Shape';
 import { EnumShape } from './EnumShape';
 
 // prettier-ignore
@@ -39,11 +51,16 @@ export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> 
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueReplaceShape<P[K], undefined> };
+export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: ReplaceShape<P[K], undefined, undefined> };
 
-export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: OpaqueExcludeShape<P[K], undefined> };
+export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: ExcludeShape<P[K], undefined> };
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
+
+export type DeepPartialObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null> = ObjectShape<
+  { [K in keyof P]: OptionalDeepPartialShape<P[K]> },
+  R extends AnyShape ? OptionalDeepPartialShape<R> : null
+>;
 
 /**
  * The shape of an object.
@@ -52,10 +69,10 @@ export type KeysMode = 'preserved' | 'stripped' | 'exact';
  * @template R The shape that constrains values of
  * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
  */
-export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null> extends Shape<
-  InferObject<P, R, 'input'>,
-  InferObject<P, R, 'output'>
-> {
+export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null>
+  extends Shape<InferObject<P, R, 'input'>, InferObject<P, R, 'output'>>
+  implements DeepPartialProtocol<DeepPartialObjectShape<P, R>>
+{
   /**
    * The array of known object keys.
    */
@@ -158,14 +175,14 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @template K The tuple of keys to pick.
    */
   pick<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Pick<P, K[number]>, R> {
-    const shapes: Record<string, AnyShape> = {};
+    const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
       if (keys.includes(key)) {
         shapes[key] = this.shapes[key];
       }
     }
-    return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
+    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
@@ -178,14 +195,14 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @template K The tuple of keys to omit.
    */
   omit<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]>, R> {
-    const shapes: Record<string, AnyShape> = {};
+    const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
       if (!keys.includes(key)) {
         shapes[key] = this.shapes[key];
       }
     }
-    return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
+    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
@@ -209,17 +226,24 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Optional<Pick<P, K[number]>>, R>;
 
   partial(keys?: string[]) {
-    const shapes: Record<string, AnyShape> = {};
+    const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
-      let shape: AnyShape = this.shapes[key];
-
-      if (keys === undefined || keys.includes(key)) {
-        shape = shape.optional();
-      }
-      shapes[key] = shape;
+      shapes[key] = keys === undefined || keys.includes(key) ? this.shapes[key].optional() : this.shapes[key];
     }
-    return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
+    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
+  }
+
+  deepPartial(): DeepPartialObjectShape<P, R> {
+    const shapes: Dict<AnyShape> = {};
+
+    for (const key in this.shapes) {
+      shapes[key] = toDeepPartialShape(this.shapes[key]).optional();
+    }
+
+    const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
+
+    return new ObjectShape<any, any>(shapes, restShape, this._options, this.keysMode);
   }
 
   /**
@@ -243,17 +267,12 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Required<Pick<P, K[number]>>, R>;
 
   required(keys?: string[]) {
-    const shapes: Record<string, AnyShape> = {};
+    const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
-      let shape: AnyShape = this.shapes[key];
-
-      if (keys === undefined || keys.includes(key)) {
-        shape = shape.nonOptional();
-      }
-      shapes[key] = shape;
+      shapes[key] = keys === undefined || keys.includes(key) ? this.shapes[key].nonOptional() : this.shapes[key];
     }
-    return new ObjectShape<any, R>(shapes, this.restShape, this._options, this.keysMode);
+    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
