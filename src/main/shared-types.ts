@@ -42,14 +42,14 @@ export interface Check {
   readonly callback: CheckCallback;
 
   /**
-   * `true` if the {@linkcode callback} is invoked even if previous processors failed, or `false` otherwise.
-   */
-  readonly unsafe: boolean;
-
-  /**
    * The optional parameter used by the {@linkcode callback}.
    */
   readonly param: any;
+
+  /**
+   * `true` if the {@linkcode callback} is invoked even if previous processors failed, or `false` otherwise.
+   */
+  readonly unsafe: boolean;
 }
 
 /**
@@ -62,15 +62,15 @@ export interface CheckOptions {
   key?: unknown;
 
   /**
+   * An optional param associated with the check.
+   */
+  param?: any;
+
+  /**
    * If `true` then the check would be executed even if the preceding check failed, otherwise check is
    * ignored.
    */
   unsafe?: boolean;
-
-  /**
-   * An optional param associated with the check.
-   */
-  param?: any;
 }
 
 /**

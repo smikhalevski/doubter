@@ -14,6 +14,7 @@ import {
 import {
   captureIssues,
   cloneObject,
+  copyUnsafeChecks,
   createApplyChecksCallback,
   createIssueFactory,
   getValueType,
@@ -187,9 +188,9 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape.
    */
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
-    const { key = cb, unsafe = false, param } = options;
+    const { key = cb, param, unsafe = false } = options;
 
-    const check: Check = { key, callback: cb, unsafe, param };
+    const check: Check = { key, callback: cb, param, unsafe };
 
     return this._replaceChecks(
       this._checks !== null ? this._checks.filter(check => check.key !== key).concat(check) : [check]
@@ -262,7 +263,7 @@ export class Shape<I = any, O = I> {
 
     const unsafe = options !== null && typeof options === 'object' && options.unsafe;
 
-    return this.check(cb, { key: predicate, unsafe, param: predicate });
+    return this.check(cb, { key: predicate, param: predicate, unsafe });
   }
 
   /**
@@ -919,7 +920,10 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
   }
 
   deepPartial(): PipeShape<DeepPartialShape<I>, DeepPartialShape<O>> {
-    return new PipeShape(toDeepPartialShape(this.inputShape), toDeepPartialShape(this.outputShape));
+    return copyUnsafeChecks(
+      this,
+      new PipeShape(toDeepPartialShape(this.inputShape), toDeepPartialShape(this.outputShape))
+    );
   }
 
   protected _requiresAsync(): boolean {
@@ -1045,7 +1049,7 @@ export class ReplaceShape<S extends AnyShape, A, B>
   }
 
   deepPartial(): ReplaceShape<DeepPartialShape<S>, A, B> {
-    return new ReplaceShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue);
+    return copyUnsafeChecks(this, new ReplaceShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue));
   }
 
   protected _requiresAsync(): boolean {
@@ -1155,7 +1159,7 @@ export class ExcludeShape<S extends AnyShape, T>
   }
 
   deepPartial(): ExcludeShape<DeepPartialShape<S>, T> {
-    return new ExcludeShape(toDeepPartialShape(this.shape), this.excludedValue, this._options);
+    return copyUnsafeChecks(this, new ExcludeShape(toDeepPartialShape(this.shape), this.excludedValue, this._options));
   }
 
   protected _requiresAsync(): boolean {
@@ -1268,7 +1272,7 @@ export class CatchShape<S extends AnyShape, T>
   }
 
   deepPartial(): CatchShape<DeepPartialShape<S>, T> {
-    return new CatchShape(toDeepPartialShape(this.shape), this.fallback);
+    return copyUnsafeChecks(this, new CatchShape(toDeepPartialShape(this.shape), this.fallback));
   }
 
   protected _requiresAsync(): boolean {

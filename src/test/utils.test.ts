@@ -1,14 +1,16 @@
 import {
   cloneObjectEnumerableKeys,
   cloneObjectKnownKeys,
+  copyUnsafeChecks,
   createApplyChecksCallback,
   createIssueFactory,
   enableBitAt,
   isBitEnabledAt,
   isEqual,
+  toArrayIndex,
   unique,
 } from '../main/utils';
-import { Issue, ValidationError } from '../main';
+import { Issue, Shape, ValidationError } from '../main';
 
 describe('isEqual', () => {
   test('checks equality', () => {
@@ -18,6 +20,56 @@ describe('isEqual', () => {
 
     expect(isEqual(111, 222)).toBe(false);
     expect(isEqual({}, {})).toBe(false);
+  });
+});
+
+describe('toArrayIndex', () => {
+  test('returns an array index', () => {
+    expect(toArrayIndex('0')).toBe(0);
+    expect(toArrayIndex('1')).toBe(1);
+    expect(toArrayIndex('2')).toBe(2);
+
+    expect(toArrayIndex(0)).toBe(0);
+    expect(toArrayIndex(1)).toBe(1);
+    expect(toArrayIndex(2)).toBe(2);
+  });
+
+  test('returns -1 if value is not an array index', () => {
+    expect(toArrayIndex('-5')).toBe(-1);
+    expect(toArrayIndex('0xa')).toBe(-1);
+    expect(toArrayIndex('016')).toBe(-1);
+    expect(toArrayIndex('000')).toBe(-1);
+    expect(toArrayIndex('1e+49')).toBe(-1);
+    expect(toArrayIndex(-111)).toBe(-1);
+    expect(toArrayIndex(111.222)).toBe(-1);
+    expect(toArrayIndex('aaa')).toBe(-1);
+    expect(toArrayIndex(NaN)).toBe(-1);
+    expect(toArrayIndex(new Date())).toBe(-1);
+    expect(toArrayIndex({ valueOf: () => 2 })).toBe(-1);
+    expect(toArrayIndex({ toString: () => '2' })).toBe(-1);
+  });
+});
+
+describe('copyUnsafeChecks', () => {
+  test('returns target shape is there are no unsafe check on the source shape', () => {
+    const sourceShape = new Shape().check(() => undefined);
+    const targetShape = new Shape();
+
+    expect(copyUnsafeChecks(sourceShape, targetShape)).toBe(targetShape);
+  });
+
+  test('copies unsafe checks from source to a target clone', () => {
+    const safeCheck = () => undefined;
+    const unsafeCheck = () => undefined;
+
+    const sourceShape = new Shape().check(safeCheck).check(unsafeCheck, { unsafe: true });
+    const targetShape = new Shape();
+
+    const shape = copyUnsafeChecks(sourceShape, targetShape);
+
+    expect(shape).not.toBe(targetShape);
+    expect(shape['_checks']!.length).toBe(1);
+    expect(shape['_checks']![0].callback).toBe(unsafeCheck);
   });
 });
 

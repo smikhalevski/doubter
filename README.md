@@ -543,20 +543,21 @@ checks failed. Consider an object with a custom check:
 
 ```ts
 const userShape = d.object({
-  age: d.string(),
+  age: d.number(),
   yearsOfExperience: d.number()
 }).check(value => {
-  if (value.yearsOfExperience > value.age) {
+  if (value.age < value.yearsOfExperience) {
     return { code: 'inconsistentAge' };
   }
 });
+// ⮕ Shape<{ age: number, yearsOfExperience: number }>
 ```
 
 The check callback relies on `value` to be an object with the valid set of properties. So if any issues are detected in
 the input object the check won't be called:
 
 ```ts
-// Check isn't called since yearsOfExperience is missing
+// Check isn't called since yearsOfExperience isn't a number
 nameShape.parse({ age: 18 });
 ```
 

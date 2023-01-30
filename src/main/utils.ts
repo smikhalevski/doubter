@@ -13,6 +13,9 @@ export interface Dict<T = any> {
 
 export type ToArray<T> = T extends readonly any[] ? T : never;
 
+/**
+ * Returns the extended value type.
+ */
 export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
   const type = typeof value;
 
@@ -39,6 +42,9 @@ export const isArray = Array.isArray;
 
 export const getPrototypeOf = Object.getPrototypeOf;
 
+/**
+ * [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero) comparison.
+ */
 export function isEqual(a: unknown, b: unknown): boolean {
   return a === b || (a !== a && b !== b);
 }
@@ -80,11 +86,14 @@ export function isUnsafeCheck(check: Check): boolean {
 /**
  * Returns an array index, or -1 if key isn't an index.
  */
-export function toArrayIndex(key: any): number {
+export function toArrayIndex(key: unknown): number {
   if (typeof key === 'string' && '' + +key === key) {
     key = +key;
   }
-  return Number.isInteger(key) && key >= 0 && key < 0xffffffff ? key : -1;
+  if (typeof key === 'number' && key % 1 === 0 && key >= 0 && key < 0xffffffff) {
+    return key;
+  }
+  return -1;
 }
 
 /**
@@ -106,7 +115,19 @@ export function addConstraint<S extends Shape>(
   param: unknown,
   cb: CheckCallback<S['output']>
 ): S {
-  return shape.check(cb, { key, unsafe: true, param });
+  return shape.check(cb, { key, param, unsafe: true });
+}
+
+/**
+ * Replaces checks of the target shape with unsafe checks from the source shape.
+ */
+export function copyUnsafeChecks<S extends Shape>(sourceShape: AnyShape, targetShape: S): S {
+  const checks = sourceShape['_checks']?.filter(isUnsafeCheck);
+
+  if (checks === undefined || checks.length === 0) {
+    return targetShape;
+  }
+  return targetShape['_replaceChecks'](checks);
 }
 
 /**

@@ -1,4 +1,13 @@
-import { ArrayShape, IntersectionShape, NumberShape, ObjectShape, Shape, StringShape, UnionShape } from '../../main';
+import {
+  AnyShape,
+  ArrayShape,
+  IntersectionShape,
+  NumberShape,
+  ObjectShape,
+  Shape,
+  StringShape,
+  UnionShape,
+} from '../../main';
 import {
   CODE_INTERSECTION,
   CODE_TYPE,
@@ -85,6 +94,37 @@ describe('IntersectionShape', () => {
           path: [],
         },
       ],
+    });
+  });
+
+  describe('at', () => {
+    test('returns an intersection of child shapes at key', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape();
+      const shape3 = new Shape();
+      const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
+      const arrShape = new ArrayShape(null, shape3);
+
+      const andShape = new IntersectionShape([objShape, arrShape]);
+
+      const shape = andShape.at(1) as IntersectionShape<AnyShape[]>;
+
+      expect(shape instanceof IntersectionShape).toBe(true);
+      expect(shape.shapes.length).toBe(2);
+      expect(shape.shapes[0]).toBe(shape1);
+      expect(shape.shapes[1]).toBe(shape3);
+    });
+
+    test('returns null if key does not exist in all children', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape();
+      const shape3 = new Shape();
+      const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
+      const arrShape = new ArrayShape(null, shape3);
+
+      const andShape = new IntersectionShape([objShape, arrShape]);
+
+      expect(andShape.at('key1')).toBe(null);
     });
   });
 

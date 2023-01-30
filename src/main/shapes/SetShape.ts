@@ -3,6 +3,7 @@ import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
   concatIssues,
+  copyUnsafeChecks,
   createIssueFactory,
   isArray,
   isEqual,
@@ -107,7 +108,7 @@ export class SetShape<S extends AnyShape>
   }
 
   deepPartial(): SetShape<OptionalDeepPartialShape<S>> {
-    return new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options);
+    return copyUnsafeChecks(this, new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
   }
 
   protected _requiresAsync(): boolean {

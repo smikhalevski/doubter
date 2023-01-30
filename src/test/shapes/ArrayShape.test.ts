@@ -1,4 +1,4 @@
-import { ArrayShape, NumberShape, ObjectShape, Shape, StringShape } from '../../main';
+import { ArrayShape, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -40,7 +40,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape(null, null);
 
     const arr = [111, 222];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
@@ -56,7 +56,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape([shape1, shape2], null);
 
     const arr = [111, 222];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
@@ -74,7 +74,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape(null, restShape);
 
     const arr = [111, 222];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
@@ -95,7 +95,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape([shape1, shape2], restShape);
 
     const arr = [111, 222, 333, 444];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
@@ -191,7 +191,7 @@ describe('ArrayShape', () => {
     const arrShape = new ArrayShape([shape1, shape2], null);
 
     const arr = [111, 222];
-    const result: any = arrShape.try(arr);
+    const result = arrShape.try(arr) as Ok<unknown>;
 
     expect(arr).toEqual([111, 222]);
     expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
@@ -243,47 +243,6 @@ describe('ArrayShape', () => {
         },
       ],
     });
-  });
-
-  test('returns the tuple element shape', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape();
-
-    const arrShape = new ArrayShape([shape1, shape2], null);
-
-    expect(arrShape.at('0')).toBe(shape1);
-    expect(arrShape.at('1')).toBe(shape2);
-    expect(arrShape.at('2')).toBe(null);
-
-    expect(arrShape.at(0)).toBe(shape1);
-    expect(arrShape.at(1)).toBe(shape2);
-    expect(arrShape.at(2)).toBe(null);
-
-    expect(arrShape.at('000')).toBe(null);
-    expect(arrShape.at('1e+49')).toBe(null);
-    expect(arrShape.at(-111)).toBe(null);
-    expect(arrShape.at(111.222)).toBe(null);
-    expect(arrShape.at('aaa')).toBe(null);
-  });
-
-  test('returns the rest element shape', () => {
-    const restShape = new Shape();
-
-    const arrShape = new ArrayShape(null, restShape);
-
-    expect(arrShape.at(0)).toBe(restShape);
-    expect(arrShape.at(1)).toBe(restShape);
-  });
-
-  test('returns the rest element shape when tuple element shapes are available', () => {
-    const shape1 = new Shape();
-    const restShape = new Shape();
-
-    const arrShape = new ArrayShape([shape1], restShape);
-
-    expect(arrShape.at(0)).toBe(shape1);
-    expect(arrShape.at(1)).toBe(restShape);
-    expect(arrShape.at(2)).toBe(restShape);
   });
 
   test('allow any input types when coerced and unconstrained', () => {
@@ -383,6 +342,49 @@ describe('ArrayShape', () => {
     });
   });
 
+  describe('at', () => {
+    test('returns the tuple element shape', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape();
+
+      const arrShape = new ArrayShape([shape1, shape2], null);
+
+      expect(arrShape.at('0')).toBe(shape1);
+      expect(arrShape.at('1')).toBe(shape2);
+      expect(arrShape.at('2')).toBe(null);
+
+      expect(arrShape.at(0)).toBe(shape1);
+      expect(arrShape.at(1)).toBe(shape2);
+      expect(arrShape.at(2)).toBe(null);
+
+      expect(arrShape.at('000')).toBe(null);
+      expect(arrShape.at('1e+49')).toBe(null);
+      expect(arrShape.at(-111)).toBe(null);
+      expect(arrShape.at(111.222)).toBe(null);
+      expect(arrShape.at('aaa')).toBe(null);
+    });
+
+    test('returns the rest element shape', () => {
+      const restShape = new Shape();
+
+      const arrShape = new ArrayShape(null, restShape);
+
+      expect(arrShape.at(0)).toBe(restShape);
+      expect(arrShape.at(1)).toBe(restShape);
+    });
+
+    test('returns the rest element shape when tuple element shapes are available', () => {
+      const shape1 = new Shape();
+      const restShape = new Shape();
+
+      const arrShape = new ArrayShape([shape1], restShape);
+
+      expect(arrShape.at(0)).toBe(shape1);
+      expect(arrShape.at(1)).toBe(restShape);
+      expect(arrShape.at(2)).toBe(restShape);
+    });
+  });
+
   describe('deepPartial', () => {
     test('raises an issue if deep partial tuple length is invalid', () => {
       const arrShape = new ArrayShape(
@@ -468,7 +470,7 @@ describe('ArrayShape', () => {
       const arrShape = new ArrayShape([shape1, shape2], null);
 
       const arr = [111, 222];
-      const result: any = await arrShape.tryAsync(arr);
+      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
@@ -486,7 +488,7 @@ describe('ArrayShape', () => {
       const arrShape = new ArrayShape(null, restShape);
 
       const arr = [111, 222];
-      const result: any = await arrShape.tryAsync(arr);
+      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
@@ -502,7 +504,7 @@ describe('ArrayShape', () => {
       const arrShape = new ArrayShape([shape1, shape2], null);
 
       const arr = [111, 222];
-      const result: any = await arrShape.tryAsync(arr);
+      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
 
       expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
       expect(result.value).not.toBe(arr);

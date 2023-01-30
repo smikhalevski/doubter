@@ -3,6 +3,7 @@ import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
   concatIssues,
+  copyUnsafeChecks,
   createIssueFactory,
   isArray,
   isAsyncShapes,
@@ -114,7 +115,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    * @template T The shape of rest elements.
    */
   rest<T extends AnyShape | null>(restShape: T): ArrayShape<U, T> {
-    return new ArrayShape(this.shapes, restShape, this._options);
+    return copyUnsafeChecks(this, new ArrayShape(this.shapes, restShape, this._options));
   }
 
   /**
@@ -167,7 +168,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
 
     const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
-    return new ArrayShape<any, any>(shapes, restShape, this._options);
+    return copyUnsafeChecks(this, new ArrayShape<any, any>(shapes, restShape, this._options));
   }
 
   protected _requiresAsync(): boolean {

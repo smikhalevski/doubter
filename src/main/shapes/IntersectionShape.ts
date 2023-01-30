@@ -1,5 +1,6 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
 import {
+  copyUnsafeChecks,
   createIssueFactory,
   getValueType,
   isArray,
@@ -32,8 +33,31 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
+  at(key: unknown): AnyShape | null {
+    const { shapes } = this;
+
+    if (shapes.length === 0) {
+      return null;
+    }
+    if (shapes.length === 1) {
+      return shapes[0].at(key);
+    }
+
+    const valueShapes = [];
+
+    for (const shape of shapes) {
+      const valueShape = shape.at(key);
+
+      if (valueShape === null) {
+        return null;
+      }
+      valueShapes.push(valueShape);
+    }
+    return new IntersectionShape(valueShapes);
+  }
+
   deepPartial(): DeepPartialIntersectionShape<U> {
-    return new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
+    return copyUnsafeChecks(this, new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
   }
 
   protected _requiresAsync(): boolean {

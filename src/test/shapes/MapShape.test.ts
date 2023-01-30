@@ -1,4 +1,4 @@
-import { MapShape, ObjectShape, Shape, StringShape } from '../../main';
+import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_TYPE,
   MESSAGE_MAP_TYPE,
@@ -86,7 +86,7 @@ describe('MapShape', () => {
       ['key2', 'bbb'],
     ]);
 
-    const result: any = mapShape.try(map);
+    const result = mapShape.try(map) as Ok<unknown>;
 
     expect(result).toEqual({
       ok: true,
@@ -110,7 +110,7 @@ describe('MapShape', () => {
       ['key2', 'bbb'],
     ]);
 
-    const result: any = mapShape.try(map);
+    const result = mapShape.try(map) as Ok<unknown>;
 
     expect(result).toEqual({
       ok: true,
@@ -129,17 +129,6 @@ describe('MapShape', () => {
       ok: false,
       issues: [{ code: 'xxx', path: [] }],
     });
-  });
-
-  test('returns value shape for any key', () => {
-    const valueShape = new Shape();
-    const objShape = new MapShape(new StringShape(), valueShape);
-
-    expect(objShape.at('aaa')).toBe(valueShape);
-    expect(objShape.at(111)).toBe(valueShape);
-    expect(objShape.at(111.222)).toBe(valueShape);
-    expect(objShape.at(null)).toBe(valueShape);
-    expect(objShape.at(Symbol())).toBe(valueShape);
   });
 
   test('coerces an object', () => {
@@ -183,6 +172,19 @@ describe('MapShape', () => {
           param: TYPE_MAP,
         },
       ],
+    });
+  });
+
+  describe('at', () => {
+    test('returns value shape for any key', () => {
+      const valueShape = new Shape();
+      const objShape = new MapShape(new StringShape(), valueShape);
+
+      expect(objShape.at('aaa')).toBe(valueShape);
+      expect(objShape.at(111)).toBe(valueShape);
+      expect(objShape.at(111.222)).toBe(valueShape);
+      expect(objShape.at(null)).toBe(valueShape);
+      expect(objShape.at(Symbol())).toBe(valueShape);
     });
   });
 
@@ -322,7 +324,7 @@ describe('MapShape', () => {
         ['key2', 'bbb'],
       ]);
 
-      const result: any = mapShape.tryAsync(map);
+      const result = mapShape.tryAsync(map) as Promise<Ok<unknown>>;
 
       await expect(result).resolves.toEqual({
         ok: true,
@@ -348,7 +350,7 @@ describe('MapShape', () => {
         ['key2', 'bbb'],
       ]);
 
-      const result: any = mapShape.tryAsync(map);
+      const result = mapShape.tryAsync(map) as Promise<Ok<unknown>>;
 
       await expect(result).resolves.toEqual({
         ok: true,
