@@ -2,7 +2,6 @@ import {
   ExcludeShape,
   NumberShape,
   ObjectShape,
-  Ok,
   PipeShape,
   Shape,
   StringShape,
@@ -185,82 +184,6 @@ describe('Shape', () => {
     expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
   });
 
-  test('invokes a predicate', () => {
-    const cbMock = jest.fn(value => value === 'aaa');
-
-    expect(new Shape().refine(cbMock).try('aaa')).toEqual<Ok<string>>({ ok: true, value: 'aaa' });
-
-    expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
-  });
-
-  test('does not invoke safe predicate if the preceding check failed', () => {
-    const cbMock = jest.fn().mockReturnValue(false);
-
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock);
-
-    expect(shape.try('aaa', { verbose: true })).toEqual({
-      ok: false,
-      issues: [{ code: 'xxx', path: [] }],
-    });
-
-    expect(cbMock).toHaveBeenCalledTimes(0);
-  });
-
-  test('invokes an unsafe predicate', () => {
-    const cbMock = jest.fn().mockReturnValue(false);
-
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock, { unsafe: true });
-
-    expect(shape.try('aaa', { verbose: true })).toEqual({
-      ok: false,
-      issues: [
-        { code: 'xxx', path: [] },
-        { code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cbMock },
-      ],
-    });
-
-    expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
-  });
-
-  test('returns issues if predicate fails', () => {
-    const cb = () => false;
-
-    expect(new Shape().refine(cb).try('aaa')).toEqual({
-      ok: false,
-      issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
-    });
-  });
-
-  test('narrows the output type using a narrowing predicate', () => {
-    const cb = (value: unknown): value is boolean => true;
-
-    const value: boolean = new Shape().refine(cb).parse('aaa');
-  });
-
-  test('overrides refinement message as string', () => {
-    const cb = () => false;
-
-    const shape = new Shape().refine(cb, 'bbb');
-
-    expect(shape.try('aaa')).toEqual({
-      ok: false,
-      issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
-    });
-  });
-
-  test('overrides refinement message from options', () => {
-    const cb = () => false;
-
-    const shape = new Shape().refine(cb, { message: 'bbb' });
-
-    expect(shape.try('aaa')).toEqual({
-      ok: false,
-      issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
-    });
-  });
-
   test('allows undefined input', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]).optional();
 
@@ -365,6 +288,84 @@ describe('Shape', () => {
     expect(shape.brand()).toBe(shape);
   });
 
+  describe('refine', () => {
+    test('invokes a predicate', () => {
+      const cbMock = jest.fn(value => value === 'aaa');
+
+      expect(new Shape().refine(cbMock).try('aaa')).toEqual({ ok: true, value: 'aaa' });
+
+      expect(cbMock).toHaveBeenCalledTimes(1);
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
+    });
+
+    test('does not invoke safe predicate if the preceding check failed', () => {
+      const cbMock = jest.fn().mockReturnValue(false);
+
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock);
+
+      expect(shape.try('aaa', { verbose: true })).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
+
+      expect(cbMock).toHaveBeenCalledTimes(0);
+    });
+
+    test('invokes an unsafe predicate', () => {
+      const cbMock = jest.fn().mockReturnValue(false);
+
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock, { unsafe: true });
+
+      expect(shape.try('aaa', { verbose: true })).toEqual({
+        ok: false,
+        issues: [
+          { code: 'xxx', path: [] },
+          { code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cbMock },
+        ],
+      });
+
+      expect(cbMock).toHaveBeenCalledTimes(1);
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
+    });
+
+    test('returns issues if predicate fails', () => {
+      const cb = () => false;
+
+      expect(new Shape().refine(cb).try('aaa')).toEqual({
+        ok: false,
+        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
+      });
+    });
+
+    test('narrows the output type using a narrowing predicate', () => {
+      const cb = (value: unknown): value is boolean => true;
+
+      const value: boolean = new Shape().refine(cb).parse('aaa');
+    });
+
+    test('overrides refinement message as string', () => {
+      const cb = () => false;
+
+      const shape = new Shape().refine(cb, 'bbb');
+
+      expect(shape.try('aaa')).toEqual({
+        ok: false,
+        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
+      });
+    });
+
+    test('overrides refinement message from options', () => {
+      const cb = () => false;
+
+      const shape = new Shape().refine(cb, { message: 'bbb' });
+
+      expect(shape.try('aaa')).toEqual({
+        ok: false,
+        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
+      });
+    });
+  });
+
   describe('async', () => {
     test('creates an async shape', () => {
       class AsyncShape extends Shape {
@@ -399,7 +400,7 @@ describe('Shape', () => {
       expect(resultPromise).toBeInstanceOf(Promise);
 
       expect(await outputPromise).toBe('aaa');
-      expect(await resultPromise).toEqual<Ok<string>>({ ok: true, value: 'aaa' });
+      expect(await resultPromise).toEqual({ ok: true, value: 'aaa' });
     });
 
     test('returns default if parsing failed', async () => {
