@@ -18,7 +18,8 @@ export class EnumShape<T> extends CoercibleShape<T> {
   readonly values: readonly T[];
 
   /**
-   * Key-value mapping passes as a source to constructor, or `null` if the source was a list of values.
+   * The key-value mapping that was passed as a source arguments to the constructor, or `null` if the source was an
+   * array of values.
    */
   protected _valueMapping: ReadonlyDict<T> | null;
   protected _typeIssueFactory;
@@ -59,11 +60,16 @@ export class EnumShape<T> extends CoercibleShape<T> {
   protected _getInputTypes(): ValueType[] {
     const valueTypes = this.values.map(getValueType);
 
-    if (this._coerced) {
-      return valueTypes.concat(TYPE_STRING, TYPE_ARRAY);
-    } else {
+    if (!this._coerced) {
       return valueTypes;
     }
+
+    if (this._valueMapping !== null) {
+      valueTypes.push(TYPE_STRING);
+    }
+    valueTypes.push(TYPE_ARRAY);
+
+    return valueTypes;
   }
 
   protected _getInputValues(): unknown[] {
