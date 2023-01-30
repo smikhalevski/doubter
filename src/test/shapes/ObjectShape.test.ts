@@ -166,17 +166,6 @@ describe('ObjectShape', () => {
     expect(objShape2.keys).toEqual(['key1']);
   });
 
-  test('returns property shape at key', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape();
-
-    const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
-
-    expect(objShape.at('key1')).toBe(shape1);
-    expect(objShape.at('key2')).toBe(shape2);
-    expect(objShape.at('xxx')).toBe(null);
-  });
-
   test('marks all properties optional', () => {
     const shape1 = new StringShape();
     const shape2 = new StringShape();
@@ -239,6 +228,19 @@ describe('ObjectShape', () => {
     expect(objShape.try(new Foo())).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: {}, message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+    });
+  });
+
+  describe('at', () => {
+    test('returns property shape at key', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape();
+
+      const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
+
+      expect(objShape.at('key1')).toBe(shape1);
+      expect(objShape.at('key2')).toBe(shape2);
+      expect(objShape.at('xxx')).toBe(null);
     });
   });
 

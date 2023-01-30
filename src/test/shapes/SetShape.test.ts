@@ -138,21 +138,6 @@ describe('SetShape', () => {
     });
   });
 
-  test('returns the value shape', () => {
-    const shape = new Shape();
-
-    const setShape = new SetShape(shape);
-
-    expect(setShape.at('0')).toBe(shape);
-    expect(setShape.at(0)).toBe(shape);
-
-    expect(setShape.at('000')).toBe(null);
-    expect(setShape.at('1e+49')).toBe(null);
-    expect(setShape.at(-111)).toBe(null);
-    expect(setShape.at(111.222)).toBe(null);
-    expect(setShape.at('aaa')).toBe(null);
-  });
-
   test('updates input types when coerced', () => {
     const setShape = new SetShape(new StringShape()).coerce();
 
@@ -169,6 +154,23 @@ describe('SetShape', () => {
     const setShape = new SetShape(new Shape()).coerce();
 
     expect(setShape.parse(['aaa'])).toEqual(new Set(['aaa']));
+  });
+
+  describe('at', () => {
+    test('returns the value shape', () => {
+      const shape = new Shape();
+
+      const setShape = new SetShape(shape);
+
+      expect(setShape.at('0')).toBe(shape);
+      expect(setShape.at(0)).toBe(shape);
+
+      expect(setShape.at('000')).toBe(null);
+      expect(setShape.at('1e+49')).toBe(null);
+      expect(setShape.at(-111)).toBe(null);
+      expect(setShape.at(111.222)).toBe(null);
+      expect(setShape.at('aaa')).toBe(null);
+    });
   });
 
   describe('deepPartial', () => {

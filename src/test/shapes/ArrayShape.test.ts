@@ -245,47 +245,6 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('returns the tuple element shape', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape();
-
-    const arrShape = new ArrayShape([shape1, shape2], null);
-
-    expect(arrShape.at('0')).toBe(shape1);
-    expect(arrShape.at('1')).toBe(shape2);
-    expect(arrShape.at('2')).toBe(null);
-
-    expect(arrShape.at(0)).toBe(shape1);
-    expect(arrShape.at(1)).toBe(shape2);
-    expect(arrShape.at(2)).toBe(null);
-
-    expect(arrShape.at('000')).toBe(null);
-    expect(arrShape.at('1e+49')).toBe(null);
-    expect(arrShape.at(-111)).toBe(null);
-    expect(arrShape.at(111.222)).toBe(null);
-    expect(arrShape.at('aaa')).toBe(null);
-  });
-
-  test('returns the rest element shape', () => {
-    const restShape = new Shape();
-
-    const arrShape = new ArrayShape(null, restShape);
-
-    expect(arrShape.at(0)).toBe(restShape);
-    expect(arrShape.at(1)).toBe(restShape);
-  });
-
-  test('returns the rest element shape when tuple element shapes are available', () => {
-    const shape1 = new Shape();
-    const restShape = new Shape();
-
-    const arrShape = new ArrayShape([shape1], restShape);
-
-    expect(arrShape.at(0)).toBe(shape1);
-    expect(arrShape.at(1)).toBe(restShape);
-    expect(arrShape.at(2)).toBe(restShape);
-  });
-
   test('allow any input types when coerced and unconstrained', () => {
     const arrShape = new ArrayShape(null, null).coerce();
 
@@ -380,6 +339,49 @@ describe('ArrayShape', () => {
     expect(arrShape.try('aaa')).toEqual({
       ok: false,
       issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2, path: [] }],
+    });
+  });
+
+  describe('at', () => {
+    test('returns the tuple element shape', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape();
+
+      const arrShape = new ArrayShape([shape1, shape2], null);
+
+      expect(arrShape.at('0')).toBe(shape1);
+      expect(arrShape.at('1')).toBe(shape2);
+      expect(arrShape.at('2')).toBe(null);
+
+      expect(arrShape.at(0)).toBe(shape1);
+      expect(arrShape.at(1)).toBe(shape2);
+      expect(arrShape.at(2)).toBe(null);
+
+      expect(arrShape.at('000')).toBe(null);
+      expect(arrShape.at('1e+49')).toBe(null);
+      expect(arrShape.at(-111)).toBe(null);
+      expect(arrShape.at(111.222)).toBe(null);
+      expect(arrShape.at('aaa')).toBe(null);
+    });
+
+    test('returns the rest element shape', () => {
+      const restShape = new Shape();
+
+      const arrShape = new ArrayShape(null, restShape);
+
+      expect(arrShape.at(0)).toBe(restShape);
+      expect(arrShape.at(1)).toBe(restShape);
+    });
+
+    test('returns the rest element shape when tuple element shapes are available', () => {
+      const shape1 = new Shape();
+      const restShape = new Shape();
+
+      const arrShape = new ArrayShape([shape1], restShape);
+
+      expect(arrShape.at(0)).toBe(shape1);
+      expect(arrShape.at(1)).toBe(restShape);
+      expect(arrShape.at(2)).toBe(restShape);
     });
   });
 

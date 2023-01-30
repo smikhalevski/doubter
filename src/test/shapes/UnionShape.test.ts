@@ -101,35 +101,6 @@ describe('UnionShape', () => {
     });
   });
 
-  test('returns union of child shapes at key', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape();
-    const shape3 = new Shape();
-    const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
-    const arrShape = new ArrayShape(null, shape3);
-
-    const orShape = new UnionShape([objShape, arrShape]);
-
-    const shape: any = orShape.at(1);
-
-    expect(shape instanceof UnionShape).toBe(true);
-    expect(shape.shapes.length).toBe(2);
-    expect(shape.shapes[0]).toBe(shape1);
-    expect(shape.shapes[1]).toBe(shape3);
-  });
-
-  test('returns non-null child shapes at key', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape();
-    const shape3 = new Shape();
-    const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
-    const arrShape = new ArrayShape(null, shape3);
-
-    const orShape = new UnionShape([objShape, arrShape]);
-
-    expect(orShape.at('key1')).toBe(shape2);
-  });
-
   test('parses a discriminated union', () => {
     const shape = new UnionShape([
       new ObjectShape({ type: new ConstShape('aaa') }, null),
@@ -137,6 +108,37 @@ describe('UnionShape', () => {
     ]);
 
     expect(shape.parse({ type: 'bbb' })).toEqual({ type: 'bbb' });
+  });
+
+  describe('at', () => {
+    test('returns a union of child shapes at key', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape();
+      const shape3 = new Shape();
+      const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
+      const arrShape = new ArrayShape(null, shape3);
+
+      const orShape = new UnionShape([objShape, arrShape]);
+
+      const shape: any = orShape.at(1);
+
+      expect(shape instanceof UnionShape).toBe(true);
+      expect(shape.shapes.length).toBe(2);
+      expect(shape.shapes[0]).toBe(shape1);
+      expect(shape.shapes[1]).toBe(shape3);
+    });
+
+    test('returns non-null child shapes at key', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape();
+      const shape3 = new Shape();
+      const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
+      const arrShape = new ArrayShape(null, shape3);
+
+      const orShape = new UnionShape([objShape, arrShape]);
+
+      expect(orShape.at('key1')).toBe(shape2);
+    });
   });
 
   describe('deepPartial', () => {

@@ -131,17 +131,6 @@ describe('MapShape', () => {
     });
   });
 
-  test('returns value shape for any key', () => {
-    const valueShape = new Shape();
-    const objShape = new MapShape(new StringShape(), valueShape);
-
-    expect(objShape.at('aaa')).toBe(valueShape);
-    expect(objShape.at(111)).toBe(valueShape);
-    expect(objShape.at(111.222)).toBe(valueShape);
-    expect(objShape.at(null)).toBe(valueShape);
-    expect(objShape.at(Symbol())).toBe(valueShape);
-  });
-
   test('coerces an object', () => {
     const mapShape = new MapShape(new Shape(), new Shape()).coerce();
 
@@ -183,6 +172,19 @@ describe('MapShape', () => {
           param: TYPE_MAP,
         },
       ],
+    });
+  });
+
+  describe('at', () => {
+    test('returns value shape for any key', () => {
+      const valueShape = new Shape();
+      const objShape = new MapShape(new StringShape(), valueShape);
+
+      expect(objShape.at('aaa')).toBe(valueShape);
+      expect(objShape.at(111)).toBe(valueShape);
+      expect(objShape.at(111.222)).toBe(valueShape);
+      expect(objShape.at(null)).toBe(valueShape);
+      expect(objShape.at(Symbol())).toBe(valueShape);
     });
   });
 

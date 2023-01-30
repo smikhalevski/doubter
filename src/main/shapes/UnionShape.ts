@@ -65,7 +65,7 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   at(key: unknown): AnyShape | null {
-    const valueShapes: AnyShape[] = [];
+    const valueShapes = [];
 
     for (const shape of this.shapes) {
       const valueShape = shape.at(key);

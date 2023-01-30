@@ -90,15 +90,17 @@ describe('RecordShape', () => {
     });
   });
 
-  test('returns value shape for string and number keys', () => {
-    const valueShape = new Shape();
-    const objShape = new RecordShape(null, valueShape);
+  describe('at', () => {
+    test('returns value shape for string and number keys', () => {
+      const valueShape = new Shape();
+      const objShape = new RecordShape(null, valueShape);
 
-    expect(objShape.at('aaa')).toBe(valueShape);
-    expect(objShape.at(111)).toBe(valueShape);
-    expect(objShape.at(111.222)).toBe(valueShape);
-    expect(objShape.at(null)).toBe(null);
-    expect(objShape.at(Symbol())).toBe(null);
+      expect(objShape.at('aaa')).toBe(valueShape);
+      expect(objShape.at(111)).toBe(valueShape);
+      expect(objShape.at(111.222)).toBe(valueShape);
+      expect(objShape.at(null)).toBe(null);
+      expect(objShape.at(Symbol())).toBe(null);
+    });
   });
 
   describe('deepPartial', () => {
