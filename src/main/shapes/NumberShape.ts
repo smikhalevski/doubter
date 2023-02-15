@@ -202,6 +202,20 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
+   * `true` if the shape constrains a finite number, or `false` otherwise.
+   */
+  get isFinite(): boolean {
+    return this._typePredicate === Number.isFinite || this.isInteger;
+  }
+
+  /**
+   * `true` if the shape constrains an integer number, or `false` otherwise.
+   */
+  get isInteger(): boolean {
+    return this._typePredicate === Number.isInteger;
+  }
+
+  /**
    * Allows `NaN` as an input and output value, or replaces an input `NaN` value with a default output value.
    *
    * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
