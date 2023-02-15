@@ -64,8 +64,8 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return isAsyncShapes(this.shapes);
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return intersectValueTypes(this.shapes.map(shape => shape['_getInputTypes']()));
+  protected _getInputTypes(): readonly ValueType[] {
+    return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<ToIntersection<U[number]['output']>> {
@@ -243,14 +243,14 @@ export function intersectValues(a: any, b: any): any {
   return NEVER;
 }
 
-export function intersectValueTypes(arr: ValueType[][]): ValueType[] {
+export function intersectValueTypes(arr: Array<readonly ValueType[]>): ValueType[] {
   const arrLength = arr.length;
 
   if (arrLength === 0) {
     return [TYPE_NEVER];
   }
 
-  const types = arr[0];
+  const types = arr[0].slice(0);
 
   for (let i = 1; i < arr.length; ++i) {
     for (let j = 0; j < types.length; ++j) {

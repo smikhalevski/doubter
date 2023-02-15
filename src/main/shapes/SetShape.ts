@@ -115,9 +115,9 @@ export class SetShape<S extends AnyShape>
     return this.shape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     if (this._coerced) {
-      return this.shape['_getInputTypes']().concat(TYPE_OBJECT, TYPE_ARRAY);
+      return this.shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
     } else {
       return [TYPE_OBJECT];
     }

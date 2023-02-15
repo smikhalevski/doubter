@@ -59,7 +59,7 @@ export class LazyShape<S extends AnyShape>
     }
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     const { _getInputTypes } = this;
 
     this._getInputTypes = returnArray;

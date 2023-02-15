@@ -5,12 +5,25 @@ import {
   createApplyChecksCallback,
   createIssueFactory,
   enableBitAt,
+  getValueType,
   isBitEnabledAt,
   isEqual,
   toArrayIndex,
   unique,
 } from '../main/utils';
 import { Issue, Shape, ValidationError } from '../main';
+
+describe('getValueType', () => {
+  test('returns value type', () => {
+    expect(getValueType(111)).toBe('number');
+    expect(getValueType('aaa')).toBe('string');
+    expect(getValueType({})).toBe('object');
+    expect(getValueType([])).toBe('array');
+    expect(getValueType(null)).toBe('null');
+    expect(getValueType(undefined)).toBe('undefined');
+    expect(getValueType(new Date())).toBe('date');
+  });
+});
 
 describe('isEqual', () => {
   test('checks equality', () => {

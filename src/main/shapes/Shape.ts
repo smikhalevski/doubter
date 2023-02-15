@@ -24,6 +24,7 @@ import {
   ok,
   returnTrue,
   toDeepPartialShape,
+  unique,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -34,6 +35,7 @@ import {
   MESSAGE_EXCLUSION,
   MESSAGE_PREDICATE,
   TYPE_ANY,
+  TYPE_NEVER,
 } from '../constants';
 
 const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
@@ -132,6 +134,11 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
  * @template O The output value.
  */
 export class Shape<I = any, O = I> {
+  /**
+   * Returns the extended value type.
+   */
+  static typeOf = getValueType;
+
   /**
    * The human-readable shape description.
    */
@@ -477,7 +484,7 @@ export class Shape<I = any, O = I> {
    *
    * Used for various optimizations. Elements of the returned array don't have to be unique.
    */
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return [TYPE_ANY];
   }
 
@@ -530,6 +537,11 @@ export interface Shape<I, O> {
    * The shape output type. Accessible only at compile time for type inference.
    */
   readonly output: O;
+
+  /**
+   * The array of unique types that the shape supports as input values.
+   */
+  readonly inputTypes: readonly ValueType[];
 
   /**
    * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
@@ -626,6 +638,29 @@ Object.defineProperties(Shape.prototype, {
   output: {
     get() {
       throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
+    },
+  },
+
+  inputTypes: {
+    get(this: Shape) {
+      let inputTypes = unique(this._getInputTypes()).slice(0);
+
+      if (inputTypes.length === 0 || inputTypes.includes(TYPE_ANY)) {
+        inputTypes = [TYPE_ANY];
+      }
+      if (inputTypes.length !== 1) {
+        const neverIndex = inputTypes.indexOf(TYPE_NEVER);
+
+        if (neverIndex !== -1) {
+          inputTypes.splice(neverIndex, 1);
+        }
+      }
+
+      Object.freeze(inputTypes);
+
+      Object.defineProperty(this, 'inputTypes', { value: inputTypes });
+
+      return inputTypes;
     },
   },
 
@@ -825,8 +860,8 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
     return this.shape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']();
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes;
   }
 
   protected _getInputValues(): unknown[] {
@@ -930,8 +965,8 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
     return this.inputShape.async || this.outputShape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.inputShape['_getInputTypes']();
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.inputShape.inputTypes;
   }
 
   protected _getInputValues(): unknown[] {
@@ -1056,8 +1091,8 @@ export class ReplaceShape<S extends AnyShape, A, B>
     return this.shape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']().concat(getValueType(this.inputValue));
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes.concat(getValueType(this.inputValue));
   }
 
   protected _getInputValues(): unknown[] {
@@ -1166,8 +1201,8 @@ export class ExcludeShape<S extends AnyShape, T>
     return this.shape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']();
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes;
   }
 
   protected _getInputValues(): unknown[] {
@@ -1279,8 +1314,8 @@ export class CatchShape<S extends AnyShape, T>
     return this.shape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']();
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes;
   }
 
   protected _getInputValues(): unknown[] {

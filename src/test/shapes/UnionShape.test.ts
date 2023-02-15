@@ -25,7 +25,7 @@ describe('UnionShape', () => {
 
     const orShape = new UnionShape([shape1, shape2, shape3]);
 
-    expect(orShape['_getInputTypes']()).toEqual(['number', 'string', 'boolean']);
+    expect(orShape.inputTypes).toEqual(['number', 'string', 'boolean']);
     expect(orShape.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);

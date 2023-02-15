@@ -30,7 +30,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     if (this._coerced) {
       return [TYPE_BOOLEAN, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, TYPE_NULL, TYPE_UNDEFINED];
     } else {

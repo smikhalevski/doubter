@@ -288,6 +288,11 @@ describe('Shape', () => {
     expect(shape.brand()).toBe(shape);
   });
 
+  test('returns value type', () => {
+    expect(Shape.typeOf([])).toBe('array');
+    expect(Shape.typeOf(111)).toBe('number');
+  });
+
   describe('refine', () => {
     test('invokes a predicate', () => {
       const cbMock = jest.fn(value => value === 'aaa');
@@ -733,7 +738,7 @@ describe('CatchShape', () => {
   });
 
   test('returns input types of the underlying shape', () => {
-    expect(new CatchShape(new StringShape(), 'aaa')['_getInputTypes']()).toEqual([TYPE_STRING]);
+    expect(new CatchShape(new StringShape(), 'aaa').inputTypes).toEqual([TYPE_STRING]);
   });
 
   describe('async', () => {

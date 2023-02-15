@@ -7,7 +7,7 @@ describe('EnumShape', () => {
     const shape = new EnumShape(['aaa', 'bbb']);
 
     expect(shape.values).toEqual(['aaa', 'bbb']);
-    expect(shape['_getInputTypes']()).toEqual([TYPE_STRING, TYPE_STRING]);
+    expect(shape.inputTypes).toEqual([TYPE_STRING]);
   });
 
   test('creates an enum shape from a native numeric enum', () => {
@@ -19,7 +19,7 @@ describe('EnumShape', () => {
     const shape = new EnumShape(Foo);
 
     expect(shape.values).toEqual([Foo.AAA, Foo.BBB]);
-    expect(shape['_getInputTypes']()).toEqual([TYPE_NUMBER, TYPE_NUMBER]);
+    expect(shape.inputTypes).toEqual([TYPE_NUMBER]);
   });
 
   test('creates an enum shape from a native string enum', () => {
@@ -137,7 +137,7 @@ describe('EnumShape', () => {
 
     const shape = new EnumShape(Foo);
 
-    expect(shape.coerce()['_getInputTypes']()).toEqual([TYPE_NUMBER, TYPE_NUMBER, TYPE_STRING, TYPE_ARRAY]);
+    expect(shape.coerce().inputTypes).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_ARRAY]);
 
     expect(shape.coerce().parse('AAA')).toEqual(Foo.AAA);
     expect(shape.parse('AAA', { coerced: true })).toEqual(Foo.AAA);
@@ -146,7 +146,7 @@ describe('EnumShape', () => {
   test('coerces from an array', () => {
     const shape = new EnumShape([111, 222]);
 
-    expect(shape.coerce()['_getInputTypes']()).toEqual([TYPE_NUMBER, TYPE_NUMBER, TYPE_ARRAY]);
+    expect(shape.coerce().inputTypes).toEqual([TYPE_NUMBER, TYPE_ARRAY]);
 
     expect(shape.coerce().parse([111])).toBe(111);
     expect(shape.parse(111, { coerced: true })).toBe(111);

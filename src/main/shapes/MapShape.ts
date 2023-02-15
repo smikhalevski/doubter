@@ -76,7 +76,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return this.keyShape.async || this.valueShape.async;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     if (this._coerced) {
       return [TYPE_OBJECT, TYPE_ARRAY];
     } else {

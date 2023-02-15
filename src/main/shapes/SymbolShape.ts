@@ -20,7 +20,7 @@ export class SymbolShape extends Shape<symbol> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SYMBOL_TYPE, options, TYPE_SYMBOL);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return [TYPE_SYMBOL];
   }
 

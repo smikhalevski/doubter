@@ -175,7 +175,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return (this.shapes !== null && isAsyncShapes(this.shapes)) || (this.restShape !== null && this.restShape.async);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     const { shapes, restShape } = this;
 
     const shape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
@@ -184,14 +184,14 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       return [TYPE_ARRAY];
     }
     if (shapes === null && restShape === null) {
-      // Elements aren't parsed, any value can be wrapped in an array
+      // Elements aren't parsed, any value can be wrapped
       return [TYPE_ANY];
     }
     if (shape === null) {
       // Iterables and array-like objects
       return [TYPE_OBJECT, TYPE_ARRAY];
     }
-    return shape['_getInputTypes']().concat(TYPE_OBJECT, TYPE_ARRAY);
+    return shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {

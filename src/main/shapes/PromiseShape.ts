@@ -38,7 +38,7 @@ export class PromiseShape<S extends AnyShape>
     return true;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return [TYPE_OBJECT];
   }
 
