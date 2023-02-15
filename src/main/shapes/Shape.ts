@@ -547,7 +547,7 @@ export interface Shape<I, O> {
    * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
    * `false` if the shape can be used in both sync and async contexts.
    */
-  readonly async: boolean;
+  readonly isAsync: boolean;
 
   /**
    * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
@@ -664,7 +664,7 @@ Object.defineProperties(Shape.prototype, {
     },
   },
 
-  async: {
+  isAsync: {
     get(this: Shape) {
       const async = this._requiresAsync();
       const _applyAsync = Shape.prototype['_applyAsync'];
@@ -677,7 +677,7 @@ Object.defineProperties(Shape.prototype, {
         this._applyAsync = _applyAsync;
       }
 
-      Object.defineProperty(this, 'async', { value: async });
+      Object.defineProperty(this, 'isAsync', { value: async });
 
       return async;
     },
@@ -685,7 +685,7 @@ Object.defineProperties(Shape.prototype, {
 
   try: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['try'] = (input, options) => {
         const result = this._apply(input, options || defaultParseOptions);
@@ -707,7 +707,7 @@ Object.defineProperties(Shape.prototype, {
 
   tryAsync: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['tryAsync'] = (input, options) => {
         return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
@@ -729,7 +729,7 @@ Object.defineProperties(Shape.prototype, {
 
   parse: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['parse'] = (input, options) => {
         const result = this._apply(input, options || defaultParseOptions);
@@ -751,7 +751,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseAsync: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['parseAsync'] = (input, options) => {
         return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
@@ -773,7 +773,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseOrDefault: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
         const result = this._apply(input, options || defaultParseOptions);
@@ -795,7 +795,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseOrDefaultAsync: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
         return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
@@ -857,7 +857,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   }
 
   protected _requiresAsync(): boolean {
-    return this.shape.async;
+    return this.shape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {
@@ -962,7 +962,7 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
   }
 
   protected _requiresAsync(): boolean {
-    return this.inputShape.async || this.outputShape.async;
+    return this.inputShape.isAsync || this.outputShape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {
@@ -1088,7 +1088,7 @@ export class ReplaceShape<S extends AnyShape, A, B>
   }
 
   protected _requiresAsync(): boolean {
-    return this.shape.async;
+    return this.shape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {
@@ -1198,7 +1198,7 @@ export class ExcludeShape<S extends AnyShape, T>
   }
 
   protected _requiresAsync(): boolean {
-    return this.shape.async;
+    return this.shape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {
@@ -1311,7 +1311,7 @@ export class CatchShape<S extends AnyShape, T>
   }
 
   protected _requiresAsync(): boolean {
-    return this.shape.async;
+    return this.shape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {

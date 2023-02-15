@@ -13,7 +13,7 @@ import { CatchShape } from '../../main/shapes/Shape';
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
-    expect(new Shape().async).toBe(false);
+    expect(new Shape().isAsync).toBe(false);
   });
 
   test('clones shape when check is added', () => {
@@ -379,7 +379,7 @@ describe('Shape', () => {
         }
       }
 
-      expect(new AsyncShape().async).toBe(true);
+      expect(new AsyncShape().isAsync).toBe(true);
     });
 
     test('throws if sync methods are invoked', () => {

@@ -178,7 +178,7 @@ describe('UnionShape', () => {
 
       const orShape = new UnionShape([shape1, shape2, shape3]);
 
-      expect(orShape.async).toBe(true);
+      expect(orShape.isAsync).toBe(true);
 
       await expect(orShape.parseAsync('aaa')).resolves.toBe('aaa');
       expect(applyAsyncSpy1).not.toHaveBeenCalled();
@@ -199,7 +199,7 @@ describe('UnionShape', () => {
 
       const orShape2 = new UnionShape([shape1, orShape1]);
 
-      expect(orShape2.async).toBe(true);
+      expect(orShape2.isAsync).toBe(true);
 
       await expect(orShape2.parseAsync('aaa')).resolves.toBe('aaa');
       expect(applyAsyncSpy1).not.toHaveBeenCalled();
@@ -213,9 +213,9 @@ describe('UnionShape', () => {
       const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
       const shape3 = new Shape();
 
-      shape1.async;
-      shape2.async;
-      shape3.async;
+      shape1.isAsync;
+      shape2.isAsync;
+      shape3.isAsync;
 
       const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');

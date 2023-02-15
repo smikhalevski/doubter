@@ -50,7 +50,7 @@ export class PromiseShape<S extends AnyShape>
     let output: Promise<unknown> = input;
 
     if (!(output instanceof Promise)) {
-      if (!(options.coerced || this._coerced)) {
+      if (!(options.coerced || this.isCoerced)) {
         return Promise.resolve(this._typeIssueFactory(input, options));
       }
       output = Promise.resolve(input);

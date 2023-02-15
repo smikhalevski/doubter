@@ -7,7 +7,7 @@ describe('lazy', () => {
     const lazyShape = d.lazy(() => shape);
 
     expect(lazyShape).toBeInstanceOf(d.LazyShape);
-    expect(lazyShape.async).toBe(false);
+    expect(lazyShape.isAsync).toBe(false);
     expect(lazyShape.shape).toBe(shape);
   });
 
@@ -22,7 +22,7 @@ describe('lazy', () => {
     const lazyShape = d.lazy(() => shape);
 
     expect(lazyShape).toBeInstanceOf(d.LazyShape);
-    expect(lazyShape.async).toBe(true);
+    expect(lazyShape.isAsync).toBe(true);
     expect(lazyShape.shape).toBe(shape);
   });
 });

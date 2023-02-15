@@ -172,7 +172,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   protected _requiresAsync(): boolean {
-    return (this.shapes !== null && isAsyncShapes(this.shapes)) || (this.restShape !== null && this.restShape.async);
+    return (this.shapes !== null && isAsyncShapes(this.shapes)) || (this.restShape !== null && this.restShape.isAsync);
   }
 
   protected _getInputTypes(): readonly ValueType[] {
@@ -180,7 +180,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
 
     const shape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
 
-    if (!this._coerced) {
+    if (!this.isCoerced) {
       return [TYPE_ARRAY];
     }
     if (shapes === null && restShape === null) {
@@ -205,7 +205,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     // noinspection CommaExpressionJS
     if (
       // Not an array or not coercible
-      (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === null)) ||
+      (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)) ||
       // Invalid tuple length
       ((outputLength = output.length),
       shapes !== null &&
@@ -261,7 +261,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       // noinspection CommaExpressionJS
       if (
         // Not an array or not coercible
-        (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === null)) ||
+        (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)) ||
         // Invalid tuple length
         ((outputLength = output.length),
         shapes !== null &&

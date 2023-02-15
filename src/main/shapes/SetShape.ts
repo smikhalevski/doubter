@@ -112,11 +112,11 @@ export class SetShape<S extends AnyShape>
   }
 
   protected _requiresAsync(): boolean {
-    return this.shape.async;
+    return this.shape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {
-    if (this._coerced) {
+    if (this.isCoerced) {
       return this.shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
     } else {
       return [TYPE_OBJECT];
@@ -132,7 +132,7 @@ export class SetShape<S extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input.values()))) &&
       // No coercion or not coercible
-      (!(options.coerced || this._coerced) || !(changed = (values = this._coerceValues(input)) !== null))
+      (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== null))
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -179,7 +179,7 @@ export class SetShape<S extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input.values()))) &&
         // No coercion or not coercible
-        (!(options.coerced || this._coerced) || !(changed = (values = this._coerceValues(input)) !== null))
+        (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== null))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;

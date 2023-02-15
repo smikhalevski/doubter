@@ -32,7 +32,7 @@ describe('ObjectShape', () => {
     expect(objShape.keys).toEqual(['key1']);
     expect(objShape.restShape).toBe(restShape);
     expect(objShape.shapes).toBe(shapes);
-    expect(objShape.async).toBe(false);
+    expect(objShape.isAsync).toBe(false);
   });
 
   test('adds rest signature', () => {
@@ -527,9 +527,9 @@ describe('ObjectShape', () => {
       const shape2 = new Shape();
       const restShape = new Shape();
 
-      shape1.async;
-      shape2.async;
-      restShape.async;
+      shape1.isAsync;
+      shape2.isAsync;
+      restShape.isAsync;
 
       const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');

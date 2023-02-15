@@ -74,7 +74,7 @@ export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
   let async = false;
 
   for (let i = 0; i < shapes.length && !async; ++i) {
-    async = shapes[i].async;
+    async = shapes[i].isAsync;
   }
   return async;
 }

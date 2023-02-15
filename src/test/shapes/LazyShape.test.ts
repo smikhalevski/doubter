@@ -7,7 +7,7 @@ describe('LazyShape', () => {
 
     const applySpy = jest.spyOn<Shape, any>(shape, '_apply');
 
-    expect(lazyShape.async).toBe(false);
+    expect(lazyShape.isAsync).toBe(false);
     expect(lazyShape.parse('aaa')).toBe('aaa');
     expect(applySpy).toHaveBeenCalledTimes(1);
     expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
@@ -64,7 +64,7 @@ describe('LazyShape', () => {
 
       const applyAsyncSpy = jest.spyOn<Shape, any>(shape, '_applyAsync');
 
-      expect(lazyShape.async).toBe(true);
+      expect(lazyShape.isAsync).toBe(true);
       await expect(lazyShape.parseAsync('aaa')).resolves.toBe('aaa');
       expect(applyAsyncSpy).toHaveBeenCalledTimes(1);
       expect(applyAsyncSpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });

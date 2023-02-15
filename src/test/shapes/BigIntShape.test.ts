@@ -15,7 +15,7 @@ describe('BigIntShape', () => {
   test('creates a string shape', () => {
     const shape = new BigIntShape();
 
-    expect(shape.async).toBe(false);
+    expect(shape.isAsync).toBe(false);
     expect(shape.inputTypes).toEqual([TYPE_BIGINT]);
   });
 

@@ -216,7 +216,7 @@ const asyncShape = d.promise(d.number());
 You can check that the shape is async:
 
 ```ts
-asyncShape.async // ⮕ true
+asyncShape.isAsync // ⮕ true
 ```
 
 Async shapes don't support synchronous `parse` method, and would throw an error if it is called:
@@ -241,7 +241,7 @@ const objectShape = d.object({
 });
 // ⮕ Shape<{ foo: Promise<number> }>
 
-objectShape.async // ⮕ true
+objectShape.isAsync // ⮕ true
 ```
 
 # Parsing and trying
@@ -717,7 +717,7 @@ const syncShape1 = d.string().transform(
 );
 // ⮕ Shape<string>
 
-syncShape1.async // ⮕ false
+syncShape1.isAsync // ⮕ false
 
 syncShape1.parse('Jill');
 // ⮕ 'Hello, Jill'
@@ -733,7 +733,7 @@ const syncShape2 = d.string().transform(
 );
 // ⮕ Shape<string, Promise<string>>
 
-syncShape2.async // ⮕ false
+syncShape2.isAsync // ⮕ false
 
 syncShape2.parse('Jill');
 // ⮕ Promise<string>
@@ -751,7 +751,7 @@ const asyncShape1 = d.string().transformAsync(
 // ⮕ Shape<string>
 
 // 🟡 Notice that the shape is async
-asyncShape1.async // ⮕ true
+asyncShape1.isAsync // ⮕ true
 
 await asyncShape1.parseAsync('Jill');
 // ⮕ 'Hello, Jill'
@@ -770,7 +770,7 @@ const asyncShape2 = d.object({
 });
 // ⮕ Shape<{ foo: string }>
 
-asyncShape2.async // ⮕ true
+asyncShape2.isAsync // ⮕ true
 ```
 
 > **Note**&ensp;Composite shapes are async if they rely on a [`promise`](#promise) shape:
@@ -781,7 +781,7 @@ asyncShape2.async // ⮕ true
 > });
 > // ⮕ Shape<{ foo: Promise<string> }>
 > 
-> shape.async // ⮕ true
+> shape.isAsync // ⮕ true
 > ```
 
 # Parsing context

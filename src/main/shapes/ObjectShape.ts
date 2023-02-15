@@ -344,7 +344,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   }
 
   protected _requiresAsync(): boolean {
-    return (this.restShape !== null && this.restShape.async) || isAsyncShapes(Object.values(this.shapes));
+    return (this.restShape !== null && this.restShape.isAsync) || isAsyncShapes(Object.values(this.shapes));
   }
 
   protected _getInputTypes(): readonly ValueType[] {

@@ -31,7 +31,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   }
 
   protected _getInputTypes(): readonly ValueType[] {
-    if (this._coerced) {
+    if (this.isCoerced) {
       return [TYPE_BOOLEAN, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, TYPE_NULL, TYPE_UNDEFINED];
     } else {
       return [TYPE_BOOLEAN];
@@ -47,7 +47,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
 
     if (
       typeof output !== 'boolean' &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)
     ) {
       return this._typeIssueFactory(input, options);
     }

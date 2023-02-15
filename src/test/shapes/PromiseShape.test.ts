@@ -13,7 +13,7 @@ describe('PromiseShape', () => {
     const shape = new StringShape();
     const promiseShape = new PromiseShape(shape);
 
-    expect(promiseShape.async).toBe(true);
+    expect(promiseShape.isAsync).toBe(true);
     expect(promiseShape.shape).toBe(shape);
   });
 

@@ -461,8 +461,8 @@ describe('ArrayShape', () => {
       const shape1 = new Shape();
       const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
 
-      shape1.async;
-      shape2.async;
+      shape1.isAsync;
+      shape2.isAsync;
 
       const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');

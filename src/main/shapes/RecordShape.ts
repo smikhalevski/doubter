@@ -71,7 +71,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   }
 
   protected _requiresAsync(): boolean {
-    return (this.keyShape !== null && this.keyShape.async) || this.valueShape.async;
+    return (this.keyShape !== null && this.keyShape.isAsync) || this.valueShape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {

@@ -225,7 +225,7 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   protected _getInputTypes(): readonly ValueType[] {
-    if (this._coerced) {
+    if (this.isCoerced) {
       return [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
     } else {
       return [TYPE_NUMBER];
@@ -241,7 +241,7 @@ export class NumberShape extends CoercibleShape<number> {
 
     if (
       !this._typePredicate(output) &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)
     ) {
       return this._typeIssueFactory(input, options);
     }

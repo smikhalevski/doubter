@@ -102,7 +102,7 @@ export class StringShape extends CoercibleShape<string> {
   }
 
   protected _getInputTypes(): readonly ValueType[] {
-    if (this._coerced) {
+    if (this.isCoerced) {
       return [TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
     } else {
       return [TYPE_STRING];
@@ -118,7 +118,7 @@ export class StringShape extends CoercibleShape<string> {
 
     if (
       typeof output !== 'string' &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)
     ) {
       return this._typeIssueFactory(input, options);
     }

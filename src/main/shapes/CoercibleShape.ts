@@ -8,7 +8,10 @@ import { cloneObject } from '../utils';
  * @template O The output value.
  */
 export class CoercibleShape<I = any, O = I> extends Shape<I, O> {
-  protected _coerced = false;
+  /**
+   * `true` if input value is coerced to required type during parsing, or `false` otherwise.
+   */
+  isCoerced = false;
 
   /**
    * Enables input value coercion.
@@ -17,7 +20,7 @@ export class CoercibleShape<I = any, O = I> extends Shape<I, O> {
    */
   coerce(): this {
     const shape = cloneObject(this);
-    shape._coerced = true;
+    shape.isCoerced = true;
     return shape;
   }
 }

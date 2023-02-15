@@ -53,7 +53,7 @@ export class LazyShape<S extends AnyShape>
     this._requiresAsync = returnFalse;
 
     try {
-      return this.shape.async;
+      return this.shape.isAsync;
     } finally {
       this._requiresAsync = _requiresAsync;
     }
