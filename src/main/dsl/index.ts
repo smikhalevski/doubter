@@ -6,6 +6,7 @@ export * from './const';
 export * from './date';
 export * from './enum';
 export * from './finite';
+export * from './function';
 export * from './instanceOf';
 export * from './intersection';
 export * from './json';

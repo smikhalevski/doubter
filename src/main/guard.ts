@@ -1,7 +1,7 @@
 import { AnyShape, ArrayShape, Shape } from './shapes';
 import { isArray } from './utils';
 import { InferTuple } from './shapes/ArrayShape';
-import { ERROR_ASYNC_ARGUMENTS } from './constants';
+import { ERROR_ASYNC_DECORATOR } from './constants';
 
 /**
  * Guards each argument of a function with a corresponding shape.
@@ -134,7 +134,7 @@ export function guard(shape: any, callback?: (...args: any[]) => any) {
     shape = new ArrayShape([shape], null);
   }
   if (shape.isAsync) {
-    throw new Error(ERROR_ASYNC_ARGUMENTS);
+    throw new Error(ERROR_ASYNC_DECORATOR);
   }
 
   const factory = (callback: Function) =>

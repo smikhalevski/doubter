@@ -463,7 +463,7 @@ export class Shape<I = any, O = I> {
   protected _replaceChecks(checks: readonly Check[]): this {
     const shape = cloneObject(this);
 
-    shape._checks = checks;
+    shape._checks = checks.length !== 0 ? checks : null;
     shape._applyChecks = createApplyChecksCallback(checks);
     shape._unsafe = checks.some(isUnsafeCheck);
 
@@ -554,7 +554,7 @@ export interface Shape<I, O> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
   try(input: unknown, options?: ParseOptions): Ok<O> | Err;
 
@@ -573,7 +573,7 @@ export interface Shape<I, O> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parse(input: unknown, options?: ParseOptions): O;
@@ -593,7 +593,7 @@ export interface Shape<I, O> {
    *
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
   parseOrDefault(input: unknown): O | undefined;
 
@@ -604,7 +604,7 @@ export interface Shape<I, O> {
    * @param defaultValue The default value that is returned if parsing fails.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode async}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
   parseOrDefault<T>(input: unknown, defaultValue: T, options?: ParseOptions): O | T;
 

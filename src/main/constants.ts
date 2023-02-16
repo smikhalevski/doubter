@@ -1,7 +1,7 @@
-export const ERROR_REQUIRES_ASYNC = 'Shape is async, consider using tryAsync, parseAsync, or parseOrDefaultAsync';
+export const ERROR_REQUIRES_ASYNC = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync';
 export const ERROR_SHAPE_EXPECTED = 'Provider must return a shape';
 export const ERROR_FORBIDDEN_AT_RUNTIME = 'Must not be accessed at runtime';
-export const ERROR_ASYNC_ARGUMENTS = 'Some of argument shapes are async, consider using guardAsync';
+export const ERROR_ASYNC_DECORATOR = 'The function signature is constrained by async shapes, use decorateAsync';
 
 export const CODE_ARRAY_MIN = 'arrayMinLength';
 export const CODE_ARRAY_MAX = 'arrayMaxLength';
@@ -57,6 +57,7 @@ export const MESSAGE_CONST = 'Must be equal to %s';
 export const MESSAGE_DATE_TYPE = 'Must be a Date';
 export const MESSAGE_ENUM = 'Must be equal to one of %s';
 export const MESSAGE_EXCLUSION = 'Must not be equal to %s';
+export const MESSAGE_FUNCTION_TYPE = 'Must be a function';
 export const MESSAGE_INSTANCE = 'Must be a class instance';
 export const MESSAGE_INTERSECTION = 'Must conform the intersection';
 export const MESSAGE_JSON = 'Must be a JSON string: %s';

@@ -5,6 +5,7 @@ export { CoercibleShape } from './CoercibleShape';
 export { ConstShape } from './ConstShape';
 export { DateShape } from './DateShape';
 export { EnumShape } from './EnumShape';
+export { FunctionShape } from './FunctionShape';
 export { InstanceShape } from './InstanceShape';
 export { IntersectionShape } from './IntersectionShape';
 export { JSONShape } from './JSONShape';
