@@ -1145,7 +1145,7 @@ Note that branded types do not affect the runtime result of `parse`. It is a sta
 
 # Introspection
 
-Doubter provides various features to introspect your shapes at runtime. Let's start from detecting input types supported
+Doubter provides various features to introspect your shapes at runtime. Let's start by detecting input types supported
 by a particular shape.
 
 The supported input types of a shape can be accessed through a `inputTypes` property:
@@ -1196,7 +1196,7 @@ neverShape.inputTypes;
 // ⮕ ['never']
 
 neverShape.parse('Pluto');
-// ❌ ValidationError: type at /: Must never occur
+// ❌ ValidationError: type at /: Must not be used
 ```
 
 `never` is erased in unions:

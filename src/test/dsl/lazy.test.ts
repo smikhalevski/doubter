@@ -13,7 +13,7 @@ describe('lazy', () => {
 
   test('returns an async shape', () => {
     class AsyncShape extends Shape {
-      protected _requiresAsync() {
+      protected _isAsync() {
         return true;
       }
     }
