@@ -34,7 +34,7 @@ export class PromiseShape<S extends AnyShape>
     return copyUnsafeChecks(this, new PromiseShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return true;
   }
 

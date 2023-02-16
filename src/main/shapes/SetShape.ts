@@ -111,7 +111,7 @@ export class SetShape<S extends AnyShape>
     return copyUnsafeChecks(this, new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shape.isAsync;
   }
 

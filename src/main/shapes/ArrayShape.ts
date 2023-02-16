@@ -171,7 +171,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return copyUnsafeChecks(this, new ArrayShape<any, any>(shapes, restShape, this._options));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
   }
 

@@ -60,7 +60,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return copyUnsafeChecks(this, new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shapes.some(isAsyncShape);
   }
 

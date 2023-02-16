@@ -72,7 +72,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return copyUnsafeChecks(this, new MapShape<any, any>(keyShape, valueShape, this._options));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.keyShape.isAsync || this.valueShape.isAsync;
   }
 

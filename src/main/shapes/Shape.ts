@@ -22,7 +22,6 @@ import {
   isEqual,
   isUnsafeCheck,
   ok,
-  returnTrue,
   toDeepPartialShape,
   unique,
 } from '../utils';
@@ -475,7 +474,7 @@ export class Shape<I = any, O = I> {
    * Must return `true` if the shape must be used in async context only, otherwise the shape can be used in both sync
    * and async contexts. Override this method to implement a custom shape.
    */
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return false;
   }
 
@@ -666,7 +665,7 @@ Object.defineProperties(Shape.prototype, {
 
   isAsync: {
     get(this: Shape) {
-      const async = this._requiresAsync();
+      const async = this._isAsync();
       const _applyAsync = Shape.prototype['_applyAsync'];
 
       if (async) {
@@ -824,6 +823,12 @@ Object.defineProperties(Shape.prototype, {
  */
 export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> {
   /**
+   * `true` if the transformed shape would wait for the promise returned from the {@linkcode callback} to be fulfilled.
+   * `false` if the value that is synchronously returned from the {@linkcode callback} is used as an output.
+   */
+  readonly isCallbackAsync: boolean;
+
+  /**
    * Creates the new {@linkcode TransformShape} instance.
    *
    * @param shape The base shape.
@@ -851,13 +856,11 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   ) {
     super();
 
-    if (async) {
-      this._requiresAsync = returnTrue;
-    }
+    this.isCallbackAsync = async;
   }
 
-  protected _requiresAsync(): boolean {
-    return this.shape.isAsync;
+  protected _isAsync(): boolean {
+    return this.isCallbackAsync || this.shape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {
@@ -961,7 +964,7 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
     );
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.inputShape.isAsync || this.outputShape.isAsync;
   }
 
@@ -1087,7 +1090,7 @@ export class ReplaceShape<S extends AnyShape, A, B>
     return copyUnsafeChecks(this, new ReplaceShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shape.isAsync;
   }
 
@@ -1197,7 +1200,7 @@ export class ExcludeShape<S extends AnyShape, T>
     return copyUnsafeChecks(this, new ExcludeShape(toDeepPartialShape(this.shape), this.excludedValue, this._options));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shape.isAsync;
   }
 
@@ -1310,7 +1313,7 @@ export class CatchShape<S extends AnyShape, T>
     return copyUnsafeChecks(this, new CatchShape(toDeepPartialShape(this.shape), this.fallback));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return this.shape.isAsync;
   }
 
