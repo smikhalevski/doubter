@@ -22,8 +22,8 @@ import {
   isEqual,
   isUnsafeCheck,
   ok,
-  returnTrue,
   toDeepPartialShape,
+  unique,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
@@ -34,6 +34,7 @@ import {
   MESSAGE_EXCLUSION,
   MESSAGE_PREDICATE,
   TYPE_ANY,
+  TYPE_NEVER,
 } from '../constants';
 
 const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
@@ -132,6 +133,11 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
  * @template O The output value.
  */
 export class Shape<I = any, O = I> {
+  /**
+   * Returns the extended value type.
+   */
+  static typeOf = getValueType;
+
   /**
    * The human-readable shape description.
    */
@@ -468,7 +474,7 @@ export class Shape<I = any, O = I> {
    * Must return `true` if the shape must be used in async context only, otherwise the shape can be used in both sync
    * and async contexts. Override this method to implement a custom shape.
    */
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return false;
   }
 
@@ -477,7 +483,7 @@ export class Shape<I = any, O = I> {
    *
    * Used for various optimizations. Elements of the returned array don't have to be unique.
    */
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return [TYPE_ANY];
   }
 
@@ -532,10 +538,15 @@ export interface Shape<I, O> {
   readonly output: O;
 
   /**
+   * The array of unique types that the shape supports as input values.
+   */
+  readonly inputTypes: readonly ValueType[];
+
+  /**
    * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
    * `false` if the shape can be used in both sync and async contexts.
    */
-  readonly async: boolean;
+  readonly isAsync: boolean;
 
   /**
    * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
@@ -629,9 +640,32 @@ Object.defineProperties(Shape.prototype, {
     },
   },
 
-  async: {
+  inputTypes: {
     get(this: Shape) {
-      const async = this._requiresAsync();
+      let inputTypes = unique(this._getInputTypes()).slice(0);
+
+      if (inputTypes.length === 0 || inputTypes.includes(TYPE_ANY)) {
+        inputTypes = [TYPE_ANY];
+      }
+      if (inputTypes.length !== 1) {
+        const neverIndex = inputTypes.indexOf(TYPE_NEVER);
+
+        if (neverIndex !== -1) {
+          inputTypes.splice(neverIndex, 1);
+        }
+      }
+
+      Object.freeze(inputTypes);
+
+      Object.defineProperty(this, 'inputTypes', { value: inputTypes });
+
+      return inputTypes;
+    },
+  },
+
+  isAsync: {
+    get(this: Shape) {
+      const async = this._isAsync();
       const _applyAsync = Shape.prototype['_applyAsync'];
 
       if (async) {
@@ -642,7 +676,7 @@ Object.defineProperties(Shape.prototype, {
         this._applyAsync = _applyAsync;
       }
 
-      Object.defineProperty(this, 'async', { value: async });
+      Object.defineProperty(this, 'isAsync', { value: async });
 
       return async;
     },
@@ -650,7 +684,7 @@ Object.defineProperties(Shape.prototype, {
 
   try: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['try'] = (input, options) => {
         const result = this._apply(input, options || defaultParseOptions);
@@ -672,7 +706,7 @@ Object.defineProperties(Shape.prototype, {
 
   tryAsync: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['tryAsync'] = (input, options) => {
         return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
@@ -694,7 +728,7 @@ Object.defineProperties(Shape.prototype, {
 
   parse: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['parse'] = (input, options) => {
         const result = this._apply(input, options || defaultParseOptions);
@@ -716,7 +750,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseAsync: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['parseAsync'] = (input, options) => {
         return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
@@ -738,7 +772,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseOrDefault: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
         const result = this._apply(input, options || defaultParseOptions);
@@ -760,7 +794,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseOrDefaultAsync: {
     get(this: Shape) {
-      void this.async;
+      this.isAsync;
 
       const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
         return this._applyAsync(input, options || defaultParseOptions).then((result: ApplyResult) => {
@@ -789,6 +823,13 @@ Object.defineProperties(Shape.prototype, {
  */
 export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> {
   /**
+   * `true` if the promise returned from the {@linkcode callback} to be fulfilled before the transformation is
+   * completed, or `false` if the value that is synchronously returned from the {@linkcode callback} is used as a
+   * transformation output.
+   */
+  readonly isCallbackAsync: boolean;
+
+  /**
    * Creates the new {@linkcode TransformShape} instance.
    *
    * @param shape The base shape.
@@ -816,17 +857,15 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   ) {
     super();
 
-    if (async) {
-      this._requiresAsync = returnTrue;
-    }
+    this.isCallbackAsync = async;
   }
 
-  protected _requiresAsync(): boolean {
-    return this.shape.async;
+  protected _isAsync(): boolean {
+    return this.isCallbackAsync || this.shape.isAsync;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']();
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes;
   }
 
   protected _getInputValues(): unknown[] {
@@ -926,12 +965,12 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
     );
   }
 
-  protected _requiresAsync(): boolean {
-    return this.inputShape.async || this.outputShape.async;
+  protected _isAsync(): boolean {
+    return this.inputShape.isAsync || this.outputShape.isAsync;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.inputShape['_getInputTypes']();
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.inputShape.inputTypes;
   }
 
   protected _getInputValues(): unknown[] {
@@ -1052,12 +1091,12 @@ export class ReplaceShape<S extends AnyShape, A, B>
     return copyUnsafeChecks(this, new ReplaceShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue));
   }
 
-  protected _requiresAsync(): boolean {
-    return this.shape.async;
+  protected _isAsync(): boolean {
+    return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']().concat(getValueType(this.inputValue));
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes.concat(getValueType(this.inputValue));
   }
 
   protected _getInputValues(): unknown[] {
@@ -1162,12 +1201,12 @@ export class ExcludeShape<S extends AnyShape, T>
     return copyUnsafeChecks(this, new ExcludeShape(toDeepPartialShape(this.shape), this.excludedValue, this._options));
   }
 
-  protected _requiresAsync(): boolean {
-    return this.shape.async;
+  protected _isAsync(): boolean {
+    return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']();
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes;
   }
 
   protected _getInputValues(): unknown[] {
@@ -1275,12 +1314,12 @@ export class CatchShape<S extends AnyShape, T>
     return copyUnsafeChecks(this, new CatchShape(toDeepPartialShape(this.shape), this.fallback));
   }
 
-  protected _requiresAsync(): boolean {
-    return this.shape.async;
+  protected _isAsync(): boolean {
+    return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    return this.shape['_getInputTypes']();
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes;
   }
 
   protected _getInputValues(): unknown[] {

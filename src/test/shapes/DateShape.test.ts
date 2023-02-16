@@ -25,7 +25,7 @@ describe('DateShape', () => {
   test('updates input types when coerced', () => {
     const shape = new DateShape().coerce();
 
-    expect(shape['_getInputTypes']()).toEqual([TYPE_DATE, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
+    expect(shape.inputTypes).toEqual([TYPE_DATE, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
   });
 
   test('coerces an input', () => {

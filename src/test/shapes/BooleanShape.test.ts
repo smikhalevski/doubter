@@ -32,14 +32,7 @@ describe('BooleanShape', () => {
   test('updates input types when coerced', () => {
     const shape = new BooleanShape().coerce();
 
-    expect(shape['_getInputTypes']()).toEqual([
-      TYPE_BOOLEAN,
-      TYPE_STRING,
-      TYPE_NUMBER,
-      TYPE_ARRAY,
-      TYPE_NULL,
-      TYPE_UNDEFINED,
-    ]);
+    expect(shape.inputTypes).toEqual([TYPE_BOOLEAN, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, TYPE_NULL, TYPE_UNDEFINED]);
   });
 
   test('coerces an input', () => {

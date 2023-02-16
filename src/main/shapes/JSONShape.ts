@@ -44,7 +44,7 @@ export class JSONShape extends Shape<string, any> {
     return shape;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return [TYPE_STRING];
   }
 

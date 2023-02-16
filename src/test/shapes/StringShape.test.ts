@@ -18,8 +18,8 @@ describe('StringShape', () => {
   test('creates a string shape', () => {
     const shape = new StringShape();
 
-    expect(shape.async).toBe(false);
-    expect(shape['_getInputTypes']()).toEqual([TYPE_STRING]);
+    expect(shape.isAsync).toBe(false);
+    expect(shape.inputTypes).toEqual([TYPE_STRING]);
   });
 
   test('allows a string', () => {
@@ -160,7 +160,7 @@ describe('StringShape', () => {
   test('updates input types when coerced', () => {
     const shape = new StringShape().coerce();
 
-    expect(shape['_getInputTypes']()).toEqual([
+    expect(shape.inputTypes).toEqual([
       TYPE_STRING,
       TYPE_NUMBER,
       TYPE_BOOLEAN,

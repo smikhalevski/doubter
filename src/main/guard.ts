@@ -133,7 +133,7 @@ export function guard(shape: any, callback?: (...args: any[]) => any) {
   if (!(shape instanceof ArrayShape)) {
     shape = new ArrayShape([shape], null);
   }
-  if (shape.async) {
+  if (shape.isAsync) {
     throw new Error(ERROR_ASYNC_ARGUMENTS);
   }
 
@@ -278,7 +278,7 @@ export function guardAsync(shape: any, callback?: (...args: any[]) => any) {
 
   let factory: (callback: Function) => Function;
 
-  if (shape.async) {
+  if (shape.isAsync) {
     factory = callback =>
       function (this: any, ...args: any[]) {
         return shape.parseAsync(args).then((args: any[]) => callback.apply(this, shape.parse(args)));

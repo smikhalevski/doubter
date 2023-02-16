@@ -6,7 +6,7 @@ import {
   createIssueFactory,
   getValueType,
   isArray,
-  isAsyncShapes,
+  isAsyncShape,
   isObjectLike,
   ToArray,
   toDeepPartialShape,
@@ -87,17 +87,17 @@ export class UnionShape<U extends readonly AnyShape[]>
     return copyUnsafeChecks(this, new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
   }
 
-  protected _requiresAsync(): boolean {
-    return isAsyncShapes(this.shapes);
+  protected _isAsync(): boolean {
+    return this.shapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     const inputTypes: ValueType[] = [];
 
     for (const shape of this.shapes) {
-      inputTypes.push(...shape['_getInputTypes']());
+      inputTypes.push(...shape.inputTypes);
     }
-    return unique(inputTypes);
+    return inputTypes;
   }
 
   protected _getInputValues(): unknown[] {
@@ -210,9 +210,7 @@ export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): Look
   const bucketTypes = Object.keys(buckets) as ValueType[];
 
   for (const shape of unique(shapes)) {
-    const inputTypes = shape['_getInputTypes']();
-
-    for (const type of inputTypes.includes(TYPE_ANY) ? bucketTypes : unique(inputTypes)) {
+    for (const type of shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes) {
       if (type === TYPE_ANY || type === TYPE_NEVER) {
         continue;
       }

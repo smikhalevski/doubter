@@ -34,11 +34,11 @@ export class PromiseShape<S extends AnyShape>
     return copyUnsafeChecks(this, new PromiseShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
   }
 
-  protected _requiresAsync(): boolean {
+  protected _isAsync(): boolean {
     return true;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return [TYPE_OBJECT];
   }
 
@@ -50,7 +50,7 @@ export class PromiseShape<S extends AnyShape>
     let output: Promise<unknown> = input;
 
     if (!(output instanceof Promise)) {
-      if (!(options.coerced || this._coerced)) {
+      if (!(options.coerced || this.isCoerced)) {
         return Promise.resolve(this._typeIssueFactory(input, options));
       }
       output = Promise.resolve(input);

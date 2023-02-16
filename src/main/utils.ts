@@ -70,13 +70,8 @@ export function isDate(value: unknown): value is Date {
   return value instanceof Date && (value = value.getTime()) === value;
 }
 
-export function isAsyncShapes(shapes: readonly AnyShape[]): boolean {
-  let async = false;
-
-  for (let i = 0; i < shapes.length && !async; ++i) {
-    async = shapes[i].async;
-  }
-  return async;
+export function isAsyncShape(shape: AnyShape): boolean {
+  return shape.isAsync;
 }
 
 export function isUnsafeCheck(check: Check): boolean {

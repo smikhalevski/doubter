@@ -17,7 +17,7 @@ describe('MapShape', () => {
 
     expect(setShape.keyShape).toEqual(keyShape);
     expect(setShape.valueShape).toEqual(valueShape);
-    expect(setShape['_getInputTypes']()).toEqual([TYPE_OBJECT]);
+    expect(setShape.inputTypes).toEqual([TYPE_OBJECT]);
   });
 
   test('raises an issue if an input is not a Map', () => {

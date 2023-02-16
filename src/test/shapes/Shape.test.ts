@@ -13,7 +13,7 @@ import { CatchShape } from '../../main/shapes/Shape';
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
-    expect(new Shape().async).toBe(false);
+    expect(new Shape().isAsync).toBe(false);
   });
 
   test('clones shape when check is added', () => {
@@ -288,6 +288,11 @@ describe('Shape', () => {
     expect(shape.brand()).toBe(shape);
   });
 
+  test('returns value type', () => {
+    expect(Shape.typeOf([])).toBe('array');
+    expect(Shape.typeOf(111)).toBe('number');
+  });
+
   describe('refine', () => {
     test('invokes a predicate', () => {
       const cbMock = jest.fn(value => value === 'aaa');
@@ -369,17 +374,17 @@ describe('Shape', () => {
   describe('async', () => {
     test('creates an async shape', () => {
       class AsyncShape extends Shape {
-        protected _requiresAsync() {
+        protected _isAsync() {
           return true;
         }
       }
 
-      expect(new AsyncShape().async).toBe(true);
+      expect(new AsyncShape().isAsync).toBe(true);
     });
 
     test('throws if sync methods are invoked', () => {
       class AsyncShape extends Shape {
-        protected _requiresAsync() {
+        protected _isAsync() {
           return true;
         }
       }
@@ -733,7 +738,7 @@ describe('CatchShape', () => {
   });
 
   test('returns input types of the underlying shape', () => {
-    expect(new CatchShape(new StringShape(), 'aaa')['_getInputTypes']()).toEqual([TYPE_STRING]);
+    expect(new CatchShape(new StringShape(), 'aaa').inputTypes).toEqual([TYPE_STRING]);
   });
 
   describe('async', () => {

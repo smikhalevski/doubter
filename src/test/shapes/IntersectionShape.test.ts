@@ -13,6 +13,7 @@ import {
   CODE_TYPE,
   MESSAGE_INTERSECTION,
   MESSAGE_NUMBER_TYPE,
+  TYPE_ANY,
   TYPE_NEVER,
   TYPE_NUMBER,
   TYPE_STRING,
@@ -238,5 +239,13 @@ describe('intersectValueTypes', () => {
 
   test('returns never if there are types', () => {
     expect(intersectValueTypes([])).toEqual([TYPE_NEVER]);
+  });
+
+  test('never absorbs other types', () => {
+    expect(intersectValueTypes([[TYPE_STRING], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
+  });
+
+  test('never absorbs any type', () => {
+    expect(intersectValueTypes([[TYPE_ANY], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
   });
 });

@@ -57,10 +57,10 @@ export class EnumShape<T> extends CoercibleShape<T> {
     this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     const valueTypes = this.values.map(getValueType);
 
-    if (!this._coerced) {
+    if (!this.isCoerced) {
       return valueTypes;
     }
 
@@ -85,7 +85,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
 
     if (
       !this.values.includes(output) &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === UNRECOGNIZED)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === UNRECOGNIZED)
     ) {
       return this._typeIssueFactory(input, options);
     }

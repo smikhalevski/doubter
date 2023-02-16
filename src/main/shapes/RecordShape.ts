@@ -70,11 +70,11 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return copyUnsafeChecks(this, new RecordShape<any, any>(this.keyShape, valueShape, this._options));
   }
 
-  protected _requiresAsync(): boolean {
-    return (this.keyShape !== null && this.keyShape.async) || this.valueShape.async;
+  protected _isAsync(): boolean {
+    return this.keyShape?.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return [TYPE_OBJECT];
   }
 

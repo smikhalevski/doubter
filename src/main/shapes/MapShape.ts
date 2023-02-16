@@ -72,12 +72,12 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return copyUnsafeChecks(this, new MapShape<any, any>(keyShape, valueShape, this._options));
   }
 
-  protected _requiresAsync(): boolean {
-    return this.keyShape.async || this.valueShape.async;
+  protected _isAsync(): boolean {
+    return this.keyShape.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): ValueType[] {
-    if (this._coerced) {
+  protected _getInputTypes(): readonly ValueType[] {
+    if (this.isCoerced) {
       return [TYPE_OBJECT, TYPE_ARRAY];
     } else {
       return [TYPE_OBJECT];
@@ -92,7 +92,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input.entries()))) &&
       // No coercion or not coercible
-      (!(options.coerced || this._coerced) || !(changed = (entries = this._coerceEntries(input)) !== null))
+      (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== null))
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -164,7 +164,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input.entries()))) &&
         // No coercion or not coercible
-        (!(options.coerced || this._coerced) || !(changed = (entries = this._coerceEntries(input)) !== null))
+        (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== null))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;

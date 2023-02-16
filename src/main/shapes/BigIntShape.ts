@@ -31,8 +31,8 @@ export class BigIntShape extends CoercibleShape<bigint> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }
 
-  protected _getInputTypes(): ValueType[] {
-    if (this._coerced) {
+  protected _getInputTypes(): readonly ValueType[] {
+    if (this.isCoerced) {
       return [TYPE_BIGINT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
     } else {
       return [TYPE_BIGINT];
@@ -48,7 +48,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
 
     if (
       typeof output !== 'bigint' &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)
     ) {
       return this._typeIssueFactory(input, options);
     }

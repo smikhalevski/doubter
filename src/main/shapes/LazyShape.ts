@@ -47,19 +47,19 @@ export class LazyShape<S extends AnyShape>
     return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_shapeProvider())));
   }
 
-  protected _requiresAsync(): boolean {
-    const { _requiresAsync } = this;
+  protected _isAsync(): boolean {
+    const { _isAsync } = this;
 
-    this._requiresAsync = returnFalse;
+    this._isAsync = returnFalse;
 
     try {
-      return this.shape.async;
+      return this.shape.isAsync;
     } finally {
-      this._requiresAsync = _requiresAsync;
+      this._isAsync = _isAsync;
     }
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     const { _getInputTypes } = this;
 
     this._getInputTypes = returnArray;

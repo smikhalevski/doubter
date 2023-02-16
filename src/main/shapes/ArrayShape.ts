@@ -6,7 +6,7 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isAsyncShapes,
+  isAsyncShape,
   isEqual,
   isIterable,
   ok,
@@ -171,27 +171,27 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return copyUnsafeChecks(this, new ArrayShape<any, any>(shapes, restShape, this._options));
   }
 
-  protected _requiresAsync(): boolean {
-    return (this.shapes !== null && isAsyncShapes(this.shapes)) || (this.restShape !== null && this.restShape.async);
+  protected _isAsync(): boolean {
+    return this.shapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     const { shapes, restShape } = this;
 
     const shape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
 
-    if (!this._coerced) {
+    if (!this.isCoerced) {
       return [TYPE_ARRAY];
     }
     if (shapes === null && restShape === null) {
-      // Elements aren't parsed, any value can be wrapped in an array
+      // Elements aren't parsed, any value can be wrapped
       return [TYPE_ANY];
     }
     if (shape === null) {
       // Iterables and array-like objects
       return [TYPE_OBJECT, TYPE_ARRAY];
     }
-    return shape['_getInputTypes']().concat(TYPE_OBJECT, TYPE_ARRAY);
+    return shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
@@ -205,7 +205,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     // noinspection CommaExpressionJS
     if (
       // Not an array or not coercible
-      (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === null)) ||
+      (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)) ||
       // Invalid tuple length
       ((outputLength = output.length),
       shapes !== null &&
@@ -261,7 +261,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       // noinspection CommaExpressionJS
       if (
         // Not an array or not coercible
-        (!isArray(output) && (!(options.coerced || this._coerced) || (output = this._coerce(input)) === null)) ||
+        (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)) ||
         // Invalid tuple length
         ((outputLength = output.length),
         shapes !== null &&

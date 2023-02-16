@@ -24,7 +24,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     if ((this.ctor as unknown) === Array || Array.prototype.isPrototypeOf(this.ctor.prototype)) {
       return [TYPE_ARRAY];
     } else {

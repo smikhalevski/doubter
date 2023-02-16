@@ -11,7 +11,7 @@ import {
   Dict,
   enableBitAt,
   isArray,
-  isAsyncShapes,
+  isAsyncShape,
   isBitEnabledAt,
   isEqual,
   isObjectLike,
@@ -343,11 +343,11 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return shape;
   }
 
-  protected _requiresAsync(): boolean {
-    return (this.restShape !== null && this.restShape.async) || isAsyncShapes(Object.values(this.shapes));
+  protected _isAsync(): boolean {
+    return this.restShape?.isAsync || this._valueShapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): ValueType[] {
+  protected _getInputTypes(): readonly ValueType[] {
     return [TYPE_OBJECT];
   }
 

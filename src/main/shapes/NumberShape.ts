@@ -202,6 +202,20 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
+   * `true` if the shape constrains a finite number, or `false` otherwise.
+   */
+  get isFinite(): boolean {
+    return this._typePredicate === Number.isFinite || this.isInteger;
+  }
+
+  /**
+   * `true` if the shape constrains an integer number, or `false` otherwise.
+   */
+  get isInteger(): boolean {
+    return this._typePredicate === Number.isInteger;
+  }
+
+  /**
    * Allows `NaN` as an input and output value, or replaces an input `NaN` value with a default output value.
    *
    * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
@@ -210,8 +224,8 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, defaultValue);
   }
 
-  protected _getInputTypes(): ValueType[] {
-    if (this._coerced) {
+  protected _getInputTypes(): readonly ValueType[] {
+    if (this.isCoerced) {
       return [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
     } else {
       return [TYPE_NUMBER];
@@ -227,7 +241,7 @@ export class NumberShape extends CoercibleShape<number> {
 
     if (
       !this._typePredicate(output) &&
-      (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)
     ) {
       return this._typeIssueFactory(input, options);
     }

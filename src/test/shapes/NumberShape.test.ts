@@ -195,7 +195,7 @@ describe('NumberShape', () => {
   test('updates input types when coerced', () => {
     const shape = new NumberShape().coerce();
 
-    expect(shape['_getInputTypes']()).toEqual([
+    expect(shape.inputTypes).toEqual([
       TYPE_NUMBER,
       TYPE_STRING,
       TYPE_BOOLEAN,

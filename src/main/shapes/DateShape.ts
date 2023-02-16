@@ -21,8 +21,8 @@ export class DateShape extends CoercibleShape<Date> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);
   }
 
-  protected _getInputTypes(): ValueType[] {
-    if (this._coerced) {
+  protected _getInputTypes(): readonly ValueType[] {
+    if (this.isCoerced) {
       return [TYPE_DATE, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
     } else {
       return [TYPE_DATE];
@@ -36,7 +36,7 @@ export class DateShape extends CoercibleShape<Date> {
     let issues = null;
     let changed = false;
 
-    if (!isDate(input) && (!(changed = options.coerced || this._coerced) || (output = this._coerce(input)) === null)) {
+    if (!isDate(input) && (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)) {
       return this._typeIssueFactory(input, options);
     }
     if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {

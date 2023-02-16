@@ -38,7 +38,7 @@ npm install --save-prod doubter
 - [Deep partial](#deep-partial)
 - [Fallback value](#fallback-value)
 - [Branded types](#branded-types)
-- [Sub-shape at key](#sub-shape-at-key)
+- [Introspection](#introspection)
 - [Localization](#localization)
 - [Integrations](#integrations)
 - [Guarded functions](#guarded-functions)
@@ -216,7 +216,7 @@ const asyncShape = d.promise(d.number());
 You can check that the shape is async:
 
 ```ts
-asyncShape.async // ⮕ true
+asyncShape.isAsync // ⮕ true
 ```
 
 Async shapes don't support synchronous `parse` method, and would throw an error if it is called:
@@ -241,7 +241,7 @@ const objectShape = d.object({
 });
 // ⮕ Shape<{ foo: Promise<number> }>
 
-objectShape.async // ⮕ true
+objectShape.isAsync // ⮕ true
 ```
 
 # Parsing and trying
@@ -717,7 +717,7 @@ const syncShape1 = d.string().transform(
 );
 // ⮕ Shape<string>
 
-syncShape1.async // ⮕ false
+syncShape1.isAsync // ⮕ false
 
 syncShape1.parse('Jill');
 // ⮕ 'Hello, Jill'
@@ -733,7 +733,7 @@ const syncShape2 = d.string().transform(
 );
 // ⮕ Shape<string, Promise<string>>
 
-syncShape2.async // ⮕ false
+syncShape2.isAsync // ⮕ false
 
 syncShape2.parse('Jill');
 // ⮕ Promise<string>
@@ -751,7 +751,7 @@ const asyncShape1 = d.string().transformAsync(
 // ⮕ Shape<string>
 
 // 🟡 Notice that the shape is async
-asyncShape1.async // ⮕ true
+asyncShape1.isAsync // ⮕ true
 
 await asyncShape1.parseAsync('Jill');
 // ⮕ 'Hello, Jill'
@@ -770,7 +770,7 @@ const asyncShape2 = d.object({
 });
 // ⮕ Shape<{ foo: string }>
 
-asyncShape2.async // ⮕ true
+asyncShape2.isAsync // ⮕ true
 ```
 
 > **Note**&ensp;Composite shapes are async if they rely on a [`promise`](#promise) shape:
@@ -781,7 +781,7 @@ asyncShape2.async // ⮕ true
 > });
 > // ⮕ Shape<{ foo: Promise<string> }>
 > 
-> shape.async // ⮕ true
+> shape.isAsync // ⮕ true
 > ```
 
 # Parsing context
@@ -1143,7 +1143,114 @@ plain/unbranded data structures are no longer assignable to the inferred type of
 
 Note that branded types do not affect the runtime result of `parse`. It is a static-only construct.
 
-# Sub-shape at key
+# Introspection
+
+Doubter provides various features to introspect your shapes at runtime. Let's start by detecting input types supported
+by a particular shape.
+
+The supported input types of a shape can be accessed through a `inputTypes` property:
+
+```ts
+const shape = d.or([d.string(), d.boolean()]);
+// ⮕ Shape<string | boolean>
+
+shape.inputTypes;
+// ⮕ ['string', 'boolean']
+```
+
+To detect the type of the value use `Shape.typeOf`:
+
+```ts
+d.Shape.typeOf('Mars');
+// ⮕ 'string'
+```
+
+Types returned from `Shape.typeOf` are a superset of types returned from the `typeof` operator.
+
+<table>
+<tr><th><code>Shape.typeOf</code></th><th><code>typeof</code></th></tr>
+<tr><td><code>object</code></td><td rowspan="4"><code>object</code></td></tr>
+<tr><td><code>array</code></td></tr>
+<tr><td><code>date</code></td></tr>
+<tr><td><code>null</code></td></tr>
+<tr><td><code>function</code></td><td><code>function</code></td></tr>
+<tr><td><code>string</code></td><td><code>string</code></td></tr>
+<tr><td><code>symbol</code></td><td><code>symbol</code></td></tr>
+<tr><td><code>number</code></td><td><code>number</code></td></tr>
+<tr><td><code>bigint</code></td><td><code>bigint</code></td></tr>
+<tr><td><code>boolean</code></td><td><code>boolean</code></td></tr>
+<tr><td><code>undefined</code></td><td><code>undefined</code></td></tr>
+</table>
+
+`inputTypes` array can also contain two additional types `never` and `any`.
+
+## `never` value type
+
+The `never` type represents the type of values that never occur and tells that the shape would always raise a validation
+issue when parsing any input.
+
+```ts
+const neverShape = d.never();
+
+neverShape.inputTypes;
+// ⮕ ['never']
+
+neverShape.parse('Pluto');
+// ❌ ValidationError: type at /: Must not be used
+```
+
+`never` is erased in unions:
+
+```ts
+const shape1 = d.or([d.string(), d.never()]);
+
+shape1.inputType;
+// ⮕ ['string']
+```
+
+`never` absorbs other types in intersections:
+
+```ts
+const shape2 = d.and([d.string(), d.never()]);
+
+shape2.inputType;
+// ⮕ ['never']
+```
+
+Intersections of shapes that don't support any common types produce `never` type:
+
+```ts
+// This shape cannot be satisfied.
+const shape3 = d.and([d.string(), d.boolean()]);
+
+shape3.inputType;
+// ⮕ ['never']
+```
+
+## `any` value type
+
+`any` type emerges when type cannot be inferred at runtime. For example when [`d.any`](#any) or
+[`d.transform`](#transform) is used:
+
+```ts
+const shape1 = d.transfrorm(parseFloat);
+// ⮕ Shape<any>
+
+shape1.inputTypes;
+// ⮕ ['any']
+```
+
+`any` absorbs other types it coexists with in both unions and intersections:
+
+```ts
+const shape2 = d.or([d.string(), d.any()]);
+// ⮕ Shape<any>
+
+shape2.inputType;
+// ⮕ ['any']
+```
+
+## Nested shapes
 
 Object, array, union ond other shapes provide access to their nested shapes:
 
@@ -1154,12 +1261,14 @@ const objectShape = d.object({
 });
 // ⮕ Shape<{ name: string, age: number }>
 
-objectShape.shapes.name // ⮕ Shape<number>
+objectShape.shapes.name;
+// ⮕ Shape<number>
 
 const unionShape = d.or([d.string(), objectShape]);
 // ⮕ Shape<string | { name: string, age: number }>
 
-unionShape.shapes[1] // ⮕ objectShape
+unionShape.shapes[1];
+// ⮕ objectShape
 ```
 
 `at` method derives a sub-shape at the given key, and if there's no key `null` is returned:
@@ -1190,6 +1299,39 @@ shape.at('foo')
 shape.at('bar')
 // ⮕ null
 ```
+
+## Introspecting checks
+
+To introspect checks added to a shape, use `getCheck`:
+
+```ts
+const shape1 = d.number().min(10);
+// ⮕ Shape<number>
+
+shape1.getCheck('numberGreaterThanOrEqual')?.param;
+// ⮕ 10
+```
+
+The check-to-param mapping can be found in [Validation errors](#validation-errors) section.
+
+If you add a custom check, you can provide a `param` to enhance further introspection:
+
+```ts
+function includes(value: any): d.CheckCallback<any[]> {
+  return array => {
+    if (!array.includes(value)) {
+      return { message: `Must incude "${value}"` };
+    }
+  };
+}
+
+const shape2 = d.array().check(includes('Mars'), { param: 'Mars' });
+
+shape2.getCheck(includes)?.param;
+// ⮕ 'Mars'
+```
+
+More about adding and deleting checks in [Add, get and delete checks](#add-get-and-delete-checks) section.
 
 # Localization
 
@@ -1295,6 +1437,8 @@ For example, you can coerce input values to string type:
 
 ```ts
 const shape1 = d.string().coerce();
+
+shape1.isCoerced // ⮕ true
 
 shape1.parse([8080]);
 // ⮕ '8080'

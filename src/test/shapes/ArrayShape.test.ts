@@ -22,7 +22,7 @@ describe('ArrayShape', () => {
 
     expect(arrShape.shapes).toEqual([shape1]);
     expect(arrShape.restShape).toBe(restShape);
-    expect(arrShape['_getInputTypes']()).toEqual([TYPE_ARRAY]);
+    expect(arrShape.inputTypes).toEqual([TYPE_ARRAY]);
   });
 
   test('raises an issue if an input is not an unconstrained array', () => {
@@ -248,19 +248,19 @@ describe('ArrayShape', () => {
   test('allow any input types when coerced and unconstrained', () => {
     const arrShape = new ArrayShape(null, null).coerce();
 
-    expect(arrShape['_getInputTypes']()).toEqual([TYPE_ANY]);
+    expect(arrShape.inputTypes).toEqual([TYPE_ANY]);
   });
 
   test('allows only array-like types when tuple has two elements', () => {
     const arrShape = new ArrayShape([new StringShape(), new NumberShape()], null).coerce();
 
-    expect(arrShape['_getInputTypes']()).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
+    expect(arrShape.inputTypes).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
   });
 
   test('allows input types of a single tuple element', () => {
     const arrShape = new ArrayShape([new StringShape()], null).coerce();
 
-    expect(arrShape['_getInputTypes']()).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
+    expect(arrShape.inputTypes).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
   });
 
   test('does not coerce if a tuple has no elements', () => {
@@ -461,8 +461,8 @@ describe('ArrayShape', () => {
       const shape1 = new Shape();
       const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
 
-      shape1.async;
-      shape2.async;
+      shape1.isAsync;
+      shape2.isAsync;
 
       const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
