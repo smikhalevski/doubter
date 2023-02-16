@@ -4,7 +4,7 @@ import {
   createIssueFactory,
   getValueType,
   isArray,
-  isAsyncShapes,
+  isAsyncShape,
   isEqual,
   ok,
   ToArray,
@@ -61,7 +61,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   protected _requiresAsync(): boolean {
-    return isAsyncShapes(this.shapes);
+    return this.shapes.some(isAsyncShape);
   }
 
   protected _getInputTypes(): readonly ValueType[] {

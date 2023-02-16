@@ -6,7 +6,7 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isAsyncShapes,
+  isAsyncShape,
   isEqual,
   isIterable,
   ok,
@@ -172,7 +172,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   protected _requiresAsync(): boolean {
-    return (this.shapes !== null && isAsyncShapes(this.shapes)) || (this.restShape !== null && this.restShape.isAsync);
+    return this.shapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
   }
 
   protected _getInputTypes(): readonly ValueType[] {

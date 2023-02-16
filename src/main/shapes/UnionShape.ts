@@ -6,7 +6,7 @@ import {
   createIssueFactory,
   getValueType,
   isArray,
-  isAsyncShapes,
+  isAsyncShape,
   isObjectLike,
   ToArray,
   toDeepPartialShape,
@@ -88,7 +88,7 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected _requiresAsync(): boolean {
-    return isAsyncShapes(this.shapes);
+    return this.shapes.some(isAsyncShape);
   }
 
   protected _getInputTypes(): readonly ValueType[] {
