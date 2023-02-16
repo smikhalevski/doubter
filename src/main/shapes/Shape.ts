@@ -823,8 +823,9 @@ Object.defineProperties(Shape.prototype, {
  */
 export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> {
   /**
-   * `true` if the transformed shape would wait for the promise returned from the {@linkcode callback} to be fulfilled.
-   * `false` if the value that is synchronously returned from the {@linkcode callback} is used as an output.
+   * `true` if the promise returned from the {@linkcode callback} to be fulfilled before the transformation is
+   * completed, or `false` if the value that is synchronously returned from the {@linkcode callback} is used as a
+   * transformation output.
    */
   readonly isCallbackAsync: boolean;
 
