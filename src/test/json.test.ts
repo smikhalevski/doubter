@@ -1,13 +1,5 @@
 import * as d from '../main';
-import {
-  CODE_UNION,
-  TYPE_ARRAY,
-  TYPE_BOOLEAN,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../main/constants';
+import { CODE_UNION, MESSAGE_UNION } from '../main/constants';
 
 type Json = number | string | boolean | null | Json[] | { [key: string]: Json };
 
@@ -25,29 +17,12 @@ describe('JSON shape', () => {
 
     expect(jsonShape.try(value2)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_UNION,
-          message: 'Must conform the union of number,string,boolean,null,array,object',
-          input: value2,
-          path: [],
-          param: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: CODE_UNION, message: MESSAGE_UNION, input: value2, path: [], param: [], meta: undefined }],
     });
 
     expect(jsonShape.try(value3)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_UNION,
-          input: value3.aaa.bbb,
-          message: 'Must conform the union of number,string,boolean,null,array,object',
-          param: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
-          path: ['aaa', 'bbb'],
-        },
-      ],
+      issues: [{ code: CODE_UNION, input: value3.aaa.bbb, message: MESSAGE_UNION, param: [], path: ['aaa', 'bbb'] }],
     });
   });
 });

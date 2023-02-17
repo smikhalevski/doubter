@@ -11,7 +11,7 @@ import {
   UnionShape,
 } from '../../main';
 import { getDiscriminator } from '../../main/shapes/UnionShape';
-import { CODE_UNION, TYPE_NUMBER } from '../../main/constants';
+import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
 
 describe('UnionShape', () => {
   test('distributes buckets', () => {
@@ -79,11 +79,10 @@ describe('UnionShape', () => {
       ok: false,
       issues: [
         {
-          code: 'xxx',
-          path: [],
-        },
-        {
-          code: 'yyy',
+          code: CODE_UNION,
+          input: 'aaa',
+          message: MESSAGE_UNION,
+          param: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
           path: [],
         },
       ],
@@ -161,7 +160,7 @@ describe('UnionShape', () => {
       expect(orShape.parse(111)).toBe(111);
       expect(orShape.try(undefined)).toEqual({
         ok: false,
-        issues: [{ code: CODE_UNION, message: 'Must conform the union of number', param: [TYPE_NUMBER], path: [] }],
+        issues: [{ code: CODE_UNION, message: MESSAGE_UNION, param: [], path: [] }],
       });
     });
   });
@@ -238,8 +237,13 @@ describe('UnionShape', () => {
       await expect(orShape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
         issues: [
-          { code: 'xxx', path: [] },
-          { code: 'yyy', path: [] },
+          {
+            code: 'union',
+            input: 'aaa',
+            message: 'Must conform the union',
+            param: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+            path: [],
+          },
         ],
       });
     });
