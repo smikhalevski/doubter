@@ -143,9 +143,9 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The decorator function.
    */
   decorateAsync(
-    fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R['input']> | R['input']> : null, T>,
+    fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R['input']> | R['input'], never> : null, T>,
     options: ParseOptions = this._parseOptions
-  ): InferDecorator<A, Shape<Promise<R extends AnyShape ? R['output'] : any>>, T> {
+  ): InferDecorator<A, Shape<never, Promise<R extends AnyShape ? R['output'] : any>>, T> {
     const { argsShape, returnShape, thisShape } = this;
 
     return function (...args) {

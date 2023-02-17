@@ -11,7 +11,7 @@ No-hassle runtime validation and transformation library.
 - Sync and async validation and transformation flows;
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
-- [Just 10 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
 🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
 
