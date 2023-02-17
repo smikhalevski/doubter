@@ -65,7 +65,7 @@ export class LazyShape<S extends AnyShape>
     this._getInputTypes = returnArray;
 
     try {
-      return this.shape['_getInputTypes']();
+      return this.shape.inputTypes;
     } finally {
       this._getInputTypes = _getInputTypes;
     }

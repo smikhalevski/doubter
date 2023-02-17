@@ -1214,13 +1214,13 @@ export class ExcludeShape<S extends AnyShape, T>
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
-    const { excludedValue, _applyChecks } = this;
+    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
 
     let issues;
     let output = input;
 
     if (isEqual(input, excludedValue)) {
-      return this._typeIssueFactory(input, options);
+      return _typeIssueFactory(input, options);
     }
 
     const result = this.shape['_apply'](input, options);
@@ -1232,7 +1232,7 @@ export class ExcludeShape<S extends AnyShape, T>
       output = result.value;
 
       if (isEqual(output, excludedValue)) {
-        return this._typeIssueFactory(input, options);
+        return _typeIssueFactory(input, options);
       }
     }
 
@@ -1243,10 +1243,10 @@ export class ExcludeShape<S extends AnyShape, T>
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
-    const { excludedValue, _applyChecks } = this;
+    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
 
     if (isEqual(input, excludedValue)) {
-      return Promise.resolve(this._typeIssueFactory(input, options));
+      return Promise.resolve(_typeIssueFactory(input, options));
     }
 
     return this.shape['_applyAsync'](input, options).then(result => {
@@ -1260,7 +1260,7 @@ export class ExcludeShape<S extends AnyShape, T>
         output = result.value;
 
         if (isEqual(output, excludedValue)) {
-          return this._typeIssueFactory(input, options);
+          return _typeIssueFactory(input, options);
         }
       }
 
