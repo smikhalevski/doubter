@@ -1,37 +1,42 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
 
+// Arguments
+
+expectType<() => any>(d.fn().output);
+
+expectType<(arg: string) => any>(d.fn([d.string()]).output);
+
+expectType<(arg1: string, arg2: number) => any>(d.fn([d.string(), d.number()]).output);
+
+expectType<(arg: string) => any>(d.fn(d.tuple([d.string()])).output);
+
+expectType<(arg1: string, arg2: number) => any>(d.fn(d.tuple([d.string(), d.number()])).output);
+
+expectType<(...args: string[]) => any>(d.fn(d.array(d.string())).output);
+
+expectType<(...args: string[] | [string, number]) => any>(
+  d.fn(d.or([d.array(d.string()), d.tuple([d.string(), d.number()])])).output
+);
+
+expectType<(arg: number) => any>(d.fn([d.string().transform(parseFloat)]).input);
+
+expectType<(arg: string) => any>(d.fn([d.string().transform(parseFloat)]).output);
+
+// Return
+
 expectType<() => string>(d.fn().return(d.string()).output);
 
-expectType<(arg: string) => string>(d.fn([d.string()]).return(d.string()).output);
+expectType<() => Promise<string>>(d.fn().return(d.promise(d.string())).output);
 
-expectType<(arg1: string, arg2: number) => string>(d.fn([d.string(), d.number()]).return(d.string()).output);
+expectType<() => string>(d.fn().return(d.string().transform(parseFloat)).input);
 
-expectType<(...args: any[]) => string>(d.fn(d.array()).return(d.string()).output);
+expectType<() => number>(d.fn().return(d.string().transform(parseFloat)).output);
 
-expectType<(...args: number[]) => string>(d.fn(d.array(d.number())).return(d.string()).output);
+// This
 
-expectType<(arg1: string, arg2: number) => string>(d.fn(d.tuple([d.string(), d.number()])).return(d.string()).output);
+expectType<(this: string) => any>(d.fn().this(d.string()).output);
 
-expectType<() => string>(
-  d
-    .fn()
-    .return(d.string())
-    .parse(() => '')
-);
+expectType<(this: number) => any>(d.fn().this(d.string().transform(parseFloat)).input);
 
-expectType<() => Promise<string>>(
-  d
-    .fn()
-    .return(d.string())
-    .decorateAsync(() => '')
-);
-
-expectType<() => Promise<string>>(
-  d
-    .fn()
-    .return(d.string())
-    .decorateAsync(() => Promise.resolve(''))
-);
-
-d.fn().this(d.object({ foo: d.string() }));
+expectType<(this: string) => any>(d.fn().this(d.string().transform(parseFloat)).output);

@@ -8,6 +8,24 @@ expectType<{ aaa: string; bbb: number }>(
   }).output
 );
 
+expectType<{ aaa: string }>(
+  d
+    .object({
+      aaa: d.string(),
+      bbb: d.number(),
+    })
+    .pick(['aaa']).output
+);
+
+expectType<{ bbb: number }>(
+  d
+    .object({
+      aaa: d.string(),
+      bbb: d.number(),
+    })
+    .omit(['aaa']).output
+);
+
 expectType<{ aaa?: string; bbb?: number }>(
   d
     .object({
