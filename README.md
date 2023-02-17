@@ -401,7 +401,7 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
 | `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
 | `instance` | [`instanceOf(Class)`](#instanceof) | The class constructor `Class` |
-| `intersection` | [`d.and(…)`](#intersection) | — |
+| `intersection` | [`d.and(…)`](#intersection) | An array of root cause issues |
 | `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
 | `predicate` | [`shape.refine(…)`](#refinements) | The callback passed to `refine`  |
 | `numberInteger` | [`d.integer()`](#integer) | — |
