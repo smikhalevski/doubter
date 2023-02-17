@@ -2071,15 +2071,15 @@ shape.parse('{"foo":42}');
 With `lazy` you can declare recursive shapes. To showcase how to use it, let's create a shape that validates JSON data:
 
 ```ts
-type Json =
+type JSON =
   | number
   | string
   | boolean
   | null
-  | Json[]
-  | { [key: string]: Json };
+  | JSON[]
+  | { [key: string]: JSON };
 
-const jsonShape: d.Shape<Json> = d.lazy(() =>
+const jsonShape: d.Shape<JSON> = d.lazy(() =>
   d.or([
     d.number(),
     d.string(),
@@ -2097,7 +2097,7 @@ jsonShape.parse({ tag: Symbol() });
 // ❌ ValidationError: intersection at /tag: Must conform the intersection
 ```
 
-Note that the `Json` type is defined explicitly, because it cannot be inferred from the shape which references itself
+Note that the `JSON` type is defined explicitly, because it cannot be inferred from the shape which references itself
 directly in its own initializer.
 
 > **Warning**&ensp;While Doubter supports cyclic types, it doesn't support cyclic data structures. The latter would
