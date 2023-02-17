@@ -22,6 +22,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
 > {
   protected _typeIssueFactory;
   protected _bare = false;
+  protected _parseOptions: ParseOptions | undefined;
 
   /**
    * Creates a new {@linkcode FunctionShape} instance.
@@ -92,14 +93,21 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     return shape;
   }
 
+  options(options: ParseOptions): this {
+    const shape = cloneObject(this);
+    shape._parseOptions = options;
+    return shape;
+  }
+
   /**
    * Creates a decorator function that parses arguments and passes them to `fn`, and after `fn` synchronously returns
    * the result, the decorator parses it as well and returns.
    *
    * @param fn The underlying function that would receive a parsed arguments.
+   * @param options Parsing options used by the decorator.
    * @returns The decorator function.
    */
-  decorate(fn: InferFunction<A, R, T>): InferDecorator<A, R, T> {
+  decorate(fn: InferFunction<A, R, T>, options = this._parseOptions): InferDecorator<A, R, T> {
     const { argsShape, returnShape, thisShape } = this;
 
     if (this.isDecoratorAsync) {
@@ -107,9 +115,12 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     }
 
     return function (...args) {
-      const result = fn.apply(thisShape !== null ? thisShape.parse(this) : this, argsShape.parse(args));
+      const result = fn.apply(
+        thisShape !== null ? thisShape.parse(this, options) : this,
+        argsShape.parse(args, options)
+      );
 
-      return returnShape !== null ? returnShape.parse(result) : result;
+      return returnShape !== null ? returnShape.parse(result, options) : result;
     };
   }
 
@@ -121,10 +132,12 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * {@link Shape.isAsync async}.
    *
    * @param fn The underlying function that would receive a parsed arguments.
+   * @param options Parsing options used by the decorator.
    * @returns The decorator function.
    */
   decorateAsync(
-    fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R['input']> | R['input']> : null, T>
+    fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R['input']> | R['input']> : null, T>,
+    options = this._parseOptions
   ): InferDecorator<A, Shape<Promise<R extends AnyShape ? R['output'] : any>>, T> {
     const { argsShape, returnShape, thisShape } = this;
 
@@ -134,13 +147,17 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
       if (thisShape !== null) {
         promise = thisShape
           .parseAsync(this)
-          .then(outputThis => argsShape.parseAsync(args).then(outputArgs => fn.apply(outputThis, outputArgs)));
+          .then(outputThis => argsShape.parseAsync(args, options).then(outputArgs => fn.apply(outputThis, outputArgs)));
       } else {
-        promise = argsShape.parseAsync(args).then(outputArgs => fn.apply(this, outputArgs));
+        promise = argsShape.parseAsync(args, options).then(outputArgs => fn.apply(this, outputArgs));
       }
+
       if (returnShape !== null) {
-        promise = promise.then(returnShape.parseAsync);
+        promise = promise.then(
+          options !== undefined ? result => returnShape.parseAsync(result, options) : returnShape.parseAsync
+        );
       }
+
       return promise;
     };
   }
@@ -158,7 +175,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
       return this._typeIssueFactory(input, options);
     }
     if (_applyChecks === null || (issues = _applyChecks(input, null, options)) === null) {
-      return this._bare ? ok(this._decorate(input)) : null;
+      return this._bare ? null : ok(this._decorate(input));
     }
     return issues;
   }
