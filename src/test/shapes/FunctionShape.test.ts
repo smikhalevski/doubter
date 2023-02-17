@@ -1,4 +1,13 @@
-import { AnyShape, ArrayShape, FunctionShape, NumberShape, ObjectShape, Shape, StringShape } from '../../main';
+import {
+  AnyShape,
+  ArrayShape,
+  FunctionShape,
+  NumberShape,
+  ObjectShape,
+  Shape,
+  StringShape,
+  ValidationError,
+} from '../../main';
 import {
   CODE_TYPE,
   MESSAGE_NUMBER_TYPE,
@@ -89,61 +98,123 @@ describe('FunctionShape', () => {
       expect(parseSpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
     });
 
-    test('raises an issue if this is invalid', done => {
+    test('raises an issue if this is invalid', () => {
       const shape = new FunctionShape(
         new ArrayShape(null, null),
         null,
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      try {
-        shape.decorate(() => undefined).call({ key1: 111 } as any);
-      } catch (error: any) {
-        expect(error.issues).toEqual([
+      expect(() => shape.decorate(() => undefined).call({ key1: 111 } as any)).toThrow(
+        new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['this', 'key1'] },
-        ]);
-        done();
-      }
+        ])
+      );
     });
 
-    test('raises an issue if an argument is invalid', done => {
+    test('raises an issue if an argument is invalid', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      try {
-        shape.decorate(() => undefined).call(undefined, 111, 'aaa');
-      } catch (error: any) {
-        expect(error.issues).toEqual([
+      expect(() => shape.decorate(() => undefined).call(undefined, 111, 'aaa')).toThrow(
+        new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
-        ]);
-        done();
-      }
+        ])
+      );
     });
 
-    test('raises issues if arguments are invalid in verbose mode', done => {
+    test('raises issues if arguments are invalid in verbose mode', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      try {
-        shape.decorate(() => undefined, { verbose: true }).call(undefined, 111, 'aaa');
-      } catch (error: any) {
-        expect(error.issues).toEqual([
+      expect(() => shape.decorate(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
+        new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
           { code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, input: 'aaa', path: ['arguments', 1] },
-        ]);
-        done();
-      }
+        ])
+      );
     });
 
-    test('raises an issue if a return value is invalid', done => {
+    test('raises an issue if a return value is invalid', () => {
       const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
 
-      try {
-        shape.decorate(() => 111 as any)();
-      } catch (error: any) {
-        expect(error.issues).toEqual([
+      expect(() => shape.decorate(() => 111 as any)()).toThrow(
+        new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['return'] },
-        ]);
-        done();
-      }
+        ])
+      );
+    });
+  });
+
+  describe('decorateAsync', () => {
+    test('decorates a function with 0 arguments', async () => {
+      const fnMock = jest.fn();
+      const shape = new FunctionShape(noArgsShape, null, null);
+
+      await shape.decorateAsync(fnMock)();
+
+      expect(fnMock).toHaveBeenCalledTimes(1);
+      expect(fnMock).toHaveBeenNthCalledWith(1);
+    });
+
+    test('decorates a function with 1 argument', async () => {
+      const fnMock = jest.fn();
+
+      const argShape = new Shape();
+      const shape = new FunctionShape(new ArrayShape([argShape], null), null, null);
+
+      const parseSpy = jest.spyOn<Shape, any>(argShape, '_apply');
+
+      await shape.decorateAsync(fnMock)('aaa');
+
+      expect(fnMock).toHaveBeenCalledTimes(1);
+      expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
+
+      expect(parseSpy).toHaveBeenCalledTimes(1);
+      expect(parseSpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+    });
+
+    test('raises an issue if this is invalid', async () => {
+      const shape = new FunctionShape(
+        new ArrayShape(null, null),
+        null,
+        new ObjectShape({ key1: new StringShape() }, null)
+      );
+
+      await expect(shape.decorateAsync(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
+        new ValidationError([
+          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['this', 'key1'] },
+        ])
+      );
+    });
+
+    test('raises an issue if an argument is invalid', async () => {
+      const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
+
+      await expect(shape.decorateAsync(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
+        new ValidationError([
+          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
+        ])
+      );
+    });
+
+    test('raises issues if arguments are invalid in verbose mode', async () => {
+      const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
+
+      await expect(shape.decorateAsync(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).rejects.toEqual(
+        new ValidationError([
+          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
+          { code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, input: 'aaa', path: ['arguments', 1] },
+        ])
+      );
+    });
+
+    test('raises an issue if a return value is invalid', async () => {
+      const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
+
+      await expect(shape.decorateAsync(() => 111 as any)()).rejects.toEqual(
+        new ValidationError([
+          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['return'] },
+        ])
+      );
     });
   });
 });
