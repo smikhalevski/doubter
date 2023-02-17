@@ -6,7 +6,7 @@ import { ConstraintOptions, Message } from '../shared-types';
  *
  * @param options The constraint options or an issue message.
  */
-export function function_(options?: ConstraintOptions | Message): FunctionShape<Shape<[]>, null, null>;
+function function_(options?: ConstraintOptions | Message): FunctionShape<ArrayShape<[], null>, null, null>;
 
 /**
  * Creates a shape of a function with arguments parsed by corresponding shapes in the `argShapes` array.
@@ -15,7 +15,7 @@ export function function_(options?: ConstraintOptions | Message): FunctionShape<
  * @param options The constraint options or an issue message.
  * @template A The array of argument shapes.
  */
-export function function_<A extends readonly [AnyShape, ...AnyShape[]] | []>(
+function function_<A extends readonly [AnyShape, ...AnyShape[]] | []>(
   argShapes: A,
   options?: ConstraintOptions | Message
 ): FunctionShape<ArrayShape<A, null>, null, null>;
@@ -27,12 +27,12 @@ export function function_<A extends readonly [AnyShape, ...AnyShape[]] | []>(
  * @param options The constraint options or an issue message.
  * @template A The shape of the array of arguments.
  */
-export function function_<I extends readonly any[], O extends readonly any[], A extends Shape<I, O>>(
+function function_<I extends readonly any[], O extends readonly any[], A extends Shape<I, O>>(
   argsShape: A,
   options?: ConstraintOptions | Message
 ): FunctionShape<A, null, null>;
 
-export function function_(
+function function_(
   argShapes?: Shape | AnyShape[] | ConstraintOptions | Message,
   options?: ConstraintOptions | Message
 ) {
@@ -41,7 +41,7 @@ export function function_(
   }
   if (!(argShapes instanceof Shape)) {
     options = argShapes;
-    argShapes = new Shape();
+    argShapes = new ArrayShape([], null);
   }
   return new FunctionShape(argShapes, null, null, options);
 }

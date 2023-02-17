@@ -1,6 +1,10 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
 
+// Alias
+
+expectType<() => any>(d.function().output);
+
 // Arguments
 
 expectType<() => any>(d.fn().output);
@@ -12,6 +16,8 @@ expectType<(arg1: string, arg2: number) => any>(d.fn([d.string(), d.number()]).o
 expectType<(arg: string) => any>(d.fn(d.tuple([d.string()])).output);
 
 expectType<(arg1: string, arg2: number) => any>(d.fn(d.tuple([d.string(), d.number()])).output);
+
+expectType<(...args: any[]) => any>(d.fn(d.array()).output);
 
 expectType<(...args: string[]) => any>(d.fn(d.array(d.string())).output);
 
