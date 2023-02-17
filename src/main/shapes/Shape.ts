@@ -629,18 +629,21 @@ export interface Shape<I, O> {
 
 Object.defineProperties(Shape.prototype, {
   input: {
+    configurable: true,
     get() {
       throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
     },
   },
 
   output: {
+    configurable: true,
     get() {
       throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
     },
   },
 
   inputTypes: {
+    configurable: true,
     get(this: Shape) {
       let inputTypes = unique(this._getInputTypes()).slice(0);
 
@@ -657,13 +660,14 @@ Object.defineProperties(Shape.prototype, {
 
       Object.freeze(inputTypes);
 
-      Object.defineProperty(this, 'inputTypes', { value: inputTypes });
+      Object.defineProperty(this, 'inputTypes', { writable: true, value: inputTypes });
 
       return inputTypes;
     },
   },
 
   isAsync: {
+    configurable: true,
     get(this: Shape) {
       const async = this._isAsync();
       const _applyAsync = Shape.prototype['_applyAsync'];
@@ -676,13 +680,14 @@ Object.defineProperties(Shape.prototype, {
         this._applyAsync = _applyAsync;
       }
 
-      Object.defineProperty(this, 'isAsync', { value: async });
+      Object.defineProperty(this, 'isAsync', { writable: true, value: async });
 
       return async;
     },
   },
 
   try: {
+    configurable: true,
     get(this: Shape) {
       this.isAsync;
 
@@ -698,13 +703,14 @@ Object.defineProperties(Shape.prototype, {
         return ok(result.value);
       };
 
-      Object.defineProperty(this, 'try', { value: cb });
+      Object.defineProperty(this, 'try', { writable: true, value: cb });
 
       return cb;
     },
   },
 
   tryAsync: {
+    configurable: true,
     get(this: Shape) {
       this.isAsync;
 
@@ -720,13 +726,14 @@ Object.defineProperties(Shape.prototype, {
         });
       };
 
-      Object.defineProperty(this, 'tryAsync', { value: cb });
+      Object.defineProperty(this, 'tryAsync', { writable: true, value: cb });
 
       return cb;
     },
   },
 
   parse: {
+    configurable: true,
     get(this: Shape) {
       this.isAsync;
 
@@ -742,13 +749,14 @@ Object.defineProperties(Shape.prototype, {
         return result.value;
       };
 
-      Object.defineProperty(this, 'parse', { value: cb });
+      Object.defineProperty(this, 'parse', { writable: true, value: cb });
 
       return cb;
     },
   },
 
   parseAsync: {
+    configurable: true,
     get(this: Shape) {
       this.isAsync;
 
@@ -764,13 +772,14 @@ Object.defineProperties(Shape.prototype, {
         });
       };
 
-      Object.defineProperty(this, 'parseAsync', { value: cb });
+      Object.defineProperty(this, 'parseAsync', { writable: true, value: cb });
 
       return cb;
     },
   },
 
   parseOrDefault: {
+    configurable: true,
     get(this: Shape) {
       this.isAsync;
 
@@ -786,13 +795,14 @@ Object.defineProperties(Shape.prototype, {
         return result.value;
       };
 
-      Object.defineProperty(this, 'parseOrDefault', { value: cb });
+      Object.defineProperty(this, 'parseOrDefault', { writable: true, value: cb });
 
       return cb;
     },
   },
 
   parseOrDefaultAsync: {
+    configurable: true,
     get(this: Shape) {
       this.isAsync;
 
@@ -808,7 +818,7 @@ Object.defineProperties(Shape.prototype, {
         });
       };
 
-      Object.defineProperty(this, 'parseOrDefaultAsync', { value: cb });
+      Object.defineProperty(this, 'parseOrDefaultAsync', { writable: true, value: cb });
 
       return cb;
     },
