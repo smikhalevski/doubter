@@ -37,7 +37,7 @@ import {
   TYPE_NEVER,
 } from '../constants';
 
-const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
+export const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
 
 /**
  * An arbitrary shape.

@@ -1,5 +1,12 @@
-import { AnyShape, ArrayShape, FunctionShape, Shape } from '../../main';
-import { TYPE_FUNCTION } from '../../main/constants';
+import { AnyShape, ArrayShape, FunctionShape, NumberShape, ObjectShape, Shape, StringShape } from '../../main';
+import {
+  CODE_TYPE,
+  MESSAGE_NUMBER_TYPE,
+  MESSAGE_STRING_TYPE,
+  TYPE_FUNCTION,
+  TYPE_NUMBER,
+  TYPE_STRING,
+} from '../../main/constants';
 
 describe('FunctionShape', () => {
   let noArgsShape: AnyShape;
@@ -80,6 +87,63 @@ describe('FunctionShape', () => {
 
       expect(parseSpy).toHaveBeenCalledTimes(1);
       expect(parseSpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+    });
+
+    test('raises an issue if this is invalid', done => {
+      const shape = new FunctionShape(
+        new ArrayShape(null, null),
+        null,
+        new ObjectShape({ key1: new StringShape() }, null)
+      );
+
+      try {
+        shape.decorate(() => undefined).call({ key1: 111 } as any);
+      } catch (error: any) {
+        expect(error.issues).toEqual([
+          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['this', 'key1'] },
+        ]);
+        done();
+      }
+    });
+
+    test('raises an issue if an argument is invalid', done => {
+      const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
+
+      try {
+        shape.decorate(() => undefined).call(undefined, 111, 'aaa');
+      } catch (error: any) {
+        expect(error.issues).toEqual([
+          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
+        ]);
+        done();
+      }
+    });
+
+    test('raises issues if arguments are invalid in verbose mode', done => {
+      const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
+
+      try {
+        shape.decorate(() => undefined, { verbose: true }).call(undefined, 111, 'aaa');
+      } catch (error: any) {
+        expect(error.issues).toEqual([
+          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
+          { code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, input: 'aaa', path: ['arguments', 1] },
+        ]);
+        done();
+      }
+    });
+
+    test('raises an issue if a return value is invalid', done => {
+      const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
+
+      try {
+        shape.decorate(() => 111 as any)();
+      } catch (error: any) {
+        expect(error.issues).toEqual([
+          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['return'] },
+        ]);
+        done();
+      }
     });
   });
 });
