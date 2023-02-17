@@ -416,28 +416,10 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `stringMinLength` | [`d.string().min(n)`](#string) | The minimum string length `n` |
 | `stringMaxLength` | [`d.string().max(n)`](#string) | The maximum string length `n` |
 | `stringRegex` | [`d.string().regex(re)`](#string) | The regular expression `re` |
-| `type` | All shapes | The expected input value type <a href="#value-types"><sup>✱</sup></a> |
+| `type` | All shapes | The expected [input value type](#introspection) |
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
-| `union` | [`d.or(…)`](#union) | The array of expected input value types <a href="#value-types"><sup>✱</sup></a> |
+| `union` | [`d.or(…)`](#union) | The object with [`inputTypes`](#introspection) and `issuesPerShape` |
 | `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
-
-<a href="#value-types" name="value-types"><sup>✱</sup></a> The list of known value types:
-
-- `array`
-- `bigint`
-- `boolean`
-- `date`
-- `function`
-- `object`
-- `map`
-- `never`
-- `null`
-- `number`
-- `promise`
-- `set`
-- `string`
-- `symbol`
-- `undefined`
 
 # Checks
 
