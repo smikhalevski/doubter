@@ -17,6 +17,10 @@ expectType<(arg: string) => any>(d.fn(d.tuple([d.string()])).output);
 
 expectType<(arg1: string, arg2: number) => any>(d.fn(d.tuple([d.string(), d.number()])).output);
 
+expectType<(arg1: string, arg2: number, ...args: boolean[]) => any>(
+  d.fn(d.tuple([d.string(), d.number()]).rest(d.boolean())).output
+);
+
 expectType<(...args: any[]) => any>(d.fn(d.array()).output);
 
 expectType<(...args: string[]) => any>(d.fn(d.array(d.string())).output);
@@ -24,6 +28,10 @@ expectType<(...args: string[]) => any>(d.fn(d.array(d.string())).output);
 expectType<(...args: string[] | [string, number]) => any>(
   d.fn(d.or([d.array(d.string()), d.tuple([d.string(), d.number()])])).output
 );
+
+expectType<(arg: string) => any>(d.fn([d.string().transform(parseFloat)]).output);
+
+expectType<(arg: number) => any>(d.fn([d.string().transform(parseFloat)]).input);
 
 expectType<(arg: number) => any>(d.fn([d.string().transform(parseFloat)]).input);
 

@@ -1644,7 +1644,7 @@ describe(
     });
 
     test('doubter', measure => {
-      const fn = doubter.fn([doubter.number(), doubter.number()]).decorate((a, b) => a + b);
+      const fn = doubter.fn([doubter.number(), doubter.number()]).delegate((a, b) => a + b);
 
       measure(() => {
         fn(1, 2);

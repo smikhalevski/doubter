@@ -1,7 +1,7 @@
 import { AnyShape, ApplyResult, defaultParseOptions, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { cloneObject, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
-import { CODE_TYPE, ERROR_ASYNC_DECORATOR, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
+import { CODE_TYPE, ERROR_ASYNC_DELEGATOR, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
 import { ValidationError } from '../ValidationError';
 
 // prettier-ignore
@@ -9,7 +9,7 @@ export type InferFunction<A extends Shape, R extends AnyShape | null, T extends 
   (this: T extends AnyShape ? T['output'] : any, ...args: A['output']) => R extends AnyShape ? R['input'] : any;
 
 // prettier-ignore
-export type InferDecorator<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
+export type InferDelegator<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
   (this: T extends AnyShape ? T['input'] : any, ...args: A['input']) => R extends AnyShape ? R['output'] : any;
 
 /**
@@ -19,7 +19,7 @@ export type InferDecorator<A extends Shape, R extends AnyShape | null, T extends
  */
 export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> extends Shape<
   InferFunction<A, R, T>,
-  InferDecorator<A, R, T>
+  InferDelegator<A, R, T>
 > {
   protected _typeIssueFactory;
   protected _bare = false;
@@ -57,7 +57,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, otherwise returns
    * `false`.
    */
-  get isDecoratorAsync(): boolean {
+  get isDelegatorAsync(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
   }
 
@@ -84,7 +84,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Prevent input functions from being decorated during parsing.
+   * Prevent input functions from being delegated during parsing.
    *
    * @returns The new function shape.
    */
@@ -95,7 +95,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Set options that are used by the decorator to parse arguments, `this` and return values.
+   * Set options that are used by the delegator to parse arguments, `this` and return values.
    *
    * @param options Parsing options.
    * @returns The new function shape.
@@ -107,18 +107,18 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Creates a decorator function that parses arguments and passes them to `fn`, and after `fn` synchronously returns
-   * the result, the decorator parses it as well and returns.
+   * Creates a delegator function that parses arguments and passes them to `fn`, and after `fn` synchronously returns
+   * the result, the delegator parses it as well and returns.
    *
    * @param fn The underlying function that would receive a parsed arguments.
-   * @param options Parsing options used by the decorator. By default, options set via {@linkcode options} are used.
-   * @returns The decorator function.
+   * @param options Parsing options used by the delegator. By default, options set via {@linkcode options} are used.
+   * @returns The delegator function.
    */
-  decorate(fn: InferFunction<A, R, T>, options: ParseOptions = this._parseOptions): InferDecorator<A, R, T> {
+  delegate(fn: InferFunction<A, R, T>, options: ParseOptions = this._parseOptions): InferDelegator<A, R, T> {
     const { argsShape, returnShape, thisShape } = this;
 
-    if (this.isDecoratorAsync) {
-      throw new Error(ERROR_ASYNC_DECORATOR);
+    if (this.isDelegatorAsync) {
+      throw new Error(ERROR_ASYNC_DELEGATOR);
     }
 
     return function (...args) {
@@ -132,20 +132,20 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Creates a decorator function that parses arguments and passes them to `fn`, and after `fn` asynchronously returns
-   * the result, the decorator parses it as well and returns.
+   * Creates a delegator function that parses arguments and passes them to `fn`, and after `fn` asynchronously returns
+   * the result, the delegator parses it as well and returns.
    *
-   * Use this method if {@link isDecoratorAsync some shapes that describe the function signature} are
+   * Use this method if {@link isDelegatorAsync some shapes that describe the function signature} are
    * {@link Shape.isAsync async}.
    *
    * @param fn The underlying function that would receive a parsed arguments.
-   * @param options Parsing options used by the decorator. By default, options set via {@linkcode options} are used.
-   * @returns The decorator function.
+   * @param options Parsing options used by the delegator. By default, options set via {@linkcode options} are used.
+   * @returns The delegator function.
    */
-  decorateAsync(
+  delegateAsync(
     fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R['input']> | R['input'], never> : null, T>,
     options: ParseOptions = this._parseOptions
-  ): InferDecorator<A, Shape<never, Promise<R extends AnyShape ? R['output'] : any>>, T> {
+  ): InferDelegator<A, Shape<never, Promise<R extends AnyShape ? R['output'] : any>>, T> {
     const { argsShape, returnShape, thisShape } = this;
 
     return function (...args) {
@@ -176,7 +176,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     return [TYPE_FUNCTION];
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<InferDecorator<A, R, T>> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<InferDelegator<A, R, T>> {
     const { _applyChecks } = this;
 
     let issues = null;
@@ -185,15 +185,15 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
       return this._typeIssueFactory(input, options);
     }
     if (_applyChecks === null || (issues = _applyChecks(input, null, options)) === null) {
-      return this._bare ? null : ok(this._decorate(input));
+      return this._bare ? null : ok(this._delegate(input));
     }
     return issues;
   }
 
   // noinspection InfiniteRecursionJS
-  private _decorate(fn: InferFunction<A, R, T>): InferDecorator<A, R, T> {
-    this._decorate = this.isDecoratorAsync ? this.decorateAsync : this.decorate;
-    return this._decorate(fn);
+  private _delegate(fn: InferFunction<A, R, T>): InferDelegator<A, R, T> {
+    this._delegate = this.isDelegatorAsync ? this.delegateAsync : this.delegate;
+    return this._delegate(fn);
   }
 }
 

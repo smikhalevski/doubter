@@ -56,32 +56,32 @@ describe('FunctionShape', () => {
     expect(shape2.thisShape).toBe(thisShape);
   });
 
-  test('decorator is async if any of the arguments is async', () => {
+  test('delegator is async if any of the arguments is async', () => {
     const argsShape = new ArrayShape([asyncShape], null);
 
-    expect(new FunctionShape(argsShape, null, null).isDecoratorAsync).toBe(true);
+    expect(new FunctionShape(argsShape, null, null).isDelegatorAsync).toBe(true);
   });
 
-  test('decorator is async if return shape is async', () => {
-    expect(new FunctionShape(noArgsShape, asyncShape, null).isDecoratorAsync).toBe(true);
+  test('delegator is async if return shape is async', () => {
+    expect(new FunctionShape(noArgsShape, asyncShape, null).isDelegatorAsync).toBe(true);
   });
 
-  test('decorator is async if this shape is async', () => {
-    expect(new FunctionShape(noArgsShape, null, asyncShape).isDecoratorAsync).toBe(true);
+  test('delegator is async if this shape is async', () => {
+    expect(new FunctionShape(noArgsShape, null, asyncShape).isDelegatorAsync).toBe(true);
   });
 
-  describe('decorate', () => {
-    test('decorates a function with 0 arguments', () => {
+  describe('delegate', () => {
+    test('delegates a function with 0 arguments', () => {
       const fnMock = jest.fn();
       const shape = new FunctionShape(noArgsShape, null, null);
 
-      shape.decorate(fnMock)();
+      shape.delegate(fnMock)();
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1);
     });
 
-    test('decorates a function with 1 argument', () => {
+    test('delegates a function with 1 argument', () => {
       const fnMock = jest.fn();
 
       const argShape = new Shape();
@@ -89,7 +89,7 @@ describe('FunctionShape', () => {
 
       const parseSpy = jest.spyOn<Shape, any>(argShape, '_apply');
 
-      shape.decorate(fnMock)('aaa');
+      shape.delegate(fnMock)('aaa');
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
@@ -105,7 +105,7 @@ describe('FunctionShape', () => {
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      expect(() => shape.decorate(() => undefined).call({ key1: 111 } as any)).toThrow(
+      expect(() => shape.delegate(() => undefined).call({ key1: 111 } as any)).toThrow(
         new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['this', 'key1'] },
         ])
@@ -115,7 +115,7 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.decorate(() => undefined).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.delegate(() => undefined).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
         ])
@@ -125,7 +125,7 @@ describe('FunctionShape', () => {
     test('raises issues if arguments are invalid in verbose mode', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.decorate(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.delegate(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
           { code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, input: 'aaa', path: ['arguments', 1] },
@@ -136,7 +136,7 @@ describe('FunctionShape', () => {
     test('raises an issue if a return value is invalid', () => {
       const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
 
-      expect(() => shape.decorate(() => 111 as any)()).toThrow(
+      expect(() => shape.delegate(() => 111 as any)()).toThrow(
         new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['return'] },
         ])
@@ -144,18 +144,18 @@ describe('FunctionShape', () => {
     });
   });
 
-  describe('decorateAsync', () => {
-    test('decorates a function with 0 arguments', async () => {
+  describe('delegateAsync', () => {
+    test('delegates a function with 0 arguments', async () => {
       const fnMock = jest.fn();
       const shape = new FunctionShape(noArgsShape, null, null);
 
-      await shape.decorateAsync(fnMock)();
+      await shape.delegateAsync(fnMock)();
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1);
     });
 
-    test('decorates a function with 1 argument', async () => {
+    test('delegates a function with 1 argument', async () => {
       const fnMock = jest.fn();
 
       const argShape = new Shape();
@@ -163,7 +163,7 @@ describe('FunctionShape', () => {
 
       const parseSpy = jest.spyOn<Shape, any>(argShape, '_apply');
 
-      await shape.decorateAsync(fnMock)('aaa');
+      await shape.delegateAsync(fnMock)('aaa');
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
@@ -179,7 +179,7 @@ describe('FunctionShape', () => {
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      await expect(shape.decorateAsync(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
+      await expect(shape.delegateAsync(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['this', 'key1'] },
         ])
@@ -189,7 +189,7 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(shape.decorateAsync(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
+      await expect(shape.delegateAsync(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
         ])
@@ -199,7 +199,7 @@ describe('FunctionShape', () => {
     test('raises issues if arguments are invalid in verbose mode', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(shape.decorateAsync(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).rejects.toEqual(
+      await expect(shape.delegateAsync(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
           { code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, input: 'aaa', path: ['arguments', 1] },
@@ -210,7 +210,7 @@ describe('FunctionShape', () => {
     test('raises an issue if a return value is invalid', async () => {
       const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
 
-      await expect(shape.decorateAsync(() => 111 as any)()).rejects.toEqual(
+      await expect(shape.delegateAsync(() => 111 as any)()).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['return'] },
         ])
