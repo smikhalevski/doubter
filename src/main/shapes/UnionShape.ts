@@ -126,6 +126,7 @@ export class UnionShape<U extends readonly AnyShape[]>
 
     for (index = 0; index < shapesLength; ++index) {
       result = shapes[index]['_apply'](input, options);
+      issues = null;
 
       if (result === null) {
         break;
@@ -134,11 +135,12 @@ export class UnionShape<U extends readonly AnyShape[]>
         output = result.value;
         break;
       }
+      issues = result;
       (issuesPerShape ||= []).push(result);
     }
 
-    if (index === shapesLength) {
-      issues = shapesLength === 1 ? (result as Issue[]) : this._typeIssueFactory(input, options, issuesPerShape);
+    if (index === shapesLength && shapesLength !== 1) {
+      issues = this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issuesPerShape });
     }
 
     if (_applyChecks !== null && (_unsafe || issues === null)) {
@@ -169,6 +171,7 @@ export class UnionShape<U extends readonly AnyShape[]>
 
         if (result !== null) {
           if (isArray(result)) {
+            issues = result;
             (issuesPerShape ||= []).push(result);
 
             if (++index !== shapesLength) {
@@ -179,8 +182,8 @@ export class UnionShape<U extends readonly AnyShape[]>
           }
         }
 
-        if (index === shapesLength) {
-          issues = shapesLength === 1 ? (result as Issue[]) : _typeIssueFactory(input, options, issuesPerShape || []);
+        if (index === shapesLength && shapesLength !== 1) {
+          issues = this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issuesPerShape });
         }
 
         if (_applyChecks !== null && (_unsafe || issues === null)) {

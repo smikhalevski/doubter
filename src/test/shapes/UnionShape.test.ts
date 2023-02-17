@@ -11,7 +11,7 @@ import {
   UnionShape,
 } from '../../main';
 import { getDiscriminator } from '../../main/shapes/UnionShape';
-import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
+import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NUMBER } from '../../main/constants';
 
 describe('UnionShape', () => {
   test('distributes buckets', () => {
@@ -82,7 +82,10 @@ describe('UnionShape', () => {
           code: CODE_UNION,
           input: 'aaa',
           message: MESSAGE_UNION,
-          param: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+          param: {
+            inputTypes: [TYPE_ANY],
+            issuesPerShape: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+          },
           path: [],
         },
       ],
@@ -160,7 +163,17 @@ describe('UnionShape', () => {
       expect(orShape.parse(111)).toBe(111);
       expect(orShape.try(undefined)).toEqual({
         ok: false,
-        issues: [{ code: CODE_UNION, message: MESSAGE_UNION, param: [], path: [] }],
+        issues: [
+          {
+            code: CODE_UNION,
+            message: MESSAGE_UNION,
+            param: {
+              inputTypes: [TYPE_NUMBER],
+              issuesPerShape: null,
+            },
+            path: [],
+          },
+        ],
       });
     });
   });
@@ -241,7 +254,10 @@ describe('UnionShape', () => {
             code: 'union',
             input: 'aaa',
             message: 'Must conform the union',
-            param: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+            param: {
+              inputTypes: [TYPE_ANY],
+              issuesPerShape: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+            },
             path: [],
           },
         ],
