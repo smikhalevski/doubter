@@ -343,6 +343,13 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return shape;
   }
 
+  /**
+   * `true` if the object must have `Object` constructor or `null` prototype; `false` otherwise.
+   */
+  get isPlain(): boolean {
+    return this._typePredicate === isPlainObject;
+  }
+
   protected _isAsync(): boolean {
     return this.restShape?.isAsync || this._valueShapes.some(isAsyncShape);
   }

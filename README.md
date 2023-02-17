@@ -401,7 +401,7 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
 | `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
 | `instance` | [`instanceOf(Class)`](#instanceof) | The class constructor `Class` |
-| `intersection` | [`d.and(…)`](#intersection) | — |
+| `intersection` | [`d.and(…)`](#intersection) | An array of root cause issues |
 | `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
 | `predicate` | [`shape.refine(…)`](#refinements) | The callback passed to `refine`  |
 | `numberInteger` | [`d.integer()`](#integer) | — |
@@ -416,28 +416,10 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `stringMinLength` | [`d.string().min(n)`](#string) | The minimum string length `n` |
 | `stringMaxLength` | [`d.string().max(n)`](#string) | The maximum string length `n` |
 | `stringRegex` | [`d.string().regex(re)`](#string) | The regular expression `re` |
-| `type` | All shapes | The expected input value type <a href="#value-types"><sup>✱</sup></a> |
+| `type` | All shapes | The expected [input value type](#introspection) |
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
-| `union` | [`d.or(…)`](#union) | The array of expected input value types <a href="#value-types"><sup>✱</sup></a> |
+| `union` | [`d.or(…)`](#union) | The object with [`inputTypes`](#introspection) and `issuesPerShape` |
 | `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
-
-<a href="#value-types" name="value-types"><sup>✱</sup></a> The list of known value types:
-
-- `array`
-- `bigint`
-- `boolean`
-- `date`
-- `function`
-- `object`
-- `map`
-- `never`
-- `null`
-- `number`
-- `promise`
-- `set`
-- `string`
-- `symbol`
-- `undefined`
 
 # Checks
 
@@ -2089,15 +2071,15 @@ shape.parse('{"foo":42}');
 With `lazy` you can declare recursive shapes. To showcase how to use it, let's create a shape that validates JSON data:
 
 ```ts
-type Json =
+type JSON =
   | number
   | string
   | boolean
   | null
-  | Json[]
-  | { [key: string]: Json };
+  | JSON[]
+  | { [key: string]: JSON };
 
-const jsonShape: d.Shape<Json> = d.lazy(() =>
+const jsonShape: d.Shape<JSON> = d.lazy(() =>
   d.or([
     d.number(),
     d.string(),
@@ -2115,7 +2097,7 @@ jsonShape.parse({ tag: Symbol() });
 // ❌ ValidationError: intersection at /tag: Must conform the intersection
 ```
 
-Note that the `Json` type is defined explicitly, because it cannot be inferred from the shape which references itself
+Note that the `JSON` type is defined explicitly, because it cannot be inferred from the shape which references itself
 directly in its own initializer.
 
 > **Warning**&ensp;While Doubter supports cyclic types, it doesn't support cyclic data structures. The latter would

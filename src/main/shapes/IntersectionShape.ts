@@ -1,5 +1,6 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
 import {
+  concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
   getValueType,
@@ -30,7 +31,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
+    this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -68,11 +69,12 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<ToIntersection<U[number]['output']>> {
-    const { shapes } = this;
+  protected _apply(input: any, options: ParseOptions): ApplyResult<ToIntersection<U[number]['output']>> {
+    const { shapes, _typeIssueFactory } = this;
     const shapesLength = shapes.length;
 
-    let outputs: any[] | null = null;
+    let outputs = null;
+    let issues = null;
 
     for (let i = 0; i < shapesLength; ++i) {
       const result = shapes[i]['_apply'](input, options);
@@ -81,8 +83,13 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         continue;
       }
       if (isArray(result)) {
-        return result;
+        if (!options.verbose) {
+          return _typeIssueFactory(input, options, result);
+        }
+        issues = concatIssues(issues, result);
+        continue;
       }
+
       const output = result.value;
 
       if (outputs === null) {
@@ -95,20 +102,11 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       outputs.push(output);
     }
 
-    if (outputs === null) {
-      return null;
-    }
-    if (outputs.length !== shapesLength) {
-      outputs.push(input);
-    }
-    return intersectOutputs(input, outputs, this._typeIssueFactory, options);
+    return this._applyIntersection(input, outputs, issues, options);
   }
 
-  protected _applyAsync(
-    input: unknown,
-    options: ParseOptions
-  ): Promise<ApplyResult<ToIntersection<U[number]['output']>>> {
-    const { shapes } = this;
+  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]['output']>>> {
+    const { shapes, _typeIssueFactory } = this;
     const shapesLength = shapes.length;
 
     const promises: Promise<ApplyResult>[] = [];
@@ -118,7 +116,8 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     }
 
     return Promise.all(promises).then(results => {
-      let outputs: any[] | null = null;
+      let outputs = null;
+      let issues = null;
 
       for (let i = 0; i < shapesLength; ++i) {
         const result = results[i];
@@ -127,8 +126,13 @@ export class IntersectionShape<U extends readonly AnyShape[]>
           continue;
         }
         if (isArray(result)) {
-          return result;
+          if (!options.verbose) {
+            return _typeIssueFactory(input, options, result);
+          }
+          issues = concatIssues(issues, result);
+          continue;
         }
+
         const output = result.value;
 
         if (outputs === null) {
@@ -141,39 +145,56 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         outputs.push(output);
       }
 
-      if (outputs === null) {
-        return null;
-      }
-      if (outputs.length !== shapesLength) {
-        outputs.push(input);
-      }
-      return intersectOutputs(input, outputs, this._typeIssueFactory, options);
+      return this._applyIntersection(input, outputs, issues, options);
     });
+  }
+
+  /**
+   * Finalizes the intersection by intersecting values and application of checks.
+   */
+  private _applyIntersection(
+    input: any,
+    outputs: any[] | null,
+    issues: Issue[] | null,
+    options: ParseOptions
+  ): ApplyResult<ToIntersection<U[number]['output']>> {
+    const { shapes, _typeIssueFactory, _applyChecks, _unsafe } = this;
+
+    let output = input;
+
+    if (outputs !== null && issues === null) {
+      let outputsLength = outputs.length;
+
+      if (outputsLength !== shapes.length) {
+        outputsLength = outputs.push(input);
+      }
+
+      output = outputs[0];
+
+      for (let i = 1; i < outputsLength && output !== NEVER; ++i) {
+        output = intersectValues(output, outputs[i]);
+      }
+      if (output === NEVER) {
+        output = input;
+        issues = [];
+      }
+    }
+
+    if (issues !== null) {
+      issues = _typeIssueFactory(input, options, issues);
+    }
+
+    if (_applyChecks !== null && (_unsafe || issues === null)) {
+      issues = _applyChecks(output, issues, options);
+    }
+    if (issues === null && input !== output) {
+      return ok(output);
+    }
+    return issues;
   }
 }
 
 export const NEVER = Symbol();
-
-export function intersectOutputs(
-  input: unknown,
-  outputs: any[],
-  issueFactory: (input: unknown, options: Readonly<ParseOptions>) => Issue[],
-  options: ParseOptions
-): ApplyResult {
-  const outputsLength = outputs.length;
-
-  let value = outputs[0];
-
-  for (let i = 1; i < outputsLength; ++i) {
-    value = intersectValues(value, outputs[i]);
-
-    if (value === NEVER) {
-      return issueFactory(input, options);
-    }
-  }
-
-  return ok(value);
-}
 
 export function intersectValues(a: any, b: any): any {
   if (isEqual(a, b)) {

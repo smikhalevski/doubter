@@ -301,6 +301,8 @@ NumberShape.prototype.min = NumberShape.prototype.gte;
 
 NumberShape.prototype.max = NumberShape.prototype.lte;
 
+const { abs, floor, max } = Math;
+
 /**
  * Checks that `a` is divisible without a remainder by `b`.
  */
@@ -311,7 +313,7 @@ export function isMultipleOf(a: number, b: number): boolean {
   if (a === b || a % b === 0) {
     return true;
   }
-  if (Math.abs(a) < b || a === Math.floor(a) || b === Math.floor(b)) {
+  if (abs(a) < b || a === floor(a) || b === floor(b)) {
     // Integers had their chance
     return false;
   }
@@ -327,14 +329,12 @@ export function isMultipleOf(a: number, b: number): boolean {
 
   // The exponent extracted from e+XXX plus the number of decimal digits
   const aDecLength =
-    (~aExpIndex && Math.abs(+aStr.substring(aExpIndex + 1))) +
-    (~aDotIndex && ~(~aExpIndex || ~aStr.length) + ~aDotIndex);
+    (~aExpIndex && abs(+aStr.substring(aExpIndex + 1))) + (~aDotIndex && ~(~aExpIndex || ~aStr.length) + ~aDotIndex);
 
   const bDecLength =
-    (~bExpIndex && Math.abs(+bStr.substring(bExpIndex + 1))) +
-    (~bDotIndex && ~(~bExpIndex || ~bStr.length) + ~bDotIndex);
+    (~bExpIndex && abs(+bStr.substring(bExpIndex + 1))) + (~bDotIndex && ~(~bExpIndex || ~bStr.length) + ~bDotIndex);
 
-  const decLength = Math.max(aDecLength, bDecLength);
+  const decLength = max(aDecLength, bDecLength);
 
   // Undefined behaviour if long overflow occurs
   const aLong = +a.toFixed(decLength).replace('.', '');

@@ -45,7 +45,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
 
     if (isArray(source)) {
       valueMapping = null;
-      values = unique(source);
+      values = unique(source).slice(0);
     } else {
       valueMapping = source;
       values = unique(getEnumValues(source));

@@ -81,4 +81,4 @@ export const MESSAGE_STRING_MAX = 'Must have the maximum length of %s';
 export const MESSAGE_STRING_REGEX = 'Must match the pattern %s';
 export const MESSAGE_SYMBOL_TYPE = 'Must be a symbol';
 export const MESSAGE_TUPLE = 'Must be a tuple of length %s';
-export const MESSAGE_UNION = 'Must conform the union of %s';
+export const MESSAGE_UNION = 'Must conform the union';
