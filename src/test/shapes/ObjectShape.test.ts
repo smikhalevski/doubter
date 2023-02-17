@@ -1,4 +1,4 @@
-import { ObjectShape, Ok, Shape, StringShape } from '../../main';
+import { AnyShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_ENUM,
   CODE_EXCLUSION,
@@ -11,6 +11,12 @@ import {
 } from '../../main/constants';
 
 describe('ObjectShape', () => {
+  let asyncShape: AnyShape;
+
+  beforeEach(() => {
+    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  });
+
   test('raises non object values', () => {
     const restShape = new Shape();
 
@@ -512,9 +518,7 @@ describe('ObjectShape', () => {
 
   describe('async', () => {
     test('raises non array values', async () => {
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const objShape = new ObjectShape({}, restShape);
+      const objShape = new ObjectShape({}, asyncShape);
 
       expect(await objShape.tryAsync('')).toEqual({
         ok: false,
@@ -523,7 +527,7 @@ describe('ObjectShape', () => {
     });
 
     test('checks both known keys and indexed keys', async () => {
-      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
+      const shape1 = asyncShape;
       const shape2 = new Shape();
       const restShape = new Shape();
 
@@ -552,7 +556,7 @@ describe('ObjectShape', () => {
 
     test('raises multiple issues in verbose mode', async () => {
       const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'yyy' }]);
+      const restShape = asyncShape.check(() => [{ code: 'yyy' }]);
 
       const objShape = new ObjectShape({ key1: shape1 }, restShape);
 
@@ -581,9 +585,7 @@ describe('ObjectShape', () => {
     });
 
     test('strips unknown properties', async () => {
-      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const objShape = new ObjectShape({ key1: shape1 }, null).strip();
+      const objShape = new ObjectShape({ key1: asyncShape }, null).strip();
 
       const obj = { key1: 'aaa', yay: 'bbb' };
       const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
@@ -605,9 +607,7 @@ describe('ObjectShape', () => {
     });
 
     test('raises an issue if unknown property is encountered', async () => {
-      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const objShape = new ObjectShape({ key1: shape1 }, null).exact();
+      const objShape = new ObjectShape({ key1: asyncShape }, null).exact();
 
       const obj = { key1: 'aaa', yay: 'bbb', wow: 'ccc' };
       const result = await objShape.tryAsync(obj);
@@ -627,9 +627,7 @@ describe('ObjectShape', () => {
     });
 
     test('raises an issue if with all unknown properties in verbose mode', async () => {
-      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const objShape = new ObjectShape({ key1: shape1 }, null).exact();
+      const objShape = new ObjectShape({ key1: asyncShape }, null).exact();
 
       const obj = { key1: 'aaa', yay: 'bbb', wow: 'ccc' };
       const result = await objShape.tryAsync(obj, { verbose: true });
@@ -649,9 +647,7 @@ describe('ObjectShape', () => {
     });
 
     test('applies checks', async () => {
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const objShape = new ObjectShape({}, restShape).check(() => [{ code: 'xxx' }]);
+      const objShape = new ObjectShape({}, asyncShape).check(() => [{ code: 'xxx' }]);
 
       const result = await objShape.tryAsync({});
 

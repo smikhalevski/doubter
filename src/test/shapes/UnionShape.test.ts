@@ -14,6 +14,12 @@ import { getDiscriminator } from '../../main/shapes/UnionShape';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NUMBER } from '../../main/constants';
 
 describe('UnionShape', () => {
+  let asyncShape: AnyShape;
+
+  beforeEach(() => {
+    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  });
+
   test('distributes buckets', () => {
     const shape1 = new NumberShape();
     const shape2 = new StringShape();
@@ -222,7 +228,7 @@ describe('UnionShape', () => {
 
     test('returns the result of the first shape that returned ok', async () => {
       const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
-      const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
+      const shape2 = asyncShape;
       const shape3 = new Shape();
 
       shape1.isAsync;
@@ -243,7 +249,7 @@ describe('UnionShape', () => {
 
     test('raises if no shapes returned ok', async () => {
       const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
-      const shape2 = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'yyy' }]);
+      const shape2 = asyncShape.check(() => [{ code: 'yyy' }]);
 
       const orShape = new UnionShape([shape1, shape2]);
 
@@ -265,10 +271,7 @@ describe('UnionShape', () => {
     });
 
     test('applies checks', async () => {
-      const shape1 = new Shape();
-      const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const orShape = new UnionShape([shape1, shape2]).check(() => [{ code: 'xxx' }]);
+      const orShape = new UnionShape([new Shape(), asyncShape]).check(() => [{ code: 'xxx' }]);
 
       await expect(orShape.tryAsync({})).resolves.toEqual({
         ok: false,

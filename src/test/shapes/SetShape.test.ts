@@ -1,4 +1,4 @@
-import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
+import { AnyShape, ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
 import {
   CODE_SET_MAX,
   CODE_SET_MIN,
@@ -12,6 +12,12 @@ import {
 } from '../../main/constants';
 
 describe('SetShape', () => {
+  let asyncShape: AnyShape;
+
+  beforeEach(() => {
+    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  });
+
   test('creates a Set shape', () => {
     const shape = new Shape();
 
@@ -196,9 +202,7 @@ describe('SetShape', () => {
 
   describe('async', () => {
     test('raises an issue if an input is not a Set', async () => {
-      const shape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const setShape = new SetShape(shape);
+      const setShape = new SetShape(asyncShape);
 
       const result = await setShape.tryAsync('aaa');
 
@@ -219,11 +223,9 @@ describe('SetShape', () => {
     });
 
     test('parses values in a Set', async () => {
-      const shape = new Shape().transformAsync(value => Promise.resolve(value));
+      const applyAsyncSpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
 
-      const applyAsyncSpy = jest.spyOn<Shape, any>(shape, '_applyAsync');
-
-      const setShape = new SetShape(shape);
+      const setShape = new SetShape(asyncShape);
 
       const set = new Set([111, 222]);
       const result = (await setShape.tryAsync(set)) as Ok<unknown>;
@@ -252,9 +254,7 @@ describe('SetShape', () => {
     });
 
     test('applies checks', async () => {
-      const shape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const setShape = new SetShape(shape).check(() => [{ code: 'xxx' }]);
+      const setShape = new SetShape(asyncShape).check(() => [{ code: 'xxx' }]);
 
       await expect(setShape.tryAsync(new Set([111]))).resolves.toEqual({
         ok: false,
@@ -263,15 +263,13 @@ describe('SetShape', () => {
     });
 
     test('coerces a non-array value', async () => {
-      const shape = new Shape().transformAsync(value => Promise.resolve(value));
-      const setShape = new SetShape(shape).coerce();
+      const setShape = new SetShape(asyncShape).coerce();
 
       await expect(setShape.parseAsync('aaa')).resolves.toEqual(new Set(['aaa']));
     });
 
     test('coerces an array value', async () => {
-      const shape = new Shape().transformAsync(value => Promise.resolve(value));
-      const setShape = new SetShape(shape).coerce();
+      const setShape = new SetShape(asyncShape).coerce();
 
       await expect(setShape.parseAsync(['aaa'])).resolves.toEqual(new Set(['aaa']));
     });

@@ -1,4 +1,5 @@
 import {
+  AnyShape,
   ExcludeShape,
   NumberShape,
   ObjectShape,
@@ -10,6 +11,12 @@ import {
 } from '../../main';
 import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_STRING } from '../../main/constants';
 import { CatchShape } from '../../main/shapes/Shape';
+
+let asyncShape: AnyShape;
+
+beforeEach(() => {
+  asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+});
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
@@ -396,10 +403,8 @@ describe('Shape', () => {
     });
 
     test('returns promise', async () => {
-      const shape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const outputPromise = shape.parseAsync('aaa');
-      const resultPromise = shape.tryAsync('aaa');
+      const outputPromise = asyncShape.parseAsync('aaa');
+      const resultPromise = asyncShape.tryAsync('aaa');
 
       expect(outputPromise).toBeInstanceOf(Promise);
       expect(resultPromise).toBeInstanceOf(Promise);
@@ -571,8 +576,8 @@ describe('PipeShape', () => {
 
   describe('async', () => {
     test('pipes the output of one shape to the other', async () => {
-      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
-      const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
+      const shape1 = asyncShape;
+      const shape2 = new Shape();
 
       const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
@@ -589,8 +594,8 @@ describe('PipeShape', () => {
     });
 
     test('does not apply the output shape if the input shape parsing failed', async () => {
-      const shape1 = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'xxx' }]);
-      const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
+      const shape1 = asyncShape.check(() => [{ code: 'xxx' }]);
+      const shape2 = asyncShape;
 
       const applySpy = jest.spyOn<Shape, any>(shape2, '_apply');
 
@@ -602,8 +607,8 @@ describe('PipeShape', () => {
     });
 
     test('does not apply checks if the output shape has failed', async () => {
-      const shape1 = new Shape().transformAsync(value => Promise.resolve(value));
-      const shape2 = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'xxx' }]);
+      const shape1 = asyncShape;
+      const shape2 = asyncShape.check(() => [{ code: 'xxx' }]);
 
       const checkMock = jest.fn();
 
@@ -668,10 +673,7 @@ describe('ExcludeShape', () => {
 
   describe('async', () => {
     test('returns input as is', async () => {
-      const shape = new ExcludeShape(
-        new Shape().transformAsync(value => Promise.resolve(value)),
-        undefined
-      );
+      const shape = new ExcludeShape(asyncShape, undefined);
 
       await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 111 });
     });
@@ -686,10 +688,7 @@ describe('ExcludeShape', () => {
     });
 
     test('raises an issue if an input is undefined', async () => {
-      const shape = new ExcludeShape(
-        new Shape().transformAsync(value => Promise.resolve(value)),
-        undefined
-      );
+      const shape = new ExcludeShape(asyncShape, undefined);
 
       await expect(shape.tryAsync(undefined)).resolves.toEqual({
         ok: false,

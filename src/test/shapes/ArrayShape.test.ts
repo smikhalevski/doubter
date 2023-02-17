@@ -1,4 +1,4 @@
-import { ArrayShape, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
+import { AnyShape, ArrayShape, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -14,6 +14,12 @@ import {
 } from '../../main/constants';
 
 describe('ArrayShape', () => {
+  let asyncShape: AnyShape;
+
+  beforeEach(() => {
+    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  });
+
   test('creates an array shape', () => {
     const shape1 = new Shape();
     const restShape = new Shape();
@@ -435,9 +441,7 @@ describe('ArrayShape', () => {
 
   describe('async', () => {
     test('raises an issue if an input is not an unconstrained array', async () => {
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const arrShape = new ArrayShape(null, restShape);
+      const arrShape = new ArrayShape(null, asyncShape);
 
       const result = await arrShape.tryAsync('aaa');
 
@@ -459,7 +463,7 @@ describe('ArrayShape', () => {
 
     test('parses tuple elements', async () => {
       const shape1 = new Shape();
-      const shape2 = new Shape().transformAsync(value => Promise.resolve(value));
+      const shape2 = asyncShape;
 
       shape1.isAsync;
       shape2.isAsync;
@@ -481,11 +485,9 @@ describe('ArrayShape', () => {
     });
 
     test('parses rest elements', async () => {
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
+      const restApplyAsyncSpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
 
-      const restApplyAsyncSpy = jest.spyOn<Shape, any>(restShape, '_applyAsync');
-
-      const arrShape = new ArrayShape(null, restShape);
+      const arrShape = new ArrayShape(null, asyncShape);
 
       const arr = [111, 222];
       const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
@@ -511,9 +513,7 @@ describe('ArrayShape', () => {
     });
 
     test('applies checks', async () => {
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const arrShape = new ArrayShape(null, restShape).check(() => [{ code: 'xxx' }]);
+      const arrShape = new ArrayShape(null, asyncShape).check(() => [{ code: 'xxx' }]);
 
       await expect(arrShape.tryAsync([111])).resolves.toEqual({
         ok: false,
@@ -522,25 +522,19 @@ describe('ArrayShape', () => {
     });
 
     test('coerces a non-array to an array', async () => {
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const arrShape = new ArrayShape(null, restShape).coerce();
+      const arrShape = new ArrayShape(null, asyncShape).coerce();
 
       await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
     });
 
     test('coerces a non-array to a tuple of one element', async () => {
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const arrShape = new ArrayShape([new Shape()], restShape).coerce();
+      const arrShape = new ArrayShape([new Shape()], asyncShape).coerce();
 
       await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
     });
 
     test('does not coerce if a tuple has more than one element with rest elements', async () => {
-      const restShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const arrShape = new ArrayShape([new Shape(), new Shape()], restShape).coerce();
+      const arrShape = new ArrayShape([new Shape(), new Shape()], asyncShape).coerce();
 
       await expect(arrShape.tryAsync('aaa')).resolves.toEqual({
         ok: false,

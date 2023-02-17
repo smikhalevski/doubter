@@ -64,11 +64,11 @@ describe('toArrayIndex', () => {
 });
 
 describe('copyUnsafeChecks', () => {
-  test('returns target shape is there are no unsafe check on the source shape', () => {
+  test('returns the exact copy of the target shape is there are no unsafe check on the source shape', () => {
     const sourceShape = new Shape().check(() => undefined);
     const targetShape = new Shape();
 
-    expect(copyUnsafeChecks(sourceShape, targetShape)).toBe(targetShape);
+    expect(copyUnsafeChecks(sourceShape, targetShape)).toEqual(targetShape);
   });
 
   test('copies unsafe checks from source to a target clone', () => {
