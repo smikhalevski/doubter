@@ -1686,8 +1686,6 @@ shape.parse('J');
 
 # Cookbook
 
-Tasty recipes from the chef.
-
 ## Rename object keys
 
 ```ts
@@ -2397,18 +2395,12 @@ d.number().integer();
 d.int();
 ```
 
-Constrain the number to be a finite to raise an issue if an input value is `Infinity` or `-Infinity`:
+Constrain the input to be a finite number (not `NaN`, `Infinity` or `-Infinity`):
 
 ```ts
 d.number().finite();
-```
-
-Constrain the number to be an integer:
-
-```ts
-d.number().integer();
 // or
-d.int();
+d.finite()
 ```
 
 The finite and integer assertions are always _applied before other checks_.
@@ -2684,7 +2676,7 @@ const shape = d.transform(parseFloat);
 // ⮕ Shape<any, number>
 ```
 
-Use `transform` in conjunction with [shape-piping](#shape-piping):
+Use `transform` in conjunction with [shape piping](#shape-piping):
 
 ```ts
 shape.to(d.number().min(3).max(5));
