@@ -117,12 +117,22 @@ export function addConstraint<S extends Shape>(
  * Replaces checks of the target shape with unsafe checks from the source shape.
  */
 export function copyUnsafeChecks<S extends Shape>(sourceShape: AnyShape, targetShape: S): S {
-  const checks = sourceShape['_checks']?.filter(isUnsafeCheck);
+  return copyChecks(sourceShape, targetShape, isUnsafeCheck);
+}
 
-  if (checks === undefined || checks.length === 0) {
-    return targetShape;
-  }
-  return targetShape['_replaceChecks'](checks);
+/**
+ * Replaces checks of the target shape with checks from the source shape that match a predicate.
+ */
+export function copyChecks<S extends Shape>(
+  sourceShape: AnyShape,
+  targetShape: S,
+  predicate?: (check: Check) => boolean
+): S {
+  const checks = sourceShape['_checks'];
+
+  return targetShape['_replaceChecks'](
+    checks !== null && checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
+  );
 }
 
 /**

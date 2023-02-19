@@ -1,7 +1,13 @@
-import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
+import { AnyShape, ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
 
 describe('RecordShape', () => {
+  let asyncShape: AnyShape;
+
+  beforeEach(() => {
+    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  });
+
   test('raises non object values', () => {
     const valueShape = new Shape();
 
@@ -137,9 +143,7 @@ describe('RecordShape', () => {
 
   describe('async', () => {
     test('raises non object values', async () => {
-      const valueShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const objShape = new RecordShape(null, valueShape);
+      const objShape = new RecordShape(null, asyncShape);
 
       await expect(objShape.tryAsync('')).resolves.toEqual({
         ok: false,
@@ -148,7 +152,7 @@ describe('RecordShape', () => {
     });
 
     test('checks values', async () => {
-      const valueShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'xxx' }]);
+      const valueShape = asyncShape.check(() => [{ code: 'xxx' }]);
 
       const objShape = new RecordShape(null, valueShape);
 
@@ -159,8 +163,8 @@ describe('RecordShape', () => {
     });
 
     test('checks keys and values', async () => {
-      const keyShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'xxx' }]);
-      const valueShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'yyy' }]);
+      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
+      const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);
 
       const objShape = new RecordShape(keyShape, valueShape);
 
@@ -171,8 +175,8 @@ describe('RecordShape', () => {
     });
 
     test('raises multiple issues in verbose mode', async () => {
-      const keyShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'xxx' }]);
-      const valueShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'yyy' }]);
+      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
+      const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);
 
       const objShape = new RecordShape(keyShape, valueShape);
 
@@ -216,9 +220,7 @@ describe('RecordShape', () => {
     });
 
     test('applies checks', async () => {
-      const valueShape = new Shape().transformAsync(value => Promise.resolve(value));
-
-      const objShape = new RecordShape(null, valueShape).check(() => [{ code: 'xxx' }]);
+      const objShape = new RecordShape(null, asyncShape).check(() => [{ code: 'xxx' }]);
 
       await expect(objShape.tryAsync({})).resolves.toEqual({
         ok: false,

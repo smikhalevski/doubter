@@ -1,4 +1,4 @@
-import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
+import { AnyShape, MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_TYPE,
   MESSAGE_MAP_TYPE,
@@ -9,6 +9,12 @@ import {
 } from '../../main/constants';
 
 describe('MapShape', () => {
+  let asyncShape: AnyShape;
+
+  beforeEach(() => {
+    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  });
+
   test('creates a Map shape', () => {
     const keyShape = new Shape();
     const valueShape = new Shape();
@@ -255,10 +261,7 @@ describe('MapShape', () => {
 
   describe('async', () => {
     test('raises an issue if an input is not a Map', async () => {
-      const setShape = new MapShape(
-        new Shape().transformAsync(value => Promise.resolve(value)),
-        new Shape().transformAsync(value => Promise.resolve(value))
-      );
+      const setShape = new MapShape(asyncShape, asyncShape);
 
       await expect(setShape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
@@ -267,8 +270,8 @@ describe('MapShape', () => {
     });
 
     test('checks keys and values', async () => {
-      const keyShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'xxx' }]);
-      const valueShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'yyy' }]);
+      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
+      const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);
 
       const mapShape = new MapShape(keyShape, valueShape);
 
@@ -286,8 +289,8 @@ describe('MapShape', () => {
     });
 
     test('raises multiple issues in verbose mode', async () => {
-      const keyShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'xxx' }]);
-      const valueShape = new Shape().transformAsync(value => Promise.resolve(value)).check(() => [{ code: 'yyy' }]);
+      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
+      const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);
 
       const mapShape = new MapShape(keyShape, valueShape);
 
@@ -338,12 +341,11 @@ describe('MapShape', () => {
     });
 
     test('transforms values', async () => {
-      const keyShape = new Shape().transformAsync(value => Promise.resolve(value));
       const valueShape = new Shape<string>()
         .transformAsync(value => Promise.resolve(value))
         .transform(value => value.toUpperCase());
 
-      const mapShape = new MapShape(keyShape, valueShape);
+      const mapShape = new MapShape(asyncShape, valueShape);
 
       const map = new Map([
         ['key1', 'aaa'],
@@ -363,10 +365,7 @@ describe('MapShape', () => {
     });
 
     test('applies checks', async () => {
-      const mapShape = new MapShape(
-        new Shape().transformAsync(value => Promise.resolve(value)),
-        new Shape().transformAsync(value => Promise.resolve(value))
-      ).check(() => [{ code: 'xxx' }]);
+      const mapShape = new MapShape(asyncShape, asyncShape).check(() => [{ code: 'xxx' }]);
 
       await expect(mapShape.tryAsync(new Map())).resolves.toEqual({
         ok: false,
@@ -375,10 +374,7 @@ describe('MapShape', () => {
     });
 
     test('coerces an object', async () => {
-      const mapShape = new MapShape(
-        new Shape().transformAsync(value => Promise.resolve(value)),
-        new Shape().transformAsync(value => Promise.resolve(value))
-      ).coerce();
+      const mapShape = new MapShape(asyncShape, asyncShape).coerce();
 
       await expect(mapShape.parseAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual(
         new Map([
@@ -389,10 +385,7 @@ describe('MapShape', () => {
     });
 
     test('coerces an array of entities', async () => {
-      const mapShape = new MapShape(
-        new Shape().transformAsync(value => Promise.resolve(value)),
-        new Shape().transformAsync(value => Promise.resolve(value))
-      ).coerce();
+      const mapShape = new MapShape(asyncShape, asyncShape).coerce();
 
       await expect(
         mapShape.parseAsync([
@@ -408,10 +401,7 @@ describe('MapShape', () => {
     });
 
     test('does not coerce an array with non-entry-like arrays', async () => {
-      const mapShape = new MapShape(
-        new Shape().transformAsync(value => Promise.resolve(value)),
-        new Shape().transformAsync(value => Promise.resolve(value))
-      ).coerce();
+      const mapShape = new MapShape(asyncShape, asyncShape).coerce();
 
       await expect(mapShape.tryAsync([['key1', 'aaa'], ['key2']])).resolves.toEqual({
         ok: false,

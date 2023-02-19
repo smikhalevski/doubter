@@ -36,7 +36,7 @@ import { EnumShape } from './EnumShape';
 
 // prettier-ignore
 export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> =
-  Squash<UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>>;
+  Prettify<UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>>;
 
 // prettier-ignore
 export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> =
@@ -44,7 +44,7 @@ export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'
 
 export type StringKeyof<T extends object> = Extract<keyof T, string>;
 
-export type Squash<T> = T extends never ? never : { [K in keyof T]: T[K] };
+export type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
 export type UndefinedAsOptional<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
 

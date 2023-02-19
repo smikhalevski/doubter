@@ -11,7 +11,7 @@ No-hassle runtime validation and transformation library.
 - Sync and async validation and transformation flows;
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
-- [Just 10 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
 🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
 
@@ -41,7 +41,6 @@ npm install --save-prod doubter
 - [Introspection](#introspection)
 - [Localization](#localization)
 - [Integrations](#integrations)
-- [Guarded functions](#guarded-functions)
 
 [**Type coercion**](#type-coercion)
 
@@ -106,6 +105,10 @@ npm install --save-prod doubter
 
 - Promises<br>
   [`promise`](#promise)
+
+- Functions<br>
+  [`function`](#function)
+  [`fn`](#function)
 
 - Shape composition<br>
   [`union`](#union)
@@ -445,7 +448,7 @@ shape1.parse(3);
 A check callback receives the shape output value and must return a partial issue or an array of partial issues if the
 value is invalid.
 
-> **Note**&ensp; Check callbacks can safely throw a `ValidationError` to notify Doubter that parsing issues occurred.
+> **Note**&ensp;Check callbacks can safely throw a `ValidationError` to notify Doubter that parsing issues occurred.
 > While this has the same effect as returning an array of issues, it is recommended to throw a `ValidationError` as the
 > last resort since catching errors has a high performance penalty.
 
@@ -1370,45 +1373,6 @@ emailShape.getCheck(isEmail);
 // ⮕ { key: isEmail, … }
 ```
 
-# Guarded functions
-
-Returns a function which parses arguments using provided shapes:
-
-```ts
-const callback = d.guard([d.string(), d.boolean()], (arg1, arg2) => {
-  // arg1 is string
-  // arg2 is boolean
-});
-```
-
-Or check all arguments with a shape that parses arrays:
-
-```ts
-const callback = d.guard(d.array(d.string()), (...args) => {
-  // args is string[]
-});
-```
-
-Or if you have a single non-array argument, you can pass its shape:
-
-```ts
-const callback = d.guard(d.string(), arg => {
-  // arg is string
-});
-```
-
-To guard multiple functions omit the callback parameter and a factory function would be returned:
-
-```ts
-const callbackFactory = d.guard(d.string());
-
-const callback = callbackFactory(arg => {
-  // arg is string
-});
-```
-
-If you are want to use async shapes to parse arguments, use `guardAsync` which has the same signatures as `guard`.
-
 # Type coercion
 
 Type coercion is the process of converting value from one type to another (such as string to number, array to `Set`,
@@ -1944,6 +1908,247 @@ Constrains a value to be a finite number.
 ```ts
 d.finite();
 // ⮕ Shape<number>
+```
+
+This is a shortcut for number shape declaration:
+
+```ts
+d.number().finite();
+// ⮕ Shape<number>
+```
+
+## `function`
+
+Constrain a value to be a function that has a particular signature.
+
+A function that has no arguments and returns `any`:
+
+```ts
+d.function()
+// ⮕ Shape<() => any>
+
+// or use a shorter alias
+d.fn();
+```
+
+Provide an array of argument shapes:
+
+```ts
+d.fn([d.string(), d.number()]);
+// ⮕ Shape<(arg1: string, arg2: number) => any>
+```
+
+Or provide a shape that constrains an array of arguments:
+
+```ts
+d.fn(d.array(d.string()));
+// ⮕ Shape<(...args: string[]) => any>
+```
+
+Any shape that constrains an array type would do, you can even use a union:
+
+```ts
+d.fn(
+  d.or([
+    d.array(d.string()),
+    d.tuple([d.string(), d.number()])
+  ])
+);
+// ⮕ Shape<(...args: string[] | [string, number]) => any>
+```
+
+To constrain the return value of a function shape, use the `return` method.
+
+```ts
+d.fn().return(d.string());
+// ⮕ Shape<() => string>
+```
+
+To constrain a value of `this`:
+
+```ts
+d.fn().this(d.object({ foo: d.string }));
+// ⮕ Shape<(this: { foo: d.string }) => any>
+```
+
+### Parsing a function
+
+Function shapes check that an input value is a function:
+
+```ts
+const shape1 = d.fn();
+
+shape1.parse(() => 42);
+// ⮕ () => any
+
+shape1.parse('Mars');
+// ❌ ValidationError: type at /: Must be a function
+```
+
+The result of parsing is a delegator function that parses arguments, return and `this` values.
+See [Implementing a function](#implementing-a-function) for more details.
+
+If you want to prevent the parsed function from being wrapped in a delegator, use `bare`:
+
+```ts
+const shape2 = d.fn().bare();
+
+function implFn() {}
+
+shape2.parse(implFn) === implFn // ⮕ true
+```
+
+### Implementing a function
+
+You can delegate a function implementation using a function shape. This would guarantee that the function implementation
+is called with arguments of requested types, and delegator returns the value of the requested type.
+
+Let's declare a function shape that takes two number arguments and returns a number:
+
+```ts
+const sumShape = d.fn([d.number(), d.number()]).return(d.number());
+// ⮕ Shape<(arg1: number, arg2: number) => number>
+```
+
+Now let's provide a concrete implementation:
+
+```ts
+function sumImpl(arg1: number, arg2: number): number {
+  return arg1 + arg2;
+}
+
+const sum = sumShape.delegate(sumImpl);
+// ⮕ (arg1: number, arg2: number) => number
+
+sum(2, 3);
+// ⮕ 5
+```
+
+The function `sum` (a delegator function) delegates its implementation to `sumImpl` (an implementation function) and
+guarantees that `sumImpl` is called with exactly two number arguments and returns a number.
+
+`sum` would throw a [`ValidationError`](#validation-errors) if the required signature is violated at runtime:
+
+```ts
+sum(2, '3');
+// ❌ ValidationError: type at /arguments/1: Must be a number
+
+sum(1, 2, 3);
+// ❌ ValidationError: arrayMaxLength at /arguments: Must have the maximum length of 2
+```
+
+> **Note**&ensp;In the example above TypeScript compiler would raise an error since the function signature doesn't match
+> the provided parameters.
+
+Using function shape you can parse the return value and `this`.
+
+```ts
+const userShape = d.object({
+  name: d.string(),
+});
+// ⮕ Shape<{ name: string }>
+
+const getLastNameShape = d.fn().this(userShape).return(d.string());
+// ⮕ Shape<(this: { name: string }) => string>
+
+const getLastName = getLastNameShape.delegate(user => {
+  // 🟡 Returns undefined at runtime if name doesn't include a space char. 
+  return user.name.split(' ')[1]
+});
+// ⮕ (this: { name: string }) => string
+```
+
+When called with a valid user as `this`, `getLastName` would extract the last name:
+
+```ts
+getLastName.call({ name: 'Indiana Jones' });
+// ⮕ 'Jones'
+```
+
+But if user is invalid, an error would be thrown: 
+
+```ts
+getLastName.call({});
+// ❌ ValidationError: type at /arguments/0/name: Must be a string
+```
+
+The implementation of `getLastName` expects that the first and the last name are separated with a space character. This
+may cause an unexpected behaviour if an input string doesn't contain a space char: and `undefined` would be returned.
+But since `getLastNameShape` constrains the return value with `d.string`, an error is thrown at runtime: 
+
+```ts
+getLastName.call({ name: 'Indiana' });
+// ❌ ValidationError: type at /return: Must be a string
+```
+
+### Coercing arguments
+
+Function shapes go well with type coercion:
+
+```ts
+const plus2Shape = d.fn([d.number().coerce()]).return(d.number());
+// ⮕ Shape<(arg: number) => number>
+
+function plus2Impl(arg: number): number {
+  return arg + 2;
+}
+
+const plus2 = plus2Shape.delegate(plus2Impl);
+// ⮕ (arg: number) => number
+```
+
+While `plus2` requires a single number parameter, we can call it at runtime with a number-like string and get an
+expected numeric result because of an argument coercion:
+
+```ts
+plus2('40');
+// ⮕ 42
+```
+
+In the meantime `plus2Impl` would return the result of string concatenation:
+
+```ts
+plus2Impl('40');
+// ⮕ '402'
+```
+
+### Transforming arguments and return values
+
+Here's a function shape that transforms the input argument by converting a string to a number:
+
+```ts
+const shape = d.fn([d.string().transform(parseFloat)]);
+// ⮕ Shape<(arg: number) => any, (arg: string) => any>
+```
+
+Note that the input and output functions described by this shape have different signatures. Let's delegate the
+implementation of this function:
+
+```ts
+function implFn(arg: number) {
+  return arg + 2;
+}
+
+const delegatorFn = shape.delegate(implFn);
+// ⮕ (arg: string) => any
+```
+
+The argument of the implementation function is the output of the shape that parses arguments. The graph below
+demonstrates the data flow between the delegator and the implementation:
+
+```mermaid
+---
+title: delegatorFn
+---
+flowchart TD
+    InputArguments["Input arguments"]
+    -->|Parsed by argsShape| implFn
+    -->|Parsed by returnShape| OutputReturnValue["Output return value"]
+
+    subgraph implFn
+    OutputArguments["Output arguments"]
+    --> InputReturnValue["Input return value"]
+    end
 ```
 
 ## `instanceOf`
