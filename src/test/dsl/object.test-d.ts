@@ -26,6 +26,10 @@ expectType<{ bbb: number }>(
     .omit(['aaa']).output
 );
 
+expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend({ bbb: d.number() }).output);
+
+expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend(d.object({ bbb: d.number() })).output);
+
 expectType<{ aaa?: string; bbb?: number }>(
   d
     .object({
