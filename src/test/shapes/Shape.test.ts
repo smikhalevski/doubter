@@ -9,7 +9,7 @@ import {
   TransformShape,
   ValidationError,
 } from '../../main';
-import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_STRING } from '../../main/constants';
+import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_ANY, TYPE_STRING } from '../../main/constants';
 import { CatchShape } from '../../main/shapes/Shape';
 
 let asyncShape: AnyShape;
@@ -20,7 +20,10 @@ beforeEach(() => {
 
 describe('Shape', () => {
   test('creates a sync shape', () => {
-    expect(new Shape().isAsync).toBe(false);
+    const shape = new Shape();
+
+    expect(shape.isAsync).toBe(false);
+    expect(shape.inputTypes).toEqual([TYPE_ANY]);
   });
 
   test('clones shape when check is added', () => {

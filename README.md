@@ -1103,7 +1103,7 @@ const fidoDog: Dog = {
 };
 
 petCat(fidoDog);
-// ✅ Ok yet types are different
+// ✅ Ok, yet types are different
 ```
 
 In some cases, its can be desirable to simulate nominal typing inside TypeScript. For instance, you may wish to write a
@@ -1167,7 +1167,46 @@ Types returned from `Shape.typeOf` are a superset of types returned from the `ty
 <tr><td><code>undefined</code></td><td><code>undefined</code></td></tr>
 </table>
 
-`inputTypes` array can also contain two additional types `never` and `any`.
+`inputTypes` array can also contain two additional types `any` and `never`.
+
+## `any` value type
+
+`any` type emerges when type cannot be inferred at runtime. This happens when [`d.any`](#any), [`d.unknown`](#unknown),
+or [`d.transform`](#transform) is used:
+
+```ts
+const shape1 = d.transfrorm(parseFloat);
+// ⮕ Shape<any>
+
+shape1.inputTypes;
+// ⮕ ['any']
+```
+
+`any` absorbs other types in unions:
+
+```ts
+const shape2 = d.or([d.string(), d.any()]);
+// ⮕ Shape<any>
+
+shape2.inputType;
+// ⮕ ['any']
+```
+
+`any` absorbs other types in intersections, except when intersected with `never`:
+
+```ts
+const shape3 = d.and([d.string(), d.any()]);
+// ⮕ Shape<any>
+
+shape3.inputType;
+// ⮕ ['any']
+
+const shape4 = d.and([d.never(), d.any()]);
+// ⮕ Shape<never>
+
+shape4.inputType;
+// ⮕ ['never']
+```
 
 ## `never` value type
 
@@ -1210,29 +1249,6 @@ const shape3 = d.and([d.string(), d.boolean()]);
 
 shape3.inputType;
 // ⮕ ['never']
-```
-
-## `any` value type
-
-`any` type emerges when type cannot be inferred at runtime. For example when [`d.any`](#any) or
-[`d.transform`](#transform) is used:
-
-```ts
-const shape1 = d.transfrorm(parseFloat);
-// ⮕ Shape<any>
-
-shape1.inputTypes;
-// ⮕ ['any']
-```
-
-`any` absorbs other types it coexists with in both unions and intersections:
-
-```ts
-const shape2 = d.or([d.string(), d.any()]);
-// ⮕ Shape<any>
-
-shape2.inputType;
-// ⮕ ['any']
 ```
 
 ## Nested shapes
@@ -1305,12 +1321,13 @@ If you add a custom check, you can provide a `param` to enhance further introspe
 function includes(value: any): d.CheckCallback<any[]> {
   return array => {
     if (!array.includes(value)) {
-      return { message: `Must incude "${value}"` };
+      return { message: 'Must incude ' + value };
     }
   };
 }
 
 const shape2 = d.array().check(includes('Mars'), { param: 'Mars' });
+// ⮕ Shape<any[]>
 
 shape2.getCheck(includes)?.param;
 // ⮕ 'Mars'
@@ -1363,15 +1380,17 @@ How to validate an email or UUID? Combine Doubter with your favourite predicate 
 import * as d from 'doubter';
 import isEmail from 'validator/lib/isEmail';
 
-const emailShape = d.any<string>(isEmail, 'Must be an email');
+const emailShape = d.string().refine(isEmail, 'Must be an email');
 // ⮕ Shape<string>
 
 emailShape.parse('Not an email');
 // ❌ ValidationError: predicate at /: Must be an email
 
 emailShape.getCheck(isEmail);
-// ⮕ { key: isEmail, … }
+// ⮕ { key: isEmail, param: isEmail, unsafe: false }
 ```
+
+Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).
 
 # Type coercion
 
@@ -1686,8 +1705,6 @@ shape.parse('J');
 
 # Cookbook
 
-Tasty recipes from the chef.
-
 ## Rename object keys
 
 ```ts
@@ -1724,41 +1741,27 @@ queryShape.parse(qs.parse('age=-33'));
 # Performance
 
 The chart below showcases the performance comparison in terms of millions of operations per second (greater is better).
-Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast).
 
 <p align="center">
   <img src="./images/perf.svg" alt="Performance comparison chart"/>
 </p>
 
-Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
-
-Validation performance was measured for the following object:
-
-```ts
-const value = {
-  a1: [1, 2, 3],
-  a2: 'foo',
-  a3: false,
-  a4: {
-    a41: 'bar',
-    a42: 3.1415
-  }
-};
-```
-
-The Doubter shape under test:
+Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast) and results were collected for the
+following object shape:
 
 ```ts
-const shape = d.object({
-  a1: d.array(d.int()),
-  a2: d.string().min(3),
-  a3: d.boolean(),
-  a4: d.object({
-    a41: d.enum(['foo', 'bar']),
-    a42: d.number()
+d.object({
+  key1: d.array(d.int()),
+  key2: d.string().min(3),
+  key3: d.boolean(),
+  key4: d.object({
+    key5: d.enum(['foo', 'bar']),
+    key6: d.number()
   })
 });
 ```
+
+Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
 
 # Data types
 
@@ -1910,7 +1913,7 @@ d.finite();
 // ⮕ Shape<number>
 ```
 
-This is a shortcut for number shape declaration:
+This is a shortcut for a number shape declaration:
 
 ```ts
 d.number().finite();
@@ -2397,18 +2400,12 @@ d.number().integer();
 d.int();
 ```
 
-Constrain the number to be a finite to raise an issue if an input value is `Infinity` or `-Infinity`:
+Constrain the input to be a finite number (not `NaN`, `Infinity` or `-Infinity`):
 
 ```ts
 d.number().finite();
-```
-
-Constrain the number to be an integer:
-
-```ts
-d.number().integer();
 // or
-d.int();
+d.finite()
 ```
 
 The finite and integer assertions are always _applied before other checks_.
@@ -2647,49 +2644,6 @@ const shape = d.promise(
 // ⮕ Shape<Promise<string>, Promise<number>>
 ```
 
-## `symbol`
-
-A shape that constrains a value to be an arbitrary symbol.
-
-```ts
-d.symbol();
-// ⮕ Shape<symbol>
-```
-
-To constrain an input to an exact symbol, use [`const`](#const):
-
-```ts
-const TAG = Symbol('tag');
-
-d.const(TAG);
-// ⮕ Shape<typeof TAG>
-```
-
-Or use an [`enum`](#enum) to allow several exact symbols:
-
-```ts
-const FOO = Symbol('foo');
-const BAR = Symbol('bar');
-
-d.enum([FOO, BAR]);
-// ⮕  Shape<typeof FOO | typeof BAR>
-```
-
-## `transform`
-
-Transforms the input value:
-
-```ts
-const shape = d.transform(parseFloat);
-// ⮕ Shape<any, number>
-```
-
-Use `transform` in conjunction with [shape-piping](#shape-piping):
-
-```ts
-shape.to(d.number().min(3).max(5));
-```
-
 ## `record`
 
 Constrain keys and values of a dictionary-like object:
@@ -2764,6 +2718,58 @@ Constrain a string with a regular expression:
 d.string().regex(/foo|bar/);
 ```
 
+## `symbol`
+
+A shape that constrains a value to be an arbitrary symbol.
+
+```ts
+d.symbol();
+// ⮕ Shape<symbol>
+```
+
+To constrain an input to an exact symbol, use [`const`](#const):
+
+```ts
+const TAG = Symbol('tag');
+
+d.const(TAG);
+// ⮕ Shape<typeof TAG>
+```
+
+Or use an [`enum`](#enum) to allow several exact symbols:
+
+```ts
+const FOO = Symbol('foo');
+const BAR = Symbol('bar');
+
+d.enum([FOO, BAR]);
+// ⮕  Shape<typeof FOO | typeof BAR>
+```
+
+## `transform`
+
+Transforms the input value:
+
+```ts
+const shape = d.transform(parseFloat);
+// ⮕ Shape<any, number>
+```
+
+Use `transform` in conjunction with [shape piping](#shape-piping):
+
+```ts
+shape.to(d.number().min(3).max(5));
+```
+
+Apply async transformations with `transformAsync`:
+
+```ts
+d.transformAsync(value => Promise.resolve('Hello, ' + value));
+// ⮕ Shape<any, string>
+```
+
+For more information, see [Async transformations](#async-transformations) section.
+
 ## `tuple`
 
 Constrains a value to be a tuple where elements at particular positions have concrete types:
@@ -2782,6 +2788,15 @@ d.tuple([d.string(), d.number()], d.boolean());
 // Or
 d.tuple([d.string(), d.number()]).rest(d.boolean());
 // ⮕ Shape<[string, number, ...boolean]>
+```
+
+## `undefined`
+
+A shape that requires an input to be `undefined`:
+
+```ts
+d.undefined();
+// ⮕ Shape<undefined>
 ```
 
 ## `union`
@@ -2852,15 +2867,6 @@ businessType.parse({
   headcount: 0
 });
 // ❌ ValidationError: numberGreaterThan at /headcount: Must be greater than 0
-```
-
-## `undefined`
-
-A shape that requires an input to be `undefined`:
-
-```ts
-d.undefined();
-// ⮕ Shape<undefined>
 ```
 
 ## `unknown`

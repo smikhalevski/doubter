@@ -307,6 +307,15 @@ describe('intersectValues', () => {
 });
 
 describe('intersectValueTypes', () => {
+  test('never absorbs other types', () => {
+    expect(intersectValueTypes([[TYPE_STRING], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
+    expect(intersectValueTypes([[TYPE_ANY], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
+  });
+
+  test('any absorbs other types', () => {
+    expect(intersectValueTypes([[TYPE_STRING], [TYPE_ANY]])).toEqual([TYPE_ANY]);
+  });
+
   test('returns the shared type', () => {
     expect(intersectValueTypes([[TYPE_STRING], [TYPE_STRING, TYPE_NUMBER]])).toEqual([TYPE_STRING]);
   });

@@ -70,6 +70,12 @@ describe('FunctionShape', () => {
     expect(new FunctionShape(noArgsShape, null, asyncShape).isDelegatorAsync).toBe(true);
   });
 
+  test('bare prevents a function from being wrapped', () => {
+    const fnStub = () => undefined;
+
+    expect(new FunctionShape(noArgsShape, null, null).bare().parse(fnStub)).toBe(fnStub);
+  });
+
   describe('delegate', () => {
     test('delegates a function with 0 arguments', () => {
       const fnMock = jest.fn();

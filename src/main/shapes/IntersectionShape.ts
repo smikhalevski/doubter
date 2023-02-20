@@ -12,16 +12,26 @@ import {
   toDeepPartialShape,
 } from '../utils';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
-import { CODE_INTERSECTION, MESSAGE_INTERSECTION, TYPE_ARRAY, TYPE_DATE, TYPE_NEVER, TYPE_OBJECT } from '../constants';
+import {
+  CODE_INTERSECTION,
+  MESSAGE_INTERSECTION,
+  TYPE_ANY,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_NEVER,
+  TYPE_OBJECT,
+} from '../constants';
 
-export type ToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+// prettier-ignore
+export type ToIntersection<U extends AnyShape> =
+  (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
 
 export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<
   ToArray<{ [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never }>
 >;
 
 export class IntersectionShape<U extends readonly AnyShape[]>
-  extends Shape<ToIntersection<U[number]['input']>, ToIntersection<U[number]['output']>>
+  extends Shape<ToIntersection<U[number]>['input'], ToIntersection<U[number]>['output']>
   implements DeepPartialProtocol<DeepPartialIntersectionShape<U>>
 {
   protected _options;
@@ -69,7 +79,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<ToIntersection<U[number]['output']>> {
+  protected _apply(input: any, options: ParseOptions): ApplyResult<ToIntersection<U[number]>['output']> {
     const { shapes, _typeIssueFactory } = this;
     const shapesLength = shapes.length;
 
@@ -105,7 +115,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return this._applyIntersection(input, outputs, issues, options);
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]['output']>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]>['output']>> {
     const { shapes, _typeIssueFactory } = this;
     const shapesLength = shapes.length;
 
@@ -157,7 +167,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     outputs: any[] | null,
     issues: Issue[] | null,
     options: ParseOptions
-  ): ApplyResult<ToIntersection<U[number]['output']>> {
+  ): ApplyResult<ToIntersection<U[number]>['output']> {
     const { shapes, _typeIssueFactory, _applyChecks, _unsafe } = this;
 
     let output = input;
@@ -264,23 +274,37 @@ export function intersectValues(a: any, b: any): any {
   return NEVER;
 }
 
-export function intersectValueTypes(arr: Array<readonly ValueType[]>): ValueType[] {
-  const arrLength = arr.length;
+/**
+ * Returns the intersection type.
+ *
+ * @param typesByShape The array of arrays of unique input types associated with each shape in the intersection.
+ */
+export function intersectValueTypes(typesByShape: Array<readonly ValueType[]>): ValueType[] {
+  const shapesLength = typesByShape.length;
 
-  if (arrLength === 0) {
+  if (shapesLength === 0) {
     return [TYPE_NEVER];
   }
 
-  const types = arr[0].slice(0);
+  const types = typesByShape[0].slice(0);
 
-  for (let i = 1; i < arr.length; ++i) {
+  for (let i = 1; i < typesByShape.length; ++i) {
+    const shapeTypes = typesByShape[i];
+
+    if (shapeTypes[0] === TYPE_NEVER) {
+      return [TYPE_NEVER];
+    }
+    if (shapeTypes[0] === TYPE_ANY) {
+      return [TYPE_ANY];
+    }
+
     for (let j = 0; j < types.length; ++j) {
-      if (arr[i].includes(types[j])) {
-        continue;
+      if (!shapeTypes.includes(types[j])) {
+        types.splice(j--, 1);
       }
-      types.splice(j--, 1);
     }
   }
+
   if (types.length === 0) {
     return [TYPE_NEVER];
   }

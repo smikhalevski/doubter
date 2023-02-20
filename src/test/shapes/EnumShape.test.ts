@@ -143,6 +143,18 @@ describe('EnumShape', () => {
     expect(shape.parse('AAA', { coerced: true })).toEqual(Foo.AAA);
   });
 
+  test('coerces the key of a const object', () => {
+    const shape = new EnumShape({
+      AAA: 'aaa',
+      BBB: 'bbb',
+    } as const);
+
+    expect(shape.coerce().inputTypes).toEqual([TYPE_STRING, TYPE_ARRAY]);
+
+    expect(shape.coerce().parse('AAA')).toEqual('aaa');
+    expect(shape.parse('AAA', { coerced: true })).toEqual('aaa');
+  });
+
   test('coerces from an array', () => {
     const shape = new EnumShape([111, 222]);
 
