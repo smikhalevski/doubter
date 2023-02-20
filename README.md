@@ -62,7 +62,7 @@ npm install --save-prod doubter
 
 [**Performance**](#performance)
 
-[**Data types**](#data-types)
+**Data types**
 
 - Strings<br>
   [`string`](#string)
@@ -2639,49 +2639,6 @@ const shape = d.promise(
 // ⮕ Shape<Promise<string>, Promise<number>>
 ```
 
-## `symbol`
-
-A shape that constrains a value to be an arbitrary symbol.
-
-```ts
-d.symbol();
-// ⮕ Shape<symbol>
-```
-
-To constrain an input to an exact symbol, use [`const`](#const):
-
-```ts
-const TAG = Symbol('tag');
-
-d.const(TAG);
-// ⮕ Shape<typeof TAG>
-```
-
-Or use an [`enum`](#enum) to allow several exact symbols:
-
-```ts
-const FOO = Symbol('foo');
-const BAR = Symbol('bar');
-
-d.enum([FOO, BAR]);
-// ⮕  Shape<typeof FOO | typeof BAR>
-```
-
-## `transform`
-
-Transforms the input value:
-
-```ts
-const shape = d.transform(parseFloat);
-// ⮕ Shape<any, number>
-```
-
-Use `transform` in conjunction with [shape piping](#shape-piping):
-
-```ts
-shape.to(d.number().min(3).max(5));
-```
-
 ## `record`
 
 Constrain keys and values of a dictionary-like object:
@@ -2756,6 +2713,58 @@ Constrain a string with a regular expression:
 d.string().regex(/foo|bar/);
 ```
 
+## `symbol`
+
+A shape that constrains a value to be an arbitrary symbol.
+
+```ts
+d.symbol();
+// ⮕ Shape<symbol>
+```
+
+To constrain an input to an exact symbol, use [`const`](#const):
+
+```ts
+const TAG = Symbol('tag');
+
+d.const(TAG);
+// ⮕ Shape<typeof TAG>
+```
+
+Or use an [`enum`](#enum) to allow several exact symbols:
+
+```ts
+const FOO = Symbol('foo');
+const BAR = Symbol('bar');
+
+d.enum([FOO, BAR]);
+// ⮕  Shape<typeof FOO | typeof BAR>
+```
+
+## `transform`
+
+Transforms the input value:
+
+```ts
+const shape = d.transform(parseFloat);
+// ⮕ Shape<any, number>
+```
+
+Use `transform` in conjunction with [shape piping](#shape-piping):
+
+```ts
+shape.to(d.number().min(3).max(5));
+```
+
+Apply async transformations with `transformAsync`:
+
+```ts
+d.transformAsync(value => Promise.resolve('Hello, ' + value));
+// ⮕ Shape<any, string>
+```
+
+For more information, see [Async transformations](#async-transformations) section.
+
 ## `tuple`
 
 Constrains a value to be a tuple where elements at particular positions have concrete types:
@@ -2774,6 +2783,15 @@ d.tuple([d.string(), d.number()], d.boolean());
 // Or
 d.tuple([d.string(), d.number()]).rest(d.boolean());
 // ⮕ Shape<[string, number, ...boolean]>
+```
+
+## `undefined`
+
+A shape that requires an input to be `undefined`:
+
+```ts
+d.undefined();
+// ⮕ Shape<undefined>
 ```
 
 ## `union`
@@ -2844,15 +2862,6 @@ businessType.parse({
   headcount: 0
 });
 // ❌ ValidationError: numberGreaterThan at /headcount: Must be greater than 0
-```
-
-## `undefined`
-
-A shape that requires an input to be `undefined`:
-
-```ts
-d.undefined();
-// ⮕ Shape<undefined>
 ```
 
 ## `unknown`
