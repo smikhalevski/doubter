@@ -4,6 +4,7 @@ import {
   BooleanShape,
   ConstShape,
   EnumShape,
+  NeverShape,
   NumberShape,
   ObjectShape,
   Shape,
@@ -11,7 +12,7 @@ import {
   UnionShape,
 } from '../../main';
 import { getDiscriminator } from '../../main/shapes/UnionShape';
-import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NUMBER } from '../../main/constants';
+import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
 
 describe('UnionShape', () => {
   let asyncShape: AnyShape;
@@ -31,7 +32,7 @@ describe('UnionShape', () => {
 
     const orShape = new UnionShape([shape1, shape2, shape3]);
 
-    expect(orShape.inputTypes).toEqual(['number', 'string', 'boolean']);
+    expect(orShape.inputTypes).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN]);
     expect(orShape.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
@@ -117,6 +118,17 @@ describe('UnionShape', () => {
     ]);
 
     expect(shape.parse({ type: 'bbb' })).toEqual({ type: 'bbb' });
+  });
+
+  describe('inputTypes', () => {
+    test('never is erased', () => {
+      expect(new UnionShape([new StringShape(), new NeverShape()]).inputTypes).toEqual([TYPE_STRING]);
+    });
+
+    test('any absorbs other types', () => {
+      expect(new UnionShape([new StringShape(), new Shape()]).inputTypes).toEqual([TYPE_ANY]);
+      expect(new UnionShape([new NeverShape(), new Shape()]).inputTypes).toEqual([TYPE_ANY]);
+    });
   });
 
   describe('at', () => {

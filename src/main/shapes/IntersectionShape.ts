@@ -12,7 +12,15 @@ import {
   toDeepPartialShape,
 } from '../utils';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
-import { CODE_INTERSECTION, MESSAGE_INTERSECTION, TYPE_ARRAY, TYPE_DATE, TYPE_NEVER, TYPE_OBJECT } from '../constants';
+import {
+  CODE_INTERSECTION,
+  MESSAGE_INTERSECTION,
+  TYPE_ANY,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_NEVER,
+  TYPE_OBJECT,
+} from '../constants';
 
 export type ToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
 
@@ -264,23 +272,37 @@ export function intersectValues(a: any, b: any): any {
   return NEVER;
 }
 
-export function intersectValueTypes(arr: Array<readonly ValueType[]>): ValueType[] {
-  const arrLength = arr.length;
+/**
+ * Returns the intersection type.
+ *
+ * @param typesByShape The array of arrays of unique input types associated with each shape in the intersection.
+ */
+export function intersectValueTypes(typesByShape: Array<readonly ValueType[]>): ValueType[] {
+  const shapesLength = typesByShape.length;
 
-  if (arrLength === 0) {
+  if (shapesLength === 0) {
     return [TYPE_NEVER];
   }
 
-  const types = arr[0].slice(0);
+  const types = typesByShape[0].slice(0);
 
-  for (let i = 1; i < arr.length; ++i) {
+  for (let i = 1; i < typesByShape.length; ++i) {
+    const shapeTypes = typesByShape[i];
+
+    if (shapeTypes[0] === TYPE_NEVER) {
+      return [TYPE_NEVER];
+    }
+    if (shapeTypes[0] === TYPE_ANY) {
+      return [TYPE_ANY];
+    }
+
     for (let j = 0; j < types.length; ++j) {
-      if (arr[i].includes(types[j])) {
-        continue;
+      if (!shapeTypes.includes(types[j])) {
+        types.splice(j--, 1);
       }
-      types.splice(j--, 1);
     }
   }
+
   if (types.length === 0) {
     return [TYPE_NEVER];
   }
