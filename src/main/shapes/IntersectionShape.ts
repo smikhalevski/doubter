@@ -7,6 +7,7 @@ import {
   isArray,
   isAsyncShape,
   isEqual,
+  NEVER,
   ok,
   ToArray,
   toDeepPartialShape,
@@ -199,8 +200,6 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return issues;
   }
 }
-
-export const NEVER = Symbol();
 
 export function intersectValues(a: any, b: any): any {
   if (isEqual(a, b)) {

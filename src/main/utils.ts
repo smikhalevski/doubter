@@ -3,6 +3,8 @@ import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, S
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 
+export const NEVER = Symbol();
+
 export interface ReadonlyDict<T = any> {
   readonly [key: string]: T;
 }
@@ -475,10 +477,6 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
 
 export function returnFalse(): boolean {
   return false;
-}
-
-export function returnTrue(): boolean {
-  return true;
 }
 
 export function returnArray(): [] {
