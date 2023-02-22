@@ -41,7 +41,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options);
+    this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
   }
 
   at(key: unknown): AnyShape | null {
@@ -80,7 +80,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<ToIntersection<U[number]>['output']> {
-    const { shapes, _typeIssueFactory } = this;
+    const { shapes } = this;
     const shapesLength = shapes.length;
 
     let outputs = null;
@@ -94,7 +94,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       }
       if (isArray(result)) {
         if (!options.verbose) {
-          return _typeIssueFactory(input, options, result);
+          return result;
         }
         issues = concatIssues(issues, result);
         continue;
@@ -116,7 +116,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]>['output']>> {
-    const { shapes, _typeIssueFactory } = this;
+    const { shapes } = this;
     const shapesLength = shapes.length;
 
     const promises: Promise<ApplyResult>[] = [];
@@ -137,7 +137,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         }
         if (isArray(result)) {
           if (!options.verbose) {
-            return _typeIssueFactory(input, options, result);
+            return result;
           }
           issues = concatIssues(issues, result);
           continue;
@@ -168,7 +168,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     issues: Issue[] | null,
     options: ParseOptions
   ): ApplyResult<ToIntersection<U[number]>['output']> {
-    const { shapes, _typeIssueFactory, _applyChecks, _unsafe } = this;
+    const { shapes, _applyChecks, _unsafe } = this;
 
     let output = input;
 
@@ -186,12 +186,8 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       }
       if (output === NEVER) {
         output = input;
-        issues = [];
+        issues = this._typeIssueFactory(input, options);
       }
-    }
-
-    if (issues !== null) {
-      issues = _typeIssueFactory(input, options, issues);
     }
 
     if (_applyChecks !== null && (_unsafe || issues === null)) {

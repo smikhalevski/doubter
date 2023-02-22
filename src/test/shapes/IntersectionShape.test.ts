@@ -83,15 +83,7 @@ describe('IntersectionShape', () => {
 
     expect(andShape.try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_INTERSECTION,
-          path: [],
-          input: 'aaa',
-          message: MESSAGE_INTERSECTION,
-          param: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
     });
   });
 
@@ -101,16 +93,8 @@ describe('IntersectionShape', () => {
     expect(andShape.try('aaa', { verbose: true })).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_INTERSECTION,
-          path: [],
-          input: 'aaa',
-          message: MESSAGE_INTERSECTION,
-          param: [
-            { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] },
-            { code: CODE_TYPE, input: 'aaa', message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN, path: [] },
-          ],
-        },
+        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] },
+        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN, path: [] },
       ],
     });
   });
@@ -120,15 +104,7 @@ describe('IntersectionShape', () => {
 
     expect(andShape.try('111.222')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_INTERSECTION,
-          path: [],
-          input: '111.222',
-          message: MESSAGE_INTERSECTION,
-          param: [],
-        },
-      ],
+      issues: [{ code: CODE_INTERSECTION, path: [], input: '111.222', message: MESSAGE_INTERSECTION }],
     });
   });
 
@@ -140,8 +116,14 @@ describe('IntersectionShape', () => {
 
     expect(andShape.try(['111.222'])).toEqual({
       ok: false,
-      issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION, path: [], param: [] }],
+      issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION, path: [] }],
     });
+  });
+
+  test('empty intersections produce no issues', () => {
+    const orShape = new IntersectionShape([]);
+
+    expect(orShape.try('aaa')).toEqual({ ok: true, value: 'aaa' });
   });
 
   test('applies checks', () => {
@@ -153,6 +135,33 @@ describe('IntersectionShape', () => {
     expect(orShape.try({})).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  test('does not apply checks if an intersected shape raises an error', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
+
+    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }]);
+
+    expect(orShape.try({}, { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  test('applies unsafe checks if an intersected shape raises an error', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
+
+    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { unsafe: true });
+
+    expect(orShape.try({}, { verbose: true })).toEqual({
+      ok: false,
+      issues: [
+        { code: 'xxx', path: [] },
+        { code: 'yyy', path: [] },
+      ],
     });
   });
 
@@ -218,14 +227,7 @@ describe('IntersectionShape', () => {
       expect(andShape.parse(111)).toBe(111);
       expect(andShape.try(undefined)).toEqual({
         ok: false,
-        issues: [
-          {
-            code: CODE_INTERSECTION,
-            message: MESSAGE_INTERSECTION,
-            param: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
-            path: [],
-          },
-        ],
+        issues: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
       });
     });
   });
@@ -260,15 +262,7 @@ describe('IntersectionShape', () => {
 
       await expect(andShape.tryAsync(['111.222'])).resolves.toEqual({
         ok: false,
-        issues: [
-          {
-            code: CODE_INTERSECTION,
-            input: ['111.222'],
-            message: MESSAGE_INTERSECTION,
-            path: [],
-            param: [],
-          },
-        ],
+        issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION, path: [] }],
       });
     });
   });
