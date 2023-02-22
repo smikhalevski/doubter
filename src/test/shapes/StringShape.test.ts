@@ -39,16 +39,7 @@ describe('StringShape', () => {
   test('raises if string length is not greater than', () => {
     expect(new StringShape().min(2).try('a')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_STRING_MIN,
-          path: [],
-          input: 'a',
-          param: 2,
-          message: 'Must have the minimum length of 2',
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: CODE_STRING_MIN, path: [], input: 'a', param: 2, message: 'Must have the minimum length of 2' }],
     });
     expect(new StringShape().min(2).parse('aa')).toBe('aa');
   });
@@ -57,14 +48,7 @@ describe('StringShape', () => {
     expect(new StringShape().max(2).try('aaa')).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_STRING_MAX,
-          path: [],
-          input: 'aaa',
-          param: 2,
-          message: 'Must have the maximum length of 2',
-          meta: undefined,
-        },
+        { code: CODE_STRING_MAX, path: [], input: 'aaa', param: 2, message: 'Must have the maximum length of 2' },
       ],
     });
     expect(new StringShape().max(2).parse('aa')).toBe('aa');
@@ -74,17 +58,29 @@ describe('StringShape', () => {
     expect(new StringShape().regex(/a+/).try('bbb')).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_STRING_REGEX,
-          path: [],
-          input: 'bbb',
-          param: /a+/,
-          message: 'Must match the pattern /a+/',
-          meta: undefined,
-        },
+        { code: CODE_STRING_REGEX, path: [], input: 'bbb', param: /a+/, message: 'Must match the pattern /a+/' },
       ],
     });
     expect(new StringShape().regex(/a+/).parse('aaa')).toBe('aaa');
+  });
+
+  test('raises if string does not match multiple a patterns', () => {
+    expect(new StringShape().regex(/a+/).regex(/b+/).try('ccc', { verbose: true })).toEqual({
+      ok: false,
+      issues: [
+        { code: CODE_STRING_REGEX, input: 'ccc', message: 'Must match the pattern /a+/', param: /a+/, path: [] },
+        { code: CODE_STRING_REGEX, input: 'ccc', message: 'Must match the pattern /b+/', param: /b+/, path: [] },
+      ],
+    });
+  });
+
+  test('same regexp is added only once', () => {
+    expect(new StringShape().regex(/a+/).regex(/a+/).try('bbb', { verbose: true })).toEqual({
+      ok: false,
+      issues: [
+        { code: CODE_STRING_REGEX, input: 'bbb', message: 'Must match the pattern /a+/', param: /a+/, path: [] },
+      ],
+    });
   });
 
   test('overrides message for type issue', () => {
@@ -112,22 +108,8 @@ describe('StringShape', () => {
     expect(new StringShape({}).min(3).regex(/aaaa/).try('aa', { verbose: true })).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_STRING_MIN,
-          path: [],
-          input: 'aa',
-          param: 3,
-          message: 'Must have the minimum length of 3',
-          meta: undefined,
-        },
-        {
-          code: CODE_STRING_REGEX,
-          path: [],
-          input: 'aa',
-          param: /aaaa/,
-          message: 'Must match the pattern /aaaa/',
-          meta: undefined,
-        },
+        { code: CODE_STRING_MIN, path: [], input: 'aa', param: 3, message: 'Must have the minimum length of 3' },
+        { code: CODE_STRING_REGEX, path: [], input: 'aa', param: /aaaa/, message: 'Must match the pattern /aaaa/' },
       ],
     });
   });
@@ -136,14 +118,7 @@ describe('StringShape', () => {
     expect(new StringShape().min(3).regex(/aaaa/).try('aa')).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_STRING_MIN,
-          path: [],
-          input: 'aa',
-          param: 3,
-          message: 'Must have the minimum length of 3',
-          meta: undefined,
-        },
+        { code: CODE_STRING_MIN, path: [], input: 'aa', param: 3, message: 'Must have the minimum length of 3' },
       ],
     });
   });
@@ -181,15 +156,7 @@ describe('StringShape', () => {
   test('raises an issue if coercion fails', () => {
     expect(new StringShape().coerce().try([111, 222])).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_TYPE,
-          input: [111, 222],
-          message: MESSAGE_STRING_TYPE,
-          param: TYPE_STRING,
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: [111, 222], message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [] }],
     });
   });
 
