@@ -1044,7 +1044,7 @@ shape2.parse({ name: 8080 });
 // ❌ ValidationError: type at /name: Must be a string
 ```
 
-Deep partial isn't applied to transformed shapes:
+Deep partial isn't applied to transformed and branded shapes:
 
 ```ts
 const shape2 = d.object({
@@ -1052,6 +1052,8 @@ const shape2 = d.object({
 }).deepPartial();
 // ⮕ Shape<{ years?: string[] }, { years?: number[] }>
 ```
+
+Note that array elements aren't optional after `deepPartial` was applied.
 
 # Fallback value
 
