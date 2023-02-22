@@ -92,7 +92,7 @@ export class StringShape extends CoercibleShape<string> {
   regex(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-    return addConstraint(this, CODE_STRING_REGEX, re, (input, options) => {
+    return addConstraint(this, re.toString(), re, (input, options) => {
       re.lastIndex = 0;
 
       if (!re.test(input)) {
