@@ -1,6 +1,6 @@
 import { ApplyResult, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { addConstraint, createIssueFactory, isArray, isDate, ok } from '../utils';
+import { addConstraint, createIssueFactory, isArray, isValidDate, ok } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -143,7 +143,7 @@ export class StringShape extends CoercibleShape<string> {
     if (Number.isFinite(value) || typeof value === 'boolean' || typeof value === 'bigint') {
       return '' + value;
     }
-    if (isDate(value)) {
+    if (isValidDate(value)) {
       return value.toISOString();
     }
     return null;
