@@ -23,7 +23,7 @@
     "test": "jest",
     "test:definitions": "ln -nsf .. ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
     "perf": "[ -d ./lib ] || npm run build && node --expose-gc --max-old-space-size=4096 ./node_modules/.bin/toofast ./src/test/perf.js",
-    "docs": "typedoc --name 'Doubter 🤔' --readme none ./src/main/index.ts && cp -R ./images ./docs"
+    "docs": "typedoc --name 'Doubter 🤔' --readme none ./src/main/index.ts"
   },
   "repository": {
     "type": "git",

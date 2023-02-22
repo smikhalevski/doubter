@@ -28,10 +28,12 @@ import {
 import { ValidationError } from '../ValidationError';
 import {
   CODE_EXCLUSION,
+  CODE_NOT,
   CODE_PREDICATE,
   ERROR_FORBIDDEN_AT_RUNTIME,
   ERROR_REQUIRES_ASYNC,
   MESSAGE_EXCLUSION,
+  MESSAGE_NOT,
   MESSAGE_PREDICATE,
   TYPE_ANY,
   TYPE_NEVER,
@@ -452,6 +454,10 @@ export class Shape<I = any, O = I> {
 
   catch(fallback?: unknown): Shape {
     return new CatchShape(this, fallback);
+  }
+
+  not<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): NotShape<this, S> {
+    return new NotShape(this, shape, options);
   }
 
   /**
@@ -1326,5 +1332,99 @@ export class CatchShape<S extends AnyShape, T>
       return result;
     }
     return issues;
+  }
+}
+
+/**
+ * Checks that the input doesn't match the shape.
+ *
+ * @template S The base shape.
+ * @template N The shape to which the input must not conform.
+ */
+export class NotShape<S extends AnyShape, N extends AnyShape>
+  extends Shape<S['input'], S['output']>
+  implements DeepPartialProtocol<NotShape<DeepPartialShape<S>, N>>
+{
+  protected _options;
+  protected _typeIssueFactory;
+
+  constructor(readonly shape: S, readonly notShape: N, options?: ConstraintOptions | Message) {
+    super();
+
+    this._options = options;
+    this._typeIssueFactory = createIssueFactory(CODE_NOT, MESSAGE_NOT, options, undefined);
+  }
+
+  deepPartial(): NotShape<DeepPartialShape<S>, N> {
+    return copyUnsafeChecks(this, new NotShape(toDeepPartialShape(this.shape), this.notShape, this._options));
+  }
+
+  protected _isAsync(): boolean {
+    return this.shape.isAsync || this.notShape.isAsync;
+  }
+
+  protected _getInputTypes(): readonly ValueType[] {
+    return this.shape.inputTypes;
+  }
+
+  protected _getInputValues(): unknown[] {
+    return this.shape['_getInputValues']();
+  }
+
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output']> {
+    const { shape, notShape, _applyChecks } = this;
+
+    let issues;
+    let output = input;
+
+    let result = shape['_apply'](input, options);
+
+    if (result !== null) {
+      if (isArray(result)) {
+        return result;
+      }
+      output = result.value;
+    }
+
+    if (!isArray(notShape['_apply'](output, options))) {
+      issues = this._typeIssueFactory(input, options);
+    }
+
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
+    }
+    return issues;
+  }
+
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
+    const { shape, notShape, _applyChecks } = this;
+
+    let result: ApplyResult = null;
+    let output = input;
+
+    return shape['_applyAsync'](input, options)
+      .then(inputResult => {
+        if (inputResult !== null) {
+          if (isArray(inputResult)) {
+            return inputResult;
+          }
+          result = inputResult;
+          output = inputResult.value;
+        }
+
+        return notShape['_applyAsync'](output, options);
+      })
+      .then(outputResult => {
+        let issues;
+
+        if (!isArray(outputResult)) {
+          issues = this._typeIssueFactory(input, options);
+        }
+
+        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+          return result;
+        }
+        return issues;
+      });
   }
 }
