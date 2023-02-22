@@ -59,7 +59,7 @@ export function isPlainObject(value: unknown): boolean {
 }
 
 export function isIterable(value: any): value is Iterable<any> {
-  return isObjectLike(value) && (typeof value[Symbol.iterator] === 'function' || typeof value.length === 'number');
+  return isObjectLike(value) && (Symbol.iterator in value || !isNaN(value.length));
 }
 
 export function isNumber(value: unknown): boolean {
