@@ -117,7 +117,7 @@ export class UnionShape<U extends readonly AnyShape[]>
 
     let result = null;
     let issues = null;
-    let issuesPerShape = null;
+    let issueGroups = null;
     let output = input;
     let index;
 
@@ -136,11 +136,11 @@ export class UnionShape<U extends readonly AnyShape[]>
         break;
       }
       issues = result;
-      (issuesPerShape ||= []).push(result);
+      (issueGroups ||= []).push(result);
     }
 
     if (index === shapesLength && shapesLength !== 1) {
-      issues = this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issuesPerShape });
+      issues = this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
     }
 
     if (_applyChecks !== null && (_unsafe || issues === null)) {
@@ -162,7 +162,7 @@ export class UnionShape<U extends readonly AnyShape[]>
       return Promise.resolve(_typeIssueFactory(input, options, []));
     }
 
-    let issuesPerShape: Issue[][] | null = null;
+    let issueGroups: Issue[][] | null = null;
 
     const nextShape = (index: number): Promise<ApplyResult<U[number]['output']>> => {
       return shapes[index]['_applyAsync'](input, options).then(result => {
@@ -172,7 +172,7 @@ export class UnionShape<U extends readonly AnyShape[]>
         if (result !== null) {
           if (isArray(result)) {
             issues = result;
-            (issuesPerShape ||= []).push(result);
+            (issueGroups ||= []).push(result);
 
             if (++index !== shapesLength) {
               return nextShape(index);
@@ -183,7 +183,7 @@ export class UnionShape<U extends readonly AnyShape[]>
         }
 
         if (index === shapesLength && shapesLength !== 1) {
-          issues = this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issuesPerShape });
+          issues = this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
         }
 
         if (_applyChecks !== null && (_unsafe || issues === null)) {

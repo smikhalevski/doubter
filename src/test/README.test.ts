@@ -56,7 +56,7 @@ describe('JSON shape', () => {
           path: [],
           param: {
             inputTypes: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
-            issuesPerShape: null,
+            issueGroups: null,
           },
           meta: undefined,
         },
@@ -72,7 +72,7 @@ describe('JSON shape', () => {
           message: MESSAGE_UNION,
           param: {
             inputTypes: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
-            issuesPerShape: null,
+            issueGroups: null,
           },
           path: ['aaa', 'bbb'],
         },

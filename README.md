@@ -404,7 +404,7 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
 | `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
 | `instance` | [`instanceOf(Class)`](#instanceof) | The class constructor `Class` |
-| `intersection` | [`d.and(…)`](#intersection) | An array of root cause issues |
+| `intersection` | [`d.and(…)`](#intersection) | — |
 | `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
 | `predicate` | [`shape.refine(…)`](#refinements) | The callback passed to `refine`  |
 | `numberInteger` | [`d.integer()`](#integer) | — |
@@ -421,7 +421,7 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `stringRegex` | [`d.string().regex(re)`](#string) | The regular expression `re` |
 | `type` | All shapes | The expected [input value type](#introspection) |
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
-| `union` | [`d.or(…)`](#union) | The object with [`inputTypes`](#introspection) and `issuesPerShape` |
+| `union` | [`d.or(…)`](#union) | [Issues raised by a union](#issues-raised-by-a-union) |
 | `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
 
 # Checks
@@ -1996,7 +1996,8 @@ If you want to prevent the parsed function from being wrapped in a delegator, us
 ```ts
 const shape2 = d.fn().bare();
 
-function implFn() {}
+function implFn() {
+}
 
 shape2.parse(implFn) === implFn // ⮕ true
 ```
@@ -2068,7 +2069,7 @@ getLastName.call({ name: 'Indiana Jones' });
 // ⮕ 'Jones'
 ```
 
-But if user is invalid, an error would be thrown: 
+But if user is invalid, an error would be thrown:
 
 ```ts
 getLastName.call({});
@@ -2077,7 +2078,7 @@ getLastName.call({});
 
 The implementation of `getLastName` expects that the first and the last name are separated with a space character. This
 may cause an unexpected behaviour if an input string doesn't contain a space char: and `undefined` would be returned.
-But since `getLastNameShape` constrains the return value with `d.string`, an error is thrown at runtime: 
+But since `getLastNameShape` constrains the return value with `d.string`, an error is thrown at runtime:
 
 ```ts
 getLastName.call({ name: 'Indiana' });
@@ -2826,12 +2827,12 @@ types.
 Sole entrepreneur goes first:
 
 ```ts
-const soleShape = d.object({
-  bisinessType: d.const('sole'),
+const entrepreneurShape = d.object({
+  bisinessType: d.const('entrepreneur'),
   name: d.string(),
   age: d.int().gte(18)
 });
-// ⮕ Shape<{ type: 'sole', name: string, age: number }>
+// ⮕ Shape<{ type: 'entrepreneur', name: string, age: number }>
 ```
 
 We're going to use `bisinessType` property as the discriminator in our union. Now let's define a shape for a company:
@@ -2853,7 +2854,7 @@ to a set of literal values.
 The final step is to define a discriminated union shape:
 
 ```ts
-const businessShape = d.union([soleShape, companyShape]);
+const businessShape = d.union([entrepreneurShape, companyShape]);
 ```
 
 `union` would detect that all object shapes in the union have the `businessType` property with distinct values and would
@@ -2868,6 +2869,105 @@ businessType.parse({
 });
 // ❌ ValidationError: numberGreaterThan at /headcount: Must be greater than 0
 ```
+
+## Issues raised by a union
+
+If there are multiple shapes in the union that have raised issues during parsing, then union returns a grouping issue.
+
+```ts
+const shape = d.or([
+  d.object({
+    name: d.string()
+  }),
+  d.object({
+    age: d.number()
+  })
+]);
+
+shape.try({ name: 47, age: null });
+```
+
+The result of `try` would contain a grouping issue:
+
+```ts
+{
+  code: 'union',
+  path: [],
+  input: {
+    name: 47,
+    age: null
+  },
+  message: 'Must conform the union',
+  param: {
+    inputTypes: ['object'],
+    issueGroups: [
+      [
+        {
+          code: 'type',
+          path: ['name'],
+          input: 47,
+          message: 'Must be a string',
+          param: 'string'
+        }
+      ],
+      [
+        {
+          code: 'type',
+          path: ['age'],
+          message: 'Must be a number',
+          param: 'number'
+        }
+      ]
+    ]
+  }
+}
+```
+
+<dl>
+<dt><code>inputTypes</code></dt>
+<dd>
+
+An array of all [input value types](#introspection) that the union supports.
+
+</dd>
+<dt><code>issueGroups</code></dt>
+<dd>
+
+An array of issue groups where each group contains issues raised by a separate shape in the union; or `null`.
+
+Union checks the input only against shapes that support the corresponding input value type, so `issueGroups` only
+contains issues raised by shapes that support the input.
+
+If there were no shapes in the union that support the type of the provided input, then `issueGroups` is `null`. For
+example, if you have a `number | string` union and parse a boolean value, there's no shape that supports `boolean`
+input type. So the raised union issue would have `issueGroups` set to `null`.
+
+`path` of issues in `issueGroups` is relative to the grouping issue. 
+
+</dd>
+</dl>
+
+When union detects that only one of its shapes supports the provided input then issues produced by this shape are
+returned as is:
+
+```ts
+d.or([d.number(), d.string().min(6)]).try('Okay')
+```
+
+In this example, only `d.string` can parse the `'Okay'` input value, so the result of `try` would contain a single
+string-related issue:
+
+```ts
+{
+  code: 'stringMinLength',
+  path: [],
+  input: 'Okay',
+  message: 'Must have the minimum length of 6',
+  param: 6
+}
+```
+
+This behaviour is applied to discriminated unions as well.
 
 ## `unknown`
 
