@@ -1,5 +1,6 @@
 import {
   AnyShape,
+  ConstShape,
   ExcludeShape,
   NumberShape,
   ObjectShape,
@@ -741,6 +742,10 @@ describe('CatchShape', () => {
 
   test('returns input types of the underlying shape', () => {
     expect(new CatchShape(new StringShape(), 'aaa').inputTypes).toEqual([TYPE_STRING]);
+  });
+
+  test('returns input values of the underlying shape', () => {
+    expect(new CatchShape(new ConstShape('aaa'), 'bbb')['_getInputValues']()).toEqual(['aaa']);
   });
 
   describe('async', () => {
