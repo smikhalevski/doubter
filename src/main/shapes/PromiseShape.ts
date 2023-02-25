@@ -49,7 +49,7 @@ export class PromiseShape<S extends AnyShape>
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
     let output: Promise<unknown> = input;
 
-    if (!(output instanceof Promise)) {
+    if (!(input instanceof Promise)) {
       if (!(options.coerced || this.isCoerced)) {
         return Promise.resolve(this._typeIssueFactory(input, options));
       }
@@ -67,20 +67,24 @@ export class PromiseShape<S extends AnyShape>
         return this.shape['_applyAsync'](value, options);
       })
       .then(result => {
-        let issues;
+        let issues = null;
 
         if (result !== null) {
           if (isArray(result)) {
-            return result;
-          }
-          outputValue = result.value;
+            if (!options.verbose || !this._unsafe) {
+              return result;
+            }
+            issues = result;
+          } else {
+            outputValue = result.value;
 
-          if (!isEqual(inputValue, outputValue)) {
-            output = Promise.resolve(outputValue);
+            if (!isEqual(inputValue, outputValue)) {
+              output = Promise.resolve(outputValue);
+            }
           }
         }
 
-        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+        if (_applyChecks === null || (issues = _applyChecks(output, issues, options)) === null) {
           return ok(output);
         }
         return issues;
