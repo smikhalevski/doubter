@@ -5,6 +5,7 @@ import {
   NumberShape,
   ObjectShape,
   PipeShape,
+  ReplaceShape,
   Shape,
   StringShape,
   TransformShape,
@@ -383,27 +384,9 @@ describe('Shape', () => {
   });
 
   describe('async', () => {
-    test('creates an async shape', () => {
-      class AsyncShape extends Shape {
-        protected _isAsync() {
-          return true;
-        }
-      }
-
-      expect(new AsyncShape().isAsync).toBe(true);
-    });
-
     test('throws if sync methods are invoked', () => {
-      class AsyncShape extends Shape {
-        protected _isAsync() {
-          return true;
-        }
-      }
-
-      const shape = new AsyncShape();
-
-      expect(() => shape.parse('')).toThrow(Error);
-      expect(() => shape.try('')).toThrow(Error);
+      expect(() => asyncShape.parse('')).toThrow(Error);
+      expect(() => asyncShape.try('')).toThrow(Error);
     });
 
     test('returns promise', async () => {
@@ -625,6 +608,51 @@ describe('PipeShape', () => {
   });
 });
 
+describe('ReplaceShape', () => {
+  test('replaces input value with an output', () => {
+    const shape = new ReplaceShape(new Shape(), 111, 222);
+
+    expect(shape.parse('aaa')).toBe('aaa');
+    expect(shape.parse(111)).toBe(222);
+    expect(shape.parse(222)).toBe(222);
+  });
+
+  test('raises issues returned from the shape', () => {
+    const shape = new ReplaceShape(
+      new Shape().check(() => [{ code: 'xxx' }]),
+      111,
+      222
+    );
+
+    expect(shape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  test('does not apply checks if shape raised issues', () => {
+    const shape = new ReplaceShape(
+      new Shape().check(() => [{ code: 'xxx' }]),
+      111,
+      222
+    ).check(() => [{ code: 'yyy' }], { unsafe: true });
+
+    expect(shape.try('aaa', { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  test('applies checks to replaced value', () => {
+    const checkMock = jest.fn();
+
+    new ReplaceShape(new Shape(), 111, 222).check(checkMock).try(111);
+
+    expect(checkMock).toHaveBeenCalledTimes(1);
+    expect(checkMock).toHaveBeenNthCalledWith(1, 222, { coerced: false, verbose: false });
+  });
+});
+
 describe('ExcludeShape', () => {
   test('returns input as is', () => {
     const shape = new ExcludeShape(new Shape(), undefined);
@@ -672,6 +700,18 @@ describe('ExcludeShape', () => {
           input: 111,
         },
       ],
+    });
+  });
+
+  test('does not apply checks if shape raises an issue', () => {
+    const shape = new ExcludeShape(
+      new Shape().check(() => [{ code: 'xxx' }]),
+      undefined
+    ).check(() => [{ code: 'yyy' }], { unsafe: true });
+
+    expect(shape.try(111, { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
     });
   });
 

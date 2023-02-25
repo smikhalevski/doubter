@@ -1114,12 +1114,27 @@ export class ReplaceShape<S extends AnyShape, A, B>
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
+    const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
+
+    return this._applyResult(result, input, options);
+  }
+
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
+    if (isEqual(input, this.inputValue)) {
+      return Promise.resolve(this._applyResult(this._result, input, options));
+    }
+    return this.shape['_applyAsync'](input, options).then(result => this._applyResult(result, input, options));
+  }
+
+  private _applyResult(
+    result: ApplyResult,
+    input: unknown,
+    options: ParseOptions
+  ): ApplyResult<Exclude<S['output'], A> | B> {
     const { _applyChecks } = this;
 
     let issues;
     let output = input;
-
-    const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1132,39 +1147,6 @@ export class ReplaceShape<S extends AnyShape, A, B>
       return result;
     }
     return issues;
-  }
-
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
-    const { _applyChecks } = this;
-
-    if (isEqual(input, this.inputValue)) {
-      if (_applyChecks !== null) {
-        return new Promise(resolve => {
-          const issues = _applyChecks(this.outputValue, null, options);
-
-          resolve(issues !== null ? issues : this._result);
-        });
-      }
-
-      return Promise.resolve(this._result);
-    }
-
-    return this.shape['_applyAsync'](input, options).then(result => {
-      let issues;
-      let output = input;
-
-      if (result !== null) {
-        if (isArray(result)) {
-          return result;
-        }
-        output = result.value;
-      }
-
-      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-        return result;
-      }
-      return issues;
-    });
   }
 }
 
@@ -1224,16 +1206,28 @@ export class ExcludeShape<S extends AnyShape, T>
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
-    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
+    if (isEqual(input, this.excludedValue)) {
+      return this._typeIssueFactory(input, options);
+    }
+    return this._applyResult(this.shape['_apply'](input, options), input, options);
+  }
+
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
+    if (isEqual(input, this.excludedValue)) {
+      return Promise.resolve(this._typeIssueFactory(input, options));
+    }
+    return this.shape['_applyAsync'](input, options).then(result => this._applyResult(result, input, options));
+  }
+
+  private _applyResult(
+    result: ApplyResult,
+    input: unknown,
+    options: ParseOptions
+  ): ApplyResult<Exclude<S['output'], T>> {
+    const { _applyChecks } = this;
 
     let issues;
     let output = input;
-
-    if (isEqual(input, excludedValue)) {
-      return _typeIssueFactory(input, options);
-    }
-
-    const result = this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1241,8 +1235,8 @@ export class ExcludeShape<S extends AnyShape, T>
       }
       output = result.value;
 
-      if (isEqual(output, excludedValue)) {
-        return _typeIssueFactory(input, options);
+      if (isEqual(output, this.excludedValue)) {
+        return this._typeIssueFactory(input, options);
       }
     }
 
@@ -1250,35 +1244,6 @@ export class ExcludeShape<S extends AnyShape, T>
       return result;
     }
     return issues;
-  }
-
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
-    const { excludedValue, _typeIssueFactory, _applyChecks } = this;
-
-    if (isEqual(input, excludedValue)) {
-      return Promise.resolve(_typeIssueFactory(input, options));
-    }
-
-    return this.shape['_applyAsync'](input, options).then(result => {
-      let issues;
-      let output = input;
-
-      if (result !== null) {
-        if (isArray(result)) {
-          return result;
-        }
-        output = result.value;
-
-        if (isEqual(output, excludedValue)) {
-          return _typeIssueFactory(input, options);
-        }
-      }
-
-      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-        return result;
-      }
-      return issues;
-    });
   }
 }
 
@@ -1337,9 +1302,16 @@ export class CatchShape<S extends AnyShape, T>
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output'] | T> {
+    return this._applyResult(this.shape['_apply'](input, options), input, options);
+  }
+
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | T>> {
+    return this.shape['_applyAsync'](input, options).then(result => this._applyResult(result, input, options));
+  }
+
+  private _applyResult(result: ApplyResult, input: unknown, options: ParseOptions): ApplyResult<S['output'] | T> {
     const { _applyChecks } = this;
 
-    let result = this.shape['_apply'](input, options);
     let issues;
     let output = input;
 
@@ -1354,26 +1326,5 @@ export class CatchShape<S extends AnyShape, T>
       return result;
     }
     return issues;
-  }
-
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output'] | T>> {
-    const { _applyChecks } = this;
-
-    return this.shape['_applyAsync'](input, options).then(result => {
-      let issues;
-      let output = input;
-
-      if (result !== null) {
-        if (isArray(result)) {
-          result = this._resultProvider();
-        }
-        output = result.value;
-      }
-
-      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-        return result;
-      }
-      return issues;
-    });
   }
 }
