@@ -225,11 +225,11 @@ export function unshiftPath(issues: Issue[], key: unknown): void {
 }
 
 export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
-  if (issues !== null) {
-    issues.push(...result);
-    return issues;
+  if (issues === null) {
+    return result;
   }
-  return result;
+  issues.push(...result);
+  return issues;
 }
 
 export function captureIssues(error: unknown): Issue[] {

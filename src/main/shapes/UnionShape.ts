@@ -113,20 +113,19 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<U[number]['output']> {
-    const { _applyChecks, _unsafe } = this;
+    const { _applyChecks } = this;
 
     let result = null;
-    let issues = null;
-    let issueGroups = null;
     let output = input;
-    let index;
+    let issues = null;
+    let issueGroups: Issue[][] | null = null;
+    let index = 0;
 
     const shapes = this._lookup(input);
     const shapesLength = shapes.length;
 
-    for (index = 0; index < shapesLength; ++index) {
+    while (index < shapesLength) {
       result = shapes[index]['_apply'](input, options);
-      issues = null;
 
       if (result === null) {
         break;
@@ -135,68 +134,80 @@ export class UnionShape<U extends readonly AnyShape[]>
         output = result.value;
         break;
       }
-      issues = result;
-      (issueGroups ||= []).push(result);
+
+      if (issueGroups !== null) {
+        issueGroups.push(result);
+      } else if (index === 1) {
+        issueGroups = [issues!, result];
+      } else {
+        issues = result;
+      }
+
+      index++;
     }
 
-    if (index === shapesLength && shapesLength !== 1) {
-      issues = this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
+    if (index === shapesLength) {
+      if (shapesLength === 1) {
+        return issues;
+      }
+      return this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
     }
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
-    if (issues !== null) {
-      return issues;
-    }
-    return result;
+    return issues;
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<U[number]['output']>> {
-    const { _typeIssueFactory, _applyChecks, _unsafe } = this;
+    const { _applyChecks } = this;
 
     const shapes = this._lookup(input);
     const shapesLength = shapes.length;
 
     if (shapesLength === 0) {
-      return Promise.resolve(_typeIssueFactory(input, options, []));
+      return Promise.resolve(this._typeIssueFactory(input, options, []));
     }
 
+    let issues: Issue[] | null = null;
     let issueGroups: Issue[][] | null = null;
 
-    const nextShape = (index: number): Promise<ApplyResult<U[number]['output']>> => {
+    const applyShapeAtIndex = (index: number): Promise<ApplyResult> => {
       return shapes[index]['_applyAsync'](input, options).then(result => {
         let output = input;
-        let issues = null;
 
         if (result !== null) {
           if (isArray(result)) {
-            issues = result;
-            (issueGroups ||= []).push(result);
-
-            if (++index !== shapesLength) {
-              return nextShape(index);
+            if (issueGroups !== null) {
+              issueGroups.push(result);
+            } else if (index === 1) {
+              issueGroups = [issues!, result];
+            } else {
+              issues = result;
             }
-          } else {
-            output = result.value;
+
+            index++;
+
+            if (index !== shapesLength) {
+              return applyShapeAtIndex(index);
+            }
+            if (shapesLength === 1) {
+              return issues;
+            }
+            return this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
           }
+
+          output = result.value;
         }
 
-        if (index === shapesLength && shapesLength !== 1) {
-          issues = this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
+        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+          return result;
         }
-
-        if (_applyChecks !== null && (_unsafe || issues === null)) {
-          issues = _applyChecks(output, issues, options);
-        }
-        if (issues !== null) {
-          return issues;
-        }
-        return result;
+        return issues;
       });
     };
 
-    return nextShape(0);
+    return applyShapeAtIndex(0);
   }
 }
 
