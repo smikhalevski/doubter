@@ -83,13 +83,19 @@ export class LazyShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<S['output']> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output']> {
+    return this._applyResult(this.shape['_apply'](input, options), input, options);
+  }
+
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
+    return this.shape['_applyAsync'](input, options).then(result => this._applyResult(result, input, options));
+  }
+
+  private _applyResult(result: ApplyResult, input: unknown, options: ParseOptions): ApplyResult<S['output']> {
     const { _applyChecks } = this;
 
     let output = input;
     let issues;
-
-    const result = this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -101,25 +107,5 @@ export class LazyShape<S extends AnyShape>
       return result;
     }
     return issues;
-  }
-
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
-    const { _applyChecks } = this;
-
-    return this.shape['_applyAsync'](input, options).then(result => {
-      let output = input;
-      let issues;
-
-      if (result !== null) {
-        if (isArray(result)) {
-          return result;
-        }
-        output = result.value;
-      }
-      if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-        return result;
-      }
-      return issues;
-    });
   }
 }

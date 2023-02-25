@@ -1,6 +1,12 @@
-import { DeepPartialProtocol, LazyShape, Shape, StringShape } from '../../main';
+import { AnyShape, DeepPartialProtocol, LazyShape, Shape, StringShape } from '../../main';
 
 describe('LazyShape', () => {
+  let asyncShape: AnyShape;
+
+  beforeEach(() => {
+    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  });
+
   test('parses values with a shape', () => {
     const shape = new StringShape();
     const lazyShape = new LazyShape(() => shape);
@@ -27,6 +33,16 @@ describe('LazyShape', () => {
     expect(checkMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
   });
 
+  test('does not apply checks is shape raises an issue', () => {
+    const shape = new Shape().check(() => [{ code: 'xxx' }]);
+    const lazyShape = new LazyShape(() => shape).check(() => [{ code: 'yyy' }], { unsafe: true });
+
+    expect(lazyShape.try('aaa', { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
   describe('deepPartial', () => {
     test('marks shape as deep partial', () => {
       class MockShape extends Shape implements DeepPartialProtocol<Shape> {
@@ -48,40 +64,15 @@ describe('LazyShape', () => {
   });
 
   describe('async', () => {
-    class AsyncShape extends Shape {
-      protected _isAsync() {
-        return true;
-      }
-
-      protected _applyAsync() {
-        return Promise.resolve(null);
-      }
-    }
-
     test('parses values with a shape', async () => {
-      const shape = new AsyncShape();
-      const lazyShape = new LazyShape(() => shape);
+      const lazyShape = new LazyShape(() => asyncShape);
 
-      const applyAsyncSpy = jest.spyOn<Shape, any>(shape, '_applyAsync');
+      const applyAsyncSpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
 
       expect(lazyShape.isAsync).toBe(true);
       await expect(lazyShape.parseAsync('aaa')).resolves.toBe('aaa');
       expect(applyAsyncSpy).toHaveBeenCalledTimes(1);
       expect(applyAsyncSpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
-    });
-
-    test('applies checks to transformed value', async () => {
-      const checkMock = jest.fn(() => [{ code: 'xxx' }]);
-
-      const shape = new AsyncShape().transform(parseFloat);
-      const lazyShape = new LazyShape(() => shape).check(checkMock);
-
-      await expect(lazyShape.tryAsync('111')).resolves.toEqual({
-        ok: false,
-        issues: [{ code: 'xxx', path: [] }],
-      });
-      expect(checkMock).toHaveBeenCalledTimes(1);
-      expect(checkMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
     });
   });
 });
