@@ -12,7 +12,7 @@ import {
   ToArray,
   toDeepPartialShape,
 } from '../utils';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import {
   CODE_INTERSECTION,
   MESSAGE_INTERSECTION,
@@ -113,7 +113,10 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       outputs.push(output);
     }
 
-    return this._applyIntersection(input, outputs, issues, options);
+    if (issues !== null) {
+      return issues;
+    }
+    return this._applyIntersection(input, outputs, options);
   }
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]>['output']>> {
@@ -156,7 +159,10 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         outputs.push(output);
       }
 
-      return this._applyIntersection(input, outputs, issues, options);
+      if (issues !== null) {
+        return issues;
+      }
+      return this._applyIntersection(input, outputs, options);
     });
   }
 
@@ -166,14 +172,15 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   private _applyIntersection(
     input: any,
     outputs: any[] | null,
-    issues: Issue[] | null,
     options: ParseOptions
   ): ApplyResult<ToIntersection<U[number]>['output']> {
-    const { shapes, _applyChecks, _unsafe } = this;
+    const { shapes, _applyChecks } = this;
 
+    let result = null;
     let output = input;
+    let issues;
 
-    if (outputs !== null && issues === null) {
+    if (outputs !== null) {
       let outputsLength = outputs.length;
 
       if (outputsLength !== shapes.length) {
@@ -186,16 +193,15 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         output = intersectValues(output, outputs[i]);
       }
       if (output === NEVER) {
-        output = input;
-        issues = this._typeIssueFactory(input, options);
+        return this._typeIssueFactory(input, options);
+      }
+      if (!isEqual(output, input)) {
+        result = ok(output);
       }
     }
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
+    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
+      return result;
     }
     return issues;
   }

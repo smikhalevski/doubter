@@ -143,39 +143,12 @@ describe('IntersectionShape', () => {
     const shape1 = new Shape();
     const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }]);
+    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { unsafe: true });
 
     expect(orShape.try({}, { verbose: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [] }],
     });
-  });
-
-  test('applies unsafe checks if an intersected shape raises an error', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
-
-    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { unsafe: true });
-
-    expect(orShape.try({}, { verbose: true })).toEqual({
-      ok: false,
-      issues: [
-        { code: 'xxx', path: [] },
-        { code: 'yyy', path: [] },
-      ],
-    });
-  });
-
-  test('unsafe checks receive input value if intersection fails', () => {
-    const shape1 = new Shape().transform(() => 'xxx');
-    const shape2 = new Shape().transform(() => 'yyy');
-
-    const checkMock = jest.fn(() => null);
-
-    new IntersectionShape([shape1, shape2]).check(checkMock, { unsafe: true }).try('aaa');
-
-    expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
   });
 
   describe('at', () => {
