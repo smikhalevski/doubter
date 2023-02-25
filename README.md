@@ -896,11 +896,11 @@ shape.parse('Pluto');
 // ⮕ 'Jupiter'
 ```
 
-Note that `replace` treats passed values as literals but in TypeScript type system not all values can be literals. For
-example, there's no literal type for `NaN` which may cause unexpected result:
+Note that `replace` narrows passed values to literal types but in TypeScript type system not all values have a separate
+literal type. For example, there's no literal type for `NaN` which may cause an unexpected result:
 
 ```ts
-// 🔴 Note that the shape output is unexpectedly typed as 0
+// 🔴 Note that the output is typed as 0
 d.number().replace(NaN, 0);
 // ⮕ Shape<number, 0>
 ```
