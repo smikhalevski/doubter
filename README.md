@@ -2920,7 +2920,7 @@ businessType.parse({
 // ❌ ValidationError: numberGreaterThan at /headcount: Must be greater than 0
 ```
 
-## Issues raised by a union
+### Issues raised by a union
 
 If there are multiple shapes in the union that have raised issues during parsing, then union returns a grouping issue.
 
