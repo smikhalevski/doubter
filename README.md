@@ -266,7 +266,7 @@ parseOrDefault(42);
 ## `parse`
 
 You're already familiar with `parse` that takes an input value and returns an output value, or throws a validation error
-is parsing fails:
+if parsing fails:
 
 ```ts
 const shape = d.number();
@@ -322,9 +322,9 @@ Use `tryAsync` with [async shapes](#async-shapes). It has the same semantics and
 
 # Validation errors
 
-Validation errors which are thrown by the `parse*` methods, and
-[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by the `try*` methods have the
-`issues` property which holds an array of validation issues:
+Validation errors which are thrown by `parse*` methods, and
+[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by `try*` methods have the `issues`
+property which holds an array of validation issues:
 
 ```ts
 const shape = d.object({ age: d.number() });
@@ -355,41 +355,42 @@ The `result` contains the [`Err`](https://smikhalevski.github.io/doubter/interfa
 <dt><code>code</code></dt>
 <dd>
 
-Is the code of the validation issue. Shapes provide various checks and each check has a unique code.
-In the example above, `type` code refers to a failed number type check. See the table of known codes below. You can
-add [a custom check](#checks) to any shape and return an issue with your custom code.
+The code of the validation issue. Shapes provide various checks and each check has a unique code. In the example above,
+`type` code refers to a failed number type check. See the table of known codes below. You can add
+[a custom check](#checks) to any shape and return an issue with your custom code.
 
 </dd>
 <dt><code>path</code></dt>
 <dd>
 
-Is the object path, represented as an array that may contain strings, numbers (array indices and such), symbols, and
-any other values (since they can be `Map` keys).
+The object path as an array of keys. Keys can be strings, numbers (for example, array indices), symbols, and any other
+values since they can be `Map` keys.
 
 </dd>
 <dt><code>input</code></dt>
 <dd>
 
-Is the input value that caused a validation issue. Note that if [coercion](#type-coercion) is enabled this contains a
+The input value that caused a validation issue. Note that if [coercion](#type-coercion) is enabled this contains a
 coerced value.
 
 </dd>
 <dt><code>message</code></dt>
 <dd>
 
-Is the human-readable issue message. Refer to [Localization](#localization) section for more details.
+The human-readable issue message. Refer to [Localization](#localization) section for more details.
 
 </dd>
 <dt><code>param</code></dt>
 <dd>
 
-Is the parameter value associated with the issue. Parameter value usually depends on `code`, see the table below.
+The parameter value associated with the issue. For built-in checks, the parameter value depends on `code`, see the table
+below.
 
 </dd>
 <dt><code>meta</code></dt>
 <dd>
 
-Is the optional metadata associated with the issue. Refer to [Metadata](#metadata) section for more details.
+The optional metadata associated with the issue. Refer to [Metadata](#metadata) section for more details.
 
 </dd>
 </dl>
@@ -404,7 +405,7 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
 | `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
 | `instance` | [`instanceOf(Class)`](#instanceof) | The class constructor `Class` |
-| `intersection` | [`d.and(…)`](#intersection) | An array of root cause issues |
+| `intersection` | [`d.and(…)`](#intersection) | — |
 | `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
 | `predicate` | [`shape.refine(…)`](#refinements) | The callback passed to `refine`  |
 | `numberInteger` | [`d.integer()`](#integer) | — |
@@ -421,18 +422,18 @@ Is the optional metadata associated with the issue. Refer to [Metadata](#metadat
 | `stringRegex` | [`d.string().regex(re)`](#string) | The regular expression `re` |
 | `type` | All shapes | The expected [input value type](#introspection) |
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
-| `union` | [`d.or(…)`](#union) | The object with [`inputTypes`](#introspection) and `issuesPerShape` |
+| `union` | [`d.or(…)`](#union) | [Issues raised by a union](#issues-raised-by-a-union) |
 | `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
 
 # Checks
 
-Checks allow constraining the input value beyond type assertions. For example, if you want to constrain an input number
+Checks allow constraining the input value beyond type assertions. For example, if you want to constrain a numeric input
 to be greater than 5:
 
 ```ts
 const shape1 = d.number().check(value => {
   if (value <= 5) {
-    // 🟡 Return a partial issue
+    // 🟡 Return a partial issue, or an array of issues
     return { code: 'kaputs' };
   }
 });
@@ -448,9 +449,9 @@ shape1.parse(3);
 A check callback receives the shape output value and must return a partial issue or an array of partial issues if the
 value is invalid.
 
-> **Note**&ensp;Check callbacks can safely throw a `ValidationError` to notify Doubter that parsing issues occurred.
-> While this has the same effect as returning an array of issues, it is recommended to throw a `ValidationError` as the
-> last resort since catching errors has a high performance penalty.
+> **Note**&ensp;Check callbacks can throw a [`ValidationError`](#validation-errors) to notify Doubter that parsing
+> issues occurred. While this has the same effect as returning an array of issues, it is recommended to throw a
+> `ValidationError` as the last resort since catching errors has a high performance penalty.
 
 If value is valid, a check callback must return `null` or `undefined`.
 
@@ -460,7 +461,8 @@ Most shapes have a set of built-in checks. The check we've just implemented abov
 d.number().gt(5);
 ```
 
-Add as many checks as you need to the shape. They are executed the same order they are defined.
+Add as many checks as you need to the shape. You can mix custom and built-in checks, they are executed in the same order
+they were added.
 
 ```ts
 d.string().max(4).regex(/a/).try('Pluto');
@@ -488,8 +490,8 @@ In the example above, an [`Err`](https://smikhalevski.github.io/doubter/interfac
 > [Validation errors](#validation-errors) section.
 
 Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
-to collect all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option to a parse
-method.
+to collect all issues that prevent input from being successfully parsed. To do this, pass a `verbose` option to the
+[parse method](#parsing-and-trying).
 
 ```ts
 d.string().max(4).regex(/a/).try('Pluto', { verbose: true });
@@ -523,8 +525,53 @@ This would return the [`Err`](https://smikhalevski.github.io/doubter/interfaces/
 
 ## Safe and unsafe checks
 
-Checks that you add using a `check` method are marked as "safe" which means they aren't executed if any of the preceding
-checks failed. Consider an object with a custom check:
+Checks that you add using a `check` method are "safe" by default, which means they are not executed if any of the
+preceding checks has failed. For example, let's declare the shape of a greeting message:
+
+```ts
+const helloCheck: d.CheckCallback<string> = value => {
+  if (!value.startsWith('Hello')) {
+    return { message: 'Must start with "Hello"' };
+  }
+};
+
+const noDigitsCheck: d.CheckCallback<string> = value => {
+  if (value.match(/\d/)) {
+    return { message: 'Must not contain digits' };
+  }
+};
+
+const greetingShape1 = d.string()
+  .check(helloCheck)
+  .check(noDigitsCheck);
+```
+
+If the input violates the `helloCheck`, then `noDigitsCheck` isn't applied:
+
+```ts
+greetingShape1.parse('Adiós, R2D2', { verbose: true });
+// ❌ ValidationError: type at /: Must start with "Hello"
+```
+
+To force `noDigitsCheck` to be called even if the preceding check has failed, pass the `unsafe` option:
+
+```ts
+const greetingShape2 = d.string()
+  .check(helloCheck)
+  .check(noDigitsCheck, { unsafe: true });
+```
+
+Safe and unsafe checks are applied only if the type of the input is valid.
+
+```ts
+greetingShape2.parse(42);
+// ❌ ValidationError: type at /: Must be a number
+```
+
+In the example above checks aren't applied, since the input value 42 is of the invalid type, despite that
+`noDigitsCheck` is marked as unsafe.
+
+For some composite shapes, unsafe checks may become truly unsafe. Let's consider an object with a custom safe check:
 
 ```ts
 const userShape = d.object({
@@ -538,36 +585,37 @@ const userShape = d.object({
 // ⮕ Shape<{ age: number, yearsOfExperience: number }>
 ```
 
-The check callback relies on `value` to be an object with the valid set of properties. So if any issues are detected in
-the input object the check won't be called:
+The check relies on `value` to be an object with the valid set of properties. So if any issues are detected in the input
+object the check won't be called:
 
 ```ts
-// Check isn't called since yearsOfExperience isn't a number
+// 🟡 Check isn't applied
 nameShape.parse({ age: 18 });
+// ❌ ValidationError: type at /yearsOfExperience: Must be a number
 ```
 
-To force the check to be executed even if the preceding check has failed, pass the `unsafe` option to the check method:
+Adding the `unsafe` option would cause the check to be applied even if _object properties are invalid_.
 
-```ts
-const shape = d.string().max(3).check(
-  value => {
-    if (value.toUpperCase() !== value) {
-      return { message: 'Must be all caps' }
-    }
-  },
-  { unsafe: true }
-);
+Some shapes cannot guarantee that the input value is of the required type. For example, if any of the underlying shapes
+in an intersection have raised issues, an intersection itself cannot guarantee that its checks would receive the value
+of the expected type, so it won't apply its unsafe checks.
 
-shape.parse('Pluto', { verbose: true });
-// ❌ ValidationError
-```
+These shapes won't apply unsafe checks if an underlying shape has raised an issue:
+
+- `ExcludeShape`
+- `IntersectionShape`
+- `LazyShape`
+- `PipeShape`
+- `ReplaceShape`
+- `TransformShape`
+- `UnionShape`
 
 ## Add, get and delete checks
 
 Let's consider the same check being added to the shape twice:
 
 ```ts
-const emailCheck: d.CheckCallback = (value, options) => {
+const emailCheck: d.CheckCallback<string> = (value, options) => {
   if (!value.includes('@')) {
     return { code: 'email' };
   }
@@ -577,36 +625,36 @@ const shape = d.string().check(emailCheck).check(emailCheck);
 // ⮕ Shape<string>
 ```
 
-`emailCheck` check would be added to the shape only once, because Doubter makes checks to be distinct.
+Doubter ensures that checks are distinct, so `emailCheck` check is added to the shape only once.
 
-You can later delete a check you've added:
-
-```ts
-shape.deleteCheck(emailCheck);
-// ⮕ Shape<string>
-```
-
-Using a check callback as an identity isn't always convenient, so you can pass a `key` option:
-
-```ts
-shape.check(emailCheck, { key: 'okay' });
-// ⮕ Shape<string>
-```
-
-Now you should use this key to delete the check:
-
-```ts
-shape.deleteCheck('okay');
-// ⮕ Shape<string>
-```
-
-You can retrieve a check by its key. If `key` option was omitted, the check callback identity is used as a key:
+Retrieve a check by its key:
 
 ```ts
 shape.check(emailCheck);
 
 shape.getCheck(emailCheck);
 // ⮕ { callback: emailCheck, unsafe: false, param: undefined }
+```
+
+Delete a check:
+
+```ts
+shape.deleteCheck(emailCheck);
+// ⮕ Shape<string>
+```
+
+Using a check callback as an identity isn't always convenient. Pass a `key` option:
+
+```ts
+shape.check(emailCheck, { key: 'email' });
+// ⮕ Shape<string>
+```
+
+Now you should use the key to get or delete the check:
+
+```ts
+shape.deleteCheck('email');
+// ⮕ Shape<string>
 ```
 
 ## Metadata
@@ -653,7 +701,7 @@ d.string().refine(isMarsOrPluto)
 # Transformations
 
 Along with validation, shapes can transform values. Let's consider a shape that takes a string as an input and converts
-it to number:
+it to a number:
 
 ```ts
 const shape = d.string().transform(parseFloat);
@@ -896,17 +944,17 @@ shape.parse('Pluto');
 // ⮕ 'Jupiter'
 ```
 
-Note that `replace` treats passed values as literals but in TypeScript type system not all values can be literals. For
-example, there's no literal type for `NaN` which may cause unexpected result:
+Note that `replace` narrows passed values to literal types but in TypeScript type system not all values have a separate
+literal type. For example, there's no literal type for `NaN` which may cause an unexpected result:
 
 ```ts
-// 🔴 Note that the shape output is unexpectedly typed as 0
+// 🔴 Note that the output is typed as 0
 d.number().replace(NaN, 0);
 // ⮕ Shape<number, 0>
 ```
 
 Why is output inferred as 0 and not as a `number`? This occurs because `typeof NaN` is `number` and it is excluded from
-the output type of the shape. For this particular case use `nan` method of number shape:
+the output type of the shape. For this particular case use `nan` method of [number shape](#number):
 
 ```ts
 // 🟡 Note that the shape output is a number
@@ -1044,7 +1092,7 @@ shape2.parse({ name: 8080 });
 // ❌ ValidationError: type at /name: Must be a string
 ```
 
-Deep partial isn't applied to transformed shapes:
+Deep partial isn't applied to transformed and branded shapes:
 
 ```ts
 const shape2 = d.object({
@@ -1052,6 +1100,8 @@ const shape2 = d.object({
 }).deepPartial();
 // ⮕ Shape<{ years?: string[] }, { years?: number[] }>
 ```
+
+Note that array elements aren't optional after `deepPartial` was applied.
 
 # Fallback value
 
@@ -1343,8 +1393,8 @@ All shape factories and built-in checks support custom issue messages:
 d.string('Hey, string here').min(3, 'Too short');
 ```
 
-Checks that have a param, such as `min` constraint in the example above, can use a `%s` placeholder that would be
-interpolated with the param value.
+[Checks that have a param](#validation-errors), such as `min` constraint in the example above, can use a `%s`
+placeholder that would be interpolated with the param value.
 
 ```ts
 d.string().min(3, 'Minimum length is %s');
@@ -1387,7 +1437,7 @@ emailShape.parse('Not an email');
 // ❌ ValidationError: predicate at /: Must be an email
 
 emailShape.getCheck(isEmail);
-// ⮕ { key: isEmail, param: isEmail, unsafe: false }
+// ⮕ { key: isEmail, unsafe: false, param: isEmail }
 ```
 
 Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).
@@ -1996,7 +2046,8 @@ If you want to prevent the parsed function from being wrapped in a delegator, us
 ```ts
 const shape2 = d.fn().bare();
 
-function implFn() {}
+function implFn() {
+}
 
 shape2.parse(implFn) === implFn // ⮕ true
 ```
@@ -2068,7 +2119,7 @@ getLastName.call({ name: 'Indiana Jones' });
 // ⮕ 'Jones'
 ```
 
-But if user is invalid, an error would be thrown: 
+But if user is invalid, an error would be thrown:
 
 ```ts
 getLastName.call({});
@@ -2077,7 +2128,7 @@ getLastName.call({});
 
 The implementation of `getLastName` expects that the first and the last name are separated with a space character. This
 may cause an unexpected behaviour if an input string doesn't contain a space char: and `undefined` would be returned.
-But since `getLastNameShape` constrains the return value with `d.string`, an error is thrown at runtime: 
+But since `getLastNameShape` constrains the return value with `d.string`, an error is thrown at runtime:
 
 ```ts
 getLastName.call({ name: 'Indiana' });
@@ -2826,12 +2877,12 @@ types.
 Sole entrepreneur goes first:
 
 ```ts
-const soleShape = d.object({
-  bisinessType: d.const('sole'),
+const entrepreneurShape = d.object({
+  bisinessType: d.const('entrepreneur'),
   name: d.string(),
   age: d.int().gte(18)
 });
-// ⮕ Shape<{ type: 'sole', name: string, age: number }>
+// ⮕ Shape<{ type: 'entrepreneur', name: string, age: number }>
 ```
 
 We're going to use `bisinessType` property as the discriminator in our union. Now let's define a shape for a company:
@@ -2853,7 +2904,7 @@ to a set of literal values.
 The final step is to define a discriminated union shape:
 
 ```ts
-const businessShape = d.union([soleShape, companyShape]);
+const businessShape = d.union([entrepreneurShape, companyShape]);
 ```
 
 `union` would detect that all object shapes in the union have the `businessType` property with distinct values and would
@@ -2868,6 +2919,105 @@ businessType.parse({
 });
 // ❌ ValidationError: numberGreaterThan at /headcount: Must be greater than 0
 ```
+
+## Issues raised by a union
+
+If there are multiple shapes in the union that have raised issues during parsing, then union returns a grouping issue.
+
+```ts
+const shape = d.or([
+  d.object({
+    name: d.string()
+  }),
+  d.object({
+    age: d.number()
+  })
+]);
+
+shape.try({ name: 47, age: null });
+```
+
+The result of `try` would contain a grouping issue:
+
+```ts
+{
+  code: 'union',
+  path: [],
+  input: {
+    name: 47,
+    age: null
+  },
+  message: 'Must conform the union',
+  param: {
+    inputTypes: ['object'],
+    issueGroups: [
+      [
+        {
+          code: 'type',
+          path: ['name'],
+          input: 47,
+          message: 'Must be a string',
+          param: 'string'
+        }
+      ],
+      [
+        {
+          code: 'type',
+          path: ['age'],
+          message: 'Must be a number',
+          param: 'number'
+        }
+      ]
+    ]
+  }
+}
+```
+
+<dl>
+<dt><code>inputTypes</code></dt>
+<dd>
+
+An array of all [input value types](#introspection) that the union supports.
+
+</dd>
+<dt><code>issueGroups</code></dt>
+<dd>
+
+An array of issue groups where each group contains issues raised by a separate shape in the union; or `null`.
+
+Union checks the input only against shapes that support the corresponding input value type, so `issueGroups` only
+contains issues raised by shapes that support the input.
+
+If there were no shapes in the union that support the type of the provided input, then `issueGroups` is `null`. For
+example, if you have a `number | string` union and parse a boolean value, there's no shape that supports `boolean`
+input type. So the raised union issue would have `issueGroups` set to `null`.
+
+`path` of issues in `issueGroups` is relative to the grouping issue.
+
+</dd>
+</dl>
+
+When union detects that only one of its shapes supports the provided input then issues produced by this shape are
+returned as is:
+
+```ts
+d.or([d.number(), d.string().min(6)]).try('Okay')
+```
+
+In this example, only `d.string` can parse the `'Okay'` input value, so the result of `try` would contain a single
+string-related issue:
+
+```ts
+{
+  code: 'stringMinLength',
+  path: [],
+  input: 'Okay',
+  message: 'Must have the minimum length of 6',
+  param: 6
+}
+```
+
+This behaviour is applied to discriminated unions as well.
 
 ## `unknown`
 

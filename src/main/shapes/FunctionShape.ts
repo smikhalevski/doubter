@@ -21,8 +21,12 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   InferFunction<A, R, T>,
   InferDelegator<A, R, T>
 > {
+  /**
+   * `true` if the input functions aren't guarded by a delegator during parsing; `false` otherwise.
+   */
+  public isBare = false;
+
   protected _typeIssueFactory;
-  protected _bare = false;
   protected _parseOptions = defaultParseOptions;
 
   /**
@@ -84,13 +88,13 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Prevent input functions from being delegated during parsing.
+   * Prevent input functions from being guarded by a delegator during parsing.
    *
    * @returns The new function shape.
    */
   bare(): this {
     const shape = cloneObject(this);
-    shape._bare = true;
+    shape.isBare = true;
     return shape;
   }
 
@@ -185,7 +189,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
       return this._typeIssueFactory(input, options);
     }
     if (_applyChecks === null || (issues = _applyChecks(input, null, options)) === null) {
-      return this._bare ? null : ok(this._delegate(input));
+      return this.isBare ? null : ok(this._delegate(input));
     }
     return issues;
   }

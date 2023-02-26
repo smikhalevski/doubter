@@ -195,7 +195,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
-    const { shapes, restShape, _applyChecks, _unsafe } = this;
+    const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
     let output = input;
     let outputLength;
@@ -232,7 +232,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
           issues = concatIssues(issues, result);
           continue;
         }
-        if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
+        if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
             output = input.slice(0);
           }
@@ -241,7 +241,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       }
     }
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
+    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
@@ -252,7 +252,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
-      const { shapes, restShape, _applyChecks, _unsafe } = this;
+      const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
       let output = input;
       let outputLength;
@@ -303,7 +303,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
               issues = concatIssues(issues, result);
               continue;
             }
-            if ((_unsafe || issues === null) && !isEqual(input[i], result.value)) {
+            if ((_isUnsafe || issues === null) && !isEqual(input[i], result.value)) {
               if (input === output) {
                 output = input.slice(0);
               }
@@ -311,7 +311,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
             }
           }
 
-          if (_applyChecks !== null && (_unsafe || issues === null)) {
+          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
             issues = _applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {

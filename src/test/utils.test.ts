@@ -8,6 +8,7 @@ import {
   getValueType,
   isBitEnabledAt,
   isEqual,
+  isIterable,
   toArrayIndex,
   unique,
 } from '../main/utils';
@@ -22,6 +23,23 @@ describe('getValueType', () => {
     expect(getValueType(null)).toBe('null');
     expect(getValueType(undefined)).toBe('undefined');
     expect(getValueType(new Date())).toBe('date');
+  });
+});
+
+describe('isIterable', () => {
+  test('returns value type', () => {
+    expect(isIterable(new Map())).toBe(true);
+    expect(isIterable(new Set())).toBe(true);
+    expect(isIterable([])).toBe(true);
+    expect(isIterable({ [Symbol.iterator]: 111 })).toBe(true);
+    expect(isIterable({ [Symbol.iterator]: () => null })).toBe(true);
+    expect(isIterable({ length: null })).toBe(true);
+    expect(isIterable({ length: 111 })).toBe(true);
+    expect(isIterable({ length: '111' })).toBe(true);
+    expect(isIterable({ length: { valueOf: () => 111 } })).toBe(true);
+
+    expect(isIterable({ length: undefined })).toBe(false);
+    expect(isIterable({ length: 'aaa' })).toBe(false);
   });
 });
 

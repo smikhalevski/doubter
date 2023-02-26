@@ -91,7 +91,7 @@ describe('UnionShape', () => {
           message: MESSAGE_UNION,
           param: {
             inputTypes: [TYPE_ANY],
-            issuesPerShape: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+            issueGroups: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
           },
           path: [],
         },
@@ -187,7 +187,7 @@ describe('UnionShape', () => {
             message: MESSAGE_UNION,
             param: {
               inputTypes: [TYPE_NUMBER],
-              issuesPerShape: null,
+              issueGroups: null,
             },
             path: [],
           },
@@ -269,12 +269,12 @@ describe('UnionShape', () => {
         ok: false,
         issues: [
           {
-            code: 'union',
+            code: CODE_UNION,
             input: 'aaa',
-            message: 'Must conform the union',
+            message: MESSAGE_UNION,
             param: {
               inputTypes: [TYPE_ANY],
-              issuesPerShape: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+              issueGroups: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
             },
             path: [],
           },

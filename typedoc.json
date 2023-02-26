@@ -1,8 +1,0 @@
-{
-  "name": "Doubter",
-  "includeVersion": true,
-  "excludePrivate": true,
-  "excludeExternals": true,
-  "cleanOutputDir": true,
-  "out": "./docs"
-}

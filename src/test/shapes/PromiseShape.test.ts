@@ -1,4 +1,4 @@
-import { ArrayShape, ObjectShape, PromiseShape, StringShape } from '../../main';
+import { ArrayShape, ObjectShape, PromiseShape, Shape, StringShape } from '../../main';
 import {
   CODE_TYPE,
   ERROR_REQUIRES_ASYNC,
@@ -47,6 +47,20 @@ describe('PromiseShape', () => {
     expect(checkMock).toHaveBeenNthCalledWith(1, input, { verbose: false, coerced: false });
   });
 
+  test('applies unsafe checks if value shape raised issues', async () => {
+    const shape = new Shape().check(() => [{ code: 'xxx' }]);
+
+    const promiseShape = new PromiseShape(shape).check(() => [{ code: 'yyy' }], { unsafe: true });
+
+    await expect(promiseShape.tryAsync(Promise.resolve(111), { verbose: true })).resolves.toEqual({
+      ok: false,
+      issues: [
+        { code: 'xxx', path: [] },
+        { code: 'yyy', path: [] },
+      ],
+    });
+  });
+
   test('returns the same promise if the resolved value did not change', async () => {
     const arrShape = new ArrayShape(null, new PromiseShape(new StringShape()));
 
@@ -66,8 +80,8 @@ describe('PromiseShape', () => {
     expect(output[0]).not.toBe(arr[0]);
     expect(output[1]).not.toBe(arr[1]);
 
-    expect(await output[0]).toBe(111.222);
-    expect(await output[1]).toBe(333);
+    await expect(output[0]).resolves.toBe(111.222);
+    await expect(output[1]).resolves.toBe(333);
   });
 
   describe('deepPartial', () => {

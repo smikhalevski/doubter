@@ -6,6 +6,7 @@ import {
   CODE_TYPE,
   MESSAGE_ARRAY_TYPE,
   MESSAGE_NUMBER_TYPE,
+  MESSAGE_STRING_TYPE,
   TYPE_ANY,
   TYPE_ARRAY,
   TYPE_NUMBER,
@@ -210,6 +211,27 @@ describe('ArrayShape', () => {
     expect(arrShape.try([111])).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  test('does not apply checks if a tuple element raises an error', () => {
+    const arrShape = new ArrayShape([new StringShape()], null).check(() => [{ code: 'xxx' }]);
+
+    expect(arrShape.try([111], { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [0] }],
+    });
+  });
+
+  test('applies unsafe checks if a tuple element raises an error', () => {
+    const arrShape = new ArrayShape([new StringShape()], null).check(() => [{ code: 'xxx' }], { unsafe: true });
+
+    expect(arrShape.try([111], { verbose: true })).toEqual({
+      ok: false,
+      issues: [
+        { code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [0] },
+        { code: 'xxx', path: [] },
+      ],
     });
   });
 

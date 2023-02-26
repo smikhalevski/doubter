@@ -3,6 +3,8 @@ import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, S
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 
+export const NEVER = Symbol();
+
 export interface ReadonlyDict<T = any> {
   readonly [key: string]: T;
 }
@@ -59,14 +61,14 @@ export function isPlainObject(value: unknown): boolean {
 }
 
 export function isIterable(value: any): value is Iterable<any> {
-  return isObjectLike(value) && (typeof value[Symbol.iterator] === 'function' || typeof value.length === 'number');
+  return isObjectLike(value) && (Symbol.iterator in value || !isNaN(value.length));
 }
 
 export function isNumber(value: unknown): boolean {
   return typeof value === 'number' && value === value;
 }
 
-export function isDate(value: unknown): value is Date {
+export function isValidDate(value: unknown): value is Date {
   return value instanceof Date && (value = value.getTime()) === value;
 }
 
@@ -223,11 +225,11 @@ export function unshiftPath(issues: Issue[], key: unknown): void {
 }
 
 export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
-  if (issues !== null) {
-    issues.push(...result);
-    return issues;
+  if (issues === null) {
+    return result;
   }
-  return result;
+  issues.push(...result);
+  return issues;
 }
 
 export function captureIssues(error: unknown): Issue[] {
@@ -475,10 +477,6 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
 
 export function returnFalse(): boolean {
   return false;
-}
-
-export function returnTrue(): boolean {
-  return true;
 }
 
 export function returnArray(): [] {

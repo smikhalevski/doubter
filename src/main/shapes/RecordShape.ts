@@ -83,7 +83,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       return this._typeIssueFactory(input, options);
     }
 
-    const { keyShape, valueShape, _applyChecks, _unsafe } = this;
+    const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
 
     let keyCount = 0;
     let issues = null;
@@ -127,7 +127,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
         }
       }
 
-      if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+      if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
         if (input === output) {
           output = cloneObjectEnumerableKeys(input, keyCount);
         }
@@ -135,7 +135,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       }
     }
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
+    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
@@ -151,7 +151,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
         return;
       }
 
-      const { keyShape, valueShape, _applyChecks, _unsafe } = this;
+      const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
 
       const promises: any[] = [];
 
@@ -209,7 +209,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
               }
             }
 
-            if ((_unsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+            if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
               if (input === output) {
                 output = cloneObjectEnumerableKeys(input, keyCount);
               }
@@ -218,7 +218,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
             }
           }
 
-          if (_applyChecks !== null && (_unsafe || issues === null)) {
+          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
             issues = _applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {

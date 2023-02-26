@@ -21,7 +21,8 @@ import {
   TYPE_NUMBER,
   TYPE_STRING,
 } from '../../main/constants';
-import { intersectValues, intersectValueTypes, NEVER } from '../../main/shapes/IntersectionShape';
+import { intersectValues, intersectValueTypes } from '../../main/shapes/IntersectionShape';
+import { NEVER } from '../../main/utils';
 
 describe('IntersectionShape', () => {
   test('returns the input that matches all shapes as is', () => {
@@ -83,15 +84,7 @@ describe('IntersectionShape', () => {
 
     expect(andShape.try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_INTERSECTION,
-          path: [],
-          input: 'aaa',
-          message: MESSAGE_INTERSECTION,
-          param: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
     });
   });
 
@@ -101,16 +94,8 @@ describe('IntersectionShape', () => {
     expect(andShape.try('aaa', { verbose: true })).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_INTERSECTION,
-          path: [],
-          input: 'aaa',
-          message: MESSAGE_INTERSECTION,
-          param: [
-            { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] },
-            { code: CODE_TYPE, input: 'aaa', message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN, path: [] },
-          ],
-        },
+        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] },
+        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN, path: [] },
       ],
     });
   });
@@ -120,15 +105,7 @@ describe('IntersectionShape', () => {
 
     expect(andShape.try('111.222')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_INTERSECTION,
-          path: [],
-          input: '111.222',
-          message: MESSAGE_INTERSECTION,
-          param: [],
-        },
-      ],
+      issues: [{ code: CODE_INTERSECTION, path: [], input: '111.222', message: MESSAGE_INTERSECTION }],
     });
   });
 
@@ -140,8 +117,14 @@ describe('IntersectionShape', () => {
 
     expect(andShape.try(['111.222'])).toEqual({
       ok: false,
-      issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION, path: [], param: [] }],
+      issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION, path: [] }],
     });
+  });
+
+  test('empty intersections produce no issues', () => {
+    const orShape = new IntersectionShape([]);
+
+    expect(orShape.try('aaa')).toEqual({ ok: true, value: 'aaa' });
   });
 
   test('applies checks', () => {
@@ -156,16 +139,16 @@ describe('IntersectionShape', () => {
     });
   });
 
-  test('unsafe checks receive input value if intersection fails', () => {
-    const shape1 = new Shape().transform(() => 'xxx');
-    const shape2 = new Shape().transform(() => 'yyy');
+  test('does not apply checks if an intersected shape raises an error', () => {
+    const shape1 = new Shape();
+    const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const checkMock = jest.fn(() => null);
+    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { unsafe: true });
 
-    new IntersectionShape([shape1, shape2]).check(checkMock, { unsafe: true }).try('aaa');
-
-    expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+    expect(orShape.try({}, { verbose: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
   });
 
   describe('at', () => {
@@ -218,14 +201,7 @@ describe('IntersectionShape', () => {
       expect(andShape.parse(111)).toBe(111);
       expect(andShape.try(undefined)).toEqual({
         ok: false,
-        issues: [
-          {
-            code: CODE_INTERSECTION,
-            message: MESSAGE_INTERSECTION,
-            param: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
-            path: [],
-          },
-        ],
+        issues: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, path: [] }],
       });
     });
   });
@@ -260,15 +236,7 @@ describe('IntersectionShape', () => {
 
       await expect(andShape.tryAsync(['111.222'])).resolves.toEqual({
         ok: false,
-        issues: [
-          {
-            code: CODE_INTERSECTION,
-            input: ['111.222'],
-            message: MESSAGE_INTERSECTION,
-            path: [],
-            param: [],
-          },
-        ],
+        issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION, path: [] }],
       });
     });
   });
