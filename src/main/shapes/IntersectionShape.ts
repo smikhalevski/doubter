@@ -113,10 +113,10 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       outputs.push(output);
     }
 
-    if (issues !== null) {
-      return issues;
+    if (issues === null) {
+      return this._applyIntersection(input, outputs, options);
     }
-    return this._applyIntersection(input, outputs, options);
+    return issues;
   }
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]>['output']>> {
@@ -159,10 +159,10 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         outputs.push(output);
       }
 
-      if (issues !== null) {
-        return issues;
+      if (issues === null) {
+        return this._applyIntersection(input, outputs, options);
       }
-      return this._applyIntersection(input, outputs, options);
+      return issues;
     });
   }
 
