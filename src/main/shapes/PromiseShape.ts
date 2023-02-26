@@ -71,7 +71,7 @@ export class PromiseShape<S extends AnyShape>
 
         if (result !== null) {
           if (isArray(result)) {
-            if (!options.verbose || !this._unsafe) {
+            if (!options.verbose || !this._isUnsafe) {
               return result;
             }
             issues = result;

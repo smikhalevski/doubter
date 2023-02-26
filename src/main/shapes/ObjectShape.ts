@@ -376,7 +376,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         return;
       }
 
-      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
+      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
 
       const keysLength = keys.length;
       const promises: any[] = [];
@@ -469,7 +469,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
               issues = concatIssues(issues, result);
               continue;
             }
-            if ((_unsafe || issues === null) && !isEqual(input[key], result.value)) {
+            if ((_isUnsafe || issues === null) && !isEqual(input[key], result.value)) {
               if (input === output) {
                 output = cloneObjectEnumerableKeys(input);
               }
@@ -477,7 +477,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
             }
           }
 
-          if (_applyChecks !== null && (_unsafe || issues === null)) {
+          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
             issues = _applyChecks(output, issues, options);
           }
           if (issues === null && input !== output) {
@@ -493,7 +493,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Unknown keys are preserved as is and aren't checked.
    */
   private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions): ApplyResult {
-    const { keys, _valueShapes, _applyChecks, _unsafe } = this;
+    const { keys, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
 
@@ -517,7 +517,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         issues = concatIssues(issues, result);
         continue;
       }
-      if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
+      if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
           output = cloneObjectEnumerableKeys(input);
         }
@@ -525,7 +525,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
     }
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
+    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
@@ -538,7 +538,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ParseOptions): ApplyResult {
-    const { keys, keysMode, restShape, _valueShapes, _applyChecks, _unsafe } = this;
+    const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
 
@@ -580,7 +580,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           issues = concatIssues(issues, result);
           continue;
         }
-        if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
+        if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
             output = restShape === null ? cloneObjectKnownKeys(input, keys) : cloneObjectEnumerableKeys(input);
           }
@@ -605,7 +605,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
 
       // Unknown keys are stripped
-      if (input === output && (_unsafe || issues === null)) {
+      if (input === output && (_isUnsafe || issues === null)) {
         output = cloneObjectKnownKeys(input, keys);
       }
     }
@@ -643,7 +643,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           issues = concatIssues(issues, result);
           continue;
         }
-        if ((_unsafe || issues === null) && !isEqual(value, result.value)) {
+        if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
             output = cloneObjectEnumerableKeys(input);
           }
@@ -652,7 +652,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
     }
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
+    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {

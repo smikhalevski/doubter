@@ -156,7 +156,7 @@ export class Shape<I = any, O = I> {
   /**
    * `true` if some checks from {@linkcode _checks} were marked as unsafe, `false` otherwise.
    */
-  protected _unsafe = false;
+  protected _isUnsafe = false;
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -465,7 +465,7 @@ export class Shape<I = any, O = I> {
 
     shape._checks = checks.length !== 0 ? checks : null;
     shape._applyChecks = createApplyChecksCallback(checks);
-    shape._unsafe = checks.some(isUnsafeCheck);
+    shape._isUnsafe = checks.some(isUnsafeCheck);
 
     return shape;
   }

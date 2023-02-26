@@ -137,7 +137,7 @@ export class SetShape<S extends AnyShape>
       return this._typeIssueFactory(input, options);
     }
 
-    const { shape, _applyChecks, _unsafe } = this;
+    const { shape, _applyChecks, _isUnsafe } = this;
     const valuesLength = values.length;
 
     for (let i = 0; i < valuesLength; ++i) {
@@ -161,7 +161,7 @@ export class SetShape<S extends AnyShape>
 
     const output = changed ? new Set(values) : input;
 
-    if (_applyChecks !== null && (_unsafe || issues === null)) {
+    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && changed) {
@@ -185,7 +185,7 @@ export class SetShape<S extends AnyShape>
         return;
       }
 
-      const { shape, _applyChecks, _unsafe } = this;
+      const { shape, _applyChecks, _isUnsafe } = this;
       const valuesLength = values.length;
       const promises: Promise<ApplyResult>[] = [];
 
@@ -219,7 +219,7 @@ export class SetShape<S extends AnyShape>
 
           const output = changed ? new Set(values) : input;
 
-          if (_applyChecks !== null && (_unsafe || issues === null)) {
+          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
             issues = _applyChecks(output, issues, options);
           }
           if (issues === null && changed) {
