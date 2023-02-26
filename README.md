@@ -1092,7 +1092,7 @@ shape2.parse({ name: 8080 });
 // ❌ ValidationError: type at /name: Must be a string
 ```
 
-Deep partial isn't applied to transformed and branded shapes:
+Deep partial isn't applied to transformed shapes:
 
 ```ts
 const shape2 = d.object({
@@ -2293,7 +2293,7 @@ const shape = shape1.extend(shape2);
 // ⮕ Shape<{ foo: number, bar: boolean }>
 ```
 
-The intersection requires the input value to conform both shapes at the same time, it's no possible since there are no
+The intersection requires the input value to conform both shapes at the same time, it's not possible since there are no
 values that can satisfy the `string | number` type. So the type of property `foo` becomes `never` and no value would be
 able to satisfy the resulting intersection shape.
 
@@ -2431,7 +2431,7 @@ d.number().nan(0).parse(NaN);
 Limit the allowed range:
 
 ```ts
-// The number must be greater than 5 and less then of equal to 10
+// The number must be greater than 5 and less then or equal to 10
 d.number().gt(0.5).lte(2.5)
 // ⮕ Shape<number>
 ```
@@ -2933,6 +2933,7 @@ const shape = d.or([
     age: d.number()
   })
 ]);
+// ⮕ Shape<{ name: string } | { age: number }>
 
 shape.try({ name: 47, age: null });
 ```

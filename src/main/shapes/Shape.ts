@@ -54,7 +54,22 @@ export type AnyShape = Shape | Shape<never>;
  */
 export interface IncludeShape<S extends AnyShape, T>
   extends Shape<S['input'] | T, S['output'] | T>,
-    DeepPartialProtocol<IncludeShape<DeepPartialShape<S>, T>> {}
+    DeepPartialProtocol<IncludeShape<DeepPartialShape<S>, T>> {
+  /**
+   * The shape that parses the input without the included value.
+   */
+  readonly shape: S;
+
+  /**
+   * The value included in the input.
+   */
+  readonly inputValue: T;
+
+  /**
+   * The value included in the output.
+   */
+  readonly outputValue: T;
+}
 
 /**
  * The unique symbol that is used for type branding.
@@ -350,11 +365,10 @@ export class Shape<I = any, O = I> {
    * Input value is passed directly to the output without any checks.
    *
    * @param value The included value.
-   * @param options The constraint options or an issue message.
    * @returns The {@linkcode ReplaceShape} instance.
    * @template T The included value.
    */
-  include<T extends Literal>(value: T, options?: ConstraintOptions | Message): IncludeShape<this, T> {
+  include<T extends Literal>(value: T): IncludeShape<this, T> {
     return this.replace(value, value);
   }
 
@@ -1342,7 +1356,7 @@ export class CatchShape<S extends AnyShape, T>
  * @template N The shape to which the input must not conform.
  */
 export class NotShape<S extends AnyShape, N extends AnyShape>
-  extends Shape<S['input'], S['output']>
+  extends Shape<S['input'], Exclude<S['output'], N['input']>>
   implements DeepPartialProtocol<NotShape<DeepPartialShape<S>, N>>
 {
   protected _options;
@@ -1352,7 +1366,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_NOT, MESSAGE_NOT, options, undefined);
+    this._typeIssueFactory = createIssueFactory(CODE_NOT, MESSAGE_NOT, options, notShape);
   }
 
   deepPartial(): NotShape<DeepPartialShape<S>, N> {
@@ -1371,7 +1385,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
     return this.shape['_getInputValues']();
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output']> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], N['input']>> {
     const { shape, notShape, _applyChecks } = this;
 
     let issues;
@@ -1387,7 +1401,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
     }
 
     if (!isArray(notShape['_apply'](output, options))) {
-      issues = this._typeIssueFactory(input, options);
+      return this._typeIssueFactory(input, options);
     }
 
     if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
@@ -1396,7 +1410,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], N['input']>>> {
     const { shape, notShape, _applyChecks } = this;
 
     let result: ApplyResult = null;
@@ -1418,7 +1432,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
         let issues;
 
         if (!isArray(outputResult)) {
-          issues = this._typeIssueFactory(input, options);
+          return this._typeIssueFactory(input, options);
         }
 
         if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
