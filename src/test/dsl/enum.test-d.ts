@@ -13,3 +13,7 @@ expectType<FooEnum.AAA | FooEnum.BBB>(d.enum(FooEnum).output);
 expectType<'aaa' | 'bbb'>(d.enum({ AAA: 'aaa', BBB: 'bbb' } as const).output);
 
 expectType<111 | 'aaa' | 333>(d.enum([111, 222, 333]).replace(222, 'aaa').output);
+
+expectType<111 | 333>(d.enum([111, 222, 333]).deny(222).output);
+
+expectType<111 | 222 | 333>(d.enum([111, 222, 333]).deny(222 as number).output);
