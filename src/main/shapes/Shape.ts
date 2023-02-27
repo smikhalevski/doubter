@@ -42,11 +42,15 @@ import {
 export const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
 
 // prettier-ignore
+/**
+ * Excludes `U` from `T` only if `U` is a literal type.
+ */
 export type ExcludeLiteral<T, U> =
   number extends U ? T :
   string extends U ? T :
   symbol extends U ? T :
   bigint extends U ? T :
+  object extends U ? T :
   boolean extends U ? T :
   Exclude<T, U>;
 
