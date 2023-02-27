@@ -2500,7 +2500,7 @@ d.map(d.string(), d.number());
 
 Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
-A shape that requires an input to be equal to `NaN`:
+A shape that requires an input to be `NaN`:
 
 ```ts
 d.nan();
