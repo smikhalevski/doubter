@@ -13,7 +13,13 @@ expectType<string>(d.any<string>(() => true).input);
 
 expectType<string>(d.any<string>(() => true).output);
 
-// IncludeShape
+// refine()
+
+expectType<any>(d.any().refine((value: unknown): value is number => true).input);
+
+expectType<number>(d.any().refine((value: unknown): value is number => true).output);
+
+// ReplaceShape
 
 expectType<string | null>(d.any<string>().nullable().output);
 
@@ -57,7 +63,7 @@ expectType<{ aaa?: number }>(
 expectType<{ aaa?: string }>(
   d
     .or([d.object({ aaa: d.string() }), d.const(111)])
-    .exclude(111)
+    .deny(111)
     .deepPartial().output
 );
 
@@ -83,6 +89,8 @@ expectType<{ aaa?: string }>(d.object({ aaa: d.string() }).brand().deepPartial()
 // Branded shapes are transparent for deepPartial
 expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string() }).brand() }).deepPartial().output);
 
-// NotShape
+// ExcludeShape
 
-expectType<111>(d.enum([111, 222]).not(d.const(222)).output);
+expectType<111 | 222>(d.enum([111, 222]).not(d.const(222)).output);
+
+expectType<111>(d.enum([111, 222]).exclude(d.const(222)).output);

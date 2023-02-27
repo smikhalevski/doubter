@@ -1,7 +1,7 @@
 import {
   AnyShape,
   ConstShape,
-  ExcludeShape,
+  DenyShape,
   NumberShape,
   ObjectShape,
   PipeShape,
@@ -11,7 +11,7 @@ import {
   TransformShape,
   ValidationError,
 } from '../../main';
-import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_ANY, TYPE_STRING } from '../../main/constants';
+import { CODE_DENIED, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_ANY, TYPE_STRING } from '../../main/constants';
 import { CatchShape } from '../../main/shapes/Shape';
 
 let asyncShape: AnyShape;
@@ -287,11 +287,11 @@ describe('Shape', () => {
     expect(shape.parse(111)).toBe(222);
   });
 
-  test('wraps in ExcludeShape', () => {
+  test('wraps in DenyShape', () => {
     const shape = new Shape().nonOptional();
 
-    expect(shape).toBeInstanceOf(ExcludeShape);
-    expect((shape as ExcludeShape<any, any>).excludedValue).toBe(undefined);
+    expect(shape).toBeInstanceOf(DenyShape);
+    expect((shape as DenyShape<any, any>).deniedValue).toBe(undefined);
   });
 
   test('branding does not change shape identity', () => {
@@ -352,12 +352,6 @@ describe('Shape', () => {
         ok: false,
         issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
       });
-    });
-
-    test('narrows the output type using a narrowing predicate', () => {
-      const cb = (value: unknown): value is boolean => true;
-
-      const value: boolean = new Shape().refine(cb).parse('aaa');
     });
 
     test('overrides refinement message as string', () => {
@@ -653,15 +647,15 @@ describe('ReplaceShape', () => {
   });
 });
 
-describe('ExcludeShape', () => {
+describe('DenyShape', () => {
   test('returns input as is', () => {
-    const shape = new ExcludeShape(new Shape(), undefined);
+    const shape = new DenyShape(new Shape(), undefined);
 
     expect(shape.try(111)).toEqual({ ok: true, value: 111 });
   });
 
   test('returns output as is', () => {
-    const shape = new ExcludeShape(
+    const shape = new DenyShape(
       new Shape().transform(() => 222),
       undefined
     );
@@ -670,41 +664,28 @@ describe('ExcludeShape', () => {
   });
 
   test('raises an issue if an input is undefined', () => {
-    const shape = new ExcludeShape(new Shape(), undefined);
+    const shape = new DenyShape(new Shape(), undefined);
 
     expect(shape.try(undefined)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_EXCLUSION,
-          message: 'Must not be equal to undefined',
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [] }],
     });
   });
 
   test('raises an issue if an output is undefined', () => {
-    const shape = new ExcludeShape(
+    const shape = new DenyShape(
       new Shape().transform(() => undefined),
       undefined
     );
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_EXCLUSION,
-          message: 'Must not be equal to undefined',
-          path: [],
-          input: 111,
-        },
-      ],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [], input: 111 }],
     });
   });
 
   test('does not apply checks if shape raises an issue', () => {
-    const shape = new ExcludeShape(
+    const shape = new DenyShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       undefined
     ).check(() => [{ code: 'yyy' }], { unsafe: true });
@@ -717,13 +698,13 @@ describe('ExcludeShape', () => {
 
   describe('async', () => {
     test('returns input as is', async () => {
-      const shape = new ExcludeShape(asyncShape, undefined);
+      const shape = new DenyShape(asyncShape, undefined);
 
       await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 111 });
     });
 
     test('returns output as is', async () => {
-      const shape = new ExcludeShape(
+      const shape = new DenyShape(
         new Shape().transformAsync(() => Promise.resolve(222)),
         undefined
       );
@@ -732,36 +713,23 @@ describe('ExcludeShape', () => {
     });
 
     test('raises an issue if an input is undefined', async () => {
-      const shape = new ExcludeShape(asyncShape, undefined);
+      const shape = new DenyShape(asyncShape, undefined);
 
       await expect(shape.tryAsync(undefined)).resolves.toEqual({
         ok: false,
-        issues: [
-          {
-            code: CODE_EXCLUSION,
-            message: 'Must not be equal to undefined',
-            path: [],
-          },
-        ],
+        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [] }],
       });
     });
 
     test('raises an issue if an output is undefined', async () => {
-      const shape = new ExcludeShape(
+      const shape = new DenyShape(
         new Shape().transformAsync(() => Promise.resolve(undefined)),
         undefined
       );
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
-        issues: [
-          {
-            code: CODE_EXCLUSION,
-            message: 'Must not be equal to undefined',
-            path: [],
-            input: 111,
-          },
-        ],
+        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [], input: 111 }],
       });
     });
   });

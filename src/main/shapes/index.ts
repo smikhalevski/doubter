@@ -18,12 +18,13 @@ export { PromiseShape } from './PromiseShape';
 export { RecordShape } from './RecordShape';
 export { SetShape } from './SetShape';
 export {
+  AllowShape,
   AnyShape,
   BrandShape,
   DeepPartialProtocol,
   DeepPartialShape,
-  ExcludeShape,
-  IncludeShape,
+  DenyShape,
+  NotShape,
   PipeShape,
   ReplaceShape,
   Shape,

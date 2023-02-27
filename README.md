@@ -402,8 +402,9 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `arrayMinLength` | [`d.array().min(n)`](#array) | The minimum array length `n` |
 | `arrayMaxLength` | [`d.array().max(n)`](#array) | The maximum array length `n` |
 | `const` | [`d.const(x)`](#const) | The expected constant value `x` |
+| `denied` | [`shape.deny(x)`](#exclude) | The denied value `x` |
 | `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
-| `exclusion` | [`shape.exclude(x)`](#exclude) | The excluded value `x` |
+| `excluded` | [`shape.exclude(x)`](#exclude) | The excluded shape `x` |
 | `instance` | [`instanceOf(Class)`](#instanceof) | The class constructor `Class` |
 | `intersection` | [`d.and(…)`](#intersection) | — |
 | `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
@@ -602,7 +603,7 @@ of the expected type, so it won't apply its unsafe checks.
 
 These shapes won't apply unsafe checks if an underlying shape has raised an issue:
 
-- `ExcludeShape`
+- `DenyShape`
 - `IntersectionShape`
 - `LazyShape`
 - `PipeShape`
@@ -873,34 +874,34 @@ const shape1 = d.enum(['Mars', 'Pluto', 'Jupiter']);
 // ⮕ Shape<'Mars' | 'Pluto' | 'Jupiter'>
 ```
 
-To exclude a value from this enum you can use `exclude`:
+To deny a value from this enum you can use `deny`:
 
 ```ts
-shape1.exclude('Pluto');
+shape1.deny('Pluto');
 // ⮕ Shape<'Mars' | 'Jupiter'>
 ```
 
-Value exclusion works with any shape. For example, you can exclude a number:
+Value denial works with any shape. For example, you can deny a number:
 
 ```ts
-const shape2 = d.number().exclude(42);
+const shape2 = d.number().deny(42);
 // ⮕ Shape<number>
 
 shape2.parse(33);
 // ⮕ 33
 
 shape2.parse(42);
-// ❌ ValidationError: exclusion at /: Must not be equal to 42
+// ❌ ValidationError: denied at /: Must not be equal to 42
 ```
 
 Exclude prohibits value for _both input and output_:
 
 ```ts
-const shape3 = d.number().transform(value => value * 2).exclude(42);
+const shape3 = d.number().transform(value => value * 2).deny(42);
 // ⮕ Shape<number>
 
 shape3.parse(21);
-// ❌ ValidationError: exclusion at /: Must not be equal to 42
+// ❌ ValidationError: denied at /: Must not be equal to 42
 ```
 
 # Include
@@ -908,14 +909,14 @@ shape3.parse(21);
 You can add a value to a multitude of input values:
 
 ```ts
-d.const('Mars').include('Pluto');
+d.const('Mars').allow('Pluto');
 // ⮕ Shape<'Mars' | 'Pluto'>
 ```
 
 Included values don't go through checks and transformations of the underlying shape:
 
 ```ts
-const shape = d.number().gt(3).include('Seventeen');
+const shape = d.number().gt(3).allow('Seventeen');
 // ⮕ Shape<number | 'Seventeen'>
 
 shape.parse(2);
@@ -994,7 +995,7 @@ d.or([
 Or using an inclusion:
 
 ```ts
-d.string().include(undefined);
+d.string().allow(undefined);
 // ⮕ Shape<string | undefined>
 ```
 
@@ -1019,7 +1020,7 @@ const shape2 = shape1.nonOptional();
 // ⮕ Shape<string | number>
 
 shape2.parse(undefined);
-// ❌ ValidationError: exclusion at /: Must not be equal to undefined
+// ❌ ValidationError: denied at /: Must not be equal to undefined
 ```
 
 # Nullable and nullish

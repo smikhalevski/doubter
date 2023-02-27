@@ -27,19 +27,28 @@ import {
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import {
-  CODE_EXCLUSION,
-  CODE_NOT,
+  CODE_DENIED,
+  CODE_EXCLUDED,
   CODE_PREDICATE,
   ERROR_FORBIDDEN_AT_RUNTIME,
   ERROR_REQUIRES_ASYNC,
-  MESSAGE_EXCLUSION,
-  MESSAGE_NOT,
+  MESSAGE_DENIED,
+  MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
   TYPE_ANY,
   TYPE_NEVER,
 } from '../constants';
 
 export const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
+
+// prettier-ignore
+export type ExcludeLiteral<T, U> =
+  number extends U ? T :
+  string extends U ? T :
+  symbol extends U ? T :
+  bigint extends U ? T :
+  boolean extends U ? T :
+  Exclude<T, U>;
 
 /**
  * An arbitrary shape.
@@ -52,23 +61,26 @@ export type AnyShape = Shape | Shape<never>;
  * @template S The shape that parses the input without the replaced value.
  * @template T The value that is allows as an input and output.
  */
-export interface IncludeShape<S extends AnyShape, T>
-  extends Shape<S['input'] | T, S['output'] | T>,
-    DeepPartialProtocol<IncludeShape<DeepPartialShape<S>, T>> {
+export type AllowShape<S extends AnyShape, T> = ReplaceShape<S, T, T>;
+
+/**
+ * An alias for {@linkcode ExcludeShape} that doesn't impose the type exclusion.
+ *
+ * @template S The base shape.
+ * @template N The shape to which the output must not conform.
+ */
+export interface NotShape<S extends AnyShape, N extends AnyShape>
+  extends Shape<S['input'], S['output']>,
+    DeepPartialProtocol<NotShape<DeepPartialShape<S>, N>> {
   /**
-   * The shape that parses the input without the included value.
+   * The base shape.
    */
   readonly shape: S;
 
   /**
-   * The value included in the input.
+   * The shape to which the output must not conform.
    */
-  readonly inputValue: T;
-
-  /**
-   * The value included in the output.
-   */
-  readonly outputValue: T;
+  readonly excludedShape: N;
 }
 
 /**
@@ -114,7 +126,7 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
  *
  * @template S The shape to convert to an optional deep partial alternative.
  */
-export type OptionalDeepPartialShape<S extends AnyShape> = IncludeShape<DeepPartialShape<S>, undefined>;
+export type OptionalDeepPartialShape<S extends AnyShape> = ReplaceShape<DeepPartialShape<S>, undefined, undefined>;
 
 /**
  * The detected runtime input value type.
@@ -138,6 +150,7 @@ export type ValueType =
  * The result of shape application. This is the part of the internal API required for creating custom shapes.
  */
 export type ApplyResult<T = any> = Ok<T> | Issue[] | null;
+
 /**
  * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.
  */
@@ -368,7 +381,7 @@ export class Shape<I = any, O = I> {
    * @returns The {@linkcode ReplaceShape} instance.
    * @template T The included value.
    */
-  include<T extends Literal>(value: T): IncludeShape<this, T> {
+  allow<T extends Literal>(value: T): AllowShape<this, T> {
     return this.replace(value, value);
   }
 
@@ -377,11 +390,11 @@ export class Shape<I = any, O = I> {
    *
    * @param value The excluded value.
    * @param options The constraint options or an issue message.
-   * @returns The {@linkcode ExcludeShape} instance.
+   * @returns The {@linkcode DenyShape} instance.
    * @template T The excluded value.
    */
-  exclude<T extends Literal>(value: T, options?: ConstraintOptions | Message): ExcludeShape<this, T> {
-    return new ExcludeShape(this, value, options);
+  deny<T extends Literal>(value: T, options?: ConstraintOptions | Message): DenyShape<this, T> {
+    return new DenyShape(this, value, options);
   }
 
   /**
@@ -389,7 +402,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  optional(): IncludeShape<this, undefined>;
+  optional(): AllowShape<this, undefined>;
 
   /**
    * Replaces `undefined` input value with a default output value.
@@ -408,7 +421,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullable(): IncludeShape<this, null>;
+  nullable(): AllowShape<this, null>;
 
   /**
    * Replaces `null` input value with a default output value.
@@ -427,7 +440,7 @@ export class Shape<I = any, O = I> {
    *
    * @returns The {@linkcode ReplaceShape} instance.
    */
-  nullish(): IncludeShape<IncludeShape<this, null>, undefined>;
+  nullish(): AllowShape<AllowShape<this, null>, undefined>;
 
   /**
    * Replaces `null` and `undefined` input value with a default output value.
@@ -445,10 +458,10 @@ export class Shape<I = any, O = I> {
    * Prevents an input and output from being `undefined`.
    *
    * @param options The constraint options or an issue message.
-   * @returns The {@linkcode ExcludeShape} instance.
+   * @returns The {@linkcode DenyShape} instance.
    */
-  nonOptional(options?: ConstraintOptions | Message): ExcludeShape<this, undefined> {
-    return this.exclude(undefined, options);
+  nonOptional(options?: ConstraintOptions | Message): DenyShape<this, undefined> {
+    return this.deny(undefined, options);
   }
 
   /**
@@ -470,8 +483,28 @@ export class Shape<I = any, O = I> {
     return new CatchShape(this, fallback);
   }
 
+  /**
+   * Checks that the input doesn't match the shape.
+   *
+   * @param shape The shape to which the output must not conform.
+   * @param options The constraint options or an issue message.
+   * @template S The shape to which the output must not conform.
+   * @returns The {@linkcode ExcludeShape} instance.
+   */
+  exclude<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): ExcludeShape<this, S> {
+    return new ExcludeShape(this, shape, options);
+  }
+
+  /**
+   * Checks that the input doesn't match the shape.
+   *
+   * @param shape The shape to which the output must not conform.
+   * @param options The constraint options or an issue message.
+   * @template S The shape to which the output must not conform.
+   * @returns The {@linkcode ExcludeShape} instance.
+   */
   not<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): NotShape<this, S> {
-    return new NotShape(this, shape, options);
+    return this.exclude(shape, options);
   }
 
   /**
@@ -963,7 +996,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
  * @template I The input shape.
  * @template O The output shape.
  */
-export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
+export class PipeShape<I extends AnyShape, O extends AnyShape>
   extends Shape<I['input'], O['output']>
   implements DeepPartialProtocol<PipeShape<DeepPartialShape<I>, DeepPartialShape<O>>>
 {
@@ -1076,14 +1109,14 @@ export class PipeShape<I extends AnyShape, O extends Shape<I['output'], any>>
 }
 
 /**
- * The shape that replaces an input value with an output value.
+ * The shape that replaces an input literal value with an output literal value.
  *
  * @template S The shape that parses the input without the replaced value.
  * @template A The input value to replace.
  * @template B The output value.
  */
 export class ReplaceShape<S extends AnyShape, A, B>
-  extends Shape<S['input'] | A, Exclude<S['output'], A> | B>
+  extends Shape<S['input'] | A, ExcludeLiteral<S['output'], A> | B>
   implements DeepPartialProtocol<ReplaceShape<DeepPartialShape<S>, A, B>>
 {
   private _result: ApplyResult<B>;
@@ -1133,13 +1166,16 @@ export class ReplaceShape<S extends AnyShape, A, B>
     return this.shape['_getInputValues']().concat(this.inputValue);
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], A> | B> {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<ExcludeLiteral<S['output'], A> | B> {
     const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
 
     return this._applyResult(result, input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], A> | B>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ParseOptions
+  ): Promise<ApplyResult<ExcludeLiteral<S['output'], A> | B>> {
     if (isEqual(input, this.inputValue)) {
       return Promise.resolve(this._applyResult(this._result, input, options));
     }
@@ -1150,7 +1186,7 @@ export class ReplaceShape<S extends AnyShape, A, B>
     result: ApplyResult,
     input: unknown,
     options: ParseOptions
-  ): ApplyResult<Exclude<S['output'], A> | B> {
+  ): ApplyResult<ExcludeLiteral<S['output'], A> | B> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1171,46 +1207,46 @@ export class ReplaceShape<S extends AnyShape, A, B>
 }
 
 /**
- * The shape that excludes a value from both input and output.
+ * The shape that prevents both input and output from being equal to a denied literal value.
  *
- * @template S The base shape.
- * @template T The excluded value.
+ * @template S The shape that parses the input without the denied value.
+ * @template T The denied value.
  */
-export class ExcludeShape<S extends AnyShape, T>
-  extends Shape<Exclude<S['input'], T>, Exclude<S['output'], T>>
-  implements DeepPartialProtocol<ExcludeShape<DeepPartialShape<S>, T>>
+export class DenyShape<S extends AnyShape, T>
+  extends Shape<ExcludeLiteral<S['input'], T>, ExcludeLiteral<S['output'], T>>
+  implements DeepPartialProtocol<DenyShape<DeepPartialShape<S>, T>>
 {
   protected _options;
   protected _typeIssueFactory;
 
   /**
-   * Creates the new {@linkcode ExcludeShape} instance.
+   * Creates the new {@linkcode DenyShape} instance.
    *
-   * @param shape The shape that parses the input without the replaced value.
-   * @param excludedValue The excluded value.
+   * @param shape The shape that parses the input without the denied value.
+   * @param deniedValue The dined value.
    * @param options The constraint options or an issue message.
-   * @template S The shape that parses the input without the replaced value.
-   * @template T The excluded value.
+   * @template S The shape that parses the input without the denied value.
+   * @template T The dined value.
    */
   constructor(
     /**
-     * The base shape.
+     * The shape that parses the input without the denied value.
      */
     readonly shape: S,
     /**
-     * The excluded value.
+     * The dined value.
      */
-    readonly excludedValue: T,
+    readonly deniedValue: T,
     options?: ConstraintOptions | Message
   ) {
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_EXCLUSION, MESSAGE_EXCLUSION, options, excludedValue);
+    this._typeIssueFactory = createIssueFactory(CODE_DENIED, MESSAGE_DENIED, options, deniedValue);
   }
 
-  deepPartial(): ExcludeShape<DeepPartialShape<S>, T> {
-    return copyUnsafeChecks(this, new ExcludeShape(toDeepPartialShape(this.shape), this.excludedValue, this._options));
+  deepPartial(): DenyShape<DeepPartialShape<S>, T> {
+    return copyUnsafeChecks(this, new DenyShape(toDeepPartialShape(this.shape), this.deniedValue, this._options));
   }
 
   protected _isAsync(): boolean {
@@ -1222,18 +1258,18 @@ export class ExcludeShape<S extends AnyShape, T>
   }
 
   protected _getInputValues(): unknown[] {
-    return this.shape['_getInputValues']().filter(value => !isEqual(this.excludedValue, value));
+    return this.shape['_getInputValues']().filter(value => !isEqual(this.deniedValue, value));
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], T>> {
-    if (isEqual(input, this.excludedValue)) {
+  protected _apply(input: unknown, options: ParseOptions): ApplyResult<ExcludeLiteral<S['output'], T>> {
+    if (isEqual(input, this.deniedValue)) {
       return this._typeIssueFactory(input, options);
     }
     return this._applyResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], T>>> {
-    if (isEqual(input, this.excludedValue)) {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<ExcludeLiteral<S['output'], T>>> {
+    if (isEqual(input, this.deniedValue)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
     return this.shape['_applyAsync'](input, options).then(result => this._applyResult(result, input, options));
@@ -1243,7 +1279,7 @@ export class ExcludeShape<S extends AnyShape, T>
     result: ApplyResult,
     input: unknown,
     options: ParseOptions
-  ): ApplyResult<Exclude<S['output'], T>> {
+  ): ApplyResult<ExcludeLiteral<S['output'], T>> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1255,7 +1291,7 @@ export class ExcludeShape<S extends AnyShape, T>
       }
       output = result.value;
 
-      if (isEqual(output, this.excludedValue)) {
+      if (isEqual(output, this.deniedValue)) {
         return this._typeIssueFactory(input, options);
       }
     }
@@ -1353,28 +1389,47 @@ export class CatchShape<S extends AnyShape, T>
  * Checks that the input doesn't match the shape.
  *
  * @template S The base shape.
- * @template N The shape to which the input must not conform.
+ * @template N The shape to which the output must not conform.
  */
-export class NotShape<S extends AnyShape, N extends AnyShape>
+export class ExcludeShape<S extends AnyShape, N extends AnyShape>
   extends Shape<S['input'], Exclude<S['output'], N['input']>>
-  implements DeepPartialProtocol<NotShape<DeepPartialShape<S>, N>>
+  implements DeepPartialProtocol<ExcludeShape<DeepPartialShape<S>, N>>
 {
   protected _options;
   protected _typeIssueFactory;
 
-  constructor(readonly shape: S, readonly notShape: N, options?: ConstraintOptions | Message) {
+  /**
+   * Creates the new {@linkcode ExcludeShape} instance.
+   *
+   * @param shape The shape that parses the input.
+   * @param excludedShape The shape to which the output must not conform.
+   * @param options The constraint options or an issue message.
+   * @template S The base shape.
+   * @template N The shape to which the output must not conform.
+   */
+  constructor(
+    /**
+     * The base shape.
+     */
+    readonly shape: S,
+    /**
+     * The shape to which the output must not conform.
+     */
+    readonly excludedShape: N,
+    options?: ConstraintOptions | Message
+  ) {
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_NOT, MESSAGE_NOT, options, notShape);
+    this._typeIssueFactory = createIssueFactory(CODE_EXCLUDED, MESSAGE_EXCLUDED, options, excludedShape);
   }
 
-  deepPartial(): NotShape<DeepPartialShape<S>, N> {
-    return copyUnsafeChecks(this, new NotShape(toDeepPartialShape(this.shape), this.notShape, this._options));
+  deepPartial(): ExcludeShape<DeepPartialShape<S>, N> {
+    return copyUnsafeChecks(this, new ExcludeShape(toDeepPartialShape(this.shape), this.excludedShape, this._options));
   }
 
   protected _isAsync(): boolean {
-    return this.shape.isAsync || this.notShape.isAsync;
+    return this.shape.isAsync || this.excludedShape.isAsync;
   }
 
   protected _getInputTypes(): readonly ValueType[] {
@@ -1386,7 +1441,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
   }
 
   protected _apply(input: unknown, options: ParseOptions): ApplyResult<Exclude<S['output'], N['input']>> {
-    const { shape, notShape, _applyChecks } = this;
+    const { shape, excludedShape, _applyChecks } = this;
 
     let issues;
     let output = input;
@@ -1400,7 +1455,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
       output = result.value;
     }
 
-    if (!isArray(notShape['_apply'](output, options))) {
+    if (!isArray(excludedShape['_apply'](output, options))) {
       return this._typeIssueFactory(input, options);
     }
 
@@ -1411,7 +1466,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], N['input']>>> {
-    const { shape, notShape, _applyChecks } = this;
+    const { shape, excludedShape, _applyChecks } = this;
 
     let result: ApplyResult = null;
     let output = input;
@@ -1426,7 +1481,7 @@ export class NotShape<S extends AnyShape, N extends AnyShape>
           output = inputResult.value;
         }
 
-        return notShape['_applyAsync'](output, options);
+        return excludedShape['_applyAsync'](output, options);
       })
       .then(outputResult => {
         let issues;

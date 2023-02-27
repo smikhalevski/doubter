@@ -23,12 +23,12 @@ import {
   unshiftPath,
 } from '../utils';
 import {
+  AllowShape,
   AnyShape,
   ApplyResult,
   DeepPartialProtocol,
-  ExcludeShape,
+  DenyShape,
   OptionalDeepPartialShape,
-  ReplaceShape,
   Shape,
   ValueType,
 } from './Shape';
@@ -52,9 +52,9 @@ export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> 
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: ReplaceShape<P[K], undefined, undefined> };
+export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: AllowShape<P[K], undefined> };
 
-export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: ExcludeShape<P[K], undefined> };
+export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: DenyShape<P[K], undefined> };
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
