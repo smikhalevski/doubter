@@ -108,9 +108,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   /**
    * Returns an array shape that has rest elements constrained by the given shape.
    *
-   * The returned object shape would have no checks.
-   *
-   * @param restShape The shape of rest elements or `null` if there are no rest elements.
+   * @param restShape The shape of rest elements, or `null` if there are no rest elements.
    * @returns The new array shape.
    * @template T The shape of rest elements.
    */

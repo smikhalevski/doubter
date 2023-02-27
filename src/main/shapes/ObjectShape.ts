@@ -68,7 +68,8 @@ export type DeepPartialObjectShape<P extends ReadonlyDict<AnyShape>, R extends A
  *
  * @template P The mapping from an object key to a corresponding value shape.
  * @template R The shape that constrains values of
- * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
+ * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures), or `null`
+ * if there's no index signature.
  */
 export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null>
   extends Shape<InferObject<P, R, 'input'>, InferObject<P, R, 'output'>>
@@ -80,7 +81,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   readonly keys: readonly StringKeyof<P>[];
 
   /**
-   * The mode of unknown keys handling.
+   * The mode of keys handling.
    */
   readonly keysMode: KeysMode;
 
@@ -98,7 +99,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
    * then values thea fall under the index signature are unconstrained.
    * @param options The type constraint options or an issue message.
-   * @param keysMode The mode of unknown keys handling.
+   * @param keysMode The mode of keys handling.
    * @template P The mapping from an object key to a corresponding value shape.
    * @template R The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
@@ -136,8 +137,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
    * this shape and its {@linkcode keysMode} is preserved intact.
    *
-   * The returned object shape would have no checks.
-   *
    * @param shape The object shape which properties must be added to this object shape.
    * @returns The new object shape.
    * @template T Properties to add.
@@ -151,8 +150,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    *
    * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
    * this shape and its {@linkcode keysMode} is preserved intact.
-   *
-   * The returned object shape would have no checks.
    *
    * @param shapes The properties to add.
    * @returns The new object shape.
@@ -168,8 +165,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
   /**
    * Returns an object shape that only has properties with listed keys.
-   *
-   * The returned object shape would have no checks.
    *
    * @param keys The list of property keys to pick.
    * @returns The new object shape.
@@ -189,8 +184,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape that doesn't have the listed keys.
    *
-   * The returned object shape would have no checks.
-   *
    * @param keys The list of property keys to omit.
    * @returns The new object shape.
    * @template K The tuple of keys to omit.
@@ -209,16 +202,12 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape with all properties marked as optional.
    *
-   * The returned object shape would have no checks.
-   *
    * @returns The new object shape.
    */
   partial(): ObjectShape<Optional<P>, R>;
 
   /**
    * Returns an object shape with keys marked as optional.
-   *
-   * The returned object shape would have no checks.
    *
    * @param keys The list of property keys to make optional.
    * @returns The new object shape.
@@ -250,16 +239,12 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape with all properties marked as required.
    *
-   * The returned object shape would have no checks.
-   *
    * @returns The new object shape.
    */
   required(): ObjectShape<Required<P>, R>;
 
   /**
    * Returns an object shape with keys marked as required.
-   *
-   * The returned object shape would have no checks.
    *
    * @param keys The list of property keys to make required.
    * @returns The new object shape.
@@ -279,8 +264,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape that allows only known keys and has no index signature.
    *
-   * The returned object shape would have no checks.
-   *
    * @param options The constraint options or an issue message.
    * @returns The new object shape.
    */
@@ -295,8 +278,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape that doesn't have an index signature and all unknown keys are stripped.
    *
-   * The returned object shape would have no checks.
-   *
    * @returns The new object shape.
    */
   strip(): ObjectShape<P, null> {
@@ -305,8 +286,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
   /**
    * Returns an object shape that has an index signature that doesn't constrain values.
-   *
-   * The returned object shape would have no checks.
    *
    * @returns The new object shape.
    */
@@ -317,13 +296,13 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape that has an index signature that is constrained by the given shape.
    *
-   * The returned object shape would have no checks.
-   *
-   * @param restShape The shape that validates values at unknown keys.
+   * @param restShape The shape that constrains values of
+   * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures), or `null`
+   * if there's no index signature.
    * @returns The new object shape.
    * @template T The index signature shape.
    */
-  rest<T extends AnyShape>(restShape: T): ObjectShape<P, T> {
+  rest<T extends AnyShape | null>(restShape: T): ObjectShape<P, T> {
     return copyUnsafeChecks(this, new ObjectShape(this.shapes, restShape, this._options));
   }
 
