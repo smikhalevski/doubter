@@ -11,8 +11,16 @@ import {
   TransformShape,
   ValidationError,
 } from '../../main';
-import { CODE_DENIED, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_ANY, TYPE_STRING } from '../../main/constants';
-import { CatchShape } from '../../main/shapes/Shape';
+import {
+  CODE_DENIED,
+  CODE_EXCLUDED,
+  CODE_PREDICATE,
+  MESSAGE_EXCLUDED,
+  MESSAGE_PREDICATE,
+  TYPE_ANY,
+  TYPE_STRING,
+} from '../../main/constants';
+import { CatchShape, ExcludeShape } from '../../main/shapes/Shape';
 
 let asyncShape: AnyShape;
 
@@ -767,6 +775,78 @@ describe('CatchShape', () => {
 
     test('returns the result of a fallback callback if parsing fails', async () => {
       await expect(new CatchShape(new StringShape(), () => 'aaa').parseAsync(111)).resolves.toBe('aaa');
+    });
+  });
+});
+
+describe('ExcludeShape', () => {
+  test('returns the output as is if it is not excluded', () => {
+    expect(new ExcludeShape(new Shape(), new StringShape()).parse(222)).toBe(222);
+  });
+
+  test('does not apply exclusion if an underlying shape raised an issue', () => {
+    const shape = new ExcludeShape(
+      new Shape().check(() => [{ code: 'xxx' }]),
+      new StringShape()
+    );
+
+    expect(shape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  test('raises an issue if the output matches the excluded shape', () => {
+    const excludedShape = new StringShape();
+
+    expect(new ExcludeShape(new Shape(), excludedShape).try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape, path: [] }],
+    });
+  });
+
+  test('applies checks', () => {
+    const shape = new ExcludeShape(new Shape(), new StringShape()).check(() => [{ code: 'xxx' }]);
+
+    expect(shape.try(111)).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  describe('async', () => {
+    test('returns the output as is if it is not excluded', async () => {
+      await expect(new ExcludeShape(asyncShape, new StringShape()).parseAsync(222)).resolves.toBe(222);
+    });
+
+    test('does not apply exclusion if an underlying shape raised an issue', async () => {
+      const shape = new ExcludeShape(
+        asyncShape.check(() => [{ code: 'xxx' }]),
+        new StringShape()
+      );
+
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
+    });
+
+    test('raises an issue if the output matches the excluded shape', async () => {
+      const excludedShape = new StringShape();
+
+      await expect(new ExcludeShape(new Shape(), excludedShape).tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape, path: [] }],
+      });
+    });
+
+    test('applies checks', async () => {
+      const shape = new ExcludeShape(new Shape(), new StringShape()).check(() => [{ code: 'xxx' }]);
+
+      await expect(shape.tryAsync(111)).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
     });
   });
 });

@@ -1478,22 +1478,17 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<Exclude<S['output'], N['input']>>> {
     const { shape, excludedShape, _applyChecks } = this;
 
-    let result: ApplyResult = null;
-    let output = input;
+    return shape['_applyAsync'](input, options).then(result => {
+      let output = input;
 
-    return shape['_applyAsync'](input, options)
-      .then(inputResult => {
-        if (inputResult !== null) {
-          if (isArray(inputResult)) {
-            return inputResult;
-          }
-          result = inputResult;
-          output = inputResult.value;
+      if (result !== null) {
+        if (isArray(result)) {
+          return result;
         }
+        output = result.value;
+      }
 
-        return excludedShape['_applyAsync'](output, options);
-      })
-      .then(outputResult => {
+      return excludedShape['_applyAsync'](output, options).then(outputResult => {
         let issues;
 
         if (!isArray(outputResult)) {
@@ -1505,5 +1500,6 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
         }
         return issues;
       });
+    });
   }
 }
