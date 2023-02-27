@@ -313,6 +313,22 @@ describe('Shape', () => {
     expect(Shape.typeOf(111)).toBe('number');
   });
 
+  test('excludes a shape', () => {
+    const excludedShape = new Shape();
+    const shape = new Shape().exclude(excludedShape);
+
+    expect(shape).toBeInstanceOf(ExcludeShape);
+    expect(shape.excludedShape).toBe(excludedShape);
+  });
+
+  test('excludes a shape', () => {
+    const excludedShape = new Shape();
+    const shape = new Shape().not(excludedShape);
+
+    expect(shape).toBeInstanceOf(ExcludeShape);
+    expect(shape.excludedShape).toBe(excludedShape);
+  });
+
   describe('refine', () => {
     test('invokes a predicate', () => {
       const cbMock = jest.fn(value => value === 'aaa');

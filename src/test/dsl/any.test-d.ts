@@ -99,6 +99,10 @@ expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string(
 
 // ExcludeShape
 
+expectType<111 | 222>(d.enum([111, 222]).not(d.const(222)).input);
+
 expectType<111 | 222>(d.enum([111, 222]).not(d.const(222)).output);
+
+expectType<111 | 222>(d.enum([111, 222]).exclude(d.const(222)).input);
 
 expectType<111>(d.enum([111, 222]).exclude(d.const(222)).output);
