@@ -603,11 +603,11 @@ of the expected type, so it won't apply its unsafe checks.
 
 These shapes won't apply unsafe checks if an underlying shape has raised an issue:
 
-- `DenyShape`
+- `DenyLiteralShape`
 - `IntersectionShape`
 - `LazyShape`
 - `PipeShape`
-- `ReplaceShape`
+- `ReplaceLiteralShape`
 - `TransformShape`
 - `UnionShape`
 
