@@ -25,6 +25,14 @@ expectType<string | null>(d.any<string>().nullable().output);
 
 expectType<string | 111>(d.any<string>().nullable(111).output);
 
+expectType<111 | 333>(d.any<111 | 222>().replace(222, 333).output);
+
+expectType<111 | 222 | 333>(d.any<111 | 222>().replace(222 as number, 333).output);
+
+expectType<number>(d.any<111 | 222>().replace(NaN, 333).input);
+
+expectType<111 | 222 | 333>(d.any<111 | 222>().replace(NaN, 333).output);
+
 // parse()
 
 expectType<string | undefined>(d.any<string>().parseOrDefault(111));

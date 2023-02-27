@@ -21,16 +21,17 @@ export {
   AllowLiteralShape,
   AnyShape,
   BrandShape,
+  CatchShape,
   DeepPartialProtocol,
   DeepPartialShape,
   DenyLiteralShape,
+  ExcludeShape,
   NotShape,
   PipeShape,
   ReplaceLiteralShape,
   Shape,
   TransformShape,
   ValueType,
-  CatchShape,
 } from './Shape';
 export { StringShape } from './StringShape';
 export { SymbolShape } from './SymbolShape';
