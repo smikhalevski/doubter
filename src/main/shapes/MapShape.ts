@@ -226,23 +226,23 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
       const next = (): ApplyResult | Promise<ApplyResult> => {
         index++;
 
-        if (index === entriesLength) {
-          const output = changed ? new Map(entries) : input;
+        if (index !== entriesLength) {
+          entry = entries[index];
+          key = outputKey = entry[0];
+          value = outputValue = entry[1];
 
-          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-            issues = _applyChecks(output, issues, options);
-          }
-          if (issues === null && input !== output) {
-            return ok(output);
-          }
-          return issues;
+          return callApply(keyShape, key, options, applyKeyResult);
         }
 
-        entry = entries[index];
-        key = outputKey = entry[0];
-        value = outputValue = entry[1];
+        const output = changed ? new Map(entries) : input;
 
-        return callApply(keyShape, key, options, applyKeyResult);
+        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+          issues = _applyChecks(output, issues, options);
+        }
+        if (issues === null && input !== output) {
+          return ok(output);
+        }
+        return issues;
       };
 
       resolve(next());

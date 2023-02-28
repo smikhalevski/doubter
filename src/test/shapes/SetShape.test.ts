@@ -237,6 +237,28 @@ describe('SetShape', () => {
       expect(applyAsyncSpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
     });
 
+    test('does not apply value shape if the previous value raised an issue', async () => {
+      const checkMock = jest
+        .fn()
+        .mockReturnValueOnce(undefined)
+        .mockReturnValueOnce([{ code: 'xxx' }]);
+
+      const shape = asyncShape.check(checkMock);
+
+      shape.isAsync;
+
+      const applyAsyncSpy = jest.spyOn<Shape, any>(shape, '_applyAsync');
+
+      const setShape = new SetShape(shape);
+
+      const set = new Set([111, 222, 333]);
+      await setShape.tryAsync(set);
+
+      expect(applyAsyncSpy).toHaveBeenCalledTimes(2);
+      expect(applyAsyncSpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(applyAsyncSpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
+    });
+
     test('returns a new set if some values were transformed', async () => {
       const cbMock = jest.fn();
       cbMock.mockReturnValueOnce(Promise.resolve('aaa'));

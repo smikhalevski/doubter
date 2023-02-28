@@ -295,19 +295,19 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       const next = (): ApplyResult | Promise<ApplyResult> => {
         index++;
 
-        if (index === outputLength || (shapes === null && restShape === null)) {
-          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-            issues = _applyChecks(output, issues, options);
-          }
-          if (issues === null && input !== output) {
-            return ok(output);
-          }
-          return issues;
+        if (index !== outputLength && (shapes !== null || restShape !== null)) {
+          const valueShape = index < shapesLength ? shapes![index] : restShape!;
+
+          return valueShape['_applyAsync'](output[index], options).then(applyResult);
         }
 
-        const valueShape = index < shapesLength ? shapes![index] : restShape!;
-
-        return valueShape['_applyAsync'](output[index], options).then(applyResult);
+        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+          issues = _applyChecks(output, issues, options);
+        }
+        if (issues === null && input !== output) {
+          return ok(output);
+        }
+        return issues;
       };
 
       resolve(next());

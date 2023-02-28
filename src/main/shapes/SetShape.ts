@@ -1,5 +1,5 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
   concatIssues,
@@ -130,7 +130,7 @@ export class SetShape<S extends AnyShape>
 
     if (
       // Not a Set
-      !(input instanceof Set && (values = Array.from(input.values()))) &&
+      !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
       (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== null))
     ) {
@@ -156,7 +156,9 @@ export class SetShape<S extends AnyShape>
         issues = concatIssues(issues, result);
         continue;
       }
-      changed = !isEqual(value, (values[i] = result.value));
+      if ((changed = !isEqual(value, result.value))) {
+        values[i] = result.value;
+      }
     }
 
     const output = changed ? new Set(values) : input;
@@ -173,13 +175,13 @@ export class SetShape<S extends AnyShape>
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Set<S['output']>>> {
     return new Promise(resolve => {
       let changed = false;
-      let values: unknown[] | null;
+      let values: unknown[];
 
       if (
         // Not a Set
-        !(input instanceof Set && (values = Array.from(input.values()))) &&
+        !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== null))
+        (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)!) !== null))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;
@@ -187,47 +189,46 @@ export class SetShape<S extends AnyShape>
 
       const { shape, _applyChecks, _isUnsafe } = this;
       const valuesLength = values.length;
-      const promises: Promise<ApplyResult>[] = [];
 
-      for (let i = 0; i < valuesLength; ++i) {
-        promises.push(shape['_applyAsync'](values[i], options));
-      }
+      let issues: Issue[] | null = null;
+      let index = -1;
+      let value: unknown;
 
-      resolve(
-        Promise.all(promises).then(results => {
-          const resultsLength = results.length;
+      const applyResult = (result: ApplyResult) => {
+        if (result !== null) {
+          if (isArray(result)) {
+            unshiftPath(result, index);
 
-          let issues = null;
-
-          for (let i = 0; i < resultsLength; ++i) {
-            const result = results[i];
-
-            if (result === null) {
-              continue;
+            if (!options.verbose) {
+              return result;
             }
-            if (isArray(result)) {
-              unshiftPath(result, i);
-
-              if (!options.verbose) {
-                return result;
-              }
-              issues = concatIssues(issues, result);
-              continue;
-            }
-            changed = !isEqual(values![i], (values![i] = result.value));
+            issues = concatIssues(issues, result);
+          } else if ((changed = !isEqual(value, result.value))) {
+            values[index] = result.value;
           }
+        }
+        return next();
+      };
 
-          const output = changed ? new Set(values) : input;
+      const next = (): ApplyResult | Promise<ApplyResult> => {
+        index++;
 
-          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-            issues = _applyChecks(output, issues, options);
-          }
-          if (issues === null && changed) {
-            return ok(output);
-          }
-          return issues;
-        })
-      );
+        if (index !== valuesLength) {
+          return shape['_applyAsync']((value = values[index]), options).then(applyResult);
+        }
+
+        const output = changed ? new Set(values) : input;
+
+        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+          issues = _applyChecks(output, issues, options);
+        }
+        if (issues === null && changed) {
+          return ok(output);
+        }
+        return issues;
+      };
+
+      resolve(next());
     });
   }
 
