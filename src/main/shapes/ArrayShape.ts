@@ -274,23 +274,20 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       let index = -1;
 
       const applyResult = (result: ApplyResult) => {
-        if (result === null) {
-          return next();
-        }
-        if (isArray(result)) {
-          unshiftPath(result, index);
+        if (result !== null) {
+          if (isArray(result)) {
+            unshiftPath(result, index);
 
-          if (!options.verbose) {
-            return result;
+            if (!options.verbose) {
+              return result;
+            }
+            issues = concatIssues(issues, result);
+          } else if ((_isUnsafe || issues === null) && !isEqual(input[index], result.value)) {
+            if (input === output) {
+              output = input.slice(0);
+            }
+            output[index] = result.value;
           }
-          issues = concatIssues(issues, result);
-          return next();
-        }
-        if ((_isUnsafe || issues === null) && !isEqual(input[index], result.value)) {
-          if (input === output) {
-            output = input.slice(0);
-          }
-          output[index] = result.value;
         }
         return next();
       };

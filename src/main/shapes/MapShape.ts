@@ -6,8 +6,9 @@ import {
   OptionalDeepPartialShape,
   ValueType,
 } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
+  callApply,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -90,7 +91,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
     if (
       // Not a Map
-      !(input instanceof Map && (entries = Array.from(input.entries()))) &&
+      !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
       (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== null))
     ) {
@@ -103,7 +104,8 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     let issues = null;
 
     for (let i = 0; i < entriesLength; ++i) {
-      const [key, value] = entries[i];
+      const entry = entries[i];
+      const [key, value] = entry;
 
       let outputKey = key;
       let outputValue = value;
@@ -140,7 +142,8 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
       if ((_isUnsafe || issues === null) && (!isEqual(key, outputKey) || !isEqual(value, outputValue))) {
         changed = true;
-        entries[i] = [outputKey, outputValue];
+        entry[0] = outputKey;
+        entry[1] = outputValue;
       }
     }
 
@@ -158,13 +161,13 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Map<K['output'], V['output']>>> {
     return new Promise(resolve => {
       let changed = false;
-      let entries: [unknown, unknown][] | null;
+      let entries: [unknown, unknown][];
 
       if (
         // Not a Map
-        !(input instanceof Map && (entries = Array.from(input.entries()))) &&
+        !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== null))
+        (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)!) !== null))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;
@@ -172,70 +175,77 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
       const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
       const entriesLength = entries.length;
-      const promises: any[] = [];
 
-      for (let i = 0; i < entriesLength; ++i) {
-        const [key, value] = entries[i];
+      let issues: Issue[] | null = null;
+      let index = -1;
 
-        promises.push(keyShape['_applyAsync'](key, options), valueShape['_applyAsync'](value, options));
-      }
+      let entry: [unknown, unknown];
+      let key: unknown;
+      let value: unknown;
+      let outputKey: unknown;
+      let outputValue: unknown;
 
-      resolve(
-        Promise.all(promises).then(results => {
-          let issues = null;
+      const applyKeyResult = (keyResult: ApplyResult) => {
+        if (keyResult !== null) {
+          if (isArray(keyResult)) {
+            unshiftPath(keyResult, key);
 
-          for (let i = 0; i < entriesLength; ++i) {
-            const [key, value] = entries![i];
-
-            let outputKey = key;
-            let outputValue = value;
-
-            const keyResult = results[i * 2];
-            const valueResult = results[i * 2 + 1];
-
-            if (keyResult !== null) {
-              if (isArray(keyResult)) {
-                unshiftPath(keyResult, key);
-
-                if (!options.verbose) {
-                  return keyResult;
-                }
-                issues = concatIssues(issues, keyResult);
-              } else {
-                outputKey = keyResult.value;
-              }
+            if (!options.verbose) {
+              return keyResult;
             }
-
-            if (valueResult !== null) {
-              if (isArray(valueResult)) {
-                unshiftPath(valueResult, key);
-
-                if (!options.verbose) {
-                  return valueResult;
-                }
-                issues = concatIssues(issues, valueResult);
-              } else {
-                outputValue = valueResult.value;
-              }
-            }
-
-            if ((_isUnsafe || issues === null) && (!isEqual(key, outputKey) || !isEqual(value, outputValue))) {
-              changed = true;
-              entries![i] = [outputKey, outputValue];
-            }
+            issues = concatIssues(issues, keyResult);
+          } else {
+            outputKey = keyResult.value;
           }
+        }
+        return callApply(valueShape, value, options, applyValueResult);
+      };
 
+      const applyValueResult = (valueResult: ApplyResult) => {
+        if (valueResult !== null) {
+          if (isArray(valueResult)) {
+            unshiftPath(valueResult, key);
+
+            if (!options.verbose) {
+              return valueResult;
+            }
+            issues = concatIssues(issues, valueResult);
+          } else {
+            outputValue = valueResult.value;
+          }
+        }
+
+        if ((_isUnsafe || issues === null) && !(isEqual(key, outputKey) && isEqual(value, outputValue))) {
+          changed = true;
+          entry[0] = outputKey;
+          entry[1] = outputValue;
+        }
+        return next();
+      };
+
+      const next = (): ApplyResult | Promise<ApplyResult> => {
+        index++;
+
+        if (index === entriesLength) {
           const output = changed ? new Map(entries) : input;
 
           if (_applyChecks !== null && (_isUnsafe || issues === null)) {
             issues = _applyChecks(output, issues, options);
           }
-          if (changed && issues === null) {
+          if (issues === null && input !== output) {
             return ok(output);
           }
           return issues;
-        })
-      );
+        }
+
+        entry = entries[index];
+        key = outputKey = entry[0];
+        value = outputValue = entry[1];
+
+        return callApply(keyShape, key, options, applyKeyResult);
+      };
+
+      resolve(next());
     });
   }
 
