@@ -1,7 +1,7 @@
 import { AnyShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_ENUM,
-  CODE_EXCLUSION,
+  CODE_DENIED,
   CODE_TYPE,
   CODE_UNKNOWN_KEYS,
   MESSAGE_OBJECT_TYPE,
@@ -205,8 +205,8 @@ describe('ObjectShape', () => {
     expect(objShape.try(obj, { verbose: true })).toEqual({
       ok: false,
       issues: [
-        { code: CODE_EXCLUSION, message: 'Must not be equal to undefined', path: ['key1'] },
-        { code: CODE_EXCLUSION, message: 'Must not be equal to undefined', path: ['key2'] },
+        { code: CODE_DENIED, message: 'Must not be equal to undefined', path: ['key1'] },
+        { code: CODE_DENIED, message: 'Must not be equal to undefined', path: ['key2'] },
       ],
     });
   });
@@ -220,7 +220,7 @@ describe('ObjectShape', () => {
 
     expect(objShape.try(obj, { verbose: true })).toEqual({
       ok: false,
-      issues: [{ code: CODE_EXCLUSION, message: 'Must not be equal to undefined', path: ['key1'] }],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: ['key1'] }],
     });
   });
 

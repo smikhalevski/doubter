@@ -1,18 +1,26 @@
 import {
   AnyShape,
   ConstShape,
-  ExcludeShape,
+  DenyLiteralShape,
   NumberShape,
   ObjectShape,
   PipeShape,
-  ReplaceShape,
+  ReplaceLiteralShape,
   Shape,
   StringShape,
   TransformShape,
   ValidationError,
 } from '../../main';
-import { CODE_EXCLUSION, CODE_PREDICATE, MESSAGE_PREDICATE, TYPE_ANY, TYPE_STRING } from '../../main/constants';
-import { CatchShape } from '../../main/shapes/Shape';
+import {
+  CODE_DENIED,
+  CODE_EXCLUDED,
+  CODE_PREDICATE,
+  MESSAGE_EXCLUDED,
+  MESSAGE_PREDICATE,
+  TYPE_ANY,
+  TYPE_STRING,
+} from '../../main/constants';
+import { CatchShape, ExcludeShape } from '../../main/shapes/Shape';
 
 let asyncShape: AnyShape;
 
@@ -287,11 +295,11 @@ describe('Shape', () => {
     expect(shape.parse(111)).toBe(222);
   });
 
-  test('wraps in ExcludeShape', () => {
+  test('wraps in DenyLiteralShape', () => {
     const shape = new Shape().nonOptional();
 
-    expect(shape).toBeInstanceOf(ExcludeShape);
-    expect((shape as ExcludeShape<any, any>).excludedValue).toBe(undefined);
+    expect(shape).toBeInstanceOf(DenyLiteralShape);
+    expect((shape as DenyLiteralShape<any, any>).deniedValue).toBe(undefined);
   });
 
   test('branding does not change shape identity', () => {
@@ -303,6 +311,22 @@ describe('Shape', () => {
   test('returns value type', () => {
     expect(Shape.typeOf([])).toBe('array');
     expect(Shape.typeOf(111)).toBe('number');
+  });
+
+  test('excludes a shape', () => {
+    const excludedShape = new Shape();
+    const shape = new Shape().exclude(excludedShape);
+
+    expect(shape).toBeInstanceOf(ExcludeShape);
+    expect(shape.excludedShape).toBe(excludedShape);
+  });
+
+  test('excludes a shape', () => {
+    const excludedShape = new Shape();
+    const shape = new Shape().not(excludedShape);
+
+    expect(shape).toBeInstanceOf(ExcludeShape);
+    expect(shape.excludedShape).toBe(excludedShape);
   });
 
   describe('refine', () => {
@@ -352,12 +376,6 @@ describe('Shape', () => {
         ok: false,
         issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
       });
-    });
-
-    test('narrows the output type using a narrowing predicate', () => {
-      const cb = (value: unknown): value is boolean => true;
-
-      const value: boolean = new Shape().refine(cb).parse('aaa');
     });
 
     test('overrides refinement message as string', () => {
@@ -608,9 +626,9 @@ describe('PipeShape', () => {
   });
 });
 
-describe('ReplaceShape', () => {
+describe('ReplaceLiteralShape', () => {
   test('replaces input value with an output', () => {
-    const shape = new ReplaceShape(new Shape(), 111, 222);
+    const shape = new ReplaceLiteralShape(new Shape(), 111, 222);
 
     expect(shape.parse('aaa')).toBe('aaa');
     expect(shape.parse(111)).toBe(222);
@@ -618,7 +636,7 @@ describe('ReplaceShape', () => {
   });
 
   test('raises issues returned from the shape', () => {
-    const shape = new ReplaceShape(
+    const shape = new ReplaceLiteralShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       111,
       222
@@ -631,7 +649,7 @@ describe('ReplaceShape', () => {
   });
 
   test('does not apply checks if shape raised issues', () => {
-    const shape = new ReplaceShape(
+    const shape = new ReplaceLiteralShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       111,
       222
@@ -646,22 +664,22 @@ describe('ReplaceShape', () => {
   test('applies checks to replaced value', () => {
     const checkMock = jest.fn();
 
-    new ReplaceShape(new Shape(), 111, 222).check(checkMock).try(111);
+    new ReplaceLiteralShape(new Shape(), 111, 222).check(checkMock).try(111);
 
     expect(checkMock).toHaveBeenCalledTimes(1);
     expect(checkMock).toHaveBeenNthCalledWith(1, 222, { coerced: false, verbose: false });
   });
 });
 
-describe('ExcludeShape', () => {
+describe('DenyLiteralShape', () => {
   test('returns input as is', () => {
-    const shape = new ExcludeShape(new Shape(), undefined);
+    const shape = new DenyLiteralShape(new Shape(), undefined);
 
     expect(shape.try(111)).toEqual({ ok: true, value: 111 });
   });
 
   test('returns output as is', () => {
-    const shape = new ExcludeShape(
+    const shape = new DenyLiteralShape(
       new Shape().transform(() => 222),
       undefined
     );
@@ -670,41 +688,28 @@ describe('ExcludeShape', () => {
   });
 
   test('raises an issue if an input is undefined', () => {
-    const shape = new ExcludeShape(new Shape(), undefined);
+    const shape = new DenyLiteralShape(new Shape(), undefined);
 
     expect(shape.try(undefined)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_EXCLUSION,
-          message: 'Must not be equal to undefined',
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [] }],
     });
   });
 
   test('raises an issue if an output is undefined', () => {
-    const shape = new ExcludeShape(
+    const shape = new DenyLiteralShape(
       new Shape().transform(() => undefined),
       undefined
     );
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_EXCLUSION,
-          message: 'Must not be equal to undefined',
-          path: [],
-          input: 111,
-        },
-      ],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [], input: 111 }],
     });
   });
 
   test('does not apply checks if shape raises an issue', () => {
-    const shape = new ExcludeShape(
+    const shape = new DenyLiteralShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       undefined
     ).check(() => [{ code: 'yyy' }], { unsafe: true });
@@ -717,13 +722,13 @@ describe('ExcludeShape', () => {
 
   describe('async', () => {
     test('returns input as is', async () => {
-      const shape = new ExcludeShape(asyncShape, undefined);
+      const shape = new DenyLiteralShape(asyncShape, undefined);
 
       await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 111 });
     });
 
     test('returns output as is', async () => {
-      const shape = new ExcludeShape(
+      const shape = new DenyLiteralShape(
         new Shape().transformAsync(() => Promise.resolve(222)),
         undefined
       );
@@ -732,36 +737,23 @@ describe('ExcludeShape', () => {
     });
 
     test('raises an issue if an input is undefined', async () => {
-      const shape = new ExcludeShape(asyncShape, undefined);
+      const shape = new DenyLiteralShape(asyncShape, undefined);
 
       await expect(shape.tryAsync(undefined)).resolves.toEqual({
         ok: false,
-        issues: [
-          {
-            code: CODE_EXCLUSION,
-            message: 'Must not be equal to undefined',
-            path: [],
-          },
-        ],
+        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [] }],
       });
     });
 
     test('raises an issue if an output is undefined', async () => {
-      const shape = new ExcludeShape(
+      const shape = new DenyLiteralShape(
         new Shape().transformAsync(() => Promise.resolve(undefined)),
         undefined
       );
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
-        issues: [
-          {
-            code: CODE_EXCLUSION,
-            message: 'Must not be equal to undefined',
-            path: [],
-            input: 111,
-          },
-        ],
+        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [], input: 111 }],
       });
     });
   });
@@ -799,6 +791,78 @@ describe('CatchShape', () => {
 
     test('returns the result of a fallback callback if parsing fails', async () => {
       await expect(new CatchShape(new StringShape(), () => 'aaa').parseAsync(111)).resolves.toBe('aaa');
+    });
+  });
+});
+
+describe('ExcludeShape', () => {
+  test('returns the output as is if it is not excluded', () => {
+    expect(new ExcludeShape(new Shape(), new StringShape()).parse(222)).toBe(222);
+  });
+
+  test('does not apply exclusion if an underlying shape raised an issue', () => {
+    const shape = new ExcludeShape(
+      new Shape().check(() => [{ code: 'xxx' }]),
+      new StringShape()
+    );
+
+    expect(shape.try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  test('raises an issue if the output matches the excluded shape', () => {
+    const excludedShape = new StringShape();
+
+    expect(new ExcludeShape(new Shape(), excludedShape).try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape, path: [] }],
+    });
+  });
+
+  test('applies checks', () => {
+    const shape = new ExcludeShape(new Shape(), new StringShape()).check(() => [{ code: 'xxx' }]);
+
+    expect(shape.try(111)).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
+  });
+
+  describe('async', () => {
+    test('returns the output as is if it is not excluded', async () => {
+      await expect(new ExcludeShape(asyncShape, new StringShape()).parseAsync(222)).resolves.toBe(222);
+    });
+
+    test('does not apply exclusion if an underlying shape raised an issue', async () => {
+      const shape = new ExcludeShape(
+        asyncShape.check(() => [{ code: 'xxx' }]),
+        new StringShape()
+      );
+
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
+    });
+
+    test('raises an issue if the output matches the excluded shape', async () => {
+      const excludedShape = new StringShape();
+
+      await expect(new ExcludeShape(new Shape(), excludedShape).tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape, path: [] }],
+      });
+    });
+
+    test('applies checks', async () => {
+      const shape = new ExcludeShape(new Shape(), new StringShape()).check(() => [{ code: 'xxx' }]);
+
+      await expect(shape.tryAsync(111)).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', path: [] }],
+      });
     });
   });
 });

@@ -18,18 +18,20 @@ export { PromiseShape } from './PromiseShape';
 export { RecordShape } from './RecordShape';
 export { SetShape } from './SetShape';
 export {
+  AllowLiteralShape,
   AnyShape,
   BrandShape,
+  CatchShape,
   DeepPartialProtocol,
   DeepPartialShape,
+  DenyLiteralShape,
   ExcludeShape,
-  IncludeShape,
+  NotShape,
   PipeShape,
-  ReplaceShape,
+  ReplaceLiteralShape,
   Shape,
   TransformShape,
   ValueType,
-  CatchShape,
 } from './Shape';
 export { StringShape } from './StringShape';
 export { SymbolShape } from './SymbolShape';

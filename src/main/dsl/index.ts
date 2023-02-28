@@ -15,6 +15,7 @@ export * from './map';
 export * from './nan';
 export * from './integer';
 export * from './never';
+export * from './not';
 export * from './null';
 export * from './number';
 export * from './object';
