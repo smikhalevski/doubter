@@ -66,7 +66,7 @@ export function isPlainObject(value: unknown): boolean {
   return isObjectLike(value) && ((prototype = getPrototypeOf(value)) === null || prototype.constructor === Object);
 }
 
-export function isIterable(value: any): value is Iterable<any> {
+export function isIterableObject(value: any): value is Iterable<any> {
   return isObjectLike(value) && (Symbol.iterator in value || !isNaN(value.length));
 }
 

@@ -8,7 +8,7 @@ import {
   getValueType,
   isBitEnabledAt,
   isEqual,
-  isIterable,
+  isIterableObject,
   toArrayIndex,
   unique,
 } from '../main/utils';
@@ -26,21 +26,21 @@ describe('getValueType', () => {
   });
 });
 
-describe('isIterable', () => {
+describe('isIterableObject', () => {
   test('returns value type', () => {
-    expect(isIterable(new Map())).toBe(true);
-    expect(isIterable(new Set())).toBe(true);
-    expect(isIterable([])).toBe(true);
-    expect(isIterable({ [Symbol.iterator]: 111 })).toBe(true);
-    expect(isIterable({ [Symbol.iterator]: () => null })).toBe(true);
-    expect(isIterable({ length: null })).toBe(true);
-    expect(isIterable({ length: 111 })).toBe(true);
-    expect(isIterable({ length: '111' })).toBe(true);
-    expect(isIterable({ length: { valueOf: () => 111 } })).toBe(true);
+    expect(isIterableObject(new Map())).toBe(true);
+    expect(isIterableObject(new Set())).toBe(true);
+    expect(isIterableObject([])).toBe(true);
+    expect(isIterableObject({ [Symbol.iterator]: 111 })).toBe(true);
+    expect(isIterableObject({ [Symbol.iterator]: () => null })).toBe(true);
+    expect(isIterableObject({ length: null })).toBe(true);
+    expect(isIterableObject({ length: 111 })).toBe(true);
+    expect(isIterableObject({ length: '111' })).toBe(true);
+    expect(isIterableObject({ length: { valueOf: () => 111 } })).toBe(true);
 
-    expect(isIterable({ length: undefined })).toBe(false);
-    expect(isIterable({ length: 'aaa' })).toBe(false);
-    expect(isIterable('')).toBe(false);
+    expect(isIterableObject({ length: undefined })).toBe(false);
+    expect(isIterableObject({ length: 'aaa' })).toBe(false);
+    expect(isIterableObject('')).toBe(false);
   });
 });
 

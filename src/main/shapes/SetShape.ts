@@ -7,7 +7,7 @@ import {
   createIssueFactory,
   isArray,
   isEqual,
-  isIterable,
+  isIterableObject,
   ok,
   toArrayIndex,
   toDeepPartialShape,
@@ -241,7 +241,7 @@ export class SetShape<S extends AnyShape>
     if (isArray(value)) {
       return value;
     }
-    if (isIterable(value)) {
+    if (isIterableObject(value)) {
       return Array.from(value);
     }
     return [value];

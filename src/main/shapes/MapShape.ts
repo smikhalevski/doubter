@@ -14,7 +14,7 @@ import {
   createIssueFactory,
   isArray,
   isEqual,
-  isIterable,
+  isIterableObject,
   isObjectLike,
   ok,
   toDeepPartialShape,
@@ -258,7 +258,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     if (isArray(value)) {
       return value.every(isEntry) ? value : null;
     }
-    if (isIterable(value)) {
+    if (isIterableObject(value)) {
       value = Array.from(value);
 
       return value.every(isEntry) ? value : null;

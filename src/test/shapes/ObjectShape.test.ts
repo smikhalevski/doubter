@@ -1,7 +1,7 @@
 import { AnyShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
-  CODE_ENUM,
   CODE_DENIED,
+  CODE_ENUM,
   CODE_TYPE,
   CODE_UNKNOWN_KEYS,
   MESSAGE_OBJECT_TYPE,
