@@ -2,6 +2,7 @@ import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
   Bits,
+  callApply,
   cloneObject,
   cloneObjectEnumerableKeys,
   cloneObjectKnownKeys,
@@ -358,7 +359,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
 
       const keysLength = keys.length;
-      const promises: any[] = [];
 
       let issues: Issue[] | null = null;
       let output = input;
@@ -367,6 +367,8 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let seenBits: Bits = 0;
 
       let unknownKeys: string[] | null = null;
+
+      const entries: [key: string, value: unknown, shape: AnyShape][] = [];
 
       for (const key in input) {
         const value = input[key];
@@ -382,7 +384,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
 
         if (valueShape !== null) {
-          promises.push(key, valueShape['_applyAsync'](value, options));
+          entries.push([key, value, valueShape]);
           continue;
         }
 
@@ -422,49 +424,53 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           }
 
           const key = keys[i];
-          const value = input[key];
-
-          promises.push(key, _valueShapes[i]['_applyAsync'](value, options));
+          entries.push([key, input[key], _valueShapes[i]]);
         }
       }
 
-      resolve(
-        Promise.all(promises).then(entries => {
-          const entriesLength = entries.length;
+      const entriesLength = entries.length;
 
-          for (let i = 0; i < entriesLength; i += 2) {
-            const key = entries[i];
-            const result: ApplyResult = entries[i + 1];
+      let index = -1;
+      let key: string;
 
-            if (result === null) {
-              continue;
+      const applyValueResult = (result: ApplyResult) => {
+        if (result !== null) {
+          if (isArray(result)) {
+            unshiftPath(result, key);
+
+            if (!options.verbose) {
+              return result;
             }
-            if (isArray(result)) {
-              unshiftPath(result, key);
-
-              if (!options.verbose) {
-                return result;
-              }
-              issues = concatIssues(issues, result);
-              continue;
+            issues = concatIssues(issues, result);
+          } else if ((_isUnsafe || issues === null) && !isEqual(input[key], result.value)) {
+            if (input === output) {
+              output = cloneObjectEnumerableKeys(input);
             }
-            if ((_isUnsafe || issues === null) && !isEqual(input[key], result.value)) {
-              if (input === output) {
-                output = cloneObjectEnumerableKeys(input);
-              }
-              setKeyValue(output, key, result.value);
-            }
+            setKeyValue(output, key, result.value);
           }
+        }
+        return next();
+      };
 
-          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-            issues = _applyChecks(output, issues, options);
-          }
-          if (issues === null && input !== output) {
-            return ok(output as InferObject<P, R, 'output'>);
-          }
-          return issues;
-        })
-      );
+      const next = (): ApplyResult | Promise<ApplyResult> => {
+        index++;
+
+        if (index !== entriesLength) {
+          const entry = entries[index];
+          key = entry[0];
+          return callApply(entry[2], entry[1], options, applyValueResult);
+        }
+
+        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+          issues = _applyChecks(output, issues, options);
+        }
+        if (issues === null && input !== output) {
+          return ok(output as InferObject<P, R, 'output'>);
+        }
+        return issues;
+      };
+
+      resolve(next());
     });
   }
 
