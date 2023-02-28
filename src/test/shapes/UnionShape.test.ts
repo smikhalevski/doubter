@@ -247,16 +247,16 @@ describe('UnionShape', () => {
       shape2.isAsync;
       shape3.isAsync;
 
-      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-      const applyAsyncSpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
 
       const orShape = new UnionShape([shape1, shape2, shape3]);
 
       await expect(orShape.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applyAsyncSpy1).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy3).not.toHaveBeenCalled();
+      expect(applySpy1).toHaveBeenCalledTimes(1);
+      expect(applySpy2).toHaveBeenCalledTimes(1);
+      expect(applySpy3).not.toHaveBeenCalled();
     });
 
     test('raises if no shapes returned ok', async () => {
