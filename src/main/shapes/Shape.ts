@@ -727,14 +727,14 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
     get(this: Shape) {
       const async = this._isAsync();
-      const _applyAsync = Shape.prototype['_applyAsync'];
+      const _defaultApplyAsync = Shape.prototype['_applyAsync'];
 
       if (async) {
         this._apply = () => {
           throw new Error(ERROR_REQUIRES_ASYNC);
         };
-      } else if (this._applyAsync !== _applyAsync) {
-        this._applyAsync = _applyAsync;
+      } else if (this._applyAsync !== _defaultApplyAsync) {
+        this._applyAsync = _defaultApplyAsync;
       }
 
       Object.defineProperty(this, 'isAsync', { writable: true, value: async });

@@ -40,6 +40,7 @@ describe('isIterable', () => {
 
     expect(isIterable({ length: undefined })).toBe(false);
     expect(isIterable({ length: 'aaa' })).toBe(false);
+    expect(isIterable('')).toBe(false);
   });
 });
 

@@ -1,5 +1,5 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
   concatIssues,
@@ -10,7 +10,6 @@ import {
   isEqual,
   isIterable,
   ok,
-  ToArray,
   toArrayIndex,
   toDeepPartialShape,
   unshiftPath,
@@ -30,9 +29,11 @@ import {
 } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
-export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> = ToArray<{
-  [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never;
-}>;
+// prettier-ignore
+export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =
+  U extends readonly AnyShape[]
+    ? { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }
+    : never;
 
 // prettier-ignore
 export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends 'input' | 'output'> =
@@ -42,7 +43,7 @@ export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape 
 
 export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
   U extends readonly AnyShape[]
-    ? ToArray<{ [K in keyof U]: U[K] extends AnyShape ? OptionalDeepPartialShape<U[K]> : never }>
+    ? { [K in keyof U]: U[K] extends AnyShape ? OptionalDeepPartialShape<U[K]> : never }
     : null,
   R extends AnyShape ? OptionalDeepPartialShape<R> : null
 >;
@@ -253,7 +254,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
       let output = input;
-      let outputLength;
+      let outputLength: number;
       let shapesLength = 0;
 
       // noinspection CommaExpressionJS
@@ -269,46 +270,35 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         return;
       }
 
-      const promises: Promise<ApplyResult>[] = [];
+      let issues: Issue[] | null = null;
+      let index = -1;
 
-      if (shapes !== null || restShape !== null) {
-        for (let i = 0; i < outputLength; ++i) {
-          const value = output[i];
-          const valueShape = i < shapesLength ? shapes![i] : restShape!;
-
-          promises.push(valueShape['_applyAsync'](value, options));
+      const applyResult = (result: ApplyResult) => {
+        if (result === null) {
+          return next();
         }
-      }
+        if (isArray(result)) {
+          unshiftPath(result, index);
 
-      resolve(
-        Promise.all(promises).then(results => {
-          const resultsLength = results.length;
-
-          let issues = null;
-
-          for (let i = 0; i < resultsLength; ++i) {
-            const result = results[i];
-
-            if (result === null) {
-              continue;
-            }
-            if (isArray(result)) {
-              unshiftPath(result, i);
-
-              if (!options.verbose) {
-                return result;
-              }
-              issues = concatIssues(issues, result);
-              continue;
-            }
-            if ((_isUnsafe || issues === null) && !isEqual(input[i], result.value)) {
-              if (input === output) {
-                output = input.slice(0);
-              }
-              output[i] = result.value;
-            }
+          if (!options.verbose) {
+            return result;
           }
+          issues = concatIssues(issues, result);
+          return next();
+        }
+        if ((_isUnsafe || issues === null) && !isEqual(input[index], result.value)) {
+          if (input === output) {
+            output = input.slice(0);
+          }
+          output[index] = result.value;
+        }
+        return next();
+      };
 
+      const next = (): ApplyResult | Promise<ApplyResult> => {
+        index++;
+
+        if (index === outputLength || (shapes === null && restShape === null)) {
           if (_applyChecks !== null && (_isUnsafe || issues === null)) {
             issues = _applyChecks(output, issues, options);
           }
@@ -316,8 +306,14 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
             return ok(output);
           }
           return issues;
-        })
-      );
+        }
+
+        const valueShape = index < shapesLength ? shapes![index] : restShape!;
+
+        return valueShape['_applyAsync'](output[index], options).then(applyResult);
+      };
+
+      resolve(next());
     });
   }
 
