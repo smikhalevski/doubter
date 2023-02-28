@@ -174,6 +174,32 @@ describe('RecordShape', () => {
       });
     });
 
+    test('does not invoke the value shape if the previous key shape has raised an issue', async () => {
+      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
+      const valueShape = asyncShape;
+
+      const applyAsyncKeySpy = jest.spyOn<Shape, any>(keyShape, '_applyAsync');
+      const applyAsyncValueSpy = jest.spyOn<Shape, any>(valueShape, '_applyAsync');
+
+      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' });
+
+      expect(applyAsyncKeySpy).toHaveBeenCalledTimes(1);
+      expect(applyAsyncValueSpy).toHaveBeenCalledTimes(0);
+    });
+
+    test('does not invoke the key shape if the previous value shape has raised an issue', async () => {
+      const keyShape = asyncShape;
+      const valueShape = asyncShape.check(() => [{ code: 'xxx' }]);
+
+      const applyAsyncKeySpy = jest.spyOn<Shape, any>(keyShape, '_applyAsync');
+      const applyAsyncValueSpy = jest.spyOn<Shape, any>(valueShape, '_applyAsync');
+
+      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' });
+
+      expect(applyAsyncKeySpy).toHaveBeenCalledTimes(1);
+      expect(applyAsyncValueSpy).toHaveBeenCalledTimes(1);
+    });
+
     test('raises multiple issues in verbose mode', async () => {
       const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
       const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);

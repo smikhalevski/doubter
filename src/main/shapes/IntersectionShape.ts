@@ -1,5 +1,6 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
 import {
+  callApply,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -9,10 +10,9 @@ import {
   isEqual,
   NEVER,
   ok,
-  ToArray,
   toDeepPartialShape,
 } from '../utils';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   CODE_INTERSECTION,
   MESSAGE_INTERSECTION,
@@ -27,9 +27,9 @@ import {
 export type ToIntersection<U extends AnyShape> =
   (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
 
-export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<
-  ToArray<{ [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never }>
->;
+export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<{
+  [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
+}>;
 
 export class IntersectionShape<U extends readonly AnyShape[]>
   extends Shape<ToIntersection<U[number]>['input'], ToIntersection<U[number]>['output']>
@@ -107,10 +107,9 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         outputs = [output];
         continue;
       }
-      if (outputs.includes(output)) {
-        continue;
+      if (!outputs.includes(output)) {
+        outputs.push(output);
       }
-      outputs.push(output);
     }
 
     if (issues === null) {
@@ -120,49 +119,47 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]>['output']>> {
-    const { shapes } = this;
-    const shapesLength = shapes.length;
+    return new Promise(resolve => {
+      const { shapes } = this;
+      const shapesLength = shapes.length;
 
-    const promises: Promise<ApplyResult>[] = [];
+      let outputs: unknown[] | null = null;
+      let issues: Issue[] | null = null;
+      let index = -1;
 
-    for (let i = 0; i < shapesLength; ++i) {
-      promises.push(shapes[i]['_applyAsync'](input, options));
-    }
+      const applyResult = (result: ApplyResult) => {
+        if (result !== null) {
+          if (isArray(result)) {
+            if (!options.verbose) {
+              return result;
+            }
+            issues = concatIssues(issues, result);
+          } else {
+            const output = result.value;
 
-    return Promise.all(promises).then(results => {
-      let outputs = null;
-      let issues = null;
-
-      for (let i = 0; i < shapesLength; ++i) {
-        const result = results[i];
-
-        if (result === null) {
-          continue;
-        }
-        if (isArray(result)) {
-          if (!options.verbose) {
-            return result;
+            if (outputs === null) {
+              outputs = [output];
+            } else if (!outputs.includes(output)) {
+              outputs.push(output);
+            }
           }
-          issues = concatIssues(issues, result);
-          continue;
         }
+        return next();
+      };
 
-        const output = result.value;
+      const next = (): ApplyResult | Promise<ApplyResult> => {
+        index++;
 
-        if (outputs === null) {
-          outputs = [output];
-          continue;
+        if (index !== shapesLength) {
+          return callApply(shapes[index], input, options, applyResult);
         }
-        if (outputs.includes(output)) {
-          continue;
+        if (issues === null) {
+          return this._applyIntersection(input, outputs, options);
         }
-        outputs.push(output);
-      }
+        return issues;
+      };
 
-      if (issues === null) {
-        return this._applyIntersection(input, outputs, options);
-      }
-      return issues;
+      resolve(next());
     });
   }
 

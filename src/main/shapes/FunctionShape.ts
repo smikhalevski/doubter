@@ -1,6 +1,6 @@
 import { AnyShape, ApplyResult, defaultParseOptions, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { cloneObject, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
+import { callApply, cloneObject, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
 import { CODE_TYPE, ERROR_ASYNC_DELEGATOR, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
 import { ValidationError } from '../ValidationError';
 
@@ -153,26 +153,31 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     const { argsShape, returnShape, thisShape } = this;
 
     return function (...args) {
-      let promise;
+      return new Promise(resolve => {
+        let result;
 
-      if (thisShape !== null) {
-        promise = Promise.all([thisShape['_applyAsync'](this, options), argsShape['_applyAsync'](args, options)]).then(
-          ([thisResult, argsResult]) =>
-            fn.apply(getOrDie(thisResult, 'this', this), getOrDie(argsResult, 'arguments', args))
-        );
-      } else {
-        promise = argsShape['_applyAsync'](args, options).then(argsResult =>
-          fn.apply(this, getOrDie(argsResult, 'arguments', args))
-        );
-      }
+        if (thisShape !== null) {
+          result = callApply(thisShape, this, options, thisResult => {
+            const thisValue = getOrDie(thisResult, 'this', this);
 
-      if (returnShape !== null) {
-        promise = promise.then(result =>
-          returnShape['_applyAsync'](result, options).then(resultResult => getOrDie(resultResult, 'return', result))
-        );
-      }
+            return callApply(argsShape, args, options, argsResult =>
+              fn.apply(thisValue, getOrDie(argsResult, 'arguments', args))
+            );
+          });
+        } else {
+          result = callApply(argsShape, args, options, argsResult =>
+            fn.apply(this, getOrDie(argsResult, 'arguments', args))
+          );
+        }
 
-      return promise;
+        if (returnShape !== null) {
+          result = Promise.resolve(result).then(result =>
+            callApply(returnShape, result, options, resultResult => getOrDie(resultResult, 'return', result))
+          );
+        }
+
+        resolve(result);
+      });
     };
   }
 

@@ -1,13 +1,13 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
+  callApply,
   copyUnsafeChecks,
   createIssueFactory,
   getValueType,
   isArray,
   isAsyncShape,
   isObjectLike,
-  ToArray,
   toDeepPartialShape,
   unique,
 } from '../utils';
@@ -19,9 +19,9 @@ import { ObjectShape } from './ObjectShape';
  */
 export type LookupCallback = (input: any) => readonly AnyShape[];
 
-export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<
-  ToArray<{ [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never }>
->;
+export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<{
+  [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
+}>;
 
 /**
  * The shape that requires an input to conform at least one of shapes.
@@ -134,15 +134,8 @@ export class UnionShape<U extends readonly AnyShape[]>
         output = result.value;
         break;
       }
-
-      if (issueGroups !== null) {
-        issueGroups.push(result);
-      } else if (index === 1) {
-        issueGroups = [issues!, result];
-      } else {
-        issues = result;
-      }
-
+      (issueGroups ||= []).push(result);
+      issues = result;
       index++;
     }
 
@@ -160,54 +153,50 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<U[number]['output']>> {
-    const { _applyChecks } = this;
+    return new Promise(resolve => {
+      const { _applyChecks } = this;
 
-    const shapes = this._lookup(input);
-    const shapesLength = shapes.length;
+      const shapes = this._lookup(input);
+      const shapesLength = shapes.length;
 
-    if (shapesLength === 0) {
-      return Promise.resolve(this._typeIssueFactory(input, options, []));
-    }
+      let issues: Issue[] | null = null;
+      let issueGroups: Issue[][] | null = null;
 
-    let issues: Issue[] | null = null;
-    let issueGroups: Issue[][] | null = null;
+      let index = -1;
 
-    const applyShapeAtIndex = (index: number): Promise<ApplyResult> => {
-      return shapes[index]['_applyAsync'](input, options).then(result => {
+      const applyResult = (result: ApplyResult) => {
         let output = input;
 
         if (result !== null) {
           if (isArray(result)) {
-            if (issueGroups !== null) {
-              issueGroups.push(result);
-            } else if (index === 1) {
-              issueGroups = [issues!, result];
-            } else {
-              issues = result;
-            }
-
-            index++;
-
-            if (index !== shapesLength) {
-              return applyShapeAtIndex(index);
-            }
-            if (shapesLength === 1) {
-              return issues;
-            }
-            return this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
+            (issueGroups ||= []).push(result);
+            issues = result;
+            return next();
+          } else {
+            output = result.value;
           }
-
-          output = result.value;
         }
 
         if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
           return result;
         }
         return issues;
-      });
-    };
+      };
 
-    return applyShapeAtIndex(0);
+      const next = (): ApplyResult | Promise<ApplyResult> => {
+        index++;
+
+        if (index !== shapesLength) {
+          return callApply(shapes[index], input, options, applyResult);
+        }
+        if (shapesLength === 1) {
+          return issues;
+        }
+        return this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
+      };
+
+      resolve(next());
+    });
   }
 }
 

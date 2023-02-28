@@ -1,5 +1,13 @@
 import { Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from './shared-types';
-import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './shapes/Shape';
+import {
+  AnyShape,
+  ApplyChecksCallback,
+  ApplyResult,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  Shape,
+  ValueType,
+} from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
 
@@ -12,8 +20,6 @@ export interface ReadonlyDict<T = any> {
 export interface Dict<T = any> {
   [key: string]: T;
 }
-
-export type ToArray<T> = T extends readonly any[] ? T : never;
 
 /**
  * Returns the extended value type.
@@ -60,7 +66,7 @@ export function isPlainObject(value: unknown): boolean {
   return isObjectLike(value) && ((prototype = getPrototypeOf(value)) === null || prototype.constructor === Object);
 }
 
-export function isIterable(value: any): value is Iterable<any> {
+export function isIterableObject(value: any): value is Iterable<any> {
   return isObjectLike(value) && (Symbol.iterator in value || !isNaN(value.length));
 }
 
@@ -135,6 +141,18 @@ export function copyChecks<S extends Shape>(
   return targetShape['_replaceChecks'](
     checks !== null && checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
   );
+}
+
+export function callApply<T>(
+  shape: AnyShape,
+  input: unknown,
+  options: ParseOptions,
+  cb: (result: ApplyResult) => T
+): T | Promise<Awaited<T>> {
+  if (shape.isAsync) {
+    return shape['_applyAsync'](input, options).then(cb) as Promise<Awaited<T>>;
+  }
+  return cb(shape['_apply'](input, options));
 }
 
 /**

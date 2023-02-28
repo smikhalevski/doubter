@@ -1,7 +1,7 @@
 import { AnyShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
-  CODE_ENUM,
   CODE_DENIED,
+  CODE_ENUM,
   CODE_TYPE,
   CODE_UNKNOWN_KEYS,
   MESSAGE_OBJECT_TYPE,
@@ -536,8 +536,8 @@ describe('ObjectShape', () => {
       restShape.isAsync;
 
       const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-      const restApplySpy = jest.spyOn<Shape, any>(restShape, '_applyAsync');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
+      const restApplySpy = jest.spyOn<Shape, any>(restShape, '_apply');
 
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, restShape);
 

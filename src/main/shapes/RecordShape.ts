@@ -1,6 +1,7 @@
 import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
+  callApply,
   cloneObjectEnumerableKeys,
   concatIssues,
   copyUnsafeChecks,
@@ -85,11 +86,13 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
     const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
 
-    let keyCount = 0;
-    let issues = null;
     let output = input;
+    let issues = null;
+    let index = -1;
 
     for (const key in input) {
+      index++;
+
       const value = input[key];
 
       let outputKey: PropertyKey = key;
@@ -129,7 +132,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
       if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
         if (input === output) {
-          output = cloneObjectEnumerableKeys(input, keyCount);
+          output = cloneObjectEnumerableKeys(input, index);
         }
         setKeyValue(output, outputKey, outputValue);
       }
@@ -139,7 +142,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
-      return ok(output as InferRecord<K, V, 'output'>);
+      return ok(output);
     }
     return issues;
   }
@@ -153,80 +156,82 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
       const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
 
-      const promises: any[] = [];
+      const keys = Object.keys(input);
+      const keysLength = keys.length;
 
-      for (const key in input) {
-        const value = input[key];
+      let output = input;
+      let issues: Issue[] | null = null;
+      let index = -1;
 
-        promises.push(
-          key,
-          keyShape !== null ? keyShape['_applyAsync'](key, options) : null,
-          valueShape['_applyAsync'](value, options)
-        );
-      }
+      let key: string;
+      let value: unknown;
+      let outputKey: string;
+      let outputValue: unknown;
 
-      resolve(
-        Promise.all(promises).then(results => {
-          const resultsLength = results.length;
+      const applyKeyResult = (keyResult: ApplyResult) => {
+        if (keyResult !== null) {
+          if (isArray(keyResult)) {
+            unshiftPath(keyResult, key);
 
-          let keyCount = 0;
-          let issues = null;
-          let output = input;
-
-          for (let i = 0; i < resultsLength; i += 3) {
-            const key = results[i];
-            const value = input[key];
-
-            let outputKey: PropertyKey = key;
-            let outputValue = value;
-
-            const keyResult = results[i + 1];
-            const valueResult = results[i + 2];
-
-            if (keyResult !== null) {
-              if (isArray(keyResult)) {
-                unshiftPath(keyResult, key);
-
-                if (!options.verbose) {
-                  return keyResult;
-                }
-                issues = concatIssues(issues, keyResult);
-              } else {
-                outputKey = keyResult.value;
-              }
+            if (!options.verbose) {
+              return keyResult;
             }
+            issues = concatIssues(issues, keyResult);
+          } else {
+            outputKey = keyResult.value;
+          }
+        }
+        return callApply(valueShape, value, options, applyValueResult);
+      };
 
-            if (valueResult !== null) {
-              if (isArray(valueResult)) {
-                unshiftPath(valueResult, key);
+      const applyValueResult = (valueResult: ApplyResult) => {
+        if (valueResult !== null) {
+          if (isArray(valueResult)) {
+            unshiftPath(valueResult, key);
 
-                if (!options.verbose) {
-                  return valueResult;
-                }
-                issues = concatIssues(issues, valueResult);
-              } else {
-                outputValue = valueResult.value;
-              }
+            if (!options.verbose) {
+              return valueResult;
             }
-
-            if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
-              if (input === output) {
-                output = cloneObjectEnumerableKeys(input, keyCount);
-              }
-
-              output[outputKey as string] = outputValue;
-            }
+            issues = concatIssues(issues, valueResult);
+          } else {
+            outputValue = valueResult.value;
           }
+        }
 
-          if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-            issues = _applyChecks(output, issues, options);
+        if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+          if (input === output) {
+            output = cloneObjectEnumerableKeys(input, index);
           }
-          if (issues === null && input !== output) {
-            return ok(output as InferRecord<K, V, 'output'>);
+          setKeyValue(output, outputKey, outputValue);
+        }
+
+        return next();
+      };
+
+      const next = (): ApplyResult | Promise<ApplyResult> => {
+        index++;
+
+        if (index !== keysLength) {
+          key = outputKey = keys[index];
+          value = outputValue = input[key];
+
+          if (keyShape !== null) {
+            return callApply(keyShape, key, options, applyKeyResult);
+          } else {
+            return valueShape['_applyAsync'](value, options).then(applyValueResult);
           }
-          return issues;
-        })
-      );
+        }
+
+        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+          issues = _applyChecks(output, issues, options);
+        }
+        if (issues === null && input !== output) {
+          return ok(output);
+        }
+        return issues;
+      };
+
+      resolve(next());
     });
   }
 }
