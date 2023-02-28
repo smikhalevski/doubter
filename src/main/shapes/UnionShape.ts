@@ -135,6 +135,7 @@ export class UnionShape<U extends readonly AnyShape[]>
         break;
       }
       (issueGroups ||= []).push(result);
+      issues = result;
       index++;
     }
 
