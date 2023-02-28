@@ -21,8 +21,6 @@ export interface Dict<T = any> {
   [key: string]: T;
 }
 
-export type ToArray<T> = T extends readonly any[] ? T : never;
-
 /**
  * Returns the extended value type.
  */

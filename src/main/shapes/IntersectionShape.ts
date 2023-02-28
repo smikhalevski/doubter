@@ -10,7 +10,6 @@ import {
   isEqual,
   NEVER,
   ok,
-  ToArray,
   toDeepPartialShape,
 } from '../utils';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
@@ -28,9 +27,9 @@ import {
 export type ToIntersection<U extends AnyShape> =
   (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
 
-export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<
-  ToArray<{ [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never }>
->;
+export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<{
+  [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
+}>;
 
 export class IntersectionShape<U extends readonly AnyShape[]>
   extends Shape<ToIntersection<U[number]>['input'], ToIntersection<U[number]>['output']>

@@ -8,7 +8,6 @@ import {
   isArray,
   isAsyncShape,
   isObjectLike,
-  ToArray,
   toDeepPartialShape,
   unique,
 } from '../utils';
@@ -20,9 +19,9 @@ import { ObjectShape } from './ObjectShape';
  */
 export type LookupCallback = (input: any) => readonly AnyShape[];
 
-export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<
-  ToArray<{ [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never }>
->;
+export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<{
+  [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
+}>;
 
 /**
  * The shape that requires an input to conform at least one of shapes.
