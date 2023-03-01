@@ -37,7 +37,7 @@ import { EnumShape } from './EnumShape';
 
 // prettier-ignore
 export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> =
-  Prettify<UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>>;
+  Prettify<UndefinedAsOptionalProps<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>>;
 
 // prettier-ignore
 export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> =
@@ -47,15 +47,15 @@ export type StringKeyof<T extends object> = Extract<keyof T, string>;
 
 export type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
-export type UndefinedAsOptional<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
+export type UndefinedAsOptionalProps<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
 
 export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: AllowLiteralShape<P[K], undefined> };
+export type OptionalProps<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: AllowLiteralShape<P[K], undefined> };
 
-export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: DenyLiteralShape<P[K], undefined> };
+export type RequiredProps<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: DenyLiteralShape<P[K], undefined> };
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
@@ -212,7 +212,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    *
    * @returns The new object shape.
    */
-  partial(): ObjectShape<Optional<P>, R>;
+  partial(): ObjectShape<OptionalProps<P>, R>;
 
   /**
    * Returns an object shape with keys marked as optional.
@@ -221,7 +221,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    * @template K The list of string keys.
    */
-  partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Optional<Pick<P, K[number]>>, R>;
+  partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & OptionalProps<Pick<P, K[number]>>, R>;
 
   partial(keys?: string[]) {
     const shapes: Dict<AnyShape> = {};
@@ -249,7 +249,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    *
    * @returns The new object shape.
    */
-  required(): ObjectShape<Required<P>, R>;
+  required(): ObjectShape<RequiredProps<P>, R>;
 
   /**
    * Returns an object shape with keys marked as required.
@@ -258,7 +258,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    * @template K The list of string keys.
    */
-  required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Required<Pick<P, K[number]>>, R>;
+  required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & RequiredProps<Pick<P, K[number]>>, R>;
 
   required(keys?: string[]) {
     const shapes: Dict<AnyShape> = {};
@@ -465,7 +465,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           issues = _applyChecks(output, issues, options);
         }
         if (issues === null && input !== output) {
-          return ok(output as InferObject<P, R, 'output'>);
+          return ok(output);
         }
         return issues;
       };
