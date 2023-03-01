@@ -48,8 +48,6 @@ export function ok<T>(value: T): Ok<T> {
 
 export const isArray = Array.isArray;
 
-export const getPrototypeOf = Object.getPrototypeOf;
-
 /**
  * [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero) comparison.
  */
@@ -61,9 +59,25 @@ export function isObjectLike(value: unknown): boolean {
   return value !== null && typeof value === 'object';
 }
 
-export function isPlainObject(value: unknown): boolean {
-  let prototype;
-  return isObjectLike(value) && ((prototype = getPrototypeOf(value)) === null || prototype.constructor === Object);
+const objectCtorString = Object.prototype.constructor.toString();
+
+export function isPlainObject(value: any): boolean {
+  let proto;
+  let ctor;
+
+  if (!isObjectLike(value)) {
+    return false;
+  }
+  if ((proto = Object.getPrototypeOf(value)) === null) {
+    return true;
+  }
+  if (!Object.hasOwnProperty.call(proto, 'constructor')) {
+    return false;
+  }
+  if ((ctor = proto.constructor) === Object) {
+    return true;
+  }
+  return typeof ctor == 'function' && Function.toString.call(ctor) === objectCtorString;
 }
 
 export function isIterableObject(value: any): value is Iterable<any> {
@@ -311,8 +325,8 @@ export function setObjectProperty(obj: Record<any, any>, key: any, value: unknow
 /**
  * Returns the shallow clone of the instance object.
  */
-export function cloneObject<T extends object>(instance: T): T {
-  return Object.assign(Object.create(getPrototypeOf(instance)), instance);
+export function cloneInstance<T extends object>(obj: T): T {
+  return Object.assign(Object.create(Object.getPrototypeOf(obj)), obj);
 }
 
 /**

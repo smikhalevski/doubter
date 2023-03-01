@@ -14,7 +14,7 @@ import {
 import {
   applyForResult,
   captureIssues,
-  cloneObject,
+  cloneInstance,
   copyUnsafeChecks,
   createApplyChecksCallback,
   createIssueFactory,
@@ -212,7 +212,7 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape with the description added.
    */
   describe(text: string): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
     shape.description = text;
     return shape;
   }
@@ -520,7 +520,7 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape.
    */
   protected _replaceChecks(checks: readonly Check[]): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
 
     shape._checks = checks.length !== 0 ? checks : null;
     shape._applyChecks = createApplyChecksCallback(checks);

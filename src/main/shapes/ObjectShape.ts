@@ -2,7 +2,7 @@ import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
   applyForResult,
-  cloneObject,
+  cloneInstance,
   cloneObjectEnumerableKeys,
   cloneObjectKnownKeys,
   concatIssues,
@@ -325,7 +325,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Constrains an object to be an `Object` instance or to have a `null` prototype.
    */
   plain(): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
     shape._typePredicate = isPlainObject;
     return shape;
   }
@@ -419,12 +419,10 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       if (seenCount !== keysLength) {
         for (let i = 0; i < keysLength; ++i) {
-          if (isMaskEnabled(seenMask, i)) {
-            continue;
+          if (!isMaskEnabled(seenMask, i)) {
+            const key = keys[i];
+            entries.push([key, input[key], _valueShapes[i]]);
           }
-
-          const key = keys[i];
-          entries.push([key, input[key], _valueShapes[i]]);
         }
       }
 

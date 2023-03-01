@@ -1,6 +1,6 @@
 import { AnyShape, defaultParseOptions, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { applyForResult, cloneObject, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
+import { applyForResult, cloneInstance, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
 import { CODE_TYPE, ERROR_ASYNC_DELEGATOR, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
 import { ValidationError } from '../ValidationError';
 
@@ -93,7 +93,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The new function shape.
    */
   bare(): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
     shape.isBare = true;
     return shape;
   }
@@ -105,7 +105,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The new function shape.
    */
   options(options: ParseOptions): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
     shape._parseOptions = options;
     return shape;
   }

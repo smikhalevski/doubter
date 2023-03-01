@@ -6,13 +6,37 @@ import {
   createIssueFactory,
   enableMask,
   getValueType,
-  isMaskEnabled,
   isEqual,
   isIterableObject,
+  isMaskEnabled,
+  isPlainObject,
   toArrayIndex,
   unique,
 } from '../main/utils';
 import { Issue, Shape, ValidationError } from '../main';
+
+describe('isPlainObject', () => {
+  test('detects plain objects', () => {
+    expect(isPlainObject({})).toBe(true);
+    expect(isPlainObject({ a: 1 })).toBe(true);
+    expect(isPlainObject({ constructor: () => undefined })).toBe(true);
+    expect(isPlainObject([1, 2, 3])).toBe(false);
+    expect(isPlainObject(new (class {})())).toBe(false);
+  });
+
+  test('returns true for objects with a [[Prototype]] of null', () => {
+    expect(isPlainObject(Object.create(null))).toBe(true);
+  });
+
+  test('returns false for non-Object objects', () => {
+    expect(isPlainObject(Error)).toBe(false);
+  });
+
+  test('returns false for non-objects', () => {
+    expect(isPlainObject(111)).toBe(false);
+    expect(isPlainObject('aaa')).toBe(false);
+  });
+});
 
 describe('getValueType', () => {
   test('returns value type', () => {

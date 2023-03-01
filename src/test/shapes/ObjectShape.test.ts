@@ -235,6 +235,7 @@ describe('ObjectShape', () => {
   test('raises if object is not plain', () => {
     const objShape = new ObjectShape({}, null).plain();
 
+    expect(objShape.isPlain).toBe(true);
     expect(objShape.parse({})).toEqual({});
 
     class Foo {}
