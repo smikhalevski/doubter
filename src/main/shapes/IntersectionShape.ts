@@ -191,9 +191,8 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   ): Result<ToIntersection<U[number]>['output']> {
     const { shapes, _applyChecks } = this;
 
-    let result = null;
     let output = input;
-    let issues;
+    let issues = null;
 
     if (outputs !== null) {
       let outputsLength = outputs.length;
@@ -210,13 +209,14 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       if (output === NEVER) {
         return this._typeIssueFactory(input, options);
       }
-      if (!isEqual(output, input)) {
-        result = ok(output);
-      }
     }
 
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    if (
+      (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
+      outputs !== null &&
+      !isEqual(output, input)
+    ) {
+      return ok(output);
     }
     return issues;
   }

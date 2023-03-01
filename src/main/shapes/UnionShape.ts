@@ -134,10 +134,10 @@ export class UnionShape<U extends readonly AnyShape[]>
         output = result.value;
         break;
       }
-      if (issueGroups !== null) {
-        issueGroups.push(result);
-      } else {
+      if (issueGroups === null) {
         issueGroups = [result];
+      } else {
+        issueGroups.push(result);
       }
       issues = result;
       index++;
@@ -173,10 +173,10 @@ export class UnionShape<U extends readonly AnyShape[]>
 
         if (result !== null) {
           if (isArray(result)) {
-            if (issueGroups !== null) {
-              issueGroups.push(result);
-            } else {
+            if (issueGroups === null) {
               issueGroups = [result];
+            } else {
+              issueGroups.push(result);
             }
             issues = result;
 
