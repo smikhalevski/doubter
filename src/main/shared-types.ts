@@ -50,7 +50,7 @@ export interface Check {
   /**
    * `true` if the {@linkcode callback} is invoked even if previous processors failed, or `false` otherwise.
    */
-  readonly unsafe: boolean;
+  readonly isUnsafe: boolean;
 }
 
 /**

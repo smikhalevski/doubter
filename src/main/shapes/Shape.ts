@@ -233,7 +233,7 @@ export class Shape<I = any, O = I> {
   check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
     const { key = cb, param, unsafe = false } = options;
 
-    const check: Check = { key, callback: cb, param, unsafe };
+    const check: Check = { key, callback: cb, param, isUnsafe: unsafe };
 
     return this._replaceChecks(
       this._checks !== null ? this._checks.filter(check => check.key !== key).concat(check) : [check]

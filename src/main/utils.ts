@@ -243,7 +243,7 @@ export function isAsyncShape(shape: AnyShape): boolean {
 }
 
 export function isUnsafeCheck(check: Check): boolean {
-  return check.unsafe;
+  return check.isUnsafe;
 }
 
 /**
@@ -421,10 +421,10 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
   }
 
   if (checksLength === 1) {
-    const [{ unsafe: unsafe0, callback: cb0 }] = checks;
+    const [{ isUnsafe: isUnsafe0, callback: cb0 }] = checks;
 
     return (output, issues, options) => {
-      if (issues === null || unsafe0) {
+      if (issues === null || isUnsafe0) {
         let result;
 
         try {
@@ -441,10 +441,10 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
   }
 
   if (checksLength === 2) {
-    const [{ unsafe: unsafe0, callback: cb0 }, { unsafe: unsafe1, callback: cb1 }] = checks;
+    const [{ isUnsafe: isUnsafe0, callback: cb0 }, { isUnsafe: isUnsafe1, callback: cb1 }] = checks;
 
     return (output, issues, options) => {
-      if (issues === null || unsafe0) {
+      if (issues === null || isUnsafe0) {
         let result;
 
         try {
@@ -465,7 +465,7 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
         }
       }
 
-      if (issues === null || unsafe1) {
+      if (issues === null || isUnsafe1) {
         let result;
 
         try {
@@ -484,11 +484,11 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
 
   return (output, issues, options) => {
     for (let i = 0; i < checksLength; ++i) {
-      const { unsafe, callback } = checks[i];
+      const { isUnsafe, callback } = checks[i];
 
       let result;
 
-      if (issues !== null && !unsafe) {
+      if (issues !== null && !isUnsafe) {
         continue;
       }
 
