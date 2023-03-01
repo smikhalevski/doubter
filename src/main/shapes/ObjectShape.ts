@@ -2,7 +2,6 @@ import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
   applyForResult,
-  Bits,
   cloneObject,
   cloneObjectEnumerableKeys,
   cloneObjectKnownKeys,
@@ -10,13 +9,14 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   Dict,
-  enableBitAt,
+  enableMask,
   isArray,
   isAsyncShape,
-  isBitEnabledAt,
   isEqual,
+  isMaskEnabled,
   isObjectLike,
   isPlainObject,
+  Mask,
   ok,
   ReadonlyDict,
   setObjectProperty,
@@ -364,7 +364,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let output = input;
 
       let seenCount = 0;
-      let seenBits: Bits = 0;
+      let seenMask: Mask = 0;
 
       let unknownKeys: string[] | null = null;
 
@@ -378,7 +378,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
         if (index !== -1) {
           seenCount++;
-          seenBits = enableBitAt(seenBits, index);
+          seenMask = enableMask(seenMask, index);
 
           valueShape = _valueShapes[index];
         }
@@ -419,7 +419,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       if (seenCount !== keysLength) {
         for (let i = 0; i < keysLength; ++i) {
-          if (isBitEnabledAt(seenBits, i)) {
+          if (isMaskEnabled(seenMask, i)) {
             continue;
           }
 
@@ -531,7 +531,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     let output = input;
 
     let seenCount = 0;
-    let seenBits: Bits = 0;
+    let seenMask: Mask = 0;
 
     let unknownKeys = null;
 
@@ -544,7 +544,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       // The key is known
       if (index !== -1) {
         seenCount++;
-        seenBits = enableBitAt(seenBits, index);
+        seenMask = enableMask(seenMask, index);
 
         valueShape = _valueShapes[index];
       }
@@ -608,7 +608,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     // Parse absent known keys
     if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
-        if (isBitEnabledAt(seenBits, i)) {
+        if (isMaskEnabled(seenMask, i)) {
           continue;
         }
 

@@ -261,34 +261,50 @@ export function captureIssues(error: unknown): Issue[] {
   throw error;
 }
 
-export type Bits = number[] | number;
+/**
+ * A bitmask that can hold an arbitrary number of bits.
+ */
+export type Mask = number[] | number;
 
-export function enableBitAt(bits: Bits, index: number): Bits {
-  if (typeof bits === 'number') {
+/**
+ * Sets bit to 1 at index in mask.
+ *
+ * @param mask The mutable mask to update.
+ * @param index The index at which the bit must be set to 1.
+ * @returns The updated mask.
+ */
+export function enableMask(mask: Mask, index: number): Mask {
+  if (typeof mask === 'number') {
     if (index < 32) {
-      return bits | (1 << index);
+      return mask | (1 << index);
     }
-    bits = [bits, 0, 0];
+    mask = [mask, 0, 0];
   }
 
-  bits[index >> 5] |= 1 << index % 32;
+  mask[index >> 5] |= 1 << index % 32;
 
-  return bits;
+  return mask;
 }
 
-export function isBitEnabledAt(bits: Bits, index: number): boolean {
-  if (typeof bits === 'number') {
-    return bits >>> index !== 0;
+/**
+ * Returns `true` if the bit at index in the bitmask is set to 1.
+ */
+export function isMaskEnabled(mask: Mask, index: number): boolean {
+  if (typeof mask === 'number') {
+    return mask >>> index !== 0;
   } else {
-    return bits[index >> 5] >>> index % 32 !== 0;
+    return mask[index >> 5] >>> index % 32 !== 0;
   }
 }
 
-export function setObjectProperty(obj: Record<any, any>, key: PropertyKey, value: unknown): void {
+/**
+ * Updates object property value, prevents prototype pollution.
+ */
+export function setObjectProperty(obj: Record<any, any>, key: any, value: unknown): void {
   if (key === '__proto__') {
     Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
   } else {
-    obj[key as string] = value;
+    obj[key] = value;
   }
 }
 

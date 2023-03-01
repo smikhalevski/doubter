@@ -4,9 +4,9 @@ import {
   copyUnsafeChecks,
   createApplyChecksCallback,
   createIssueFactory,
-  enableBitAt,
+  enableMask,
   getValueType,
-  isBitEnabledAt,
+  isMaskEnabled,
   isEqual,
   isIterableObject,
   toArrayIndex,
@@ -273,23 +273,23 @@ describe('createIssueFactory', () => {
   });
 });
 
-describe('enableBitAt', () => {
+describe('enableMask', () => {
   test('sets bit', () => {
-    expect(enableBitAt(0b0, 5)).toBe(0b100000);
-    expect(enableBitAt(0b1, 5)).toBe(0b100001);
-    expect(enableBitAt(0b100, 5)).toBe(0b100100);
-    expect(enableBitAt(0b1, 31)).toBe(-2147483647);
-    expect(enableBitAt(0b1, 35)).toEqual([1, 0b1000, 0]);
+    expect(enableMask(0b0, 5)).toBe(0b100000);
+    expect(enableMask(0b1, 5)).toBe(0b100001);
+    expect(enableMask(0b100, 5)).toBe(0b100100);
+    expect(enableMask(0b1, 31)).toBe(-2147483647);
+    expect(enableMask(0b1, 35)).toEqual([1, 0b1000, 0]);
   });
 });
 
-describe('isBitEnabledAt', () => {
+describe('isMaskEnabled', () => {
   test('reads bit', () => {
-    expect(isBitEnabledAt(enableBitAt(0b0, 5), 5)).toBe(true);
-    expect(isBitEnabledAt(enableBitAt(0b1, 5), 5)).toBe(true);
-    expect(isBitEnabledAt(enableBitAt(0b100, 5), 5)).toBe(true);
-    expect(isBitEnabledAt(enableBitAt(0b1, 31), 31)).toBe(true);
-    expect(isBitEnabledAt(enableBitAt(0b1, 35), 35)).toEqual(true);
+    expect(isMaskEnabled(enableMask(0b0, 5), 5)).toBe(true);
+    expect(isMaskEnabled(enableMask(0b1, 5), 5)).toBe(true);
+    expect(isMaskEnabled(enableMask(0b100, 5), 5)).toBe(true);
+    expect(isMaskEnabled(enableMask(0b1, 31), 31)).toBe(true);
+    expect(isMaskEnabled(enableMask(0b1, 35), 35)).toEqual(true);
   });
 });
 
