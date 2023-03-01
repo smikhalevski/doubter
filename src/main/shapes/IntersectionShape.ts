@@ -1,6 +1,6 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 import {
-  callApply,
+  applyForResult,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -151,7 +151,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         index++;
 
         if (index !== shapesLength) {
-          return callApply(shapes[index], input, options, handleResult);
+          return applyForResult(shapes[index], input, options, handleResult);
         }
         if (issues === null) {
           return this._applyIntersection(input, outputs, options);

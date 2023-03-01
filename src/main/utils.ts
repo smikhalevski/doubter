@@ -147,7 +147,7 @@ export function copyChecks<S extends Shape>(
   );
 }
 
-export function callApply<T>(
+export function applyForResult<T>(
   shape: AnyShape,
   input: unknown,
   options: ParseOptions,

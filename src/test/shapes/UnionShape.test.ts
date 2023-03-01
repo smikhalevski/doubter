@@ -7,6 +7,8 @@ import {
   NeverShape,
   NumberShape,
   ObjectShape,
+  ParseOptions,
+  Result,
   Shape,
   StringShape,
   UnionShape,
@@ -18,7 +20,15 @@ describe('UnionShape', () => {
   let asyncShape: AnyShape;
 
   beforeEach(() => {
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('distributes buckets', () => {

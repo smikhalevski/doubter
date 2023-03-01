@@ -12,7 +12,7 @@ import {
   RefineOptions,
 } from '../shared-types';
 import {
-  callApply,
+  applyForResult,
   captureIssues,
   cloneObject,
   copyUnsafeChecks,
@@ -892,7 +892,7 @@ Object.defineProperties(Shape.prototype, {
  */
 export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> {
   /**
-   * `true` if the promise returned from the {@linkcode callback} to be fulfilled before the transformation is
+   * `true` if the promise returned from the {@linkcode callback} must be fulfilled before the transformation is
    * completed, or `false` if the value that is synchronously returned from the {@linkcode callback} is used as a
    * transformation output.
    */
@@ -922,7 +922,7 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
      * @return The transformation result.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    readonly callback: (output: S['output'], options: Readonly<ParseOptions>) => Promise<O> | O
+    readonly callback: (output: S['output'], options: Readonly<ParseOptions>) => PromiseLike<O> | O
   ) {
     super();
 
@@ -942,12 +942,12 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   }
 
   protected _apply(input: any, options: ParseOptions): Result<O> {
-    const { shape, callback, _applyChecks } = this;
+    const { callback, _applyChecks } = this;
 
     let issues = null;
     let output = input;
 
-    const result = shape['_apply'](input, options);
+    const result = this.shape['_apply'](input, options);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -969,29 +969,45 @@ export class TransformShape<S extends AnyShape, O> extends Shape<S['input'], O> 
   }
 
   protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<O>> {
-    const { shape, callback, _applyChecks } = this;
+    return new Promise(resolve => {
+      const { callback, _applyChecks } = this;
 
-    return shape['_applyAsync'](input, options).then(result => {
-      let output = input;
+      resolve(
+        applyForResult(this.shape, input, options, result => {
+          let output = input;
 
-      if (result !== null) {
-        if (isArray(result)) {
-          return result;
-        }
-        output = result.value;
-      }
+          if (result !== null) {
+            if (isArray(result)) {
+              return result;
+            }
+            output = result.value;
+          }
 
-      return new Promise<O>(resolve => resolve(callback(output, options))).then(output => {
-        let issues = null;
+          try {
+            output = callback(output, options);
+          } catch (error) {
+            return captureIssues(error);
+          }
 
-        if (
-          (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
-          !isEqual(input, output)
-        ) {
-          return ok(output);
-        }
-        return issues;
-      }, captureIssues);
+          const handleOutput = (output: unknown): Result => {
+            let issues = null;
+
+            if (
+              (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
+              !isEqual(input, output)
+            ) {
+              return ok(output);
+            }
+            return issues;
+          };
+
+          if (this.isCallbackAsync) {
+            return Promise.resolve(output).then(handleOutput, captureIssues);
+          }
+
+          return handleOutput(output);
+        })
+      );
     });
   }
 }
@@ -1090,7 +1106,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
         output = result.value;
       }
 
-      return callApply(outputShape, output, options, outputResult => {
+      return applyForResult(outputShape, output, options, outputResult => {
         let issues;
 
         if (outputResult !== null) {
@@ -1478,7 +1494,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
         output = result.value;
       }
 
-      return callApply(excludedShape, output, options, outputResult => {
+      return applyForResult(excludedShape, output, options, outputResult => {
         let issues;
 
         if (!isArray(outputResult)) {

@@ -1,7 +1,7 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
-  callApply,
+  applyForResult,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -191,7 +191,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
             outputKey = keyResult.value;
           }
         }
-        return callApply(valueShape, value, options, handleValueResult);
+        return applyForResult(valueShape, value, options, handleValueResult);
       };
 
       const handleValueResult = (valueResult: Result) => {
@@ -224,7 +224,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
           key = outputKey = entry[0];
           value = outputValue = entry[1];
 
-          return callApply(keyShape, key, options, handleKeyResult);
+          return applyForResult(keyShape, key, options, handleKeyResult);
         }
 
         const output = changed ? new Map(entries) : input;

@@ -4,6 +4,8 @@ import {
   FunctionShape,
   NumberShape,
   ObjectShape,
+  ParseOptions,
+  Result,
   Shape,
   StringShape,
   ValidationError,
@@ -23,7 +25,16 @@ describe('FunctionShape', () => {
 
   beforeEach(() => {
     noArgsShape = new ArrayShape(null, null);
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('creates a string shape', () => {

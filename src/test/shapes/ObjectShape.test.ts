@@ -1,4 +1,4 @@
-import { AnyShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
+import { AnyShape, ObjectShape, Ok, ParseOptions, Result, Shape, StringShape } from '../../main';
 import {
   CODE_DENIED,
   CODE_ENUM,
@@ -14,7 +14,15 @@ describe('ObjectShape', () => {
   let asyncShape: AnyShape;
 
   beforeEach(() => {
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('raises non object values', () => {

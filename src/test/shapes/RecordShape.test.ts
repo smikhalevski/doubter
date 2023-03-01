@@ -1,11 +1,19 @@
-import { AnyShape, ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
+import { AnyShape, ObjectShape, Ok, ParseOptions, RecordShape, Result, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
 
 describe('RecordShape', () => {
   let asyncShape: AnyShape;
 
   beforeEach(() => {
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('raises non object values', () => {

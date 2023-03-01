@@ -1,6 +1,6 @@
 import { AnyShape, defaultParseOptions, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { callApply, cloneObject, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
+import { applyForResult, cloneObject, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
 import { CODE_TYPE, ERROR_ASYNC_DELEGATOR, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
 import { ValidationError } from '../ValidationError';
 
@@ -157,22 +157,22 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
         let result;
 
         if (thisShape !== null) {
-          result = callApply(thisShape, this, options, thisResult => {
+          result = applyForResult(thisShape, this, options, thisResult => {
             const thisValue = getOrDie(thisResult, 'this', this);
 
-            return callApply(argsShape, args, options, argsResult =>
+            return applyForResult(argsShape, args, options, argsResult =>
               fn.apply(thisValue, getOrDie(argsResult, 'arguments', args))
             );
           });
         } else {
-          result = callApply(argsShape, args, options, argsResult =>
+          result = applyForResult(argsShape, args, options, argsResult =>
             fn.apply(this, getOrDie(argsResult, 'arguments', args))
           );
         }
 
         if (returnShape !== null) {
           result = Promise.resolve(result).then(result =>
-            callApply(returnShape, result, options, resultResult => getOrDie(resultResult, 'return', result))
+            applyForResult(returnShape, result, options, resultResult => getOrDie(resultResult, 'return', result))
           );
         }
 

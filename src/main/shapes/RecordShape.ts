@@ -1,7 +1,7 @@
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
-  callApply,
+  applyForResult,
   cloneObjectEnumerableKeys,
   concatIssues,
   copyUnsafeChecks,
@@ -179,7 +179,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
             outputKey = keyResult.value;
           }
         }
-        return callApply(valueShape, value, options, handleValueResult);
+        return applyForResult(valueShape, value, options, handleValueResult);
       };
 
       const handleValueResult = (valueResult: Result) => {
@@ -214,7 +214,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
           value = outputValue = input[key];
 
           if (keyShape !== null) {
-            return callApply(keyShape, key, options, handleKeyResult);
+            return applyForResult(keyShape, key, options, handleKeyResult);
           } else {
             return valueShape['_applyAsync'](value, options).then(handleValueResult);
           }

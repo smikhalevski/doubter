@@ -1,9 +1,12 @@
 import {
   AnyShape,
+  CatchShape,
   ConstShape,
   DenyLiteralShape,
+  ExcludeShape,
   NumberShape,
   ObjectShape,
+  ParseOptions,
   PipeShape,
   ReplaceLiteralShape,
   Shape,
@@ -20,12 +23,20 @@ import {
   TYPE_ANY,
   TYPE_STRING,
 } from '../../main/constants';
-import { CatchShape, ExcludeShape } from '../../main/shapes/Shape';
+import { Result } from '../../main/shapes/Shape';
 
 let asyncShape: AnyShape;
 
 beforeEach(() => {
-  asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  asyncShape = new (class extends Shape {
+    protected _isAsync(): boolean {
+      return true;
+    }
+
+    protected _applyAsync(input: unknown, options: ParseOptions) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    }
+  })();
 });
 
 describe('Shape', () => {
@@ -517,6 +528,19 @@ describe('TransformShape', () => {
       const shape = new TransformShape(new Shape(), true, () => Promise.reject('expected'));
 
       await expect(shape.tryAsync('aaa')).rejects.toBe('expected');
+    });
+
+    test('async base shape with sync transform that returns a promise', async () => {
+      const checkMock = jest.fn();
+
+      const shape = new TransformShape(asyncShape, false, value => Promise.resolve('__' + value)).check(checkMock);
+
+      const output = shape.parseAsync('aaa');
+
+      await expect(output).resolves.toBe('__aaa');
+      expect(checkMock).toHaveBeenCalledTimes(1);
+      expect(checkMock.mock.calls[0][0]).toBeInstanceOf(Promise);
+      await expect(checkMock.mock.calls[0][0]).resolves.toBe('__aaa');
     });
   });
 });

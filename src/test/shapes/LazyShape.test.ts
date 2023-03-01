@@ -1,10 +1,18 @@
-import { AnyShape, DeepPartialProtocol, LazyShape, Shape, StringShape } from '../../main';
+import { AnyShape, DeepPartialProtocol, LazyShape, ParseOptions, Result, Shape, StringShape } from '../../main';
 
 describe('LazyShape', () => {
   let asyncShape: AnyShape;
 
   beforeEach(() => {
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('parses values with a shape', () => {

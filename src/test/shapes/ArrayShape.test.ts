@@ -1,4 +1,15 @@
-import { AnyShape, ArrayShape, Err, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
+import {
+  AnyShape,
+  ArrayShape,
+  Err,
+  NumberShape,
+  ObjectShape,
+  Ok,
+  ParseOptions,
+  Result,
+  Shape,
+  StringShape,
+} from '../../main';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -18,7 +29,15 @@ describe('ArrayShape', () => {
   let asyncShape: AnyShape;
 
   beforeEach(() => {
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('creates an array shape', () => {
