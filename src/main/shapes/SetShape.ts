@@ -233,7 +233,7 @@ export class SetShape<S extends AnyShape>
   }
 
   /**
-   * Coerces value to a list of `Set` values, or returns `null` if coercion isn't possible.
+   * Coerces value to a array of `Set` values, or returns `null` if coercion isn't possible.
    *
    * @param value The non-`Set` value to coerce.
    */

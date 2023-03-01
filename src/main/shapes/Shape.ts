@@ -538,7 +538,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the list of runtime value types that can be processed by the shape.
+   * Returns the array of runtime value types that can be processed by the shape.
    *
    * Used for various optimizations. Elements of the returned array don't have to be unique.
    */
@@ -547,7 +547,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the list of all input values that are known beforehand.
+   * Returns the array of all input values that are known beforehand.
    */
   protected _getInputValues(): unknown[] {
     return [];

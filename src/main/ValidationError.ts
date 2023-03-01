@@ -6,14 +6,14 @@ import { Issue } from './shared-types';
  */
 export class ValidationError extends Error {
   /**
-   * The list of issues that caused the error.
+   * The array of issues that caused the error.
    */
   issues: Issue[];
 
   /**
    * Creates a new {@linkcode ValidationError} instance.
    *
-   * @param issues The mutable list of partially defined issues that have caused an error.
+   * @param issues The mutable array of partially defined issues that have caused an error.
    */
   constructor(issues: Partial<Issue>[]) {
     let message = '';

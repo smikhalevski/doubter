@@ -4,7 +4,7 @@ import { ConstraintOptions, Message } from '../shared-types';
 /**
  * Creates an intersection shape that tries to parse the input with all provided shapes.
  *
- * @param shapes The list of shapes.
+ * @param shapes The array of shapes.
  * @param options The constraint options or an issue message.
  * @template U The tuple of intersected shapes.
  */

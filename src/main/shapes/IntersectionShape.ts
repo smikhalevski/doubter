@@ -31,6 +31,11 @@ export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = Inters
   [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
 }>;
 
+/**
+ * The shape that requires an input to conform all given shapes.
+ *
+ * @template U The array of shapes that comprise an intersection.
+ */
 export class IntersectionShape<U extends readonly AnyShape[]>
   extends Shape<ToIntersection<U[number]>['input'], ToIntersection<U[number]>['output']>
   implements DeepPartialProtocol<DeepPartialIntersectionShape<U>>
@@ -38,7 +43,20 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   protected _options;
   protected _typeIssueFactory;
 
-  constructor(readonly shapes: U, options?: ConstraintOptions | Message) {
+  /**
+   * Creates a new {@linkcode IntersectionShape} instance.
+   *
+   * @param shapes The array of shapes that comprise an intersection.
+   * @param options The union constraint options or an issue message.
+   * @template U The array of shapes that comprise an intersection.
+   */
+  constructor(
+    /**
+     * The array of shapes that comprise an intersection.
+     */
+    readonly shapes: U,
+    options?: ConstraintOptions | Message
+  ) {
     super();
 
     this._options = options;

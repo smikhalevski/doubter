@@ -4,7 +4,7 @@ import { ConstraintOptions, Message } from '../shared-types';
 /**
  * Creates the tuple shape.
  *
- * @param shapes The list of tuple element shapes.
+ * @param shapes The array of tuple element shapes.
  * @param options The constraint options or an issue message.
  * @template U The tuple elements.
  */
@@ -16,7 +16,7 @@ export function tuple<U extends readonly [AnyShape, ...AnyShape[]]>(
 /**
  * Creates the tuple shape with rest elements.
  *
- * @param shapes The list of tuple element shapes.
+ * @param shapes The array of tuple element shapes.
  * @param restShape The shape of rest elements.
  * @param options The constraint options or an issue message.
  * @template U The head tuple elements.

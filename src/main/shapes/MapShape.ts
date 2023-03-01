@@ -243,7 +243,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
   }
 
   /**
-   * Coerces value to a list of `Map` entries, or returns `null` if coercion isn't possible.
+   * Coerces value to a array of `Map` entries, or returns `null` if coercion isn't possible.
    *
    * @param value The non-`Map` value to coerce.
    */

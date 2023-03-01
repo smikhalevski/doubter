@@ -15,7 +15,7 @@ import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
 import { ObjectShape } from './ObjectShape';
 
 /**
- * Returns the list of shapes that are applicable to the input.
+ * Returns the array of shapes that are applicable to the input.
  */
 export type LookupCallback = (input: any) => readonly AnyShape[];
 
@@ -26,7 +26,7 @@ export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<{
 /**
  * The shape that requires an input to conform at least one of shapes.
  *
- * @template U The list of shapes that comprise a union.
+ * @template U The array of shapes that comprise a union.
  */
 export class UnionShape<U extends readonly AnyShape[]>
   extends Shape<U[number]['input'], U[number]['output']>
@@ -38,13 +38,13 @@ export class UnionShape<U extends readonly AnyShape[]>
   /**
    * Creates a new {@linkcode UnionShape} instance.
    *
-   * @param shapes The list of shapes that comprise a union.
+   * @param shapes The array of shapes that comprise a union.
    * @param options The union constraint options or an issue message.
-   * @template U The list of shapes that comprise a union.
+   * @template U The array of shapes that comprise a union.
    */
   constructor(
     /**
-     * The list of shapes that comprise a union.
+     * The array of shapes that comprise a union.
      */
     readonly shapes: U,
     options?: ConstraintOptions | Message

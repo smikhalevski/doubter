@@ -174,7 +174,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape that only has properties with listed keys.
    *
-   * @param keys The list of property keys to pick.
+   * @param keys The array of property keys to pick.
    * @returns The new object shape.
    * @template K The tuple of keys to pick.
    */
@@ -192,7 +192,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape that doesn't have the listed keys.
    *
-   * @param keys The list of property keys to omit.
+   * @param keys The array of property keys to omit.
    * @returns The new object shape.
    * @template K The tuple of keys to omit.
    */
@@ -217,9 +217,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape with keys marked as optional.
    *
-   * @param keys The list of property keys to make optional.
+   * @param keys The array of property keys to make optional.
    * @returns The new object shape.
-   * @template K The list of string keys.
+   * @template K The array of string keys.
    */
   partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & OptionalProps<Pick<P, K[number]>>, R>;
 
@@ -254,9 +254,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape with keys marked as required.
    *
-   * @param keys The list of property keys to make required.
+   * @param keys The array of property keys to make required.
    * @returns The new object shape.
-   * @template K The list of string keys.
+   * @template K The array of string keys.
    */
   required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & RequiredProps<Pick<P, K[number]>>, R>;
 

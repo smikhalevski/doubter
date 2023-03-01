@@ -51,7 +51,7 @@ export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extend
 /**
  * The shape of an array or a tuple.
  *
- * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
+ * @template U The array of positioned element shapes, or `null` if there are no positioned elements.
  * @template R The shape of rest elements, or `null` if there are no rest elements.
  */
 export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null>
@@ -64,15 +64,15 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   /**
    * Creates a new {@linkcode ArrayShape} instance.
    *
-   * @param shapes The list of positioned element shapes or `null` if there are no positioned elements.
+   * @param shapes The array of positioned element shapes or `null` if there are no positioned elements.
    * @param restShape The shape of rest elements or `null` if there are no rest elements.
    * @param options The type constraint options or the type issue message.
-   * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
+   * @template U The array of positioned element shapes, or `null` if there are no positioned elements.
    * @template R The shape of rest elements, or `null` if there are no rest elements.
    */
   constructor(
     /**
-     * The list of positioned element shapes or `null` if there are no positioned elements.
+     * The array of positioned element shapes or `null` if there are no positioned elements.
      */
     readonly shapes: U,
     /**

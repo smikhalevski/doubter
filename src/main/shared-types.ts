@@ -11,7 +11,7 @@ export interface Err {
   ok: false;
 
   /**
-   * The list of issues encountered during parsing.
+   * The array of issues encountered during parsing.
    */
   issues: Issue[];
 }
@@ -37,7 +37,8 @@ export interface Check {
   readonly key: any;
 
   /**
-   * The callback that validates the shape output and returns the list of issues or throws a {@linkcode Validation} error.
+   * The callback that validates the shape output and returns the array of issues or throws a {@linkcode Validation}
+   * error.
    */
   readonly callback: CheckCallback;
 

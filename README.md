@@ -403,7 +403,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `arrayMaxLength` | [`d.array().max(n)`](#array) | The maximum array length `n` |
 | `const` | [`d.const(x)`](#const) | The expected constant value `x` |
 | `denied` | [`shape.deny(x)`](#deny-a-literal-value) | The denied value `x` |
-| `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
+| `enum` | [`d.enum([x, y, z])`](#enum) | The array of unique values`[x, y, z]` |
 | `excluded` | [`shape.exclude(…)`](#exclude-a-shape) | The excluded shape |
 | `instance` | [`d.instanceOf(Class)`](#instanceof) | The class constructor `Class` |
 | `intersection` | [`d.and(…)`](#intersection) | — |
