@@ -12,7 +12,7 @@ import {
   ok,
   toArrayIndex,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import {
   CODE_ARRAY_MAX,
@@ -223,7 +223,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
           continue;
         }
         if (isArray(result)) {
-          unshiftPath(result, i);
+          unshiftIssuesPath(result, i);
 
           if (!options.verbose) {
             return result;
@@ -276,7 +276,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       const handleResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
-            unshiftPath(result, index);
+            unshiftIssuesPath(result, index);
 
             if (!options.verbose) {
               return result;

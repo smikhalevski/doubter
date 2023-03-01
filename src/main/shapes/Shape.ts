@@ -21,6 +21,7 @@ import {
   getValueType,
   isArray,
   isEqual,
+  isFunction,
   isUnsafeCheck,
   ok,
   toDeepPartialShape,
@@ -1349,8 +1350,8 @@ export class CatchShape<S extends AnyShape, T>
   ) {
     super();
 
-    if (typeof fallback === 'function') {
-      this._resultProvider = () => ok((fallback as Function)());
+    if (isFunction(fallback)) {
+      this._resultProvider = () => ok(fallback());
     } else {
       const result = ok(fallback);
       this._resultProvider = () => result;

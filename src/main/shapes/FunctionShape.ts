@@ -1,6 +1,14 @@
 import { AnyShape, defaultParseOptions, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { applyForResult, cloneInstance, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
+import {
+  applyForResult,
+  cloneInstance,
+  copyChecks,
+  createIssueFactory,
+  isArray,
+  ok,
+  unshiftIssuesPath,
+} from '../utils';
 import { CODE_TYPE, ERROR_ASYNC_DELEGATOR, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
 import { ValidationError } from '../ValidationError';
 
@@ -210,7 +218,7 @@ function getOrDie<T>(result: Result<T>, part: 'this' | 'arguments' | 'return', i
     return input;
   }
   if (isArray(result)) {
-    unshiftPath(result, part);
+    unshiftIssuesPath(result, part);
     throw new ValidationError(result);
   }
   return result.value;

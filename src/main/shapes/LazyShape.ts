@@ -1,6 +1,6 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 import { ParseOptions } from '../shared-types';
-import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
+import { copyUnsafeChecks, isArray, toDeepPartialShape } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 
 /**
@@ -108,4 +108,12 @@ export class LazyShape<S extends AnyShape>
     }
     return issues;
   }
+}
+
+function returnFalse(): boolean {
+  return false;
+}
+
+function returnArray(): any[] {
+  return [];
 }

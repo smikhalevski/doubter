@@ -1,6 +1,6 @@
 import { Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, isConstructorOf } from '../utils';
+import { createIssueFactory, isSubclass } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../constants';
 
 /**
@@ -25,10 +25,10 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
   }
 
   protected _getInputTypes(): readonly ValueType[] {
-    if (isConstructorOf(this.ctor, Array)) {
+    if (isSubclass(this.ctor, Array)) {
       return [TYPE_ARRAY];
     }
-    if (isConstructorOf(this.ctor, Date)) {
+    if (isSubclass(this.ctor, Date)) {
       return [TYPE_DATE];
     }
     return [TYPE_OBJECT];

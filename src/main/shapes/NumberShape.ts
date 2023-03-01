@@ -1,6 +1,6 @@
 import { Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { addConstraint, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
+import { abs, addConstraint, cloneInstance, createIssueFactory, floor, isArray, isNumber, max, ok } from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -300,8 +300,6 @@ export interface NumberShape {
 NumberShape.prototype.min = NumberShape.prototype.gte;
 
 NumberShape.prototype.max = NumberShape.prototype.lte;
-
-const { abs, floor, max } = Math;
 
 /**
  * Checks that `a` is divisible without a remainder by `b`.

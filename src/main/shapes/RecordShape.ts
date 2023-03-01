@@ -2,7 +2,7 @@ import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape,
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   applyForResult,
-  cloneObjectEnumerableKeys,
+  cloneDictHead,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -12,7 +12,7 @@ import {
   ok,
   setObjectProperty,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
 
@@ -101,7 +101,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
-            unshiftPath(keyResult, key);
+            unshiftIssuesPath(keyResult, key);
 
             if (!options.verbose) {
               return keyResult;
@@ -117,7 +117,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
-          unshiftPath(valueResult, key);
+          unshiftIssuesPath(valueResult, key);
 
           if (!options.verbose) {
             return valueResult;
@@ -130,7 +130,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
       if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
         if (input === output) {
-          output = cloneObjectEnumerableKeys(input, index);
+          output = cloneDictHead(input, index);
         }
         setObjectProperty(output, outputKey, outputValue);
       }
@@ -169,7 +169,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       const handleKeyResult = (keyResult: Result) => {
         if (keyResult !== null) {
           if (isArray(keyResult)) {
-            unshiftPath(keyResult, key);
+            unshiftIssuesPath(keyResult, key);
 
             if (!options.verbose) {
               return keyResult;
@@ -185,7 +185,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       const handleValueResult = (valueResult: Result) => {
         if (valueResult !== null) {
           if (isArray(valueResult)) {
-            unshiftPath(valueResult, key);
+            unshiftIssuesPath(valueResult, key);
 
             if (!options.verbose) {
               return valueResult;
@@ -198,7 +198,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
         if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
           if (input === output) {
-            output = cloneObjectEnumerableKeys(input, index);
+            output = cloneDictHead(input, index);
           }
           setObjectProperty(output, outputKey, outputValue);
         }

@@ -11,7 +11,7 @@ import {
   isObjectLike,
   ok,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
@@ -107,7 +107,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
       if (keyResult !== null) {
         if (isArray(keyResult)) {
-          unshiftPath(keyResult, key);
+          unshiftIssuesPath(keyResult, key);
 
           if (!options.verbose) {
             return keyResult;
@@ -122,7 +122,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
-          unshiftPath(valueResult, key);
+          unshiftIssuesPath(valueResult, key);
 
           if (!options.verbose) {
             return valueResult;
@@ -181,7 +181,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
       const handleKeyResult = (keyResult: Result) => {
         if (keyResult !== null) {
           if (isArray(keyResult)) {
-            unshiftPath(keyResult, key);
+            unshiftIssuesPath(keyResult, key);
 
             if (!options.verbose) {
               return keyResult;
@@ -197,7 +197,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
       const handleValueResult = (valueResult: Result) => {
         if (valueResult !== null) {
           if (isArray(valueResult)) {
-            unshiftPath(valueResult, key);
+            unshiftIssuesPath(valueResult, key);
 
             if (!options.verbose) {
               return valueResult;

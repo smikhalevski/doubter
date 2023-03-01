@@ -11,7 +11,7 @@ import {
   ok,
   toArrayIndex,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import {
   CODE_SET_MAX,
@@ -148,7 +148,7 @@ export class SetShape<S extends AnyShape>
         continue;
       }
       if (isArray(result)) {
-        unshiftPath(result, i);
+        unshiftIssuesPath(result, i);
 
         if (!options.verbose) {
           return result;
@@ -197,7 +197,7 @@ export class SetShape<S extends AnyShape>
       const handleResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
-            unshiftPath(result, index);
+            unshiftIssuesPath(result, index);
 
             if (!options.verbose) {
               return result;

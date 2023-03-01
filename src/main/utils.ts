@@ -9,9 +9,7 @@ import {
   ValueType,
 } from './shapes/Shape';
 import { inflateIssue, ValidationError } from './ValidationError';
-import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL } from './constants';
-
-export const NEVER = Symbol();
+import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL, TYPE_OBJECT } from './constants';
 
 export interface ReadonlyDict<T = any> {
   readonly [key: string]: T;
@@ -21,32 +19,11 @@ export interface Dict<T = any> {
   [key: string]: T;
 }
 
-/**
- * Returns the extended value type.
- */
-export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
-  const type = typeof value;
-
-  if (type !== 'object') {
-    return type;
-  }
-  if (value === null) {
-    return TYPE_NULL;
-  }
-  if (isArray(value)) {
-    return TYPE_ARRAY;
-  }
-  if (value instanceof Date) {
-    return TYPE_DATE;
-  }
-  return type;
-}
-
-export function ok<T>(value: T): Ok<T> {
-  return { ok: true, value };
-}
+export const NEVER = Symbol();
 
 export const isArray = Array.isArray;
+
+export const { abs, floor, max } = Math;
 
 /**
  * [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero) comparison.
@@ -57,6 +34,10 @@ export function isEqual(a: unknown, b: unknown): boolean {
 
 export function isObjectLike(value: unknown): boolean {
   return value !== null && typeof value === 'object';
+}
+
+export function isFunction(value: unknown): value is Function {
+  return typeof value === 'function';
 }
 
 const objectCtorString = Object.prototype.constructor.toString();
@@ -77,14 +58,14 @@ export function isPlainObject(value: any): boolean {
   if ((ctor = proto.constructor) === Object) {
     return true;
   }
-  return typeof ctor == 'function' && Function.toString.call(ctor) === objectCtorString;
+  return isFunction(ctor) && Function.toString.call(ctor) === objectCtorString;
 }
 
 export function isIterableObject(value: any): value is Iterable<any> {
   return isObjectLike(value) && (Symbol.iterator in value || !isNaN(value.length));
 }
 
-export function isConstructorOf(ctor: Function, superCtor: Function): boolean {
+export function isSubclass(ctor: Function, superCtor: Function): boolean {
   return ctor === superCtor || superCtor.prototype.isPrototypeOf(ctor.prototype);
 }
 
@@ -96,6 +77,167 @@ export function isValidDate(value: unknown): value is Date {
   return value instanceof Date && (value = value.getTime()) === value;
 }
 
+export function unique<T>(arr: T[]): T[];
+
+export function unique<T>(arr: readonly T[]): readonly T[];
+
+export function unique<T>(arr: readonly T[]): readonly T[] {
+  let uniqueArr: T[] | null = null;
+
+  for (let i = 0; i < arr.length; ++i) {
+    const value = arr[i];
+
+    if (arr.includes(value, i + 1)) {
+      if (uniqueArr === null) {
+        uniqueArr = arr.slice(0, i);
+      }
+      continue;
+    }
+    if (uniqueArr !== null) {
+      uniqueArr.push(value);
+    }
+  }
+  return uniqueArr || arr;
+}
+
+/**
+ * Returns an array index as a number, or -1 if key isn't an index.
+ */
+export function toArrayIndex(key: unknown): number {
+  let index;
+
+  if (typeof key === 'string' && (index = +key) === index && '' + index === key) {
+    key = index;
+  }
+  if (typeof key === 'number' && floor(key) === key && key >= 0 && key < 0xffffffff) {
+    return key;
+  }
+  return -1;
+}
+
+/**
+ * Updates object property value, prevents prototype pollution.
+ */
+export function setObjectProperty(obj: Record<any, any>, key: any, value: unknown): void {
+  if (key === '__proto__') {
+    Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
+  } else {
+    obj[key] = value;
+  }
+}
+
+/**
+ * Returns the shallow clone of the instance object.
+ */
+export function cloneInstance<T extends object>(obj: T): T {
+  return Object.assign(Object.create(Object.getPrototypeOf(obj)), obj);
+}
+
+/**
+ * Clones a dictionary-like object.
+ */
+export function cloneDict(dict: ReadonlyDict): Dict {
+  const obj = {};
+
+  for (const key in dict) {
+    setObjectProperty(obj, key, dict[key]);
+  }
+  return obj;
+}
+
+/**
+ * Clones the first `count` keys of a dictionary-like object.
+ */
+export function cloneDictHead(dict: ReadonlyDict, count: number): Dict {
+  const obj = {};
+
+  let index = 0;
+
+  for (const key in dict) {
+    if (index >= count) {
+      break;
+    }
+    setObjectProperty(obj, key, dict[key]);
+    ++index;
+  }
+  return obj;
+}
+
+/**
+ * Clones known keys of a dictionary-like object.
+ */
+export function cloneDictKeys(dict: ReadonlyDict, keys: readonly string[]): Dict {
+  const obj = {};
+
+  for (const key of keys) {
+    if (key in dict) {
+      setObjectProperty(obj, key, dict[key]);
+    }
+  }
+  return obj;
+}
+
+/**
+ * A bitmask that can hold an arbitrary number of bits.
+ */
+export type Mask = number[] | number;
+
+/**
+ * Sets bit to 1 at index in mask.
+ *
+ * @param mask The mutable mask to update.
+ * @param index The index at which the bit must be set to 1.
+ * @returns The updated mask.
+ */
+export function enableMask(mask: Mask, index: number): Mask {
+  if (typeof mask === 'number') {
+    if (index < 32) {
+      return mask | (1 << index);
+    }
+    mask = [mask, 0, 0];
+  }
+
+  mask[index >> 5] |= 1 << index % 32;
+
+  return mask;
+}
+
+/**
+ * Returns `true` if the bit at index in the bitmask is set to 1.
+ */
+export function isMaskEnabled(mask: Mask, index: number): boolean {
+  if (typeof mask === 'number') {
+    return mask >>> index !== 0;
+  } else {
+    return mask[index >> 5] >>> index % 32 !== 0;
+  }
+}
+
+/**
+ * Returns the extended value type.
+ */
+export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
+  const type = typeof value;
+
+  if (type !== TYPE_OBJECT) {
+    return type;
+  }
+  if (value === null) {
+    return TYPE_NULL;
+  }
+  if (isArray(value)) {
+    return TYPE_ARRAY;
+  }
+  if (value instanceof Date) {
+    return TYPE_DATE;
+  }
+  return type;
+}
+
+export function ok<T>(value: T): Ok<T> {
+  return { ok: true, value };
+}
+
 export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
 }
@@ -105,26 +247,13 @@ export function isUnsafeCheck(check: Check): boolean {
 }
 
 /**
- * Returns an array index, or -1 if key isn't an index.
- */
-export function toArrayIndex(key: unknown): number {
-  if (typeof key === 'string' && '' + +key === key) {
-    key = +key;
-  }
-  if (typeof key === 'number' && key % 1 === 0 && key >= 0 && key < 0xffffffff) {
-    return key;
-  }
-  return -1;
-}
-
-/**
  * Converts the shape to its deep partial alternative if shape implements {@linkcode DeepPartialProtocol}, or returns
  * the shape as is.
  */
 export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(
   shape: S
 ): DeepPartialShape<S> {
-  return typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
+  return isFunction(shape.deepPartial) ? shape.deepPartial() : shape;
 }
 
 /**
@@ -161,6 +290,10 @@ export function copyChecks<S extends Shape>(
   );
 }
 
+/**
+ * Calls {@linkcode Shape._apply} or {@linkcode Shape._applyAsync} depending on {@linkcode Shape._isAsync}, and passes
+ * the result to `cb` after it becomes available.
+ */
 export function applyForResult<T>(
   shape: AnyShape,
   input: unknown,
@@ -205,58 +338,60 @@ export function createIssueFactory(
 
 export function createIssueFactory(
   code: string,
-  defaultMessage: string,
-  options: ConstraintOptions | Message | undefined,
+  defaultMessage: any,
+  options: any,
   param?: any
 ): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[] {
-  const paramKnown = arguments.length === 4;
+  const paramRequired = arguments.length <= 3;
 
   let meta: unknown;
-  let message: any = defaultMessage;
+  let message = defaultMessage;
 
-  if (options !== null && typeof options === 'object') {
+  if (isObjectLike(options)) {
     if (options.message !== undefined) {
       message = options.message;
     }
     meta = options.meta;
-  } else if (typeof options === 'function') {
+  } else if (isFunction(options)) {
     message = options;
-  } else if (options != null) {
+  } else if (options !== undefined) {
     message = options;
   }
 
-  if (typeof message === 'function') {
-    if (paramKnown) {
-      return (input, options) => [
-        { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
-      ];
-    } else {
+  if (isFunction(message)) {
+    if (paramRequired) {
       return (input, options, param) => [
         { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
       ];
     }
+
+    return (input, options) => [
+      { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
+    ];
   }
 
   if (typeof message === 'string') {
-    if (paramKnown) {
-      message = message.replace('%s', param);
-    } else if (message.indexOf('%s') !== -1) {
-      return (input, options, param) => [{ code, path: [], input, message: message.replace('%s', param), param, meta }];
+    if (paramRequired) {
+      if (message.indexOf('%s') !== -1) {
+        return (input, options, param) => [
+          { code, path: [], input, message: message.replace('%s', String(param)), param, meta },
+        ];
+      }
+    } else {
+      message = message.replace('%s', String(param));
     }
   }
 
-  if (paramKnown) {
-    return input => [{ code, path: [], input, message, param, meta }];
-  } else {
+  if (paramRequired) {
     return (input, options, param) => [{ code, path: [], input, message, param, meta }];
   }
+
+  return input => [{ code, path: [], input, message, param, meta }];
 }
 
-export function unshiftPath(issues: Issue[], key: unknown): void {
-  let issuesLength = issues.length;
-
-  for (let i = 0; i < issuesLength; ++i) {
-    issues[i].path.unshift(key);
+export function unshiftIssuesPath(issues: Issue[], key: unknown): void {
+  for (const issue of issues) {
+    issue.path.unshift(key);
   }
 }
 
@@ -276,101 +411,8 @@ export function captureIssues(error: unknown): Issue[] {
 }
 
 /**
- * A bitmask that can hold an arbitrary number of bits.
+ * Creates the callback that applies given checks to a value.
  */
-export type Mask = number[] | number;
-
-/**
- * Sets bit to 1 at index in mask.
- *
- * @param mask The mutable mask to update.
- * @param index The index at which the bit must be set to 1.
- * @returns The updated mask.
- */
-export function enableMask(mask: Mask, index: number): Mask {
-  if (typeof mask === 'number') {
-    if (index < 32) {
-      return mask | (1 << index);
-    }
-    mask = [mask, 0, 0];
-  }
-
-  mask[index >> 5] |= 1 << index % 32;
-
-  return mask;
-}
-
-/**
- * Returns `true` if the bit at index in the bitmask is set to 1.
- */
-export function isMaskEnabled(mask: Mask, index: number): boolean {
-  if (typeof mask === 'number') {
-    return mask >>> index !== 0;
-  } else {
-    return mask[index >> 5] >>> index % 32 !== 0;
-  }
-}
-
-/**
- * Updates object property value, prevents prototype pollution.
- */
-export function setObjectProperty(obj: Record<any, any>, key: any, value: unknown): void {
-  if (key === '__proto__') {
-    Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
-  } else {
-    obj[key] = value;
-  }
-}
-
-/**
- * Returns the shallow clone of the instance object.
- */
-export function cloneInstance<T extends object>(obj: T): T {
-  return Object.assign(Object.create(Object.getPrototypeOf(obj)), obj);
-}
-
-/**
- * Clones the first `keyCount` keys of a plain object.
- */
-export function cloneObjectEnumerableKeys(input: ReadonlyDict, keyCount = -1): ReadonlyDict {
-  const output: ReadonlyDict = {};
-
-  if (keyCount < 0) {
-    for (const key in input) {
-      setObjectProperty(output, key, input[key]);
-    }
-  }
-  if (keyCount > 0) {
-    let index = 0;
-
-    for (const key in input) {
-      if (index === keyCount) {
-        break;
-      }
-      setObjectProperty(output, key, input[key]);
-      ++index;
-    }
-  }
-  return output;
-}
-
-/**
- * Clones known keys of the object.
- */
-export function cloneObjectKnownKeys(input: ReadonlyDict, keys: readonly string[]): ReadonlyDict {
-  const output: ReadonlyDict = {};
-  const keysLength = keys.length;
-
-  for (let i = 0; i < keysLength; ++i) {
-    const key = keys[i];
-
-    if (key in input) {
-      setObjectProperty(output, key, input[key]);
-    }
-  }
-  return output;
-}
-
 export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecksCallback | null {
   const checksLength = checks.length;
 
@@ -473,26 +515,20 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
   };
 }
 
-function appendIssue(issues: Issue[] | null, result: Partial<Issue>[] | Partial<Issue>): Issue[] | null;
-
-function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
+function appendIssue(issues: Issue[] | null, result: any /*Partial<Issue>[] | Partial<Issue>*/): Issue[] | null {
   if (isArray(result)) {
-    const resultLength = result.length;
-
-    if (resultLength === 0) {
+    if (result.length === 0) {
       return issues;
     }
 
-    for (let i = 0; i < resultLength; ++i) {
-      inflateIssue(result[i]);
-    }
+    result.forEach(inflateIssue);
 
     if (issues === null) {
       issues = result;
     } else {
       issues.push(...result);
     }
-  } else {
+  } else if (isObjectLike(result)) {
     inflateIssue(result);
 
     if (issues === null) {
@@ -502,35 +538,4 @@ function appendIssue(issues: Issue[] | null, result: any): Issue[] | null {
     }
   }
   return issues;
-}
-
-export function unique<T>(arr: T[]): T[];
-
-export function unique<T>(arr: readonly T[]): readonly T[];
-
-export function unique<T>(arr: readonly T[]): readonly T[] {
-  let uniqueArr: T[] | null = null;
-
-  for (let i = 0; i < arr.length; ++i) {
-    const value = arr[i];
-
-    if (arr.includes(value, i + 1)) {
-      if (uniqueArr === null) {
-        uniqueArr = arr.slice(0, i);
-      }
-      continue;
-    }
-    if (uniqueArr !== null) {
-      uniqueArr.push(value);
-    }
-  }
-  return uniqueArr || arr;
-}
-
-export function returnFalse(): boolean {
-  return false;
-}
-
-export function returnArray(): [] {
-  return [];
 }

@@ -2,9 +2,9 @@ import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
   applyForResult,
+  cloneDict,
+  cloneDictKeys,
   cloneInstance,
-  cloneObjectEnumerableKeys,
-  cloneObjectKnownKeys,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -21,7 +21,7 @@ import {
   ReadonlyDict,
   setObjectProperty,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import {
   AllowLiteralShape,
@@ -403,7 +403,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
 
         if (input === output && keysMode === 'stripped') {
-          output = cloneObjectKnownKeys(input, keys);
+          output = cloneDictKeys(input, keys);
         }
       }
 
@@ -434,7 +434,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       const handleValueResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
-            unshiftPath(result, key);
+            unshiftIssuesPath(result, key);
 
             if (!options.verbose) {
               return result;
@@ -442,7 +442,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
             issues = concatIssues(issues, result);
           } else if ((_isUnsafe || issues === null) && !isEqual(input[key], result.value)) {
             if (input === output) {
-              output = cloneObjectEnumerableKeys(input);
+              output = cloneDict(input);
             }
             setObjectProperty(output, key, result.value);
           }
@@ -492,7 +492,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         continue;
       }
       if (isArray(result)) {
-        unshiftPath(result, key);
+        unshiftIssuesPath(result, key);
 
         if (!options.verbose) {
           return result;
@@ -502,7 +502,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
       if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
-          output = cloneObjectEnumerableKeys(input);
+          output = cloneDict(input);
         }
         setObjectProperty(output, key, result.value);
       }
@@ -555,7 +555,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           continue;
         }
         if (isArray(result)) {
-          unshiftPath(result, key);
+          unshiftIssuesPath(result, key);
 
           if (!options.verbose) {
             return result;
@@ -565,7 +565,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = restShape === null ? cloneObjectKnownKeys(input, keys) : cloneObjectEnumerableKeys(input);
+            output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
           setObjectProperty(output, key, result.value);
         }
@@ -589,7 +589,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       // Unknown keys are stripped
       if (input === output && (_isUnsafe || issues === null)) {
-        output = cloneObjectKnownKeys(input, keys);
+        output = cloneDictKeys(input, keys);
       }
     }
 
@@ -618,7 +618,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           continue;
         }
         if (isArray(result)) {
-          unshiftPath(result, key);
+          unshiftIssuesPath(result, key);
 
           if (!options.verbose) {
             return result;
@@ -628,7 +628,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = cloneObjectEnumerableKeys(input);
+            output = cloneDict(input);
           }
           setObjectProperty(output, key, result.value);
         }
