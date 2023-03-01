@@ -1,4 +1,4 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, ValueType } from './Shape';
 import {
   applyForResult,
   concatIssues,
@@ -8,7 +8,6 @@ import {
   isArray,
   isAsyncShape,
   isEqual,
-  NEVER,
   ok,
   toDeepPartialShape,
 } from '../utils';

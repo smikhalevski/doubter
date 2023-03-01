@@ -1,4 +1,12 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, OptionalDeepPartialShape, Result, ValueType } from './Shape';
+import {
+  AnyShape,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  NEVER,
+  OptionalDeepPartialShape,
+  Result,
+  ValueType,
+} from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   applyForResult,
@@ -86,7 +94,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== null))
+      (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== NEVER))
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -160,7 +168,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)!) !== null))
+        (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== NEVER))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;
@@ -243,23 +251,23 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
   }
 
   /**
-   * Coerces value to a array of `Map` entries, or returns `null` if coercion isn't possible.
+   * Coerces a value to a array of `Map` entries, or returns {@linkcode NEVER} if coercion isn't possible.
    *
    * @param value The non-`Map` value to coerce.
    */
-  protected _coerceEntries(value: any): [unknown, unknown][] | null {
+  protected _coerceEntries(value: any): [unknown, unknown][] {
     if (isArray(value)) {
-      return value.every(isEntry) ? value : null;
+      return value.every(isEntry) ? value : NEVER;
     }
     if (isIterableObject(value)) {
       value = Array.from(value);
 
-      return value.every(isEntry) ? value : null;
+      return value.every(isEntry) ? value : NEVER;
     }
     if (isObjectLike(value)) {
       return Object.entries(value);
     }
-    return null;
+    return NEVER;
   }
 }
 

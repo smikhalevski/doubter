@@ -41,6 +41,11 @@ import {
   TYPE_NEVER,
 } from '../constants';
 
+/**
+ * The marker object that is used to denote an impossible value.
+ */
+export const NEVER = Object.freeze({}) as never;
+
 export const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
 
 // prettier-ignore

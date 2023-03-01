@@ -1,4 +1,4 @@
-import { BigIntShape } from '../../main';
+import { BigIntShape, NEVER } from '../../main';
 import {
   CODE_TYPE,
   MESSAGE_BIGINT_TYPE,
@@ -78,16 +78,16 @@ describe('BigIntShape', () => {
     test('coerces a string', () => {
       expect(new BigIntShape()['_coerce']('111')).toBe(BigInt(111));
 
-      expect(new BigIntShape()['_coerce']('aaa')).toBe(null);
+      expect(new BigIntShape()['_coerce']('aaa')).toBe(NEVER);
     });
 
     test('coerces a number', () => {
       expect(new BigIntShape()['_coerce'](111)).toBe(BigInt(111));
 
-      expect(new BigIntShape()['_coerce'](111.222)).toBe(null);
-      expect(new BigIntShape()['_coerce'](NaN)).toBe(null);
-      expect(new BigIntShape()['_coerce'](Infinity)).toBe(null);
-      expect(new BigIntShape()['_coerce'](-Infinity)).toBe(null);
+      expect(new BigIntShape()['_coerce'](111.222)).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](NaN)).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](Infinity)).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](-Infinity)).toBe(NEVER);
     });
 
     test('coerces a boolean', () => {
@@ -105,14 +105,14 @@ describe('BigIntShape', () => {
     });
 
     test('does not coerce unsuitable array', () => {
-      expect(new BigIntShape()['_coerce']([BigInt(111), 'aaa'])).toBe(null);
-      expect(new BigIntShape()['_coerce']([BigInt(111), BigInt(111)])).toBe(null);
-      expect(new BigIntShape()['_coerce'](['aaa'])).toBe(null);
+      expect(new BigIntShape()['_coerce']([BigInt(111), 'aaa'])).toBe(NEVER);
+      expect(new BigIntShape()['_coerce']([BigInt(111), BigInt(111)])).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](['aaa'])).toBe(NEVER);
     });
 
     test('does not coerce objects and functions', () => {
-      expect(new BigIntShape()['_coerce']({ key1: 111 })).toBe(null);
-      expect(new BigIntShape()['_coerce'](() => undefined)).toBe(null);
+      expect(new BigIntShape()['_coerce']({ key1: 111 })).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](() => undefined)).toBe(NEVER);
     });
   });
 });

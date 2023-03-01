@@ -1,4 +1,4 @@
-import { Result, ValueType } from './Shape';
+import { NEVER, Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, isArray, ok } from '../utils';
 import {
@@ -48,7 +48,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
 
     if (
       typeof output !== 'bigint' &&
-      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -58,7 +58,12 @@ export class BigIntShape extends CoercibleShape<bigint> {
     return issues;
   }
 
-  protected _coerce(value: any): bigint | null {
+  /**
+   * Coerces a value to a bigint or returns {@linkcode NEVER} if coercion isn't possible.
+   *
+   * @param value The non-bigint value to coerce.
+   */
+  protected _coerce(value: any): bigint {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {
       return value;
     }
@@ -70,6 +75,6 @@ export class BigIntShape extends CoercibleShape<bigint> {
         return BigInt(value);
       } catch {}
     }
-    return null;
+    return NEVER;
   }
 }

@@ -19,8 +19,6 @@ export interface Dict<T = any> {
   [key: string]: T;
 }
 
-export const NEVER = Symbol();
-
 export const isArray = Array.isArray;
 
 export const { abs, floor, max } = Math;

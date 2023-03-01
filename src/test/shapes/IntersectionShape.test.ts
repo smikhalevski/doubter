@@ -3,6 +3,7 @@ import {
   ArrayShape,
   BooleanShape,
   IntersectionShape,
+  NEVER,
   NumberShape,
   ObjectShape,
   Shape,
@@ -22,7 +23,6 @@ import {
   TYPE_STRING,
 } from '../../main/constants';
 import { intersectValues, intersectValueTypes } from '../../main/shapes/IntersectionShape';
-import { NEVER } from '../../main/utils';
 
 describe('IntersectionShape', () => {
   test('returns the input that matches all shapes as is', () => {

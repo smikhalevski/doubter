@@ -1,4 +1,4 @@
-import { StringShape } from '../../main';
+import { NEVER, StringShape } from '../../main';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -165,9 +165,9 @@ describe('StringShape', () => {
       expect(new StringShape()['_coerce'](111)).toBe('111');
       expect(new StringShape()['_coerce'](111.222)).toBe('111.222');
 
-      expect(new StringShape()['_coerce'](NaN)).toBe(null);
-      expect(new StringShape()['_coerce'](Infinity)).toBe(null);
-      expect(new StringShape()['_coerce'](-Infinity)).toBe(null);
+      expect(new StringShape()['_coerce'](NaN)).toBe(NEVER);
+      expect(new StringShape()['_coerce'](Infinity)).toBe(NEVER);
+      expect(new StringShape()['_coerce'](-Infinity)).toBe(NEVER);
     });
 
     test('coerces a boolean', () => {
@@ -184,19 +184,19 @@ describe('StringShape', () => {
       expect(new StringShape()['_coerce'](['aaa'])).toBe('aaa');
       expect(new StringShape()['_coerce']([111])).toBe('111');
 
-      expect(new StringShape()['_coerce']([['aaa']])).toBe(null);
-      expect(new StringShape()['_coerce']([[111]])).toBe(null);
-      expect(new StringShape()['_coerce'](['aaa', 'bbb'])).toBe(null);
-      expect(new StringShape()['_coerce'](['aaa', 111])).toBe(null);
+      expect(new StringShape()['_coerce']([['aaa']])).toBe(NEVER);
+      expect(new StringShape()['_coerce']([[111]])).toBe(NEVER);
+      expect(new StringShape()['_coerce'](['aaa', 'bbb'])).toBe(NEVER);
+      expect(new StringShape()['_coerce'](['aaa', 111])).toBe(NEVER);
     });
 
     test('does not coerce objects and functions', () => {
-      expect(new StringShape()['_coerce']({ key1: 111 })).toBe(null);
-      expect(new StringShape()['_coerce'](() => undefined)).toBe(null);
+      expect(new StringShape()['_coerce']({ key1: 111 })).toBe(NEVER);
+      expect(new StringShape()['_coerce'](() => undefined)).toBe(NEVER);
     });
 
     test('does not coerce a symbol', () => {
-      expect(new StringShape()['_coerce'](Symbol())).toBe(null);
+      expect(new StringShape()['_coerce'](Symbol())).toBe(NEVER);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -132,7 +132,7 @@ export class SetShape<S extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== null))
+      (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== NEVER))
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -181,7 +181,7 @@ export class SetShape<S extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)!) !== null))
+        (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== NEVER))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;
@@ -233,11 +233,11 @@ export class SetShape<S extends AnyShape>
   }
 
   /**
-   * Coerces value to a array of `Set` values, or returns `null` if coercion isn't possible.
+   * Coerces a value to an array of `Set` values, or returns {@linkcode NEVER} if coercion isn't possible.
    *
    * @param value The non-`Set` value to coerce.
    */
-  protected _coerceValues(value: unknown): unknown[] | null {
+  protected _coerceValues(value: unknown): unknown[] {
     if (isArray(value)) {
       return value;
     }
