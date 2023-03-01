@@ -58,8 +58,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, otherwise returns
-   * `false`.
+   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, or `false` otherwise.
    */
   get isDelegatorAsync(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
