@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -11,7 +11,7 @@ import {
   ok,
   toArrayIndex,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import {
   CODE_SET_MAX,
@@ -123,7 +123,7 @@ export class SetShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<Set<S['output']>> {
+  protected _apply(input: any, options: ParseOptions): Result<Set<S['output']>> {
     let changed = false;
     let values;
     let issues = null;
@@ -148,7 +148,7 @@ export class SetShape<S extends AnyShape>
         continue;
       }
       if (isArray(result)) {
-        unshiftPath(result, i);
+        unshiftIssuesPath(result, i);
 
         if (!options.verbose) {
           return result;
@@ -166,13 +166,13 @@ export class SetShape<S extends AnyShape>
     if (_applyChecks !== null && (_isUnsafe || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
-    if (issues === null && changed) {
+    if (changed && issues === null) {
       return ok(output);
     }
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Set<S['output']>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Set<S['output']>>> {
     return new Promise(resolve => {
       let changed = false;
       let values: unknown[];
@@ -194,10 +194,10 @@ export class SetShape<S extends AnyShape>
       let index = -1;
       let value: unknown;
 
-      const applyResult = (result: ApplyResult) => {
+      const handleResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
-            unshiftPath(result, index);
+            unshiftIssuesPath(result, index);
 
             if (!options.verbose) {
               return result;
@@ -210,11 +210,11 @@ export class SetShape<S extends AnyShape>
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== valuesLength) {
-          return shape['_applyAsync']((value = values[index]), options).then(applyResult);
+          return shape['_applyAsync']((value = values[index]), options).then(handleResult);
         }
 
         const output = changed ? new Set(values) : input;
@@ -222,7 +222,7 @@ export class SetShape<S extends AnyShape>
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
           issues = _applyChecks(output, issues, options);
         }
-        if (issues === null && changed) {
+        if (changed && issues === null) {
           return ok(output);
         }
         return issues;
@@ -233,7 +233,7 @@ export class SetShape<S extends AnyShape>
   }
 
   /**
-   * Coerces value to a list of `Set` values, or returns `null` if coercion isn't possible.
+   * Coerces value to a array of `Set` values, or returns `null` if coercion isn't possible.
    *
    * @param value The non-`Set` value to coerce.
    */

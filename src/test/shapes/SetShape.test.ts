@@ -1,4 +1,4 @@
-import { AnyShape, ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
+import { AnyShape, ObjectShape, Ok, ParseOptions, Result, SetShape, Shape, StringShape } from '../../main';
 import {
   CODE_SET_MAX,
   CODE_SET_MIN,
@@ -15,7 +15,15 @@ describe('SetShape', () => {
   let asyncShape: AnyShape;
 
   beforeEach(() => {
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('creates a Set shape', () => {
@@ -223,7 +231,7 @@ describe('SetShape', () => {
     });
 
     test('parses values in a Set', async () => {
-      const applyAsyncSpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
+      const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
 
       const setShape = new SetShape(asyncShape);
 
@@ -232,9 +240,9 @@ describe('SetShape', () => {
 
       expect(result).toEqual({ ok: true, value: set });
       expect(result.value).toBe(set);
-      expect(applyAsyncSpy).toHaveBeenCalledTimes(2);
-      expect(applyAsyncSpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-      expect(applyAsyncSpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenCalledTimes(2);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
     });
 
     test('does not apply value shape if the previous value raised an issue', async () => {
@@ -247,16 +255,16 @@ describe('SetShape', () => {
 
       shape.isAsync;
 
-      const applyAsyncSpy = jest.spyOn<Shape, any>(shape, '_applyAsync');
+      const applySpy = jest.spyOn<Shape, any>(shape, '_applyAsync');
 
       const setShape = new SetShape(shape);
 
       const set = new Set([111, 222, 333]);
       await setShape.tryAsync(set);
 
-      expect(applyAsyncSpy).toHaveBeenCalledTimes(2);
-      expect(applyAsyncSpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-      expect(applyAsyncSpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenCalledTimes(2);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
     });
 
     test('returns a new set if some values were transformed', async () => {

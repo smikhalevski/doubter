@@ -1,4 +1,15 @@
-import { AnyShape, ArrayShape, Err, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
+import {
+  AnyShape,
+  ArrayShape,
+  Err,
+  NumberShape,
+  ObjectShape,
+  Ok,
+  ParseOptions,
+  Result,
+  Shape,
+  StringShape,
+} from '../../main';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -18,7 +29,15 @@ describe('ArrayShape', () => {
   let asyncShape: AnyShape;
 
   beforeEach(() => {
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('creates an array shape', () => {
@@ -490,8 +509,8 @@ describe('ArrayShape', () => {
       shape1.isAsync;
       shape2.isAsync;
 
-      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
 
       const arrShape = new ArrayShape([shape1, shape2], null);
 
@@ -500,10 +519,10 @@ describe('ArrayShape', () => {
 
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
-      expect(applyAsyncSpy1).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false });
+      expect(applySpy1).toHaveBeenCalledTimes(1);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(applySpy2).toHaveBeenCalledTimes(1);
+      expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false });
     });
 
     test('does not apply tuple element shape if previous shape raised an issue', async () => {
@@ -513,8 +532,8 @@ describe('ArrayShape', () => {
       shape1.isAsync;
       shape2.isAsync;
 
-      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
 
       const arrShape = new ArrayShape([shape1, shape2], null);
 
@@ -522,9 +541,9 @@ describe('ArrayShape', () => {
       const result = (await arrShape.tryAsync(arr)) as Err;
 
       expect(result).toEqual({ ok: false, issues: [{ code: 'xxx', path: [0] }] });
-      expect(applyAsyncSpy1).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-      expect(applyAsyncSpy2).not.toHaveBeenCalled();
+      expect(applySpy1).toHaveBeenCalledTimes(1);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(applySpy2).not.toHaveBeenCalled();
     });
 
     test('parses rest elements', async () => {

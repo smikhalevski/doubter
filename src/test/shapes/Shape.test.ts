@@ -1,9 +1,12 @@
 import {
   AnyShape,
+  CatchShape,
   ConstShape,
   DenyLiteralShape,
+  ExcludeShape,
   NumberShape,
   ObjectShape,
+  ParseOptions,
   PipeShape,
   ReplaceLiteralShape,
   Shape,
@@ -20,12 +23,20 @@ import {
   TYPE_ANY,
   TYPE_STRING,
 } from '../../main/constants';
-import { CatchShape, ExcludeShape } from '../../main/shapes/Shape';
+import { Result } from '../../main/shapes/Shape';
 
 let asyncShape: AnyShape;
 
 beforeEach(() => {
-  asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+  asyncShape = new (class extends Shape {
+    protected _isAsync(): boolean {
+      return true;
+    }
+
+    protected _applyAsync(input: unknown, options: ParseOptions) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    }
+  })();
 });
 
 describe('Shape', () => {
@@ -44,7 +55,7 @@ describe('Shape', () => {
 
     expect(shape1).not.toBe(shape2);
     expect(shape1.getCheck(cb)).toBe(undefined);
-    expect(shape2.getCheck(cb)).toEqual({ key: cb, callback: cb, unsafe: false });
+    expect(shape2.getCheck(cb)).toEqual({ key: cb, callback: cb, isUnsafe: false });
   });
 
   test('deletes a check', () => {
@@ -518,6 +529,19 @@ describe('TransformShape', () => {
 
       await expect(shape.tryAsync('aaa')).rejects.toBe('expected');
     });
+
+    test('async base shape with sync transform that returns a promise', async () => {
+      const checkMock = jest.fn();
+
+      const shape = new TransformShape(asyncShape, false, value => Promise.resolve('__' + value)).check(checkMock);
+
+      const output = shape.parseAsync('aaa');
+
+      await expect(output).resolves.toBe('__aaa');
+      expect(checkMock).toHaveBeenCalledTimes(1);
+      expect(checkMock.mock.calls[0][0]).toBeInstanceOf(Promise);
+      await expect(checkMock.mock.calls[0][0]).resolves.toBe('__aaa');
+    });
   });
 });
 
@@ -584,18 +608,18 @@ describe('PipeShape', () => {
       const shape1 = asyncShape;
       const shape2 = new Shape();
 
-      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
 
       const pipeShape = new PipeShape(shape1, shape2);
 
       await expect(pipeShape.parseAsync('aaa')).resolves.toBe('aaa');
 
-      expect(applyAsyncSpy1).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(applySpy1).toHaveBeenCalledTimes(1);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
 
-      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(applySpy2).toHaveBeenCalledTimes(1);
+      expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
     });
 
     test('does not apply the output shape if the input shape parsing failed', async () => {

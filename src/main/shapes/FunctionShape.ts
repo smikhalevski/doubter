@@ -1,6 +1,14 @@
-import { AnyShape, ApplyResult, defaultParseOptions, Shape, ValueType } from './Shape';
+import { AnyShape, defaultParseOptions, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { callApply, cloneObject, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
+import {
+  applyForResult,
+  cloneInstance,
+  copyChecks,
+  createIssueFactory,
+  isArray,
+  ok,
+  unshiftIssuesPath,
+} from '../utils';
 import { CODE_TYPE, ERROR_ASYNC_DELEGATOR, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
 import { ValidationError } from '../ValidationError';
 
@@ -58,8 +66,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, otherwise returns
-   * `false`.
+   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, or `false` otherwise.
    */
   get isDelegatorAsync(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
@@ -93,7 +100,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The new function shape.
    */
   bare(): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
     shape.isBare = true;
     return shape;
   }
@@ -105,7 +112,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The new function shape.
    */
   options(options: ParseOptions): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
     shape._parseOptions = options;
     return shape;
   }
@@ -157,22 +164,22 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
         let result;
 
         if (thisShape !== null) {
-          result = callApply(thisShape, this, options, thisResult => {
+          result = applyForResult(thisShape, this, options, thisResult => {
             const thisValue = getOrDie(thisResult, 'this', this);
 
-            return callApply(argsShape, args, options, argsResult =>
+            return applyForResult(argsShape, args, options, argsResult =>
               fn.apply(thisValue, getOrDie(argsResult, 'arguments', args))
             );
           });
         } else {
-          result = callApply(argsShape, args, options, argsResult =>
+          result = applyForResult(argsShape, args, options, argsResult =>
             fn.apply(this, getOrDie(argsResult, 'arguments', args))
           );
         }
 
         if (returnShape !== null) {
           result = Promise.resolve(result).then(result =>
-            callApply(returnShape, result, options, resultResult => getOrDie(resultResult, 'return', result))
+            applyForResult(returnShape, result, options, resultResult => getOrDie(resultResult, 'return', result))
           );
         }
 
@@ -185,7 +192,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     return [TYPE_FUNCTION];
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<InferDelegator<A, R, T>> {
+  protected _apply(input: any, options: ParseOptions): Result<InferDelegator<A, R, T>> {
     const { _applyChecks } = this;
 
     let issues = null;
@@ -206,12 +213,12 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 }
 
-function getOrDie<T>(result: ApplyResult<T>, part: 'this' | 'arguments' | 'return', input: any): T {
+function getOrDie<T>(result: Result<T>, part: 'this' | 'arguments' | 'return', input: any): T {
   if (result === null) {
     return input;
   }
   if (isArray(result)) {
-    unshiftPath(result, part);
+    unshiftIssuesPath(result, part);
     throw new ValidationError(result);
   }
   return result.value;

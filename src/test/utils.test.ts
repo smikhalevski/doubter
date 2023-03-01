@@ -1,18 +1,43 @@
 import {
-  cloneObjectEnumerableKeys,
-  cloneObjectKnownKeys,
+  cloneDict,
+  cloneDictHead,
+  cloneDictKeys,
   copyUnsafeChecks,
   createApplyChecksCallback,
   createIssueFactory,
-  enableBitAt,
+  enableMask,
   getValueType,
-  isBitEnabledAt,
   isEqual,
   isIterableObject,
+  isMaskEnabled,
+  isPlainObject,
   toArrayIndex,
   unique,
 } from '../main/utils';
 import { Issue, Shape, ValidationError } from '../main';
+
+describe('isPlainObject', () => {
+  test('detects plain objects', () => {
+    expect(isPlainObject({})).toBe(true);
+    expect(isPlainObject({ a: 1 })).toBe(true);
+    expect(isPlainObject({ constructor: () => undefined })).toBe(true);
+    expect(isPlainObject([1, 2, 3])).toBe(false);
+    expect(isPlainObject(new (class {})())).toBe(false);
+  });
+
+  test('returns true for objects with a [[Prototype]] of null', () => {
+    expect(isPlainObject(Object.create(null))).toBe(true);
+  });
+
+  test('returns false for non-Object objects', () => {
+    expect(isPlainObject(Error)).toBe(false);
+  });
+
+  test('returns false for non-objects', () => {
+    expect(isPlainObject(111)).toBe(false);
+    expect(isPlainObject('aaa')).toBe(false);
+  });
+});
 
 describe('getValueType', () => {
   test('returns value type', () => {
@@ -273,38 +298,40 @@ describe('createIssueFactory', () => {
   });
 });
 
-describe('enableBitAt', () => {
+describe('enableMask', () => {
   test('sets bit', () => {
-    expect(enableBitAt(0b0, 5)).toBe(0b100000);
-    expect(enableBitAt(0b1, 5)).toBe(0b100001);
-    expect(enableBitAt(0b100, 5)).toBe(0b100100);
-    expect(enableBitAt(0b1, 31)).toBe(-2147483647);
-    expect(enableBitAt(0b1, 35)).toEqual([1, 0b1000, 0]);
+    expect(enableMask(0b0, 5)).toBe(0b100000);
+    expect(enableMask(0b1, 5)).toBe(0b100001);
+    expect(enableMask(0b100, 5)).toBe(0b100100);
+    expect(enableMask(0b1, 31)).toBe(-2147483647);
+    expect(enableMask(0b1, 35)).toEqual([1, 0b1000, 0]);
   });
 });
 
-describe('isBitEnabledAt', () => {
+describe('isMaskEnabled', () => {
   test('reads bit', () => {
-    expect(isBitEnabledAt(enableBitAt(0b0, 5), 5)).toBe(true);
-    expect(isBitEnabledAt(enableBitAt(0b1, 5), 5)).toBe(true);
-    expect(isBitEnabledAt(enableBitAt(0b100, 5), 5)).toBe(true);
-    expect(isBitEnabledAt(enableBitAt(0b1, 31), 31)).toBe(true);
-    expect(isBitEnabledAt(enableBitAt(0b1, 35), 35)).toEqual(true);
+    expect(isMaskEnabled(enableMask(0b0, 5), 5)).toBe(true);
+    expect(isMaskEnabled(enableMask(0b1, 5), 5)).toBe(true);
+    expect(isMaskEnabled(enableMask(0b100, 5), 5)).toBe(true);
+    expect(isMaskEnabled(enableMask(0b1, 31), 31)).toBe(true);
+    expect(isMaskEnabled(enableMask(0b1, 35), 35)).toEqual(true);
   });
 });
 
-describe('cloneObjectEnumerableKeys', () => {
+describe('cloneDict', () => {
   test('clones all keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneObjectEnumerableKeys(obj1);
+    const obj2 = cloneDict(obj1);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ aaa: 111, bbb: 222 });
   });
+});
 
+describe('cloneDictHead', () => {
   test('clones limited number of leading keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneObjectEnumerableKeys(obj1, 1);
+    const obj2 = cloneDictHead(obj1, 1);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ aaa: 111 });
@@ -312,17 +339,17 @@ describe('cloneObjectEnumerableKeys', () => {
 
   test('clones no keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneObjectEnumerableKeys(obj1, 0);
+    const obj2 = cloneDictHead(obj1, 0);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({});
   });
 });
 
-describe('cloneObjectKnownKeys', () => {
+describe('cloneDictKeys', () => {
   test('clones known keys', () => {
     const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneObjectKnownKeys(obj1, ['bbb']);
+    const obj2 = cloneDictKeys(obj1, ['bbb']);
 
     expect(obj1).not.toBe(obj2);
     expect(obj2).toEqual({ bbb: 222 });
@@ -335,7 +362,7 @@ describe('createApplyChecksCallback', () => {
       const cbMock = jest.fn(() => [{ code: 'xxx' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { key: cbMock, callback: cbMock, param: undefined, unsafe: false },
+        { key: cbMock, callback: cbMock, param: undefined, isUnsafe: false },
       ]);
 
       expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
@@ -347,7 +374,7 @@ describe('createApplyChecksCallback', () => {
       const cbMock = jest.fn(() => [{ code: 'xxx' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { key: cbMock, callback: cbMock, param: undefined, unsafe: true },
+        { key: cbMock, callback: cbMock, param: undefined, isUnsafe: true },
       ]);
 
       const issues: Issue[] = [];
@@ -362,7 +389,7 @@ describe('createApplyChecksCallback', () => {
       const cbMock = jest.fn(() => [{ code: 'xxx' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { key: cbMock, callback: cbMock, param: undefined, unsafe: false },
+        { key: cbMock, callback: cbMock, param: undefined, isUnsafe: false },
       ]);
 
       const issues: Issue[] = [];
@@ -378,7 +405,7 @@ describe('createApplyChecksCallback', () => {
       });
 
       const applyChecks = createApplyChecksCallback([
-        { key: cbMock, callback: cbMock, param: undefined, unsafe: false },
+        { key: cbMock, callback: cbMock, param: undefined, isUnsafe: false },
       ]);
 
       expect(() => applyChecks!(111, null, {})).toThrow(new Error('expected'));
@@ -390,7 +417,7 @@ describe('createApplyChecksCallback', () => {
       });
 
       const applyChecks = createApplyChecksCallback([
-        { key: cbMock, callback: cbMock, param: undefined, unsafe: false },
+        { key: cbMock, callback: cbMock, param: undefined, isUnsafe: false },
       ]);
 
       expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
@@ -405,10 +432,10 @@ describe('createApplyChecksCallback', () => {
       const cbMock4 = jest.fn(() => [{ code: 'DDD' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { key: cbMock1, callback: cbMock1, param: undefined, unsafe: true },
-        { key: cbMock2, callback: cbMock2, param: undefined, unsafe: true },
-        { key: cbMock3, callback: cbMock3, param: undefined, unsafe: true },
-        { key: cbMock4, callback: cbMock4, param: undefined, unsafe: true },
+        { key: cbMock1, callback: cbMock1, param: undefined, isUnsafe: true },
+        { key: cbMock2, callback: cbMock2, param: undefined, isUnsafe: true },
+        { key: cbMock3, callback: cbMock3, param: undefined, isUnsafe: true },
+        { key: cbMock4, callback: cbMock4, param: undefined, isUnsafe: true },
       ]);
 
       expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'BBB', path: [] }]);
@@ -427,10 +454,10 @@ describe('createApplyChecksCallback', () => {
       const cbMock4 = jest.fn(() => [{ code: 'DDD' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { key: cbMock1, callback: cbMock1, param: undefined, unsafe: true },
-        { key: cbMock2, callback: cbMock2, param: undefined, unsafe: true },
-        { key: cbMock3, callback: cbMock3, param: undefined, unsafe: true },
-        { key: cbMock4, callback: cbMock4, param: undefined, unsafe: true },
+        { key: cbMock1, callback: cbMock1, param: undefined, isUnsafe: true },
+        { key: cbMock2, callback: cbMock2, param: undefined, isUnsafe: true },
+        { key: cbMock3, callback: cbMock3, param: undefined, isUnsafe: true },
+        { key: cbMock4, callback: cbMock4, param: undefined, isUnsafe: true },
       ]);
 
       expect(applyChecks!(111, null, { verbose: true })).toEqual([
@@ -455,10 +482,10 @@ describe('createApplyChecksCallback', () => {
       const cbMock4 = jest.fn(() => [{ code: 'DDD' }]);
 
       const applyChecks = createApplyChecksCallback([
-        { key: cbMock1, callback: cbMock1, param: undefined, unsafe: false },
-        { key: cbMock2, callback: cbMock2, param: undefined, unsafe: true },
-        { key: cbMock3, callback: cbMock3, param: undefined, unsafe: false },
-        { key: cbMock4, callback: cbMock4, param: undefined, unsafe: true },
+        { key: cbMock1, callback: cbMock1, param: undefined, isUnsafe: false },
+        { key: cbMock2, callback: cbMock2, param: undefined, isUnsafe: true },
+        { key: cbMock3, callback: cbMock3, param: undefined, isUnsafe: false },
+        { key: cbMock4, callback: cbMock4, param: undefined, isUnsafe: true },
       ]);
 
       expect(applyChecks!(111, null, { verbose: true })).toEqual([

@@ -1,4 +1,4 @@
-import { ApplyResult, ValueType } from './Shape';
+import { Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, getValueType, isArray, NEVER, ok, ReadonlyDict, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
@@ -11,7 +11,7 @@ import { CoercibleShape } from './CoercibleShape';
  */
 export class EnumShape<T> extends CoercibleShape<T> {
   /**
-   * The list of unique values allowed as an input.
+   * The array of unique values allowed as an input.
    */
   readonly values: readonly T[];
 
@@ -25,13 +25,13 @@ export class EnumShape<T> extends CoercibleShape<T> {
   /**
    * Creates a new {@linkcode EnumShape} instance.
    *
-   * @param source The list of allowed values, a const key-value mapping, or an enum object.
+   * @param source The array of allowed values, a const key-value mapping, or an enum object.
    * @param options The type constraint options or an issue message.
    * @template T Allowed values.
    */
   constructor(
     /**
-     * The list of allowed values, a const key-value mapping, or an enum object.
+     * The array of allowed values, a const key-value mapping, or an enum object.
      */
     readonly source: readonly T[] | ReadonlyDict<T>,
     options?: ConstraintOptions | Message
@@ -74,7 +74,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     return this.values.slice(0);
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<T> {
+  protected _apply(input: any, options: ParseOptions): Result<T> {
     const { _applyChecks } = this;
 
     let output = input;

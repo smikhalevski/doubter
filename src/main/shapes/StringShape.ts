@@ -1,4 +1,4 @@
-import { ApplyResult, ValueType } from './Shape';
+import { Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { addConstraint, createIssueFactory, isArray, isValidDate, ok } from '../utils';
 import {
@@ -109,7 +109,7 @@ export class StringShape extends CoercibleShape<string> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<string> {
+  protected _apply(input: any, options: ParseOptions): Result<string> {
     const { _applyChecks } = this;
 
     let output = input;

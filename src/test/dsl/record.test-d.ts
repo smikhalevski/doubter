@@ -9,3 +9,5 @@ expectType<{ bbb: number }>(
     d.number()
   ).output
 );
+
+expectType<Record<string, boolean | undefined>>(d.record(d.string(), d.boolean().optional()).output);

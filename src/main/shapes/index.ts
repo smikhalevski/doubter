@@ -29,6 +29,7 @@ export {
   NotShape,
   PipeShape,
   ReplaceLiteralShape,
+  Result,
   Shape,
   TransformShape,
   ValueType,

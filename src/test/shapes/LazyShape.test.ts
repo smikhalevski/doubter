@@ -1,10 +1,18 @@
-import { AnyShape, DeepPartialProtocol, LazyShape, Shape, StringShape } from '../../main';
+import { AnyShape, DeepPartialProtocol, LazyShape, ParseOptions, Result, Shape, StringShape } from '../../main';
 
 describe('LazyShape', () => {
   let asyncShape: AnyShape;
 
   beforeEach(() => {
-    asyncShape = new Shape().transformAsync(value => Promise.resolve(value));
+    asyncShape = new (class extends Shape {
+      protected _isAsync(): boolean {
+        return true;
+      }
+
+      protected _applyAsync(input: unknown, options: ParseOptions) {
+        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+      }
+    })();
   });
 
   test('parses values with a shape', () => {
@@ -67,12 +75,12 @@ describe('LazyShape', () => {
     test('parses values with a shape', async () => {
       const lazyShape = new LazyShape(() => asyncShape);
 
-      const applyAsyncSpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
+      const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
 
       expect(lazyShape.isAsync).toBe(true);
       await expect(lazyShape.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applyAsyncSpy).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenCalledTimes(1);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
     });
   });
 });

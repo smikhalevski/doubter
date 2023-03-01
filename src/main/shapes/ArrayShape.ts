@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -12,7 +12,7 @@ import {
   ok,
   toArrayIndex,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import {
   CODE_ARRAY_MAX,
@@ -51,7 +51,7 @@ export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extend
 /**
  * The shape of an array or a tuple.
  *
- * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
+ * @template U The array of positioned element shapes, or `null` if there are no positioned elements.
  * @template R The shape of rest elements, or `null` if there are no rest elements.
  */
 export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null>
@@ -64,15 +64,15 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   /**
    * Creates a new {@linkcode ArrayShape} instance.
    *
-   * @param shapes The list of positioned element shapes or `null` if there are no positioned elements.
+   * @param shapes The array of positioned element shapes or `null` if there are no positioned elements.
    * @param restShape The shape of rest elements or `null` if there are no rest elements.
    * @param options The type constraint options or the type issue message.
-   * @template U The list of positioned element shapes, or `null` if there are no positioned elements.
+   * @template U The array of positioned element shapes, or `null` if there are no positioned elements.
    * @template R The shape of rest elements, or `null` if there are no rest elements.
    */
   constructor(
     /**
-     * The list of positioned element shapes or `null` if there are no positioned elements.
+     * The array of positioned element shapes or `null` if there are no positioned elements.
      */
     readonly shapes: U,
     /**
@@ -193,7 +193,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<InferArray<U, R, 'output'>> {
+  protected _apply(input: any, options: ParseOptions): Result<InferArray<U, R, 'output'>> {
     const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
     let output = input;
@@ -223,7 +223,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
           continue;
         }
         if (isArray(result)) {
-          unshiftPath(result, i);
+          unshiftIssuesPath(result, i);
 
           if (!options.verbose) {
             return result;
@@ -249,7 +249,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferArray<U, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
       const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
@@ -273,10 +273,10 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       let issues: Issue[] | null = null;
       let index = -1;
 
-      const applyResult = (result: ApplyResult) => {
+      const handleResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
-            unshiftPath(result, index);
+            unshiftIssuesPath(result, index);
 
             if (!options.verbose) {
               return result;
@@ -292,13 +292,13 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== outputLength && (shapes !== null || restShape !== null)) {
           const valueShape = index < shapesLength ? shapes![index] : restShape!;
 
-          return valueShape['_applyAsync'](output[index], options).then(applyResult);
+          return valueShape['_applyAsync'](output[index], options).then(handleResult);
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {

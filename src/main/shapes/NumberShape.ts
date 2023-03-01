@@ -1,6 +1,6 @@
-import { ApplyResult, Shape, ValueType } from './Shape';
+import { Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { addConstraint, cloneObject, createIssueFactory, isArray, isNumber, ok } from '../utils';
+import { abs, addConstraint, cloneInstance, createIssueFactory, floor, isArray, isNumber, max, ok } from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -44,6 +44,20 @@ export class NumberShape extends CoercibleShape<number> {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
+  }
+
+  /**
+   * `true` if the shape constrains a finite number, or `false` otherwise.
+   */
+  get isFinite(): boolean {
+    return this._typePredicate === Number.isFinite || this.isInteger;
+  }
+
+  /**
+   * `true` if the shape constrains an integer number, or `false` otherwise.
+   */
+  get isInteger(): boolean {
+    return this._typePredicate === Number.isInteger;
   }
 
   /**
@@ -178,7 +192,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   finite(options?: ConstraintOptions | Message): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
     shape._typePredicate = Number.isFinite;
@@ -193,26 +207,12 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   integer(options?: ConstraintOptions | Message): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
     shape._typePredicate = Number.isInteger;
 
     return shape;
-  }
-
-  /**
-   * `true` if the shape constrains a finite number, or `false` otherwise.
-   */
-  get isFinite(): boolean {
-    return this._typePredicate === Number.isFinite || this.isInteger;
-  }
-
-  /**
-   * `true` if the shape constrains an integer number, or `false` otherwise.
-   */
-  get isInteger(): boolean {
-    return this._typePredicate === Number.isInteger;
   }
 
   /**
@@ -232,7 +232,7 @@ export class NumberShape extends CoercibleShape<number> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<number> {
+  protected _apply(input: any, options: ParseOptions): Result<number> {
     const { _applyChecks } = this;
 
     let output = input;
@@ -300,8 +300,6 @@ export interface NumberShape {
 NumberShape.prototype.min = NumberShape.prototype.gte;
 
 NumberShape.prototype.max = NumberShape.prototype.lte;
-
-const { abs, floor, max } = Math;
 
 /**
  * Checks that `a` is divisible without a remainder by `b`.

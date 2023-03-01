@@ -1,8 +1,8 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
-  callApply,
-  cloneObjectEnumerableKeys,
+  applyForResult,
+  cloneDictHead,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -10,17 +10,15 @@ import {
   isEqual,
   isObjectLike,
   ok,
-  setKeyValue,
+  setObjectProperty,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
 
 // prettier-ignore
 export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends 'input' | 'output'> =
-  undefined extends V[C]
-    ? Partial<Record<K extends Shape ? K[C] : string, V[C]>>
-    : Record<K extends Shape ? K[C] : string, V[C]>;
+  Record<K extends Shape ? K[C] : string, V[C]>;
 
 /**
  * The shape that describes an object with string keys and values that conform the given shape.
@@ -79,7 +77,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
+  protected _apply(input: any, options: ParseOptions): Result<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -91,19 +89,19 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     let index = -1;
 
     for (const key in input) {
-      index++;
-
       const value = input[key];
 
       let outputKey: PropertyKey = key;
       let outputValue = value;
+
+      index++;
 
       if (keyShape !== null) {
         const keyResult = keyShape['_apply'](key, options);
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
-            unshiftPath(keyResult, key);
+            unshiftIssuesPath(keyResult, key);
 
             if (!options.verbose) {
               return keyResult;
@@ -119,7 +117,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
-          unshiftPath(valueResult, key);
+          unshiftIssuesPath(valueResult, key);
 
           if (!options.verbose) {
             return valueResult;
@@ -132,9 +130,9 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
       if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
         if (input === output) {
-          output = cloneObjectEnumerableKeys(input, index);
+          output = cloneDictHead(input, index);
         }
-        setKeyValue(output, outputKey, outputValue);
+        setObjectProperty(output, outputKey, outputValue);
       }
     }
 
@@ -147,7 +145,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferRecord<K, V, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         resolve(this._typeIssueFactory(input, options));
@@ -168,10 +166,10 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       let outputKey: string;
       let outputValue: unknown;
 
-      const applyKeyResult = (keyResult: ApplyResult) => {
+      const handleKeyResult = (keyResult: Result) => {
         if (keyResult !== null) {
           if (isArray(keyResult)) {
-            unshiftPath(keyResult, key);
+            unshiftIssuesPath(keyResult, key);
 
             if (!options.verbose) {
               return keyResult;
@@ -181,13 +179,13 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
             outputKey = keyResult.value;
           }
         }
-        return callApply(valueShape, value, options, applyValueResult);
+        return applyForResult(valueShape, value, options, handleValueResult);
       };
 
-      const applyValueResult = (valueResult: ApplyResult) => {
+      const handleValueResult = (valueResult: Result) => {
         if (valueResult !== null) {
           if (isArray(valueResult)) {
-            unshiftPath(valueResult, key);
+            unshiftIssuesPath(valueResult, key);
 
             if (!options.verbose) {
               return valueResult;
@@ -200,15 +198,15 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
         if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
           if (input === output) {
-            output = cloneObjectEnumerableKeys(input, index);
+            output = cloneDictHead(input, index);
           }
-          setKeyValue(output, outputKey, outputValue);
+          setObjectProperty(output, outputKey, outputValue);
         }
 
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== keysLength) {
@@ -216,9 +214,9 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
           value = outputValue = input[key];
 
           if (keyShape !== null) {
-            return callApply(keyShape, key, options, applyKeyResult);
+            return applyForResult(keyShape, key, options, handleKeyResult);
           } else {
-            return valueShape['_applyAsync'](value, options).then(applyValueResult);
+            return valueShape['_applyAsync'](value, options).then(handleValueResult);
           }
         }
 

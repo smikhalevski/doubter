@@ -403,7 +403,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `arrayMaxLength` | [`d.array().max(n)`](#array) | The maximum array length `n` |
 | `const` | [`d.const(x)`](#const) | The expected constant value `x` |
 | `denied` | [`shape.deny(x)`](#deny-a-literal-value) | The denied value `x` |
-| `enum` | [`d.enum([x, y, z])`](#enum) | The list of unique expected values`[x, y, z]` |
+| `enum` | [`d.enum([x, y, z])`](#enum) | The array of unique values`[x, y, z]` |
 | `excluded` | [`shape.exclude(…)`](#exclude-a-shape) | The excluded shape |
 | `instance` | [`d.instanceOf(Class)`](#instanceof) | The class constructor `Class` |
 | `intersection` | [`d.and(…)`](#intersection) | — |
@@ -560,7 +560,8 @@ greetingShape1.parse('Adiós, R2D2', { verbose: true });
 // ❌ ValidationError: type at /: Must start with "Hello"
 ```
 
-To force `noDigitsCheck` to be called even if the preceding check has failed, pass the `unsafe` option:
+To force `noDigitsCheck` to be called even if the preceding check has failed, pass the
+[`unsafe`](https://smikhalevski.github.io/doubter/interfaces/CheckOptions.html#unsafe) option:
 
 ```ts
 const greetingShape2 = d.string()
@@ -640,7 +641,7 @@ Retrieve a check:
 shape.check(emailCheck);
 
 shape.getCheck(emailCheck);
-// ⮕ { callback: emailCheck, unsafe: false, param: undefined }
+// ⮕ { key: emailCheck, callback: emailCheck, isUnsafe: false, param: undefined }
 ```
 
 Delete a check:
@@ -656,6 +657,9 @@ Using a check callback identity as a key isn't always convenient. Pass the
 ```ts
 shape.check(emailCheck, { key: 'email' });
 // ⮕ Shape<string>
+
+shape.getCheck(emailCheck);
+// ⮕ { key: 'email', callback: emailCheck, isUnsafe: false, param: undefined }
 ```
 
 Now you should use the key to get or delete the check:
@@ -1532,7 +1536,7 @@ emailShape.parse('Not an email');
 // ❌ ValidationError: predicate at /: Must be an email
 
 emailShape.getCheck(isEmail);
-// ⮕ { key: isEmail, unsafe: false, param: isEmail }
+// ⮕ { key: isEmail, callback: isEmail, isUnsafe: false, param: isEmail }
 ```
 
 Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).

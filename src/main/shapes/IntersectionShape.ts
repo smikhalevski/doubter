@@ -1,6 +1,6 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 import {
-  callApply,
+  applyForResult,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -31,6 +31,11 @@ export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = Inters
   [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
 }>;
 
+/**
+ * The shape that requires an input to conform all given shapes.
+ *
+ * @template U The array of shapes that comprise an intersection.
+ */
 export class IntersectionShape<U extends readonly AnyShape[]>
   extends Shape<ToIntersection<U[number]>['input'], ToIntersection<U[number]>['output']>
   implements DeepPartialProtocol<DeepPartialIntersectionShape<U>>
@@ -38,7 +43,20 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   protected _options;
   protected _typeIssueFactory;
 
-  constructor(readonly shapes: U, options?: ConstraintOptions | Message) {
+  /**
+   * Creates a new {@linkcode IntersectionShape} instance.
+   *
+   * @param shapes The array of shapes that comprise an intersection.
+   * @param options The union constraint options or an issue message.
+   * @template U The array of shapes that comprise an intersection.
+   */
+  constructor(
+    /**
+     * The array of shapes that comprise an intersection.
+     */
+    readonly shapes: U,
+    options?: ConstraintOptions | Message
+  ) {
     super();
 
     this._options = options;
@@ -80,7 +98,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<ToIntersection<U[number]>['output']> {
+  protected _apply(input: any, options: ParseOptions): Result<ToIntersection<U[number]>['output']> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -118,7 +136,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]>['output']>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<ToIntersection<U[number]>['output']>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -127,7 +145,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       let issues: Issue[] | null = null;
       let index = -1;
 
-      const applyResult = (result: ApplyResult) => {
+      const handleResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
             if (!options.verbose) {
@@ -147,11 +165,11 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== shapesLength) {
-          return callApply(shapes[index], input, options, applyResult);
+          return applyForResult(shapes[index], input, options, handleResult);
         }
         if (issues === null) {
           return this._applyIntersection(input, outputs, options);
@@ -170,12 +188,11 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     input: any,
     outputs: any[] | null,
     options: ParseOptions
-  ): ApplyResult<ToIntersection<U[number]>['output']> {
+  ): Result<ToIntersection<U[number]>['output']> {
     const { shapes, _applyChecks } = this;
 
-    let result = null;
     let output = input;
-    let issues;
+    let issues = null;
 
     if (outputs !== null) {
       let outputsLength = outputs.length;
@@ -192,13 +209,14 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       if (output === NEVER) {
         return this._typeIssueFactory(input, options);
       }
-      if (!isEqual(output, input)) {
-        result = ok(output);
-      }
     }
 
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    if (
+      (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
+      outputs !== null &&
+      !isEqual(output, input)
+    ) {
+      return ok(output);
     }
     return issues;
   }

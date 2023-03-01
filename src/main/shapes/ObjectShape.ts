@@ -1,35 +1,35 @@
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
-  Bits,
-  callApply,
-  cloneObject,
-  cloneObjectEnumerableKeys,
-  cloneObjectKnownKeys,
+  applyForResult,
+  cloneDict,
+  cloneDictKeys,
+  cloneInstance,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
   Dict,
-  enableBitAt,
+  enableMask,
   isArray,
   isAsyncShape,
-  isBitEnabledAt,
   isEqual,
+  isMaskEnabled,
   isObjectLike,
   isPlainObject,
+  Mask,
   ok,
   ReadonlyDict,
-  setKeyValue,
+  setObjectProperty,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import {
   AllowLiteralShape,
   AnyShape,
-  ApplyResult,
   DeepPartialProtocol,
   DenyLiteralShape,
   OptionalDeepPartialShape,
+  Result,
   Shape,
   ValueType,
 } from './Shape';
@@ -37,7 +37,7 @@ import { EnumShape } from './EnumShape';
 
 // prettier-ignore
 export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> =
-  Prettify<UndefinedAsOptional<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>>;
+  Prettify<UndefinedAsOptionalProps<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>>;
 
 // prettier-ignore
 export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> =
@@ -47,15 +47,15 @@ export type StringKeyof<T extends object> = Extract<keyof T, string>;
 
 export type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
-export type UndefinedAsOptional<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
+export type UndefinedAsOptionalProps<T> = OmitBy<T, undefined> & Partial<PickBy<T, undefined>>;
 
 export type OmitBy<T, V> = Omit<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
 export type PickBy<T, V> = Pick<T, { [K in keyof T]: V extends Extract<T[K], V> ? K : never }[keyof T]>;
 
-export type Optional<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: AllowLiteralShape<P[K], undefined> };
+export type OptionalProps<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: AllowLiteralShape<P[K], undefined> };
 
-export type Required<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: DenyLiteralShape<P[K], undefined> };
+export type RequiredProps<P extends ReadonlyDict<AnyShape>> = { [K in keyof P]: DenyLiteralShape<P[K], undefined> };
 
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
@@ -128,6 +128,13 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
+  /**
+   * `true` if the object must have `Object` constructor or `null` prototype; `false` otherwise.
+   */
+  get isPlain(): boolean {
+    return this._typePredicate === isPlainObject;
+  }
+
   at(key: any): AnyShape | null {
     return this.shapes.hasOwnProperty(key) ? this.shapes[key] : this.restShape;
   }
@@ -167,7 +174,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape that only has properties with listed keys.
    *
-   * @param keys The list of property keys to pick.
+   * @param keys The array of property keys to pick.
    * @returns The new object shape.
    * @template K The tuple of keys to pick.
    */
@@ -185,7 +192,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Returns an object shape that doesn't have the listed keys.
    *
-   * @param keys The list of property keys to omit.
+   * @param keys The array of property keys to omit.
    * @returns The new object shape.
    * @template K The tuple of keys to omit.
    */
@@ -205,16 +212,16 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    *
    * @returns The new object shape.
    */
-  partial(): ObjectShape<Optional<P>, R>;
+  partial(): ObjectShape<OptionalProps<P>, R>;
 
   /**
    * Returns an object shape with keys marked as optional.
    *
-   * @param keys The list of property keys to make optional.
+   * @param keys The array of property keys to make optional.
    * @returns The new object shape.
-   * @template K The list of string keys.
+   * @template K The array of string keys.
    */
-  partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Optional<Pick<P, K[number]>>, R>;
+  partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & OptionalProps<Pick<P, K[number]>>, R>;
 
   partial(keys?: string[]) {
     const shapes: Dict<AnyShape> = {};
@@ -242,16 +249,16 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    *
    * @returns The new object shape.
    */
-  required(): ObjectShape<Required<P>, R>;
+  required(): ObjectShape<RequiredProps<P>, R>;
 
   /**
    * Returns an object shape with keys marked as required.
    *
-   * @param keys The list of property keys to make required.
+   * @param keys The array of property keys to make required.
    * @returns The new object shape.
-   * @template K The list of string keys.
+   * @template K The array of string keys.
    */
-  required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & Required<Pick<P, K[number]>>, R>;
+  required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & RequiredProps<Pick<P, K[number]>>, R>;
 
   required(keys?: string[]) {
     const shapes: Dict<AnyShape> = {};
@@ -318,16 +325,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Constrains an object to be an `Object` instance or to have a `null` prototype.
    */
   plain(): this {
-    const shape = cloneObject(this);
+    const shape = cloneInstance(this);
     shape._typePredicate = isPlainObject;
     return shape;
-  }
-
-  /**
-   * `true` if the object must have `Object` constructor or `null` prototype; `false` otherwise.
-   */
-  get isPlain(): boolean {
-    return this._typePredicate === isPlainObject;
   }
 
   protected _isAsync(): boolean {
@@ -338,7 +338,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
+  protected _apply(input: any, options: ParseOptions): Result<InferObject<P, R, 'output'>> {
     if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -349,7 +349,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
         resolve(this._typeIssueFactory(input, options));
@@ -364,7 +364,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let output = input;
 
       let seenCount = 0;
-      let seenBits: Bits = 0;
+      let seenMask: Mask = 0;
 
       let unknownKeys: string[] | null = null;
 
@@ -378,7 +378,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
         if (index !== -1) {
           seenCount++;
-          seenBits = enableBitAt(seenBits, index);
+          seenMask = enableMask(seenMask, index);
 
           valueShape = _valueShapes[index];
         }
@@ -403,7 +403,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
 
         if (input === output && keysMode === 'stripped') {
-          output = cloneObjectKnownKeys(input, keys);
+          output = cloneDictKeys(input, keys);
         }
       }
 
@@ -419,12 +419,10 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       if (seenCount !== keysLength) {
         for (let i = 0; i < keysLength; ++i) {
-          if (isBitEnabledAt(seenBits, i)) {
-            continue;
+          if (!isMaskEnabled(seenMask, i)) {
+            const key = keys[i];
+            entries.push([key, input[key], _valueShapes[i]]);
           }
-
-          const key = keys[i];
-          entries.push([key, input[key], _valueShapes[i]]);
         }
       }
 
@@ -433,10 +431,10 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let index = -1;
       let key: string;
 
-      const applyValueResult = (result: ApplyResult) => {
+      const handleValueResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
-            unshiftPath(result, key);
+            unshiftIssuesPath(result, key);
 
             if (!options.verbose) {
               return result;
@@ -444,28 +442,28 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
             issues = concatIssues(issues, result);
           } else if ((_isUnsafe || issues === null) && !isEqual(input[key], result.value)) {
             if (input === output) {
-              output = cloneObjectEnumerableKeys(input);
+              output = cloneDict(input);
             }
-            setKeyValue(output, key, result.value);
+            setObjectProperty(output, key, result.value);
           }
         }
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== entriesLength) {
           const entry = entries[index];
           key = entry[0];
-          return callApply(entry[2], entry[1], options, applyValueResult);
+          return applyForResult(entry[2], entry[1], options, handleValueResult);
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
           issues = _applyChecks(output, issues, options);
         }
         if (issues === null && input !== output) {
-          return ok(output as InferObject<P, R, 'output'>);
+          return ok(output);
         }
         return issues;
       };
@@ -477,7 +475,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Unknown keys are preserved as is and aren't checked.
    */
-  private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions): ApplyResult {
+  private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions): Result {
     const { keys, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
@@ -494,7 +492,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         continue;
       }
       if (isArray(result)) {
-        unshiftPath(result, key);
+        unshiftIssuesPath(result, key);
 
         if (!options.verbose) {
           return result;
@@ -504,9 +502,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       }
       if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
         if (input === output) {
-          output = cloneObjectEnumerableKeys(input);
+          output = cloneDict(input);
         }
-        setKeyValue(output, key, result.value);
+        setObjectProperty(output, key, result.value);
       }
     }
 
@@ -522,7 +520,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
-  private _applyRestChecked(input: ReadonlyDict, options: ParseOptions): ApplyResult {
+  private _applyRestChecked(input: ReadonlyDict, options: ParseOptions): Result {
     const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
@@ -531,7 +529,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     let output = input;
 
     let seenCount = 0;
-    let seenBits: Bits = 0;
+    let seenMask: Mask = 0;
 
     let unknownKeys = null;
 
@@ -544,7 +542,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       // The key is known
       if (index !== -1) {
         seenCount++;
-        seenBits = enableBitAt(seenBits, index);
+        seenMask = enableMask(seenMask, index);
 
         valueShape = _valueShapes[index];
       }
@@ -557,7 +555,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           continue;
         }
         if (isArray(result)) {
-          unshiftPath(result, key);
+          unshiftIssuesPath(result, key);
 
           if (!options.verbose) {
             return result;
@@ -567,9 +565,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = restShape === null ? cloneObjectKnownKeys(input, keys) : cloneObjectEnumerableKeys(input);
+            output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
-          setKeyValue(output, key, result.value);
+          setObjectProperty(output, key, result.value);
         }
         continue;
       }
@@ -591,7 +589,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       // Unknown keys are stripped
       if (input === output && (_isUnsafe || issues === null)) {
-        output = cloneObjectKnownKeys(input, keys);
+        output = cloneDictKeys(input, keys);
       }
     }
 
@@ -608,7 +606,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     // Parse absent known keys
     if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
-        if (isBitEnabledAt(seenBits, i)) {
+        if (isMaskEnabled(seenMask, i)) {
           continue;
         }
 
@@ -620,7 +618,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           continue;
         }
         if (isArray(result)) {
-          unshiftPath(result, key);
+          unshiftIssuesPath(result, key);
 
           if (!options.verbose) {
             return result;
@@ -630,9 +628,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         }
         if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
           if (input === output) {
-            output = cloneObjectEnumerableKeys(input);
+            output = cloneDict(input);
           }
-          setKeyValue(output, key, result.value);
+          setObjectProperty(output, key, result.value);
         }
       }
     }

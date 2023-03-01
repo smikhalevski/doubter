@@ -1,14 +1,7 @@
-import {
-  AnyShape,
-  ApplyResult,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  OptionalDeepPartialShape,
-  ValueType,
-} from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
-  callApply,
+  applyForResult,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -18,7 +11,7 @@ import {
   isObjectLike,
   ok,
   toDeepPartialShape,
-  unshiftPath,
+  unshiftIssuesPath,
 } from '../utils';
 import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
@@ -85,7 +78,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<Map<K['output'], V['output']>> {
+  protected _apply(input: any, options: ParseOptions): Result<Map<K['output'], V['output']>> {
     let changed = false;
     let entries;
 
@@ -114,7 +107,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
       if (keyResult !== null) {
         if (isArray(keyResult)) {
-          unshiftPath(keyResult, key);
+          unshiftIssuesPath(keyResult, key);
 
           if (!options.verbose) {
             return keyResult;
@@ -129,7 +122,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
-          unshiftPath(valueResult, key);
+          unshiftIssuesPath(valueResult, key);
 
           if (!options.verbose) {
             return valueResult;
@@ -158,7 +151,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Map<K['output'], V['output']>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Map<K['output'], V['output']>>> {
     return new Promise(resolve => {
       let changed = false;
       let entries: [unknown, unknown][];
@@ -185,10 +178,10 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
       let outputKey: unknown;
       let outputValue: unknown;
 
-      const applyKeyResult = (keyResult: ApplyResult) => {
+      const handleKeyResult = (keyResult: Result) => {
         if (keyResult !== null) {
           if (isArray(keyResult)) {
-            unshiftPath(keyResult, key);
+            unshiftIssuesPath(keyResult, key);
 
             if (!options.verbose) {
               return keyResult;
@@ -198,13 +191,13 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
             outputKey = keyResult.value;
           }
         }
-        return callApply(valueShape, value, options, applyValueResult);
+        return applyForResult(valueShape, value, options, handleValueResult);
       };
 
-      const applyValueResult = (valueResult: ApplyResult) => {
+      const handleValueResult = (valueResult: Result) => {
         if (valueResult !== null) {
           if (isArray(valueResult)) {
-            unshiftPath(valueResult, key);
+            unshiftIssuesPath(valueResult, key);
 
             if (!options.verbose) {
               return valueResult;
@@ -223,7 +216,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== entriesLength) {
@@ -231,7 +224,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
           key = outputKey = entry[0];
           value = outputValue = entry[1];
 
-          return callApply(keyShape, key, options, applyKeyResult);
+          return applyForResult(keyShape, key, options, handleKeyResult);
         }
 
         const output = changed ? new Map(entries) : input;
@@ -239,7 +232,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
           issues = _applyChecks(output, issues, options);
         }
-        if (issues === null && input !== output) {
+        if (changed && issues === null) {
           return ok(output);
         }
         return issues;
@@ -250,7 +243,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
   }
 
   /**
-   * Coerces value to a list of `Map` entries, or returns `null` if coercion isn't possible.
+   * Coerces value to a array of `Map` entries, or returns `null` if coercion isn't possible.
    *
    * @param value The non-`Map` value to coerce.
    */
