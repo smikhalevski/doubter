@@ -284,7 +284,7 @@ export function isBitEnabledAt(bits: Bits, index: number): boolean {
   }
 }
 
-export function setKeyValue(obj: Record<any, any>, key: PropertyKey, value: unknown): void {
+export function setObjectProperty(obj: Record<any, any>, key: PropertyKey, value: unknown): void {
   if (key === '__proto__') {
     Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
   } else {
@@ -307,7 +307,7 @@ export function cloneObjectEnumerableKeys(input: ReadonlyDict, keyCount = -1): R
 
   if (keyCount < 0) {
     for (const key in input) {
-      setKeyValue(output, key, input[key]);
+      setObjectProperty(output, key, input[key]);
     }
   }
   if (keyCount > 0) {
@@ -317,7 +317,7 @@ export function cloneObjectEnumerableKeys(input: ReadonlyDict, keyCount = -1): R
       if (index === keyCount) {
         break;
       }
-      setKeyValue(output, key, input[key]);
+      setObjectProperty(output, key, input[key]);
       ++index;
     }
   }
@@ -335,7 +335,7 @@ export function cloneObjectKnownKeys(input: ReadonlyDict, keys: readonly string[
     const key = keys[i];
 
     if (key in input) {
-      setKeyValue(output, key, input[key]);
+      setObjectProperty(output, key, input[key]);
     }
   }
   return output;

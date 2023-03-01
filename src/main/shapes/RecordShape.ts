@@ -10,7 +10,7 @@ import {
   isEqual,
   isObjectLike,
   ok,
-  setKeyValue,
+  setObjectProperty,
   toDeepPartialShape,
   unshiftPath,
 } from '../utils';
@@ -132,7 +132,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
         if (input === output) {
           output = cloneObjectEnumerableKeys(input, index);
         }
-        setKeyValue(output, outputKey, outputValue);
+        setObjectProperty(output, outputKey, outputValue);
       }
     }
 
@@ -200,7 +200,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
           if (input === output) {
             output = cloneObjectEnumerableKeys(input, index);
           }
-          setKeyValue(output, outputKey, outputValue);
+          setObjectProperty(output, outputKey, outputValue);
         }
 
         return next();

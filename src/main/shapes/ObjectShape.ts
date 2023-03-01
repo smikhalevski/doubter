@@ -19,7 +19,7 @@ import {
   isPlainObject,
   ok,
   ReadonlyDict,
-  setKeyValue,
+  setObjectProperty,
   toDeepPartialShape,
   unshiftPath,
 } from '../utils';
@@ -446,7 +446,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
             if (input === output) {
               output = cloneObjectEnumerableKeys(input);
             }
-            setKeyValue(output, key, result.value);
+            setObjectProperty(output, key, result.value);
           }
         }
         return next();
@@ -506,7 +506,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         if (input === output) {
           output = cloneObjectEnumerableKeys(input);
         }
-        setKeyValue(output, key, result.value);
+        setObjectProperty(output, key, result.value);
       }
     }
 
@@ -569,7 +569,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           if (input === output) {
             output = restShape === null ? cloneObjectKnownKeys(input, keys) : cloneObjectEnumerableKeys(input);
           }
-          setKeyValue(output, key, result.value);
+          setObjectProperty(output, key, result.value);
         }
         continue;
       }
@@ -632,7 +632,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           if (input === output) {
             output = cloneObjectEnumerableKeys(input);
           }
-          setKeyValue(output, key, result.value);
+          setObjectProperty(output, key, result.value);
         }
       }
     }
