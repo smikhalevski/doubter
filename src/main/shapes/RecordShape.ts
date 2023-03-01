@@ -18,9 +18,7 @@ import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
 
 // prettier-ignore
 export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends 'input' | 'output'> =
-  undefined extends V[C]
-    ? Partial<Record<K extends Shape ? K[C] : string, V[C]>>
-    : Record<K extends Shape ? K[C] : string, V[C]>;
+  Record<K extends Shape ? K[C] : string, V[C]>;
 
 /**
  * The shape that describes an object with string keys and values that conform the given shape.
