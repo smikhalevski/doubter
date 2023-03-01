@@ -608,18 +608,18 @@ describe('PipeShape', () => {
       const shape1 = asyncShape;
       const shape2 = new Shape();
 
-      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
 
       const pipeShape = new PipeShape(shape1, shape2);
 
       await expect(pipeShape.parseAsync('aaa')).resolves.toBe('aaa');
 
-      expect(applyAsyncSpy1).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(applySpy1).toHaveBeenCalledTimes(1);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
 
-      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(applySpy2).toHaveBeenCalledTimes(1);
+      expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
     });
 
     test('does not apply the output shape if the input shape parsing failed', async () => {

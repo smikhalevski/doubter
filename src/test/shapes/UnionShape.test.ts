@@ -212,18 +212,18 @@ describe('UnionShape', () => {
       const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
       const shape3 = new BooleanShape();
 
-      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-      const applyAsyncSpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applySpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
 
       const orShape = new UnionShape([shape1, shape2, shape3]);
 
       expect(orShape.isAsync).toBe(true);
 
       await expect(orShape.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applyAsyncSpy1).not.toHaveBeenCalled();
-      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy3).not.toHaveBeenCalled();
+      expect(applySpy1).not.toHaveBeenCalled();
+      expect(applySpy2).toHaveBeenCalledTimes(1);
+      expect(applySpy3).not.toHaveBeenCalled();
     });
 
     test('does not unwrap union shapes that have checks', async () => {
@@ -232,9 +232,9 @@ describe('UnionShape', () => {
       const shape3 = new BooleanShape();
       const orShape1 = new UnionShape([shape2, shape3]).refine(() => true);
 
-      const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-      const applyAsyncSpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applySpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
       const unionApplyAsyncSpy = jest.spyOn<Shape, any>(orShape1, '_applyAsync');
 
       const orShape2 = new UnionShape([shape1, orShape1]);
@@ -242,9 +242,9 @@ describe('UnionShape', () => {
       expect(orShape2.isAsync).toBe(true);
 
       await expect(orShape2.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applyAsyncSpy1).not.toHaveBeenCalled();
-      expect(applyAsyncSpy2).toHaveBeenCalledTimes(1);
-      expect(applyAsyncSpy3).not.toHaveBeenCalled();
+      expect(applySpy1).not.toHaveBeenCalled();
+      expect(applySpy2).toHaveBeenCalledTimes(1);
+      expect(applySpy3).not.toHaveBeenCalled();
       expect(unionApplyAsyncSpy).toHaveBeenCalledTimes(1);
     });
 
