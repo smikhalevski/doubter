@@ -1,3 +1,8 @@
+/**
+ * Carries the result of successful input parsing.
+ *
+ * @template T The output value.
+ */
 export interface Ok<T> {
   ok: true;
 
@@ -7,6 +12,9 @@ export interface Ok<T> {
   value: T;
 }
 
+/**
+ * Carries the result of failed input parsing.
+ */
 export interface Err {
   ok: false;
 

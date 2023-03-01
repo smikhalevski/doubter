@@ -39,6 +39,7 @@ npm install --save-prod doubter
 - [Introspection](#introspection)
 - [Localization](#localization)
 - [Integrations](#integrations)
+- [Advanced shapes](#advanced-shapes)
 
 [**Type coercion**](#type-coercion)
 
@@ -1540,6 +1541,91 @@ emailShape.getCheck(isEmail);
 ```
 
 Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).
+
+# Advanced shapes
+
+[`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) class has several protected methods that you can
+override to implement the shape logic:
+
+- [`_apply(input, options)`](https://smikhalevski.github.io/doubter/classes/Shape.html#_apply)<br>
+  Place the synchronous parsing logic inside this method. It receives an `input` that must be parsed and should return
+  `null` if the output is the same as input, [`Ok`](https://smikhalevski.github.io/doubter/interfaces/Ok.html) if the
+  output contains an updated value, or an array of
+  [`Issue`](https://smikhalevski.github.io/doubter/interfaces/Issue.html) objects.
+
+- [`_applyAsync(input, options)`](https://smikhalevski.github.io/doubter/classes/Shape.html#_applyAsync)<br>
+  Asynchronous parsing is handled by this method. It has the same semantics as `_apply` but returns a `Promise`. You
+  need to override this method only if you have a separate logic for async parsing.
+
+- [`_isAsync()`](https://smikhalevski.github.io/doubter/classes/Shape.html#_isAsync)<br>
+  Must return `true` if your shape supports async parsing only, otherwise you don't need to override this method.
+
+Let's create a custom shape that parses an input string as a number:
+
+```ts
+class NumberLikeShape extends d.Shape<string, number> {
+
+  protected _apply(input: unknown, options: d.ParseOptions): d.Result<number> {
+    
+    // 1️⃣ Validate the input
+    if (typeof input !== 'string' || isNaN(parseFloat(input))) {
+      return [{
+        code: 'kaputs',
+        message: 'Must be a numberish',
+        path: [],
+        input,
+        param: undefined,
+        meta: undefined
+      }];
+    }
+    
+    // 2️⃣ Return the output
+    return { ok: true, value: parseFloat(input) };
+  }
+}
+```
+
+Now let's use this shape alongside with other built-in shapes:
+
+```ts
+const shape = d.array(new NumberLikeShape());
+// ⮕ Shape<string[], number[]>
+
+shape.parse(['42', '33']);
+// ⮕ [42, 33]
+```
+
+## Overriding type coercion
+
+You can extend existing shapes and override type coercion that they use.
+
+```ts
+class YesNoBooleanShape extends d.BooleanShape {
+  
+  protected _coerce(value: unknown): boolean {
+    if (value === 'yes') {
+      return true;
+    }
+    if (value === 'no') {
+      return false;
+    }
+    // Coercion is not possible
+    return d.NEVER;
+  }
+}
+```
+
+This shape can be used alongside built-in shapes:
+
+```ts
+const yesNoShape = new YesNoBooleanShape().coerce();
+
+d.array(yesNoShape).parse(['yes', 'no'])
+// ⮕ [true, false]
+
+yesNoShape.parse('true')
+// ❌ ValidationError: type at /: Must be a boolean
+```
 
 # Type coercion
 

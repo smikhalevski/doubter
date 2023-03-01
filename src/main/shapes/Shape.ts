@@ -42,7 +42,8 @@ import {
 } from '../constants';
 
 /**
- * The marker object that is used to denote an impossible value.
+ * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from `_coerce`
+ * method, that is present on various shapes, when coercion is not possible.
  */
 export const NEVER = Object.freeze({}) as never;
 
