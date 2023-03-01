@@ -38,25 +38,9 @@ export function isFunction(value: unknown): value is Function {
   return typeof value === 'function';
 }
 
-const objectCtorString = Object.prototype.constructor.toString();
-
 export function isPlainObject(value: any): boolean {
   let proto;
-  let ctor;
-
-  if (!isObjectLike(value)) {
-    return false;
-  }
-  if ((proto = Object.getPrototypeOf(value)) === null) {
-    return true;
-  }
-  if (!Object.hasOwnProperty.call(proto, 'constructor')) {
-    return false;
-  }
-  if ((ctor = proto.constructor) === Object) {
-    return true;
-  }
-  return isFunction(ctor) && Function.toString.call(ctor) === objectCtorString;
+  return isObjectLike(value) && ((proto = Object.getPrototypeOf(value)) === null || proto.constructor === Object);
 }
 
 export function isIterableObject(value: any): value is Iterable<any> {
@@ -96,6 +80,16 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
     }
   }
   return uniqueArr || arr;
+}
+
+/**
+ * Returns primitive if an object is a wrapper, or returns value as is.
+ */
+export function toPrimitive(value: unknown): unknown {
+  if (isObjectLike(value) && (value instanceof String || value instanceof Number || value instanceof Boolean)) {
+    return value.valueOf();
+  }
+  return value;
 }
 
 /**

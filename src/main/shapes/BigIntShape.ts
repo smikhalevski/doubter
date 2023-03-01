@@ -1,6 +1,6 @@
 import { NEVER, Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok } from '../utils';
+import { createIssueFactory, isArray, ok, toPrimitive } from '../utils';
 import {
   CODE_TYPE,
   MESSAGE_BIGINT_TYPE,
@@ -70,6 +70,9 @@ export class BigIntShape extends CoercibleShape<bigint> {
     if (value === null || value === undefined) {
       return BigInt(0);
     }
+
+    value = toPrimitive(value);
+
     if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
       try {
         return BigInt(value);

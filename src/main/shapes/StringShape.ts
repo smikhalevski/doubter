@@ -1,6 +1,6 @@
 import { NEVER, Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { addConstraint, createIssueFactory, isArray, isValidDate, ok } from '../utils';
+import { addConstraint, createIssueFactory, isArray, isValidDate, ok, toPrimitive } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -139,6 +139,12 @@ export class StringShape extends CoercibleShape<string> {
     }
     if (value === null || value === undefined) {
       return '';
+    }
+
+    value = toPrimitive(value);
+
+    if (typeof value === 'string') {
+      return value;
     }
     if (Number.isFinite(value) || typeof value === 'boolean' || typeof value === 'bigint') {
       return '' + value;

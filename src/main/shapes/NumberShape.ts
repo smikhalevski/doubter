@@ -1,6 +1,17 @@
 import { NEVER, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { abs, addConstraint, cloneInstance, createIssueFactory, floor, isArray, isNumber, max, ok } from '../utils';
+import {
+  abs,
+  addConstraint,
+  cloneInstance,
+  createIssueFactory,
+  floor,
+  isArray,
+  isNumber,
+  max,
+  ok,
+  toPrimitive,
+} from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -257,14 +268,17 @@ export class NumberShape extends CoercibleShape<number> {
    * @param value The non-number value to coerce.
    */
   protected _coerce(value: any): number {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number' && value === value) {
-      return value;
+    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number') {
+      return this._typePredicate(value) ? value : NEVER;
     }
     if (value === null || value === undefined) {
       return 0;
     }
+
+    value = toPrimitive(value);
+
     if (
-      (typeof value === 'string' || typeof value === 'boolean' || value instanceof Date) &&
+      (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || value instanceof Date) &&
       this._typePredicate((value = +value))
     ) {
       return value;

@@ -194,19 +194,15 @@ describe(
       });
 
       test('zod', measure => {
-        const type = zod
-          .object({
-            a1: zod.array(zod.number().int()),
-            a2: zod.string().min(3),
-            a3: zod.boolean(),
-            a4: zod
-              .object({
-                a41: zod.enum(['foo', 'bar']),
-                a42: zod.number(),
-              })
-              .passthrough(),
-          })
-          .passthrough();
+        const type = zod.object({
+          a1: zod.array(zod.number().int()),
+          a2: zod.string().min(3),
+          a3: zod.boolean(),
+          a4: zod.object({
+            a41: zod.enum(['foo', 'bar']),
+            a42: zod.number(),
+          }),
+        });
 
         measure(() => {
           type.parse(value);
@@ -272,52 +268,54 @@ describe(
 describe(
   'string()',
   () => {
-    const value = 'aaa';
+    describe('"aaa"', () => {
+      const value = 'aaa';
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'string',
+      test('Ajv', measure => {
+        const validate = new Ajv().compile({
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'string',
+        });
+
+        measure(() => {
+          validate(value);
+        });
       });
 
-      measure(() => {
-        validate(value);
+      test('zod', measure => {
+        const type = zod.string();
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = myzod.string();
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('valita', measure => {
+        const type = valita.string();
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = doubter.string();
+
+        measure(() => {
+          shape.parse(value);
+        });
       });
     });
 
-    test('zod', measure => {
-      const type = zod.string();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = myzod.string();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('valita', measure => {
-      const type = valita.string();
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('doubter', measure => {
-      const shape = doubter.string();
-
-      measure(() => {
-        shape.parse(value);
-      });
-    });
-
-    describe('invalid input', () => {
+    describe('111', () => {
       const value = 111;
 
       test('Ajv', measure => {
@@ -343,9 +341,7 @@ describe(
         const type = myzod.string();
 
         measure(() => {
-          try {
-            type.parse(value);
-          } catch {}
+          type.try(value);
         });
       });
 
@@ -372,54 +368,56 @@ describe(
 describe(
   'string().length(3)',
   () => {
-    const value = 'aaa';
+    describe('"aaa"', () => {
+      const value = 'aaa';
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'string',
-        minLength: 3,
-        maxLength: 3,
+      test('Ajv', measure => {
+        const validate = new Ajv().compile({
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'string',
+          minLength: 3,
+          maxLength: 3,
+        });
+
+        measure(() => {
+          validate(value);
+        });
       });
 
-      measure(() => {
-        validate(value);
+      test('zod', measure => {
+        const type = zod.string().length(3);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('myzod', measure => {
+        const type = myzod.string().min(3).max(3);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('valita', measure => {
+        const type = valita.string().assert(v => v.length === 3);
+
+        measure(() => {
+          type.parse(value);
+        });
+      });
+
+      test('doubter', measure => {
+        const shape = doubter.string().length(3);
+
+        measure(() => {
+          shape.parse(value);
+        });
       });
     });
 
-    test('zod', measure => {
-      const type = zod.string().length(3);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = myzod.string().min(3).max(3);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('valita', measure => {
-      const type = valita.string().assert(v => v.length === 3);
-
-      measure(() => {
-        type.parse(value);
-      });
-    });
-
-    test('doubter', measure => {
-      const shape = doubter.string().length(3);
-
-      measure(() => {
-        shape.parse(value);
-      });
-    });
-
-    describe('invalid input', () => {
+    describe('"aaaa"', () => {
       const value = 'aaaa';
 
       test('Ajv', measure => {
@@ -447,9 +445,7 @@ describe(
         const type = myzod.string().min(3).max(3);
 
         measure(() => {
-          try {
-            type.parse(value);
-          } catch {}
+          type.try(value);
         });
       });
 
@@ -494,9 +490,62 @@ describe(
       });
     };
 
-    createTests('aaa');
+    describe('"aaa"', () => createTests('aaa'));
 
-    describe('invalid input', () => createTests(111));
+    describe('111', () => createTests(111));
+
+    describe('new String("aaa")', () => createTests(new String('aaa')));
+  },
+  perfOptions
+);
+
+describe(
+  'set(number())',
+  () => {
+    const value = new Set([111]);
+
+    test('zod', measure => {
+      const type = zod.set(zod.number());
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = doubter.set(doubter.number());
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  },
+  perfOptions
+);
+
+describe(
+  'instanceof vs tag',
+  () => {
+    test('instanceof', measure => {
+      const value = new Set();
+
+      measure(() => {
+        if (!(value instanceof Set)) {
+          throw new Error();
+        }
+      });
+    });
+
+    test('tag', measure => {
+      const toString = Object.prototype.toString;
+      const value = new Set();
+
+      measure(() => {
+        if (toString.call(value) !== '[object Set]') {
+          throw new Error();
+        }
+      });
+    });
   },
   perfOptions
 );
@@ -793,9 +842,9 @@ describe(
       });
     };
 
-    createTests('aaa');
+    describe('"aaa"', () => createTests('aaa'));
 
-    describe('invalid input', () => createTests(111));
+    describe('111', () => createTests(111));
   },
   perfOptions
 );

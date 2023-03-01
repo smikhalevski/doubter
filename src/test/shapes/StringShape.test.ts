@@ -161,6 +161,11 @@ describe('StringShape', () => {
   });
 
   describe('coercion', () => {
+    test('coerces a String wrapper', () => {
+      expect(new StringShape()['_coerce'](new String('aaa'))).toBe('aaa');
+      expect(new StringShape()['_coerce']([new String('aaa')])).toBe('aaa');
+    });
+
     test('coerces a number', () => {
       expect(new StringShape()['_coerce'](111)).toBe('111');
       expect(new StringShape()['_coerce'](111.222)).toBe('111.222');
