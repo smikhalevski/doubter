@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, defaultParseOptions, Shape, ValueType } from './Shape';
+import { AnyShape, defaultParseOptions, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { callApply, cloneObject, copyChecks, createIssueFactory, isArray, ok, unshiftPath } from '../utils';
 import { CODE_TYPE, ERROR_ASYNC_DELEGATOR, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
@@ -185,7 +185,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     return [TYPE_FUNCTION];
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<InferDelegator<A, R, T>> {
+  protected _apply(input: any, options: ParseOptions): Result<InferDelegator<A, R, T>> {
     const { _applyChecks } = this;
 
     let issues = null;
@@ -206,7 +206,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 }
 
-function getOrDie<T>(result: ApplyResult<T>, part: 'this' | 'arguments' | 'return', input: any): T {
+function getOrDie<T>(result: Result<T>, part: 'this' | 'arguments' | 'return', input: any): T {
   if (result === null) {
     return input;
   }

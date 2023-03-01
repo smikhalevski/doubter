@@ -2,9 +2,9 @@ import { Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptio
 import {
   AnyShape,
   ApplyChecksCallback,
-  ApplyResult,
   DeepPartialProtocol,
   DeepPartialShape,
+  Result,
   Shape,
   ValueType,
 } from './shapes/Shape';
@@ -68,6 +68,10 @@ export function isPlainObject(value: unknown): boolean {
 
 export function isIterableObject(value: any): value is Iterable<any> {
   return isObjectLike(value) && (Symbol.iterator in value || !isNaN(value.length));
+}
+
+export function isConstructorOf(ctor: Function, superCtor: Function): boolean {
+  return ctor === superCtor || superCtor.prototype.isPrototypeOf(ctor.prototype);
 }
 
 export function isNumber(value: unknown): boolean {
@@ -147,7 +151,7 @@ export function callApply<T>(
   shape: AnyShape,
   input: unknown,
   options: ParseOptions,
-  cb: (result: ApplyResult) => T
+  cb: (result: Result) => T
 ): T | Promise<Awaited<T>> {
   if (shape.isAsync) {
     return shape['_applyAsync'](input, options).then(cb) as Promise<Awaited<T>>;

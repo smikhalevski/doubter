@@ -26,10 +26,10 @@ import {
 import {
   AllowLiteralShape,
   AnyShape,
-  ApplyResult,
   DeepPartialProtocol,
   DenyLiteralShape,
   OptionalDeepPartialShape,
+  Result,
   Shape,
   ValueType,
 } from './Shape';
@@ -126,6 +126,13 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     this._options = options;
     this._valueShapes = Object.values(shapes);
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
+  }
+
+  /**
+   * `true` if the object must have `Object` constructor or `null` prototype; `false` otherwise.
+   */
+  get isPlain(): boolean {
+    return this._typePredicate === isPlainObject;
   }
 
   at(key: any): AnyShape | null {
@@ -323,13 +330,6 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return shape;
   }
 
-  /**
-   * `true` if the object must have `Object` constructor or `null` prototype; `false` otherwise.
-   */
-  get isPlain(): boolean {
-    return this._typePredicate === isPlainObject;
-  }
-
   protected _isAsync(): boolean {
     return this.restShape?.isAsync || this._valueShapes.some(isAsyncShape);
   }
@@ -338,7 +338,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<InferObject<P, R, 'output'>> {
+  protected _apply(input: any, options: ParseOptions): Result<InferObject<P, R, 'output'>> {
     if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -349,7 +349,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferObject<P, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
         resolve(this._typeIssueFactory(input, options));
@@ -433,7 +433,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let index = -1;
       let key: string;
 
-      const applyValueResult = (result: ApplyResult) => {
+      const handleValueResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
             unshiftPath(result, key);
@@ -452,13 +452,13 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== entriesLength) {
           const entry = entries[index];
           key = entry[0];
-          return callApply(entry[2], entry[1], options, applyValueResult);
+          return callApply(entry[2], entry[1], options, handleValueResult);
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
@@ -477,7 +477,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Unknown keys are preserved as is and aren't checked.
    */
-  private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions): ApplyResult {
+  private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions): Result {
     const { keys, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
@@ -522,7 +522,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
-  private _applyRestChecked(input: ReadonlyDict, options: ParseOptions): ApplyResult {
+  private _applyRestChecked(input: ReadonlyDict, options: ParseOptions): Result {
     const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;

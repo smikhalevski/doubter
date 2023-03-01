@@ -1,4 +1,4 @@
-import { ApplyResult, Shape, ValueType } from './Shape';
+import { Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { addConstraint, cloneObject, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import {
@@ -44,6 +44,20 @@ export class NumberShape extends CoercibleShape<number> {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
+  }
+
+  /**
+   * `true` if the shape constrains a finite number, or `false` otherwise.
+   */
+  get isFinite(): boolean {
+    return this._typePredicate === Number.isFinite || this.isInteger;
+  }
+
+  /**
+   * `true` if the shape constrains an integer number, or `false` otherwise.
+   */
+  get isInteger(): boolean {
+    return this._typePredicate === Number.isInteger;
   }
 
   /**
@@ -202,20 +216,6 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * `true` if the shape constrains a finite number, or `false` otherwise.
-   */
-  get isFinite(): boolean {
-    return this._typePredicate === Number.isFinite || this.isInteger;
-  }
-
-  /**
-   * `true` if the shape constrains an integer number, or `false` otherwise.
-   */
-  get isInteger(): boolean {
-    return this._typePredicate === Number.isInteger;
-  }
-
-  /**
    * Allows `NaN` as an input and output value, or replaces an input `NaN` value with a default output value.
    *
    * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
@@ -232,7 +232,7 @@ export class NumberShape extends CoercibleShape<number> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<number> {
+  protected _apply(input: any, options: ParseOptions): Result<number> {
     const { _applyChecks } = this;
 
     let output = input;

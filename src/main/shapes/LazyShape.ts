@@ -1,10 +1,10 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 import { ParseOptions } from '../shared-types';
 import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 
 /**
- * Lazily resolves a shape using the provider.
+ * Lazily resolves a shape using the provider callback.
  *
  * @template S The resolved shape.
  */
@@ -17,7 +17,7 @@ export class LazyShape<S extends AnyShape>
   /**
    * Creates a new {@linkcode LazyShape} instance.
    *
-   * @param shapeProvider The provider that returns the resolved shape.
+   * @param shapeProvider The provider callback that returns the shape.
    * @template S The resolved shape.
    */
   constructor(shapeProvider: () => S) {
@@ -27,7 +27,7 @@ export class LazyShape<S extends AnyShape>
   }
 
   /**
-   * The resolved shape.
+   * The lazy-loaded shape.
    */
   get shape(): S {
     const shape = this._shapeProvider();
@@ -83,15 +83,15 @@ export class LazyShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<S['output']> {
-    return this._applyResult(this.shape['_apply'](input, options), input, options);
+  protected _apply(input: unknown, options: ParseOptions): Result<S['output']> {
+    return this._handleResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<S['output']>> {
-    return this.shape['_applyAsync'](input, options).then(result => this._applyResult(result, input, options));
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<S['output']>> {
+    return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
   }
 
-  private _applyResult(result: ApplyResult, input: unknown, options: ParseOptions): ApplyResult<S['output']> {
+  private _handleResult(result: Result, input: unknown, options: ParseOptions): Result<S['output']> {
     const { _applyChecks } = this;
 
     let output = input;

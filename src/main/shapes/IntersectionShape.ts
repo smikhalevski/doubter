@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 import {
   callApply,
   concatIssues,
@@ -80,7 +80,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<ToIntersection<U[number]>['output']> {
+  protected _apply(input: any, options: ParseOptions): Result<ToIntersection<U[number]>['output']> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -118,7 +118,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<ToIntersection<U[number]>['output']>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<ToIntersection<U[number]>['output']>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -127,7 +127,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       let issues: Issue[] | null = null;
       let index = -1;
 
-      const applyResult = (result: ApplyResult) => {
+      const handleResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
             if (!options.verbose) {
@@ -147,11 +147,11 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== shapesLength) {
-          return callApply(shapes[index], input, options, applyResult);
+          return callApply(shapes[index], input, options, handleResult);
         }
         if (issues === null) {
           return this._applyIntersection(input, outputs, options);
@@ -170,7 +170,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     input: any,
     outputs: any[] | null,
     options: ParseOptions
-  ): ApplyResult<ToIntersection<U[number]>['output']> {
+  ): Result<ToIntersection<U[number]>['output']> {
     const { shapes, _applyChecks } = this;
 
     let result = null;

@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, DeepPartialShape, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   callApply,
@@ -112,7 +112,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return inputValues;
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<U[number]['output']> {
+  protected _apply(input: unknown, options: ParseOptions): Result<U[number]['output']> {
     const { _applyChecks } = this;
 
     let result = null;
@@ -134,7 +134,11 @@ export class UnionShape<U extends readonly AnyShape[]>
         output = result.value;
         break;
       }
-      (issueGroups ||= []).push(result);
+      if (issueGroups !== null) {
+        issueGroups.push(result);
+      } else {
+        issueGroups = [result];
+      }
       issues = result;
       index++;
     }
@@ -152,7 +156,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<ApplyResult<U[number]['output']>> {
+  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<U[number]['output']>> {
     return new Promise(resolve => {
       const { _applyChecks } = this;
 
@@ -164,13 +168,18 @@ export class UnionShape<U extends readonly AnyShape[]>
 
       let index = -1;
 
-      const applyResult = (result: ApplyResult) => {
+      const handleResult = (result: Result) => {
         let output = input;
 
         if (result !== null) {
           if (isArray(result)) {
-            (issueGroups ||= []).push(result);
+            if (issueGroups !== null) {
+              issueGroups.push(result);
+            } else {
+              issueGroups = [result];
+            }
             issues = result;
+
             return next();
           } else {
             output = result.value;
@@ -183,11 +192,11 @@ export class UnionShape<U extends readonly AnyShape[]>
         return issues;
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== shapesLength) {
-          return callApply(shapes[index], input, options, applyResult);
+          return callApply(shapes[index], input, options, handleResult);
         }
         if (shapesLength === 1) {
           return issues;

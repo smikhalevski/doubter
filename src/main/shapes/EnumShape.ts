@@ -1,4 +1,4 @@
-import { ApplyResult, ValueType } from './Shape';
+import { Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, getValueType, isArray, NEVER, ok, ReadonlyDict, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
@@ -74,7 +74,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     return this.values.slice(0);
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<T> {
+  protected _apply(input: any, options: ParseOptions): Result<T> {
     const { _applyChecks } = this;
 
     let output = input;

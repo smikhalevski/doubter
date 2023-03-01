@@ -585,7 +585,7 @@ describe('PipeShape', () => {
       const shape2 = new Shape();
 
       const applyAsyncSpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const applyAsyncSpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
 
       const pipeShape = new PipeShape(shape1, shape2);
 

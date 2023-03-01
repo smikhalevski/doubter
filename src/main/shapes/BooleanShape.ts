@@ -1,4 +1,4 @@
-import { ApplyResult, ValueType } from './Shape';
+import { Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
 import { createIssueFactory, isArray, ok } from '../utils';
 import {
@@ -38,7 +38,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<boolean> {
+  protected _apply(input: any, options: ParseOptions): Result<boolean> {
     const { _applyChecks } = this;
 
     let output = input;

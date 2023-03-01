@@ -1,4 +1,4 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   callApply,
@@ -79,7 +79,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ParseOptions): ApplyResult<InferRecord<K, V, 'output'>> {
+  protected _apply(input: any, options: ParseOptions): Result<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -91,12 +91,12 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     let index = -1;
 
     for (const key in input) {
-      index++;
-
       const value = input[key];
 
       let outputKey: PropertyKey = key;
       let outputValue = value;
+
+      index++;
 
       if (keyShape !== null) {
         const keyResult = keyShape['_apply'](key, options);
@@ -147,7 +147,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<InferRecord<K, V, 'output'>>> {
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferRecord<K, V, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         resolve(this._typeIssueFactory(input, options));
@@ -168,7 +168,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       let outputKey: string;
       let outputValue: unknown;
 
-      const applyKeyResult = (keyResult: ApplyResult) => {
+      const handleKeyResult = (keyResult: Result) => {
         if (keyResult !== null) {
           if (isArray(keyResult)) {
             unshiftPath(keyResult, key);
@@ -181,10 +181,10 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
             outputKey = keyResult.value;
           }
         }
-        return callApply(valueShape, value, options, applyValueResult);
+        return callApply(valueShape, value, options, handleValueResult);
       };
 
-      const applyValueResult = (valueResult: ApplyResult) => {
+      const handleValueResult = (valueResult: Result) => {
         if (valueResult !== null) {
           if (isArray(valueResult)) {
             unshiftPath(valueResult, key);
@@ -208,7 +208,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
         return next();
       };
 
-      const next = (): ApplyResult | Promise<ApplyResult> => {
+      const next = (): Result | Promise<Result> => {
         index++;
 
         if (index !== keysLength) {
@@ -216,9 +216,9 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
           value = outputValue = input[key];
 
           if (keyShape !== null) {
-            return callApply(keyShape, key, options, applyKeyResult);
+            return callApply(keyShape, key, options, handleKeyResult);
           } else {
-            return valueShape['_applyAsync'](value, options).then(applyValueResult);
+            return valueShape['_applyAsync'](value, options).then(handleValueResult);
           }
         }
 

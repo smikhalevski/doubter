@@ -16,6 +16,11 @@ describe('InstanceShape', () => {
     expect(new InstanceShape(class extends Array {}).inputTypes).toEqual(['array']);
   });
 
+  test('uses date input type for an Date and its subclasses', () => {
+    expect(new InstanceShape(Date).inputTypes).toEqual(['date']);
+    expect(new InstanceShape(class extends Date {}).inputTypes).toEqual(['date']);
+  });
+
   test('parses an instance of a class', () => {
     const value = new Foo();
 

@@ -1,6 +1,6 @@
-import { AnyShape, ApplyResult, DeepPartialProtocol, OptionalDeepPartialShape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { copyUnsafeChecks, createIssueFactory, isArray, isEqual, ok, toDeepPartialShape } from '../utils';
+import { callApply, copyUnsafeChecks, createIssueFactory, isArray, isEqual, ok, toDeepPartialShape } from '../utils';
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -42,12 +42,12 @@ export class PromiseShape<S extends AnyShape>
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): ApplyResult<Promise<S['output']>> {
+  protected _apply(input: unknown, options: ParseOptions): Result<Promise<S['output']>> {
     throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<ApplyResult<Promise<S['output']>>> {
-    let output: Promise<unknown> = input;
+  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Promise<S['output']>>> {
+    let output = input;
 
     if (!(input instanceof Promise)) {
       if (!(options.coerced || this.isCoerced)) {
@@ -58,15 +58,8 @@ export class PromiseShape<S extends AnyShape>
 
     const { _applyChecks } = this;
 
-    let inputValue: unknown;
-    let outputValue: unknown;
-
-    return output
-      .then(value => {
-        inputValue = outputValue = value;
-        return this.shape['_applyAsync'](value, options);
-      })
-      .then(result => {
+    return output.then((value: unknown) =>
+      callApply(this.shape, value, options, result => {
         let issues = null;
 
         if (result !== null) {
@@ -75,12 +68,8 @@ export class PromiseShape<S extends AnyShape>
               return result;
             }
             issues = result;
-          } else {
-            outputValue = result.value;
-
-            if (!isEqual(inputValue, outputValue)) {
-              output = Promise.resolve(outputValue);
-            }
+          } else if (!isEqual(value, result.value)) {
+            output = Promise.resolve(result.value);
           }
         }
 
@@ -88,6 +77,7 @@ export class PromiseShape<S extends AnyShape>
           return ok(output);
         }
         return issues;
-      });
+      })
+    );
   }
 }
