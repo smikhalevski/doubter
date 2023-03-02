@@ -1996,7 +1996,13 @@ d.object({
 });
 ```
 
-Clone this repo and use `npm ci && npm run perf` to run the performance testsuite.
+To reproduce these performance results on your machine use:
+
+```shell
+npm ci
+npm run build
+npm run perf -- overall
+```
 
 # Data types
 
