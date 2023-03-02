@@ -2001,7 +2001,7 @@ To reproduce these performance results on your machine use:
 ```shell
 npm ci
 npm run build
-npm run perf -- overall
+npm run perf -- -t overall
 ```
 
 # Data types
