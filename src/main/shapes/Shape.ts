@@ -45,7 +45,7 @@ import {
  * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from `_coerce`
  * method, that is present on various shapes, when coercion is not possible.
  */
-export const NEVER = Object.freeze({}) as never;
+export const NEVER = Object.freeze({ never: true }) as never;
 
 export const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
 

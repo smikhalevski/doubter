@@ -57,6 +57,16 @@ describe('BooleanShape', () => {
   });
 
   describe('coercion', () => {
+    test('coerces a Boolean wrapper', () => {
+      expect(new BooleanShape()['_coerce'](new Boolean(true))).toBe(true);
+      expect(new BooleanShape()['_coerce']([new Boolean(false)])).toBe(false);
+    });
+
+    test('coerces a String wrapper', () => {
+      expect(new BooleanShape()['_coerce'](new String('true'))).toBe(true);
+      expect(new BooleanShape()['_coerce']([new String('false')])).toBe(false);
+    });
+
     test('coerces a string', () => {
       expect(new BooleanShape()['_coerce']('true')).toBe(true);
 

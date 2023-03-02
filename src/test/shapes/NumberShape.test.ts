@@ -229,6 +229,16 @@ describe('NumberShape', () => {
   });
 
   describe('coercion', () => {
+    test('coerces a Number wrapper', () => {
+      expect(new NumberShape()['_coerce'](new Number(111))).toBe(111);
+      expect(new NumberShape()['_coerce']([new Number(111)])).toBe(111);
+    });
+
+    test('coerces a String wrapper', () => {
+      expect(new NumberShape()['_coerce'](new String('111'))).toBe(111);
+      expect(new NumberShape()['_coerce']([new String('111')])).toBe(111);
+    });
+
     test('coerces a string', () => {
       expect(new NumberShape()['_coerce']('111')).toBe(111);
       expect(new NumberShape()['_coerce']('111.222')).toBe(111.222);
@@ -236,10 +246,19 @@ describe('NumberShape', () => {
       expect(new NumberShape()['_coerce']('aaa')).toBe(NEVER);
     });
 
-    test('does not coerce NaN and Infinity', () => {
+    test('does not coerce NaN', () => {
       expect(new NumberShape()['_coerce'](NaN)).toBe(NEVER);
-      expect(new NumberShape()['_coerce'](Infinity)).toBe(NEVER);
-      expect(new NumberShape()['_coerce'](-Infinity)).toBe(NEVER);
+      expect(new NumberShape().finite()['_coerce'](NaN)).toBe(NEVER);
+      expect(new NumberShape().integer()['_coerce'](NaN)).toBe(NEVER);
+    });
+
+    test('coerce Infinity only in an unconstrained number mode', () => {
+      expect(new NumberShape()['_coerce'](Infinity)).toBe(Infinity);
+      expect(new NumberShape()['_coerce']([-Infinity])).toBe(-Infinity);
+      expect(new NumberShape().finite()['_coerce'](Infinity)).toBe(NEVER);
+      expect(new NumberShape().finite()['_coerce']([-Infinity])).toBe(NEVER);
+      expect(new NumberShape().integer()['_coerce'](Infinity)).toBe(NEVER);
+      expect(new NumberShape().integer()['_coerce']([-Infinity])).toBe(NEVER);
     });
 
     test('coerces a boolean', () => {
