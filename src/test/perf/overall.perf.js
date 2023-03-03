@@ -4,7 +4,7 @@ const myzod = require('myzod');
 const valita = require('@badrap/valita');
 const doubter = require('../../../lib');
 
-describe('overall', () => {
+describe('Overall', () => {
   const value = {
     a1: [1, 2, 3],
     a2: 'foo',
@@ -15,7 +15,7 @@ describe('overall', () => {
     },
   };
 
-  describe('loose object assertion', () => {
+  describe('Loose validation', () => {
     test('Ajv', measure => {
       const ajv = new Ajv();
 
@@ -135,7 +135,7 @@ describe('overall', () => {
     });
   });
 
-  describe('strict object assertion', () => {
+  describe('Strict validation', () => {
     test('Ajv', measure => {
       const ajv = new Ajv();
 
@@ -266,7 +266,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
     },
   };
 
-  describe('loose object assertion', () => {
+  describe('Loose validation', () => {
     test('Ajv', measure => {
       const ajv = new Ajv();
 
@@ -411,7 +411,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
     });
   });
 
-  describe('strict object assertion', () => {
+  describe('Strict validation', () => {
     test('Ajv', measure => {
       const ajv = new Ajv();
 
