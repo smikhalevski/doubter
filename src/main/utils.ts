@@ -86,13 +86,15 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
  * Removes an element at index from a array. Mutates the array!
  *
  * @param arr The array to modify.
- * @param index The index in the array, unchecked.
+ * @param index The index in the array.
  */
 export function deleteAt<T>(arr: T[], index: number): T[] {
-  for (let i = index + 1; i < arr.length; ++i) {
-    arr[i - 1] = arr[i];
+  if (index >= 0) {
+    for (let i = index + 1; i < arr.length; ++i) {
+      arr[i - 1] = arr[i];
+    }
+    arr.pop();
   }
-  arr.pop();
   return arr;
 }
 

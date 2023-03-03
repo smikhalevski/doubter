@@ -398,7 +398,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `instance` | [`d.instanceOf(Class)`](#instanceof) | The class constructor `Class` |
 | `intersection` | [`d.and(…)`](#intersection-and) | — |
 | `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
-| `predicate` | [`shape.refine(…)`](#refinements) | The predicate callback  |
+| `predicate` | [`shape.refine(…)`](#refinements) | The predicate callback |
 | `numberInteger` | [`d.integer()`](#integer-int) | — |
 | `numberFinite` | [`d.finite()`](#finite) | — |
 | `numberGreaterThan` | [`d.number().gt(x)`](#number) | The exclusive minimum value `x` |
@@ -1459,6 +1459,66 @@ shape3.inputType;
 // ⮕ ['never']
 ```
 
+## Check that an input type is accepted
+
+To check that the shape accepts a particular input type use
+[`isAcceptedType`](https://smikhalevski.github.io/doubter/classes/Shape.html#isAcceptedType):
+
+```ts
+const stringShape = d.string();
+
+stringShape.isAcceptedType('string');
+// ⮕ true
+
+stringShape.isAcceptedType('number');
+// ⮕ false
+```
+
+You can check that the shape is [optional](#optional-and-non-optional) by checking that it accepts `undefined` input
+value type:
+
+```ts
+const optionalShape = d.number().optional();
+
+optionalShape.isAcceptedType('number');
+// ⮕ true
+
+optionalShape.isAcceptedType('undefined');
+// ⮕ true
+
+optionalShape.isAcceptedType('null');
+// ⮕ false
+```
+
+The fact that a shape accepts a particular input type, does not guarantee that it wouldn't raise an issue when a value
+of this type is parsed. For example, consider the [pipe](#shape-piping) from [`d.any`](#any) to [`d.string`](#string):
+
+```ts
+const anyShape = d.any().to(d.string());
+// ⮕ Shape<any, string>
+```
+
+This shape accepts [`any`](#any-value-type) input value type:
+
+```ts
+anyShape.inputTypes;
+// ⮕ ['any']
+```
+
+Since anything can be assigned to `any`, an `undefined` type is accepted:
+
+```ts
+anyShape.isAcceptedType('undefined');
+// ⮕ true
+```
+
+But parsing `undefined` with `anyShape` would produce an error:
+
+```ts
+anyShape.parse('undefined');
+// ❌ ValidationError: type at /: Must be a string
+```
+
 ## Nested shapes
 
 Object, array, union ond other shapes provide access to their nested shapes:
@@ -1652,7 +1712,7 @@ Let's create a custom shape that parses an input string as a number:
 class NumberLikeShape extends d.Shape<string, number> {
 
   protected _apply(input: unknown, options: d.ParseOptions): d.Result<number> {
-    
+
     // 1️⃣ Validate the input
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {
       return [{
@@ -1664,7 +1724,7 @@ class NumberLikeShape extends d.Shape<string, number> {
         meta: undefined
       }];
     }
-    
+
     // 2️⃣ Return the output
     return { ok: true, value: parseFloat(input) };
   }
@@ -1687,7 +1747,7 @@ You can extend existing shapes and override type coercion that they use.
 
 ```ts
 class YesNoShape extends d.BooleanShape {
-  
+
   protected _coerce(value: unknown): boolean {
     if (value === 'yes') {
       return true;

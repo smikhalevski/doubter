@@ -215,6 +215,17 @@ export class Shape<I = any, O = I> {
   }
 
   /**
+   * Returns `true` if the shape accepts the given input type, or `false` otherwise.
+   *
+   * @param type The type that must be checked.
+   */
+  isAcceptedType(type: ValueType): boolean {
+    const types = this.inputTypes;
+
+    return types[0] === TYPE_ANY || (types[0] !== TYPE_NEVER && type === TYPE_ANY) || types.includes(type);
+  }
+
+  /**
    * Adds a human-readable description text to the shape.
    *
    * @param text The description text.
@@ -752,7 +763,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      let types = unique(this._getInputTypes()).slice(0);
+      let types = unique(this._getInputTypes());
 
       if (types.length === 0 || types.includes(TYPE_ANY)) {
         types = [TYPE_ANY];
@@ -761,7 +772,7 @@ Object.defineProperties(Shape.prototype, {
         const neverIndex = types.indexOf(TYPE_NEVER);
 
         if (neverIndex !== -1) {
-          types.splice(neverIndex, 1);
+          (types = types.slice(0)).splice(neverIndex, 1);
         }
       }
 
