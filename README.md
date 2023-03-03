@@ -105,8 +105,8 @@ npm install --save-prod doubter
   [`never`](#never)
 
 - Other<br>
-  [`transform`](#transform)
-  [`transformAsync`](#transform)
+  [`transform`](#transform-transformasync)
+  [`transformAsync`](#transform-transformasync)
   [`lazy`](#lazy)
   [`json`](#json)
 
@@ -1359,7 +1359,7 @@ Types returned from `Shape.typeOf` are a superset of types returned from the `ty
 ## `any` value type
 
 `any` type emerges when type cannot be inferred at runtime. This happens when [`d.any`](#any), [`d.unknown`](#unknown),
-or [`d.transform`](#transform) is used:
+or [`d.transform`](#transform-transformasync) is used:
 
 ```ts
 const shape1 = d.transfrorm(parseFloat);
@@ -3009,7 +3009,7 @@ d.enum([FOO, BAR]);
 // ⮕  Shape<typeof FOO | typeof BAR>
 ```
 
-# `transform`
+# `transform`, `transformAsync`
 
 Returns a [`TransformShape`](https://smikhalevski.github.io/doubter/classes/TransformShape.html) instance.
 
@@ -3325,7 +3325,8 @@ queryShape.parse(qs.parse('age=-33'));
 
 ## Conditionally applied shapes
 
-If you need to apply a different shape depending on an input value, you can use [`transform`](#transform).
+If you need to apply a different shape depending on an input value, you can use
+[`transform`](#transform-transformasync).
 
 ```ts
 const stringShape = d.string().min(5);
