@@ -481,6 +481,27 @@ In the example above, an [`Err`](https://smikhalevski.github.io/doubter/interfac
 > **Note**&ensp;You can find the list of issue codes and corresponding param values in
 > [Validation errors](#validation-errors) section.
 
+## Parameterized checks
+
+You can pass an additional parameter when adding a check:
+
+```ts
+const includesCheck: d.CheckCallback<string[], string> = (value, param) => {
+  if (!value.includes(param)) {
+    return { message: 'Must incude ' + param };
+  }
+};
+
+const shape2 = d.array(d.string()).check(includesCheck, 'Mars');
+// ⮕ Shape<any[]>
+
+shape2.parse(['Mars', 'Pluto']);
+// ⮕ ['Mars', 'Pluto']
+
+shape2.parse(['Venus']);
+// ❌ ValidationError: unknown at /: Must incude Mars
+```
+
 ## Verbose mode
 
 Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
@@ -528,7 +549,7 @@ message:
 ```ts
 const helloCheck: d.CheckCallback<string> = value => {
   if (!value.startsWith('Hello')) {
-    return { message: 'Must start with "Hello"' };
+    return { message: 'Must start with Hello' };
   }
 };
 
@@ -538,7 +559,7 @@ const noDigitsCheck: d.CheckCallback<string> = value => {
   }
 };
 
-const greetingShape1 = d.string()
+const shape = d.string()
   .check(helloCheck)
   .check(noDigitsCheck);
 ```
@@ -546,28 +567,28 @@ const greetingShape1 = d.string()
 If the input violates the `helloCheck`, then `noDigitsCheck` isn't applied:
 
 ```ts
-greetingShape1.parse('Adiós, R2D2', { verbose: true });
-// ❌ ValidationError: type at /: Must start with "Hello"
+shape.parse('Adiós, R2D2', { verbose: true });
+// ❌ ValidationError: type at /: Must start with Hello
 ```
 
-To force `noDigitsCheck` to be called even if the preceding check has failed, pass the
+To force `noDigitsCheck` to be applied even if `helloCheck` has raised issues, pass the
 [`unsafe`](https://smikhalevski.github.io/doubter/interfaces/CheckOptions.html#unsafe) option:
 
 ```ts
-const greetingShape2 = d.string()
+const shape = d.string()
   .check(helloCheck)
-  .check(noDigitsCheck, { unsafe: true });
+  .check({ unsafe: true }, noDigitsCheck);
 ```
 
 Safe and unsafe checks are applied only if the type of the input is valid.
 
 ```ts
-greetingShape2.parse(42);
+shape.parse(42);
 // ❌ ValidationError: type at /: Must be a number
 ```
 
-In the example above checks aren't applied, since the input value 42 is of the invalid type, despite that
-`noDigitsCheck` is marked as unsafe.
+In the example above both `helloCheck` and `noDigitsCheck` _are not_ applied, since the input value 42 is of the invalid
+type, despite that `noDigitsCheck` is marked as unsafe.
 
 For some composite shapes, unsafe checks may become truly unsafe. Let's consider an object with a custom safe check:
 
@@ -613,7 +634,7 @@ These shapes won't apply unsafe checks if an underlying shape has raised an issu
 Let's consider the same check being added to the shape twice:
 
 ```ts
-const emailCheck: d.CheckCallback<string> = (value, options) => {
+const emailCheck: d.CheckCallback<string> = value => {
   if (!value.includes('@')) {
     return { code: 'email' };
   }
@@ -645,7 +666,7 @@ Using a check callback identity as a key isn't always convenient. Pass the
 [`key`](https://smikhalevski.github.io/doubter/interfaces/CheckOptions.html#key) option to define a custom key:
 
 ```ts
-shape.check(emailCheck, { key: 'email' });
+shape.check({ key: 'email' }, emailCheck);
 // ⮕ Shape<string>
 
 shape.getCheck(emailCheck);
@@ -1489,43 +1510,6 @@ shape.at('bar')
 // ⮕ null
 ```
 
-## Introspecting checks
-
-To introspect checks added to a shape, use
-[`getCheck`](https://smikhalevski.github.io/doubter/classes/Shape.html#getCheck):
-
-```ts
-const shape1 = d.number().min(10);
-// ⮕ Shape<number>
-
-shape1.getCheck('numberGreaterThanOrEqual')?.param;
-// ⮕ 10
-```
-
-The check-to-param mapping can be found in [Validation errors](#validation-errors) section.
-
-If you add a custom check, you can provide the
-[`param`](https://smikhalevski.github.io/doubter/interfaces/CheckOptions.html#param) option to enhance further
-introspection:
-
-```ts
-function includes(value: any): d.CheckCallback<any[]> {
-  return array => {
-    if (!array.includes(value)) {
-      return { message: 'Must incude ' + value };
-    }
-  };
-}
-
-const shape2 = d.array().check(includes('Mars'), { param: 'Mars' });
-// ⮕ Shape<any[]>
-
-shape2.getCheck(includes)?.param;
-// ⮕ 'Mars'
-```
-
-More about adding and deleting checks in [Add, get and delete checks](#add-get-and-delete-checks) section.
-
 # Localization
 
 All shape factories and built-in checks support custom issue messages:
@@ -1566,7 +1550,9 @@ d.string().length(3, { message: 'Expected length is %s' })
 
 # Integrations
 
-How to validate an email or UUID? Combine Doubter with your favourite predicate library:
+How to validate an email or UUID? Combine Doubter with your favourite predicate library!
+
+For example, create a shape that validates that input is an email:
 
 ```ts
 import * as d from 'doubter';
@@ -1578,8 +1564,15 @@ const emailShape = d.string().refine(isEmail, 'Must be an email');
 emailShape.parse('Not an email');
 // ❌ ValidationError: predicate at /: Must be an email
 
-emailShape.getCheck(isEmail);
-// ⮕ { key: isEmail, callback: isEmail, isUnsafe: false, param: isEmail }
+emailShape.parse('foo@bar.com');
+// ⮕ 'foo@bar.com'
+```
+
+You can check that the shape describes an email using `hasCheck`:
+
+```ts
+emailShape.hasCheck(isEmail);
+// ⮕ true
 ```
 
 Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).

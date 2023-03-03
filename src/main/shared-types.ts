@@ -33,7 +33,7 @@ export interface Err {
  * @template T The value that must be checked.
  * @template P The check param.
  */
-export type CheckCallback<T = any, P = unknown> = (
+export type CheckCallback<T = any, P = any> = (
   value: T,
   param: P,
   options: Readonly<ParseOptions>
