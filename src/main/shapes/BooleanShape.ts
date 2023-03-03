@@ -1,6 +1,6 @@
-import { Result, ValueType } from './Shape';
+import { NEVER, Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok } from '../utils';
+import { createIssueFactory, isArray, ok, toPrimitive } from '../utils';
 import {
   CODE_TYPE,
   MESSAGE_BOOLEAN_TYPE,
@@ -47,7 +47,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
 
     if (
       typeof output !== 'boolean' &&
-      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -58,12 +58,18 @@ export class BooleanShape extends CoercibleShape<boolean> {
   }
 
   /**
-   * Coerces value to a boolean or returns `null` if coercion isn't possible.
+   * Coerces a value to a boolean or returns {@linkcode NEVER} if coercion isn't possible.
    *
    * @param value The non-boolean value to coerce.
    */
-  protected _coerce(value: unknown): boolean | null {
+  protected _coerce(value: unknown): boolean {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'boolean') {
+      return value;
+    }
+
+    value = toPrimitive(value);
+
+    if (typeof value === 'boolean') {
       return value;
     }
     if (value === null || value === undefined || value === false || value === 0 || value === 'false') {
@@ -72,6 +78,6 @@ export class BooleanShape extends CoercibleShape<boolean> {
     if (value === true || value === 1 || value === 'true') {
       return true;
     }
-    return null;
+    return NEVER;
   }
 }

@@ -1,4 +1,4 @@
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import {
   addConstraint,
@@ -204,7 +204,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     // noinspection CommaExpressionJS
     if (
       // Not an array or not coercible
-      (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)) ||
+      (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)) ||
       // Invalid tuple length
       ((outputLength = output.length),
       shapes !== null &&
@@ -260,7 +260,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       // noinspection CommaExpressionJS
       if (
         // Not an array or not coercible
-        (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)) ||
+        (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)) ||
         // Invalid tuple length
         ((outputLength = output.length),
         shapes !== null &&
@@ -315,11 +315,11 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   }
 
   /**
-   * Coerces value to an array or returns `null` if coercion isn't possible.
+   * Coerces a value to an array or returns {@linkcode NEVER} if coercion isn't possible.
    *
    * @param value The non-array value to coerce.
    */
-  protected _coerce(value: unknown): unknown[] | null {
+  protected _coerce(value: unknown): unknown[] {
     if (isIterableObject(value)) {
       return Array.from(value);
     }

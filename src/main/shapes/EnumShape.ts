@@ -1,6 +1,6 @@
-import { Result, ValueType } from './Shape';
+import { NEVER, Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, getValueType, isArray, NEVER, ok, ReadonlyDict, unique } from '../utils';
+import { createIssueFactory, getValueType, isArray, ok, ReadonlyDict, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -94,7 +94,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
   }
 
   /**
-   * Coerces value to an enum value or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to an enum value or returns {@linkcode NEVER} if coercion isn't possible.
    *
    * @param value The non-enum value to coerce.
    */

@@ -21,10 +21,12 @@ describe('Cookbook', () => {
   });
 
   test('query strings', () => {
-    const queryShape = d.object({
-      name: d.string().optional(),
-      age: d.int().coerce().gt(0).catch().optional(),
-    });
+    const queryShape = d
+      .object({
+        name: d.string(),
+        age: d.int().coerce().nonNegative().catch(),
+      })
+      .partial();
 
     expect(queryShape.parse(qs.parse('name=Frodo&age=50'))).toEqual({ name: 'Frodo', age: 50 });
 
@@ -78,5 +80,49 @@ describe('JSON shape', () => {
         },
       ],
     });
+  });
+});
+
+describe('Advanced shapes', () => {
+  test('NumberLikeShape', () => {
+    class NumberLikeShape extends d.Shape<string, number> {
+      protected _apply(input: unknown, options: d.ParseOptions): d.Result<number> {
+        if (typeof input !== 'string' || isNaN(parseFloat(input))) {
+          return [
+            {
+              code: 'kaputs',
+              message: 'Must be a numberish',
+              path: [],
+              input,
+              param: undefined,
+              meta: undefined,
+            },
+          ];
+        }
+
+        return { ok: true, value: parseFloat(input) };
+      }
+    }
+
+    const shape = d.array(new NumberLikeShape());
+
+    expect(shape.parse(['42', '33'])).toEqual([42, 33]);
+  });
+
+  test('YesNoShape', () => {
+    class YesNoShape extends d.BooleanShape {
+      protected _coerce(value: unknown): boolean {
+        if (value === 'yes') {
+          return true;
+        }
+        if (value === 'no') {
+          return false;
+        }
+        // 🟡 Return NEVER if coercion isn't possible
+        return d.NEVER;
+      }
+    }
+
+    expect(d.array(new YesNoShape().coerce()).parse(['yes', 'no'])).toEqual([true, false]);
   });
 });

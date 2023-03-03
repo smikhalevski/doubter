@@ -1,4 +1,4 @@
-import { BooleanShape } from '../../main';
+import { BooleanShape, NEVER } from '../../main';
 import {
   CODE_TYPE,
   MESSAGE_BOOLEAN_TYPE,
@@ -57,20 +57,30 @@ describe('BooleanShape', () => {
   });
 
   describe('coercion', () => {
+    test('coerces a Boolean wrapper', () => {
+      expect(new BooleanShape()['_coerce'](new Boolean(true))).toBe(true);
+      expect(new BooleanShape()['_coerce']([new Boolean(false)])).toBe(false);
+    });
+
+    test('coerces a String wrapper', () => {
+      expect(new BooleanShape()['_coerce'](new String('true'))).toBe(true);
+      expect(new BooleanShape()['_coerce']([new String('false')])).toBe(false);
+    });
+
     test('coerces a string', () => {
       expect(new BooleanShape()['_coerce']('true')).toBe(true);
 
-      expect(new BooleanShape()['_coerce']('aaa')).toBe(null);
+      expect(new BooleanShape()['_coerce']('aaa')).toBe(NEVER);
     });
 
     test('coerces a number', () => {
       expect(new BooleanShape()['_coerce'](1)).toBe(true);
       expect(new BooleanShape()['_coerce'](0)).toBe(false);
 
-      expect(new BooleanShape()['_coerce'](111)).toBe(null);
-      expect(new BooleanShape()['_coerce'](NaN)).toBe(null);
-      expect(new BooleanShape()['_coerce'](Infinity)).toBe(null);
-      expect(new BooleanShape()['_coerce'](-Infinity)).toBe(null);
+      expect(new BooleanShape()['_coerce'](111)).toBe(NEVER);
+      expect(new BooleanShape()['_coerce'](NaN)).toBe(NEVER);
+      expect(new BooleanShape()['_coerce'](Infinity)).toBe(NEVER);
+      expect(new BooleanShape()['_coerce'](-Infinity)).toBe(NEVER);
     });
 
     test('coerces a boolean', () => {
@@ -87,19 +97,19 @@ describe('BooleanShape', () => {
       expect(new BooleanShape()['_coerce']([true])).toBe(true);
       expect(new BooleanShape()['_coerce']([false])).toBe(false);
 
-      expect(new BooleanShape()['_coerce']([[true]])).toBe(null);
-      expect(new BooleanShape()['_coerce']([BigInt(111), 'aaa'])).toBe(null);
-      expect(new BooleanShape()['_coerce']([BigInt(111), BigInt(111)])).toBe(null);
-      expect(new BooleanShape()['_coerce'](['aaa'])).toBe(null);
+      expect(new BooleanShape()['_coerce']([[true]])).toBe(NEVER);
+      expect(new BooleanShape()['_coerce']([BigInt(111), 'aaa'])).toBe(NEVER);
+      expect(new BooleanShape()['_coerce']([BigInt(111), BigInt(111)])).toBe(NEVER);
+      expect(new BooleanShape()['_coerce'](['aaa'])).toBe(NEVER);
     });
 
     test('does not coerce objects and functions', () => {
-      expect(new BooleanShape()['_coerce']({ key1: 111 })).toBe(null);
-      expect(new BooleanShape()['_coerce'](() => undefined)).toBe(null);
+      expect(new BooleanShape()['_coerce']({ key1: 111 })).toBe(NEVER);
+      expect(new BooleanShape()['_coerce'](() => undefined)).toBe(NEVER);
     });
 
     test('does not coerce a symbol', () => {
-      expect(new BooleanShape()['_coerce'](Symbol())).toBe(null);
+      expect(new BooleanShape()['_coerce'](Symbol())).toBe(NEVER);
     });
   });
 });

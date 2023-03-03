@@ -1,0 +1,8 @@
+{
+  "name": "Doubter",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "disableSources": true,
+  "readme": "none"
+}

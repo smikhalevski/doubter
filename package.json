@@ -22,8 +22,8 @@
     "clean": "rimraf ./lib ./docs ./coverage",
     "test": "jest",
     "test:definitions": "ln -nsf .. ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
-    "perf": "[ -d ./lib ] || npm run build && node --expose-gc --max-old-space-size=4096 ./node_modules/.bin/toofast ./src/test/perf.js",
-    "docs": "typedoc --name Doubter --readme none --disableSources ./src/main/index.ts"
+    "perf": "toofast",
+    "docs": "typedoc ./src/main/index.ts"
   },
   "repository": {
     "type": "git",
@@ -57,7 +57,7 @@
     "rimraf": "^3.0.2",
     "rollup": "^3.10.0",
     "rollup-plugin-dts": "^5.1.1",
-    "toofast": "^1.3.1",
+    "toofast": "^2.0.0",
     "ts-jest": "^29.0.4",
     "tsd": "^0.25.0",
     "tslib": "^2.4.1",

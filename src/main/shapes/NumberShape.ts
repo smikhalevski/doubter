@@ -1,6 +1,17 @@
-import { Result, Shape, ValueType } from './Shape';
+import { NEVER, Result, Shape, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { abs, addConstraint, cloneInstance, createIssueFactory, floor, isArray, isNumber, max, ok } from '../utils';
+import {
+  abs,
+  addConstraint,
+  cloneInstance,
+  createIssueFactory,
+  floor,
+  isArray,
+  isNumber,
+  max,
+  ok,
+  toPrimitive,
+} from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -241,7 +252,7 @@ export class NumberShape extends CoercibleShape<number> {
 
     if (
       !this._typePredicate(output) &&
-      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === null)
+      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -252,24 +263,27 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * Coerces value to a number (not `NaN`) or returns `null` if coercion isn't possible.
+   * Coerces a value to a number (not `NaN`) or returns {@linkcode NEVER} if coercion isn't possible.
    *
    * @param value The non-number value to coerce.
    */
-  protected _coerce(value: any): number | null {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number' && value === value) {
-      return value;
+  protected _coerce(value: any): number {
+    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number') {
+      return this._typePredicate(value) ? value : NEVER;
     }
     if (value === null || value === undefined) {
       return 0;
     }
+
+    value = toPrimitive(value);
+
     if (
-      (typeof value === 'string' || typeof value === 'boolean' || value instanceof Date) &&
+      (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || value instanceof Date) &&
       this._typePredicate((value = +value))
     ) {
       return value;
     }
-    return null;
+    return NEVER;
   }
 }
 

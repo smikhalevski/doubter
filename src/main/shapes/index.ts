@@ -27,6 +27,7 @@ export {
   DenyLiteralShape,
   ExcludeShape,
   NotShape,
+  NEVER,
   PipeShape,
   ReplaceLiteralShape,
   Result,
