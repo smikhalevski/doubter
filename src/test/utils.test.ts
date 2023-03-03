@@ -5,6 +5,7 @@ import {
   copyUnsafeChecks,
   createApplyChecksCallback,
   createIssueFactory,
+  deleteAt,
   enableMask,
   getValueType,
   isEqual,
@@ -36,6 +37,15 @@ describe('isPlainObject', () => {
   test('returns false for non-objects', () => {
     expect(isPlainObject(111)).toBe(false);
     expect(isPlainObject('aaa')).toBe(false);
+  });
+});
+
+describe('deleteAt', () => {
+  test('deletes an element at index', () => {
+    const arr = [111, 222, 333];
+
+    expect(deleteAt(arr, 1)).toBe(arr);
+    expect(arr).toEqual([111, 333]);
   });
 });
 
@@ -119,7 +129,7 @@ describe('copyUnsafeChecks', () => {
     const safeCheck = () => undefined;
     const unsafeCheck = () => undefined;
 
-    const sourceShape = new Shape().check(safeCheck).check(unsafeCheck, { unsafe: true });
+    const sourceShape = new Shape().check(safeCheck).check({ unsafe: true }, unsafeCheck);
     const targetShape = new Shape();
 
     const shape = copyUnsafeChecks(sourceShape, targetShape);
@@ -367,7 +377,7 @@ describe('createApplyChecksCallback', () => {
 
       expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
     });
 
     test('unsafe check merges issues', () => {
@@ -382,7 +392,7 @@ describe('createApplyChecksCallback', () => {
       expect(applyChecks!(111, issues, { verbose: false, coerced: false })).toEqual(issues);
       expect(issues).toEqual([{ code: 'xxx', path: [] }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
     });
 
     test('safe check is not called when issues present', () => {
@@ -440,9 +450,9 @@ describe('createApplyChecksCallback', () => {
 
       expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'BBB', path: [] }]);
       expect(cbMock1).toHaveBeenCalledTimes(1);
-      expect(cbMock1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(cbMock1).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
       expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(cbMock2).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
       expect(cbMock3).not.toHaveBeenCalled();
       expect(cbMock4).not.toHaveBeenCalled();
     });
@@ -466,13 +476,13 @@ describe('createApplyChecksCallback', () => {
         { code: 'DDD', path: [] },
       ]);
       expect(cbMock1).toHaveBeenCalledTimes(1);
-      expect(cbMock1).toHaveBeenNthCalledWith(1, 111, { verbose: true });
+      expect(cbMock1).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
       expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 111, { verbose: true });
+      expect(cbMock2).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
       expect(cbMock3).toHaveBeenCalledTimes(1);
-      expect(cbMock3).toHaveBeenNthCalledWith(1, 111, { verbose: true });
+      expect(cbMock3).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
       expect(cbMock4).toHaveBeenCalledTimes(1);
-      expect(cbMock4).toHaveBeenNthCalledWith(1, 111, { verbose: true });
+      expect(cbMock4).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
     });
 
     test('does not execute unsafe checks', () => {
@@ -494,12 +504,12 @@ describe('createApplyChecksCallback', () => {
         { code: 'DDD', path: [] },
       ]);
       expect(cbMock1).toHaveBeenCalledTimes(1);
-      expect(cbMock1).toHaveBeenNthCalledWith(1, 111, { verbose: true });
+      expect(cbMock1).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
       expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 111, { verbose: true });
+      expect(cbMock2).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
       expect(cbMock3).not.toHaveBeenCalled();
       expect(cbMock4).toHaveBeenCalledTimes(1);
-      expect(cbMock4).toHaveBeenNthCalledWith(1, 111, { verbose: true });
+      expect(cbMock4).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
     });
   });
 });

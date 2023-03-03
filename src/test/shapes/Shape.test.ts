@@ -79,7 +79,17 @@ describe('Shape', () => {
     shape.parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerced: false });
+  });
+
+  test('invokes  a parameterized check', () => {
+    const cbMock = jest.fn(() => null);
+    const shape = new Shape().check(cbMock, 111);
+
+    shape.parse('aaa');
+
+    expect(cbMock).toHaveBeenCalledTimes(1);
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', 111, { verbose: false, coerced: false });
   });
 
   test('invokes checks in the same order they were added', () => {
@@ -104,7 +114,7 @@ describe('Shape', () => {
 
   test('adds the same check callback with a key', () => {
     const cbMock = jest.fn();
-    const shape = new Shape().check(cbMock, { key: 'aaa' }).check(cbMock);
+    const shape = new Shape().check({ key: 'aaa' }, cbMock).check(cbMock);
 
     shape.parse(111);
 
@@ -113,7 +123,7 @@ describe('Shape', () => {
 
   test('replaces check callback with the same key', () => {
     const cbMock = jest.fn();
-    const shape = new Shape().check(cbMock, { key: 'aaa' }).check(cbMock, { key: 'aaa' });
+    const shape = new Shape().check({ key: 'aaa' }, cbMock).check({ key: 'aaa' }, cbMock);
 
     shape.parse(111);
 
@@ -184,7 +194,7 @@ describe('Shape', () => {
     const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
     const checkMock2 = jest.fn();
 
-    const shape = new Shape().check(checkMock1).check(checkMock2, { unsafe: true });
+    const shape = new Shape().check(checkMock1).check({ unsafe: true }, checkMock2);
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
@@ -193,14 +203,14 @@ describe('Shape', () => {
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
     expect(checkMock2).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
+    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
   });
 
   test('collects all issues in verbose mode', () => {
     const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
     const checkMock2 = jest.fn(() => [{ code: 'yyy' }]);
 
-    const shape = new Shape().check(checkMock1).check(checkMock2, { unsafe: true });
+    const shape = new Shape().check(checkMock1).check({ unsafe: true }, checkMock2);
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
@@ -212,7 +222,7 @@ describe('Shape', () => {
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
     expect(checkMock2).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
+    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
   });
 
   test('allows undefined input', () => {
@@ -489,7 +499,7 @@ describe('TransformShape', () => {
     shape.parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
   });
 
   describe('async', () => {
@@ -691,7 +701,7 @@ describe('ReplaceLiteralShape', () => {
     new ReplaceLiteralShape(new Shape(), 111, 222).check(checkMock).try(111);
 
     expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, 222, { coerced: false, verbose: false });
+    expect(checkMock).toHaveBeenNthCalledWith(1, 222, undefined, { coerced: false, verbose: false });
   });
 });
 

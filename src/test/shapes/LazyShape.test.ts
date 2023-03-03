@@ -38,12 +38,12 @@ describe('LazyShape', () => {
       issues: [{ code: 'xxx', path: [] }],
     });
     expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+    expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
   });
 
   test('does not apply checks is shape raises an issue', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
-    const lazyShape = new LazyShape(() => shape).check(() => [{ code: 'yyy' }], { unsafe: true });
+    const lazyShape = new LazyShape(() => shape).check({ unsafe: true }, () => [{ code: 'yyy' }]);
 
     expect(lazyShape.try('aaa', { verbose: true })).toEqual({
       ok: false,

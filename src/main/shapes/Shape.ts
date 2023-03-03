@@ -286,14 +286,9 @@ export class Shape<I = any, O = I> {
     const { key = cb, unsafe = false } = options;
 
     const index = getCheckIndex(this._checks, key);
-    const check: Check = { key, callback: cb, param, isUnsafe: unsafe };
+    const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
 
-    Object.freeze(check);
-
-    return replaceChecks(
-      cloneInstance(this),
-      index !== -1 && this._checks.length !== 1 ? deleteAt(this._checks.concat(check), index) : [check]
-    );
+    return replaceChecks(cloneInstance(this), index !== -1 ? deleteAt(checks, index) : checks);
   }
 
   /**

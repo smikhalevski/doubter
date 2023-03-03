@@ -318,7 +318,10 @@ export function copyChecks<S extends Shape>(
 ): S {
   const checks = sourceShape['_checks'];
 
-  return replaceChecks(targetShape, checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []);
+  return replaceChecks(
+    cloneInstance(targetShape),
+    checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
+  );
 }
 
 /**

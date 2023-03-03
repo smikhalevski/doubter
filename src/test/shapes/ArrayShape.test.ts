@@ -243,7 +243,7 @@ describe('ArrayShape', () => {
   });
 
   test('applies unsafe checks if a tuple element raises an error', () => {
-    const arrShape = new ArrayShape([new StringShape()], null).check(() => [{ code: 'xxx' }], { unsafe: true });
+    const arrShape = new ArrayShape([new StringShape()], null).check({ unsafe: true }, () => [{ code: 'xxx' }]);
 
     expect(arrShape.try([111], { verbose: true })).toEqual({
       ok: false,

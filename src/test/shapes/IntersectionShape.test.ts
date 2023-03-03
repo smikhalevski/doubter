@@ -143,7 +143,7 @@ describe('IntersectionShape', () => {
     const shape1 = new Shape();
     const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { unsafe: true });
+    const orShape = new IntersectionShape([shape1, shape2]).check({ unsafe: true }, () => [{ code: 'yyy' }]);
 
     expect(orShape.try({}, { verbose: true })).toEqual({
       ok: false,
