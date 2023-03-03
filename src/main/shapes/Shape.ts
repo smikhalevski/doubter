@@ -763,7 +763,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      let types = unique(this._getInputTypes()).slice(0);
+      let types = unique(this._getInputTypes());
 
       if (types.length === 0 || types.includes(TYPE_ANY)) {
         types = [TYPE_ANY];
@@ -772,7 +772,7 @@ Object.defineProperties(Shape.prototype, {
         const neverIndex = types.indexOf(TYPE_NEVER);
 
         if (neverIndex !== -1) {
-          types.splice(neverIndex, 1);
+          (types = types.slice(0)).splice(neverIndex, 1);
         }
       }
 

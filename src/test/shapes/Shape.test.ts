@@ -136,7 +136,7 @@ describe('Shape', () => {
 
   test('creates input types', () => {
     const shape = new (class extends Shape {
-      protected _getInputTypes(): readonly ValueType[] {
+      protected _getInputTypes(): ValueType[] {
         return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
       }
     })();
@@ -158,7 +158,7 @@ describe('Shape', () => {
 
   test('detects accepted input types', () => {
     const shape = new (class extends Shape {
-      protected _getInputTypes(): readonly ValueType[] {
+      protected _getInputTypes(): ValueType[] {
         return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
       }
     })();
