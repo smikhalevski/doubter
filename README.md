@@ -1586,21 +1586,72 @@ Read more about [Refinements](#refinements) and how to [Add, get and delete chec
 
 # Advanced shapes
 
-[`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) class has several protected methods that you can
-override to implement the shape logic:
+You can create custom shapes by extending the [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html)
+class.
 
-- [`_apply(input, options)`](https://smikhalevski.github.io/doubter/classes/Shape.html#_apply)<br>
-  Place the synchronous parsing logic inside this method. It receives an `input` that must be parsed and should return
-  `null` if the output is the same as input, [`Ok`](https://smikhalevski.github.io/doubter/interfaces/Ok.html) if the
-  output contains an updated value, or an array of
-  [`Issue`](https://smikhalevski.github.io/doubter/interfaces/Issue.html) objects.
+> **Note**&ensp;Most of the time you don't need to implement a custom shape class and should prefer using
+[`transform`](#transform-transformasync) or similar features instead.
 
-- [`_applyAsync(input, options)`](https://smikhalevski.github.io/doubter/classes/Shape.html#_applyAsync)<br>
-  Asynchronous parsing is handled by this method. It has the same semantics as `_apply` but returns a `Promise`. You
-  need to override this method only if you have a separate logic for async parsing.
+`Shape` has several protected methods that you can override to alter different aspects of the shape logic.
 
-- [`_isAsync()`](https://smikhalevski.github.io/doubter/classes/Shape.html#_isAsync)<br>
-  Must return `true` if your shape supports async parsing only, otherwise you don't need to override this method.
+<dl>
+<dt>
+  <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_apply">
+    <code>_apply(input, options)</code>
+  </a>
+</dt>
+<dd>
+
+Place the synchronous parsing logic inside this method. It receives an `input` that must be parsed and should return
+`null` if the output is the same as input, [`Ok`](https://smikhalevski.github.io/doubter/interfaces/Ok.html) if the
+output contains an updated value, or an array of
+[`Issue`](https://smikhalevski.github.io/doubter/interfaces/Issue.html) objects.
+
+</dd>
+<dt>
+  <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_applyAsync">
+    <code>_applyAsync(input, options)</code>
+  </a>
+</dt>
+<dd>
+
+Asynchronous parsing is handled by this method. It has the same semantics as `_apply` but returns a `Promise`. You need
+to override this method only if you have a separate logic for async parsing.
+
+</dd>
+<dt>
+  <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_isAsync">
+    <code>_isAsync()</code>
+  </a>
+</dt>
+<dd>
+
+Return `true` if your shape supports async parsing only, otherwise you don't need to override this method.
+
+</dd>
+<dt>
+  <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_getInputTypes">
+    <code>_getInputTypes()</code>
+  </a>
+</dt>
+<dd>
+
+Returns the array of [runtime value types](#introspection) that can be processed by the shape. Elements of the returned
+array don't have to be unique and are available publicly as a readonly
+[`inputTypes`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputTypes) array.
+
+</dd>
+<dt>
+  <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_getInputValues">
+    <code>_getInputValues()</code>
+  </a>
+</dt>
+<dd>
+
+If your shape is applicable only to a known list of literal values, return them using this method.
+
+</dd>
+</dl>
 
 Let's create a custom shape that parses an input string as a number:
 
@@ -1668,6 +1719,24 @@ d.array(yesNoShape).parse(['yes', 'no'])
 yesNoShape.parse('true')
 // ❌ ValidationError: type at /: Must be a boolean
 ```
+
+## Implementing deep partial support
+
+To enable `deepPartial` support, your shape must implement
+[`DeepPartialProtocol`](https://smikhalevski.github.io/doubter/interfaces/DeepPartialProtocol.html).
+
+```ts
+class MyShape
+  extends Shape
+  implements DeepPartialProtocol<MyDeepPartialShape> {
+
+  deepPartial(): MyDeepPartialShape {
+    // Create and return a deep partial version of MyShape
+  }
+}
+```
+
+This is sufficient to enable type inference and runtime support for `deepPartial` method.
 
 # Performance
 
