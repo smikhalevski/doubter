@@ -21,10 +21,12 @@ describe('Cookbook', () => {
   });
 
   test('query strings', () => {
-    const queryShape = d.object({
-      name: d.string().optional(),
-      age: d.int().coerce().gt(0).catch().optional(),
-    });
+    const queryShape = d
+      .object({
+        name: d.string(),
+        age: d.int().coerce().nonNegative().catch(),
+      })
+      .partial();
 
     expect(queryShape.parse(qs.parse('name=Frodo&age=50'))).toEqual({ name: 'Frodo', age: 50 });
 

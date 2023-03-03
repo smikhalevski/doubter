@@ -36,16 +36,11 @@ npm install --save-prod doubter
 - [Deep partial](#deep-partial)
 - [Fallback value](#fallback-value)
 - [Branded types](#branded-types)
+- [Type coercion](#type-coercion)
 - [Introspection](#introspection)
 - [Localization](#localization)
 - [Integrations](#integrations)
 - [Advanced shapes](#advanced-shapes)
-- [Type coercion](#type-coercion)
-
-[**Cookbook**](#cookbook)
-
-- [Rename object keys](#rename-object-keys)
-- [Type-safe URL query params](#type-safe-url-query-params)
 
 [**Performance**](#performance)
 
@@ -114,6 +109,12 @@ npm install --save-prod doubter
   [`transformAsync`](#transform)
   [`lazy`](#lazy)
   [`json`](#json)
+
+**Cookbook**
+
+- [Rename object keys](#rename-object-keys)
+- [Type-safe URL query params](#type-safe-url-query-params)
+- [Conditionally applied shapes](#conditionally-applied-shapes)
 
 # Basics
 
@@ -1260,6 +1261,59 @@ plain/unbranded data structures are no longer assignable to the inferred type of
 
 Note that branded types do not affect the runtime result of `parse`. It is a static-only construct.
 
+# Type coercion
+
+Type coercion is the process of converting value from one type to another (such as string to number, array to `Set`,
+and so on).
+
+When coercion is enabled, input values are implicitly converted to the required input type whenever possible.
+For example, you can coerce input values to string type:
+
+```ts
+const shape1 = d.string().coerce();
+
+shape1.isCoerced // ⮕ true
+
+shape1.parse([8080]);
+// ⮕ '8080'
+
+shape1.parse(null);
+// ⮕ ''
+```
+
+Coercion can be enabled on shape-by-shape basis (as shown in the example above), or it can be enabled for all shapes
+when `coerced` option is passed to a [parsing method](#parsing-and-trying):
+
+```ts
+const shape2 = d.object({
+  name: d.string(),
+  birthday: d.date()
+});
+
+shape2.parse(
+  {
+    name: ['Jake'],
+    birthday: '1949-01-24'
+  },
+  { coerced: true }
+);
+// ⮕ { name: 'Jake', birthday: new Date(-660700800000) }
+```
+
+Coercion rules differ from JavaScript so the behavior is more predictable and human-like. With Doubter you can coerce
+input to the following types:
+
+- [string](#coerce-to-a-string)
+- [number](#coerce-to-a-number)
+- [boolean](#coerce-to-a-boolean)
+- [bigint](#coerce-to-a-bigint)
+- [enum](#coerce-to-an-enum)
+- [array](#coerce-to-an-array)
+- [`Date`](#coerce-to-a-date)
+- [`Promise`](#coerce-to-a-promise)
+- [`Map`](#coerce-to-a-map)
+- [`Set`](#coerce-to-a-set)
+
 # Introspection
 
 Doubter provides various features to introspect your shapes at runtime. Let's start by detecting input types supported
@@ -1613,94 +1667,6 @@ d.array(yesNoShape).parse(['yes', 'no'])
 
 yesNoShape.parse('true')
 // ❌ ValidationError: type at /: Must be a boolean
-```
-
-# Type coercion
-
-Type coercion is the process of converting value from one type to another (such as string to number, array to `Set`,
-and so on).
-
-When coercion is enabled, input values are implicitly converted to the required input type whenever possible.
-For example, you can coerce input values to string type:
-
-```ts
-const shape1 = d.string().coerce();
-
-shape1.isCoerced // ⮕ true
-
-shape1.parse([8080]);
-// ⮕ '8080'
-
-shape1.parse(null);
-// ⮕ ''
-```
-
-Coercion can be enabled on shape-by-shape basis (as shown in the example above), or it can be enabled for all shapes
-when `coerced` option is passed to a [parsing method](#parsing-and-trying):
-
-```ts
-const shape2 = d.object({
-  name: d.string(),
-  birthday: d.date()
-});
-
-shape2.parse(
-  {
-    name: ['Jake'],
-    birthday: '1949-01-24'
-  },
-  { coerced: true }
-);
-// ⮕ { name: 'Jake', birthday: new Date(-660700800000) }
-```
-
-Coercion rules differ from JavaScript so the behavior is more predictable and human-like. With Doubter you can coerce
-input to the following types: 
-
-- [string](#coerce-to-a-string)
-- [number](#coerce-to-a-number)
-- [boolean](#coerce-to-a-boolean)
-- [bigint](#coerce-to-a-bigint)
-- [enum](#coerce-to-an-enum)
-- [array](#coerce-to-an-array)
-- [`Date`](#coerce-to-a-date)
-- [`Promise`](#coerce-to-a-promise)
-- [`Map`](#coerce-to-a-map)
-- [`Set`](#coerce-to-a-set)
-
-# Cookbook
-
-## Rename object keys
-
-```ts
-const keyShape = d.enum(['foo', 'bar']).transform(
-  value => value.toUpperCase() as 'FOO' | 'BAR'
-);
-// ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
-
-const shape = d.record(keyShape, d.number());
-// ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
-
-shape.parse({ foo: 1, bar: 2 });
-// ⮕ { FOO: 1, BAR: 2 }
-```
-
-## Type-safe URL query params
-
-```ts
-import qs from 'qs';
-
-const queryShape = d.object({
-  name: d.string().optional(),
-  age: d.int().gt(0).coerce().catch().optional()
-});
-// ⮕ Shape<{ name: string | undefined, age: number | undefined }>
-
-queryShape.parse(qs.parse('name=Frodo&age=50'));
-// ⮕ { name: 'Frodo', age: 50 }
-
-queryShape.parse(qs.parse('age=-33'));
-// ⮕ { age: undefined }
 ```
 
 # Performance
@@ -3296,4 +3262,97 @@ A shape that requires an input to be `undefined` that is typed as `void`:
 ```ts
 d.void();
 // ⮕ Shape<void>
+```
+
+# Cookbook
+
+## Rename object keys
+
+First, create a shape that describes the key transformation. In this example we are going to
+[transform](#transformations) the [enumeration](#enum) of keys to uppercase alternatives:
+
+```ts
+const keyShape = d.enum(['foo', 'bar']).transform(
+  value => value.toUpperCase() as 'FOO' | 'BAR'
+);
+// ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
+```
+
+Then, create a [`record`](#record) shape that constrains keys and values or a dictionary-like object:
+
+```ts
+const shape = d.record(keyShape, d.number());
+// ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
+```
+
+Parse the input object, the output would be a new object with transformed keys:
+
+```ts
+shape.parse({ foo: 1, bar: 2 });
+// ⮕ { FOO: 1, BAR: 2 }
+```
+
+## Type-safe URL query params
+
+Let's define a shape that describes the query with `name` and `age` params:
+
+```ts
+const queryShape = d
+  .object({
+    name: d.string(),
+    age: d.int().coerce().nonNegative().catch()
+  })
+  .partial();
+// ⮕ Shape<{ name: string | undefined, age: number | undefined }>
+```
+
+Note that the object shape is partial, so absence of any param won't raise a validation issue. Since query params are
+strings, `name` doesn't require additional attention. On the other hand, `age` is an integer, so we should enable
+[coercion](#type-coercion) for it. We also added [`catch`](#fallback-value) to ensure that if `age` cannot be parsed as
+a positive integer, Doubter would return `undefined`.
+
+Now let's parse the query string with `qs` and then apply our shape:
+
+```ts
+import qs from 'qs';
+
+queryShape.parse(qs.parse('name=Frodo&age=50'));
+// ⮕ { name: 'Frodo', age: 50 }
+
+queryShape.parse(qs.parse('age=-33'));
+// ⮕ { age: undefined }
+```
+
+## Conditionally applied shapes
+
+If you need to apply a different shape depending on an input value, you can use [`transform`](#transform).
+
+```ts
+const stringShape = d.string().min(5);
+
+const numberShape = d.number().positive();
+
+const shape = d.transform(value => {
+  if (typeof value === 'string') {
+    return stringShape.parse(value)
+  } else {
+    return numberShape.parse(value);
+  }
+});
+```
+
+[`parse`](#parse) would throw a `ValidationError` that is captured by the enclosing `transform`.
+
+```ts
+shape.parse('Uranus');
+// ⮕ 'Mars'
+
+shape.parse('Mars');
+// ❌ ValidationError: stringMinLength at /: Must have the minimum length of 5
+
+shape.parse(42);
+// ⮕ 42
+
+shape.parse(-273.15);
+// ❌ ValidationError: numberGreaterThan at /: Must be greater than 0
 ```
