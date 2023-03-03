@@ -19,9 +19,7 @@ No-hassle runtime validation and transformation library.
 npm install --save-prod doubter
 ```
 
-🔎 [API documentation is available here.](https://smikhalevski.github.io/doubter/)
-
-**Core features**
+**Features**
 
 - [Basics](#basics)
 - [Parsing and trying](#parsing-and-trying)
@@ -51,22 +49,22 @@ npm install --save-prod doubter
 
 [**Performance**](#performance)
 
-[**Data types**](#data-types)
+**Data types**
 
 - Strings<br>
   [`string`](#string)
 
 - Numbers<br>
   [`number`](#number)
-  [`integer`](#integer)
-  [`int`](#integer)
+  [`integer`](#integer-int)
+  [`int`](#integer-int)
   [`finite`](#finite)
   [`nan`](#nan)
   [`bigint`](#bigint)
 
 - Booleans<br>
-  [`boolean`](#boolean)
-  [`bool`](#boolean)
+  [`boolean`](#boolean-bool)
+  [`bool`](#boolean-bool)
 
 - Symbols<br>
   [`symbol`](#symbol)
@@ -96,14 +94,14 @@ npm install --save-prod doubter
   [`promise`](#promise)
 
 - Functions<br>
-  [`function`](#function)
-  [`fn`](#function)
+  [`function`](#function-fn)
+  [`fn`](#function-fn)
 
 - Shape composition<br>
-  [`union`](#union)
-  [`or`](#union)
-  [`intersection`](#intersection)
-  [`and`](#intersection)
+  [`union`](#union-or)
+  [`or`](#union-or)
+  [`intersection`](#intersection-and)
+  [`and`](#intersection-and)
   [`not`](#not)
 
 - Unconstrained values<br>
@@ -397,10 +395,10 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `enum` | [`d.enum([x, y, z])`](#enum) | The array of unique values`[x, y, z]` |
 | `excluded` | [`shape.exclude(…)`](#exclude-a-shape) | The excluded shape |
 | `instance` | [`d.instanceOf(Class)`](#instanceof) | The class constructor `Class` |
-| `intersection` | [`d.and(…)`](#intersection) | — |
+| `intersection` | [`d.and(…)`](#intersection-and) | — |
 | `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
 | `predicate` | [`shape.refine(…)`](#refinements) | The predicate callback  |
-| `numberInteger` | [`d.integer()`](#integer) | — |
+| `numberInteger` | [`d.integer()`](#integer-int) | — |
 | `numberFinite` | [`d.finite()`](#finite) | — |
 | `numberGreaterThan` | [`d.number().gt(x)`](#number) | The exclusive minimum value `x` |
 | `numberGreaterThanOrEqual` | [`d.number().gte(x)`](#number) | The minimum value `x` |
@@ -414,7 +412,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `stringRegex` | [`d.string().regex(re)`](#string) | The regular expression `re` |
 | `type` | All shapes | The expected [input value type](#introspection) |
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
-| `union` | [`d.or(…)`](#union) | [Issues raised by a union](#issues-raised-by-a-union) |
+| `union` | [`d.or(…)`](#union-or) | [Issues raised by a union](#issues-raised-by-a-union) |
 | `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
 | `unknown` | — | Used if a partial issue doesn't have a code property |
 
@@ -602,12 +600,12 @@ of the expected type, so it won't apply its unsafe checks.
 These shapes won't apply unsafe checks if an underlying shape has raised an issue:
 
 - [`DenyLiteralShape`](#deny-a-literal-value)
-- [`IntersectionShape`](#intersection)
+- [`IntersectionShape`](#intersection-and)
 - [`LazyShape`](#lazy)
 - [`PipeShape`](#shape-piping)
 - [`ReplaceLiteralShape`](#replace-a-literal-value)
 - [`TransformShape`](#transformations)
-- [`UnionShape`](#union)
+- [`UnionShape`](#union-or)
 
 ## Add, get and delete checks
 
@@ -1659,16 +1657,16 @@ shape2.parse(
 Coercion rules differ from JavaScript so the behavior is more predictable and human-like. With Doubter you can coerce
 input to the following types: 
 
-- [string](#coerce-to-string)
-- [number](#coerce-to-number)
-- [boolean](#coerce-to-boolean)
-- [bigint](#coerce-to-bigint)
-- [enum](#coerce-to-enum)
-- [array](#coerce-to-array)
-- [`Date`](#coerce-to-date)
-- [`Promise`](#coerce-to-promise)
-- [`Map`](#coerce-to-map)
-- [`Set`](#coerce-to-set)
+- [string](#coerce-to-a-string)
+- [number](#coerce-to-a-number)
+- [boolean](#coerce-to-a-boolean)
+- [bigint](#coerce-to-a-bigint)
+- [enum](#coerce-to-an-enum)
+- [array](#coerce-to-an-array)
+- [`Date`](#coerce-to-a-date)
+- [`Promise`](#coerce-to-a-promise)
+- [`Map`](#coerce-to-a-map)
+- [`Set`](#coerce-to-a-set)
 
 # Cookbook
 
@@ -1713,30 +1711,18 @@ The chart below showcases the performance comparison in terms of millions of ope
   <img src="./images/perf.svg" alt="Performance comparison chart"/>
 </p>
 
-Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast) and results were collected for the
-following object shape:
+Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast).
 
-```ts
-d.object({
-  key1: d.array(d.int()),
-  key2: d.string().min(3),
-  key3: d.boolean(),
-  key4: d.object({
-    key5: d.enum(['foo', 'bar']),
-    key6: d.number()
-  })
-});
-```
-
-To reproduce these performance results on your machine use:
+[Here is the performance test suite](./src/test/perf/overall.perf.js) that produced the results above. To reproduce
+them, clone this repo and in the repo's root directory use:
 
 ```shell
 npm ci
 npm run build
-npm run perf -- -t overall
+npm run perf -- --testNamePattern Overall
 ```
 
-## `any`
+# `any`
 
 Returns a [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
 
@@ -1762,7 +1748,7 @@ d.any((value): value is string => typeof value === 'string');
 // ⮕ Shape<any, string>
 ```
 
-## `array`
+# `array`
 
 Returns an [`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
 
@@ -1799,7 +1785,7 @@ d.array(d.string().transform(parseFloat));
 // ⮕ Shape<string[], number[]>
 ```
 
-### Coerce to array
+## Coerce to an array
 
 Iterables and array-like objects are converted to array via `Array.from(value)`:
 
@@ -1820,7 +1806,7 @@ shape.parse('Rose');
 // ⮕ ['Rose']
 ```
 
-## `bigint`
+# `bigint`
 
 Returns a [`BigIntShape`](https://smikhalevski.github.io/doubter/classes/BigIntShape.html) instance.
 
@@ -1831,7 +1817,7 @@ d.bigint();
 // ⮕ Shape<bigint>
 ```
 
-### Coerce to bigint
+## Coerce to a bigint
 
 `null` and `undefined` are converted to 0:
 
@@ -1862,7 +1848,7 @@ shape.parse([BigInt(1), BigInt(2)]);
 // ❌ ValidationError: type at /: Must be a bigint
 ```
 
-## `boolean`
+# `boolean`, `bool`
 
 Returns a [`BooleanShape`](https://smikhalevski.github.io/doubter/classes/BooleanShape.html) instance.
 
@@ -1875,7 +1861,7 @@ d.bool();
 // ⮕ Shape<boolean>
 ```
 
-### Coerce to boolean
+## Coerce to a boolean
 
 `null`, `undefined`, `'false'` and 0 are converted to `false`:
 
@@ -1906,7 +1892,7 @@ shape.parse([0, 1]);
 // ❌ ValidationError: type at /: Must be a boolean
 ```
 
-## `const`
+# `const`
 
 Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
@@ -1921,7 +1907,7 @@ There are shortcuts for [`null`](#null), [`undefined`](#undefined) and [`nan`](#
 
 Consider using [`enum`](#enum) if you want a value to be one of multiple literal values.
 
-## `date`
+# `date`
 
 Returns a [`DateShape`](https://smikhalevski.github.io/doubter/classes/DateShape.html) instance.
 
@@ -1932,7 +1918,7 @@ d.date();
 // ⮕ Shape<Date>
 ```
 
-### Coerce to `Date`
+## Coerce to a `Date`
 
 Strings and numbers are converted via `new Date(value)` and if an invalid date is produced then an issue is raised:
 
@@ -1956,7 +1942,7 @@ shape.parse(['2021-12-03', '2023-01-22']);
 // ❌ ValidationError: type at /: Must be a Date
 ```
 
-## `enum`
+# `enum`
 
 Returns an [`EnumShape`](https://smikhalevski.github.io/doubter/classes/EnumShape.html) instance.
 
@@ -1994,7 +1980,7 @@ d.enum(plants);
 // ⮕ Shape<'Mars', 'Pluto', 'Jupiter'>
 ```
 
-### Coerce to enum
+## Coerce to an enum
 
 If an enum is defined via a native TypeScript enum or via a const object, then enum element names are coerced to
 corresponding values:
@@ -2025,7 +2011,7 @@ shape.parse([1, 2]);
 // ❌ ValidationError: enum at /: Must be equal to one of 0,1,2
 ```
 
-## `finite`
+# `finite`
 
 Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
@@ -2043,9 +2029,9 @@ d.number().finite();
 // ⮕ Shape<number>
 ```
 
-Finite numbers follow [number type coercion rules](#coerce-to-number).
+Finite numbers follow [number type coercion rules](#coerce-to-a-number).
 
-## `function`
+# `function`, `fn`
 
 Returns a [`FunctionShape`](https://smikhalevski.github.io/doubter/classes/FunctionShape.html) instance.
 
@@ -2101,7 +2087,7 @@ d.fn().this(d.object({ foo: d.string }));
 // ⮕ Shape<(this: { foo: d.string }) => any>
 ```
 
-### Parsing a function
+## Parsing a function
 
 Function shapes check that an input value is a function:
 
@@ -2129,7 +2115,7 @@ function implFn() {
 shape2.parse(implFn) === implFn // ⮕ true
 ```
 
-### Implementing a function
+## Implementing a function
 
 You can delegate a function implementation using a function shape. This would guarantee that the function implementation
 is called with arguments of requested types, and delegator returns the value of the requested type.
@@ -2212,7 +2198,7 @@ getLastName.call({ name: 'Indiana' });
 // ❌ ValidationError: type at /return: Must be a string
 ```
 
-### Coercing arguments
+## Coercing arguments
 
 Function shapes go well with type coercion:
 
@@ -2243,7 +2229,7 @@ plus2Impl('40');
 // ⮕ '402'
 ```
 
-### Transforming arguments and return values
+## Transforming arguments and return values
 
 Here's a function shape that transforms the input argument by converting a string to a number:
 
@@ -2282,7 +2268,7 @@ flowchart TD
     end
 ```
 
-## `instanceOf`
+# `instanceOf`
 
 Returns an [`InstanceShape`](https://smikhalevski.github.io/doubter/classes/InstanceShape.html) instance.
 
@@ -2297,7 +2283,7 @@ d.instanceOf(User);
 // ⮕ Shape<User>
 ```
 
-## `integer`
+# `integer`, `int`
 
 Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
@@ -2318,9 +2304,9 @@ d.number().integer();
 // ⮕ Shape<number>
 ```
 
-Integers follow [number type coercion rules](#coerce-to-number).
+Integers follow [number type coercion rules](#coerce-to-a-number).
 
-## `intersection`
+# `intersection`, `and`
 
 Returns an [`IntersectionShape`](https://smikhalevski.github.io/doubter/classes/IntersectionShape.html) instance.
 
@@ -2348,7 +2334,7 @@ d.and([
 // ⮕ Shape<string[] & Array<'Peter' | 'Paul'>>
 ```
 
-### Intersecting objects
+## Intersecting objects
 
 When working with objects, [extend objects](#extending-objects) instead of intersecting them whenever possible, since
 object shapes are more performant than object intersection shapes.
@@ -2385,7 +2371,7 @@ const shape = d.and([shape1, shape2]);
 // ⮕ Shape<{ foo: never, bar: boolean }>
 ```
 
-## `json`
+# `json`
 
 Returns a [`JSONShape`](https://smikhalevski.github.io/doubter/classes/JSONShape.html) instance.
 
@@ -2410,7 +2396,7 @@ shape.parse('{"foo":42}');
 // ⮕ { foo: 42 }
 ```
 
-## `lazy`
+# `lazy`
 
 Returns a [`LazyShape`](https://smikhalevski.github.io/doubter/classes/LazyShape.html) instance.
 
@@ -2449,7 +2435,7 @@ directly in its own initializer.
 > **Warning**&ensp;While Doubter supports cyclic types, it doesn't support cyclic data structures. The latter would
 > cause an infinite loop at runtime.
 
-## `map`
+# `map`
 
 Returns a [`MapShape`](https://smikhalevski.github.io/doubter/classes/MapShape.html) instance.
 
@@ -2460,7 +2446,7 @@ d.map(d.string(), d.number());
 // ⮕ Shape<Map<string, number>>
 ```
 
-### Coerce to `Map`
+## Coerce to a `Map`
 
 Arrays, iterables and array-like objects that withhold entry-like elements (a tuple with two elements) are converted to
 `Map` entries via `Array.from(value)`:
@@ -2488,7 +2474,7 @@ shape.parse({
 // ⮕ Map { 'Jake' → 31, 'Jill' → 28 }
 ```
 
-## `nan`
+# `nan`
 
 Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
@@ -2506,7 +2492,7 @@ d.number().nan();
 // ⮕ Shape<number>
 ```
 
-## `never`
+# `never`
 
 Returns a [`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) instance.
 
@@ -2517,7 +2503,7 @@ d.never();
 // ⮕ Shape<never>
 ```
 
-## `not`
+# `not`
 
 Returns an [`ExcludeShape`](https://smikhalevski.github.io/doubter/classes/ExcludeShape.html) instance.
 
@@ -2536,7 +2522,7 @@ shape.parse('Bill');
 
 More about exclusions in the [Exclude a shape](#exclude-a-shape) section.
 
-## `null`
+# `null`
 
 Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
@@ -2547,7 +2533,7 @@ d.null();
 // ⮕ Shape<null>
 ```
 
-## `number`
+# `number`
 
 Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
@@ -2605,7 +2591,7 @@ d.finite()
 
 The finite and integer assertions are always _applied before other checks_.
 
-### Coerce to number
+## Coerce to a number
 
 `null` and `undefined` values are converted to 0:
 
@@ -2636,7 +2622,7 @@ shape.parse([1997, 1998]);
 // ❌ ValidationError: type at /: Must be a number
 ```
 
-## `object`
+# `object`
 
 Returns an [`ObjectShape`](https://smikhalevski.github.io/doubter/classes/ObjectShape.html) instance.
 
@@ -2650,7 +2636,7 @@ d.object({
 // ⮕ Shape<{ name: string, age: number }>
 ```
 
-### Optional properties
+## Optional properties
 
 If the inferred type of the property shape is a union with `undefined` then the property becomes optional:
 
@@ -2682,7 +2668,7 @@ d.object({
 // ⮕ Shape<{ name: string }, { name?: string | undefined }>
 ```
 
-### Index signature
+## Index signature
 
 Add an index signature to the object type, so all properties that aren't listed explicitly are validated with the rest
 shape:
@@ -2707,7 +2693,7 @@ shape.rest(restShape);
 Unlike an index signature in TypeScript, a rest shape is applied only to keys that aren't explicitly specified among
 object property shapes.
 
-### Unknown keys
+## Unknown keys
 
 Keys that aren't defined explicitly can be handled in several ways:
 
@@ -2743,7 +2729,7 @@ const shape = d.object({ foo: d.string() }).exact();
 shape.preserve();
 ```
 
-### Picking and omitting properties
+## Picking and omitting properties
 
 Picking keys from an object creates the new shape that contains only listed keys:
 
@@ -2769,7 +2755,7 @@ shape.omit(['foo']);
 // ⮕ Shape<{ bar: number }>
 ```
 
-### Extending objects
+## Extending objects
 
 Add new properties to the object shape:
 
@@ -2799,7 +2785,7 @@ fooShape.extend(barShape);
 // ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
-### Making objects partial and required
+## Making objects partial and required
 
 Object properties are optional if their type extends `undefined`. Derive an object shape that would have its properties
 all marked as optional:
@@ -2840,7 +2826,7 @@ shape3.required(['foo'])
 
 Note that `required` would force the value of both input and output to be non-`undefined`.
 
-### Object keys
+## Object keys
 
 Derive a shape that constrains keys of an object:
 
@@ -2854,7 +2840,7 @@ const keyShape = shape.keyof();
 // ⮕ Shape<'name' | 'age'>
 ```
 
-## `promise`
+# `promise`
 
 Returns a [`PromiseShape`](https://smikhalevski.github.io/doubter/classes/PromiseShape.html) instance.
 
@@ -2874,7 +2860,7 @@ const shape = d.promise(
 // ⮕ Shape<Promise<string>, Promise<number>>
 ```
 
-### Coerce to `Promise`
+## Coerce to a `Promise`
 
 All values are converted to a promise by wrapping it in `Promise.resolve()`:
 
@@ -2885,7 +2871,7 @@ shape.parseAsync(42);
 // ⮕ Promise<number>
 ```
 
-## `record`
+# `record`
 
 Returns a [`RecordShape`](https://smikhalevski.github.io/doubter/classes/RecordShape.html) instance.
 
@@ -2913,7 +2899,7 @@ d.record(keyShape, d.number());
 // ⮕ Shape<Record<'foo' | 'bar', number>>
 ```
 
-## `set`
+# `set`
 
 Returns a [`SetShape`](https://smikhalevski.github.io/doubter/classes/SetShape.html) instance.
 
@@ -2936,7 +2922,7 @@ Limit both minimum and maximum size at the same time:
 d.set(d.string()).size(5);
 ```
 
-### Coerce to `Set`
+## Coerce to a `Set`
 
 Arrays, iterables and array-like objects converted to `Set` values via `Array.from(value)`:
 
@@ -2954,7 +2940,7 @@ shape.parse('J');
 // ⮕ Set { 'J' }
 ```
 
-## `string`
+# `string`
 
 Returns a [`StringShape`](https://smikhalevski.github.io/doubter/classes/StringShape.html) instance.
 
@@ -2983,7 +2969,7 @@ Constrain a string with a regular expression:
 d.string().regex(/foo|bar/);
 ```
 
-### Coerce to string
+## Coerce to a string
 
 `null` and `undefined` are converted to an empty string:
 
@@ -3027,7 +3013,7 @@ shape.parse(['Jill', 'Sarah']);
 // ❌ ValidationError: type at /: Must be a string
 ```
 
-## `symbol`
+# `symbol`
 
 Returns a [`SymbolShape`](https://smikhalevski.github.io/doubter/classes/SymbolShape.html) instance.
 
@@ -3057,7 +3043,7 @@ d.enum([FOO, BAR]);
 // ⮕  Shape<typeof FOO | typeof BAR>
 ```
 
-## `transform`
+# `transform`
 
 Returns a [`TransformShape`](https://smikhalevski.github.io/doubter/classes/TransformShape.html) instance.
 
@@ -3083,7 +3069,7 @@ d.transformAsync(value => Promise.resolve('Hello, ' + value));
 
 For more information, see [Transformations](#transformations) section.
 
-## `tuple`
+# `tuple`
 
 Returns an [`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
 
@@ -3105,9 +3091,9 @@ d.tuple([d.string(), d.number()]).rest(d.boolean());
 // ⮕ Shape<[string, number, ...boolean]>
 ```
 
-Tuples follow [array type coercion rules](#coerce-to-array).
+Tuples follow [array type coercion rules](#coerce-to-an-array).
 
-## `undefined`
+# `undefined`
 
 Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
@@ -3118,7 +3104,7 @@ d.undefined();
 // ⮕ Shape<undefined>
 ```
 
-## `union`
+# `union`, `or`
 
 Returns a [`UnionShape`](https://smikhalevski.github.io/doubter/classes/UnionShape.html) instance.
 
@@ -3135,7 +3121,7 @@ Use a shorter alias `or`:
 d.or([d.string(), d.number()]);
 ```
 
-### Discriminated unions
+## Discriminated unions
 
 A discriminated union is a union of object shapes that all share a particular key.
 
@@ -3190,7 +3176,7 @@ businessType.parse({
 // ❌ ValidationError: numberGreaterThan at /headcount: Must be greater than 0
 ```
 
-### Issues raised by a union
+## Issues raised by a union
 
 If there are multiple shapes in the union that have raised issues during parsing, then union returns a grouping issue.
 
@@ -3290,7 +3276,7 @@ string-related issue:
 
 This behaviour is applied to discriminated unions as well.
 
-## `unknown`
+# `unknown`
 
 Returns a [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
 
@@ -3301,7 +3287,7 @@ d.unknown();
 // ⮕ Shape<unknown>
 ```
 
-## `void`
+# `void`
 
 Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
