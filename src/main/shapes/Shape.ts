@@ -16,14 +16,16 @@ import {
   captureIssues,
   cloneInstance,
   copyUnsafeChecks,
-  createApplyChecksCallback,
   createIssueFactory,
+  deleteAt,
+  getCheckIndex,
   getValueType,
   isArray,
   isEqual,
   isFunction,
-  isUnsafeCheck,
+  isObjectLike,
   ok,
+  replaceChecks,
   toDeepPartialShape,
   unique,
 } from '../utils';
@@ -189,7 +191,7 @@ export class Shape<I = any, O = I> {
   /**
    * The array of checks that were used to produce {@linkcode _applyChecks}.
    */
-  protected _checks: readonly Check[] | null = null;
+  protected _checks: readonly Check[] = [];
 
   /**
    * A callback that applies checks to the given value.
@@ -227,23 +229,66 @@ export class Shape<I = any, O = I> {
   /**
    * Adds the check that is applied to the shape output.
    *
+   * If check callback returns an empty array, it is considered that no issues have occurred.
+   *
+   * @param cb The callback that checks the shape output.
+   * @returns The clone of the shape.
+   */
+  check(cb: CheckCallback<O, undefined>): this;
+
+  /**
+   * Adds the check that is applied to the shape output.
+   *
+   * If check callback returns an empty array, it is considered that no issues have occurred.
+   *
+   * @param cb The callback that checks the shape output.
+   * @param param The param that is passed to `cb` as the second argument.
+   * @returns The clone of the shape.
+   */
+  check<P>(cb: CheckCallback<O, P>, param: P): this;
+
+  /**
+   * Adds the check that is applied to the shape output.
+   *
    * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then the existing
    * check is deleted and the new one is appended. If the key is `undefined` then the `cb` identity is used as a key.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
-   * @param cb The callback that checks the shape output.
    * @param options The check options.
+   * @param cb The callback that checks the shape output.
    * @returns The clone of the shape.
    */
-  check(cb: CheckCallback<O>, options: CheckOptions = {}): this {
-    const { key = cb, param, unsafe = false } = options;
+  check(options: CheckOptions, cb: CheckCallback<O, undefined>): this;
 
-    const check: Check = { key, callback: cb, param, isUnsafe: unsafe };
+  /**
+   * Adds the check that is applied to the shape output.
+   *
+   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then the existing
+   * check is deleted and the new one is appended. If the key is `undefined` then the `cb` identity is used as a key.
+   *
+   * If check callback returns an empty array, it is considered that no issues have occurred.
+   *
+   * @param options The check options.
+   * @param cb The callback that checks the shape output.
+   * @param param The param that is passed to `cb` as the second argument.
+   * @returns The clone of the shape.
+   */
+  check<P>(options: CheckOptions, cb: CheckCallback<O, P>, param: P): this;
 
-    return this._replaceChecks(
-      this._checks !== null ? this._checks.filter(check => check.key !== key).concat(check) : [check]
-    );
+  check(options: any, cb?: any, param?: any): this {
+    if (isFunction(options)) {
+      param = cb;
+      cb = options;
+      options = {};
+    }
+
+    const { key = cb, unsafe = false } = options;
+
+    const index = getCheckIndex(this._checks, key);
+    const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
+
+    return replaceChecks(cloneInstance(this), index !== -1 ? deleteAt(checks, index) : checks);
   }
 
   /**
@@ -253,7 +298,18 @@ export class Shape<I = any, O = I> {
    * @returns The check or `undefined` if there's no check associated with the key.
    */
   getCheck(key: unknown): Check | undefined {
-    return this._checks?.find(check => check.key === key);
+    const index = getCheckIndex(this._checks, key);
+
+    return index !== -1 ? this._checks[index] : undefined;
+  }
+
+  /**
+   * Returns `true` if the shape has the check with the given key, or `false` otherwise.
+   *
+   * @param key The check key.
+   */
+  hasCheck(key: unknown): boolean {
+    return getCheckIndex(this._checks, key) !== -1;
   }
 
   /**
@@ -263,17 +319,16 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape if the matching check was deleted, or this shape if there is no matching check.
    */
   deleteCheck(key: unknown): this {
-    if (this.getCheck(key) === undefined) {
-      return this;
-    }
-    return this._replaceChecks(this._checks!.filter(check => check.key !== key));
+    const index = getCheckIndex(this._checks, key);
+
+    return index !== -1 ? replaceChecks(cloneInstance(this), deleteAt(this._checks.slice(0), index)) : this;
   }
 
   /**
    * Refines the shape output type with the
    * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
    *
-   * @param predicate The predicate that returns `true` if value conforms the required type, or `false` otherwise.
+   * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The constraint options or an issue message.
    * @returns The shape with the narrowed output.
    * @template T The narrowed output value.
@@ -282,14 +337,14 @@ export class Shape<I = any, O = I> {
     /**
      * @param output The shape output value.
      */
-    predicate: (output: O) => output is T,
+    cb: (output: O) => output is T,
     options?: RefineOptions | Message
   ): Shape<I, T>;
 
   /**
    * Checks that the output value conforms the predicate.
    *
-   * @param predicate The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
+   * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
@@ -297,22 +352,18 @@ export class Shape<I = any, O = I> {
     /**
      * @param output The shape output value.
      */
-    predicate: (output: O) => boolean,
+    cb: (output: O) => boolean,
     options?: RefineOptions | Message
   ): this;
 
-  refine(predicate: (output: O) => unknown, options?: RefineOptions | Message) {
-    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, predicate);
+  refine(cb: (output: O) => unknown, options?: any) {
+    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
-    const cb: CheckCallback<O> = (input, options) => {
-      if (!predicate(input)) {
+    return this.check({ key: cb, unsafe: isObjectLike(options) && options.unsafe }, (input, param, options) => {
+      if (!cb(input)) {
         return issueFactory(input, options);
       }
-    };
-
-    const unsafe = options !== null && typeof options === 'object' && options.unsafe;
-
-    return this.check(cb, { key: predicate, param: predicate, unsafe });
+    });
   }
 
   /**
@@ -511,6 +562,9 @@ export class Shape<I = any, O = I> {
   /**
    * Checks that the input doesn't match the shape.
    *
+   * This method works exactly as {@linkcode exclude} at runtime, but it doesn't perform the exclusion on the type
+   * level.
+   *
    * @param shape The shape to which the output must not conform.
    * @param options The constraint options or an issue message.
    * @template S The shape to which the output must not conform.
@@ -518,22 +572,6 @@ export class Shape<I = any, O = I> {
    */
   not<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): NotShape<this, S> {
     return this.exclude(shape, options);
-  }
-
-  /**
-   * Returns a shape clone with new set of checks.
-   *
-   * @param checks The map from a check key to a corresponding check.
-   * @returns The clone of the shape.
-   */
-  protected _replaceChecks(checks: readonly Check[]): this {
-    const shape = cloneInstance(this);
-
-    shape._checks = checks.length !== 0 ? checks : null;
-    shape._applyChecks = createApplyChecksCallback(checks);
-    shape._isUnsafe = checks.some(isUnsafeCheck);
-
-    return shape;
   }
 
   /**
@@ -696,6 +734,7 @@ export interface Shape<I, O> {
 Object.defineProperties(Shape.prototype, {
   input: {
     configurable: true,
+
     get() {
       throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
     },
@@ -703,6 +742,7 @@ Object.defineProperties(Shape.prototype, {
 
   output: {
     configurable: true,
+
     get() {
       throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
     },
@@ -710,30 +750,32 @@ Object.defineProperties(Shape.prototype, {
 
   inputTypes: {
     configurable: true,
-    get(this: Shape) {
-      let inputTypes = unique(this._getInputTypes()).slice(0);
 
-      if (inputTypes.length === 0 || inputTypes.includes(TYPE_ANY)) {
-        inputTypes = [TYPE_ANY];
+    get(this: Shape) {
+      let types = unique(this._getInputTypes()).slice(0);
+
+      if (types.length === 0 || types.includes(TYPE_ANY)) {
+        types = [TYPE_ANY];
       }
-      if (inputTypes.length !== 1) {
-        const neverIndex = inputTypes.indexOf(TYPE_NEVER);
+      if (types.length !== 1) {
+        const neverIndex = types.indexOf(TYPE_NEVER);
 
         if (neverIndex !== -1) {
-          inputTypes.splice(neverIndex, 1);
+          types.splice(neverIndex, 1);
         }
       }
 
-      Object.freeze(inputTypes);
+      Object.freeze(types);
 
-      Object.defineProperty(this, 'inputTypes', { writable: true, value: inputTypes });
+      Object.defineProperty(this, 'inputTypes', { writable: true, value: types });
 
-      return inputTypes;
+      return types;
     },
   },
 
   isAsync: {
     configurable: true,
+
     get(this: Shape) {
       const async = this._isAsync();
       const _defaultApplyAsync = Shape.prototype['_applyAsync'];
@@ -754,6 +796,7 @@ Object.defineProperties(Shape.prototype, {
 
   try: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
@@ -777,6 +820,7 @@ Object.defineProperties(Shape.prototype, {
 
   tryAsync: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
@@ -800,6 +844,7 @@ Object.defineProperties(Shape.prototype, {
 
   parse: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
@@ -823,6 +868,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseAsync: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
@@ -846,6 +892,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseOrDefault: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
@@ -869,6 +916,7 @@ Object.defineProperties(Shape.prototype, {
 
   parseOrDefaultAsync: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 

@@ -28,10 +28,14 @@ export interface Err {
  * A callback that takes a value and returns `undefined` if it satisfies the requirements. If a value doesn't satisfy
  * the check requirements then issues can be returned or a {@linkcode ValidationError} can be thrown.
  *
- * @type T The value type.
+ * @param value The value that must be checked.
+ * @param param The check param.
+ * @template T The value that must be checked.
+ * @template P The check param.
  */
-export type CheckCallback<T = any> = (
+export type CheckCallback<T = any, P = any> = (
   value: T,
+  param: P,
   options: Readonly<ParseOptions>
 ) => Partial<Issue>[] | Partial<Issue> | null | undefined | void;
 
@@ -69,11 +73,6 @@ export interface CheckOptions {
    * The unique key of the check in scope of the shape.
    */
   key?: unknown;
-
-  /**
-   * An optional param associated with the check.
-   */
-  param?: any;
 
   /**
    * If `true` then the check would be executed even if the preceding check failed, otherwise check is

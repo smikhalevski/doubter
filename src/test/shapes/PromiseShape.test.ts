@@ -44,13 +44,13 @@ describe('PromiseShape', () => {
     });
 
     expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, input, { verbose: false, coerced: false });
+    expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerced: false });
   });
 
   test('applies unsafe checks if value shape raised issues', async () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const promiseShape = new PromiseShape(shape).check(() => [{ code: 'yyy' }], { unsafe: true });
+    const promiseShape = new PromiseShape(shape).check({ unsafe: true }, () => [{ code: 'yyy' }]);
 
     await expect(promiseShape.tryAsync(Promise.resolve(111), { verbose: true })).resolves.toEqual({
       ok: false,

@@ -1,6 +1,7 @@
 {
   "testOptions": {
-    "warmupIterationCount": 100
+    "warmupIterationCount": 100,
+    "targetRme": 0.005
   },
   "setupFiles": [
     "./src/test/setup.js"

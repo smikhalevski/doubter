@@ -58,8 +58,8 @@ export class StringShape extends CoercibleShape<string> {
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-    return addConstraint(this, CODE_STRING_MIN, length, (input, options) => {
-      if (input.length < length) {
+    return addConstraint(this, CODE_STRING_MIN, length, (input, param, options) => {
+      if (input.length < param) {
         return issueFactory(input, options);
       }
     });
@@ -75,8 +75,8 @@ export class StringShape extends CoercibleShape<string> {
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-    return addConstraint(this, CODE_STRING_MAX, length, (input, options) => {
-      if (input.length > length) {
+    return addConstraint(this, CODE_STRING_MAX, length, (input, param, options) => {
+      if (input.length > param) {
         return issueFactory(input, options);
       }
     });
@@ -92,10 +92,10 @@ export class StringShape extends CoercibleShape<string> {
   regex(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-    return addConstraint(this, re.toString(), re, (input, options) => {
-      re.lastIndex = 0;
+    return addConstraint(this, re.toString(), re, (input, param, options) => {
+      param.lastIndex = 0;
 
-      if (!re.test(input)) {
+      if (!param.test(input)) {
         return issueFactory(input, options);
       }
     });
