@@ -1642,7 +1642,7 @@ shape.parse(['42', '33']);
 You can extend existing shapes and override type coercion that they use.
 
 ```ts
-class YesNoBooleanShape extends d.BooleanShape {
+class YesNoShape extends d.BooleanShape {
   
   protected _coerce(value: unknown): boolean {
     if (value === 'yes') {
@@ -1660,7 +1660,7 @@ class YesNoBooleanShape extends d.BooleanShape {
 This shape can be used alongside built-in shapes:
 
 ```ts
-const yesNoShape = new YesNoBooleanShape().coerce();
+const yesNoShape = new YesNoShape().coerce();
 
 d.array(yesNoShape).parse(['yes', 'no'])
 // ⮕ [true, false]

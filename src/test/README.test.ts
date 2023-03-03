@@ -109,8 +109,8 @@ describe('Advanced shapes', () => {
     expect(shape.parse(['42', '33'])).toEqual([42, 33]);
   });
 
-  test('YesNoBooleanShape', () => {
-    class YesNoBooleanShape extends d.BooleanShape {
+  test('YesNoShape', () => {
+    class YesNoShape extends d.BooleanShape {
       protected _coerce(value: unknown): boolean {
         if (value === 'yes') {
           return true;
@@ -123,6 +123,6 @@ describe('Advanced shapes', () => {
       }
     }
 
-    expect(d.array(new YesNoBooleanShape().coerce()).parse(['yes', 'no'])).toEqual([true, false]);
+    expect(d.array(new YesNoShape().coerce()).parse(['yes', 'no'])).toEqual([true, false]);
   });
 });
