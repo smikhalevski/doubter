@@ -138,8 +138,8 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-    return addConstraint(this, CODE_ARRAY_MIN, length, (input, options) => {
-      if (input.length < length) {
+    return addConstraint(this, CODE_ARRAY_MIN, length, (input, param, options) => {
+      if (input.length < param) {
         return issueFactory(input, options);
       }
     });
@@ -155,8 +155,8 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-    return addConstraint(this, CODE_ARRAY_MAX, length, (input, options) => {
-      if (input.length > length) {
+    return addConstraint(this, CODE_ARRAY_MAX, length, (input, param, options) => {
+      if (input.length > param) {
         return issueFactory(input, options);
       }
     });

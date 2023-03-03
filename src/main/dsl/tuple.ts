@@ -33,7 +33,7 @@ export function tuple(
   restShape?: AnyShape | ConstraintOptions | Message | null,
   options?: ConstraintOptions | Message
 ): ArrayShape<[AnyShape, ...AnyShape[]], AnyShape | null> {
-  if (restShape == null || restShape instanceof Shape) {
+  if (restShape === null || restShape === undefined || restShape instanceof Shape) {
     return new ArrayShape(shapes, restShape || null, options);
   } else {
     return new ArrayShape(shapes, null, restShape);

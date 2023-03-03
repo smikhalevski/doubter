@@ -121,8 +121,8 @@ export class NumberShape extends CoercibleShape<number> {
   gt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-    return addConstraint(this, CODE_NUMBER_GT, value, (input, options) => {
-      if (input <= value) {
+    return addConstraint(this, CODE_NUMBER_GT, value, (input, param, options) => {
+      if (input <= param) {
         return issueFactory(input, options);
       }
     });
@@ -138,8 +138,8 @@ export class NumberShape extends CoercibleShape<number> {
   lt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-    return addConstraint(this, CODE_NUMBER_LT, value, (input, options) => {
-      if (input >= value) {
+    return addConstraint(this, CODE_NUMBER_LT, value, (input, param, options) => {
+      if (input >= param) {
         return issueFactory(input, options);
       }
     });
@@ -155,8 +155,8 @@ export class NumberShape extends CoercibleShape<number> {
   gte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-    return addConstraint(this, CODE_NUMBER_GTE, value, (input, options) => {
-      if (input < value) {
+    return addConstraint(this, CODE_NUMBER_GTE, value, (input, param, options) => {
+      if (input < param) {
         return issueFactory(input, options);
       }
     });
@@ -172,8 +172,8 @@ export class NumberShape extends CoercibleShape<number> {
   lte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-    return addConstraint(this, CODE_NUMBER_LTE, value, (input, options) => {
-      if (input > value) {
+    return addConstraint(this, CODE_NUMBER_LTE, value, (input, param, options) => {
+      if (input > param) {
         return issueFactory(input, options);
       }
     });
@@ -189,8 +189,8 @@ export class NumberShape extends CoercibleShape<number> {
   multipleOf(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
 
-    return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, value, (input, options) => {
-      if (!isMultipleOf(input, value)) {
+    return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, value, (input, param, options) => {
+      if (!isMultipleOf(input, param)) {
         return issueFactory(input, options);
       }
     });

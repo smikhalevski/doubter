@@ -97,11 +97,21 @@ expectType<{ aaa?: string }>(d.object({ aaa: d.string() }).brand().deepPartial()
 // Branded shapes are transparent for deepPartial
 expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string() }).brand() }).deepPartial().output);
 
-// ExcludeShape
+// not()
+
+expectType<111 | 222>(d.enum([111, 222]).not(d.number()).input);
+
+expectType<111 | 222>(d.enum([111, 222]).not(d.number()).output);
 
 expectType<111 | 222>(d.enum([111, 222]).not(d.const(222)).input);
 
 expectType<111 | 222>(d.enum([111, 222]).not(d.const(222)).output);
+
+// exclude()
+
+expectType<111 | 222>(d.enum([111, 222]).exclude(d.number()).input);
+
+expectType<never>(d.enum([111, 222]).exclude(d.number()).output);
 
 expectType<111 | 222>(d.enum([111, 222]).exclude(d.const(222)).input);
 

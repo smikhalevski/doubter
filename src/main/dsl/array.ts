@@ -21,7 +21,7 @@ export function array(
   shape?: AnyShape | ConstraintOptions | Message,
   options?: ConstraintOptions | Message
 ): ArrayShape<any, any> {
-  if (shape == null || shape instanceof Shape) {
+  if (shape === null || shape === undefined || shape instanceof Shape) {
     return new ArrayShape(null, shape || null, options);
   } else {
     return new ArrayShape(null, null, shape);

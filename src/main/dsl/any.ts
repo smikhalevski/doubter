@@ -33,5 +33,5 @@ export function any<T = any>(cb: (value: any) => boolean, options?: ConstraintOp
 export function any(cb?: (value: any) => boolean, options?: ConstraintOptions | Message): AnyShape {
   const shape = new Shape();
 
-  return cb == null ? shape : shape.refine(cb, options);
+  return cb === null || cb === undefined ? shape : shape.refine(cb, options);
 }

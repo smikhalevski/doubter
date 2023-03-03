@@ -83,13 +83,17 @@ export function unique<T>(arr: readonly T[]): readonly T[] {
 }
 
 /**
- * Returns primitive if an object is a wrapper, or returns value as is.
+ * Removes an element at index from a array. Mutates the array!
+ *
+ * @param arr The array to modify.
+ * @param index The index in the array, unchecked.
  */
-export function toPrimitive(value: unknown): unknown {
-  if (isObjectLike(value) && (value instanceof String || value instanceof Number || value instanceof Boolean)) {
-    return value.valueOf();
+export function deleteAt<T>(arr: T[], index: number): T[] {
+  for (let i = index + 1; i < arr.length; ++i) {
+    arr[i - 1] = arr[i];
   }
-  return value;
+  arr.pop();
+  return arr;
 }
 
 /**
@@ -105,6 +109,16 @@ export function toArrayIndex(key: unknown): number {
     return key;
   }
   return -1;
+}
+
+/**
+ * Returns primitive if an object is a wrapper, or returns value as is.
+ */
+export function toPrimitive(value: unknown): unknown {
+  if (isObjectLike(value) && (value instanceof String || value instanceof Number || value instanceof Boolean)) {
+    return value.valueOf();
+  }
+  return value;
 }
 
 /**
@@ -234,10 +248,6 @@ export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
 }
 
-export function isUnsafeCheck(check: Check): boolean {
-  return check.isUnsafe;
-}
-
 /**
  * Converts the shape to its deep partial alternative if shape implements {@linkcode DeepPartialProtocol}, or returns
  * the shape as is.
@@ -248,22 +258,53 @@ export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProto
   return isFunction(shape.deepPartial) ? shape.deepPartial() : shape;
 }
 
+export function isUnsafeCheck(check: Check): boolean {
+  return check.isUnsafe;
+}
+
+/**
+ * Returns the index of the check with the given key, or -1 if there's no such check.
+ */
+export function getCheckIndex(checks: readonly Check[], key: unknown): number {
+  for (let i = 0; i < checks.length; ++i) {
+    if (checks[i].key === key) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Updates the shape checks and related properties.
+ *
+ * @param shape The shape to update.
+ * @param checks The array of new checks.
+ * @returns The clone of the shape.
+ */
+export function replaceChecks<S extends Shape>(shape: S, checks: readonly Check[]): S {
+  shape['_checks'] = checks;
+  shape['_applyChecks'] = createApplyChecksCallback(checks);
+  shape['_isUnsafe'] = checks.some(isUnsafeCheck);
+
+  return shape;
+}
+
 /**
  * The shortcut to add built-in constraints to shapes.
  */
-export function addConstraint<S extends Shape>(
+export function addConstraint<S extends Shape, P>(
   shape: S,
   key: string,
-  param: unknown,
-  cb: CheckCallback<S['output']>
+  param: P,
+  cb: CheckCallback<S['output'], P>
 ): S {
-  return shape.check(cb, { key, param, unsafe: true });
+  return shape.check({ key, unsafe: true }, cb, param);
 }
 
 /**
  * Replaces checks of the target shape with unsafe checks from the source shape.
  */
-export function copyUnsafeChecks<S extends Shape>(sourceShape: AnyShape, targetShape: S): S {
+export function copyUnsafeChecks<S extends Shape>(sourceShape: Shape, targetShape: S): S {
   return copyChecks(sourceShape, targetShape, isUnsafeCheck);
 }
 
@@ -271,15 +312,13 @@ export function copyUnsafeChecks<S extends Shape>(sourceShape: AnyShape, targetS
  * Replaces checks of the target shape with checks from the source shape that match a predicate.
  */
 export function copyChecks<S extends Shape>(
-  sourceShape: AnyShape,
+  sourceShape: Shape,
   targetShape: S,
   predicate?: (check: Check) => boolean
 ): S {
   const checks = sourceShape['_checks'];
 
-  return targetShape['_replaceChecks'](
-    checks !== null && checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
-  );
+  return replaceChecks(targetShape, checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []);
 }
 
 /**
@@ -294,8 +333,9 @@ export function applyForResult<T>(
 ): T | Promise<Awaited<T>> {
   if (shape.isAsync) {
     return shape['_applyAsync'](input, options).then(cb) as Promise<Awaited<T>>;
+  } else {
+    return cb(shape['_apply'](input, options));
   }
-  return cb(shape['_apply'](input, options));
 }
 
 /**
@@ -413,18 +453,18 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
   }
 
   if (checksLength === 1) {
-    const [{ isUnsafe: isUnsafe0, callback: cb0 }] = checks;
+    const [{ callback: cb0, param: param0, isUnsafe: isUnsafe0 }] = checks;
 
     return (output, issues, options) => {
       if (issues === null || isUnsafe0) {
         let result;
 
         try {
-          result = cb0(output, options);
+          result = cb0(output, param0, options);
         } catch (error) {
           return concatIssues(issues, captureIssues(error));
         }
-        if (result != null) {
+        if (result !== null && result !== undefined) {
           return appendIssue(issues, result);
         }
       }
@@ -433,14 +473,17 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
   }
 
   if (checksLength === 2) {
-    const [{ isUnsafe: isUnsafe0, callback: cb0 }, { isUnsafe: isUnsafe1, callback: cb1 }] = checks;
+    const [
+      { callback: cb0, param: param0, isUnsafe: isUnsafe0 },
+      { callback: cb1, param: param1, isUnsafe: isUnsafe1 },
+    ] = checks;
 
     return (output, issues, options) => {
       if (issues === null || isUnsafe0) {
         let result;
 
         try {
-          result = cb0(output, options);
+          result = cb0(output, param0, options);
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
 
@@ -448,7 +491,7 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
             return issues;
           }
         }
-        if (result != null) {
+        if (result !== null && result !== undefined) {
           issues = appendIssue(issues, result);
 
           if (issues !== null && !options.verbose) {
@@ -461,11 +504,11 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
         let result;
 
         try {
-          result = cb1(output, options);
+          result = cb1(output, param1, options);
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
         }
-        if (result != null) {
+        if (result !== null && result !== undefined) {
           issues = appendIssue(issues, result);
         }
       }
@@ -476,7 +519,7 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
 
   return (output, issues, options) => {
     for (let i = 0; i < checksLength; ++i) {
-      const { isUnsafe, callback } = checks[i];
+      const { callback, param, isUnsafe } = checks[i];
 
       let result;
 
@@ -485,7 +528,7 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
       }
 
       try {
-        result = callback(output, options);
+        result = callback(output, param, options);
       } catch (error) {
         issues = concatIssues(issues, captureIssues(error));
 
@@ -494,7 +537,7 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
         }
       }
 
-      if (result != null) {
+      if (result !== null && result !== undefined) {
         issues = appendIssue(issues, result);
 
         if (issues !== null && !options.verbose) {
