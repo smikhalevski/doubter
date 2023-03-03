@@ -1,6 +1,18 @@
 import { expectType } from 'tsd';
 import * as d from 'doubter';
 
+expectType<{ aaa?: string }>(
+  d.object({
+    aaa: d.string().optional(),
+  }).output
+);
+
+expectType<{ aaa?: any }>(
+  d.object({
+    aaa: d.any(),
+  }).output
+);
+
 expectType<{ aaa: string; bbb: number }>(
   d.object({
     aaa: d.string(),

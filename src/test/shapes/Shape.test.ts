@@ -13,6 +13,7 @@ import {
   StringShape,
   TransformShape,
   ValidationError,
+  ValueType,
 } from '../../main';
 import {
   CODE_DENIED,
@@ -21,7 +22,10 @@ import {
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
   TYPE_ANY,
+  TYPE_NEVER,
+  TYPE_NUMBER,
   TYPE_STRING,
+  TYPE_SYMBOL,
 } from '../../main/constants';
 import { Result } from '../../main/shapes/Shape';
 
@@ -128,6 +132,42 @@ describe('Shape', () => {
     shape.parse(111);
 
     expect(cbMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('creates input types', () => {
+    const shape = new (class extends Shape {
+      protected _getInputTypes(): readonly ValueType[] {
+        return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
+      }
+    })();
+
+    expect(shape.inputTypes).toEqual([TYPE_STRING, TYPE_NUMBER]);
+  });
+
+  test('any shape accepts never', () => {
+    expect(new Shape().isAcceptedType(TYPE_NEVER)).toBe(true);
+  });
+
+  test('any shape accepts any', () => {
+    expect(new Shape().isAcceptedType(TYPE_ANY)).toBe(true);
+  });
+
+  test('any shape accepts other types', () => {
+    expect(new Shape().isAcceptedType(TYPE_STRING)).toBe(true);
+  });
+
+  test('detects accepted input types', () => {
+    const shape = new (class extends Shape {
+      protected _getInputTypes(): readonly ValueType[] {
+        return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
+      }
+    })();
+
+    expect(shape.isAcceptedType(TYPE_ANY)).toBe(true);
+    expect(shape.isAcceptedType(TYPE_STRING)).toBe(true);
+    expect(shape.isAcceptedType(TYPE_NUMBER)).toBe(true);
+    expect(shape.isAcceptedType(TYPE_SYMBOL)).toBe(false);
+    expect(shape.isAcceptedType(TYPE_NEVER)).toBe(false);
   });
 
   test('returns ok when input was parsed', () => {
