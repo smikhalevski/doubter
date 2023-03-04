@@ -14,7 +14,6 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isEqual,
   isIterableObject,
   isObjectLike,
   ok,
@@ -106,12 +105,10 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
     for (let i = 0; i < entriesLength; ++i) {
       const entry = entries[i];
-      const [key, value] = entry;
 
-      let outputKey = key;
-      let outputValue = value;
+      let [key, value] = entry;
 
-      const keyResult = keyShape['_apply'](key, options);
+      let keyResult = keyShape['_apply'](key, options);
 
       if (keyResult !== null) {
         if (isArray(keyResult)) {
@@ -121,12 +118,13 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
             return keyResult;
           }
           issues = concatIssues(issues, keyResult);
+          keyResult = null;
         } else {
-          outputKey = keyResult.value;
+          key = keyResult.value;
         }
       }
 
-      const valueResult = valueShape['_apply'](value, options);
+      let valueResult = valueShape['_apply'](value, options);
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
@@ -136,15 +134,16 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
             return valueResult;
           }
           issues = concatIssues(issues, valueResult);
+          valueResult = null;
         } else {
-          outputValue = valueResult.value;
+          value = valueResult.value;
         }
       }
 
-      if ((_isUnsafe || issues === null) && (!isEqual(key, outputKey) || !isEqual(value, outputValue))) {
+      if ((_isUnsafe || issues === null) && (keyResult !== null || valueResult !== null)) {
         changed = true;
-        entry[0] = outputKey;
-        entry[1] = outputValue;
+        entry[0] = key;
+        entry[1] = value;
       }
     }
 
@@ -183,10 +182,11 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
       let entry: [unknown, unknown];
       let key: unknown;
       let value: unknown;
-      let outputKey: unknown;
-      let outputValue: unknown;
+      let keyChanged = false;
 
       const handleKeyResult = (keyResult: Result) => {
+        keyChanged = false;
+
         if (keyResult !== null) {
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
@@ -196,7 +196,8 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
             }
             issues = concatIssues(issues, keyResult);
           } else {
-            outputKey = keyResult.value;
+            key = keyResult.value;
+            keyChanged = true;
           }
         }
         return applyForResult(valueShape, value, options, handleValueResult);
@@ -211,15 +212,16 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
               return valueResult;
             }
             issues = concatIssues(issues, valueResult);
+            valueResult = null;
           } else {
-            outputValue = valueResult.value;
+            value = valueResult.value;
           }
         }
 
-        if ((_isUnsafe || issues === null) && !(isEqual(key, outputKey) && isEqual(value, outputValue))) {
+        if ((_isUnsafe || issues === null) && (keyChanged || valueResult !== null)) {
           changed = true;
-          entry[0] = outputKey;
-          entry[1] = outputValue;
+          entry[0] = key;
+          entry[1] = value;
         }
         return next();
       };
@@ -229,8 +231,8 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
         if (index !== entriesLength) {
           entry = entries[index];
-          key = outputKey = entry[0];
-          value = outputValue = entry[1];
+          key = entry[0];
+          value = entry[1];
 
           return applyForResult(keyShape, key, options, handleKeyResult);
         }
@@ -251,7 +253,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
   }
 
   /**
-   * Coerces a value to a array of `Map` entries, or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to an array of `Map` entries, or returns {@linkcode NEVER} if coercion isn't possible.
    *
    * @param value The non-`Map` value to coerce.
    */

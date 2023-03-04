@@ -12,7 +12,6 @@ import {
   enableMask,
   isArray,
   isAsyncShape,
-  isEqual,
   isMaskEnabled,
   isObjectLike,
   isPlainObject,
@@ -440,7 +439,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if ((_isUnsafe || issues === null) && !isEqual(input[key], result.value)) {
+          } else if (_isUnsafe || issues === null) {
             if (input === output) {
               output = cloneDict(input);
             }
@@ -500,7 +499,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         issues = concatIssues(issues, result);
         continue;
       }
-      if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
+      if (_isUnsafe || issues === null) {
         if (input === output) {
           output = cloneDict(input);
         }
@@ -563,7 +562,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           issues = concatIssues(issues, result);
           continue;
         }
-        if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
+        if (_isUnsafe || issues === null) {
           if (input === output) {
             output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
@@ -626,7 +625,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
           issues = concatIssues(issues, result);
           continue;
         }
-        if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
+        if (_isUnsafe || issues === null) {
           if (input === output) {
             output = cloneDict(input);
           }

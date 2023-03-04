@@ -7,7 +7,6 @@ import {
   createIssueFactory,
   isArray,
   isAsyncShape,
-  isEqual,
   isIterableObject,
   ok,
   toArrayIndex,
@@ -231,7 +230,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
           issues = concatIssues(issues, result);
           continue;
         }
-        if ((_isUnsafe || issues === null) && !isEqual(value, result.value)) {
+        if (_isUnsafe || issues === null) {
           if (input === output) {
             output = input.slice(0);
           }
@@ -282,7 +281,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if ((_isUnsafe || issues === null) && !isEqual(input[index], result.value)) {
+          } else if (_isUnsafe || issues === null) {
             if (input === output) {
               output = input.slice(0);
             }
