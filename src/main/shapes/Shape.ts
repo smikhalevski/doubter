@@ -1394,7 +1394,7 @@ export class CatchShape<S extends AnyShape, T>
   extends Shape<S['input'], S['output'] | T>
   implements DeepPartialProtocol<CatchShape<DeepPartialShape<S>, T>>
 {
-  private _resultProvider: (issues: Issue[], input: unknown) => Ok<T>;
+  private _resultProvider: (input: unknown, issues: Issue[], options: Readonly<ParseOptions>) => Ok<T>;
 
   /**
    * Creates the new {@linkcode CatchShape} instance.
@@ -1413,12 +1413,12 @@ export class CatchShape<S extends AnyShape, T>
      *
      * A callback receives the array of raised issues and an input for which the parsing failed.
      */
-    readonly fallback: T | ((issues: Issue[], input: any) => T)
+    readonly fallback: T | ((input: any, issues: Issue[], options: Readonly<ParseOptions>) => T)
   ) {
     super();
 
     if (isFunction(fallback)) {
-      this._resultProvider = (issues, input) => ok(fallback(issues, input));
+      this._resultProvider = (input, issues, options) => ok(fallback(input, issues, options));
     } else {
       const result = ok(fallback);
       this._resultProvider = () => result;
@@ -1458,7 +1458,7 @@ export class CatchShape<S extends AnyShape, T>
     if (result !== null) {
       if (isArray(result)) {
         try {
-          result = this._resultProvider(result, input);
+          result = this._resultProvider(input, result, options);
         } catch (error) {
           return captureIssues(error);
         }

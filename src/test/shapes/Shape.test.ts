@@ -848,7 +848,7 @@ describe('CatchShape', () => {
     expect(new CatchShape(new StringShape(), () => 'aaa').parse(111)).toBe('aaa');
   });
 
-  test('fallback callback receives the array of issues and input', () => {
+  test('fallback callback receives the input value, the array of issues, and parsing options', () => {
     const fallbackMock = jest.fn();
 
     new CatchShape(new StringShape(), fallbackMock).parse(111);
@@ -856,8 +856,9 @@ describe('CatchShape', () => {
     expect(fallbackMock).toHaveBeenCalledTimes(1);
     expect(fallbackMock).toHaveBeenNthCalledWith(
       1,
+      111,
       [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, meta: undefined, param: TYPE_STRING, path: [] }],
-      111
+      { coerced: false, verbose: false }
     );
   });
 
