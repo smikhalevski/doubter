@@ -348,8 +348,11 @@ export class Shape<I = any, O = I> {
   refine<T extends O>(
     /**
      * @param output The shape output value.
+     * @param options Parsing options.
+     * @return `true` if value matches the predicate, or `false` otherwise.
+     * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
      */
-    cb: (output: O) => output is T,
+    cb: (output: O, options: Readonly<ParseOptions>) => output is T,
     options?: RefineOptions | Message
   ): Shape<I, T>;
 
@@ -363,16 +366,19 @@ export class Shape<I = any, O = I> {
   refine(
     /**
      * @param output The shape output value.
+     * @param options Parsing options.
+     * @return `true` if value matches the predicate, or `false` otherwise.
+     * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
      */
-    cb: (output: O) => boolean,
+    cb: (output: O, options: Readonly<ParseOptions>) => boolean,
     options?: RefineOptions | Message
   ): this;
 
-  refine(cb: (output: O) => unknown, options?: any) {
+  refine(cb: (output: O, options: Readonly<ParseOptions>) => unknown, options?: any) {
     const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
     return this.check({ key: cb, unsafe: isObjectLike(options) && options.unsafe }, (input, param, options) => {
-      if (!cb(input)) {
+      if (!cb(input, options)) {
         return issueFactory(input, options);
       }
     });

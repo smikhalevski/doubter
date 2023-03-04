@@ -412,7 +412,7 @@ describe('Shape', () => {
       expect(new Shape().refine(cbMock).try('aaa')).toEqual({ ok: true, value: 'aaa' });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
     });
 
     test('does not invoke safe predicate if the preceding check failed', () => {
@@ -442,7 +442,7 @@ describe('Shape', () => {
       });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa');
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
     });
 
     test('returns issues if predicate fails', () => {

@@ -730,6 +730,9 @@ d.string().refine(isMarsOrPluto)
 // ⮕ Shape<string, 'Mars' | 'Pluto'>
 ```
 
+A predicate callback receives the value that must be validated and parsing options, so you can access
+[your custom context](#parsing-context).
+
 # Transformations
 
 Along with validation, shapes can transform values. Let's consider a shape that takes a string as an input and converts
@@ -851,9 +854,10 @@ asyncShape2.isAsync // ⮕ true
 
 # Parsing context
 
-Inside [check](#checks), [transform](#transformations) and [fallback](#fallback-value) callbacks you can access options
-passed to the parser. The [`context`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#context)
-option may store arbitrary data, which is `undefined` by default.
+Inside [check](#checks), [refinement predicates](#refinements), [transform](#transformations) and
+[fallback](#fallback-value) callbacks you can access options passed to the parser. The
+[`context`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#context) option may store arbitrary
+data, which is `undefined` by default.
 
 The example below shows how you can transform numbers to formatted strings using context:
 

@@ -116,3 +116,15 @@ expectType<never>(d.enum([111, 222]).exclude(d.number()).output);
 expectType<111 | 222>(d.enum([111, 222]).exclude(d.const(222)).input);
 
 expectType<111>(d.enum([111, 222]).exclude(d.const(222)).output);
+
+// parseOrDefault()
+
+expectType<111 | 222 | 333>(d.enum([111, 222]).parseOrDefault('aaa', 333));
+
+expectType<string | 111>(d.string().parseOrDefault('aaa', 111));
+
+// parseOrDefaultAsync()
+
+expectType<Promise<111 | 222 | 333>>(d.enum([111, 222]).parseOrDefaultAsync('aaa', 333));
+
+expectType<Promise<string | 111>>(d.string().parseOrDefaultAsync('aaa', 111));
