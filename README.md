@@ -1236,6 +1236,28 @@ shape2.parse('Mars');
 // ⮕ 1671565326707
 ```
 
+If fallback is a function, it would receive an array of issues and an input value that caused them:
+
+```ts
+d.string().catch((issues, input) => {
+  // Return a fallback value
+});
+```
+
+A fallback function can throw a [`ValidationError`](#validation-errors) to indicate that a fallback value cannot be
+produced. Issues from this error would be incorporated in the parsing result.
+
+```ts
+const shape3 = d.object({
+  name: d.string().catch(() => {
+    throw new d.ValidationError([{ code: 'kaputs' }]);
+  })
+});
+
+shape3.parse({ name: 47 });
+// ❌ ValidationError: kaputs at /name
+```
+
 # Branded types
 
 TypeScript's type system is structural, which means that any two types that are structurally equivalent are considered

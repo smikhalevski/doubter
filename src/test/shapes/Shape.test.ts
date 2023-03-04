@@ -848,15 +848,36 @@ describe('CatchShape', () => {
     expect(new CatchShape(new StringShape(), () => 'aaa').parse(111)).toBe('aaa');
   });
 
-  test('fallback callback receives the array of issues', () => {
+  test('fallback callback receives the array of issues and input', () => {
     const fallbackMock = jest.fn();
 
     new CatchShape(new StringShape(), fallbackMock).parse(111);
 
     expect(fallbackMock).toHaveBeenCalledTimes(1);
-    expect(fallbackMock).toHaveBeenNthCalledWith(1, [
-      { code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, meta: undefined, param: TYPE_STRING, path: [] },
-    ]);
+    expect(fallbackMock).toHaveBeenNthCalledWith(
+      1,
+      [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, meta: undefined, param: TYPE_STRING, path: [] }],
+      111
+    );
+  });
+
+  test('error thrown from fallback is not swallowed', () => {
+    expect(() =>
+      new CatchShape(new StringShape(), () => {
+        throw new Error('expected');
+      }).parse(111)
+    ).toThrow(new Error('expected'));
+  });
+
+  test('ValidationError error thrown from fallback is returned as issues', () => {
+    expect(
+      new CatchShape(new StringShape(), () => {
+        throw new ValidationError([{ code: 'xxx' }]);
+      }).try(111)
+    ).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
   });
 
   test('returns input types of the underlying shape', () => {
