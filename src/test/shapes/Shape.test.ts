@@ -19,8 +19,10 @@ import {
   CODE_DENIED,
   CODE_EXCLUDED,
   CODE_PREDICATE,
+  CODE_TYPE,
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
+  MESSAGE_STRING_TYPE,
   TYPE_ANY,
   TYPE_NEVER,
   TYPE_NUMBER,
@@ -830,6 +832,39 @@ describe('CatchShape', () => {
 
   test('returns the result of a fallback callback if parsing fails', () => {
     expect(new CatchShape(new StringShape(), () => 'aaa').parse(111)).toBe('aaa');
+  });
+
+  test('fallback callback receives the input value, the array of issues, and parsing options', () => {
+    const fallbackMock = jest.fn();
+
+    new CatchShape(new StringShape(), fallbackMock).parse(111);
+
+    expect(fallbackMock).toHaveBeenCalledTimes(1);
+    expect(fallbackMock).toHaveBeenNthCalledWith(
+      1,
+      111,
+      [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, meta: undefined, param: TYPE_STRING, path: [] }],
+      { coerced: false, verbose: false }
+    );
+  });
+
+  test('error thrown from fallback is not swallowed', () => {
+    expect(() =>
+      new CatchShape(new StringShape(), () => {
+        throw new Error('expected');
+      }).parse(111)
+    ).toThrow(new Error('expected'));
+  });
+
+  test('ValidationError error thrown from fallback is returned as issues', () => {
+    expect(
+      new CatchShape(new StringShape(), () => {
+        throw new ValidationError([{ code: 'xxx' }]);
+      }).try(111)
+    ).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [] }],
+    });
   });
 
   test('returns input types of the underlying shape', () => {

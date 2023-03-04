@@ -851,9 +851,9 @@ asyncShape2.isAsync // ⮕ true
 
 # Parsing context
 
-Inside [check](#checks) and [transform](#transformations) callbacks you can access options passed to the parser. The
-[`context`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#context) option may store arbitrary
-data, which is `undefined` by default.
+Inside [check](#checks), [transform](#transformations) and [fallback](#fallback-value) callbacks you can access options
+passed to the parser. The [`context`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#context)
+option may store arbitrary data, which is `undefined` by default.
 
 The example below shows how you can transform numbers to formatted strings using context:
 
@@ -1234,6 +1234,30 @@ shape2.parse('Pluto');
 
 shape2.parse('Mars');
 // ⮕ 1671565326707
+```
+
+Fallback functions receive an input value, an array of issues and
+[parsing options](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html) (so you can access your
+[custom context](#parsing-context) if needed).
+
+```ts
+d.string().catch((input, issues, options) => {
+  // Return a fallback value
+});
+```
+
+A fallback function can throw a [`ValidationError`](#validation-errors) to indicate that a fallback value cannot be
+produced. Issues from this error would be incorporated in the parsing result.
+
+```ts
+const shape3 = d.object({
+  name: d.string().catch(() => {
+    throw new d.ValidationError([{ code: 'kaputs' }]);
+  })
+});
+
+shape3.parse({ name: 47 });
+// ❌ ValidationError: kaputs at /name
 ```
 
 # Branded types
