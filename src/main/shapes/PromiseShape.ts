@@ -1,14 +1,6 @@
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import {
-  applyForResult,
-  copyUnsafeChecks,
-  createIssueFactory,
-  isArray,
-  isEqual,
-  ok,
-  toDeepPartialShape,
-} from '../utils';
+import { applyForResult, copyUnsafeChecks, createIssueFactory, isArray, ok, toDeepPartialShape } from '../utils';
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -55,19 +47,15 @@ export class PromiseShape<S extends AnyShape>
   }
 
   protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Promise<S['output']>>> {
-    let output = input;
-
-    if (!(input instanceof Promise)) {
-      if (!(options.coerced || this.isCoerced)) {
-        return Promise.resolve(this._typeIssueFactory(input, options));
-      }
-      output = Promise.resolve(input);
+    if (!(input instanceof Promise) && !(options.coerced || this.isCoerced)) {
+      return Promise.resolve(this._typeIssueFactory(input, options));
     }
 
-    const { _applyChecks } = this;
+    const handleValue = (value: unknown) => {
+      return applyForResult(this.shape, value, options, result => {
+        const { _applyChecks } = this;
 
-    return output.then((value: unknown) =>
-      applyForResult(this.shape, value, options, result => {
+        let output = input;
         let issues = null;
 
         if (result !== null) {
@@ -76,16 +64,23 @@ export class PromiseShape<S extends AnyShape>
               return result;
             }
             issues = result;
-          } else if (!isEqual(value, result.value)) {
-            output = Promise.resolve(result.value);
+          } else {
+            output = result.value;
           }
         }
 
-        if (_applyChecks === null || (issues = _applyChecks(output, issues, options)) === null) {
+        output = Promise.resolve(output);
+
+        if ((_applyChecks === null || (issues = _applyChecks(output, issues, options)) === null) && output !== input) {
           return ok(output);
         }
         return issues;
-      })
-    );
+      });
+    };
+
+    if (input instanceof Promise) {
+      return input.then(handleValue);
+    }
+    return Promise.resolve(handleValue(input));
   }
 }

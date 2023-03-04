@@ -7,7 +7,6 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isEqual,
   isObjectLike,
   ok,
   setObjectProperty,
@@ -88,16 +87,14 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     let issues = null;
     let index = -1;
 
-    for (const key in input) {
-      const value = input[key];
-
-      let outputKey: PropertyKey = key;
-      let outputValue = value;
+    for (let key in input) {
+      let value = input[key];
+      let keyResult = null;
 
       index++;
 
       if (keyShape !== null) {
-        const keyResult = keyShape['_apply'](key, options);
+        keyResult = keyShape['_apply'](key, options);
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
@@ -107,13 +104,14 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
               return keyResult;
             }
             issues = concatIssues(issues, keyResult);
+            keyResult = null;
           } else {
-            outputKey = keyResult.value;
+            key = keyResult.value as string;
           }
         }
       }
 
-      const valueResult = valueShape['_apply'](value, options);
+      let valueResult = valueShape['_apply'](value, options);
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
@@ -123,16 +121,17 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
             return valueResult;
           }
           issues = concatIssues(issues, valueResult);
+          valueResult = null;
         } else {
-          outputValue = valueResult.value;
+          value = valueResult.value;
         }
       }
 
-      if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+      if ((_isUnsafe || issues === null) && (keyResult !== null || valueResult !== null)) {
         if (input === output) {
           output = cloneDictHead(input, index);
         }
-        setObjectProperty(output, outputKey, outputValue);
+        setObjectProperty(output, key, value);
       }
     }
 
@@ -161,12 +160,13 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
       let issues: Issue[] | null = null;
       let index = -1;
 
-      let key: string;
+      let key: PropertyKey;
       let value: unknown;
-      let outputKey: string;
-      let outputValue: unknown;
+      let keyChanged = false;
 
       const handleKeyResult = (keyResult: Result) => {
+        keyChanged = false;
+
         if (keyResult !== null) {
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
@@ -176,7 +176,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
             }
             issues = concatIssues(issues, keyResult);
           } else {
-            outputKey = keyResult.value;
+            key = keyResult.value;
+            keyChanged = true;
           }
         }
         return applyForResult(valueShape, value, options, handleValueResult);
@@ -191,16 +192,17 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
               return valueResult;
             }
             issues = concatIssues(issues, valueResult);
+            valueResult = null;
           } else {
-            outputValue = valueResult.value;
+            value = valueResult.value;
           }
         }
 
-        if ((_isUnsafe || issues === null) && (key !== outputKey || !isEqual(value, outputValue))) {
+        if ((_isUnsafe || issues === null) && (keyChanged || valueResult !== null)) {
           if (input === output) {
             output = cloneDictHead(input, index);
           }
-          setObjectProperty(output, outputKey, outputValue);
+          setObjectProperty(output, key, value);
         }
 
         return next();
@@ -210,8 +212,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
         index++;
 
         if (index !== keysLength) {
-          key = outputKey = keys[index];
-          value = outputValue = input[key];
+          key = keys[index];
+          value = input[key];
 
           if (keyShape !== null) {
             return applyForResult(keyShape, key, options, handleKeyResult);

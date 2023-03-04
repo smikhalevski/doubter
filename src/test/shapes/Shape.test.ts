@@ -350,6 +350,19 @@ describe('Shape', () => {
     expect(new Shape().to(shape).parse(111)).toBe(222);
   });
 
+  test('pipes from async shape to TransformShape that synchronously returns a promise', async () => {
+    const checkMock = jest.fn();
+
+    const shape = asyncShape.to(new TransformShape(value => Promise.resolve('__' + value))).check(checkMock);
+
+    const output = shape.parseAsync('aaa');
+
+    await expect(output).resolves.toBe('__aaa');
+    expect(checkMock).toHaveBeenCalledTimes(1);
+    expect(checkMock.mock.calls[0][0]).toBeInstanceOf(Promise);
+    await expect(checkMock.mock.calls[0][0]).resolves.toBe('__aaa');
+  });
+
   test('returns the fallback value if parsing fails', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]).catch(222);
 
@@ -488,10 +501,10 @@ describe('Shape', () => {
 });
 
 describe('TransformShape', () => {
-  test('transforms the output', () => {
+  test('transforms the value', () => {
     const cbMock = jest.fn(() => 111);
 
-    const shape = new TransformShape(new Shape(), false, cbMock);
+    const shape = new TransformShape(cbMock);
 
     expect(shape.parse('aaa')).toBe(111);
 
@@ -499,22 +512,8 @@ describe('TransformShape', () => {
     expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
   });
 
-  test('does not call transform if shape parsing failed', () => {
-    const cbMock = jest.fn(() => 111);
-
-    const shape = new TransformShape(
-      new Shape().check(() => [{ code: 'xxx' }]),
-      false,
-      cbMock
-    );
-
-    shape.try('aaa');
-
-    expect(cbMock).not.toHaveBeenCalled();
-  });
-
   test('transform callback can throw ValidationError instances', () => {
-    const shape = new TransformShape(new Shape(), false, () => {
+    const shape = new TransformShape(() => {
       throw new ValidationError([{ code: 'xxx' }]);
     });
 
@@ -525,16 +524,16 @@ describe('TransformShape', () => {
   });
 
   test('does not swallow unrecognized errors', () => {
-    const shape = new TransformShape(new Shape(), false, () => {
+    const shape = new TransformShape(() => {
       throw new Error('expected');
     });
 
     expect(() => shape.try('aaa')).toThrow(new Error('expected'));
   });
 
-  test('invokes a check', () => {
+  test('applies checks', () => {
     const cbMock = jest.fn(() => null);
-    const shape = new TransformShape(new Shape(), false, () => 111).check(cbMock);
+    const shape = new TransformShape(() => 111).check(cbMock);
 
     shape.parse('aaa');
 
@@ -546,7 +545,7 @@ describe('TransformShape', () => {
     test('transforms async shape output', async () => {
       const cbMock = jest.fn(() => Promise.resolve(111));
 
-      const shape = new TransformShape(new Shape(), true, cbMock);
+      const shape = new TransformShape(cbMock, true);
 
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
@@ -557,7 +556,7 @@ describe('TransformShape', () => {
     test('transforms using an async callback', async () => {
       const cbMock = jest.fn(() => Promise.resolve(111));
 
-      const shape = new TransformShape(new Shape(), true, cbMock);
+      const shape = new TransformShape(cbMock, true);
 
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
@@ -566,7 +565,7 @@ describe('TransformShape', () => {
     });
 
     test('transform callback can reject with ValidationError instances', async () => {
-      const shape = new TransformShape(new Shape(), true, () => Promise.reject(new ValidationError([{ code: 'xxx' }])));
+      const shape = new TransformShape(() => Promise.reject(new ValidationError([{ code: 'xxx' }])), true);
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
@@ -575,22 +574,9 @@ describe('TransformShape', () => {
     });
 
     test('does not swallow unrecognized errors', async () => {
-      const shape = new TransformShape(new Shape(), true, () => Promise.reject('expected'));
+      const shape = new TransformShape(() => Promise.reject('expected'), true);
 
       await expect(shape.tryAsync('aaa')).rejects.toBe('expected');
-    });
-
-    test('async base shape with sync transform that returns a promise', async () => {
-      const checkMock = jest.fn();
-
-      const shape = new TransformShape(asyncShape, false, value => Promise.resolve('__' + value)).check(checkMock);
-
-      const output = shape.parseAsync('aaa');
-
-      await expect(output).resolves.toBe('__aaa');
-      expect(checkMock).toHaveBeenCalledTimes(1);
-      expect(checkMock.mock.calls[0][0]).toBeInstanceOf(Promise);
-      await expect(checkMock.mock.calls[0][0]).resolves.toBe('__aaa');
     });
   });
 });

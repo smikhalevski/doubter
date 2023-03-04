@@ -6,7 +6,6 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isEqual,
   isIterableObject,
   ok,
   toArrayIndex,
@@ -156,9 +155,8 @@ export class SetShape<S extends AnyShape>
         issues = concatIssues(issues, result);
         continue;
       }
-      if ((changed = !isEqual(value, result.value))) {
-        values[i] = result.value;
-      }
+      changed = true;
+      values[i] = result.value;
     }
 
     const output = changed ? new Set(values) : input;
@@ -192,7 +190,6 @@ export class SetShape<S extends AnyShape>
 
       let issues: Issue[] | null = null;
       let index = -1;
-      let value: unknown;
 
       const handleResult = (result: Result) => {
         if (result !== null) {
@@ -203,7 +200,8 @@ export class SetShape<S extends AnyShape>
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if ((changed = !isEqual(value, result.value))) {
+          } else {
+            changed = true;
             values[index] = result.value;
           }
         }
@@ -214,7 +212,7 @@ export class SetShape<S extends AnyShape>
         index++;
 
         if (index !== valuesLength) {
-          return shape['_applyAsync']((value = values[index]), options).then(handleResult);
+          return shape['_applyAsync'](values[index], options).then(handleResult);
         }
 
         const output = changed ? new Set(values) : input;
