@@ -549,10 +549,13 @@ export class Shape<I = any, O = I> {
   /**
    * Returns the fallback value if parsing fails.
    *
-   * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
+   * @param fallback The value or a callback that returns a value that is returned if parsing has failed. A callback
+   * receives an input value, an array of raised issues, and {@link ParseOptions parsing options}.
    * @returns The {@linkcode CatchShape} instance.
    */
-  catch<T extends Literal>(fallback: T | (() => T)): CatchShape<this, T>;
+  catch<T extends Literal>(
+    fallback: T | ((input: any, issues: Issue[], options: Readonly<ParseOptions>) => T)
+  ): CatchShape<this, T>;
 
   catch(fallback?: unknown): Shape {
     return new CatchShape(this, fallback);
@@ -1411,7 +1414,7 @@ export class CatchShape<S extends AnyShape, T>
     /**
      * The value or a callback that returns a value that is returned if parsing has failed.
      *
-     * A callback receives the array of raised issues and an input for which the parsing failed.
+     *  A callback receives an input value, an array of raised issues, and {@link ParseOptions parsing options}.
      */
     readonly fallback: T | ((input: any, issues: Issue[], options: Readonly<ParseOptions>) => T)
   ) {
