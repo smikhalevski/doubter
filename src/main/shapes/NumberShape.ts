@@ -229,7 +229,7 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Allows `NaN` as an input and output value, or replaces an input `NaN` value with a default output value.
    *
-   * @param [defaultValue = NaN] The value that is used instead of `NaN` in the output.
+   * @param defaultValue The value that is used instead of `NaN` in the output.
    */
   nan(defaultValue = NaN): Shape<number> {
     return this.replace(NaN, defaultValue);

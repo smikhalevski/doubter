@@ -59,6 +59,18 @@ export function isValidDate(value: unknown): value is Date {
   return value instanceof Date && (value = value.getTime()) === value;
 }
 
+export function returnTrue(): boolean {
+  return true;
+}
+
+export function returnFalse(): boolean {
+  return false;
+}
+
+export function returnArray(): any[] {
+  return [];
+}
+
 export function unique<T>(arr: T[]): T[];
 
 export function unique<T>(arr: readonly T[]): readonly T[];
