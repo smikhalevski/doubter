@@ -19,8 +19,10 @@ import {
   CODE_DENIED,
   CODE_EXCLUDED,
   CODE_PREDICATE,
+  CODE_TYPE,
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
+  MESSAGE_STRING_TYPE,
   TYPE_ANY,
   TYPE_NEVER,
   TYPE_NUMBER,
@@ -844,6 +846,17 @@ describe('CatchShape', () => {
 
   test('returns the result of a fallback callback if parsing fails', () => {
     expect(new CatchShape(new StringShape(), () => 'aaa').parse(111)).toBe('aaa');
+  });
+
+  test('fallback callback receives the array of issues', () => {
+    const fallbackMock = jest.fn();
+
+    new CatchShape(new StringShape(), fallbackMock).parse(111);
+
+    expect(fallbackMock).toHaveBeenCalledTimes(1);
+    expect(fallbackMock).toHaveBeenNthCalledWith(1, [
+      { code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, meta: undefined, param: TYPE_STRING, path: [] },
+    ]);
   });
 
   test('returns input types of the underlying shape', () => {
