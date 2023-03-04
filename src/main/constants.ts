@@ -28,6 +28,7 @@ export const CODE_STRING_REGEX = 'stringRegex';
 export const CODE_TYPE = 'type';
 export const CODE_TUPLE = 'tuple';
 export const CODE_UNION = 'union';
+export const CODE_UNKNOWN = 'unknown';
 export const CODE_UNKNOWN_KEYS = 'unknownKeys';
 
 export const TYPE_OBJECT = 'object';
