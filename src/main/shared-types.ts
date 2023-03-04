@@ -32,6 +32,7 @@ export interface Err {
  * @param param The check param.
  * @template T The value that must be checked.
  * @template P The check param.
+ * @throws {@linkcode ValidationError} to notify that the check cannot be completed.
  */
 export type CheckCallback<T = any, P = any> = (
   value: T,

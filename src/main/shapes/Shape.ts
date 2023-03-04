@@ -350,6 +350,7 @@ export class Shape<I = any, O = I> {
      * @param output The shape output value.
      * @param options Parsing options.
      * @return `true` if value matches the predicate, or `false` otherwise.
+     * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
      */
     cb: (output: O, options: Readonly<ParseOptions>) => output is T,
     options?: RefineOptions | Message
@@ -367,6 +368,7 @@ export class Shape<I = any, O = I> {
      * @param output The shape output value.
      * @param options Parsing options.
      * @return `true` if value matches the predicate, or `false` otherwise.
+     * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
      */
     cb: (output: O, options: Readonly<ParseOptions>) => boolean,
     options?: RefineOptions | Message
