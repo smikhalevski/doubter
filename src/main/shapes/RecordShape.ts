@@ -86,9 +86,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     let output = input;
     let issues = null;
     let index = -1;
-    let key: PropertyKey;
 
-    for (key in input) {
+    for (let key in input) {
       let value = input[key];
       let keyResult = null;
 
@@ -107,7 +106,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
             issues = concatIssues(issues, keyResult);
             keyResult = null;
           } else {
-            key = keyResult.value;
+            key = keyResult.value as string;
           }
         }
       }
