@@ -1,4 +1,4 @@
-import { Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from './shared-types';
+import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok } from './shared-types';
 import {
   AnyShape,
   ApplyChecksCallback,
@@ -345,7 +345,7 @@ export function copyChecks<S extends Shape>(
 export function applyForResult<T>(
   shape: AnyShape,
   input: unknown,
-  options: ParseOptions,
+  options: ApplyOptions,
   cb: (result: Result) => T
 ): T | Promise<Awaited<T>> {
   if (shape.isAsync) {
@@ -369,7 +369,7 @@ export function createIssueFactory(
   defaultMessage: string,
   options: ConstraintOptions | Message | undefined,
   param: unknown
-): (input: unknown, options: Readonly<ParseOptions>) => Issue[];
+): (input: unknown, options: Readonly<ApplyOptions>) => Issue[];
 
 /**
  * Returns a function that creates a new array with a single issue.
@@ -383,14 +383,14 @@ export function createIssueFactory(
   code: string,
   defaultMessage: string,
   options: ConstraintOptions | Message | undefined
-): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[];
+): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[];
 
 export function createIssueFactory(
   code: string,
   defaultMessage: any,
   options: any,
   param?: any
-): (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[] {
+): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[] {
   const paramRequired = arguments.length <= 3;
 
   let meta: unknown;

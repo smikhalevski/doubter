@@ -1,5 +1,5 @@
-import { AnyShape, defaultParseOptions, Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { AnyShape, defaultApplyOptions, Result, Shape, ValueType } from './Shape';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import {
   applyForResult,
   cloneInstance,
@@ -35,7 +35,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   public isBare = false;
 
   protected _typeIssueFactory;
-  protected _parseOptions = defaultParseOptions;
+  protected _parseOptions = defaultApplyOptions;
 
   /**
    * Creates a new {@linkcode FunctionShape} instance.
@@ -111,7 +111,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @param options Parsing options.
    * @returns The new function shape.
    */
-  options(options: ParseOptions): this {
+  options(options: ApplyOptions): this {
     const shape = cloneInstance(this);
     shape._parseOptions = options;
     return shape;
@@ -125,7 +125,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @param options Parsing options used by the delegator. By default, options set via {@linkcode options} are used.
    * @returns The delegator function.
    */
-  delegate(fn: InferFunction<A, R, T>, options: ParseOptions = this._parseOptions): InferDelegator<A, R, T> {
+  delegate(fn: InferFunction<A, R, T>, options: ApplyOptions = this._parseOptions): InferDelegator<A, R, T> {
     const { argsShape, returnShape, thisShape } = this;
 
     if (this.isDelegatorAsync) {
@@ -155,7 +155,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    */
   delegateAsync(
     fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R['input']> | R['input'], never> : null, T>,
-    options: ParseOptions = this._parseOptions
+    options: ApplyOptions = this._parseOptions
   ): InferDelegator<A, Shape<never, Promise<R extends AnyShape ? R['output'] : any>>, T> {
     const { argsShape, returnShape, thisShape } = this;
 
@@ -192,7 +192,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     return [TYPE_FUNCTION];
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<InferDelegator<A, R, T>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferDelegator<A, R, T>> {
     const { _applyChecks } = this;
 
     let issues = null;

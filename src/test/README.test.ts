@@ -86,7 +86,7 @@ describe('JSON shape', () => {
 describe('Advanced shapes', () => {
   test('NumberLikeShape', () => {
     class NumberLikeShape extends d.Shape<string, number> {
-      protected _apply(input: unknown, options: d.ParseOptions): d.Result<number> {
+      protected _apply(input: unknown, options: d.ApplyOptions): d.Result<number> {
         if (typeof input !== 'string' || isNaN(parseFloat(input))) {
           return [
             {

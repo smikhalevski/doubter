@@ -1,5 +1,5 @@
 import { Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import { createIssueFactory } from '../utils';
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE, TYPE_SYMBOL } from '../constants';
 
@@ -24,7 +24,7 @@ export class SymbolShape extends Shape<symbol> {
     return [TYPE_SYMBOL];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<symbol> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<symbol> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'symbol') {

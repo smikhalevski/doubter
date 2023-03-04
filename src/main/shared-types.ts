@@ -37,7 +37,7 @@ export interface Err {
 export type CheckCallback<T = any, P = any> = (
   value: T,
   param: P,
-  options: Readonly<ParseOptions>
+  options: Readonly<ApplyOptions>
 ) => Partial<Issue>[] | Partial<Issue> | null | undefined | void;
 
 /**
@@ -127,7 +127,7 @@ export interface Issue {
  * @param options The parsing options.
  * @returns Any value that should be used as an issue message.
  */
-export type MessageCallback = (param: any, code: any, input: any, meta: any, options: Readonly<ParseOptions>) => any;
+export type MessageCallback = (param: any, code: any, input: any, meta: any, options: Readonly<ApplyOptions>) => any;
 
 /**
  * A callback that returns an issue message or a message string.
@@ -158,9 +158,9 @@ export interface RefineOptions extends ConstraintOptions {
 }
 
 /**
- * Options applied during parsing.
+ * Options used during parsing.
  */
-export interface ParseOptions {
+export interface ApplyOptions {
   /**
    * If `true` then all issues are collected during parsing, otherwise parsing is aborted after the first issue is
    * encountered.
@@ -180,6 +180,16 @@ export interface ParseOptions {
    * The custom context. Use it to pass custom params to check and transform callbacks.
    */
   context?: any;
+}
+
+/**
+ * Options used during parsing.
+ */
+export interface ParseOptions extends ApplyOptions {
+  /**
+   * A message that is passed to {@linkcode ValidationError} if it is thrown.
+   */
+  errorMessage: ((issues: Issue[], input: any) => string) | string;
 }
 
 export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;

@@ -1,12 +1,12 @@
 import {
   AnyShape,
+  ApplyOptions,
   CatchShape,
   ConstShape,
   DenyLiteralShape,
   ExcludeShape,
   NumberShape,
   ObjectShape,
-  ParseOptions,
   PipeShape,
   ReplaceLiteralShape,
   Shape,
@@ -39,7 +39,7 @@ beforeEach(() => {
       return true;
     }
 
-    protected _applyAsync(input: unknown, options: ParseOptions) {
+    protected _applyAsync(input: unknown, options: ApplyOptions) {
       return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
     }
   })();

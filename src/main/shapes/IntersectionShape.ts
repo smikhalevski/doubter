@@ -11,7 +11,7 @@ import {
   ok,
   toDeepPartialShape,
 } from '../utils';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import {
   CODE_INTERSECTION,
   MESSAGE_INTERSECTION,
@@ -97,7 +97,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<ToIntersection<U[number]>['output']> {
+  protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>['output']> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -135,7 +135,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<ToIntersection<U[number]>['output']>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<ToIntersection<U[number]>['output']>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -186,7 +186,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   private _applyIntersection(
     input: any,
     outputs: any[] | null,
-    options: ParseOptions
+    options: ApplyOptions
   ): Result<ToIntersection<U[number]>['output']> {
     const { shapes, _applyChecks } = this;
 

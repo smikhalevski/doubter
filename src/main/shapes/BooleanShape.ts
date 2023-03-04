@@ -1,5 +1,5 @@
 import { NEVER, Result, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import { createIssueFactory, isArray, ok, toPrimitive } from '../utils';
 import {
   CODE_TYPE,
@@ -38,7 +38,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<boolean> {
+  protected _apply(input: any, options: ApplyOptions): Result<boolean> {
     const { _applyChecks } = this;
 
     let output = input;

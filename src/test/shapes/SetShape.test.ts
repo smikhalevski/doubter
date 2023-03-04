@@ -1,4 +1,4 @@
-import { AnyShape, ObjectShape, Ok, ParseOptions, Result, SetShape, Shape, StringShape } from '../../main';
+import { AnyShape, ApplyOptions, ObjectShape, Ok, Result, SetShape, Shape, StringShape } from '../../main';
 import {
   CODE_SET_MAX,
   CODE_SET_MIN,
@@ -20,7 +20,7 @@ describe('SetShape', () => {
         return true;
       }
 
-      protected _applyAsync(input: unknown, options: ParseOptions) {
+      protected _applyAsync(input: unknown, options: ApplyOptions) {
         return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
       }
     })();

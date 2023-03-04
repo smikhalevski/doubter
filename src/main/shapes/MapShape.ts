@@ -7,7 +7,7 @@ import {
   Result,
   ValueType,
 } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import {
   applyForResult,
   concatIssues,
@@ -85,7 +85,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<Map<K['output'], V['output']>> {
+  protected _apply(input: any, options: ApplyOptions): Result<Map<K['output'], V['output']>> {
     let changed = false;
     let entries;
 
@@ -158,7 +158,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Map<K['output'], V['output']>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Map<K['output'], V['output']>>> {
     return new Promise(resolve => {
       let changed = false;
       let entries: [unknown, unknown][];

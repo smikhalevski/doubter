@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from '../shapes';
-import { ConstraintOptions, Message } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 
 /**
  * Creates the unconstrained shape.
@@ -22,9 +22,10 @@ export function any<T = any>(): Shape<T>;
 export function any<T>(
   /**
    * @param value The input value.
+   * @param options Parsing options.
    * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
-  cb: (value: any) => value is T,
+  cb: (value: any, options: Readonly<ApplyOptions>) => value is T,
   options?: ConstraintOptions | Message
 ): Shape<T>;
 
@@ -38,13 +39,17 @@ export function any<T>(
 export function any<T = any>(
   /**
    * @param value The input value.
+   * @param options Parsing options.
    * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
-  cb: (value: any) => boolean,
+  cb: (value: any, options: Readonly<ApplyOptions>) => boolean,
   options?: ConstraintOptions | Message
 ): Shape<T>;
 
-export function any(cb?: (value: any) => boolean, options?: ConstraintOptions | Message): AnyShape {
+export function any(
+  cb?: (value: any, options: Readonly<ApplyOptions>) => boolean,
+  options?: ConstraintOptions | Message
+): AnyShape {
   const shape = new Shape();
 
   return cb === null || cb === undefined ? shape : shape.refine(cb, options);

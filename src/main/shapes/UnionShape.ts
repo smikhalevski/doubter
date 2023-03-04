@@ -1,5 +1,5 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import {
   applyForResult,
   copyUnsafeChecks,
@@ -112,7 +112,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return inputValues;
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<U[number]['output']> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<U[number]['output']> {
     const { _applyChecks } = this;
 
     let result = null;
@@ -156,7 +156,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<U[number]['output']>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<U[number]['output']>> {
     return new Promise(resolve => {
       const { _applyChecks } = this;
 

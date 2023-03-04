@@ -506,7 +506,7 @@ shape2.parse(['Venus']);
 
 Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
 to collect all issues that prevent input from being successfully parsed. To do this, pass the
-[`verbose`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#verbose) option to the
+[`verbose`](https://smikhalevski.github.io/doubter/interfaces/ApplyOptions.html#verbose) option to the
 [parse method](#parsing-and-trying).
 
 ```ts
@@ -856,7 +856,7 @@ asyncShape2.isAsync // ⮕ true
 
 Inside [check](#checks) callbacks, [refinement predicates](#refinements), [transformers](#transformations) and
 [fallback](#fallback-value) functions you can access options passed to the parser. The
-[`context`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#context) option may store arbitrary
+[`context`](https://smikhalevski.github.io/doubter/interfaces/ApplyOptions.html#context) option may store arbitrary
 data, which is `undefined` by default.
 
 For example, here's how you can use context to transform numbers to formatted strings:
@@ -1241,7 +1241,7 @@ shape2.parse('Mars');
 ```
 
 Fallback functions receive an input value, an array of issues and
-[parsing options](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html) (so you can access your
+[parsing options](https://smikhalevski.github.io/doubter/interfaces/ApplyOptions.html) (so you can access your
 [custom context](#parsing-context) if needed).
 
 ```ts
@@ -1739,7 +1739,7 @@ Let's create a custom shape that parses an input string as a number:
 ```ts
 class NumberLikeShape extends d.Shape<string, number> {
 
-  protected _apply(input: unknown, options: d.ParseOptions): d.Result<number> {
+  protected _apply(input: unknown, options: d.ApplyOptions): d.Result<number> {
 
     // 1️⃣ Validate the input
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {

@@ -1,5 +1,5 @@
 import { NEVER, Result, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import { createIssueFactory, isArray, ok, toPrimitive } from '../utils';
 import {
   CODE_TYPE,
@@ -39,7 +39,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<bigint> {
+  protected _apply(input: any, options: ApplyOptions): Result<bigint> {
     const { _applyChecks } = this;
 
     let output = input;

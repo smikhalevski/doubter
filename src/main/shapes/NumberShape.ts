@@ -1,5 +1,5 @@
 import { NEVER, Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import {
   abs,
   addConstraint,
@@ -243,7 +243,7 @@ export class NumberShape extends CoercibleShape<number> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<number> {
+  protected _apply(input: any, options: ApplyOptions): Result<number> {
     const { _applyChecks } = this;
 
     let output = input;

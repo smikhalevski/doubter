@@ -1,4 +1,4 @@
-import { ParseOptions } from '../shared-types';
+import { ApplyOptions } from '../shared-types';
 import { TransformShape } from '../shapes';
 
 /**
@@ -16,7 +16,7 @@ export function transform<T>(
    * @return The transformation result.
    * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
    */
-  cb: (value: any, options: Readonly<ParseOptions>) => T
+  cb: (value: any, options: Readonly<ApplyOptions>) => T
 ): TransformShape<T> {
   return new TransformShape(cb);
 }
@@ -36,7 +36,7 @@ export function transformAsync<T>(
    * @return The transformation result.
    * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
    */
-  cb: (value: any, options: Readonly<ParseOptions>) => Promise<T>
+  cb: (value: any, options: Readonly<ApplyOptions>) => Promise<T>
 ): TransformShape<T> {
   return new TransformShape(cb, true);
 }

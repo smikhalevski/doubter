@@ -1,5 +1,5 @@
 import { NEVER, Result, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import { createIssueFactory, isArray, isValidDate, ok, toPrimitive } from '../utils';
 import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
@@ -29,7 +29,7 @@ export class DateShape extends CoercibleShape<Date> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<Date> {
+  protected _apply(input: any, options: ApplyOptions): Result<Date> {
     const { _applyChecks } = this;
 
     let output = input;

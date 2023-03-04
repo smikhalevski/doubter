@@ -1,4 +1,4 @@
-import { AnyShape, ObjectShape, Ok, ParseOptions, Result, Shape, StringShape } from '../../main';
+import { AnyShape, ApplyOptions, ObjectShape, Ok, Result, Shape, StringShape } from '../../main';
 import {
   CODE_DENIED,
   CODE_ENUM,
@@ -19,7 +19,7 @@ describe('ObjectShape', () => {
         return true;
       }
 
-      protected _applyAsync(input: unknown, options: ParseOptions) {
+      protected _applyAsync(input: unknown, options: ApplyOptions) {
         return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
       }
     })();

@@ -1,10 +1,10 @@
 import {
   AnyShape,
+  ApplyOptions,
   ArrayShape,
   FunctionShape,
   NumberShape,
   ObjectShape,
-  ParseOptions,
   Result,
   Shape,
   StringShape,
@@ -31,7 +31,7 @@ describe('FunctionShape', () => {
         return true;
       }
 
-      protected _applyAsync(input: unknown, options: ParseOptions) {
+      protected _applyAsync(input: unknown, options: ApplyOptions) {
         return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
       }
     })();

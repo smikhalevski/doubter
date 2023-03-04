@@ -1,5 +1,5 @@
 import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import {
   addConstraint,
   concatIssues,
@@ -122,7 +122,7 @@ export class SetShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<Set<S['output']>> {
+  protected _apply(input: any, options: ApplyOptions): Result<Set<S['output']>> {
     let changed = false;
     let values;
     let issues = null;
@@ -170,7 +170,7 @@ export class SetShape<S extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Set<S['output']>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Set<S['output']>>> {
     return new Promise(resolve => {
       let changed = false;
       let values: unknown[];

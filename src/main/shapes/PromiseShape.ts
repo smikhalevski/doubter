@@ -1,5 +1,5 @@
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import { applyForResult, copyUnsafeChecks, createIssueFactory, isArray, ok, toDeepPartialShape } from '../utils';
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
@@ -42,11 +42,11 @@ export class PromiseShape<S extends AnyShape>
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<Promise<S['output']>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<Promise<S['output']>> {
     throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Promise<S['output']>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Promise<S['output']>>> {
     if (!(input instanceof Promise) && !(options.coerced || this.isCoerced)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }

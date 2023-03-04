@@ -1,5 +1,5 @@
 import { Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import { createIssueFactory } from '../utils';
 import { CODE_TYPE, MESSAGE_NEVER_TYPE, TYPE_NEVER } from '../constants';
 
@@ -24,7 +24,7 @@ export class NeverShape extends Shape<never> {
     return [TYPE_NEVER];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<never> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<never> {
     return this._typeIssueFactory(input, options);
   }
 }

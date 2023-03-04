@@ -1,5 +1,5 @@
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import {
   applyForResult,
   cloneDictHead,
@@ -76,7 +76,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<InferRecord<K, V, 'output'>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferRecord<K, V, 'output'>> {
     if (!isObjectLike(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -144,7 +144,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferRecord<K, V, 'output'>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferRecord<K, V, 'output'>>> {
     return new Promise(resolve => {
       if (!isObjectLike(input)) {
         resolve(this._typeIssueFactory(input, options));

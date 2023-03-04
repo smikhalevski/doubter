@@ -1,4 +1,4 @@
-import { AnyShape, MapShape, ObjectShape, Ok, ParseOptions, Result, Shape, StringShape } from '../../main';
+import { AnyShape, ApplyOptions, MapShape, ObjectShape, Ok, Result, Shape, StringShape } from '../../main';
 import {
   CODE_TYPE,
   MESSAGE_MAP_TYPE,
@@ -17,7 +17,7 @@ describe('MapShape', () => {
         return true;
       }
 
-      protected _applyAsync(input: unknown, options: ParseOptions) {
+      protected _applyAsync(input: unknown, options: ApplyOptions) {
         return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
       }
     })();

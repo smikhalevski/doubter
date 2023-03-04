@@ -1,5 +1,5 @@
 import { Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
 import { createIssueFactory, isSubclass } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../constants';
 
@@ -34,7 +34,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<InstanceType<C>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<InstanceType<C>> {
     const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {

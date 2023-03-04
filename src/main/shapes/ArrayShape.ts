@@ -1,5 +1,5 @@
 import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import {
   addConstraint,
   concatIssues,
@@ -192,7 +192,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<InferArray<U, R, 'output'>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, 'output'>> {
     const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
     let output = input;
@@ -248,7 +248,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferArray<U, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
       const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
