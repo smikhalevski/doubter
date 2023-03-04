@@ -854,12 +854,12 @@ asyncShape2.isAsync // ⮕ true
 
 # Parsing context
 
-Inside [check](#checks), [refinement predicates](#refinements), [transform](#transformations) and
-[fallback](#fallback-value) callbacks you can access options passed to the parser. The
+Inside [check](#checks) callbacks, [refinement predicates](#refinements), [transformers](#transformations) and
+[fallback](#fallback-value) functions you can access options passed to the parser. The
 [`context`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#context) option may store arbitrary
 data, which is `undefined` by default.
 
-The example below shows how you can transform numbers to formatted strings using context:
+For example, here's how you can use context to transform numbers to formatted strings:
 
 ```ts
 const shape = d.number().transform(
