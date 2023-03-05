@@ -17,7 +17,7 @@ import {
   Shape,
   ValueType,
 } from './shapes/Shape';
-import { inflateIssue, ValidationError } from './ValidationError';
+import { ValidationError } from './ValidationError';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL, TYPE_OBJECT } from './constants';
 
 export interface ReadonlyDict<T = any> {
@@ -419,12 +419,12 @@ export function createIssueFactory(
   if (isFunction(message)) {
     if (paramRequired) {
       return (input, options, param) => [
-        { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
+        { code, path: undefined, input, message: message(param, code, input, meta, options), param, meta },
       ];
     }
 
     return (input, options) => [
-      { code, path: [], input, message: message(param, code, input, meta, options), param, meta },
+      { code, path: undefined, input, message: message(param, code, input, meta, options), param, meta },
     ];
   }
 
@@ -432,7 +432,7 @@ export function createIssueFactory(
     if (paramRequired) {
       if (message.indexOf('%s') !== -1) {
         return (input, options, param) => [
-          { code, path: [], input, message: message.replace('%s', String(param)), param, meta },
+          { code, path: undefined, input, message: message.replace('%s', String(param)), param, meta },
         ];
       }
     } else {
@@ -441,15 +441,19 @@ export function createIssueFactory(
   }
 
   if (paramRequired) {
-    return (input, options, param) => [{ code, path: [], input, message, param, meta }];
+    return (input, options, param) => [{ code, path: undefined, input, message, param, meta }];
   }
 
-  return input => [{ code, path: [], input, message, param, meta }];
+  return input => [{ code, path: undefined, input, message, param, meta }];
 }
 
 export function unshiftIssuesPath(issues: Issue[], key: unknown): void {
   for (const issue of issues) {
-    issue.path.unshift(key);
+    if (issue.path === undefined) {
+      issue.path = [key];
+    } else {
+      issue.path.unshift(key);
+    }
   }
 }
 
@@ -576,22 +580,17 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
   };
 }
 
-function appendIssue(issues: Issue[] | null, result: any /*Partial<Issue>[] | Partial<Issue>*/): Issue[] | null {
+function appendIssue(issues: Issue[] | null, result: Issue[] | Issue): Issue[] | null {
   if (isArray(result)) {
     if (result.length === 0) {
       return issues;
     }
-
-    result.forEach(inflateIssue);
-
     if (issues === null) {
       issues = result;
     } else {
       issues.push(...result);
     }
   } else if (isObjectLike(result)) {
-    inflateIssue(result);
-
     if (issues === null) {
       issues = [result];
     } else {
@@ -601,25 +600,19 @@ function appendIssue(issues: Issue[] | null, result: any /*Partial<Issue>[] | Pa
   return issues;
 }
 
-/**
- * Returns an er
- * @param issues
- * @param input
- * @param options
- */
 export function getErrorMessage(
   issues: Issue[],
   input: unknown,
   options: ParseOptions | undefined
 ): string | undefined {
-  // if (!isObjectLike(options)) {
-  //   return;
-  // }
-  // if (isFunction(options.errorMessage)) {
-  //   return options.errorMessage(issues, input);
-  // }
-  // if (typeof options.errorMessage === 'string') {
-  //   return options.errorMessage;
-  // }
-  return undefined;
+  if (options === null || typeof options !== 'object') {
+    return;
+  }
+  if (isFunction(options.errorMessage)) {
+    return options.errorMessage(issues, input);
+  }
+  if (options.errorMessage === undefined) {
+    return;
+  }
+  return String(options.errorMessage);
 }

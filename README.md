@@ -415,7 +415,6 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
 | `union` | [`d.or(…)`](#union-or) | [Issues raised by a union](#issues-raised-by-a-union) |
 | `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
-| `unknown` | — | Used if a partial issue doesn't have a code property |
 
 # Checks
 
@@ -425,7 +424,7 @@ to be greater than 5:
 ```ts
 const shape1 = d.number().check(value => {
   if (value <= 5) {
-    // 🟡 Return a partial issue, or an array of issues
+    // 🟡 Return an issue, or an array of issues
     return { code: 'kaputs' };
   }
 });
@@ -438,8 +437,7 @@ shape1.parse(3);
 // ❌ ValidationError: kaputs at /
 ```
 
-A check callback receives the shape output value and must return a partial issue or an array of partial issues if the
-value is invalid.
+A check callback receives the shape output value and must return an issue or an array of issues if the value is invalid.
 
 > **Note**&ensp;Check callbacks can throw a [`ValidationError`](#validation-errors) to notify Doubter that parsing
 > issues occurred. While this has the same effect as returning an array of issues, it is recommended to throw a
@@ -1745,11 +1743,8 @@ class NumberLikeShape extends d.Shape<string, number> {
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {
       return [{
         code: 'kaputs',
-        message: 'Must be a numberish',
-        path: [],
+        message: 'Must be coercible to number',
         input,
-        param: undefined,
-        meta: undefined
       }];
     }
 

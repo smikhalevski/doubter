@@ -9,15 +9,7 @@ describe('finite', () => {
   test('raises an issue if value is not a finite number', () => {
     expect(d.finite().try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_NUMBER_FINITE,
-          input: 'aaa',
-          message: MESSAGE_NUMBER_FINITE,
-          param: undefined,
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_NUMBER_FINITE, input: 'aaa', message: MESSAGE_NUMBER_FINITE }],
     });
   });
 });

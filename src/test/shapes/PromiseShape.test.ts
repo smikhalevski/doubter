@@ -28,7 +28,7 @@ describe('PromiseShape', () => {
   test('raises an issue if value is not a Promise', async () => {
     await expect(new PromiseShape(new StringShape()).tryAsync('aaa')).resolves.toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: TYPE_PROMISE, path: [] }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: TYPE_PROMISE }],
     });
   });
 
@@ -40,7 +40,7 @@ describe('PromiseShape', () => {
 
     await expect(promiseShape.tryAsync(input)).resolves.toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
 
     expect(checkMock).toHaveBeenCalledTimes(1);
@@ -54,10 +54,7 @@ describe('PromiseShape', () => {
 
     await expect(promiseShape.tryAsync(Promise.resolve(111), { verbose: true })).resolves.toEqual({
       ok: false,
-      issues: [
-        { code: 'xxx', path: [] },
-        { code: 'yyy', path: [] },
-      ],
+      issues: [{ code: 'xxx' }, { code: 'yyy' }],
     });
   });
 
@@ -93,7 +90,7 @@ describe('PromiseShape', () => {
 
       await expect(promiseShape.tryAsync(Promise.resolve(111))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [] }],
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
       });
     });
 

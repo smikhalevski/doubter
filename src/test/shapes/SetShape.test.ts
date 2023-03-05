@@ -42,7 +42,7 @@ describe('SetShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: TYPE_SET, path: [] }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: TYPE_SET }],
     });
   });
 
@@ -110,7 +110,7 @@ describe('SetShape', () => {
 
     expect(setShape.try(new Set([111]))).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -128,9 +128,7 @@ describe('SetShape', () => {
     expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
     expect(setShape.try(new Set([111]))).toEqual({
       ok: false,
-      issues: [
-        { code: CODE_SET_MIN, path: [], input: new Set([111]), message: 'Must have the minimum size of 2', param: 2 },
-      ],
+      issues: [{ code: CODE_SET_MIN, input: new Set([111]), message: 'Must have the minimum size of 2', param: 2 }],
     });
   });
 
@@ -141,13 +139,7 @@ describe('SetShape', () => {
     expect(setShape.try(new Set([111, 222, 333]))).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_SET_MAX,
-          path: [],
-          input: new Set([111, 222, 333]),
-          message: 'Must have the maximum size of 2',
-          param: 2,
-        },
+        { code: CODE_SET_MAX, input: new Set([111, 222, 333]), message: 'Must have the maximum size of 2', param: 2 },
       ],
     });
   });
@@ -216,7 +208,7 @@ describe('SetShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: TYPE_SET, path: [] }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: TYPE_SET }],
       });
     });
 
@@ -288,7 +280,7 @@ describe('SetShape', () => {
 
       await expect(setShape.tryAsync(new Set([111]))).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
 

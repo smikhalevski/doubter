@@ -179,7 +179,7 @@ describe('Shape', () => {
   test('returns err when input parsing failed', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    expect(shape.try('aaa')).toEqual({ ok: false, issues: [{ code: 'xxx', path: [] }] });
+    expect(shape.try('aaa')).toEqual({ ok: false, issues: [{ code: 'xxx' }] });
   });
 
   test('returns ok if check returns an empty array', () => {
@@ -205,7 +205,7 @@ describe('Shape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -225,7 +225,7 @@ describe('Shape', () => {
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
@@ -240,7 +240,7 @@ describe('Shape', () => {
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
@@ -256,10 +256,7 @@ describe('Shape', () => {
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
-      issues: [
-        { code: 'xxx', path: [] },
-        { code: 'yyy', path: [] },
-      ],
+      issues: [{ code: 'xxx' }, { code: 'yyy' }],
     });
 
     expect(checkMock1).toHaveBeenCalledTimes(1);
@@ -422,7 +419,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
 
       expect(cbMock).toHaveBeenCalledTimes(0);
@@ -435,10 +432,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
-        issues: [
-          { code: 'xxx', path: [] },
-          { code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cbMock },
-        ],
+        issues: [{ code: 'xxx' }, { code: CODE_PREDICATE, input: 'aaa', message: MESSAGE_PREDICATE, param: cbMock }],
       });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
@@ -450,7 +444,7 @@ describe('Shape', () => {
 
       expect(new Shape().refine(cb).try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
+        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
       });
     });
 
@@ -461,7 +455,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
+        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: 'bbb', param: cb }],
       });
     });
 
@@ -472,7 +466,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
+        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: 'bbb', param: cb }],
       });
     });
   });
@@ -521,7 +515,7 @@ describe('TransformShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -571,7 +565,7 @@ describe('TransformShape', () => {
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
 
@@ -706,7 +700,7 @@ describe('ReplaceLiteralShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -719,7 +713,7 @@ describe('ReplaceLiteralShape', () => {
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -754,7 +748,7 @@ describe('DenyLiteralShape', () => {
 
     expect(shape.try(undefined)).toEqual({
       ok: false,
-      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [] }],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined' }],
     });
   });
 
@@ -766,7 +760,7 @@ describe('DenyLiteralShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [], input: 111 }],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', input: 111 }],
     });
   });
 
@@ -778,7 +772,7 @@ describe('DenyLiteralShape', () => {
 
     expect(shape.try(111, { verbose: true })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -803,7 +797,7 @@ describe('DenyLiteralShape', () => {
 
       await expect(shape.tryAsync(undefined)).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [] }],
+        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined' }],
       });
     });
 
@@ -815,7 +809,7 @@ describe('DenyLiteralShape', () => {
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [], input: 111 }],
+        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', input: 111 }],
       });
     });
   });
@@ -843,7 +837,7 @@ describe('CatchShape', () => {
     expect(fallbackMock).toHaveBeenNthCalledWith(
       1,
       111,
-      [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, meta: undefined, param: TYPE_STRING, path: [] }],
+      [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
       { coerced: false, verbose: false }
     );
   });
@@ -863,7 +857,7 @@ describe('CatchShape', () => {
       }).try(111)
     ).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -903,7 +897,7 @@ describe('ExcludeShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -912,7 +906,7 @@ describe('ExcludeShape', () => {
 
     expect(new ExcludeShape(new Shape(), excludedShape).try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape, path: [] }],
+      issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape }],
     });
   });
 
@@ -921,7 +915,7 @@ describe('ExcludeShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -938,7 +932,7 @@ describe('ExcludeShape', () => {
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
 
@@ -947,7 +941,7 @@ describe('ExcludeShape', () => {
 
       await expect(new ExcludeShape(new Shape(), excludedShape).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape, path: [] }],
+        issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape }],
       });
     });
 
@@ -956,7 +950,7 @@ describe('ExcludeShape', () => {
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
   });

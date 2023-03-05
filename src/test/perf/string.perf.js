@@ -223,7 +223,7 @@ describe('string().coerce()', () => {
 
   describe('111', () => createTests(111));
 
-  describe('new String("aaa")', () => createTests(new String('aaa')));
+  describe('new String("aaa")', () => createTests(String('aaa')));
 });
 
 describe('string().optional()', () => {

@@ -32,7 +32,7 @@ describe('ObjectShape', () => {
 
     expect(objShape.try('')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+      issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
     });
   });
 
@@ -105,13 +105,7 @@ describe('ObjectShape', () => {
     expect(objShape.try('xxx')).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_ENUM,
-          input: 'xxx',
-          message: 'Must be equal to one of key1,key2',
-          param: ['key1', 'key2'],
-          path: [],
-        },
+        { code: CODE_ENUM, input: 'xxx', message: 'Must be equal to one of key1,key2', param: ['key1', 'key2'] },
       ],
     });
   });
@@ -242,7 +236,7 @@ describe('ObjectShape', () => {
 
     expect(objShape.try(new Foo())).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: {}, message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+      issues: [{ code: CODE_TYPE, input: {}, message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
     });
   });
 
@@ -381,7 +375,7 @@ describe('ObjectShape', () => {
 
       expect(objShape.try({})).toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
   });
@@ -487,7 +481,6 @@ describe('ObjectShape', () => {
             input: obj,
             message: 'Must not have unknown keys: yay',
             param: ['yay'],
-            path: [],
           },
         ],
       });
@@ -509,7 +502,6 @@ describe('ObjectShape', () => {
             input: obj,
             message: 'Must not have unknown keys: yay,wow',
             param: ['yay', 'wow'],
-            path: [],
           },
         ],
       });
@@ -520,7 +512,7 @@ describe('ObjectShape', () => {
 
       expect(objShape.try({})).toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
   });
@@ -531,7 +523,7 @@ describe('ObjectShape', () => {
 
       expect(await objShape.tryAsync('')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+        issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
       });
     });
 
@@ -629,7 +621,6 @@ describe('ObjectShape', () => {
             input: obj,
             message: 'Must not have unknown keys: yay',
             param: ['yay'],
-            path: [],
           },
         ],
       });
@@ -649,7 +640,6 @@ describe('ObjectShape', () => {
             input: obj,
             message: 'Must not have unknown keys: yay,wow',
             param: ['yay', 'wow'],
-            path: [],
           },
         ],
       });
@@ -662,7 +652,7 @@ describe('ObjectShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
   });

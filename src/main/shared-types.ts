@@ -38,7 +38,7 @@ export type CheckCallback<T = any, P = any> = (
   value: T,
   param: P,
   options: Readonly<ApplyOptions>
-) => Partial<Issue>[] | Partial<Issue> | null | undefined | void;
+) => Issue[] | Issue | null | undefined | void;
 
 /**
  * The shape output value check.
@@ -89,32 +89,32 @@ export interface Issue {
   /**
    * The code of the validation issue.
    */
-  code: any;
+  code?: any;
 
   /**
-   * The object path where an issue has occurred.
+   * The object path where an issue has occurred, or `undefined` if the issue is caused by the {@linkcode input}.
    */
-  path: any[];
+  path?: any[];
 
   /**
    * The value that caused an issue to occur.
    */
-  input: any;
+  input?: any;
 
   /**
    * A message associated with an issue. Built-in messages are strings but custom messages can have an arbitrary type.
    */
-  message: any;
+  message?: any;
 
   /**
-   * An additional param that is specific for a particular {@linkcode code}.
+   * An additional param.
    */
-  param: any;
+  param?: any;
 
   /**
-   * An arbitrary metadata that can be used for message formatting.
+   * An arbitrary metadata associated with this issue.
    */
-  meta: any;
+  meta?: any;
 }
 
 /**

@@ -101,9 +101,8 @@ describe('UnionShape', () => {
           message: MESSAGE_UNION,
           param: {
             inputTypes: [TYPE_ANY],
-            issueGroups: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+            issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
           },
-          path: [],
         },
       ],
     });
@@ -117,7 +116,7 @@ describe('UnionShape', () => {
 
     expect(orShape.try({})).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -199,7 +198,6 @@ describe('UnionShape', () => {
               inputTypes: [TYPE_NUMBER],
               issueGroups: null,
             },
-            path: [],
           },
         ],
       });
@@ -284,9 +282,8 @@ describe('UnionShape', () => {
             message: MESSAGE_UNION,
             param: {
               inputTypes: [TYPE_ANY],
-              issueGroups: [[{ code: 'xxx', path: [] }], [{ code: 'yyy', path: [] }]],
+              issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
             },
-            path: [],
           },
         ],
       });
@@ -297,7 +294,7 @@ describe('UnionShape', () => {
 
       await expect(orShape.tryAsync({})).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
   });

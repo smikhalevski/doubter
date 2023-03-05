@@ -9,15 +9,7 @@ describe('number', () => {
   test('raises an issue if value is not a number', () => {
     expect(d.number().try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_TYPE,
-          input: 'aaa',
-          message: MESSAGE_NUMBER_TYPE,
-          param: TYPE_NUMBER,
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
     });
   });
 });

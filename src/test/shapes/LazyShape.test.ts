@@ -35,7 +35,7 @@ describe('LazyShape', () => {
 
     expect(lazyShape.try('111')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
     expect(checkMock).toHaveBeenCalledTimes(1);
     expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
@@ -47,7 +47,7 @@ describe('LazyShape', () => {
 
     expect(lazyShape.try('aaa', { verbose: true })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 

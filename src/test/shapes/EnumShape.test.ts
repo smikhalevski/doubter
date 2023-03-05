@@ -48,16 +48,7 @@ describe('EnumShape', () => {
 
     expect(new EnumShape(Foo).try(2)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_ENUM,
-          path: [],
-          input: 2,
-          param: [Foo.AAA, Foo.BBB],
-          message: 'Must be equal to one of 0,1',
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: CODE_ENUM, input: 2, param: [Foo.AAA, Foo.BBB], message: 'Must be equal to one of 0,1' }],
     });
   });
 
@@ -69,16 +60,7 @@ describe('EnumShape', () => {
 
     expect(new EnumShape(Foo).try('AAA')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_ENUM,
-          path: [],
-          input: 'AAA',
-          param: [Foo.AAA, Foo.BBB],
-          message: 'Must be equal to one of 0,1',
-          meta: undefined,
-        },
-      ],
+      issues: [{ code: CODE_ENUM, input: 'AAA', param: [Foo.AAA, Foo.BBB], message: 'Must be equal to one of 0,1' }],
     });
   });
 
@@ -91,14 +73,7 @@ describe('EnumShape', () => {
     expect(new EnumShape(Foo).try('ccc')).toEqual({
       ok: false,
       issues: [
-        {
-          code: CODE_ENUM,
-          path: [],
-          input: 'ccc',
-          param: [Foo.AAA, Foo.BBB],
-          message: 'Must be equal to one of aaa,bbb',
-          meta: undefined,
-        },
+        { code: CODE_ENUM, input: 'ccc', param: [Foo.AAA, Foo.BBB], message: 'Must be equal to one of aaa,bbb' },
       ],
     });
   });
@@ -119,9 +94,7 @@ describe('EnumShape', () => {
   test('raises an issue when an input is not one of values from the list', () => {
     expect(new EnumShape(['aaa', 'bbb']).try('ccc')).toEqual({
       ok: false,
-      issues: [
-        { code: CODE_ENUM, path: [], input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of aaa,bbb' },
-      ],
+      issues: [{ code: CODE_ENUM, input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of aaa,bbb' }],
     });
   });
 
@@ -169,7 +142,7 @@ describe('EnumShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 });

@@ -18,14 +18,14 @@ describe('BooleanShape', () => {
   test('raises an issue if an input is not a boolean', () => {
     expect(new BooleanShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: 'aaa', param: TYPE_BOOLEAN, message: MESSAGE_BOOLEAN_TYPE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_BOOLEAN, message: MESSAGE_BOOLEAN_TYPE }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new BooleanShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: 111, param: TYPE_BOOLEAN, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 111, param: TYPE_BOOLEAN, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -44,27 +44,19 @@ describe('BooleanShape', () => {
   test('raises an issue if coercion fails', () => {
     expect(new BooleanShape().coerce().try(222)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_TYPE,
-          input: 222,
-          message: MESSAGE_BOOLEAN_TYPE,
-          param: TYPE_BOOLEAN,
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: 222, message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN }],
     });
   });
 
   describe('coercion', () => {
     test('coerces a Boolean wrapper', () => {
-      expect(new BooleanShape()['_coerce'](new Boolean(true))).toBe(true);
-      expect(new BooleanShape()['_coerce']([new Boolean(false)])).toBe(false);
+      expect(new BooleanShape()['_coerce'](Boolean(true))).toBe(true);
+      expect(new BooleanShape()['_coerce']([Boolean(false)])).toBe(false);
     });
 
     test('coerces a String wrapper', () => {
-      expect(new BooleanShape()['_coerce'](new String('true'))).toBe(true);
-      expect(new BooleanShape()['_coerce']([new String('false')])).toBe(false);
+      expect(new BooleanShape()['_coerce'](String('true'))).toBe(true);
+      expect(new BooleanShape()['_coerce']([String('false')])).toBe(false);
     });
 
     test('coerces a string', () => {

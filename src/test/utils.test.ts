@@ -145,47 +145,20 @@ describe('createIssueFactory', () => {
     test('creates a factory with the default message', () => {
       const issueFactory = createIssueFactory('aaa', 'bbb', undefined, 'eee');
 
-      expect(issueFactory('xxx', {})).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 'bbb',
-          meta: undefined,
-          param: 'eee',
-          path: [],
-        },
-      ]);
+      expect(issueFactory('xxx', {})).toEqual([{ code: 'aaa', input: 'xxx', message: 'bbb', param: 'eee' }]);
     });
 
     test('creates a factory with a string message', () => {
       const issueFactory = createIssueFactory('aaa', 'bbb', 'ccc %s', 'eee');
 
-      expect(issueFactory('xxx', {})).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 'ccc eee',
-          meta: undefined,
-          param: 'eee',
-          path: [],
-        },
-      ]);
+      expect(issueFactory('xxx', {})).toEqual([{ code: 'aaa', input: 'xxx', message: 'ccc eee', param: 'eee' }]);
     });
 
     test('creates a factory with a function message', () => {
       const cbMock = jest.fn(() => 222);
       const issueFactory = createIssueFactory('aaa', 'bbb', cbMock, 'eee');
 
-      expect(issueFactory('xxx', {})).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 222,
-          meta: undefined,
-          param: 'eee',
-          path: [],
-        },
-      ]);
+      expect(issueFactory('xxx', {})).toEqual([{ code: 'aaa', input: 'xxx', message: 222, param: 'eee' }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', undefined, {});
     });
@@ -194,14 +167,7 @@ describe('createIssueFactory', () => {
       const issueFactory = createIssueFactory('aaa', 'bbb', { message: 'ccc %s', meta: 111 }, 'eee');
 
       expect(issueFactory('xxx', {})).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 'ccc eee',
-          meta: 111,
-          param: 'eee',
-          path: [],
-        },
+        { code: 'aaa', input: 'xxx', message: 'ccc eee', meta: 111, param: 'eee' },
       ]);
     });
 
@@ -209,16 +175,7 @@ describe('createIssueFactory', () => {
       const cbMock = jest.fn(() => 222);
       const issueFactory = createIssueFactory('aaa', 'bbb', { message: cbMock, meta: 111 }, 'eee');
 
-      expect(issueFactory('xxx', {})).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 222,
-          meta: 111,
-          param: 'eee',
-          path: [],
-        },
-      ]);
+      expect(issueFactory('xxx', {})).toEqual([{ code: 'aaa', input: 'xxx', message: 222, meta: 111, param: 'eee' }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', 111, {});
     });
@@ -228,47 +185,20 @@ describe('createIssueFactory', () => {
     test('creates a factory with the default message', () => {
       const issueFactory = createIssueFactory('aaa', 'bbb', undefined);
 
-      expect(issueFactory('xxx', {}, 'eee')).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 'bbb',
-          meta: undefined,
-          param: 'eee',
-          path: [],
-        },
-      ]);
+      expect(issueFactory('xxx', {}, 'eee')).toEqual([{ code: 'aaa', input: 'xxx', message: 'bbb', param: 'eee' }]);
     });
 
     test('creates a factory with a string message', () => {
       const issueFactory = createIssueFactory('aaa', 'bbb', 'ccc %s');
 
-      expect(issueFactory('xxx', {}, 'eee')).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 'ccc eee',
-          meta: undefined,
-          param: 'eee',
-          path: [],
-        },
-      ]);
+      expect(issueFactory('xxx', {}, 'eee')).toEqual([{ code: 'aaa', input: 'xxx', message: 'ccc eee', param: 'eee' }]);
     });
 
     test('creates a factory with a function message', () => {
       const cbMock = jest.fn(() => 222);
       const issueFactory = createIssueFactory('aaa', 'bbb', cbMock);
 
-      expect(issueFactory('xxx', {}, 'eee')).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 222,
-          meta: undefined,
-          param: 'eee',
-          path: [],
-        },
-      ]);
+      expect(issueFactory('xxx', {}, 'eee')).toEqual([{ code: 'aaa', input: 'xxx', message: 222, param: 'eee' }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', undefined, {});
     });
@@ -277,14 +207,7 @@ describe('createIssueFactory', () => {
       const issueFactory = createIssueFactory('aaa', 'bbb', { message: 'ccc %s', meta: 111 });
 
       expect(issueFactory('xxx', {}, 'eee')).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 'ccc eee',
-          meta: 111,
-          param: 'eee',
-          path: [],
-        },
+        { code: 'aaa', input: 'xxx', message: 'ccc eee', meta: 111, param: 'eee' },
       ]);
     });
 
@@ -293,14 +216,7 @@ describe('createIssueFactory', () => {
       const issueFactory = createIssueFactory('aaa', 'bbb', { message: cbMock, meta: 111 });
 
       expect(issueFactory('xxx', { context: 333 }, 'eee')).toEqual([
-        {
-          code: 'aaa',
-          input: 'xxx',
-          message: 222,
-          meta: 111,
-          param: 'eee',
-          path: [],
-        },
+        { code: 'aaa', input: 'xxx', message: 222, meta: 111, param: 'eee' },
       ]);
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', 111, { context: 333 });
@@ -375,7 +291,7 @@ describe('createApplyChecksCallback', () => {
         { key: cbMock, callback: cbMock, param: undefined, isUnsafe: false },
       ]);
 
-      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
+      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx' }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
     });
@@ -390,7 +306,7 @@ describe('createApplyChecksCallback', () => {
       const issues: Issue[] = [];
 
       expect(applyChecks!(111, issues, { verbose: false, coerced: false })).toEqual(issues);
-      expect(issues).toEqual([{ code: 'xxx', path: [] }]);
+      expect(issues).toEqual([{ code: 'xxx' }]);
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
     });
@@ -430,7 +346,7 @@ describe('createApplyChecksCallback', () => {
         { key: cbMock, callback: cbMock, param: undefined, isUnsafe: false },
       ]);
 
-      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx', path: [] }]);
+      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'xxx' }]);
     });
   });
 
@@ -448,7 +364,7 @@ describe('createApplyChecksCallback', () => {
         { key: cbMock4, callback: cbMock4, param: undefined, isUnsafe: true },
       ]);
 
-      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'BBB', path: [] }]);
+      expect(applyChecks!(111, null, { verbose: false, coerced: false })).toEqual([{ code: 'BBB' }]);
       expect(cbMock1).toHaveBeenCalledTimes(1);
       expect(cbMock1).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
       expect(cbMock2).toHaveBeenCalledTimes(1);
@@ -470,11 +386,7 @@ describe('createApplyChecksCallback', () => {
         { key: cbMock4, callback: cbMock4, param: undefined, isUnsafe: true },
       ]);
 
-      expect(applyChecks!(111, null, { verbose: true })).toEqual([
-        { code: 'BBB', path: [] },
-        { code: 'CCC', path: [] },
-        { code: 'DDD', path: [] },
-      ]);
+      expect(applyChecks!(111, null, { verbose: true })).toEqual([{ code: 'BBB' }, { code: 'CCC' }, { code: 'DDD' }]);
       expect(cbMock1).toHaveBeenCalledTimes(1);
       expect(cbMock1).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
       expect(cbMock2).toHaveBeenCalledTimes(1);
@@ -498,11 +410,7 @@ describe('createApplyChecksCallback', () => {
         { key: cbMock4, callback: cbMock4, param: undefined, isUnsafe: true },
       ]);
 
-      expect(applyChecks!(111, null, { verbose: true })).toEqual([
-        { code: 'AAA', path: [] },
-        { code: 'BBB', path: [] },
-        { code: 'DDD', path: [] },
-      ]);
+      expect(applyChecks!(111, null, { verbose: true })).toEqual([{ code: 'AAA' }, { code: 'BBB' }, { code: 'DDD' }]);
       expect(cbMock1).toHaveBeenCalledTimes(1);
       expect(cbMock1).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
       expect(cbMock2).toHaveBeenCalledTimes(1);
