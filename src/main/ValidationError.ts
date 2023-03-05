@@ -3,67 +3,86 @@ import { CODE_UNION } from './constants';
 import { isArray, isObjectLike } from './utils';
 
 /**
- * An error thrown if parsing failed. Custom checkers and transformers can throw this error to notify that the operation
- * has failed.
+ * An error thrown if parsing failed. Custom check callbacks, refinement predicates, transformers, and fallback
+ * functions can throw this error to notify that the operation has failed.
  */
 export class ValidationError extends Error {
   /**
-   * The array of issues that caused the error.
+   * The global function that stringifies issues as an error message, if a message is omitted when
+   * {@linkcode ValidationError} is instantiated.
    */
-  issues: Issue[] = [];
+  static issuesStringifier = stringifyIssues;
 
-  constructor(issues?: Issue[]);
+  /**
+   * Creates a new {@linkcode ValidationError} instance.
+   *
+   * @param issues The array of issues that caused the validation error.
+   * @param message The error message. If omitted then `issues` are converted to a string using
+   * {@linkcode ValidationError.issuesStringifier} and used as a message.
+   */
+  constructor(
+    /**
+     * The array of issues that caused the error.
+     */
+    public issues: Issue[],
+    message = ValidationError.issuesStringifier(issues)
+  ) {
+    super(message);
 
-  constructor(message?: string, issues?: Issue[]);
-
-  constructor() {
-    super();
-    // issues.forEach(inflateIssue);
-    //
-    // super(message ?? stringifyIssues(issues));
-    //
     Object.setPrototypeOf(this, new.target.prototype);
-    //
-    // this.name = 'ValidationError';
-    // this.issues = issues;
+
+    this.name = 'ValidationError';
   }
 }
 
 export function stringifyIssues(issues: Issue[]): string {
-  return issues.length > 1 ? '\n' + stringifyIssues_(issues) : stringifyIssues_(issues);
-}
-
-function stringifyIssues_(issues: Issue[]): string {
-  let resultStr = '';
+  let str = '';
 
   for (let paragraph = false, i = 0; i < issues.length; ++i) {
     const issue = issues[i];
 
-    let str = issue.path?.join('/') + ': ' + (typeof issue.message === 'string' ? issue.message : String(issue.code));
+    let issueStr = stringifyPath(issue.path);
+
+    if (typeof issue.message === 'string' && issue.message !== '') {
+      issueStr += ': ' + issue.message;
+    } else if (typeof issue.code === 'string' && issue.code !== '') {
+      issueStr += ': ' + issue.code;
+    }
 
     if (issue.code === CODE_UNION && isObjectLike(issue.param)) {
       const { inputTypes, issueGroups } = issue.param;
 
       if (isArray(issueGroups)) {
         for (let j = 0; j < issueGroups.length; ++j) {
-          str += indent('\n\n' + (j + 1 + ')').padEnd(4) + indent(stringifyIssues(issueGroups[j]), '    '), '  ');
+          issueStr += indent('\n\n' + (j + 1 + ')').padEnd(4) + indent(stringifyIssues(issueGroups[j]), '    '), '  ');
         }
       } else if (isArray(inputTypes)) {
-        str += ' (' + inputTypes.join(', ') + ')';
+        issueStr += ' (' + inputTypes.join(', ') + ')';
       }
     }
 
-    const issueParagraph = str.indexOf('\n') !== -1;
+    const issueParagraph = issueStr.indexOf('\n') !== -1;
 
     if (i !== 0) {
-      resultStr += paragraph || issueParagraph ? '\n\n' : '\n';
+      str += paragraph || issueParagraph ? '\n\n' : '\n';
     }
 
     paragraph = issueParagraph;
-    resultStr += str;
+    str += issueStr;
   }
 
-  return resultStr;
+  return str;
+}
+
+function stringifyPath(path: any[] | undefined): string {
+  if (!isArray(path) || path.length === 0) {
+    return '/';
+  }
+  let str = '';
+  for (const key of path) {
+    str += '/' + (typeof key === 'object' || typeof key === 'function' ? '{⋯}' : String(key));
+  }
+  return str;
 }
 
 function indent(str: string, padding: string): string {

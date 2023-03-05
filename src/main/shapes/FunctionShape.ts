@@ -226,7 +226,7 @@ function getOrThrow<T>(key: 'this' | 'arguments' | 'return', result: Result<T>, 
   }
   if (isArray(result)) {
     unshiftIssuesPath(result, key);
-    throw new ValidationError(getErrorMessage(result, input, options), result);
+    throw new ValidationError(result, getErrorMessage(result, input, options));
   }
   return result.value;
 }

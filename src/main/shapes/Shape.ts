@@ -878,7 +878,7 @@ Object.defineProperties(Shape.prototype, {
           return input;
         }
         if (isArray(result)) {
-          throw new ValidationError(getErrorMessage(result, input, options), result);
+          throw new ValidationError(result, getErrorMessage(result, input, options));
         }
         return result.value;
       };
@@ -901,7 +901,7 @@ Object.defineProperties(Shape.prototype, {
             return input;
           }
           if (isArray(result)) {
-            throw new ValidationError(getErrorMessage(result, input, options), result);
+            throw new ValidationError(result, getErrorMessage(result, input, options));
           }
           return result.value;
         });
