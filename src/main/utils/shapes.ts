@@ -8,44 +8,13 @@ import {
   Shape,
   ValueType,
 } from '../shapes/Shape';
-import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
+import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok } from '../types';
 import { ValidationError } from '../ValidationError';
-import { cloneInstance, isArray, isFunction, isObjectLike } from './lang';
+import { isArray, isObjectLike } from './lang';
+import { cloneInstance } from './objects';
 
-/**
- * A bitmask that can hold an arbitrary number of bits.
- */
-export type Mask = number[] | number;
-
-/**
- * Sets bit to 1 at index in mask.
- *
- * @param mask The mutable mask to update.
- * @param index The index at which the bit must be set to 1.
- * @returns The updated mask.
- */
-export function enableMask(mask: Mask, index: number): Mask {
-  if (typeof mask === 'number') {
-    if (index < 32) {
-      return mask | (1 << index);
-    }
-    mask = [mask, 0, 0];
-  }
-
-  mask[index >> 5] |= 1 << index % 32;
-
-  return mask;
-}
-
-/**
- * Returns `true` if the bit at index in the bitmask is set to 1.
- */
-export function isMaskEnabled(mask: Mask, index: number): boolean {
-  if (typeof mask === 'number') {
-    return mask >>> index !== 0;
-  } else {
-    return mask[index >> 5] >>> index % 32 !== 0;
-  }
+export function ok<T>(value: T): Ok<T> {
+  return { ok: true, value };
 }
 
 /**
@@ -69,10 +38,6 @@ export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'
   return type;
 }
 
-export function ok<T>(value: T): Ok<T> {
-  return { ok: true, value };
-}
-
 export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
 }
@@ -84,7 +49,7 @@ export function isAsyncShape(shape: AnyShape): boolean {
 export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(
   shape: S
 ): DeepPartialShape<S> {
-  return isFunction(shape.deepPartial) ? shape.deepPartial() : shape;
+  return typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
 export function isUnsafeCheck(check: Check): boolean {
@@ -104,6 +69,8 @@ export function getCheckIndex(checks: readonly Check[], key: unknown): number {
 }
 
 /**
+ * Mutates the shape!
+ *
  * Updates the shape checks and related properties.
  *
  * @param shape The shape to update.
@@ -119,14 +86,9 @@ export function replaceChecks<S extends Shape>(shape: S, checks: readonly Check[
 }
 
 /**
- * The shortcut to add built-in constraints to shapes.
+ * The shortcut to add built-in checks to shapes.
  */
-export function addConstraint<S extends Shape, P>(
-  shape: S,
-  key: string,
-  param: P,
-  cb: CheckCallback<S['output'], P>
-): S {
+export function addCheck<S extends Shape, P>(shape: S, key: string, param: P, cb: CheckCallback<S['output'], P>): S {
   return shape.check({ key, unsafe: true }, cb, param);
 }
 
@@ -138,24 +100,20 @@ export function copyUnsafeChecks<S extends Shape>(sourceShape: Shape, targetShap
 }
 
 /**
- * Replaces checks of the target shape with checks from the source shape that match a predicate.
+ * Replaces checks of `shape` with checks from the `baseShape` that match a predicate.
  */
-export function copyChecks<S extends Shape>(
-  sourceShape: Shape,
-  targetShape: S,
-  predicate?: (check: Check) => boolean
-): S {
-  const checks = sourceShape['_checks'];
+export function copyChecks<S extends Shape>(baseShape: Shape, shape: S, predicate?: (check: Check) => boolean): S {
+  const checks = baseShape['_checks'];
 
   return replaceChecks(
-    cloneInstance(targetShape),
+    cloneInstance(shape),
     checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
   );
 }
 
 /**
- * Calls {@linkcode Shape._apply} or {@linkcode Shape._applyAsync} depending on {@linkcode Shape._isAsync}, and passes
- * the result to `cb` after it becomes available.
+ * Calls `Shape._apply` or `Shape._applyAsync` depending on `Shape._isAsync`, and passes the result to `cb` after it
+ * becomes available.
  */
 export function applyShape<T>(
   shape: AnyShape,
@@ -171,13 +129,41 @@ export function applyShape<T>(
 }
 
 /**
+ * Prepends a key to a path of each issue.
+ */
+export function unshiftIssuesPath(issues: Issue[], key: unknown): void {
+  for (const issue of issues) {
+    if (isArray(issue.path)) {
+      issue.path.unshift(key);
+    } else {
+      issue.path = [key];
+    }
+  }
+}
+
+export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
+  if (issues === null) {
+    return result;
+  }
+  issues.push(...result);
+  return issues;
+}
+
+export function captureIssues(error: unknown): Issue[] {
+  if (error instanceof ValidationError) {
+    return error.issues;
+  }
+  throw error;
+}
+
+/**
  * Returns a function that creates a new array with a single issue.
  *
  * @param code The code of the issue.
  * @param defaultMessage The default message that is used if message isn't provided through options.
  * @param options Options provided by the user.
  * @param param The param that is added to the issue.
- * @returns The callback that takes an input and returns an array with a single issue.
+ * @returns The callback that takes an input and options, and returns an array with a single issue.
  */
 export function createIssueFactory(
   code: string,
@@ -192,7 +178,7 @@ export function createIssueFactory(
  * @param code The code of the issue.
  * @param defaultMessage The default message that is used if message isn't provided through options.
  * @param options Options provided by the user.
- * @returns The callback that takes an input and a param, and returns an array with a single issue.
+ * @returns The callback that takes an input, options, and a param, and returns an array with a single issue.
  */
 export function createIssueFactory(
   code: string,
@@ -204,7 +190,7 @@ export function createIssueFactory(
   code: string,
   defaultMessage: any,
   options: any,
-  param?: any
+  param?: unknown
 ): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[] {
   const paramRequired = arguments.length <= 3;
 
@@ -216,13 +202,13 @@ export function createIssueFactory(
       message = options.message;
     }
     meta = options.meta;
-  } else if (isFunction(options)) {
+  } else if (typeof options === 'function') {
     message = options;
   } else if (options !== undefined) {
     message = options;
   }
 
-  if (isFunction(message)) {
+  if (typeof message === 'function') {
     if (paramRequired) {
       return (input, options, param) => [
         { code, path: undefined, input, message: message(param, code, input, meta, options), param, meta },
@@ -251,31 +237,6 @@ export function createIssueFactory(
   }
 
   return input => [{ code, path: undefined, input, message, param, meta }];
-}
-
-export function unshiftIssuesPath(issues: Issue[], key: unknown): void {
-  for (const issue of issues) {
-    if (issue.path === undefined) {
-      issue.path = [key];
-    } else {
-      issue.path.unshift(key);
-    }
-  }
-}
-
-export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
-  if (issues === null) {
-    return result;
-  }
-  issues.push(...result);
-  return issues;
-}
-
-export function captureIssues(error: unknown): Issue[] {
-  if (error instanceof ValidationError) {
-    return error.issues;
-  }
-  throw error;
 }
 
 /**
@@ -388,13 +349,12 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
 
 function appendIssue(issues: Issue[] | null, result: Issue[] | Issue): Issue[] | null {
   if (isArray(result)) {
-    if (result.length === 0) {
-      return issues;
-    }
-    if (issues === null) {
-      issues = result;
-    } else {
-      issues.push(...result);
+    if (result.length !== 0) {
+      if (issues === null) {
+        issues = result;
+      } else {
+        issues.push(...result);
+      }
     }
   } else if (isObjectLike(result)) {
     if (issues === null) {
@@ -404,21 +364,4 @@ function appendIssue(issues: Issue[] | null, result: Issue[] | Issue): Issue[] |
     }
   }
   return issues;
-}
-
-export function getErrorMessage(
-  issues: Issue[],
-  input: unknown,
-  options: ParseOptions | undefined
-): string | undefined {
-  if (options === null || typeof options !== 'object') {
-    return;
-  }
-  if (isFunction(options.errorMessage)) {
-    return options.errorMessage(issues, input);
-  }
-  if (options.errorMessage === undefined) {
-    return;
-  }
-  return String(options.errorMessage);
 }

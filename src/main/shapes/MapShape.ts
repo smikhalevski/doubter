@@ -6,7 +6,7 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isIterableObject,
+  isIterable,
   isObjectLike,
   ok,
   toDeepPartialShape,
@@ -261,7 +261,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     if (isArray(value)) {
       return value.every(isEntry) ? value : NEVER;
     }
-    if (isIterableObject(value)) {
+    if (isIterable(value)) {
       value = Array.from(value);
 
       return value.every(isEntry) ? value : NEVER;

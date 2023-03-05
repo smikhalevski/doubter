@@ -1,5 +1,5 @@
 import { Issue } from './types';
-import { stringifyIssues } from './utils/stringifyIssues';
+import { stringifyIssues } from './utils/errors';
 
 /**
  * An error thrown if parsing failed. Custom check callbacks, refinement predicates, transformers, and fallback

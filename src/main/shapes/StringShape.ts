@@ -16,7 +16,7 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { addConstraint, createIssueFactory, isArray, isValidDate, ok, toPrimitive } from '../utils';
+import { addCheck, canonize, createIssueFactory, isArray, isValidDate, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result, ValueType } from './Shape';
 
@@ -58,7 +58,7 @@ export class StringShape extends CoercibleShape<string> {
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-    return addConstraint(this, CODE_STRING_MIN, length, (input, param, options) => {
+    return addCheck(this, CODE_STRING_MIN, length, (input, param, options) => {
       if (input.length < param) {
         return issueFactory(input, options);
       }
@@ -75,7 +75,7 @@ export class StringShape extends CoercibleShape<string> {
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-    return addConstraint(this, CODE_STRING_MAX, length, (input, param, options) => {
+    return addCheck(this, CODE_STRING_MAX, length, (input, param, options) => {
       if (input.length > param) {
         return issueFactory(input, options);
       }
@@ -92,7 +92,7 @@ export class StringShape extends CoercibleShape<string> {
   regex(re: RegExp, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-    return addConstraint(this, re.toString(), re, (input, param, options) => {
+    return addCheck(this, re.toString(), re, (input, param, options) => {
       param.lastIndex = 0;
 
       if (!param.test(input)) {
@@ -141,7 +141,7 @@ export class StringShape extends CoercibleShape<string> {
       return '';
     }
 
-    value = toPrimitive(value);
+    value = canonize(value);
 
     if (typeof value === 'string') {
       return value;

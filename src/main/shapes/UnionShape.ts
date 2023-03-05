@@ -9,7 +9,7 @@ import {
   isAsyncShape,
   isObjectLike,
   toDeepPartialShape,
-  unique,
+  uniqueArray,
 } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
@@ -229,7 +229,7 @@ export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): Look
 
   const bucketTypes = Object.keys(buckets) as ValueType[];
 
-  for (const shape of unique(shapes)) {
+  for (const shape of uniqueArray(shapes)) {
     for (const type of shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes) {
       if (type === TYPE_ANY || type === TYPE_NEVER) {
         continue;

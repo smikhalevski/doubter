@@ -1,7 +1,12 @@
 import { CODE_UNION } from '../constants';
-import { Issue } from '../types';
+import { Issue, ParseOptions } from '../types';
 import { isArray, isObjectLike } from './lang';
 
+/**
+ * Stringifies the array of issues as a human-readable message.
+ *
+ * @param issues The array of issues to stringify.
+ */
 export function stringifyIssues(issues: Issue[]): string {
   let str = '';
 
@@ -54,4 +59,21 @@ function stringifyPath(path: any[] | undefined): string {
 
 function indent(str: string, padding: string): string {
   return str.replace(/\n+/g, '$&' + padding);
+}
+
+export function getErrorMessage(
+  issues: Issue[],
+  input: unknown,
+  options: ParseOptions | undefined
+): string | undefined {
+  if (options === null || typeof options !== 'object') {
+    return;
+  }
+  if (typeof options.errorMessage === 'function') {
+    return options.errorMessage(issues, input);
+  }
+  if (options.errorMessage === undefined) {
+    return;
+  }
+  return String(options.errorMessage);
 }

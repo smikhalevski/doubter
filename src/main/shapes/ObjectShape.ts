@@ -2,6 +2,7 @@ import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
+  Bitmask,
   cloneDict,
   cloneDictKeys,
   cloneInstance,
@@ -9,17 +10,16 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   Dict,
-  enableMask,
+  getBit,
   isArray,
   isAsyncShape,
-  isMaskEnabled,
   isObjectLike,
   isPlainObject,
-  Mask,
   ok,
   ReadonlyDict,
   setObjectProperty,
   toDeepPartialShape,
+  toggleBit,
   unshiftIssuesPath,
 } from '../utils';
 import { EnumShape } from './EnumShape';
@@ -363,7 +363,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let output = input;
 
       let seenCount = 0;
-      let seenMask: Mask = 0;
+      let seenBitmask: Bitmask = 0;
 
       let unknownKeys: string[] | null = null;
 
@@ -377,7 +377,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
         if (index !== -1) {
           seenCount++;
-          seenMask = enableMask(seenMask, index);
+          seenBitmask = toggleBit(seenBitmask, index);
 
           valueShape = _valueShapes[index];
         }
@@ -418,7 +418,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       if (seenCount !== keysLength) {
         for (let i = 0; i < keysLength; ++i) {
-          if (!isMaskEnabled(seenMask, i)) {
+          if (getBit(seenBitmask, i) === 0) {
             const key = keys[i];
             entries.push([key, input[key], _valueShapes[i]]);
           }
@@ -528,7 +528,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     let output = input;
 
     let seenCount = 0;
-    let seenMask: Mask = 0;
+    let seenBitmask: Bitmask = 0;
 
     let unknownKeys = null;
 
@@ -541,7 +541,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       // The key is known
       if (index !== -1) {
         seenCount++;
-        seenMask = enableMask(seenMask, index);
+        seenBitmask = toggleBit(seenBitmask, index);
 
         valueShape = _valueShapes[index];
       }
@@ -605,7 +605,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     // Parse absent known keys
     if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
-        if (isMaskEnabled(seenMask, i)) {
+        if (getBit(seenBitmask, i) === 1) {
           continue;
         }
 

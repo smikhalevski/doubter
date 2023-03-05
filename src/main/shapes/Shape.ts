@@ -30,19 +30,18 @@ import {
   cloneInstance,
   copyUnsafeChecks,
   createIssueFactory,
-  deleteAt,
+  deleteArrayIndex,
   getCheckIndex,
   getErrorMessage,
   getValueType,
   isArray,
   isEqual,
-  isFunction,
   isObjectLike,
   ok,
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
-  unique,
+  uniqueArray,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 
@@ -184,7 +183,7 @@ export class Shape<I = any, O = I> {
   /**
    * Returns the extended value type.
    */
-  static typeOf = getValueType;
+  static readonly typeOf = getValueType;
 
   /**
    * The human-readable shape description.
@@ -291,7 +290,7 @@ export class Shape<I = any, O = I> {
   check<P>(options: CheckOptions, cb: CheckCallback<O, P>, param: P): this;
 
   check(options: any, cb?: any, param?: any): this {
-    if (isFunction(options)) {
+    if (typeof options === 'function') {
       param = cb;
       cb = options;
       options = {};
@@ -302,7 +301,7 @@ export class Shape<I = any, O = I> {
     const index = getCheckIndex(this._checks, key);
     const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
 
-    return replaceChecks(cloneInstance(this), index !== -1 ? deleteAt(checks, index) : checks);
+    return replaceChecks(cloneInstance(this), index !== -1 ? deleteArrayIndex(checks, index) : checks);
   }
 
   /**
@@ -335,7 +334,7 @@ export class Shape<I = any, O = I> {
   deleteCheck(key: unknown): this {
     const index = getCheckIndex(this._checks, key);
 
-    return index !== -1 ? replaceChecks(cloneInstance(this), deleteAt(this._checks.slice(0), index)) : this;
+    return index !== -1 ? replaceChecks(cloneInstance(this), deleteArrayIndex(this._checks.slice(0), index)) : this;
   }
 
   /**
@@ -775,7 +774,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      let types = unique(this._getInputTypes());
+      let types = uniqueArray(this._getInputTypes());
 
       if (types.length === 0 || types.includes(TYPE_ANY)) {
         types = [TYPE_ANY];
@@ -1370,8 +1369,8 @@ export class CatchShape<S extends AnyShape, T>
   ) {
     super();
 
-    if (isFunction(fallback)) {
-      this._resultProvider = (input, issues, options) => ok(fallback(input, issues, options));
+    if (typeof fallback === 'function') {
+      this._resultProvider = (input, issues, options) => ok((fallback as Function)(input, issues, options));
     } else {
       const result = ok(fallback);
       this._resultProvider = () => result;

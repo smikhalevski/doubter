@@ -6,7 +6,7 @@ import {
   TYPE_NUMBER,
   TYPE_STRING,
 } from '../../main/constants';
-import { stringifyIssues } from '../../main/utils/stringifyIssues';
+import { stringifyIssues } from '../../main/utils/errors';
 
 describe('stringifyIssues', () => {
   test('', () => {

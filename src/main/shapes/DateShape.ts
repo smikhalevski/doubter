@@ -1,6 +1,6 @@
 import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory, isArray, isValidDate, ok, toPrimitive } from '../utils';
+import { createIssueFactory, isArray, isValidDate, ok, canonize } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result, ValueType } from './Shape';
 
@@ -58,7 +58,7 @@ export class DateShape extends CoercibleShape<Date> {
       return value;
     }
 
-    value = toPrimitive(value);
+    value = canonize(value);
 
     if ((typeof value === 'string' || typeof value === 'number') && isValidDate((value = new Date(value)))) {
       return value;

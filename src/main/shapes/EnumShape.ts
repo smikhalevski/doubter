@@ -1,6 +1,6 @@
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory, getValueType, isArray, ok, ReadonlyDict, unique } from '../utils';
+import { createIssueFactory, getValueType, isArray, ok, ReadonlyDict, uniqueArray } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result, ValueType } from './Shape';
 
@@ -43,10 +43,10 @@ export class EnumShape<T> extends CoercibleShape<T> {
 
     if (isArray(source)) {
       valueMapping = null;
-      values = unique(source).slice(0);
+      values = uniqueArray(source).slice(0);
     } else {
       valueMapping = source;
-      values = unique(getEnumValues(source));
+      values = uniqueArray(getEnumValues(source));
     }
 
     this.values = values;

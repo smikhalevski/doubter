@@ -1,53 +1,5 @@
 import { Issue, Shape, ValidationError } from '../../main';
-import {
-  cloneDict,
-  cloneDictHead,
-  cloneDictKeys,
-  copyUnsafeChecks,
-  createApplyChecksCallback,
-  createIssueFactory,
-  deleteAt,
-  enableMask,
-  getValueType,
-  isEqual,
-  isIterableObject,
-  isMaskEnabled,
-  isPlainObject,
-  toArrayIndex,
-  unique,
-} from '../../main/utils';
-
-describe('isPlainObject', () => {
-  test('detects plain objects', () => {
-    expect(isPlainObject({})).toBe(true);
-    expect(isPlainObject({ a: 1 })).toBe(true);
-    expect(isPlainObject({ constructor: () => undefined })).toBe(true);
-    expect(isPlainObject([1, 2, 3])).toBe(false);
-    expect(isPlainObject(new (class {})())).toBe(false);
-  });
-
-  test('returns true for objects with a [[Prototype]] of null', () => {
-    expect(isPlainObject(Object.create(null))).toBe(true);
-  });
-
-  test('returns false for non-Object objects', () => {
-    expect(isPlainObject(Error)).toBe(false);
-  });
-
-  test('returns false for non-objects', () => {
-    expect(isPlainObject(111)).toBe(false);
-    expect(isPlainObject('aaa')).toBe(false);
-  });
-});
-
-describe('deleteAt', () => {
-  test('deletes an element at index', () => {
-    const arr = [111, 222, 333];
-
-    expect(deleteAt(arr, 1)).toBe(arr);
-    expect(arr).toEqual([111, 333]);
-  });
-});
+import { copyUnsafeChecks, createApplyChecksCallback, createIssueFactory, getValueType } from '../../main/utils';
 
 describe('getValueType', () => {
   test('returns value type', () => {
@@ -58,62 +10,6 @@ describe('getValueType', () => {
     expect(getValueType(null)).toBe('null');
     expect(getValueType(undefined)).toBe('undefined');
     expect(getValueType(new Date())).toBe('date');
-  });
-});
-
-describe('isIterableObject', () => {
-  test('returns value type', () => {
-    expect(isIterableObject(new Map())).toBe(true);
-    expect(isIterableObject(new Set())).toBe(true);
-    expect(isIterableObject([])).toBe(true);
-    expect(isIterableObject({ [Symbol.iterator]: 111 })).toBe(true);
-    expect(isIterableObject({ [Symbol.iterator]: () => null })).toBe(true);
-    expect(isIterableObject({ length: null })).toBe(true);
-    expect(isIterableObject({ length: 111 })).toBe(true);
-    expect(isIterableObject({ length: '111' })).toBe(true);
-    expect(isIterableObject({ length: { valueOf: () => 111 } })).toBe(true);
-
-    expect(isIterableObject({ length: undefined })).toBe(false);
-    expect(isIterableObject({ length: 'aaa' })).toBe(false);
-    expect(isIterableObject('')).toBe(false);
-  });
-});
-
-describe('isEqual', () => {
-  test('checks equality', () => {
-    expect(isEqual(NaN, NaN)).toBe(true);
-    expect(isEqual(0, -0)).toBe(true);
-    expect(isEqual(111, 111)).toBe(true);
-
-    expect(isEqual(111, 222)).toBe(false);
-    expect(isEqual({}, {})).toBe(false);
-  });
-});
-
-describe('toArrayIndex', () => {
-  test('returns an array index', () => {
-    expect(toArrayIndex('0')).toBe(0);
-    expect(toArrayIndex('1')).toBe(1);
-    expect(toArrayIndex('2')).toBe(2);
-
-    expect(toArrayIndex(0)).toBe(0);
-    expect(toArrayIndex(1)).toBe(1);
-    expect(toArrayIndex(2)).toBe(2);
-  });
-
-  test('returns -1 if value is not an array index', () => {
-    expect(toArrayIndex('-5')).toBe(-1);
-    expect(toArrayIndex('0xa')).toBe(-1);
-    expect(toArrayIndex('016')).toBe(-1);
-    expect(toArrayIndex('000')).toBe(-1);
-    expect(toArrayIndex('1e+49')).toBe(-1);
-    expect(toArrayIndex(-111)).toBe(-1);
-    expect(toArrayIndex(111.222)).toBe(-1);
-    expect(toArrayIndex('aaa')).toBe(-1);
-    expect(toArrayIndex(NaN)).toBe(-1);
-    expect(toArrayIndex(new Date())).toBe(-1);
-    expect(toArrayIndex({ valueOf: () => 2 })).toBe(-1);
-    expect(toArrayIndex({ toString: () => '2' })).toBe(-1);
   });
 });
 
@@ -221,64 +117,6 @@ describe('createIssueFactory', () => {
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', 111, { context: 333 });
     });
-  });
-});
-
-describe('enableMask', () => {
-  test('sets bit', () => {
-    expect(enableMask(0b0, 5)).toBe(0b100000);
-    expect(enableMask(0b1, 5)).toBe(0b100001);
-    expect(enableMask(0b100, 5)).toBe(0b100100);
-    expect(enableMask(0b1, 31)).toBe(-2147483647);
-    expect(enableMask(0b1, 35)).toEqual([1, 0b1000, 0]);
-  });
-});
-
-describe('isMaskEnabled', () => {
-  test('reads bit', () => {
-    expect(isMaskEnabled(enableMask(0b0, 5), 5)).toBe(true);
-    expect(isMaskEnabled(enableMask(0b1, 5), 5)).toBe(true);
-    expect(isMaskEnabled(enableMask(0b100, 5), 5)).toBe(true);
-    expect(isMaskEnabled(enableMask(0b1, 31), 31)).toBe(true);
-    expect(isMaskEnabled(enableMask(0b1, 35), 35)).toEqual(true);
-  });
-});
-
-describe('cloneDict', () => {
-  test('clones all keys', () => {
-    const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneDict(obj1);
-
-    expect(obj1).not.toBe(obj2);
-    expect(obj2).toEqual({ aaa: 111, bbb: 222 });
-  });
-});
-
-describe('cloneDictHead', () => {
-  test('clones limited number of leading keys', () => {
-    const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneDictHead(obj1, 1);
-
-    expect(obj1).not.toBe(obj2);
-    expect(obj2).toEqual({ aaa: 111 });
-  });
-
-  test('clones no keys', () => {
-    const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneDictHead(obj1, 0);
-
-    expect(obj1).not.toBe(obj2);
-    expect(obj2).toEqual({});
-  });
-});
-
-describe('cloneDictKeys', () => {
-  test('clones known keys', () => {
-    const obj1 = { aaa: 111, bbb: 222 };
-    const obj2 = cloneDictKeys(obj1, ['bbb']);
-
-    expect(obj1).not.toBe(obj2);
-    expect(obj2).toEqual({ bbb: 222 });
   });
 });
 
@@ -419,33 +257,5 @@ describe('createApplyChecksCallback', () => {
       expect(cbMock4).toHaveBeenCalledTimes(1);
       expect(cbMock4).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: true });
     });
-  });
-});
-
-describe('unique', () => {
-  test('returns the input array if it contains unique values', () => {
-    const arr = [1, 2, 3];
-    expect(unique(arr)).toBe(arr);
-  });
-
-  test('returns the empty array as is', () => {
-    const arr: any[] = [];
-    expect(unique(arr)).toBe(arr);
-  });
-
-  test('removes duplicates', () => {
-    const arr = [1, 2, 3, 3, 1];
-    const uniqueArr = unique(arr);
-
-    expect(uniqueArr).not.toBe(arr);
-    expect(uniqueArr).toEqual([2, 3, 1]);
-  });
-
-  test('removes NaN duplicates', () => {
-    const arr = [NaN, 1, NaN, 2, NaN];
-    const uniqueArr = unique(arr);
-
-    expect(uniqueArr).not.toBe(arr);
-    expect(uniqueArr).toEqual([1, 2, NaN]);
   });
 });

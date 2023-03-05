@@ -10,7 +10,7 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory, isArray, ok, toPrimitive } from '../utils';
+import { createIssueFactory, isArray, ok, canonize } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result, ValueType } from './Shape';
 
@@ -71,7 +71,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
       return BigInt(0);
     }
 
-    value = toPrimitive(value);
+    value = canonize(value);
 
     if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
       try {

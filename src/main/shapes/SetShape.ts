@@ -11,12 +11,12 @@ import {
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
-  addConstraint,
+  addCheck,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isIterableObject,
+  isIterable,
   ok,
   toArrayIndex,
   toDeepPartialShape,
@@ -82,7 +82,7 @@ export class SetShape<S extends AnyShape>
   min(size: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-    return addConstraint(this, CODE_SET_MIN, size, (input, param, options) => {
+    return addCheck(this, CODE_SET_MIN, size, (input, param, options) => {
       if (input.size < param) {
         return issueFactory(input, options);
       }
@@ -99,7 +99,7 @@ export class SetShape<S extends AnyShape>
   max(size: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-    return addConstraint(this, CODE_SET_MAX, size, (input, param, options) => {
+    return addCheck(this, CODE_SET_MAX, size, (input, param, options) => {
       if (input.size > param) {
         return issueFactory(input, options);
       }
@@ -239,7 +239,7 @@ export class SetShape<S extends AnyShape>
     if (isArray(value)) {
       return value;
     }
-    if (isIterableObject(value)) {
+    if (isIterable(value)) {
       return Array.from(value);
     }
     return [value];

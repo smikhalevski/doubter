@@ -192,4 +192,7 @@ export interface ParseOptions extends ApplyOptions {
   errorMessage?: ((issues: Issue[], input: any) => string) | string;
 }
 
+/**
+ * The literal value of any type.
+ */
 export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;

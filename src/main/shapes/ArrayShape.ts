@@ -13,14 +13,14 @@ import {
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
-  addConstraint,
+  addCheck,
   applyShape,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
   isAsyncShape,
-  isIterableObject,
+  isIterable,
   ok,
   toArrayIndex,
   toDeepPartialShape,
@@ -138,7 +138,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-    return addConstraint(this, CODE_ARRAY_MIN, length, (input, param, options) => {
+    return addCheck(this, CODE_ARRAY_MIN, length, (input, param, options) => {
       if (input.length < param) {
         return issueFactory(input, options);
       }
@@ -155,7 +155,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-    return addConstraint(this, CODE_ARRAY_MAX, length, (input, param, options) => {
+    return addCheck(this, CODE_ARRAY_MAX, length, (input, param, options) => {
       if (input.length > param) {
         return issueFactory(input, options);
       }
@@ -318,7 +318,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    * @param value The non-array value to coerce.
    */
   protected _coerce(value: unknown): unknown[] {
-    if (isIterableObject(value)) {
+    if (isIterable(value)) {
       return Array.from(value);
     }
     return [value];
