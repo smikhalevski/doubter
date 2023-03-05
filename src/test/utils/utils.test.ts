@@ -14,8 +14,8 @@ import {
   isPlainObject,
   toArrayIndex,
   unique,
-} from '../main/utils';
-import { Issue, Shape, ValidationError } from '../main';
+} from '../../main/utils';
+import { Issue, Shape, ValidationError } from '../../main';
 
 describe('isPlainObject', () => {
   test('detects plain objects', () => {

@@ -1,6 +1,6 @@
 import { Issue } from './shared-types';
 import { CODE_UNION } from './constants';
-import { isArray, isObjectLike } from './utils';
+import { isArray, isObjectLike } from './utils/lang';
 
 /**
  * An error thrown if parsing failed. Custom check callbacks, refinement predicates, transformers, and fallback
