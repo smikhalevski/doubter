@@ -1,5 +1,5 @@
-import { ConstraintOptions, Literal, Message } from '../shared-types';
 import { EnumShape } from '../shapes';
+import { ConstraintOptions, Literal, Message } from '../types';
 import { ReadonlyDict } from '../utils';
 
 /**

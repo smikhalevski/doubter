@@ -1,4 +1,13 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, ValueType } from './Shape';
+import {
+  CODE_INTERSECTION,
+  MESSAGE_INTERSECTION,
+  TYPE_ANY,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_NEVER,
+  TYPE_OBJECT,
+} from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   concatIssues,
@@ -11,16 +20,7 @@ import {
   ok,
   toDeepPartialShape,
 } from '../utils';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
-import {
-  CODE_INTERSECTION,
-  MESSAGE_INTERSECTION,
-  TYPE_ANY,
-  TYPE_ARRAY,
-  TYPE_DATE,
-  TYPE_NEVER,
-  TYPE_OBJECT,
-} from '../constants';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, ValueType } from './Shape';
 
 // prettier-ignore
 export type ToIntersection<U extends AnyShape> =

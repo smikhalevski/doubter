@@ -1,7 +1,7 @@
-import { Result, Shape, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
-import { createIssueFactory, isSubclass } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { createIssueFactory, isSubclass } from '../utils';
+import { Result, Shape, ValueType } from './Shape';
 
 /**
  * The shape of the class instance.

@@ -1,5 +1,5 @@
-import { ConstraintOptions, Message } from '../shared-types';
 import { AnyShape, ObjectShape } from '../shapes';
+import { ConstraintOptions, Message } from '../types';
 import { ReadonlyDict } from '../utils';
 
 /**

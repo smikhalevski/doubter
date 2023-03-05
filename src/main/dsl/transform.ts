@@ -1,5 +1,5 @@
-import { ApplyOptions } from '../shared-types';
 import { TransformShape } from '../shapes';
+import { ApplyOptions } from '../types';
 
 /**
  * Creates the shape that synchronously transforms the input value.

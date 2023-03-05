@@ -1,5 +1,5 @@
 import { StringShape } from '../shapes';
-import { ConstraintOptions, Message } from '../shared-types';
+import { ConstraintOptions, Message } from '../types';
 
 /**
  * Creates the string shape.

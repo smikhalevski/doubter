@@ -1,5 +1,5 @@
 import { AnyShape, ArrayShape, FunctionShape, Shape } from '../shapes';
-import { ConstraintOptions, Message } from '../shared-types';
+import { ConstraintOptions, Message } from '../types';
 
 /**
  * Creates a shape of a function that has no arguments.

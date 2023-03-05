@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from '../shapes';
-import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
 
 /**
  * Creates the unconstrained shape.

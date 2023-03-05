@@ -1,3 +1,4 @@
+import { Issue, Shape, ValidationError } from '../../main';
 import {
   cloneDict,
   cloneDictHead,
@@ -15,7 +16,6 @@ import {
   toArrayIndex,
   unique,
 } from '../../main/utils';
-import { Issue, Shape, ValidationError } from '../../main';
 
 describe('isPlainObject', () => {
   test('detects plain objects', () => {

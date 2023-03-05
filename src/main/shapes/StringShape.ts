@@ -1,6 +1,3 @@
-import { NEVER, Result, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
-import { addConstraint, createIssueFactory, isArray, isValidDate, ok, toPrimitive } from '../utils';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -18,7 +15,10 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { addConstraint, createIssueFactory, isArray, isValidDate, ok, toPrimitive } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER, Result, ValueType } from './Shape';
 
 /**
  * The shape that constrains the input as a string.

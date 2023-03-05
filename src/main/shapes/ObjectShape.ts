@@ -1,5 +1,5 @@
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   cloneDict,
@@ -22,6 +22,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
+import { EnumShape } from './EnumShape';
 import {
   AllowLiteralShape,
   AnyShape,
@@ -32,7 +33,6 @@ import {
   Shape,
   ValueType,
 } from './Shape';
-import { EnumShape } from './EnumShape';
 
 // prettier-ignore
 export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> =

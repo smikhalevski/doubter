@@ -1,5 +1,5 @@
-import { AnyShape, defaultApplyOptions, Result, Shape, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../shared-types';
+import { CODE_TYPE, ERROR_FUNCTION_WRAPPER_ASYNC, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
 import {
   applyShape,
   cloneInstance,
@@ -10,8 +10,8 @@ import {
   ok,
   unshiftIssuesPath,
 } from '../utils';
-import { CODE_TYPE, ERROR_FUNCTION_WRAPPER_ASYNC, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
 import { ValidationError } from '../ValidationError';
+import { AnyShape, defaultApplyOptions, Result, Shape, ValueType } from './Shape';
 
 // prettier-ignore
 export type InferFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =

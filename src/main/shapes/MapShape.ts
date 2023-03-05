@@ -1,13 +1,5 @@
-import {
-  AnyShape,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  NEVER,
-  OptionalDeepPartialShape,
-  Result,
-  ValueType,
-} from './Shape';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
+import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   concatIssues,
@@ -20,8 +12,16 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
 import { CoercibleShape } from './CoercibleShape';
+import {
+  AnyShape,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  NEVER,
+  OptionalDeepPartialShape,
+  Result,
+  ValueType,
+} from './Shape';
 
 /**
  * The shape of a `Map` instance.

@@ -1,8 +1,8 @@
-import { NEVER, Result, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
-import { createIssueFactory, getValueType, isArray, ok, ReadonlyDict, unique } from '../utils';
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { createIssueFactory, getValueType, isArray, ok, ReadonlyDict, unique } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER, Result, ValueType } from './Shape';
 
 /**
  * The shape that constrains an input to one of values.

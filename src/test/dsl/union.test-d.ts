@@ -1,5 +1,5 @@
-import { expectType } from 'tsd';
 import * as d from 'doubter';
+import { expectType } from 'tsd';
 
 expectType<string | number | boolean>(d.or([d.string(), d.number(), d.boolean()]).output);
 

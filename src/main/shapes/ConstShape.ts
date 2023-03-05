@@ -1,7 +1,7 @@
-import { Result, Shape, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
-import { createIssueFactory, getValueType } from '../utils';
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { createIssueFactory, getValueType } from '../utils';
+import { Result, Shape, ValueType } from './Shape';
 
 /**
  * The shape that constrains an input to exactly equal to the expected value.

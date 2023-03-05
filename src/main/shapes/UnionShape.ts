@@ -1,5 +1,5 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
+import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   copyUnsafeChecks,
@@ -11,8 +11,8 @@ import {
   toDeepPartialShape,
   unique,
 } from '../utils';
-import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
 import { ObjectShape } from './ObjectShape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 
 /**
  * Returns the array of shapes that are applicable to the input.

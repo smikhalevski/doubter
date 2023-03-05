@@ -1,18 +1,3 @@
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
-import {
-  addConstraint,
-  concatIssues,
-  copyUnsafeChecks,
-  createIssueFactory,
-  isArray,
-  isAsyncShape,
-  isIterableObject,
-  ok,
-  toArrayIndex,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../utils';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -26,7 +11,22 @@ import {
   TYPE_ARRAY,
   TYPE_OBJECT,
 } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import {
+  addConstraint,
+  concatIssues,
+  copyUnsafeChecks,
+  createIssueFactory,
+  isArray,
+  isAsyncShape,
+  isIterableObject,
+  ok,
+  toArrayIndex,
+  toDeepPartialShape,
+  unshiftIssuesPath,
+} from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 
 // prettier-ignore
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =

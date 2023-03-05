@@ -1,5 +1,5 @@
-import { expectNotType, expectType } from 'tsd';
 import * as d from 'doubter';
+import { expectNotType, expectType } from 'tsd';
 
 expectType<111>(d.any((value): value is 111 => true).input);
 

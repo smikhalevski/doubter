@@ -1,6 +1,3 @@
-import { NEVER, Result, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
-import { createIssueFactory, isArray, ok, toPrimitive } from '../utils';
 import {
   CODE_TYPE,
   MESSAGE_BOOLEAN_TYPE,
@@ -11,7 +8,10 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { createIssueFactory, isArray, ok, toPrimitive } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER, Result, ValueType } from './Shape';
 
 /**
  * The shape of the boolean value.

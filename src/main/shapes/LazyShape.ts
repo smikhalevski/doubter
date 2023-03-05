@@ -1,7 +1,7 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
-import { ApplyOptions } from '../shared-types';
-import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
+import { ApplyOptions } from '../types';
+import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 
 /**
  * Lazily resolves a shape using the provider callback.

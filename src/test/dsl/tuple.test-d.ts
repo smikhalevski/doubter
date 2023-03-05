@@ -1,5 +1,5 @@
-import { expectType } from 'tsd';
 import * as d from 'doubter';
+import { expectType } from 'tsd';
 
 expectType<[string, number]>(d.tuple([d.string(), d.number()]).output);
 

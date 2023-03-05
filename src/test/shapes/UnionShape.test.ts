@@ -13,8 +13,8 @@ import {
   StringShape,
   UnionShape,
 } from '../../main';
-import { getDiscriminator } from '../../main/shapes/UnionShape';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
+import { getDiscriminator } from '../../main/shapes/UnionShape';
 
 describe('UnionShape', () => {
   let asyncShape: AnyShape;

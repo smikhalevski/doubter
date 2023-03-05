@@ -1,5 +1,15 @@
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
+import {
+  CODE_SET_MAX,
+  CODE_SET_MIN,
+  CODE_TYPE,
+  MESSAGE_SET_MAX,
+  MESSAGE_SET_MIN,
+  MESSAGE_SET_TYPE,
+  TYPE_ARRAY,
+  TYPE_OBJECT,
+  TYPE_SET,
+} from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addConstraint,
   concatIssues,
@@ -12,18 +22,8 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import {
-  CODE_SET_MAX,
-  CODE_SET_MIN,
-  CODE_TYPE,
-  MESSAGE_SET_MAX,
-  MESSAGE_SET_MIN,
-  MESSAGE_SET_TYPE,
-  TYPE_ARRAY,
-  TYPE_OBJECT,
-  TYPE_SET,
-} from '../constants';
 import { CoercibleShape } from './CoercibleShape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 
 /**
  * The shape of a `Set` instance.

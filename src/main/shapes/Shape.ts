@@ -1,4 +1,16 @@
 import {
+  CODE_DENIED,
+  CODE_EXCLUDED,
+  CODE_PREDICATE,
+  ERROR_FORBIDDEN_AT_RUNTIME,
+  ERROR_REQUIRES_ASYNC,
+  MESSAGE_DENIED,
+  MESSAGE_EXCLUDED,
+  MESSAGE_PREDICATE,
+  TYPE_ANY,
+  TYPE_NEVER,
+} from '../constants';
+import {
   ApplyOptions,
   Check,
   CheckCallback,
@@ -11,7 +23,7 @@ import {
   Ok,
   ParseOptions,
   RefineOptions,
-} from '../shared-types';
+} from '../types';
 import {
   applyShape,
   captureIssues,
@@ -33,18 +45,6 @@ import {
   unique,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
-import {
-  CODE_DENIED,
-  CODE_EXCLUDED,
-  CODE_PREDICATE,
-  ERROR_FORBIDDEN_AT_RUNTIME,
-  ERROR_REQUIRES_ASYNC,
-  MESSAGE_DENIED,
-  MESSAGE_EXCLUDED,
-  MESSAGE_PREDICATE,
-  TYPE_ANY,
-  TYPE_NEVER,
-} from '../constants';
 
 /**
  * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from `_coerce`

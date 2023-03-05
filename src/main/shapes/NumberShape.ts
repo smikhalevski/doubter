@@ -1,17 +1,3 @@
-import { NEVER, Result, Shape, ValueType } from './Shape';
-import { ApplyOptions, ConstraintOptions, Message } from '../shared-types';
-import {
-  abs,
-  addConstraint,
-  cloneInstance,
-  createIssueFactory,
-  floor,
-  isArray,
-  isNumber,
-  max,
-  ok,
-  toPrimitive,
-} from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -37,7 +23,21 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import {
+  abs,
+  addConstraint,
+  cloneInstance,
+  createIssueFactory,
+  floor,
+  isArray,
+  isNumber,
+  max,
+  ok,
+  toPrimitive,
+} from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER, Result, Shape, ValueType } from './Shape';
 
 /**
  * The shape that constrains the input as a number.

@@ -1,13 +1,4 @@
-import {
-  ApplyOptions,
-  Check,
-  CheckCallback,
-  ConstraintOptions,
-  Issue,
-  Message,
-  Ok,
-  ParseOptions,
-} from '../shared-types';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL, TYPE_OBJECT } from '../constants';
 import {
   AnyShape,
   ApplyChecksCallback,
@@ -17,8 +8,8 @@ import {
   Shape,
   ValueType,
 } from '../shapes/Shape';
+import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
-import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL, TYPE_OBJECT } from '../constants';
 import { cloneInstance, isArray, isFunction, isObjectLike } from './lang';
 
 /**

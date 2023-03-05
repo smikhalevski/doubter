@@ -1,5 +1,5 @@
-import { expectType } from 'tsd';
 import * as d from 'doubter';
+import { expectType } from 'tsd';
 
 expectType<111 | 'aaa'>(d.enum([111, 'aaa']).output);
 

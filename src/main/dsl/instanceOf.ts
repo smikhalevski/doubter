@@ -1,5 +1,5 @@
 import { InstanceShape } from '../shapes';
-import { ConstraintOptions, Message } from '../shared-types';
+import { ConstraintOptions, Message } from '../types';
 
 /**
  * Creates the class instance shape.
