@@ -8,7 +8,7 @@ import {
   Shape,
   ValueType,
 } from '../shapes/Shape';
-import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok } from '../types';
+import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
 import { cloneInstance } from './objects';
@@ -364,4 +364,26 @@ function appendIssue(issues: Issue[] | null, result: Issue[] | Issue): Issue[] |
     }
   }
   return issues;
+}
+
+/**
+ * Returns an error message that is composed of the captured issues and parsing options.
+ */
+export function getErrorMessage(
+  issues: Issue[],
+  input: unknown,
+  options: ParseOptions | undefined
+): string | undefined {
+  if (!isObjectLike(options)) {
+    return;
+  }
+
+  const { errorMessage } = options;
+
+  if (typeof errorMessage === 'function') {
+    return errorMessage(issues, input);
+  }
+  if (errorMessage !== undefined) {
+    return String(errorMessage);
+  }
 }

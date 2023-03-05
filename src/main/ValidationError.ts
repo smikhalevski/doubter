@@ -1,5 +1,4 @@
 import { Issue } from './types';
-import { stringifyIssues } from './utils/errors';
 
 /**
  * An error thrown if parsing failed. Custom check callbacks, refinement predicates, transformers, and fallback
@@ -10,7 +9,7 @@ export class ValidationError extends Error {
    * The global function that stringifies issues as an error message, if a message is omitted when
    * {@linkcode ValidationError} is instantiated.
    */
-  static issuesStringifier = stringifyIssues;
+  static issuesStringifier = (issues: Issue[]): string => JSON.stringify(issues, jsonReplacer, 2);
 
   /**
    * Creates a new {@linkcode ValidationError} instance.
@@ -32,4 +31,8 @@ export class ValidationError extends Error {
 
     this.name = 'ValidationError';
   }
+}
+
+function jsonReplacer(key: any, value: any): any {
+  return typeof value === 'symbol' || typeof value === 'bigint' ? String(value) : value;
 }

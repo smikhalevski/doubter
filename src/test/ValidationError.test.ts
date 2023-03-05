@@ -17,7 +17,14 @@ describe('ValidationError', () => {
   test('returns message', () => {
     const error = new ValidationError([{ code: 'aaa' }, { message: 'bbb' }]);
 
-    expect(error.toString()).toBe('ValidationError: /: aaa\n/: bbb');
+    expect(error.toString()).toBe(`ValidationError: [
+  {
+    "code": "aaa"
+  },
+  {
+    "message": "bbb"
+  }
+]`);
   });
 
   test('custom message can be assigned', () => {
