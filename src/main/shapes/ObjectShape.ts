@@ -13,7 +13,7 @@ import {
   getBit,
   isArray,
   isAsyncShape,
-  isObjectLike,
+  isObject,
   isPlainObject,
   ok,
   ReadonlyDict,
@@ -87,7 +87,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
   protected _options;
   protected _valueShapes: Shape[];
-  protected _typePredicate = isObjectLike;
+  protected _typePredicate = isObject;
   protected _typeIssueFactory;
   protected _exactIssueFactory?: (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[];
 

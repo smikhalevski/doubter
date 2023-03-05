@@ -7,7 +7,7 @@ import {
   getValueType,
   isArray,
   isAsyncShape,
-  isObjectLike,
+  isObject,
   toDeepPartialShape,
   uniqueArray,
 } from '../utils';
@@ -265,7 +265,7 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
     const values = valuesForShape.map(values => values[0]);
 
     return input => {
-      if (!isObjectLike(input)) {
+      if (!isObject(input)) {
         return noShapesArray;
       }
 
@@ -278,7 +278,7 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
   }
 
   return input => {
-    if (!isObjectLike(input)) {
+    if (!isObject(input)) {
       return noShapesArray;
     }
 

@@ -7,7 +7,7 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isObjectLike,
+  isObject,
   ok,
   setObjectProperty,
   toDeepPartialShape,
@@ -77,7 +77,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferRecord<K, V, 'output'>> {
-    if (!isObjectLike(input)) {
+    if (!isObject(input)) {
       return this._typeIssueFactory(input, options);
     }
 
@@ -146,7 +146,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
 
   protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferRecord<K, V, 'output'>>> {
     return new Promise(resolve => {
-      if (!isObjectLike(input)) {
+      if (!isObject(input)) {
         resolve(this._typeIssueFactory(input, options));
         return;
       }

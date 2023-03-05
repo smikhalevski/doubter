@@ -7,8 +7,12 @@ export function isEqual(a: unknown, b: unknown): boolean {
   return a === b || (a !== a && b !== b);
 }
 
-export function isObjectLike(value: unknown): boolean {
+export function isObjectLike(value: unknown): value is Record<any, any> {
   return value !== null && typeof value === 'object';
+}
+
+export function isObject(value: unknown): boolean {
+  return isObjectLike(value) && !isArray(value);
 }
 
 export function isPlainObject(value: any): boolean {
@@ -30,6 +34,10 @@ export function isNumber(value: unknown): boolean {
 
 export function isValidDate(value: unknown): value is Date {
   return value instanceof Date && (value = value.getTime()) === value;
+}
+
+export function isMapEntry(value: unknown): value is [unknown, unknown] {
+  return isArray(value) && value.length === 2;
 }
 
 /**

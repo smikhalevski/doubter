@@ -7,6 +7,7 @@ import {
   createIssueFactory,
   isArray,
   isIterable,
+  isMapEntry,
   isObjectLike,
   ok,
   toDeepPartialShape,
@@ -259,20 +260,16 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
    */
   protected _coerceEntries(value: any): [unknown, unknown][] {
     if (isArray(value)) {
-      return value.every(isEntry) ? value : NEVER;
+      return value.every(isMapEntry) ? value : NEVER;
     }
     if (isIterable(value)) {
       value = Array.from(value);
 
-      return value.every(isEntry) ? value : NEVER;
+      return value.every(isMapEntry) ? value : NEVER;
     }
     if (isObjectLike(value)) {
       return Object.entries(value);
     }
     return NEVER;
   }
-}
-
-function isEntry(value: unknown): value is [unknown, unknown] {
-  return isArray(value) && value.length === 2;
 }

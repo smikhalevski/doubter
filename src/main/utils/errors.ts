@@ -66,14 +66,16 @@ export function getErrorMessage(
   input: unknown,
   options: ParseOptions | undefined
 ): string | undefined {
-  if (options === null || typeof options !== 'object') {
+  let errorMessage;
+
+  if (!isObjectLike(options)) {
     return;
   }
-  if (typeof options.errorMessage === 'function') {
-    return options.errorMessage(issues, input);
+  if (typeof (errorMessage = options.errorMessage) === 'function') {
+    return errorMessage(issues, input);
   }
-  if (options.errorMessage === undefined) {
+  if (errorMessage === undefined) {
     return;
   }
-  return String(options.errorMessage);
+  return String(errorMessage);
 }
