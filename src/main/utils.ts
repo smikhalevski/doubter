@@ -1,4 +1,13 @@
-import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok } from './shared-types';
+import {
+  ApplyOptions,
+  Check,
+  CheckCallback,
+  ConstraintOptions,
+  Issue,
+  Message,
+  Ok,
+  ParseOptions,
+} from './shared-types';
 import {
   AnyShape,
   ApplyChecksCallback,
@@ -342,7 +351,7 @@ export function copyChecks<S extends Shape>(
  * Calls {@linkcode Shape._apply} or {@linkcode Shape._applyAsync} depending on {@linkcode Shape._isAsync}, and passes
  * the result to `cb` after it becomes available.
  */
-export function applyForResult<T>(
+export function applyShape<T>(
   shape: AnyShape,
   input: unknown,
   options: ApplyOptions,
@@ -590,4 +599,27 @@ function appendIssue(issues: Issue[] | null, result: any /*Partial<Issue>[] | Pa
     }
   }
   return issues;
+}
+
+/**
+ * Returns an er
+ * @param issues
+ * @param input
+ * @param options
+ */
+export function getErrorMessage(
+  issues: Issue[],
+  input: unknown,
+  options: ParseOptions | undefined
+): string | undefined {
+  // if (!isObjectLike(options)) {
+  //   return;
+  // }
+  // if (isFunction(options.errorMessage)) {
+  //   return options.errorMessage(issues, input);
+  // }
+  // if (typeof options.errorMessage === 'string') {
+  //   return options.errorMessage;
+  // }
+  return undefined;
 }

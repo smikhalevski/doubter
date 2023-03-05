@@ -1,7 +1,7 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import {
-  applyForResult,
+  applyShape,
   copyUnsafeChecks,
   createIssueFactory,
   getValueType,
@@ -196,7 +196,7 @@ export class UnionShape<U extends readonly AnyShape[]>
         index++;
 
         if (index !== shapesLength) {
-          return applyForResult(shapes[index], input, options, handleResult);
+          return applyShape(shapes[index], input, options, handleResult);
         }
         if (shapesLength === 1) {
           return issues;

@@ -9,7 +9,7 @@ import {
 } from './Shape';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import {
-  applyForResult,
+  applyShape,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -200,7 +200,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
             keyChanged = true;
           }
         }
-        return applyForResult(valueShape, value, options, handleValueResult);
+        return applyShape(valueShape, value, options, handleValueResult);
       };
 
       const handleValueResult = (valueResult: Result) => {
@@ -234,7 +234,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
           key = entry[0];
           value = entry[1];
 
-          return applyForResult(keyShape, key, options, handleKeyResult);
+          return applyShape(keyShape, key, options, handleKeyResult);
         }
 
         const output = changed ? new Map(entries) : input;

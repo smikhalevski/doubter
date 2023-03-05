@@ -12,19 +12,14 @@ export class ValidationError extends Error {
    */
   issues: Issue[];
 
-  /**
-   * Creates a new {@linkcode ValidationError} instance.
-   *
-   * @param issues The mutable array of partially defined issues that have caused an error.
-   */
+  constructor(message?: string, issues?: Partial<Issue>[]);
+
   constructor(issues: Partial<Issue>[]);
 
-  constructor(issues: Issue[]) {
+  constructor(message?: any, issues?: any) {
     issues.forEach(inflateIssue);
 
-    const message = stringifyIssues(issues);
-
-    super(message.indexOf('\n') !== -1 ? '\n' + message : message);
+    super(message ?? stringifyIssues(issues));
 
     Object.setPrototypeOf(this, new.target.prototype);
 
@@ -39,6 +34,11 @@ export function inflateIssue(issue: Partial<Issue>): void {
 }
 
 function stringifyIssues(issues: Issue[]): string {
+  const message = stringifyIssues_(issues);
+  return message.indexOf('\n') !== -1 ? '\n' + message : message;
+}
+
+function stringifyIssues_(issues: Issue[]): string {
   let resultStr = '';
 
   for (let paragraph = false, i = 0; i < issues.length; ++i) {

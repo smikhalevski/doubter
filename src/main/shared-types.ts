@@ -189,7 +189,7 @@ export interface ParseOptions extends ApplyOptions {
   /**
    * A message that is passed to {@linkcode ValidationError} if it is thrown.
    */
-  errorMessage: ((issues: Issue[], input: any) => string) | string;
+  errorMessage?: ((issues: Issue[], input: any) => string) | string;
 }
 
 export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;

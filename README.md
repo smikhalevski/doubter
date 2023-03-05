@@ -2217,26 +2217,26 @@ shape1.parse('Mars');
 // ❌ ValidationError: type at /: Must be a function
 ```
 
-The result of parsing is a delegator function that parses arguments, return and `this` values.
-See [Implementing a function](#implementing-a-function) for more details.
+The result of parsing is a wrapper function that parses arguments, return and `this` values. See
+[Implementing a function](#implementing-a-function) section for more details.
 
-If you want to prevent the parsed function from being wrapped in a delegator, use `bare`:
+If you want to prevent the input function from being wrapped, use `noWrap`:
 
 ```ts
-const shape2 = d.fn().bare();
+const shape2 = d.fn().noWrap();
 
-function implFn() {
+function impl() {
 }
 
-shape2.parse(implFn) === implFn // ⮕ true
+shape2.parse(impl) === impl // ⮕ true
 ```
 
 ## Implementing a function
 
-You can delegate a function implementation using a function shape. This would guarantee that the function implementation
-is called with arguments of requested types, and delegator returns the value of the requested type.
+You can wrap a function implementation using a `FunctionShape`. This would guarantee that the function implementation
+is called with arguments of requested types, and the wrapper returns the value of the requested type.
 
-Let's declare a function shape that takes two number arguments and returns a number:
+Let's declare a function shape that takes two number arguments and returns a number as well:
 
 ```ts
 const sumShape = d.fn([d.number(), d.number()]).return(d.number());
@@ -2250,23 +2250,23 @@ function sumImpl(arg1: number, arg2: number): number {
   return arg1 + arg2;
 }
 
-const sum = sumShape.delegate(sumImpl);
+const sumWrapper = sumShape.wrap(sumImpl);
 // ⮕ (arg1: number, arg2: number) => number
 
-sum(2, 3);
+sumWrapper(2, 3);
 // ⮕ 5
 ```
 
-The function `sum` (a delegator function) delegates its implementation to `sumImpl` (an implementation function) and
-guarantees that `sumImpl` is called with exactly two number arguments and returns a number.
+The wrapper function `sumWrapper` wraps implementation function `sumImpl` and guarantees that `sumImpl` is called with
+exactly two number arguments and returns a number.
 
-`sum` would throw a [`ValidationError`](#validation-errors) if the required signature is violated at runtime:
+`sumWrapper` would throw a [`ValidationError`](#validation-errors) if the required signature is violated at runtime:
 
 ```ts
-sum(2, '3');
+sumWrapper(2, '3');
 // ❌ ValidationError: type at /arguments/1: Must be a number
 
-sum(1, 2, 3);
+sumWrapper(1, 2, 3);
 // ❌ ValidationError: arrayMaxLength at /arguments: Must have the maximum length of 2
 ```
 
@@ -2284,7 +2284,7 @@ const userShape = d.object({
 const getLastNameShape = d.fn().this(userShape).return(d.string());
 // ⮕ Shape<(this: { name: string }) => string>
 
-const getLastName = getLastNameShape.delegate(user => {
+const getLastName = getLastNameShape.wrap(user => {
   // 🟡 Returns undefined at runtime if name doesn't include a space char. 
   return user.name.split(' ')[1]
 });
@@ -2326,15 +2326,15 @@ function plus2Impl(arg: number): number {
   return arg + 2;
 }
 
-const plus2 = plus2Shape.delegate(plus2Impl);
+const plus2Wrapper = plus2Shape.wrap(plus2Impl);
 // ⮕ (arg: number) => number
 ```
 
-While `plus2` requires a single number parameter, we can call it at runtime with a number-like string and get an
+While `plus2Wrapper` requires a single number parameter, we can call it at runtime with a number-like string and get an
 expected numeric result because of an argument coercion:
 
 ```ts
-plus2('40');
+plus2Wrapper('40');
 // ⮕ 42
 ```
 
@@ -2354,31 +2354,31 @@ const shape = d.fn([d.string().transform(parseFloat)]);
 // ⮕ Shape<(arg: number) => any, (arg: string) => any>
 ```
 
-Note that the input and output functions described by this shape have different signatures. Let's delegate the
+Note that the input and output functions described by this shape have different signatures. Let's wrap the
 implementation of this function:
 
 ```ts
-function implFn(arg: number) {
+function impl(arg: number) {
   return arg + 2;
 }
 
-const delegatorFn = shape.delegate(implFn);
+const wrapper = shape.wrap(impl);
 // ⮕ (arg: string) => any
 ```
 
-The argument of the implementation function is the output of the shape that parses arguments. The graph below
-demonstrates the data flow between the delegator and the implementation:
+Arguments of the implementation function is the output of the wrapper function. The graph below demonstrates the data
+flow between the wrapper and the implementation:
 
 ```mermaid
 ---
-title: delegatorFn
+title: wrapper
 ---
 flowchart TD
     InputArguments["Input arguments"]
-    -->|Parsed by argsShape| implFn
+    -->|Parsed by argsShape| impl
     -->|Parsed by returnShape| OutputReturnValue["Output return value"]
 
-    subgraph implFn
+    subgraph impl
     OutputArguments["Output arguments"]
     --> InputReturnValue["Input return value"]
     end

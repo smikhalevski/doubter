@@ -1,7 +1,7 @@
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
 import {
-  applyForResult,
+  applyShape,
   cloneDict,
   cloneDictKeys,
   cloneInstance,
@@ -455,7 +455,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         if (index !== entriesLength) {
           const entry = entries[index];
           key = entry[0];
-          return applyForResult(entry[2], entry[1], options, handleValueResult);
+          return applyShape(entry[2], entry[1], options, handleValueResult);
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {

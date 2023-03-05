@@ -13,13 +13,14 @@ import {
   RefineOptions,
 } from '../shared-types';
 import {
-  applyForResult,
+  applyShape,
   captureIssues,
   cloneInstance,
   copyUnsafeChecks,
   createIssueFactory,
   deleteAt,
   getCheckIndex,
+  getErrorMessage,
   getValueType,
   isArray,
   isEqual,
@@ -877,7 +878,7 @@ Object.defineProperties(Shape.prototype, {
           return input;
         }
         if (isArray(result)) {
-          throw new ValidationError(result);
+          throw new ValidationError(getErrorMessage(result, input, options), result);
         }
         return result.value;
       };
@@ -900,7 +901,7 @@ Object.defineProperties(Shape.prototype, {
             return input;
           }
           if (isArray(result)) {
-            throw new ValidationError(result);
+            throw new ValidationError(getErrorMessage(result, input, options), result);
           }
           return result.value;
         });
@@ -1123,7 +1124,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
         output = result.value;
       }
 
-      return applyForResult(outputShape, output, options, outputResult => {
+      return applyShape(outputShape, output, options, outputResult => {
         let issues;
 
         if (outputResult !== null) {
@@ -1518,7 +1519,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
         output = result.value;
       }
 
-      return applyForResult(excludedShape, output, options, outputResult => {
+      return applyShape(excludedShape, output, options, outputResult => {
         let issues;
 
         if (!isArray(outputResult)) {
