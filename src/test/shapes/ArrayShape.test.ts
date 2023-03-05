@@ -501,7 +501,7 @@ describe('ArrayShape', () => {
       shape1.isAsync;
       shape2.isAsync;
 
-      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
+      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
       const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
 
       const arrShape = new ArrayShape([shape1, shape2], null);

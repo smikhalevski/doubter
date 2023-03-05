@@ -14,6 +14,7 @@ import {
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addConstraint,
+  applyShape,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -295,9 +296,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         index++;
 
         if (index !== outputLength && (shapes !== null || restShape !== null)) {
-          const valueShape = index < shapesLength ? shapes![index] : restShape!;
-
-          return valueShape['_applyAsync'](output[index], options).then(handleResult);
+          return applyShape(index < shapesLength ? shapes![index] : restShape!, output[index], options, handleResult);
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
