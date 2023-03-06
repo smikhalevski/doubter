@@ -6,6 +6,7 @@ import {
   TYPE_BOOLEAN,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
@@ -32,7 +33,15 @@ describe('BooleanShape', () => {
   test('updates input types when coerced', () => {
     const shape = new BooleanShape().coerce();
 
-    expect(shape.inputTypes).toEqual([TYPE_BOOLEAN, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, TYPE_NULL, TYPE_UNDEFINED]);
+    expect(shape.inputTypes).toEqual([
+      TYPE_BOOLEAN,
+      TYPE_OBJECT,
+      TYPE_STRING,
+      TYPE_NUMBER,
+      TYPE_ARRAY,
+      TYPE_NULL,
+      TYPE_UNDEFINED,
+    ]);
   });
 
   test('coerces an input', () => {

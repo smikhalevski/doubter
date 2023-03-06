@@ -80,9 +80,9 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
   protected _getInputTypes(): readonly ValueType[] {
     if (this.isCoerced) {
-      return [TYPE_OBJECT, TYPE_ARRAY];
+      return [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
     } else {
-      return [TYPE_OBJECT];
+      return [TYPE_MAP];
     }
   }
 

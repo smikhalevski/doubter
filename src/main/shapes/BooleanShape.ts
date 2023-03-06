@@ -5,6 +5,7 @@ import {
   TYPE_BOOLEAN,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
@@ -32,7 +33,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
 
   protected _getInputTypes(): readonly ValueType[] {
     if (this.isCoerced) {
-      return [TYPE_BOOLEAN, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, TYPE_NULL, TYPE_UNDEFINED];
+      return [TYPE_BOOLEAN, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, TYPE_NULL, TYPE_UNDEFINED];
     } else {
       return [TYPE_BOOLEAN];
     }

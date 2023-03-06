@@ -6,6 +6,7 @@ import {
   TYPE_BOOLEAN,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
@@ -33,7 +34,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
 
   protected _getInputTypes(): readonly ValueType[] {
     if (this.isCoerced) {
-      return [TYPE_BIGINT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
+      return [TYPE_BIGINT, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
     } else {
       return [TYPE_BIGINT];
     }

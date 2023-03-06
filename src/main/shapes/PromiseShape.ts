@@ -1,4 +1,4 @@
-import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_OBJECT, TYPE_PROMISE } from '../constants';
+import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, TYPE_PROMISE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { applyShape, copyUnsafeChecks, createIssueFactory, isArray, ok, toDeepPartialShape } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -39,7 +39,11 @@ export class PromiseShape<S extends AnyShape>
   }
 
   protected _getInputTypes(): readonly ValueType[] {
-    return [TYPE_OBJECT];
+    if (this.isCoerced) {
+      return this.shape.inputTypes.concat(TYPE_PROMISE);
+    } else {
+      return [TYPE_PROMISE];
+    }
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<Promise<S['output']>> {

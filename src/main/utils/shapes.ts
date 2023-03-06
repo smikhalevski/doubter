@@ -1,4 +1,4 @@
-import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL, TYPE_OBJECT } from '../constants';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_MAP, TYPE_NULL, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../constants';
 import {
   AnyShape,
   ApplyChecksCallback,
@@ -34,6 +34,15 @@ export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'
   }
   if (value instanceof Date) {
     return TYPE_DATE;
+  }
+  if (value instanceof Promise) {
+    return TYPE_PROMISE;
+  }
+  if (value instanceof Set) {
+    return TYPE_SET;
+  }
+  if (value instanceof Map) {
+    return TYPE_MAP;
   }
   return type;
 }

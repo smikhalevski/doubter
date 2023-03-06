@@ -1,4 +1,12 @@
-import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
+import {
+  CODE_TYPE,
+  MESSAGE_DATE_TYPE,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_NUMBER,
+  TYPE_OBJECT,
+  TYPE_STRING,
+} from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory, isArray, isValidDate, ok, canonize } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -23,7 +31,7 @@ export class DateShape extends CoercibleShape<Date> {
 
   protected _getInputTypes(): readonly ValueType[] {
     if (this.isCoerced) {
-      return [TYPE_DATE, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
+      return [TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
     } else {
       return [TYPE_DATE];
     }

@@ -10,6 +10,7 @@ import {
   TYPE_BOOLEAN,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
@@ -127,6 +128,7 @@ describe('StringShape', () => {
 
     expect(shape.inputTypes).toEqual([
       TYPE_STRING,
+      TYPE_OBJECT,
       TYPE_NUMBER,
       TYPE_BOOLEAN,
       TYPE_BIGINT,

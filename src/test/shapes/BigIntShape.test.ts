@@ -7,6 +7,7 @@ import {
   TYPE_BOOLEAN,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
@@ -44,6 +45,7 @@ describe('BigIntShape', () => {
 
     expect(shape.inputTypes).toEqual([
       TYPE_BIGINT,
+      TYPE_OBJECT,
       TYPE_STRING,
       TYPE_NUMBER,
       TYPE_BOOLEAN,

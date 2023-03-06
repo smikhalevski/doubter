@@ -213,18 +213,23 @@ export class UnionShape<U extends readonly AnyShape[]>
  * Creates a lookup that finds a shape using an input value type.
  */
 export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): LookupCallback {
-  const buckets: Record<Exclude<ValueType, 'any' | 'never'>, AnyShape[]> = {
-    object: [],
-    array: [],
-    function: [],
-    string: [],
-    symbol: [],
-    number: [],
-    bigint: [],
-    boolean: [],
-    date: [],
-    null: [],
-    undefined: [],
+  const emptyArray: AnyShape[] = [];
+
+  const buckets: Record<Exclude<ValueType, 'any' | 'never'>, readonly AnyShape[]> = {
+    object: emptyArray,
+    array: emptyArray,
+    function: emptyArray,
+    string: emptyArray,
+    symbol: emptyArray,
+    number: emptyArray,
+    bigint: emptyArray,
+    boolean: emptyArray,
+    date: emptyArray,
+    promise: emptyArray,
+    set: emptyArray,
+    map: emptyArray,
+    null: emptyArray,
+    undefined: emptyArray,
   };
 
   const bucketTypes = Object.keys(buckets) as ValueType[];
@@ -234,7 +239,7 @@ export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): Look
       if (type === TYPE_ANY || type === TYPE_NEVER) {
         continue;
       }
-      buckets[type].push(shape);
+      buckets[type] = buckets[type].concat(shape);
     }
   }
 
@@ -259,19 +264,19 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
 
   const { key, valuesForShape } = discriminator;
   const shapeArrays = shapes.map(shape => [shape]);
-  const noShapesArray: AnyShape[] = [];
+  const emptyArray: AnyShape[] = [];
 
   if (valuesForShape.every(values => values.length === 1 && values[0] === values[0])) {
     const values = valuesForShape.map(values => values[0]);
 
     return input => {
       if (!isObject(input)) {
-        return noShapesArray;
+        return emptyArray;
       }
 
       const index = values.indexOf(input[key]);
       if (index === -1) {
-        return noShapesArray;
+        return emptyArray;
       }
       return shapeArrays[index];
     };
@@ -279,7 +284,7 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
 
   return input => {
     if (!isObject(input)) {
-      return noShapesArray;
+      return emptyArray;
     }
 
     const value = input[key];
@@ -289,7 +294,7 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
         return shapeArrays[i];
       }
     }
-    return noShapesArray;
+    return emptyArray;
   };
 }
 

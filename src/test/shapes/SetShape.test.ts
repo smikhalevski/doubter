@@ -32,7 +32,7 @@ describe('SetShape', () => {
     const setShape = new SetShape(shape);
 
     expect(setShape.shape).toEqual(shape);
-    expect(setShape.inputTypes).toEqual([TYPE_OBJECT]);
+    expect(setShape.inputTypes).toEqual([TYPE_SET]);
   });
 
   test('raises an issue if an input is not a Set', () => {
@@ -147,7 +147,7 @@ describe('SetShape', () => {
   test('updates input types when coerced', () => {
     const setShape = new SetShape(new StringShape()).coerce();
 
-    expect(setShape.inputTypes).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
+    expect(setShape.inputTypes).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
   });
 
   test('coerces a non-array value', () => {

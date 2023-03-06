@@ -20,6 +20,7 @@ import {
   TYPE_DATE,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
@@ -233,7 +234,7 @@ export class NumberShape extends CoercibleShape<number> {
 
   protected _getInputTypes(): readonly ValueType[] {
     if (this.isCoerced) {
-      return [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
+      return [TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
     } else {
       return [TYPE_NUMBER];
     }

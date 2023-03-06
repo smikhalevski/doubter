@@ -14,6 +14,7 @@ import {
   TYPE_DATE,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
@@ -176,6 +177,7 @@ describe('NumberShape', () => {
 
     expect(shape.inputTypes).toEqual([
       TYPE_NUMBER,
+      TYPE_OBJECT,
       TYPE_STRING,
       TYPE_BOOLEAN,
       TYPE_ARRAY,

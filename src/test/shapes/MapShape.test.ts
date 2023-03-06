@@ -1,12 +1,5 @@
 import { AnyShape, ApplyOptions, MapShape, ObjectShape, Ok, Result, Shape, StringShape } from '../../main';
-import {
-  CODE_TYPE,
-  MESSAGE_MAP_TYPE,
-  MESSAGE_STRING_TYPE,
-  TYPE_MAP,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../../main/constants';
+import { CODE_TYPE, MESSAGE_MAP_TYPE, MESSAGE_STRING_TYPE, TYPE_MAP, TYPE_STRING } from '../../main/constants';
 
 describe('MapShape', () => {
   let asyncShape: AnyShape;
@@ -31,7 +24,7 @@ describe('MapShape', () => {
 
     expect(setShape.keyShape).toEqual(keyShape);
     expect(setShape.valueShape).toEqual(valueShape);
-    expect(setShape.inputTypes).toEqual([TYPE_OBJECT]);
+    expect(setShape.inputTypes).toEqual([TYPE_MAP]);
   });
 
   test('raises an issue if an input is not a Map', () => {
