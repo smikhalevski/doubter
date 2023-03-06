@@ -13,6 +13,8 @@ import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
 import { cloneInstance } from './objects';
 
+export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
+
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }

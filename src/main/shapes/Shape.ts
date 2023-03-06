@@ -37,6 +37,7 @@ import {
   isArray,
   isEqual,
   isObjectLike,
+  Mutable,
   ok,
   replaceChecks,
   returnTrue,
@@ -191,7 +192,7 @@ export class Shape<I = any, O = I> {
   /**
    * The human-readable shape description.
    */
-  description = '';
+  readonly description: string = '';
 
   /**
    * The array of checks that were used to produce {@linkcode _applyChecks}.
@@ -238,7 +239,7 @@ export class Shape<I = any, O = I> {
    */
   describe(text: string): this {
     const shape = cloneInstance(this);
-    shape.description = text;
+    (shape as Mutable<this>).description = text;
     return shape;
   }
 
