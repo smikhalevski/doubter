@@ -1925,7 +1925,8 @@ npm run perf -- --testNamePattern Overall
 
 # `any`
 
-Returns a [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
+[`any`](https://smikhalevski.github.io/doubter/functions/any.html) returns a
+[`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
 
 An unconstrained value that is inferred as `any`:
 
@@ -1951,7 +1952,8 @@ d.any((value): value is string => typeof value === 'string');
 
 # `array`
 
-Returns an [`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
+[`array`](https://smikhalevski.github.io/doubter/functions/array.html) returns an
+[`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
 
 Constrains a value to be an array:
 
@@ -2009,7 +2011,8 @@ shape.parse('Rose');
 
 # `bigint`
 
-Returns a [`BigIntShape`](https://smikhalevski.github.io/doubter/classes/BigIntShape.html) instance.
+[`bigint`](https://smikhalevski.github.io/doubter/functions/bigint.html) returns a
+[`BigIntShape`](https://smikhalevski.github.io/doubter/classes/BigIntShape.html) instance.
 
 Constrains a value to be a bigint.
 
@@ -2051,7 +2054,8 @@ shape.parse([BigInt(1), BigInt(2)]);
 
 # `boolean`, `bool`
 
-Returns a [`BooleanShape`](https://smikhalevski.github.io/doubter/classes/BooleanShape.html) instance.
+[`boolean`](https://smikhalevski.github.io/doubter/functions/boolean.html) returns a
+[`BooleanShape`](https://smikhalevski.github.io/doubter/classes/BooleanShape.html) instance.
 
 Constrains a value to be boolean.
 
@@ -2095,7 +2099,8 @@ shape.parse([0, 1]);
 
 # `const`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`const`](https://smikhalevski.github.io/doubter/functions/const.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 Constrains a value to be an exact value:
 
@@ -2110,7 +2115,8 @@ Consider using [`enum`](#enum) if you want a value to be one of multiple literal
 
 # `date`
 
-Returns a [`DateShape`](https://smikhalevski.github.io/doubter/classes/DateShape.html) instance.
+[`date`](https://smikhalevski.github.io/doubter/functions/date.html) returns a
+[`DateShape`](https://smikhalevski.github.io/doubter/classes/DateShape.html) instance.
 
 Constrains a value to be a valid date.
 
@@ -2145,7 +2151,8 @@ shape.parse(['2021-12-03', '2023-01-22']);
 
 # `enum`
 
-Returns an [`EnumShape`](https://smikhalevski.github.io/doubter/classes/EnumShape.html) instance.
+[`enum`](https://smikhalevski.github.io/doubter/functions/enum.html) returns an
+[`EnumShape`](https://smikhalevski.github.io/doubter/classes/EnumShape.html) instance.
 
 Constrains a value to be equal to one of predefined values:
 
@@ -2214,7 +2221,8 @@ shape.parse([1, 2]);
 
 # `finite`
 
-Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
+[`finite`](https://smikhalevski.github.io/doubter/functions/finite.html) returns a
+[`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
 Constrains a value to be a finite number.
 
@@ -2234,7 +2242,8 @@ Finite numbers follow [number type coercion rules](#coerce-to-a-number).
 
 # `function`, `fn`
 
-Returns a [`FunctionShape`](https://smikhalevski.github.io/doubter/classes/FunctionShape.html) instance.
+[`function`](https://smikhalevski.github.io/doubter/functions/function.html) returns a
+[`FunctionShape`](https://smikhalevski.github.io/doubter/classes/FunctionShape.html) instance.
 
 Constrain a value to be a function that has a particular signature.
 
@@ -2471,7 +2480,8 @@ flowchart TD
 
 # `instanceOf`
 
-Returns an [`InstanceShape`](https://smikhalevski.github.io/doubter/classes/InstanceShape.html) instance.
+[`instanceOf`](https://smikhalevski.github.io/doubter/functions/instanceOf.html) returns an
+[`InstanceShape`](https://smikhalevski.github.io/doubter/classes/InstanceShape.html) instance.
 
 Constrains a value to be an object that is an instance of a class:
 
@@ -2486,7 +2496,8 @@ d.instanceOf(User);
 
 # `integer`, `int`
 
-Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
+[`integer`](https://smikhalevski.github.io/doubter/functions/integer.html) returns a
+[`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
 Constrains a value to be an integer.
 
@@ -2509,7 +2520,8 @@ Integers follow [number type coercion rules](#coerce-to-a-number).
 
 # `intersection`, `and`
 
-Returns an [`IntersectionShape`](https://smikhalevski.github.io/doubter/classes/IntersectionShape.html) instance.
+[`intersection`](https://smikhalevski.github.io/doubter/functions/intersection.html) returns an
+[`IntersectionShape`](https://smikhalevski.github.io/doubter/classes/IntersectionShape.html) instance.
 
 Creates a shape that checks that the input value conforms to all shapes.
 
@@ -2574,7 +2586,8 @@ const shape = d.and([shape1, shape2]);
 
 # `lazy`
 
-Returns a [`LazyShape`](https://smikhalevski.github.io/doubter/classes/LazyShape.html) instance.
+[`lazy`](https://smikhalevski.github.io/doubter/functions/lazy.html) returns a
+[`LazyShape`](https://smikhalevski.github.io/doubter/classes/LazyShape.html) instance.
 
 With `lazy` you can declare recursive shapes. To showcase how to use it, let's create a shape that validates JSON data:
 
@@ -2613,7 +2626,8 @@ directly in its own initializer.
 
 # `map`
 
-Returns a [`MapShape`](https://smikhalevski.github.io/doubter/classes/MapShape.html) instance.
+[`map`](https://smikhalevski.github.io/doubter/functions/map.html) returns a
+[`MapShape`](https://smikhalevski.github.io/doubter/classes/MapShape.html) instance.
 
 Constrains an input to be a `Map` instance:
 
@@ -2652,7 +2666,8 @@ shape.parse({
 
 # `nan`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`nan`](https://smikhalevski.github.io/doubter/functions/nan.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 A shape that requires an input to be `NaN`:
 
@@ -2670,7 +2685,8 @@ d.number().nan();
 
 # `never`
 
-Returns a [`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) instance.
+[`never`](https://smikhalevski.github.io/doubter/functions/never.html) returns a
+[`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) instance.
 
 A shape that always raises a validation issue regardless of an input value:
 
@@ -2681,7 +2697,8 @@ d.never();
 
 # `not`
 
-Returns an [`ExcludeShape`](https://smikhalevski.github.io/doubter/classes/ExcludeShape.html) instance.
+[`not`](https://smikhalevski.github.io/doubter/functions/not.html) returns an
+[`ExcludeShape`](https://smikhalevski.github.io/doubter/classes/ExcludeShape.html) instance.
 
 A shape that allows any value that doesn't conform the negated shape:
 
@@ -2700,7 +2717,8 @@ More about exclusions in the [Exclude a shape](#exclude-a-shape) section.
 
 # `null`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`null`](https://smikhalevski.github.io/doubter/functions/null.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 A shape that requires an input to be `null`:
 
@@ -2711,7 +2729,8 @@ d.null();
 
 # `number`
 
-Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
+[`number`](https://smikhalevski.github.io/doubter/functions/number.html) returns a
+[`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
 A shape that requires an input to be a number.
 
@@ -2800,7 +2819,8 @@ shape.parse([1997, 1998]);
 
 # `object`
 
-Returns an [`ObjectShape`](https://smikhalevski.github.io/doubter/classes/ObjectShape.html) instance.
+[`object`](https://smikhalevski.github.io/doubter/functions/object.html) returns an
+[`ObjectShape`](https://smikhalevski.github.io/doubter/classes/ObjectShape.html) instance.
 
 Constrains a value to be an object with a set of properties:
 
@@ -3018,7 +3038,8 @@ const keyShape = shape.keyof();
 
 # `promise`
 
-Returns a [`PromiseShape`](https://smikhalevski.github.io/doubter/classes/PromiseShape.html) instance.
+[`promise`](https://smikhalevski.github.io/doubter/functions/promise.html) returns a
+[`PromiseShape`](https://smikhalevski.github.io/doubter/classes/PromiseShape.html) instance.
 
 A shape that constrains to the resolved value of a `Promise`.
 
@@ -3049,7 +3070,8 @@ shape.parseAsync(42);
 
 # `record`
 
-Returns a [`RecordShape`](https://smikhalevski.github.io/doubter/classes/RecordShape.html) instance.
+[`record`](https://smikhalevski.github.io/doubter/functions/record.html) returns a
+[`RecordShape`](https://smikhalevski.github.io/doubter/classes/RecordShape.html) instance.
 
 Constrain keys and values of a dictionary-like object:
 
@@ -3077,7 +3099,8 @@ d.record(keyShape, d.number());
 
 # `set`
 
-Returns a [`SetShape`](https://smikhalevski.github.io/doubter/classes/SetShape.html) instance.
+[`set`](https://smikhalevski.github.io/doubter/functions/set.html) returns a
+[`SetShape`](https://smikhalevski.github.io/doubter/classes/SetShape.html) instance.
 
 Constrains an input to be a `Set` instance:
 
@@ -3118,7 +3141,8 @@ shape.parse('J');
 
 # `string`
 
-Returns a [`StringShape`](https://smikhalevski.github.io/doubter/classes/StringShape.html) instance.
+[`string`](https://smikhalevski.github.io/doubter/functions/string.html) returns a
+[`StringShape`](https://smikhalevski.github.io/doubter/classes/StringShape.html) instance.
 
 Constrains a value to be string.
 
@@ -3191,7 +3215,8 @@ shape.parse(['Jill', 'Sarah']);
 
 # `symbol`
 
-Returns a [`SymbolShape`](https://smikhalevski.github.io/doubter/classes/SymbolShape.html) instance.
+[`symbol`](https://smikhalevski.github.io/doubter/functions/symbol.html) returns a
+[`SymbolShape`](https://smikhalevski.github.io/doubter/classes/SymbolShape.html) instance.
 
 A shape that constrains a value to be an arbitrary symbol.
 
@@ -3221,7 +3246,9 @@ d.enum([FOO, BAR]);
 
 # `transform`, `transformAsync`
 
-Returns a [`TransformShape`](https://smikhalevski.github.io/doubter/classes/TransformShape.html) instance.
+Both [`transform`](https://smikhalevski.github.io/doubter/functions/transform.html) and
+[`transformAsync`](https://smikhalevski.github.io/doubter/functions/transformAsync.html) return a
+[`TransformShape`](https://smikhalevski.github.io/doubter/classes/TransformShape.html) instance.
 
 Transforms the input value:
 
@@ -3247,7 +3274,8 @@ For more information, see [Transformations](#transformations) section.
 
 # `tuple`
 
-Returns an [`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
+[`tuple`](https://smikhalevski.github.io/doubter/functions/tuple.html) returns an
+[`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
 
 Constrains a value to be a tuple where elements at particular positions have concrete types:
 
@@ -3271,7 +3299,8 @@ Tuples follow [array type coercion rules](#coerce-to-an-array).
 
 # `undefined`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`undefined`](https://smikhalevski.github.io/doubter/functions/undefined.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 A shape that requires an input to be `undefined`:
 
@@ -3282,7 +3311,8 @@ d.undefined();
 
 # `union`, `or`
 
-Returns a [`UnionShape`](https://smikhalevski.github.io/doubter/classes/UnionShape.html) instance.
+[`union`](https://smikhalevski.github.io/doubter/functions/union.html) returns a
+[`UnionShape`](https://smikhalevski.github.io/doubter/classes/UnionShape.html) instance.
 
 A constraint that allows a value to be one of the given types:
 
@@ -3454,7 +3484,8 @@ This behaviour is applied to discriminated unions as well.
 
 # `unknown`
 
-Returns a [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
+[`unknown`](https://smikhalevski.github.io/doubter/functions/unknown.html) returns a
+[`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
 
 An unconstrained value that is inferred as `unknown`:
 
@@ -3465,7 +3496,8 @@ d.unknown();
 
 # `void`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`void`](https://smikhalevski.github.io/doubter/functions/void.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 A shape that requires an input to be `undefined` that is typed as `void`:
 

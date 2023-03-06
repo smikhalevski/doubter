@@ -165,7 +165,7 @@ export type ValueType =
   | 'undefined';
 
 /**
- * The detected runtime input type.
+ * The detected runtime type.
  */
 export type Type = ValueType | 'any' | 'never';
 
