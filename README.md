@@ -1462,9 +1462,12 @@ Types returned from `Shape.typeOf` are a superset of types returned from the `ty
 
 <table>
 <tr><th><code>Shape.typeOf</code></th><th><code>typeof</code></th></tr>
-<tr><td><code>object</code></td><td rowspan="4"><code>object</code></td></tr>
+<tr><td><code>object</code></td><td rowspan="7"><code>object</code></td></tr>
 <tr><td><code>array</code></td></tr>
 <tr><td><code>date</code></td></tr>
+<tr><td><code>promise</code></td></tr>
+<tr><td><code>set</code></td></tr>
+<tr><td><code>map</code></td></tr>
 <tr><td><code>null</code></td></tr>
 <tr><td><code>function</code></td><td><code>function</code></td></tr>
 <tr><td><code>string</code></td><td><code>string</code></td></tr>
@@ -1594,28 +1597,28 @@ The fact that a shape accepts a particular input type, does not guarantee that i
 of this type is parsed. For example, consider the [pipe](#shape-piping) from [`d.any`](#any) to [`d.string`](#string):
 
 ```ts
-const anyShape = d.any().to(d.string());
+const fuzzyShape = d.any().to(d.string());
 // ⮕ Shape<any, string>
 ```
 
 This shape accepts [`any`](#any-value-type) input value type:
 
 ```ts
-anyShape.inputTypes;
+fuzzyShape.inputTypes;
 // ⮕ ['any']
 ```
 
 Since anything can be assigned to `any`, an `undefined` type is accepted:
 
 ```ts
-anyShape.isAcceptedType('undefined');
+fuzzyShape.isAcceptedType('undefined');
 // ⮕ true
 ```
 
-But parsing `undefined` with `anyShape` would produce an error:
+But parsing `undefined` with `fuzzyShape` would produce an error:
 
 ```ts
-anyShape.parse('undefined');
+fuzzyShape.parse('undefined');
 // ❌ ValidationError: type at /: Must be a string
 ```
 
