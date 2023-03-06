@@ -177,7 +177,7 @@ export interface ApplyOptions {
   coerced?: boolean;
 
   /**
-   * The custom context. Use it to pass custom params to check and transform callbacks.
+   * The custom context.
    */
   context?: any;
 }

@@ -253,6 +253,48 @@ parseOrDefault(42);
 // ⮕ undefined
 ```
 
+Parsing methods accept options argument.
+
+```ts
+d.number().parse('42', { coerced: true });
+// ⮕ 42
+```
+
+Following options are available:
+
+<dl>
+<dt><code>verbose</code></dt>
+<dd>
+
+If `true` then Doubter collects all issues during parsing, otherwise parsing is aborted after the first issue is
+encountered. Refer to [Verbose mode](#verbose-mode) section for more details.
+
+</dd>
+<dt><code>coerced</code></dt>
+<dd>
+
+If `true` then all shapes that support type coercion would try to coerce an input to a required type. Refer to
+[Type coercion](#type-coercion) section for more details.
+
+</dd>
+<dt><code>context</code></dt>
+<dd>
+
+The custom context that can be accessed from custom check callbacks, refinement predicates, transformers, and fallback
+functions. Refer to [Parsing context](#parsing-context) section for more details.
+
+</dd>
+<dt><code>errorMessage</code></dt>
+<dd>
+
+This option is only available for [`parse` and `parseAsync`](#parse) methods. It configures a `ValidationError`
+message. If a callback is provided it receives issues and an input value, and must return a string message. If a string
+is provided, it is used as is. You can also configure global issue formatter that is used by `ValidationError`, refer to
+[Global error message formatter](#global-error-message-formatter) section for more details.
+
+</dd>
+</dl>
+
 ## `parse`
 
 You're already familiar with `parse` that takes an input value and returns an output value, or throws a validation error
@@ -312,9 +354,9 @@ Use `tryAsync` with [async shapes](#async-shapes). It has the same semantics and
 
 # Validation errors
 
-Validation errors which are thrown by `parse*` methods, and
-[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by `try*` methods have the `issues`
-property which holds an array of validation issues:
+Validation errors which are thrown by [`parse*` methods](#parse), and
+[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by [`try*` methods](#try) have the
+`issues` property which holds an array of validation issues:
 
 ```ts
 const shape = d.object({ age: d.number() });
@@ -323,7 +365,8 @@ const shape = d.object({ age: d.number() });
 const result = shape.try({ age: 'seventeen' });
 ```
 
-The `result` contains the [`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) object:
+The `result` contains the [`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) object with the array of
+issues:
 
 ```ts
 {
@@ -353,8 +396,8 @@ The code of the validation issue. Shapes provide various checks and each check h
 <dt><code>path</code></dt>
 <dd>
 
-The object path as an array of keys. Keys can be strings, numbers (for example, array indices), symbols, and any other
-values since they can be `Map` keys.
+The object path as an array of keys, or `undefined` if there's no path. Keys can be strings, numbers (for example, array
+indices), symbols, and any other values since they can be `Map` keys.
 
 </dd>
 <dt><code>input</code></dt>
@@ -415,6 +458,29 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
 | `union` | [`d.or(…)`](#union-or) | [Issues raised by a union](#issues-raised-by-a-union) |
 | `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
+
+## Global error message formatter
+
+Be default, `ValidationError` uses `JSON.stringify` to produce an error message. While you can provide a custom error
+message by passing [`errorMessage` option](#parse) to `parse` and `parseAsync`, you also can configure the global
+formatter.
+
+```ts
+d.ValidationError.formatIssues = issues => {
+  // Return a human-readable error message that describes issues
+  return 'Something went wrong';
+};
+
+new d.ValidationError([]).message;
+// ⮕ 'Something went wrong'
+
+new d.ValidationError([], 'Kaputs').message;
+// ⮕ 'Kaputs'
+```
+
+`formatIssues` is called whenever a
+[`message` constructor argument](https://smikhalevski.github.io/doubter/classes/ValidationError.html#constructor) is
+omitted. 
 
 # Checks
 
