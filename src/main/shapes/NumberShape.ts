@@ -27,7 +27,7 @@ import {
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { addCheck, canonize, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, Shape, ValueType } from './Shape';
+import { NEVER, Result, Shape, Type } from './Shape';
 
 /**
  * The shape that constrains the input as a number.
@@ -232,7 +232,7 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, defaultValue);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
       return [TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
     } else {

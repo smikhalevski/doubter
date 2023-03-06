@@ -31,7 +31,7 @@ import {
   OptionalDeepPartialShape,
   Result,
   Shape,
-  ValueType,
+  Type,
 } from './Shape';
 
 // prettier-ignore
@@ -333,7 +333,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return this.restShape?.isAsync || this._valueShapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return [TYPE_OBJECT];
   }
 

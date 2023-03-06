@@ -2,7 +2,7 @@ import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_STRING } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory, getValueType, isArray, ok, ReadonlyDict, uniqueArray } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, ValueType } from './Shape';
+import { NEVER, Result, Type } from './Shape';
 
 /**
  * The shape that constrains an input to one of values.
@@ -55,7 +55,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     const valueTypes = this.values.map(getValueType);
 
     if (!this.isCoerced) {

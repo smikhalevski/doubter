@@ -12,8 +12,8 @@ import {
   Shape,
   StringShape,
   TransformShape,
+  Type,
   ValidationError,
-  ValueType,
 } from '../../main';
 import {
   CODE_DENIED,
@@ -56,7 +56,7 @@ describe('Shape', () => {
   describe('_getInputTypes', () => {
     test('creates input types', () => {
       const shape = new (class extends Shape {
-        protected _getInputTypes(): ValueType[] {
+        protected _getInputTypes(): Type[] {
           return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
         }
       })();
@@ -280,7 +280,7 @@ describe('Shape', () => {
 
     test('detects accepted input types', () => {
       const shape = new (class extends Shape {
-        protected _getInputTypes(): ValueType[] {
+        protected _getInputTypes(): Type[] {
           return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
         }
       })();

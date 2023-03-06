@@ -1,7 +1,7 @@
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory, getValueType } from '../utils';
-import { Result, Shape, ValueType } from './Shape';
+import { Result, Shape, Type } from './Shape';
 
 /**
  * The shape that constrains an input to exactly equal to the expected value.
@@ -32,7 +32,7 @@ export class ConstShape<T> extends Shape<T> {
     this._typeIssueFactory = createIssueFactory(CODE_CONST, MESSAGE_CONST, options, value);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return [getValueType(this.value)];
   }
 

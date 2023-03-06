@@ -20,7 +20,7 @@ import {
   ok,
   toDeepPartialShape,
 } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, Type } from './Shape';
 
 // prettier-ignore
 export type ToIntersection<U extends AnyShape> =
@@ -93,7 +93,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return this.shapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
   }
 
@@ -294,7 +294,7 @@ export function intersectValues(a: any, b: any): any {
  *
  * @param typesByShape The array of arrays of unique input types associated with each shape in the intersection.
  */
-export function intersectValueTypes(typesByShape: Array<readonly ValueType[]>): ValueType[] {
+export function intersectValueTypes(typesByShape: Array<readonly Type[]>): Type[] {
   const shapesLength = typesByShape.length;
 
   if (shapesLength === 0) {

@@ -22,7 +22,7 @@ export function ok<T>(value: T): Ok<T> {
 /**
  * Returns the extended value type.
  */
-export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
+export function getValueType(value: unknown): ValueType {
   const type = typeof value;
 
   if (type !== TYPE_OBJECT) {

@@ -146,7 +146,7 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
 export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<DeepPartialShape<S>, undefined>;
 
 /**
- * The detected runtime input value type.
+ * The detected runtime value type.
  */
 export type ValueType =
   | 'object'
@@ -162,9 +162,12 @@ export type ValueType =
   | 'set'
   | 'map'
   | 'null'
-  | 'undefined'
-  | 'any'
-  | 'never';
+  | 'undefined';
+
+/**
+ * The detected runtime input type.
+ */
+export type Type = ValueType | 'any' | 'never';
 
 /**
  * The result that shape returns after being applied to an input value. This is the part of the internal API required
@@ -185,9 +188,11 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
  */
 export class Shape<I = any, O = I> {
   /**
-   * Returns the extended value type.
+   * Returns the {@link ValueType extended value type}.
    */
-  static readonly typeOf = getValueType;
+  static typeOf(value: unknown): ValueType {
+    return getValueType(value);
+  }
 
   /**
    * The human-readable shape description.
@@ -225,7 +230,7 @@ export class Shape<I = any, O = I> {
    *
    * @param type The type that must be checked.
    */
-  isAcceptedType(type: ValueType): boolean {
+  isAcceptedType(type: Type): boolean {
     const types = this.inputTypes;
 
     return types[0] === TYPE_ANY || (types[0] !== TYPE_NEVER && type === TYPE_ANY) || types.includes(type);
@@ -611,11 +616,11 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the array of runtime value types that can be processed by the shape.
+   * Returns the array of runtime input value types that can be processed by the shape.
    *
-   * Used for various optimizations. Elements of the returned array don't have to be unique.
+   * Used for introspection and various optimizations. Elements of the returned array don't have to be unique.
    */
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return [TYPE_ANY];
   }
 
@@ -672,7 +677,7 @@ export interface Shape<I, O> {
   /**
    * The array of unique types that the shape supports as input values.
    */
-  readonly inputTypes: readonly ValueType[];
+  readonly inputTypes: readonly Type[];
 
   /**
    * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
@@ -1077,7 +1082,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return this.inputShape.isAsync || this.outputShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return this.inputShape.inputTypes;
   }
 
@@ -1202,7 +1207,7 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return this.shape.inputTypes.concat(getValueType(this.inputValue));
   }
 
@@ -1297,7 +1302,7 @@ export class DenyLiteralShape<S extends AnyShape, T>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return this.shape.inputTypes;
   }
 
@@ -1391,7 +1396,7 @@ export class CatchShape<S extends AnyShape, T>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return this.shape.inputTypes;
   }
 
@@ -1478,7 +1483,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return this.shape.isAsync || this.excludedShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return this.shape.inputTypes;
   }
 

@@ -12,7 +12,7 @@ import {
   uniqueArray,
 } from '../utils';
 import { ObjectShape } from './ObjectShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, Type, ValueType } from './Shape';
 
 /**
  * Returns the array of shapes that are applicable to the input.
@@ -90,8 +90,8 @@ export class UnionShape<U extends readonly AnyShape[]>
     return this.shapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
-    const inputTypes: ValueType[] = [];
+  protected _getInputTypes(): readonly Type[] {
+    const inputTypes: Type[] = [];
 
     for (const shape of this.shapes) {
       inputTypes.push(...shape.inputTypes);
@@ -215,7 +215,7 @@ export class UnionShape<U extends readonly AnyShape[]>
 export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): LookupCallback {
   const emptyArray: AnyShape[] = [];
 
-  const buckets: Record<Exclude<ValueType, 'any' | 'never'>, readonly AnyShape[]> = {
+  const buckets: Record<ValueType, readonly AnyShape[]> = {
     object: emptyArray,
     array: emptyArray,
     function: emptyArray,
@@ -232,7 +232,7 @@ export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): Look
     undefined: emptyArray,
   };
 
-  const bucketTypes = Object.keys(buckets) as ValueType[];
+  const bucketTypes = Object.keys(buckets) as Type[];
 
   for (const shape of uniqueArray(shapes)) {
     for (const type of shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes) {

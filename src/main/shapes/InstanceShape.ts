@@ -10,7 +10,7 @@ import {
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory, isEqualOrSubclass } from '../utils';
-import { Result, Shape, ValueType } from './Shape';
+import { Result, Shape, Type } from './Shape';
 
 /**
  * The shape of the class instance.
@@ -33,7 +33,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     const { ctor } = this;
 
     if (isEqualOrSubclass(ctor, Function)) {

@@ -11,9 +11,9 @@ import {
   TYPE_UNDEFINED,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory, isArray, ok, canonize } from '../utils';
+import { canonize, createIssueFactory, isArray, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, ValueType } from './Shape';
+import { NEVER, Result, Type } from './Shape';
 
 /**
  * The shape of the bigint value.
@@ -32,7 +32,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
       return [TYPE_BIGINT, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
     } else {

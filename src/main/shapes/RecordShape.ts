@@ -13,7 +13,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, Type } from './Shape';
 
 // prettier-ignore
 export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends 'input' | 'output'> =
@@ -72,7 +72,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return this.keyShape?.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return [TYPE_OBJECT];
   }
 

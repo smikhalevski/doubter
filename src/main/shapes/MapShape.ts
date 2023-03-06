@@ -21,7 +21,7 @@ import {
   NEVER,
   OptionalDeepPartialShape,
   Result,
-  ValueType,
+  Type,
 } from './Shape';
 
 /**
@@ -78,7 +78,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return this.keyShape.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
       return [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
     } else {

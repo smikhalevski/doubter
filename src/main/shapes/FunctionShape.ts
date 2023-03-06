@@ -11,7 +11,7 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, Result, Shape, ValueType } from './Shape';
+import { AnyShape, defaultApplyOptions, Result, Shape, Type } from './Shape';
 
 // prettier-ignore
 export type InferFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
@@ -195,7 +195,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     };
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return [TYPE_FUNCTION];
   }
 

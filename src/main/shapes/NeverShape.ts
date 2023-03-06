@@ -1,7 +1,7 @@
 import { CODE_TYPE, MESSAGE_NEVER_TYPE, TYPE_NEVER } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
-import { Result, Shape, ValueType } from './Shape';
+import { Result, Shape, Type } from './Shape';
 
 /**
  * The shape that doesn't match any input.
@@ -20,7 +20,7 @@ export class NeverShape extends Shape<never> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NEVER_TYPE, options, TYPE_NEVER);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     return [TYPE_NEVER];
   }
 

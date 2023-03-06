@@ -23,7 +23,7 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, Type } from './Shape';
 
 /**
  * The shape of a `Set` instance.
@@ -114,7 +114,7 @@ export class SetShape<S extends AnyShape>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
       return this.shape.inputTypes.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
     } else {

@@ -19,7 +19,7 @@ import {
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { addCheck, canonize, createIssueFactory, isArray, isValidDate, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, ValueType } from './Shape';
+import { NEVER, Result, Type } from './Shape';
 
 /**
  * The shape that constrains the input as a string.
@@ -102,7 +102,7 @@ export class StringShape extends CoercibleShape<string> {
     });
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
       return [TYPE_STRING, TYPE_OBJECT, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
     } else {
