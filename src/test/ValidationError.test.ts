@@ -27,6 +27,19 @@ describe('ValidationError', () => {
 ]`);
   });
 
+  test('converts symbol and bigint values to string', () => {
+    const error = new ValidationError([{ code: Symbol('aaa') }, { message: BigInt('111') }]);
+
+    expect(error.toString()).toBe(`ValidationError: [
+  {
+    "code": "Symbol(aaa)"
+  },
+  {
+    "message": "111"
+  }
+]`);
+  });
+
   test('custom message can be assigned', () => {
     const error = new ValidationError([{}]);
 

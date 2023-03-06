@@ -521,7 +521,7 @@ describe('ObjectShape', () => {
     test('raises non array values', async () => {
       const objShape = new ObjectShape({}, asyncShape);
 
-      expect(await objShape.tryAsync('')).toEqual({
+      await expect(objShape.tryAsync('')).resolves.toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
       });
