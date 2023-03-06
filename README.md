@@ -108,7 +108,6 @@ npm install --save-prod doubter
   [`transform`](#transform-transformasync)
   [`transformAsync`](#transform-transformasync)
   [`lazy`](#lazy)
-  [`json`](#json)
 
 **Cookbook**
 
@@ -440,7 +439,6 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `excluded` | [`shape.exclude(…)`](#exclude-a-shape) | The excluded shape |
 | `instance` | [`d.instanceOf(Class)`](#instanceof) | The class constructor `Class` |
 | `intersection` | [`d.and(…)`](#intersection-and) | — |
-| `json` | [`d.json()`](#json) | The message from `JSON.parse()` |
 | `predicate` | [`shape.refine(…)`](#refinements) | The predicate callback |
 | `numberInteger` | [`d.integer()`](#integer-int) | — |
 | `numberFinite` | [`d.finite()`](#finite) | — |
@@ -952,18 +950,28 @@ d.string()
 // ⮕ Shape<string, number>
 ```
 
-Piping is particularly useful in conjunction with [transformations](#transformations) and [JSON shape](#json). The
-example below shows how you can parse input JSON string and ensure that the output is an object:
+For example, you can validate that an input value is an [instance of a class](#instanceof) and then validate its
+properties using [`object`](#object):
 
 ```ts
-const shape = d.json().to(
+class Planet {
+  constructor(public name: string) {}
+}
+
+const shape = d.instanceOf(Planet).to(
   d.object({
-    foo: d.bigint().coerce()
+    name: d.string().min(4)
   })
 );
 
-shape.parse('{"foo":"6889063"}');
-// ⮕ { foo: BigInt(6889063) }
+shape.parse({ name: 'Pluto' });
+// ❌ ValidationError: instance at /: Must be a class instance
+
+shape.parse(new Planet('X'));
+// ❌ ValidationError: stringMinLength at /name: Must have the minimum length of 4
+
+shape.parse(new Planet('Mars'));
+// ⮕ Planet { name: 'Mars' }
 ```
 
 # Replace, allow, and deny a value
@@ -2546,31 +2554,6 @@ able to satisfy the resulting intersection shape.
 ```ts
 const shape = d.and([shape1, shape2]);
 // ⮕ Shape<{ foo: never, bar: boolean }>
-```
-
-# `json`
-
-Returns a [`JSONShape`](https://smikhalevski.github.io/doubter/classes/JSONShape.html) instance.
-
-Parses input strings as JSON:
-
-```ts
-d.json();
-// ⮕ Shape<string, any>
-```
-
-Works best with [shape piping](#shape-piping):
-
-```ts
-const shape = d.json().to(
-  d.object({
-    foo: d.number()
-  })
-);
-// ⮕ Shape<string, { foo: number }>
-
-shape.parse('{"foo":42}');
-// ⮕ { foo: 42 }
 ```
 
 # `lazy`

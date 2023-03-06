@@ -8,7 +8,6 @@ export { EnumShape } from './EnumShape';
 export { FunctionShape } from './FunctionShape';
 export { InstanceShape } from './InstanceShape';
 export { IntersectionShape } from './IntersectionShape';
-export { JSONShape } from './JSONShape';
 export { LazyShape } from './LazyShape';
 export { MapShape } from './MapShape';
 export { NeverShape } from './NeverShape';
