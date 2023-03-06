@@ -177,7 +177,7 @@ export class NumberShape extends CoercibleShape<number> {
    * produce unexpected results when used with floating point numbers. This happens because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
    *
-   * Use a custom check to constrain input to be a multiple of real number.
+   * Use a custom check to constrain input to be a multiple of a real number.
    *
    * @param value The positive number by which the input should be divisible without a remainder.
    * @param options The constraint options or an issue message.

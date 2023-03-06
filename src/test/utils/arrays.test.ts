@@ -1,22 +1,12 @@
 import { deleteArrayIndex, toArrayIndex, uniqueArray } from '../../main/utils';
 
 describe('uniqueArray', () => {
-  test('returns the input array if it contains unique values', () => {
-    const arr = [1, 2, 3];
-    expect(uniqueArray(arr)).toBe(arr);
-  });
-
-  test('returns the empty array as is', () => {
-    const arr: any[] = [];
-    expect(uniqueArray(arr)).toBe(arr);
-  });
-
   test('removes duplicates', () => {
     const arr = [1, 2, 3, 3, 1];
     const uniqueArr = uniqueArray(arr);
 
     expect(uniqueArr).not.toBe(arr);
-    expect(uniqueArr).toEqual([2, 3, 1]);
+    expect(uniqueArr).toEqual([1, 2, 3]);
   });
 
   test('removes NaN duplicates', () => {
@@ -24,7 +14,7 @@ describe('uniqueArray', () => {
     const uniqueArr = uniqueArray(arr);
 
     expect(uniqueArr).not.toBe(arr);
-    expect(uniqueArr).toEqual([1, 2, NaN]);
+    expect(uniqueArr).toEqual([NaN, 1, 2]);
   });
 });
 

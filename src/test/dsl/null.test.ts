@@ -5,6 +5,6 @@ describe('null', () => {
     const shape = d.null();
 
     expect(shape).toBeInstanceOf(d.ConstShape);
-    expect(shape.value).toBe(null);
+    expect(shape.value).toBeNull();
   });
 });

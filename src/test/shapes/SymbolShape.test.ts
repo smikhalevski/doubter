@@ -2,7 +2,7 @@ import { SymbolShape } from '../../main';
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE, TYPE_SYMBOL } from '../../main/constants';
 
 describe('SymbolShape', () => {
-  test('parses boolean values', () => {
+  test('parses symbol values', () => {
     const value = Symbol();
     expect(new SymbolShape().parse(value)).toBe(value);
   });

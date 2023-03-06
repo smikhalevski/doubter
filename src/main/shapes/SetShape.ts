@@ -12,6 +12,7 @@ import {
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
+  canonize,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -236,6 +237,8 @@ export class SetShape<S extends AnyShape>
    * @param value The non-`Set` value to coerce.
    */
   protected _coerceValues(value: unknown): unknown[] {
+    value = canonize(value);
+
     if (isArray(value)) {
       return value;
     }

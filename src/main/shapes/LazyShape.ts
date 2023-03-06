@@ -71,13 +71,13 @@ export class LazyShape<S extends AnyShape>
     }
   }
 
-  protected _getInputValues(): unknown[] {
+  protected _getInputValues(): readonly unknown[] | null {
     const { _getInputValues } = this;
 
     this._getInputValues = returnArray;
 
     try {
-      return this.shape['_getInputValues']();
+      return this.shape.inputValues;
     } finally {
       this._getInputValues = _getInputValues;
     }

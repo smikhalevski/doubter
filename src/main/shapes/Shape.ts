@@ -226,7 +226,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns `true` if the shape accepts the given input type, or `false` otherwise.
+   * Returns `true` if the shape accepts values of the given input type, or `false` otherwise.
    *
    * @param type The type that must be checked.
    */
@@ -243,6 +243,10 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape with the description added.
    */
   describe(text: string): this {
+    if (this.description === text) {
+      return this;
+    }
+
     const shape = cloneInstance(this);
     (shape as Mutable<this>).description = text;
     return shape;
@@ -625,10 +629,12 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the array of all input values that are known beforehand.
+   * Returns the array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous
+   * range of values. An empty array means that shape doesn't accept any values, and {@linkcode _getInputTypes} must
+   * return `['never']` is this case.
    */
-  protected _getInputValues(): unknown[] {
-    return [];
+  protected _getInputValues(): readonly unknown[] | null {
+    return null;
   }
 
   /**
@@ -675,9 +681,16 @@ export interface Shape<I, O> {
   readonly output: O;
 
   /**
-   * The array of unique types that the shape supports as input values.
+   * The non-empty array of unique types of supported input values.
    */
   readonly inputTypes: readonly Type[];
+
+  /**
+   * The array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous range of
+   * values. If `inputValues` is an empty array then shape doesn't accept any values, so {@linkcode inputTypes} is
+   * `['never']`.
+   */
+  readonly inputValues: readonly unknown[] | null;
 
   /**
    * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
@@ -798,11 +811,25 @@ Object.defineProperties(Shape.prototype, {
         }
       }
 
-      Object.freeze(types);
-
       Object.defineProperty(this, 'inputTypes', { writable: true, value: types });
 
       return types;
+    },
+  },
+
+  inputValues: {
+    configurable: true,
+
+    get(this: Shape) {
+      let values = this._getInputValues();
+
+      if (values !== null) {
+        values = uniqueArray(values);
+      }
+
+      Object.defineProperty(this, 'inputValues', { writable: true, value: values });
+
+      return values;
     },
   },
 
@@ -1086,8 +1113,8 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return this.inputShape.inputTypes;
   }
 
-  protected _getInputValues(): unknown[] {
-    return this.inputShape['_getInputValues']();
+  protected _getInputValues(): readonly unknown[] | null {
+    return this.inputShape.inputValues;
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<O['output']> {
@@ -1211,8 +1238,10 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     return this.shape.inputTypes.concat(getValueType(this.inputValue));
   }
 
-  protected _getInputValues(): unknown[] {
-    return this.shape['_getInputValues']().concat(this.inputValue);
+  protected _getInputValues(): readonly unknown[] | null {
+    const values = this.shape.inputValues;
+
+    return values !== null ? values.concat(this.inputValue) : null;
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], A> | B> {
@@ -1306,8 +1335,10 @@ export class DenyLiteralShape<S extends AnyShape, T>
     return this.shape.inputTypes;
   }
 
-  protected _getInputValues(): unknown[] {
-    return this.shape['_getInputValues']().filter(value => !isEqual(this.deniedValue, value));
+  protected _getInputValues(): readonly unknown[] | null {
+    const values = this.shape.inputValues;
+
+    return values !== null ? values.filter(value => !isEqual(this.deniedValue, value)) : null;
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], T>> {
@@ -1400,8 +1431,8 @@ export class CatchShape<S extends AnyShape, T>
     return this.shape.inputTypes;
   }
 
-  protected _getInputValues(): unknown[] {
-    return this.shape['_getInputValues']();
+  protected _getInputValues(): readonly unknown[] | null {
+    return this.shape.inputValues;
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<S['output'] | T> {
@@ -1487,8 +1518,14 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return this.shape.inputTypes;
   }
 
-  protected _getInputValues(): unknown[] {
-    return this.shape['_getInputValues']();
+  protected _getInputValues(): readonly unknown[] | null {
+    const values = this.shape.inputValues;
+    const excludedValues = this.excludedShape.inputValues;
+
+    if (values !== null && excludedValues !== null) {
+      return values.filter(value => !excludedValues.includes(value));
+    }
+    return values;
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<S['output'], N['input']>> {

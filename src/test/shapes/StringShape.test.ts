@@ -32,7 +32,8 @@ describe('StringShape', () => {
       ok: false,
       issues: [{ code: CODE_TYPE, input: 111, param: TYPE_STRING, message: 'Must be a string' }],
     });
-    expect(new StringShape().min(2).parse('aa')).toBe('aa');
+
+    expect(new StringShape().min(2).parse('aaa')).toBe('aaa');
   });
 
   test('raises if string length is not greater than', () => {
@@ -40,7 +41,8 @@ describe('StringShape', () => {
       ok: false,
       issues: [{ code: CODE_STRING_MIN, input: 'a', param: 2, message: 'Must have the minimum length of 2' }],
     });
-    expect(new StringShape().min(2).parse('aa')).toBe('aa');
+
+    expect(new StringShape().min(2).parse('aaa')).toBe('aaa');
   });
 
   test('raises if string length is not less than', () => {
@@ -48,7 +50,8 @@ describe('StringShape', () => {
       ok: false,
       issues: [{ code: CODE_STRING_MAX, input: 'aaa', param: 2, message: 'Must have the maximum length of 2' }],
     });
-    expect(new StringShape().max(2).parse('aa')).toBe('aa');
+
+    expect(new StringShape().max(3).parse('aaa')).toBe('aaa');
   });
 
   test('raises if string does not match a pattern', () => {
@@ -56,6 +59,7 @@ describe('StringShape', () => {
       ok: false,
       issues: [{ code: CODE_STRING_REGEX, input: 'bbb', param: /a+/, message: 'Must match the pattern /a+/' }],
     });
+
     expect(new StringShape().regex(/a+/).parse('aaa')).toBe('aaa');
   });
 

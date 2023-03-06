@@ -36,7 +36,7 @@ export class ConstShape<T> extends Shape<T> {
     return [getValueType(this.value)];
   }
 
-  protected _getInputValues(): unknown[] {
+  protected _getInputValues(): readonly unknown[] | null {
     return [this.value];
   }
 

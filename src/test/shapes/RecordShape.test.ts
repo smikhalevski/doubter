@@ -1,22 +1,24 @@
-import { AnyShape, ApplyOptions, ObjectShape, Ok, RecordShape, Result, Shape, StringShape } from '../../main';
+import { ApplyOptions, ObjectShape, Ok, RecordShape, Result, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
 
 describe('RecordShape', () => {
-  let asyncShape: AnyShape;
+  class AsyncShape extends Shape {
+    protected _isAsync(): boolean {
+      return true;
+    }
+
+    protected _applyAsync(input: unknown, options: ApplyOptions) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    }
+  }
+
+  let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    asyncShape = new (class extends Shape {
-      protected _isAsync(): boolean {
-        return true;
-      }
-
-      protected _applyAsync(input: unknown, options: ApplyOptions) {
-        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
-      }
-    })();
+    asyncShape = new AsyncShape();
   });
 
-  test('raises non object values', () => {
+  test('raises an issue for a non-object input value', () => {
     const valueShape = new Shape();
 
     const objShape = new RecordShape(null, valueShape);
@@ -112,8 +114,8 @@ describe('RecordShape', () => {
       expect(objShape.at('aaa')).toBe(valueShape);
       expect(objShape.at(111)).toBe(valueShape);
       expect(objShape.at(111.222)).toBe(valueShape);
-      expect(objShape.at(null)).toBe(null);
-      expect(objShape.at(Symbol())).toBe(null);
+      expect(objShape.at(null)).toBeNull();
+      expect(objShape.at(Symbol())).toBeNull();
     });
   });
 
@@ -150,7 +152,7 @@ describe('RecordShape', () => {
   });
 
   describe('async', () => {
-    test('raises non object values', async () => {
+    test('raises an issue for a non-object input value', async () => {
       const objShape = new RecordShape(null, asyncShape);
 
       await expect(objShape.tryAsync('')).resolves.toEqual({

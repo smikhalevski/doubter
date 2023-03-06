@@ -1,30 +1,17 @@
 /**
- * Returns the new array that contains unique elements, or returns `arr` itself if it only contains unique elements.
+ * Returns the new array that contains unique elements.
  */
-export function uniqueArray<T>(arr: T[]): T[];
-
-/**
- * Returns the new array that contains unique elements, or returns `arr` itself if it only contains unique elements.
- */
-export function uniqueArray<T>(arr: readonly T[]): readonly T[];
-
-export function uniqueArray<T>(arr: readonly T[]): readonly T[] {
-  let uniqueArr: T[] | null = null;
+export function uniqueArray<T>(arr: readonly T[]): T[] {
+  let uniqueArr: T[] = [];
 
   for (let i = 0; i < arr.length; ++i) {
     const value = arr[i];
 
-    if (arr.includes(value, i + 1)) {
-      if (uniqueArr === null) {
-        uniqueArr = arr.slice(0, i);
-      }
-      continue;
-    }
-    if (uniqueArr !== null) {
+    if (!uniqueArr.includes(value)) {
       uniqueArr.push(value);
     }
   }
-  return uniqueArr || arr;
+  return uniqueArr;
 }
 
 /**

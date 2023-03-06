@@ -5,6 +5,6 @@ describe('void', () => {
     const shape = d.void();
 
     expect(shape).toBeInstanceOf(d.ConstShape);
-    expect(shape.value).toBe(undefined);
+    expect(shape.value).toBeUndefined();
   });
 });

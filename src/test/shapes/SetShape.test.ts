@@ -1,4 +1,4 @@
-import { AnyShape, ApplyOptions, ObjectShape, Ok, Result, SetShape, Shape, StringShape } from '../../main';
+import { ApplyOptions, ObjectShape, Ok, Result, SetShape, Shape, StringShape } from '../../main';
 import {
   CODE_SET_MAX,
   CODE_SET_MIN,
@@ -12,21 +12,23 @@ import {
 } from '../../main/constants';
 
 describe('SetShape', () => {
-  let asyncShape: AnyShape;
+  class AsyncShape extends Shape {
+    protected _isAsync(): boolean {
+      return true;
+    }
+
+    protected _applyAsync(input: unknown, options: ApplyOptions) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    }
+  }
+
+  let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    asyncShape = new (class extends Shape {
-      protected _isAsync(): boolean {
-        return true;
-      }
-
-      protected _applyAsync(input: unknown, options: ApplyOptions) {
-        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
-      }
-    })();
+    asyncShape = new AsyncShape();
   });
 
-  test('creates a Set shape', () => {
+  test('creates a SetShape', () => {
     const shape = new Shape();
 
     const setShape = new SetShape(shape);
@@ -114,54 +116,6 @@ describe('SetShape', () => {
     });
   });
 
-  test('checks size', () => {
-    const setShape = new SetShape(new Shape()).size(2);
-
-    expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
-    expect(setShape.try(new Set([111]))).toEqual({ ok: false, issues: expect.any(Array) });
-    expect(setShape.try(new Set([111, 222, 333]))).toEqual({ ok: false, issues: expect.any(Array) });
-  });
-
-  test('checks min size', () => {
-    const setShape = new SetShape(new Shape()).min(2);
-
-    expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
-    expect(setShape.try(new Set([111]))).toEqual({
-      ok: false,
-      issues: [{ code: CODE_SET_MIN, input: new Set([111]), message: 'Must have the minimum size of 2', param: 2 }],
-    });
-  });
-
-  test('checks max size', () => {
-    const setShape = new SetShape(new Shape()).max(2);
-
-    expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
-    expect(setShape.try(new Set([111, 222, 333]))).toEqual({
-      ok: false,
-      issues: [
-        { code: CODE_SET_MAX, input: new Set([111, 222, 333]), message: 'Must have the maximum size of 2', param: 2 },
-      ],
-    });
-  });
-
-  test('updates input types when coerced', () => {
-    const setShape = new SetShape(new StringShape()).coerce();
-
-    expect(setShape.inputTypes).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
-  });
-
-  test('coerces a non-array value', () => {
-    const setShape = new SetShape(new Shape()).coerce();
-
-    expect(setShape.parse('aaa')).toEqual(new Set(['aaa']));
-  });
-
-  test('coerces an array value', () => {
-    const setShape = new SetShape(new Shape()).coerce();
-
-    expect(setShape.parse(['aaa'])).toEqual(new Set(['aaa']));
-  });
-
   describe('at', () => {
     test('returns the value shape', () => {
       const shape = new Shape();
@@ -171,11 +125,79 @@ describe('SetShape', () => {
       expect(setShape.at('0')).toBe(shape);
       expect(setShape.at(0)).toBe(shape);
 
-      expect(setShape.at('000')).toBe(null);
-      expect(setShape.at('1e+49')).toBe(null);
-      expect(setShape.at(-111)).toBe(null);
-      expect(setShape.at(111.222)).toBe(null);
-      expect(setShape.at('aaa')).toBe(null);
+      expect(setShape.at('000')).toBeNull();
+      expect(setShape.at('1e+49')).toBeNull();
+      expect(setShape.at(-111)).toBeNull();
+      expect(setShape.at(111.222)).toBeNull();
+      expect(setShape.at('aaa')).toBeNull();
+    });
+  });
+
+  describe('size', () => {
+    test('checks size', () => {
+      const setShape = new SetShape(new Shape()).size(2);
+
+      expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
+      expect(setShape.try(new Set([111]))).toEqual({ ok: false, issues: expect.any(Array) });
+      expect(setShape.try(new Set([111, 222, 333]))).toEqual({ ok: false, issues: expect.any(Array) });
+    });
+  });
+
+  describe('min', () => {
+    test('checks min size', () => {
+      const setShape = new SetShape(new Shape()).min(2);
+
+      expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
+      expect(setShape.try(new Set([111]))).toEqual({
+        ok: false,
+        issues: [{ code: CODE_SET_MIN, input: new Set([111]), message: 'Must have the minimum size of 2', param: 2 }],
+      });
+    });
+  });
+
+  describe('max', () => {
+    test('checks max size', () => {
+      const setShape = new SetShape(new Shape()).max(2);
+
+      expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
+      expect(setShape.try(new Set([111, 222, 333]))).toEqual({
+        ok: false,
+        issues: [
+          { code: CODE_SET_MAX, input: new Set([111, 222, 333]), message: 'Must have the maximum size of 2', param: 2 },
+        ],
+      });
+    });
+  });
+
+  describe('coerce', () => {
+    test('updates input types when coerced', () => {
+      const setShape = new SetShape(new StringShape()).coerce();
+
+      expect(setShape.inputTypes).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
+    });
+
+    test('coerces a string value', () => {
+      const setShape = new SetShape(new Shape()).coerce();
+
+      expect(setShape.parse('aaa')).toEqual(new Set(['aaa']));
+    });
+
+    test('coerces a String wrapper', () => {
+      const setShape = new SetShape(new Shape()).coerce();
+
+      expect(setShape.parse(new String('aaa'))).toEqual(new Set(['aaa']));
+    });
+
+    test('coerces an array value', () => {
+      const setShape = new SetShape(new Shape()).coerce();
+
+      expect(setShape.parse(['aaa'])).toEqual(new Set(['aaa']));
+    });
+
+    test('coerces an array-like value', () => {
+      const setShape = new SetShape(new Shape()).coerce();
+
+      expect(setShape.parse({ 0: 'aaa', length: 1 })).toEqual(new Set(['aaa']));
     });
   });
 
@@ -284,16 +306,18 @@ describe('SetShape', () => {
       });
     });
 
-    test('coerces a non-array value', async () => {
-      const setShape = new SetShape(asyncShape).coerce();
+    describe('coerce', () => {
+      test('coerces a non-array value', async () => {
+        const setShape = new SetShape(asyncShape).coerce();
 
-      await expect(setShape.parseAsync('aaa')).resolves.toEqual(new Set(['aaa']));
-    });
+        await expect(setShape.parseAsync('aaa')).resolves.toEqual(new Set(['aaa']));
+      });
 
-    test('coerces an array value', async () => {
-      const setShape = new SetShape(asyncShape).coerce();
+      test('coerces an array value', async () => {
+        const setShape = new SetShape(asyncShape).coerce();
 
-      await expect(setShape.parseAsync(['aaa'])).resolves.toEqual(new Set(['aaa']));
+        await expect(setShape.parseAsync(['aaa'])).resolves.toEqual(new Set(['aaa']));
+      });
     });
   });
 });

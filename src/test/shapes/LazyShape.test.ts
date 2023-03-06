@@ -1,21 +1,24 @@
-import { AnyShape, ApplyOptions, DeepPartialProtocol, LazyShape, Result, Shape, StringShape } from '../../main';
+import { ApplyOptions, DeepPartialProtocol, LazyShape, ObjectShape, Result, Shape, StringShape } from '../../main';
+import { TYPE_ANY, TYPE_OBJECT } from '../../main/constants';
 
 describe('LazyShape', () => {
-  let asyncShape: AnyShape;
+  class AsyncShape extends Shape {
+    protected _isAsync(): boolean {
+      return true;
+    }
+
+    protected _applyAsync(input: unknown, options: ApplyOptions) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    }
+  }
+
+  let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    asyncShape = new (class extends Shape {
-      protected _isAsync(): boolean {
-        return true;
-      }
-
-      protected _applyAsync(input: unknown, options: ApplyOptions) {
-        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
-      }
-    })();
+    asyncShape = new AsyncShape();
   });
 
-  test('parses values with a shape', () => {
+  test('parses values with an underlying shape', () => {
     const shape = new StringShape();
     const lazyShape = new LazyShape(() => shape);
 
@@ -41,13 +44,55 @@ describe('LazyShape', () => {
     expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
   });
 
-  test('does not apply checks is shape raises an issue', () => {
+  test('does not apply checks if an underlying shape raises an issue', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
     const lazyShape = new LazyShape(() => shape).check({ unsafe: true }, () => [{ code: 'yyy' }]);
 
     expect(lazyShape.try('aaa', { verbose: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
+    });
+  });
+
+  describe('_isAsync', () => {
+    test('prevents short circuit', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+
+      expect(lazyShape['_isAsync']()).toBe(false);
+    });
+
+    test('prevents infinite loop', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
+
+      expect(lazyShape['_isAsync']()).toBe(false);
+    });
+  });
+
+  describe('_getInputTypes', () => {
+    test('prevents short circuit', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+
+      expect(lazyShape['_getInputTypes']()).toEqual([TYPE_ANY]);
+    });
+
+    test('prevents infinite loop', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
+
+      expect(lazyShape['_getInputTypes']()).toEqual([TYPE_OBJECT]);
+    });
+  });
+
+  describe('_getInputValues', () => {
+    test('prevents short circuit', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+
+      expect(lazyShape.inputValues!.length).toBe(0);
+    });
+
+    test('prevents infinite loop', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
+
+      expect(lazyShape.inputValues).toBeNull();
     });
   });
 
@@ -72,7 +117,7 @@ describe('LazyShape', () => {
   });
 
   describe('async', () => {
-    test('parses values with a shape', async () => {
+    test('parses values with an underlying shape', async () => {
       const lazyShape = new LazyShape(() => asyncShape);
 
       const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');

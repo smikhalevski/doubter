@@ -6,6 +6,7 @@ import {
   DeepPartialShape,
   Result,
   Shape,
+  Type,
   ValueType,
 } from '../shapes/Shape';
 import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
@@ -51,6 +52,14 @@ export function getValueType(value: unknown): ValueType {
 
 export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
+}
+
+export function getShapeInputTypes(shape: AnyShape): readonly Type[] {
+  return shape.inputTypes;
+}
+
+export function getShapeInputValues(shape: AnyShape): readonly unknown[] | null {
+  return shape.inputValues;
 }
 
 /**

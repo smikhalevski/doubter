@@ -30,34 +30,38 @@ describe('BooleanShape', () => {
     });
   });
 
-  test('updates input types when coerced', () => {
-    const shape = new BooleanShape().coerce();
+  describe('coerce', () => {
+    test('updates input types when coerced', () => {
+      const shape = new BooleanShape().coerce();
 
-    expect(shape.inputTypes).toEqual([
-      TYPE_BOOLEAN,
-      TYPE_OBJECT,
-      TYPE_STRING,
-      TYPE_NUMBER,
-      TYPE_ARRAY,
-      TYPE_NULL,
-      TYPE_UNDEFINED,
-    ]);
-  });
+      expect(shape.inputTypes).toEqual([
+        TYPE_BOOLEAN,
+        TYPE_OBJECT,
+        TYPE_STRING,
+        TYPE_NUMBER,
+        TYPE_ARRAY,
+        TYPE_NULL,
+        TYPE_UNDEFINED,
+      ]);
+    });
 
-  test('coerces an input', () => {
-    expect(new BooleanShape().coerce().parse(1)).toBe(true);
-    expect(new BooleanShape().coerce().parse('true')).toBe(true);
-    expect(new BooleanShape().parse('true', { coerced: true })).toBe(true);
-  });
+    test('coerces an input', () => {
+      expect(new BooleanShape().coerce().parse(1)).toBe(true);
+      expect(new BooleanShape().coerce().parse(new Boolean(true))).toBe(true);
+      expect(new BooleanShape().coerce().parse([new Boolean(true)])).toBe(true);
+      expect(new BooleanShape().coerce().parse('true')).toBe(true);
+      expect(new BooleanShape().parse('true', { coerced: true })).toBe(true);
+    });
 
-  test('raises an issue if coercion fails', () => {
-    expect(new BooleanShape().coerce().try(222)).toEqual({
-      ok: false,
-      issues: [{ code: CODE_TYPE, input: 222, message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN }],
+    test('raises an issue if coercion fails', () => {
+      expect(new BooleanShape().coerce().try(222)).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 222, message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN }],
+      });
     });
   });
 
-  describe('coercion', () => {
+  describe('_coerce', () => {
     test('coerces a Boolean wrapper', () => {
       expect(new BooleanShape()['_coerce'](Boolean(true))).toBe(true);
       expect(new BooleanShape()['_coerce']([Boolean(false)])).toBe(false);

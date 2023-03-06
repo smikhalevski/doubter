@@ -2,6 +2,7 @@ import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
+  canonize,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -262,6 +263,9 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     if (isArray(value)) {
       return value.every(isMapEntry) ? value : NEVER;
     }
+
+    value = canonize(value);
+
     if (isIterable(value)) {
       value = Array.from(value);
 

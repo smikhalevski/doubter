@@ -13,6 +13,8 @@ import {
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
+  getShapeInputTypes,
+  getShapeInputValues,
   getValueType,
   isArray,
   isAsyncShape,
@@ -94,7 +96,14 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   protected _getInputTypes(): readonly Type[] {
-    return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
+    if (hasZeroValues(this.inputValues)) {
+      return [TYPE_NEVER];
+    }
+    return intersectTypes(this.shapes.map(getShapeInputTypes));
+  }
+
+  protected _getInputValues(): readonly unknown[] | null {
+    return intersectValues(this.shapes.map(getShapeInputValues));
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>['output']> {
@@ -203,7 +212,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       output = outputs[0];
 
       for (let i = 1; i < outputsLength && output !== NEVER; ++i) {
-        output = intersectValues(output, outputs[i]);
+        output = mergeValues(output, outputs[i]);
       }
       if (output === NEVER) {
         return this._typeIssueFactory(input, options);
@@ -221,7 +230,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 }
 
-export function intersectValues(a: any, b: any): any {
+export function mergeValues(a: any, b: any): any {
   if (isEqual(a, b)) {
     return a;
   }
@@ -245,7 +254,7 @@ export function intersectValues(a: any, b: any): any {
 
     for (const key in a) {
       if (key in b) {
-        const outputValue = intersectValues(a[key], b[key]);
+        const outputValue = mergeValues(a[key], b[key]);
 
         if (outputValue === NEVER) {
           return NEVER;
@@ -275,7 +284,7 @@ export function intersectValues(a: any, b: any): any {
       if (output === a) {
         output = a.slice(0);
       }
-      const outputValue = intersectValues(aValue, bValue);
+      const outputValue = mergeValues(aValue, bValue);
 
       if (outputValue === NEVER) {
         return NEVER;
@@ -294,7 +303,7 @@ export function intersectValues(a: any, b: any): any {
  *
  * @param typesByShape The array of arrays of unique input types associated with each shape in the intersection.
  */
-export function intersectValueTypes(typesByShape: Array<readonly Type[]>): Type[] {
+export function intersectTypes(typesByShape: Array<readonly Type[]>): Type[] {
   const shapesLength = typesByShape.length;
 
   if (shapesLength === 0) {
@@ -324,4 +333,39 @@ export function intersectValueTypes(typesByShape: Array<readonly Type[]>): Type[
     return [TYPE_NEVER];
   }
   return types;
+}
+
+/**
+ * Returns the array of discrete values accepted by all shapes, or returns `null` if some shapes accept continuous
+ * ranges of values.
+ *
+ * @param valuesByShape The array of arrays of discrete values accepted by shapes.
+ */
+export function intersectValues(valuesByShape: Array<readonly unknown[] | null>): unknown[] | null {
+  const shapesLength = valuesByShape.length;
+
+  if (shapesLength === 0 || valuesByShape.some(hasZeroValues)) {
+    return [];
+  }
+  if (valuesByShape.indexOf(null) !== -1) {
+    return null;
+  }
+
+  const values = valuesByShape[0]!.slice(0);
+
+  for (let i = 1; i < shapesLength && values.length !== 0; ++i) {
+    const shapeValues = valuesByShape[i]!;
+
+    for (let j = 0; j < values.length; ++j) {
+      if (!shapeValues.includes(values[j])) {
+        values.splice(j--, 1);
+      }
+    }
+  }
+
+  return values;
+}
+
+function hasZeroValues(values: readonly unknown[] | null): boolean {
+  return values !== null && values.length === 0;
 }

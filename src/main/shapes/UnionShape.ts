@@ -4,6 +4,8 @@ import {
   applyShape,
   copyUnsafeChecks,
   createIssueFactory,
+  Dict,
+  getShapeInputValues,
   getValueType,
   isArray,
   isAsyncShape,
@@ -17,7 +19,7 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, Type, V
 /**
  * Returns the array of shapes that are applicable to the input.
  */
-export type LookupCallback = (input: any) => readonly AnyShape[];
+export type Lookup = (input: any) => readonly AnyShape[];
 
 export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<{
   [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
@@ -55,12 +57,12 @@ export class UnionShape<U extends readonly AnyShape[]>
     this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
-  protected get _lookup(): LookupCallback {
-    const cb = createDiscriminatorLookupCallback(this.shapes) || createValueTypeLookupCallback(this.shapes);
+  protected get _lookup(): Lookup {
+    const lookup = createDiscriminatorLookup(this.shapes) || createValueTypeLookup(this.shapes);
 
-    Object.defineProperty(this, '_lookup', { value: cb });
+    Object.defineProperty(this, '_lookup', { value: lookup });
 
-    return cb;
+    return lookup;
   }
 
   at(key: unknown): AnyShape | null {
@@ -91,25 +93,21 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected _getInputTypes(): readonly Type[] {
-    const inputTypes: Type[] = [];
+    const types: Type[] = [];
 
     for (const shape of this.shapes) {
-      inputTypes.push(...shape.inputTypes);
+      types.push(...shape.inputTypes);
     }
-    return inputTypes;
+    return types;
   }
 
-  protected _getInputValues(): unknown[] {
-    const inputValues = [];
+  protected _getInputValues(): readonly unknown[] | null {
+    const valuesByShape = this.shapes.map(getShapeInputValues);
 
-    for (const shape of this.shapes) {
-      const values = shape['_getInputValues']();
-      if (values.length === 0) {
-        return [];
-      }
-      inputValues.push(...values);
+    if (valuesByShape.indexOf(null) !== -1) {
+      return null;
     }
-    return inputValues;
+    return ([] as unknown[]).concat(...valuesByShape);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<U[number]['output']> {
@@ -212,7 +210,7 @@ export class UnionShape<U extends readonly AnyShape[]>
 /**
  * Creates a lookup that finds a shape using an input value type.
  */
-export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): LookupCallback {
+export function createValueTypeLookup(shapes: readonly AnyShape[]): Lookup {
   const emptyArray: AnyShape[] = [];
 
   const buckets: Record<ValueType, readonly AnyShape[]> = {
@@ -236,10 +234,9 @@ export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): Look
 
   for (const shape of uniqueArray(shapes)) {
     for (const type of shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes) {
-      if (type === TYPE_ANY || type === TYPE_NEVER) {
-        continue;
+      if (type !== TYPE_ANY && type !== TYPE_NEVER) {
+        buckets[type] = buckets[type].concat(shape);
       }
-      buckets[type] = buckets[type].concat(shape);
     }
   }
 
@@ -247,10 +244,12 @@ export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): Look
 }
 
 /**
- * Creates a lookup that uses a discriminator property, or returns `null` if discriminator cannot be detected.
+ * Creates a lookup that uses a discriminator property, or returns `null` if discriminator property cannot be detected.
  */
-export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): LookupCallback | null {
+export function createDiscriminatorLookup(shapes: readonly AnyShape[]): Lookup | null {
   const shapesLength = shapes.length;
+
+  shapes = uniqueArray(shapes);
 
   if (shapesLength <= 1 || !shapes.every(isObjectShape)) {
     return null;
@@ -262,12 +261,12 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
     return null;
   }
 
-  const { key, valuesForShape } = discriminator;
+  const { key, valuesByShape } = discriminator;
   const shapeArrays = shapes.map(shape => [shape]);
   const emptyArray: AnyShape[] = [];
 
-  if (valuesForShape.every(values => values.length === 1 && values[0] === values[0])) {
-    const values = valuesForShape.map(values => values[0]);
+  if (valuesByShape.every(values => values.length === 1 && values[0] === values[0])) {
+    const values = valuesByShape.map(values => values[0]);
 
     return input => {
       if (!isObject(input)) {
@@ -290,7 +289,7 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
     const value = input[key];
 
     for (let i = 0; i < shapesLength; ++i) {
-      if (valuesForShape[i].includes(value)) {
+      if (valuesByShape[i].includes(value)) {
         return shapeArrays[i];
       }
     }
@@ -305,66 +304,61 @@ export interface Discriminator {
   key: string;
 
   /**
-   * The discriminator property values for each shape.
+   * The values for each shape.
    */
-  valuesForShape: unknown[][];
+  valuesByShape: Array<readonly unknown[]>;
 }
 
-export function getDiscriminator(shapes: readonly ObjectShape<any, any>[]): Discriminator | null {
-  const keys = shapes[0].keys.slice(0);
-  const valuesForShapeForKey: unknown[][][] = [];
+export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, any>[]): Discriminator | null {
+  const shapesLength = shapes.length;
+  const candidateKeys = shapes[0].keys;
+  const valuesByShape: Array<readonly unknown[]> = [];
+  const candidateValueSet = new Set<unknown>();
 
-  for (let i = 0; i < shapes.length && keys.length !== 0; ++i) {
-    const shapeValues: unknown[][] = [];
-    const { keys: shapeKeys, shapes: shapeShapes } = shapes[i];
+  nextCandidate: for (const candidateKey of candidateKeys) {
+    for (let i = 0; i < shapesLength; ++i) {
+      const shape = shapes[i];
 
-    valuesForShapeForKey[i] = shapeValues;
+      // Key doesn't exist on every shape
+      if (!shape.keys.includes(candidateKey)) {
+        continue nextCandidate;
+      }
 
-    for (let j = 0; j < keys.length; ++j) {
-      const key = keys[j];
+      const { inputValues } = shape.shapes[candidateKey];
 
-      if (shapeKeys.includes(key)) {
-        const keyValues: unknown[] = shapeShapes[key]['_getInputValues']();
+      if (inputValues === null || inputValues.length === 0) {
+        // Values of this key are continuous or absent for some shapes
+        continue nextCandidate;
+      }
 
-        if (keyValues.length !== 0) {
-          let duplicated = false;
+      valuesByShape[i] = inputValues;
+    }
 
-          // Ensure that this set of values wasn't seen for this key in other shapes
-          duplicateLookup: for (let k = 0; k < i; ++k) {
-            for (const value of valuesForShapeForKey[k][j]) {
-              if (keyValues.includes(value)) {
-                duplicated = true;
-                break duplicateLookup;
-              }
-            }
-          }
+    candidateValueSet.clear();
 
-          if (!duplicated) {
-            shapeValues.push(keyValues);
-            continue;
-          }
+    let valueCount = 0;
+
+    for (const values of valuesByShape) {
+      for (const value of values) {
+        candidateValueSet.add(value);
+
+        ++valueCount;
+
+        if (valueCount !== candidateValueSet.size) {
+          // Values associated with the candidate key are not unique for each shape
+          continue nextCandidate;
         }
       }
-
-      keys.splice(j, 1);
-
-      for (let k = 0; k < i; ++k) {
-        valuesForShapeForKey[k].splice(j, 1);
-      }
-      --j;
     }
-  }
 
-  if (keys.length === 0) {
-    return null;
+    return {
+      key: candidateKey,
+      valuesByShape,
+    };
   }
-
-  return {
-    key: keys[0],
-    valuesForShape: valuesForShapeForKey.map(values => values[0]),
-  };
+  return null;
 }
 
-export function isObjectShape(shape: AnyShape): shape is ObjectShape<any, any> {
+function isObjectShape(shape: AnyShape): shape is ObjectShape<any, any> {
   return shape instanceof ObjectShape;
 }
