@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from '../shapes';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, Message, RefineOptions } from '../types';
 
 /**
  * Creates the unconstrained shape.
@@ -26,7 +26,7 @@ export function any<T>(
    * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
   cb: (value: any, options: Readonly<ApplyOptions>) => value is T,
-  options?: ConstraintOptions | Message
+  options?: RefineOptions | Message
 ): Shape<T>;
 
 /**
@@ -43,12 +43,12 @@ export function any<T = any>(
    * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
   cb: (value: any, options: Readonly<ApplyOptions>) => boolean,
-  options?: ConstraintOptions | Message
+  options?: RefineOptions | Message
 ): Shape<T>;
 
 export function any(
   cb?: (value: any, options: Readonly<ApplyOptions>) => boolean,
-  options?: ConstraintOptions | Message
+  options?: RefineOptions | Message
 ): AnyShape {
   const shape = new Shape();
 

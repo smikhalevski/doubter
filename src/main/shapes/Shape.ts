@@ -378,10 +378,12 @@ export class Shape<I = any, O = I> {
     options?: RefineOptions | Message
   ): this;
 
-  refine(cb: (output: O, options: Readonly<ApplyOptions>) => unknown, options?: any) {
-    const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
+  refine(cb: (output: O, options: Readonly<ApplyOptions>) => unknown, options?: RefineOptions | Message) {
+    const { code = CODE_PREDICATE, unsafe = false } = isObjectLike<RefineOptions>(options) ? options : {};
 
-    return this.check({ key: cb, unsafe: isObjectLike(options) && options.unsafe }, (input, param, options) => {
+    const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
+
+    return this.check({ key: cb, unsafe }, (input, param, options) => {
       if (!cb(input, options)) {
         return issueFactory(input, options);
       }

@@ -198,7 +198,7 @@ export function createIssueFactory(
 export function createIssueFactory(
   code: string,
   defaultMessage: any,
-  options: any,
+  options: ConstraintOptions | Message | undefined,
   param?: unknown
 ): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[] {
   const paramRequired = arguments.length <= 3;
@@ -206,7 +206,7 @@ export function createIssueFactory(
   let meta: unknown;
   let message = defaultMessage;
 
-  if (isObjectLike(options)) {
+  if (isObjectLike<ConstraintOptions>(options)) {
     if (options.message !== undefined) {
       message = options.message;
     }

@@ -771,13 +771,13 @@ Refinements are a simplified checks that use a predicate callback to validate an
 would raise an issue if the input string is less than six characters long.
 
 ```ts
-const shape = d.string().refine(value => value.length >= 6);
+const shape1 = d.string().refine(value => value.length >= 6);
 // ⮕ Shape<string>
 
-shape.parse('Uranus');
+shape1.parse('Uranus');
 // ⮕ 'Uranus'
 
-shape.parse('Mars');
+shape1.parse('Mars');
 // ❌ ValidationError: predicate at /: Must conform the predicate
 ```
 
@@ -792,8 +792,21 @@ d.string().refine(isMarsOrPluto)
 // ⮕ Shape<string, 'Mars' | 'Pluto'>
 ```
 
-A predicate callback receives the value that must be validated and parsing options, so you can access
-[your custom context](#parsing-context).
+By default, issues raised by `refine()` have [`predicate` code](#validation-errors). You can provide a custom issue
+code:
+
+```ts
+const shape2 = d.string().refine(
+  isMarsOrPluto,
+  {
+    code: 'unknownPlanet',
+    message: 'Must be Mars or Pluto'
+  }
+);
+
+shape2.parse('Venus');
+// ❌ ValidationError: unknownPlanet at /: Must be Mars or Pluto
+```
 
 # Transformations
 

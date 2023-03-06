@@ -520,6 +520,17 @@ describe('Shape', () => {
         issues: [{ code: CODE_PREDICATE, input: 'aaa', message: 'bbb', param: cb }],
       });
     });
+
+    test('overrides issue code from options', () => {
+      const cb = () => false;
+
+      const shape = new Shape().refine(cb, { code: 'xxx' });
+
+      expect(shape.try('aaa')).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx', input: 'aaa', message: 'Must conform the predicate', param: cb }],
+      });
+    });
   });
 
   describe('async', () => {

@@ -151,6 +151,11 @@ export interface ConstraintOptions {
 
 export interface RefineOptions extends ConstraintOptions {
   /**
+   * The custom issue code. By default, an issue is raised with a "predicate" code.
+   */
+  code?: any;
+
+  /**
    * If `true` then the predicate would be executed even if the preceding check failed, otherwise the predicate is
    * ignored.
    */
