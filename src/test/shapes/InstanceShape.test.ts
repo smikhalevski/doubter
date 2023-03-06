@@ -30,14 +30,14 @@ describe('InstanceShape', () => {
   test('raises an issue if an input is not an instance of the class', () => {
     expect(new InstanceShape(Foo).try({})).toEqual({
       ok: false,
-      issues: [{ code: CODE_INSTANCE, path: [], input: {}, param: Foo, message: 'Must be a class instance' }],
+      issues: [{ code: CODE_INSTANCE, input: {}, param: Foo, message: 'Must be a class instance' }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new InstanceShape(Foo, { message: 'aaa', meta: 'bbb' }).try({})).toEqual({
       ok: false,
-      issues: [{ code: CODE_INSTANCE, path: [], input: {}, param: Foo, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_INSTANCE, input: {}, param: Foo, message: 'aaa', meta: 'bbb' }],
     });
   });
 });

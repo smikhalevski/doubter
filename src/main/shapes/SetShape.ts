@@ -1,17 +1,3 @@
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
-import {
-  addConstraint,
-  concatIssues,
-  copyUnsafeChecks,
-  createIssueFactory,
-  isArray,
-  isIterableObject,
-  ok,
-  toArrayIndex,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../utils';
 import {
   CODE_SET_MAX,
   CODE_SET_MIN,
@@ -23,7 +9,21 @@ import {
   TYPE_OBJECT,
   TYPE_SET,
 } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import {
+  addCheck,
+  concatIssues,
+  copyUnsafeChecks,
+  createIssueFactory,
+  isArray,
+  isIterable,
+  ok,
+  toArrayIndex,
+  toDeepPartialShape,
+  unshiftIssuesPath,
+} from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 
 /**
  * The shape of a `Set` instance.
@@ -82,7 +82,7 @@ export class SetShape<S extends AnyShape>
   min(size: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-    return addConstraint(this, CODE_SET_MIN, size, (input, param, options) => {
+    return addCheck(this, CODE_SET_MIN, size, (input, param, options) => {
       if (input.size < param) {
         return issueFactory(input, options);
       }
@@ -99,7 +99,7 @@ export class SetShape<S extends AnyShape>
   max(size: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-    return addConstraint(this, CODE_SET_MAX, size, (input, param, options) => {
+    return addCheck(this, CODE_SET_MAX, size, (input, param, options) => {
       if (input.size > param) {
         return issueFactory(input, options);
       }
@@ -122,7 +122,7 @@ export class SetShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<Set<S['output']>> {
+  protected _apply(input: any, options: ApplyOptions): Result<Set<S['output']>> {
     let changed = false;
     let values;
     let issues = null;
@@ -170,7 +170,7 @@ export class SetShape<S extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Set<S['output']>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Set<S['output']>>> {
     return new Promise(resolve => {
       let changed = false;
       let values: unknown[];
@@ -239,7 +239,7 @@ export class SetShape<S extends AnyShape>
     if (isArray(value)) {
       return value;
     }
-    if (isIterableObject(value)) {
+    if (isIterable(value)) {
       return Array.from(value);
     }
     return [value];

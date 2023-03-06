@@ -10,19 +10,34 @@ describe('ValidationError', () => {
     const issue = {};
     const issues = new ValidationError([issue]).issues;
 
-    expect(issues).toEqual([
-      {
-        code: 'unknown',
-        path: [],
-      },
-    ]);
+    expect(issues).toEqual([{}]);
     expect(issues[0]).toBe(issue);
   });
 
   test('returns message', () => {
     const error = new ValidationError([{ code: 'aaa' }, { message: 'bbb' }]);
 
-    expect(error.toString()).toBe('ValidationError: \naaa at /\nunknown at /: bbb');
+    expect(error.toString()).toBe(`ValidationError: [
+  {
+    "code": "aaa"
+  },
+  {
+    "message": "bbb"
+  }
+]`);
+  });
+
+  test('converts symbol and bigint values to string', () => {
+    const error = new ValidationError([{ code: Symbol('aaa') }, { message: BigInt('111') }]);
+
+    expect(error.toString()).toBe(`ValidationError: [
+  {
+    "code": "Symbol(aaa)"
+  },
+  {
+    "message": "111"
+  }
+]`);
   });
 
   test('custom message can be assigned', () => {

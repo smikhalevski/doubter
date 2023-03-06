@@ -1,5 +1,5 @@
-import { ConstraintOptions, Literal, Message } from '../shared-types';
 import { ConstShape } from '../shapes';
+import { ConstraintOptions, Literal, Message } from '../types';
 
 /**
  * Creates the constant value shape.

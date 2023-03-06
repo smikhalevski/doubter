@@ -1,3 +1,19 @@
+import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import {
+  applyShape,
+  concatIssues,
+  copyUnsafeChecks,
+  createIssueFactory,
+  isArray,
+  isIterable,
+  isMapEntry,
+  isObjectLike,
+  ok,
+  toDeepPartialShape,
+  unshiftIssuesPath,
+} from '../utils';
+import { CoercibleShape } from './CoercibleShape';
 import {
   AnyShape,
   DeepPartialProtocol,
@@ -7,21 +23,6 @@ import {
   Result,
   ValueType,
 } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
-import {
-  applyForResult,
-  concatIssues,
-  copyUnsafeChecks,
-  createIssueFactory,
-  isArray,
-  isIterableObject,
-  isObjectLike,
-  ok,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../utils';
-import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
-import { CoercibleShape } from './CoercibleShape';
 
 /**
  * The shape of a `Map` instance.
@@ -85,7 +86,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<Map<K['output'], V['output']>> {
+  protected _apply(input: any, options: ApplyOptions): Result<Map<K['output'], V['output']>> {
     let changed = false;
     let entries;
 
@@ -158,7 +159,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<Map<K['output'], V['output']>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Map<K['output'], V['output']>>> {
     return new Promise(resolve => {
       let changed = false;
       let entries: [unknown, unknown][];
@@ -200,7 +201,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
             keyChanged = true;
           }
         }
-        return applyForResult(valueShape, value, options, handleValueResult);
+        return applyShape(valueShape, value, options, handleValueResult);
       };
 
       const handleValueResult = (valueResult: Result) => {
@@ -234,7 +235,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
           key = entry[0];
           value = entry[1];
 
-          return applyForResult(keyShape, key, options, handleKeyResult);
+          return applyShape(keyShape, key, options, handleKeyResult);
         }
 
         const output = changed ? new Map(entries) : input;
@@ -259,20 +260,16 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
    */
   protected _coerceEntries(value: any): [unknown, unknown][] {
     if (isArray(value)) {
-      return value.every(isEntry) ? value : NEVER;
+      return value.every(isMapEntry) ? value : NEVER;
     }
-    if (isIterableObject(value)) {
+    if (isIterable(value)) {
       value = Array.from(value);
 
-      return value.every(isEntry) ? value : NEVER;
+      return value.every(isMapEntry) ? value : NEVER;
     }
     if (isObjectLike(value)) {
       return Object.entries(value);
     }
     return NEVER;
   }
-}
-
-function isEntry(value: unknown): value is [unknown, unknown] {
-  return isArray(value) && value.length === 2;
 }

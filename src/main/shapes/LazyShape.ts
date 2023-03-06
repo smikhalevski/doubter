@@ -1,7 +1,7 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
-import { ParseOptions } from '../shared-types';
-import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
 import { ERROR_SHAPE_EXPECTED } from '../constants';
+import { ApplyOptions } from '../types';
+import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 
 /**
  * Lazily resolves a shape using the provider callback.
@@ -83,15 +83,15 @@ export class LazyShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<S['output']> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<S['output']> {
     return this._handleResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<S['output']>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<S['output']>> {
     return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
   }
 
-  private _handleResult(result: Result, input: unknown, options: ParseOptions): Result<S['output']> {
+  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<S['output']> {
     const { _applyChecks } = this;
 
     let output = input;

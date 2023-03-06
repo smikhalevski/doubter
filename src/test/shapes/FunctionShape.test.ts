@@ -1,10 +1,10 @@
 import {
   AnyShape,
+  ApplyOptions,
   ArrayShape,
   FunctionShape,
   NumberShape,
   ObjectShape,
-  ParseOptions,
   Result,
   Shape,
   StringShape,
@@ -31,7 +31,7 @@ describe('FunctionShape', () => {
         return true;
       }
 
-      protected _applyAsync(input: unknown, options: ParseOptions) {
+      protected _applyAsync(input: unknown, options: ApplyOptions) {
         return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
       }
     })();
@@ -67,38 +67,38 @@ describe('FunctionShape', () => {
     expect(shape2.thisShape).toBe(thisShape);
   });
 
-  test('delegator is async if any of the arguments is async', () => {
+  test('wrapper is async if any of the arguments is async', () => {
     const argsShape = new ArrayShape([asyncShape], null);
 
-    expect(new FunctionShape(argsShape, null, null).isDelegatorAsync).toBe(true);
+    expect(new FunctionShape(argsShape, null, null).isWrapperAsync).toBe(true);
   });
 
-  test('delegator is async if return shape is async', () => {
-    expect(new FunctionShape(noArgsShape, asyncShape, null).isDelegatorAsync).toBe(true);
+  test('wrapper is async if return shape is async', () => {
+    expect(new FunctionShape(noArgsShape, asyncShape, null).isWrapperAsync).toBe(true);
   });
 
-  test('delegator is async if this shape is async', () => {
-    expect(new FunctionShape(noArgsShape, null, asyncShape).isDelegatorAsync).toBe(true);
+  test('wrapper is async if this shape is async', () => {
+    expect(new FunctionShape(noArgsShape, null, asyncShape).isWrapperAsync).toBe(true);
   });
 
-  test('bare prevents a function from being wrapped', () => {
+  test('noWrap prevents a function from being wrapped', () => {
     const fnStub = () => undefined;
 
-    expect(new FunctionShape(noArgsShape, null, null).bare().parse(fnStub)).toBe(fnStub);
+    expect(new FunctionShape(noArgsShape, null, null).noWrap().parse(fnStub)).toBe(fnStub);
   });
 
-  describe('delegate', () => {
-    test('delegates a function with 0 arguments', () => {
+  describe('wrap', () => {
+    test('wraps a function with 0 arguments', () => {
       const fnMock = jest.fn();
       const shape = new FunctionShape(noArgsShape, null, null);
 
-      shape.delegate(fnMock)();
+      shape.wrap(fnMock)();
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1);
     });
 
-    test('delegates a function with 1 argument', () => {
+    test('wraps a function with 1 argument', () => {
       const fnMock = jest.fn();
 
       const argShape = new Shape();
@@ -106,7 +106,7 @@ describe('FunctionShape', () => {
 
       const parseSpy = jest.spyOn<Shape, any>(argShape, '_apply');
 
-      shape.delegate(fnMock)('aaa');
+      shape.wrap(fnMock)('aaa');
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
@@ -122,9 +122,9 @@ describe('FunctionShape', () => {
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      expect(() => shape.delegate(() => undefined).call({ key1: 111 } as any)).toThrow(
+      expect(() => shape.wrap(() => undefined).call({ key1: 111 } as any)).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['this', 'key1'] },
+          { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -132,9 +132,9 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.delegate(() => undefined).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.wrap(() => undefined).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
+          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -142,10 +142,10 @@ describe('FunctionShape', () => {
     test('raises issues if arguments are invalid in verbose mode', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.delegate(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.wrap(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
-          { code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, input: 'aaa', path: ['arguments', 1] },
+          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
+          { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
         ])
       );
     });
@@ -153,26 +153,26 @@ describe('FunctionShape', () => {
     test('raises an issue if a return value is invalid', () => {
       const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
 
-      expect(() => shape.delegate(() => 111 as any)()).toThrow(
+      expect(() => shape.wrap(() => 111 as any)()).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['return'] },
+          { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
   });
 
-  describe('delegateAsync', () => {
-    test('delegates a function with 0 arguments', async () => {
+  describe('wrapAsync', () => {
+    test('wraps a function with 0 arguments', async () => {
       const fnMock = jest.fn();
       const shape = new FunctionShape(noArgsShape, null, null);
 
-      await shape.delegateAsync(fnMock)();
+      await shape.wrapAsync(fnMock)();
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1);
     });
 
-    test('delegates a function with 1 argument', async () => {
+    test('wraps a function with 1 argument', async () => {
       const fnMock = jest.fn();
 
       const argShape = new Shape();
@@ -180,7 +180,7 @@ describe('FunctionShape', () => {
 
       const parseSpy = jest.spyOn<Shape, any>(argShape, '_apply');
 
-      await shape.delegateAsync(fnMock)('aaa');
+      await shape.wrapAsync(fnMock)('aaa');
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
@@ -196,9 +196,9 @@ describe('FunctionShape', () => {
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      await expect(shape.delegateAsync(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
+      await expect(shape.wrapAsync(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['this', 'key1'] },
+          { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -206,9 +206,9 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(shape.delegateAsync(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
+      await expect(shape.wrapAsync(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
+          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -216,10 +216,10 @@ describe('FunctionShape', () => {
     test('raises issues if arguments are invalid in verbose mode', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(shape.delegateAsync(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).rejects.toEqual(
+      await expect(shape.wrapAsync(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['arguments', 0] },
-          { code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER, input: 'aaa', path: ['arguments', 1] },
+          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
+          { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
         ])
       );
     });
@@ -227,9 +227,9 @@ describe('FunctionShape', () => {
     test('raises an issue if a return value is invalid', async () => {
       const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
 
-      await expect(shape.delegateAsync(() => 111 as any)()).rejects.toEqual(
+      await expect(shape.wrapAsync(() => 111 as any)()).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, input: 111, path: ['return'] },
+          { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });

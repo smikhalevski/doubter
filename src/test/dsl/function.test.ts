@@ -30,15 +30,7 @@ describe('function', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_TYPE,
-          input: 111,
-          message: 'aaa',
-          param: TYPE_FUNCTION,
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: 111, message: 'aaa', param: TYPE_FUNCTION }],
     });
   });
 });

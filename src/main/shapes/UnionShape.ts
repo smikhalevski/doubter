@@ -1,18 +1,18 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
-  applyForResult,
+  applyShape,
   copyUnsafeChecks,
   createIssueFactory,
   getValueType,
   isArray,
   isAsyncShape,
-  isObjectLike,
+  isObject,
   toDeepPartialShape,
-  unique,
+  uniqueArray,
 } from '../utils';
-import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
 import { ObjectShape } from './ObjectShape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
 
 /**
  * Returns the array of shapes that are applicable to the input.
@@ -112,7 +112,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return inputValues;
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<U[number]['output']> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<U[number]['output']> {
     const { _applyChecks } = this;
 
     let result = null;
@@ -156,7 +156,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<U[number]['output']>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<U[number]['output']>> {
     return new Promise(resolve => {
       const { _applyChecks } = this;
 
@@ -196,7 +196,7 @@ export class UnionShape<U extends readonly AnyShape[]>
         index++;
 
         if (index !== shapesLength) {
-          return applyForResult(shapes[index], input, options, handleResult);
+          return applyShape(shapes[index], input, options, handleResult);
         }
         if (shapesLength === 1) {
           return issues;
@@ -229,7 +229,7 @@ export function createValueTypeLookupCallback(shapes: readonly AnyShape[]): Look
 
   const bucketTypes = Object.keys(buckets) as ValueType[];
 
-  for (const shape of unique(shapes)) {
+  for (const shape of uniqueArray(shapes)) {
     for (const type of shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes) {
       if (type === TYPE_ANY || type === TYPE_NEVER) {
         continue;
@@ -265,7 +265,7 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
     const values = valuesForShape.map(values => values[0]);
 
     return input => {
-      if (!isObjectLike(input)) {
+      if (!isObject(input)) {
         return noShapesArray;
       }
 
@@ -278,7 +278,7 @@ export function createDiscriminatorLookupCallback(shapes: readonly AnyShape[]): 
   }
 
   return input => {
-    if (!isObjectLike(input)) {
+    if (!isObject(input)) {
       return noShapesArray;
     }
 

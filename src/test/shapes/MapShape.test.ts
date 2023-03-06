@@ -1,4 +1,4 @@
-import { AnyShape, MapShape, ObjectShape, Ok, ParseOptions, Result, Shape, StringShape } from '../../main';
+import { AnyShape, ApplyOptions, MapShape, ObjectShape, Ok, Result, Shape, StringShape } from '../../main';
 import {
   CODE_TYPE,
   MESSAGE_MAP_TYPE,
@@ -17,7 +17,7 @@ describe('MapShape', () => {
         return true;
       }
 
-      protected _applyAsync(input: unknown, options: ParseOptions) {
+      protected _applyAsync(input: unknown, options: ApplyOptions) {
         return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
       }
     })();
@@ -41,7 +41,7 @@ describe('MapShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_MAP_TYPE, param: TYPE_MAP, path: [] }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_MAP_TYPE, param: TYPE_MAP }],
     });
   });
 
@@ -141,7 +141,7 @@ describe('MapShape', () => {
 
     expect(mapShape.try(new Map())).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -177,15 +177,7 @@ describe('MapShape', () => {
 
     expect(mapShape.try([['key1', 'aaa'], ['key2']])).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_TYPE,
-          path: [],
-          input: [['key1', 'aaa'], ['key2']],
-          message: MESSAGE_MAP_TYPE,
-          param: TYPE_MAP,
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: [['key1', 'aaa'], ['key2']], message: MESSAGE_MAP_TYPE, param: TYPE_MAP }],
     });
   });
 
@@ -273,7 +265,7 @@ describe('MapShape', () => {
 
       await expect(setShape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_MAP_TYPE, param: TYPE_MAP, path: [] }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_MAP_TYPE, param: TYPE_MAP }],
       });
     });
 
@@ -413,7 +405,7 @@ describe('MapShape', () => {
 
       await expect(mapShape.tryAsync(new Map())).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
 
@@ -452,7 +444,6 @@ describe('MapShape', () => {
         issues: [
           {
             code: CODE_TYPE,
-            path: [],
             input: [['key1', 'aaa'], ['key2']],
             message: MESSAGE_MAP_TYPE,
             param: TYPE_MAP,

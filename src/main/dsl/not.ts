@@ -1,5 +1,5 @@
 import { AnyShape, NotShape, Shape } from '../shapes';
-import { ConstraintOptions, Message } from '../shared-types';
+import { ConstraintOptions, Message } from '../types';
 
 /**
  * Creates the shape that only allows values that don't conform the shape.

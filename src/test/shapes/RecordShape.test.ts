@@ -1,4 +1,4 @@
-import { AnyShape, ObjectShape, Ok, ParseOptions, RecordShape, Result, Shape, StringShape } from '../../main';
+import { AnyShape, ApplyOptions, ObjectShape, Ok, RecordShape, Result, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
 
 describe('RecordShape', () => {
@@ -10,7 +10,7 @@ describe('RecordShape', () => {
         return true;
       }
 
-      protected _applyAsync(input: unknown, options: ParseOptions) {
+      protected _applyAsync(input: unknown, options: ApplyOptions) {
         return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
       }
     })();
@@ -23,7 +23,7 @@ describe('RecordShape', () => {
 
     expect(objShape.try('')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+      issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
     });
   });
 
@@ -100,7 +100,7 @@ describe('RecordShape', () => {
 
     expect(objShape.try({})).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -155,7 +155,7 @@ describe('RecordShape', () => {
 
       await expect(objShape.tryAsync('')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT, path: [] }],
+        issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
       });
     });
 
@@ -258,7 +258,7 @@ describe('RecordShape', () => {
 
       await expect(objShape.tryAsync({})).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
   });

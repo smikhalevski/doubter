@@ -1,5 +1,5 @@
-import { expectType } from 'tsd';
 import * as d from 'doubter';
+import { expectType } from 'tsd';
 
 expectType<Record<string, number>>(d.record(d.number()).output);
 

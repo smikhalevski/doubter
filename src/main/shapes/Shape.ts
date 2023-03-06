@@ -1,37 +1,4 @@
 import {
-  Check,
-  CheckCallback,
-  CheckOptions,
-  ConstraintOptions,
-  Err,
-  Issue,
-  Literal,
-  Message,
-  Ok,
-  ParseOptions,
-  RefineOptions,
-} from '../shared-types';
-import {
-  applyForResult,
-  captureIssues,
-  cloneInstance,
-  copyUnsafeChecks,
-  createIssueFactory,
-  deleteAt,
-  getCheckIndex,
-  getValueType,
-  isArray,
-  isEqual,
-  isFunction,
-  isObjectLike,
-  ok,
-  replaceChecks,
-  returnTrue,
-  toDeepPartialShape,
-  unique,
-} from '../utils';
-import { ValidationError } from '../ValidationError';
-import {
   CODE_DENIED,
   CODE_EXCLUDED,
   CODE_PREDICATE,
@@ -43,6 +10,40 @@ import {
   TYPE_ANY,
   TYPE_NEVER,
 } from '../constants';
+import {
+  ApplyOptions,
+  Check,
+  CheckCallback,
+  CheckOptions,
+  ConstraintOptions,
+  Err,
+  Issue,
+  Literal,
+  Message,
+  Ok,
+  ParseOptions,
+  RefineOptions,
+} from '../types';
+import {
+  applyShape,
+  captureIssues,
+  cloneInstance,
+  copyUnsafeChecks,
+  createIssueFactory,
+  deleteArrayIndex,
+  getCheckIndex,
+  getErrorMessage,
+  getValueType,
+  isArray,
+  isEqual,
+  isObjectLike,
+  ok,
+  replaceChecks,
+  returnTrue,
+  toDeepPartialShape,
+  uniqueArray,
+} from '../utils';
+import { ValidationError } from '../ValidationError';
 
 /**
  * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from `_coerce`
@@ -50,7 +51,7 @@ import {
  */
 export const NEVER = Object.freeze({ never: true }) as never;
 
-export const defaultParseOptions = Object.freeze<ParseOptions>({ verbose: false, coerced: false });
+export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerced: false });
 
 // prettier-ignore
 /**
@@ -170,7 +171,7 @@ export type Result<T = any> = Ok<T> | Issue[] | null;
 /**
  * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.
  */
-export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ParseOptions) => Issue[] | null;
+export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ApplyOptions) => Issue[] | null;
 
 /**
  * The baseline shape implementation.
@@ -182,7 +183,7 @@ export class Shape<I = any, O = I> {
   /**
    * Returns the extended value type.
    */
-  static typeOf = getValueType;
+  static readonly typeOf = getValueType;
 
   /**
    * The human-readable shape description.
@@ -289,7 +290,7 @@ export class Shape<I = any, O = I> {
   check<P>(options: CheckOptions, cb: CheckCallback<O, P>, param: P): this;
 
   check(options: any, cb?: any, param?: any): this {
-    if (isFunction(options)) {
+    if (typeof options === 'function') {
       param = cb;
       cb = options;
       options = {};
@@ -300,7 +301,7 @@ export class Shape<I = any, O = I> {
     const index = getCheckIndex(this._checks, key);
     const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
 
-    return replaceChecks(cloneInstance(this), index !== -1 ? deleteAt(checks, index) : checks);
+    return replaceChecks(cloneInstance(this), index !== -1 ? deleteArrayIndex(checks, index) : checks);
   }
 
   /**
@@ -333,7 +334,7 @@ export class Shape<I = any, O = I> {
   deleteCheck(key: unknown): this {
     const index = getCheckIndex(this._checks, key);
 
-    return index !== -1 ? replaceChecks(cloneInstance(this), deleteAt(this._checks.slice(0), index)) : this;
+    return index !== -1 ? replaceChecks(cloneInstance(this), deleteArrayIndex(this._checks.slice(0), index)) : this;
   }
 
   /**
@@ -352,7 +353,7 @@ export class Shape<I = any, O = I> {
      * @return `true` if value matches the predicate, or `false` otherwise.
      * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
      */
-    cb: (output: O, options: Readonly<ParseOptions>) => output is T,
+    cb: (output: O, options: Readonly<ApplyOptions>) => output is T,
     options?: RefineOptions | Message
   ): Shape<I, T>;
 
@@ -370,11 +371,11 @@ export class Shape<I = any, O = I> {
      * @return `true` if value matches the predicate, or `false` otherwise.
      * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
      */
-    cb: (output: O, options: Readonly<ParseOptions>) => boolean,
+    cb: (output: O, options: Readonly<ApplyOptions>) => boolean,
     options?: RefineOptions | Message
   ): this;
 
-  refine(cb: (output: O, options: Readonly<ParseOptions>) => unknown, options?: any) {
+  refine(cb: (output: O, options: Readonly<ApplyOptions>) => unknown, options?: any) {
     const issueFactory = createIssueFactory(CODE_PREDICATE, MESSAGE_PREDICATE, options, cb);
 
     return this.check({ key: cb, unsafe: isObjectLike(options) && options.unsafe }, (input, param, options) => {
@@ -409,7 +410,7 @@ export class Shape<I = any, O = I> {
      * @return The transformed value.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    cb: (output: O, options: Readonly<ParseOptions>) => T
+    cb: (output: O, options: Readonly<ApplyOptions>) => T
   ): Shape<I, T> {
     return this.to(new TransformShape(cb));
   }
@@ -428,7 +429,7 @@ export class Shape<I = any, O = I> {
      * @return The transformed value.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    cb: (output: O, options: Readonly<ParseOptions>) => Promise<T>
+    cb: (output: O, options: Readonly<ApplyOptions>) => Promise<T>
   ): Shape<I, T> {
     return this.to(new TransformShape(cb, true));
   }
@@ -557,11 +558,11 @@ export class Shape<I = any, O = I> {
    * Returns the fallback value if parsing fails.
    *
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed. A callback
-   * receives an input value, an array of raised issues, and {@link ParseOptions parsing options}.
+   * receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
    * @returns The {@linkcode CatchShape} instance.
    */
   catch<T extends Literal>(
-    fallback: T | ((input: any, issues: Issue[], options: Readonly<ParseOptions>) => T)
+    fallback: T | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => T)
   ): CatchShape<this, T>;
 
   catch(fallback?: unknown): Shape {
@@ -628,7 +629,7 @@ export class Shape<I = any, O = I> {
    * @param options Parsing options.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  protected _apply(input: unknown, options: ParseOptions): Result<O> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<O> {
     const { _applyChecks } = this;
 
     if (_applyChecks !== null) {
@@ -646,7 +647,7 @@ export class Shape<I = any, O = I> {
    * @param options Parsing options.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<O>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<O>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
   }
 }
@@ -681,7 +682,7 @@ export interface Shape<I, O> {
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
    * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
-  try(input: unknown, options?: ParseOptions): Ok<O> | Err;
+  try(input: unknown, options?: ApplyOptions): Ok<O> | Err;
 
   /**
    * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
@@ -690,7 +691,7 @@ export interface Shape<I, O> {
    * @param options Parsing options.
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
    */
-  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<O> | Err>;
+  tryAsync(input: unknown, options?: ApplyOptions): Promise<Ok<O> | Err>;
 
   /**
    * Synchronously parses the value.
@@ -731,7 +732,7 @@ export interface Shape<I, O> {
    * @returns The value that conforms the output type of the shape.
    * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
-  parseOrDefault<T>(input: unknown, defaultValue: T, options?: ParseOptions): O | T;
+  parseOrDefault<T>(input: unknown, defaultValue: T, options?: ApplyOptions): O | T;
 
   /**
    * Asynchronously parses the value and returns `undefined` value if parsing fails.
@@ -749,7 +750,7 @@ export interface Shape<I, O> {
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
    */
-  parseOrDefaultAsync<T>(input: unknown, defaultValue: T, options?: ParseOptions): Promise<O | T>;
+  parseOrDefaultAsync<T>(input: unknown, defaultValue: T, options?: ApplyOptions): Promise<O | T>;
 }
 
 Object.defineProperties(Shape.prototype, {
@@ -773,7 +774,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      let types = unique(this._getInputTypes());
+      let types = uniqueArray(this._getInputTypes());
 
       if (types.length === 0 || types.includes(TYPE_ANY)) {
         types = [TYPE_ANY];
@@ -822,7 +823,7 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['try'] = (input, options) => {
-        const result = this._apply(input, options || defaultParseOptions);
+        const result = this._apply(input, options || defaultApplyOptions);
 
         if (result === null) {
           return ok(input);
@@ -846,7 +847,7 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['tryAsync'] = (input, options) => {
-        return this._applyAsync(input, options || defaultParseOptions).then(result => {
+        return this._applyAsync(input, options || defaultApplyOptions).then(result => {
           if (result === null) {
             return ok(input);
           }
@@ -870,13 +871,13 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['parse'] = (input, options) => {
-        const result = this._apply(input, options || defaultParseOptions);
+        const result = this._apply(input, options || defaultApplyOptions);
 
         if (result === null) {
           return input;
         }
         if (isArray(result)) {
-          throw new ValidationError(result);
+          throw new ValidationError(result, getErrorMessage(result, input, options));
         }
         return result.value;
       };
@@ -894,12 +895,12 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['parseAsync'] = (input, options) => {
-        return this._applyAsync(input, options || defaultParseOptions).then(result => {
+        return this._applyAsync(input, options || defaultApplyOptions).then(result => {
           if (result === null) {
             return input;
           }
           if (isArray(result)) {
-            throw new ValidationError(result);
+            throw new ValidationError(result, getErrorMessage(result, input, options));
           }
           return result.value;
         });
@@ -917,8 +918,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-        const result = this._apply(input, options || defaultParseOptions);
+      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ApplyOptions) => {
+        const result = this._apply(input, options || defaultApplyOptions);
 
         if (result === null) {
           return input;
@@ -941,8 +942,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-        return this._applyAsync(input, options || defaultParseOptions).then(result => {
+      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ApplyOptions) => {
+        return this._applyAsync(input, options || defaultApplyOptions).then(result => {
           if (result === null) {
             return input;
           }
@@ -983,7 +984,7 @@ export class TransformShape<T> extends Shape<any, T> {
      * @return The transformation result.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    readonly callback: (value: any, options: Readonly<ParseOptions>) => PromiseLike<T> | T,
+    readonly callback: (value: any, options: Readonly<ApplyOptions>) => PromiseLike<T> | T,
     async?: boolean
   ) {
     super();
@@ -993,7 +994,7 @@ export class TransformShape<T> extends Shape<any, T> {
     }
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<T> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<T> {
     const { callback, _applyChecks } = this;
 
     let issues = null;
@@ -1011,7 +1012,7 @@ export class TransformShape<T> extends Shape<any, T> {
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<T>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<T>> {
     const { _applyChecks } = this;
 
     return new Promise<T>(resolve => resolve(this.callback(input, options))).then(output => {
@@ -1078,7 +1079,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return this.inputShape['_getInputValues']();
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<O['output']> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<O['output']> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let issues;
@@ -1109,7 +1110,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<O['output']>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<O['output']>> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     return inputShape['_applyAsync'](input, options).then(result => {
@@ -1122,7 +1123,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
         output = result.value;
       }
 
-      return applyForResult(outputShape, output, options, outputResult => {
+      return applyShape(outputShape, output, options, outputResult => {
         let issues;
 
         if (outputResult !== null) {
@@ -1203,13 +1204,13 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     return this.shape['_getInputValues']().concat(this.inputValue);
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<ExcludeLiteral<S['output'], A> | B> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], A> | B> {
     const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
 
     return this._handleResult(result, input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<ExcludeLiteral<S['output'], A> | B>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ExcludeLiteral<S['output'], A> | B>> {
     if (isEqual(input, this.inputValue)) {
       return Promise.resolve(this._handleResult(this._result, input, options));
     }
@@ -1219,7 +1220,7 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
   private _handleResult(
     result: Result,
     input: unknown,
-    options: ParseOptions
+    options: ApplyOptions
   ): Result<ExcludeLiteral<S['output'], A> | B> {
     const { _applyChecks } = this;
 
@@ -1298,21 +1299,21 @@ export class DenyLiteralShape<S extends AnyShape, T>
     return this.shape['_getInputValues']().filter(value => !isEqual(this.deniedValue, value));
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<ExcludeLiteral<S['output'], T>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], T>> {
     if (isEqual(input, this.deniedValue)) {
       return this._typeIssueFactory(input, options);
     }
     return this._handleResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<ExcludeLiteral<S['output'], T>>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ExcludeLiteral<S['output'], T>>> {
     if (isEqual(input, this.deniedValue)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
     return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
   }
 
-  private _handleResult(result: Result, input: unknown, options: ParseOptions): Result<ExcludeLiteral<S['output'], T>> {
+  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], T>> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1345,7 +1346,7 @@ export class CatchShape<S extends AnyShape, T>
   extends Shape<S['input'], S['output'] | T>
   implements DeepPartialProtocol<CatchShape<DeepPartialShape<S>, T>>
 {
-  private _resultProvider: (input: unknown, issues: Issue[], options: Readonly<ParseOptions>) => Ok<T>;
+  private _resultProvider: (input: unknown, issues: Issue[], options: Readonly<ApplyOptions>) => Ok<T>;
 
   /**
    * Creates the new {@linkcode CatchShape} instance.
@@ -1362,14 +1363,14 @@ export class CatchShape<S extends AnyShape, T>
     /**
      * The value or a callback that returns a value that is returned if parsing has failed.
      *
-     *  A callback receives an input value, an array of raised issues, and {@link ParseOptions parsing options}.
+     *  A callback receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
      */
-    readonly fallback: T | ((input: any, issues: Issue[], options: Readonly<ParseOptions>) => T)
+    readonly fallback: T | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => T)
   ) {
     super();
 
-    if (isFunction(fallback)) {
-      this._resultProvider = (input, issues, options) => ok(fallback(input, issues, options));
+    if (typeof fallback === 'function') {
+      this._resultProvider = (input, issues, options) => ok((fallback as Function)(input, issues, options));
     } else {
       const result = ok(fallback);
       this._resultProvider = () => result;
@@ -1392,15 +1393,15 @@ export class CatchShape<S extends AnyShape, T>
     return this.shape['_getInputValues']();
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<S['output'] | T> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<S['output'] | T> {
     return this._handleResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<S['output'] | T>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<S['output'] | T>> {
     return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
   }
 
-  private _handleResult(result: Result, input: unknown, options: ParseOptions): Result<S['output'] | T> {
+  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<S['output'] | T> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1479,7 +1480,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return this.shape['_getInputValues']();
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<Exclude<S['output'], N['input']>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<S['output'], N['input']>> {
     const { shape, excludedShape, _applyChecks } = this;
 
     let issues;
@@ -1504,7 +1505,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions): Promise<Result<Exclude<S['output'], N['input']>>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<Exclude<S['output'], N['input']>>> {
     const { shape, excludedShape, _applyChecks } = this;
 
     return shape['_applyAsync'](input, options).then(result => {
@@ -1517,7 +1518,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
         output = result.value;
       }
 
-      return applyForResult(excludedShape, output, options, outputResult => {
+      return applyShape(excludedShape, output, options, outputResult => {
         let issues;
 
         if (!isArray(outputResult)) {

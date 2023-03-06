@@ -55,12 +55,10 @@ describe('JSON shape', () => {
           code: CODE_UNION,
           message: MESSAGE_UNION,
           input: value2,
-          path: [],
           param: {
             inputTypes: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
             issueGroups: null,
           },
-          meta: undefined,
         },
       ],
     });
@@ -86,16 +84,13 @@ describe('JSON shape', () => {
 describe('Advanced shapes', () => {
   test('NumberLikeShape', () => {
     class NumberLikeShape extends d.Shape<string, number> {
-      protected _apply(input: unknown, options: d.ParseOptions): d.Result<number> {
+      protected _apply(input: unknown, options: d.ApplyOptions): d.Result<number> {
         if (typeof input !== 'string' || isNaN(parseFloat(input))) {
           return [
             {
               code: 'kaputs',
-              message: 'Must be a numberish',
-              path: [],
+              message: 'Must be coercible to number',
               input,
-              param: undefined,
-              meta: undefined,
             },
           ];
         }

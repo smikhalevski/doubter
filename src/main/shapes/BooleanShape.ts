@@ -1,6 +1,3 @@
-import { NEVER, Result, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, isArray, ok, toPrimitive } from '../utils';
 import {
   CODE_TYPE,
   MESSAGE_BOOLEAN_TYPE,
@@ -11,7 +8,10 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { createIssueFactory, isArray, ok, canonize } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER, Result, ValueType } from './Shape';
 
 /**
  * The shape of the boolean value.
@@ -38,7 +38,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<boolean> {
+  protected _apply(input: any, options: ApplyOptions): Result<boolean> {
     const { _applyChecks } = this;
 
     let output = input;
@@ -67,7 +67,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
       return value;
     }
 
-    value = toPrimitive(value);
+    value = canonize(value);
 
     if (typeof value === 'boolean') {
       return value;

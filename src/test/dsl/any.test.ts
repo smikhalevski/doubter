@@ -12,7 +12,6 @@ describe('any', () => {
       key: cb,
       callback: expect.any(Function),
       isUnsafe: false,
-      param: undefined,
     });
   });
 });

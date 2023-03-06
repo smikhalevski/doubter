@@ -37,8 +37,8 @@ export interface Err {
 export type CheckCallback<T = any, P = any> = (
   value: T,
   param: P,
-  options: Readonly<ParseOptions>
-) => Partial<Issue>[] | Partial<Issue> | null | undefined | void;
+  options: Readonly<ApplyOptions>
+) => Issue[] | Issue | null | undefined | void;
 
 /**
  * The shape output value check.
@@ -89,32 +89,32 @@ export interface Issue {
   /**
    * The code of the validation issue.
    */
-  code: any;
+  code?: any;
 
   /**
-   * The object path where an issue has occurred.
+   * The object path where an issue has occurred, or `undefined` if the issue is caused by the {@linkcode input}.
    */
-  path: any[];
+  path?: any[];
 
   /**
    * The value that caused an issue to occur.
    */
-  input: any;
+  input?: any;
 
   /**
    * A message associated with an issue. Built-in messages are strings but custom messages can have an arbitrary type.
    */
-  message: any;
+  message?: any;
 
   /**
-   * An additional param that is specific for a particular {@linkcode code}.
+   * An additional param.
    */
-  param: any;
+  param?: any;
 
   /**
-   * An arbitrary metadata that can be used for message formatting.
+   * An arbitrary metadata associated with this issue.
    */
-  meta: any;
+  meta?: any;
 }
 
 /**
@@ -127,7 +127,7 @@ export interface Issue {
  * @param options The parsing options.
  * @returns Any value that should be used as an issue message.
  */
-export type MessageCallback = (param: any, code: any, input: any, meta: any, options: Readonly<ParseOptions>) => any;
+export type MessageCallback = (param: any, code: any, input: any, meta: any, options: Readonly<ApplyOptions>) => any;
 
 /**
  * A callback that returns an issue message or a message string.
@@ -158,9 +158,9 @@ export interface RefineOptions extends ConstraintOptions {
 }
 
 /**
- * Options applied during parsing.
+ * Options used during parsing.
  */
-export interface ParseOptions {
+export interface ApplyOptions {
   /**
    * If `true` then all issues are collected during parsing, otherwise parsing is aborted after the first issue is
    * encountered.
@@ -177,9 +177,22 @@ export interface ParseOptions {
   coerced?: boolean;
 
   /**
-   * The custom context. Use it to pass custom params to check and transform callbacks.
+   * The custom context.
    */
   context?: any;
 }
 
+/**
+ * Options used during parsing.
+ */
+export interface ParseOptions extends ApplyOptions {
+  /**
+   * A message that is passed to {@linkcode ValidationError} if it is thrown.
+   */
+  errorMessage?: ((issues: Issue[], input: any) => string) | string;
+}
+
+/**
+ * The literal value of any type.
+ */
 export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;

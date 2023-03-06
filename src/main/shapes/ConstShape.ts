@@ -1,7 +1,7 @@
-import { Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, getValueType } from '../utils';
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { createIssueFactory, getValueType } from '../utils';
+import { Result, Shape, ValueType } from './Shape';
 
 /**
  * The shape that constrains an input to exactly equal to the expected value.
@@ -40,7 +40,7 @@ export class ConstShape<T> extends Shape<T> {
     return [this.value];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<T> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<T> {
     const { _applyChecks } = this;
 
     if (!this._typePredicate(input)) {

@@ -1,5 +1,5 @@
-import { ConstraintOptions, Message } from '../shared-types';
 import { ConstShape } from '../shapes';
+import { ConstraintOptions, Message } from '../types';
 
 /**
  * Creates a shape that requires an input to be `undefined` at runtime and typed as `void`.

@@ -1,7 +1,8 @@
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
 import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
-  applyForResult,
+  applyShape,
+  Bitmask,
   cloneDict,
   cloneDictKeys,
   cloneInstance,
@@ -9,19 +10,19 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   Dict,
-  enableMask,
+  getBit,
   isArray,
   isAsyncShape,
-  isMaskEnabled,
-  isObjectLike,
+  isObject,
   isPlainObject,
-  Mask,
   ok,
   ReadonlyDict,
   setObjectProperty,
   toDeepPartialShape,
+  toggleBit,
   unshiftIssuesPath,
 } from '../utils';
+import { EnumShape } from './EnumShape';
 import {
   AllowLiteralShape,
   AnyShape,
@@ -32,7 +33,6 @@ import {
   Shape,
   ValueType,
 } from './Shape';
-import { EnumShape } from './EnumShape';
 
 // prettier-ignore
 export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> =
@@ -87,9 +87,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
   protected _options;
   protected _valueShapes: Shape[];
-  protected _typePredicate = isObjectLike;
+  protected _typePredicate = isObject;
   protected _typeIssueFactory;
-  protected _exactIssueFactory?: (input: unknown, options: Readonly<ParseOptions>, param: unknown) => Issue[];
+  protected _exactIssueFactory?: (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[];
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.
@@ -337,7 +337,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<InferObject<P, R, 'output'>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferObject<P, R, 'output'>> {
     if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -348,7 +348,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferObject<P, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferObject<P, R, 'output'>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
         resolve(this._typeIssueFactory(input, options));
@@ -363,7 +363,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       let output = input;
 
       let seenCount = 0;
-      let seenMask: Mask = 0;
+      let seenBitmask: Bitmask = 0;
 
       let unknownKeys: string[] | null = null;
 
@@ -377,7 +377,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
         if (index !== -1) {
           seenCount++;
-          seenMask = enableMask(seenMask, index);
+          seenBitmask = toggleBit(seenBitmask, index);
 
           valueShape = _valueShapes[index];
         }
@@ -418,7 +418,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
       if (seenCount !== keysLength) {
         for (let i = 0; i < keysLength; ++i) {
-          if (!isMaskEnabled(seenMask, i)) {
+          if (getBit(seenBitmask, i) === 0) {
             const key = keys[i];
             entries.push([key, input[key], _valueShapes[i]]);
           }
@@ -455,7 +455,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
         if (index !== entriesLength) {
           const entry = entries[index];
           key = entry[0];
-          return applyForResult(entry[2], entry[1], options, handleValueResult);
+          return applyShape(entry[2], entry[1], options, handleValueResult);
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
@@ -474,7 +474,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Unknown keys are preserved as is and aren't checked.
    */
-  private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions): Result {
+  private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions): Result {
     const { keys, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
@@ -519,7 +519,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
   /**
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
-  private _applyRestChecked(input: ReadonlyDict, options: ParseOptions): Result {
+  private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions): Result {
     const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
@@ -528,7 +528,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     let output = input;
 
     let seenCount = 0;
-    let seenMask: Mask = 0;
+    let seenBitmask: Bitmask = 0;
 
     let unknownKeys = null;
 
@@ -541,7 +541,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
       // The key is known
       if (index !== -1) {
         seenCount++;
-        seenMask = enableMask(seenMask, index);
+        seenBitmask = toggleBit(seenBitmask, index);
 
         valueShape = _valueShapes[index];
       }
@@ -605,7 +605,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     // Parse absent known keys
     if (seenCount !== keysLength) {
       for (let i = 0; i < keysLength; ++i) {
-        if (isMaskEnabled(seenMask, i)) {
+        if (getBit(seenBitmask, i) === 1) {
           continue;
         }
 

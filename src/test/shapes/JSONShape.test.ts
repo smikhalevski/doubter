@@ -9,7 +9,7 @@ describe('JSONShape', () => {
   test('raises an issue if an input is not a string', () => {
     expect(new JSONShape().try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
+      issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
     });
   });
 
@@ -19,7 +19,6 @@ describe('JSONShape', () => {
       issues: [
         {
           code: CODE_JSON,
-          path: [],
           input: 'aaa',
           message: 'Must be a JSON string: Unexpected token a in JSON at position 0',
           param: 'Unexpected token a in JSON at position 0',
@@ -31,7 +30,7 @@ describe('JSONShape', () => {
   test('overrides a message for a type issue', () => {
     expect(new JSONShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: 111, param: TYPE_STRING, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 111, param: TYPE_STRING, message: 'aaa', meta: 'bbb' }],
     });
   });
 

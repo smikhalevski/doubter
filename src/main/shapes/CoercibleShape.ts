@@ -1,5 +1,5 @@
-import { Shape } from './Shape';
 import { cloneInstance } from '../utils';
+import { Shape } from './Shape';
 
 /**
  * The shape which value can be coerced to a proper type during parsing.

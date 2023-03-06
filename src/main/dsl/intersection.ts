@@ -1,5 +1,5 @@
 import { AnyShape, IntersectionShape } from '../shapes';
-import { ConstraintOptions, Message } from '../shared-types';
+import { ConstraintOptions, Message } from '../types';
 
 /**
  * Creates an intersection shape that tries to parse the input with all provided shapes.

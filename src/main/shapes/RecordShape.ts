@@ -1,19 +1,19 @@
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
-  applyForResult,
+  applyShape,
   cloneDictHead,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isObjectLike,
+  isObject,
   ok,
   setObjectProperty,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, ValueType } from './Shape';
 
 // prettier-ignore
 export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends 'input' | 'output'> =
@@ -76,8 +76,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<InferRecord<K, V, 'output'>> {
-    if (!isObjectLike(input)) {
+  protected _apply(input: any, options: ApplyOptions): Result<InferRecord<K, V, 'output'>> {
+    if (!isObject(input)) {
       return this._typeIssueFactory(input, options);
     }
 
@@ -144,9 +144,9 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferRecord<K, V, 'output'>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferRecord<K, V, 'output'>>> {
     return new Promise(resolve => {
-      if (!isObjectLike(input)) {
+      if (!isObject(input)) {
         resolve(this._typeIssueFactory(input, options));
         return;
       }
@@ -180,7 +180,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
             keyChanged = true;
           }
         }
-        return applyForResult(valueShape, value, options, handleValueResult);
+        return applyShape(valueShape, value, options, handleValueResult);
       };
 
       const handleValueResult = (valueResult: Result) => {
@@ -216,7 +216,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
           value = input[key];
 
           if (keyShape !== null) {
-            return applyForResult(keyShape, key, options, handleKeyResult);
+            return applyShape(keyShape, key, options, handleKeyResult);
           } else {
             return valueShape['_applyAsync'](value, options).then(handleValueResult);
           }

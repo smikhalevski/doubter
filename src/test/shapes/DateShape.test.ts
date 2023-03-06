@@ -11,14 +11,14 @@ describe('DateShape', () => {
   test('raises an issue if an input is not a Date instance', () => {
     expect(new DateShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: 'aaa', param: TYPE_DATE, message: MESSAGE_DATE_TYPE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_DATE, message: MESSAGE_DATE_TYPE }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new DateShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: 111, param: TYPE_DATE, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 111, param: TYPE_DATE, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -37,15 +37,7 @@ describe('DateShape', () => {
   test('raises an issue if coercion fails', () => {
     expect(new DateShape().coerce().try('aaa')).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_TYPE,
-          input: 'aaa',
-          message: MESSAGE_DATE_TYPE,
-          param: TYPE_DATE,
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_DATE_TYPE, param: TYPE_DATE }],
     });
   });
 

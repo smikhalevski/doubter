@@ -1,4 +1,4 @@
-import { expectType } from 'tsd';
 import * as d from 'doubter';
+import { expectType } from 'tsd';
 
 expectType<any>(d.not(d.string()).output);

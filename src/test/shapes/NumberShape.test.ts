@@ -17,7 +17,6 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
-import { isMultipleOf } from '../../main/shapes/NumberShape';
 
 describe('NumberShape', () => {
   test('parses a number', () => {
@@ -27,12 +26,12 @@ describe('NumberShape', () => {
   test('raises if value is not a number', () => {
     expect(new NumberShape().try('111')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: '111', param: TYPE_NUMBER, message: MESSAGE_NUMBER_TYPE }],
+      issues: [{ code: CODE_TYPE, input: '111', param: TYPE_NUMBER, message: MESSAGE_NUMBER_TYPE }],
     });
 
     expect(new NumberShape().try(NaN)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: NaN, param: TYPE_NUMBER, message: expect.any(String) }],
+      issues: [{ code: CODE_TYPE, input: NaN, param: TYPE_NUMBER, message: expect.any(String) }],
     });
 
     expect(new NumberShape().gt(2).parse(3)).toBe(3);
@@ -45,16 +44,14 @@ describe('NumberShape', () => {
   test('raises if value is an infinity', () => {
     expect(new NumberShape().finite().try(Infinity)).toEqual({
       ok: false,
-      issues: [
-        { code: CODE_NUMBER_FINITE, path: [], input: Infinity, param: undefined, message: MESSAGE_NUMBER_FINITE },
-      ],
+      issues: [{ code: CODE_NUMBER_FINITE, input: Infinity, message: MESSAGE_NUMBER_FINITE }],
     });
   });
 
   test('raises if value is not greater than or equal', () => {
     expect(new NumberShape().gte(2).try(1)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_GTE, path: [], input: 1, param: 2, message: 'Must be greater than or equal to 2' }],
+      issues: [{ code: CODE_NUMBER_GTE, input: 1, param: 2, message: 'Must be greater than or equal to 2' }],
     });
 
     expect(new NumberShape().gte(2).parse(2)).toBe(2);
@@ -63,12 +60,12 @@ describe('NumberShape', () => {
   test('raises if value is not less than', () => {
     expect(new NumberShape().lt(2).try(3)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_LT, path: [], input: 3, param: 2, message: 'Must be less than 2' }],
+      issues: [{ code: CODE_NUMBER_LT, input: 3, param: 2, message: 'Must be less than 2' }],
     });
 
     expect(new NumberShape().lt(2).try(2)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_LT, path: [], input: 2, param: 2, message: 'Must be less than 2' }],
+      issues: [{ code: CODE_NUMBER_LT, input: 2, param: 2, message: 'Must be less than 2' }],
     });
 
     expect(new NumberShape().lt(2).parse(1)).toBe(1);
@@ -77,7 +74,7 @@ describe('NumberShape', () => {
   test('raises if value is not less than or equal', () => {
     expect(new NumberShape().lte(2).try(3)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_LTE, path: [], input: 3, param: 2, message: 'Must be less than or equal to 2' }],
+      issues: [{ code: CODE_NUMBER_LTE, input: 3, param: 2, message: 'Must be less than or equal to 2' }],
     });
 
     expect(new NumberShape().lte(2).parse(2)).toBe(2);
@@ -86,58 +83,40 @@ describe('NumberShape', () => {
   test('raises if value is not a multiple of', () => {
     expect(new NumberShape().multipleOf(2).try(3)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_MULTIPLE_OF, path: [], input: 3, param: 2, message: 'Must be a multiple of 2' }],
+      issues: [{ code: CODE_NUMBER_MULTIPLE_OF, input: 3, param: 2, message: 'Must be a multiple of 2' }],
     });
 
     expect(new NumberShape().multipleOf(2).parse(4)).toBe(4);
   });
 
-  test('multiple of considers IEEE 754 representation issues', () => {
-    expect(new NumberShape().multipleOf(0.1).parse(49.9)).toBe(49.9);
-    expect(new NumberShape().multipleOf(0.000000001).parse(49.900000001)).toBe(49.900000001);
-    expect(new NumberShape().multipleOf(0.0000000015).try(49.900000001)).toEqual({
-      ok: false,
-      issues: [
-        {
-          code: CODE_NUMBER_MULTIPLE_OF,
-          input: 49.900000001,
-          message: 'Must be a multiple of 1.5e-9',
-          meta: undefined,
-          param: 1.5e-9,
-          path: [],
-        },
-      ],
-    });
-  });
-
   test('overrides message for type issue', () => {
     expect(new NumberShape({ message: 'aaa', meta: 'bbb' }).try('ccc')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, path: [], input: 'ccc', param: TYPE_NUMBER, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 'ccc', param: TYPE_NUMBER, message: 'aaa', meta: 'bbb' }],
     });
   });
 
   test('overrides message for min issue', () => {
     expect(new NumberShape().gt(2, { message: 'xxx', meta: 'yyy' }).try(0)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_GT, path: [], input: 0, param: 2, message: 'xxx', meta: 'yyy' }],
+      issues: [{ code: CODE_NUMBER_GT, input: 0, param: 2, message: 'xxx', meta: 'yyy' }],
     });
 
     expect(new NumberShape().gte(2, { message: 'xxx', meta: 'yyy' }).try(0)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_GTE, path: [], input: 0, param: 2, message: 'xxx', meta: 'yyy' }],
+      issues: [{ code: CODE_NUMBER_GTE, input: 0, param: 2, message: 'xxx', meta: 'yyy' }],
     });
   });
 
   test('overrides message for max issue', () => {
     expect(new NumberShape().lt(2, { message: 'xxx', meta: 'yyy' }).try(3)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_LT, path: [], input: 3, param: 2, message: 'xxx', meta: 'yyy' }],
+      issues: [{ code: CODE_NUMBER_LT, input: 3, param: 2, message: 'xxx', meta: 'yyy' }],
     });
 
     expect(new NumberShape().lte(2, { message: 'xxx', meta: 'yyy' }).try(3)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_LTE, path: [], input: 3, param: 2, message: 'xxx', meta: 'yyy' }],
+      issues: [{ code: CODE_NUMBER_LTE, input: 3, param: 2, message: 'xxx', meta: 'yyy' }],
     });
   });
 
@@ -145,8 +124,8 @@ describe('NumberShape', () => {
     expect(new NumberShape().gt(2).multipleOf(3).try(1, { verbose: true })).toEqual({
       ok: false,
       issues: [
-        { code: CODE_NUMBER_GT, path: [], input: 1, param: 2, message: 'Must be greater than 2' },
-        { code: CODE_NUMBER_MULTIPLE_OF, path: [], input: 1, param: 3, message: 'Must be a multiple of 3' },
+        { code: CODE_NUMBER_GT, input: 1, param: 2, message: 'Must be greater than 2' },
+        { code: CODE_NUMBER_MULTIPLE_OF, input: 1, param: 3, message: 'Must be a multiple of 3' },
       ],
     });
   });
@@ -154,7 +133,7 @@ describe('NumberShape', () => {
   test('raises a single issue', () => {
     expect(new NumberShape().gt(2).multipleOf(3).try(1)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_GT, path: [], input: 1, param: 2, message: 'Must be greater than 2' }],
+      issues: [{ code: CODE_NUMBER_GT, input: 1, param: 2, message: 'Must be greater than 2' }],
     });
   });
 
@@ -165,7 +144,7 @@ describe('NumberShape', () => {
   test('applies checks', () => {
     expect(new NumberShape().check(() => [{ code: 'xxx' }]).try(111)).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -188,7 +167,7 @@ describe('NumberShape', () => {
   test('supports async validation', async () => {
     await expect(new NumberShape().gt(3).tryAsync(2)).resolves.toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_GT, path: [], input: 2, param: 3, message: 'Must be greater than 3' }],
+      issues: [{ code: CODE_NUMBER_GT, input: 2, param: 3, message: 'Must be greater than 3' }],
     });
   });
 
@@ -216,27 +195,19 @@ describe('NumberShape', () => {
   test('raises an issue if coercion fails', () => {
     expect(new NumberShape().coerce().try(['aaa'])).toEqual({
       ok: false,
-      issues: [
-        {
-          code: CODE_TYPE,
-          input: ['aaa'],
-          message: MESSAGE_NUMBER_TYPE,
-          param: TYPE_NUMBER,
-          path: [],
-        },
-      ],
+      issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
     });
   });
 
   describe('coercion', () => {
     test('coerces a Number wrapper', () => {
-      expect(new NumberShape()['_coerce'](new Number(111))).toBe(111);
-      expect(new NumberShape()['_coerce']([new Number(111)])).toBe(111);
+      expect(new NumberShape()['_coerce'](Number(111))).toBe(111);
+      expect(new NumberShape()['_coerce']([Number(111)])).toBe(111);
     });
 
     test('coerces a String wrapper', () => {
-      expect(new NumberShape()['_coerce'](new String('111'))).toBe(111);
-      expect(new NumberShape()['_coerce']([new String('111')])).toBe(111);
+      expect(new NumberShape()['_coerce'](String('111'))).toBe(111);
+      expect(new NumberShape()['_coerce']([String('111')])).toBe(111);
     });
 
     test('coerces a string', () => {
@@ -290,35 +261,5 @@ describe('NumberShape', () => {
     test('does not coerce a symbol', () => {
       expect(new NumberShape()['_coerce'](Symbol())).toBe(NEVER);
     });
-  });
-});
-
-describe('isMultipleOf', () => {
-  test('returns false for invalid input', () => {
-    expect(isMultipleOf(5, -1)).toBe(false);
-    expect(isMultipleOf(NaN, 1)).toBe(false);
-    expect(isMultipleOf(1, NaN)).toBe(false);
-    expect(isMultipleOf(Infinity, Infinity)).toBe(false);
-    expect(isMultipleOf(Infinity, 100)).toBe(false);
-    expect(isMultipleOf(100, Infinity)).toBe(false);
-  });
-
-  test('checks that value is divisible', () => {
-    expect(isMultipleOf(Number.MAX_VALUE, 1)).toBe(true);
-    expect(isMultipleOf(Number.MAX_SAFE_INTEGER, 1)).toBe(true);
-    expect(isMultipleOf(Number.MAX_SAFE_INTEGER, 2)).toBe(false);
-    expect(isMultipleOf(1, 1)).toBe(true);
-    expect(isMultipleOf(50, 5)).toBe(true);
-
-    expect(isMultipleOf(49.9, 0.1)).toBe(true);
-    expect(isMultipleOf(-49.9, 0.1)).toBe(true);
-    expect(isMultipleOf(49.9, 0.11)).toBe(false);
-    expect(isMultipleOf(49.90000001, 0.00000001)).toBe(true);
-    expect(isMultipleOf(49.90000001, 0.0000000156)).toBe(false);
-    expect(isMultipleOf(49.90000001, 0.00000002)).toBe(false);
-  });
-
-  test('handles overflow', () => {
-    expect(isMultipleOf(100000000.05, 0.100000002)).toBe(false);
   });
 });

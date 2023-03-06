@@ -1,6 +1,15 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, ValueType } from './Shape';
 import {
-  applyForResult,
+  CODE_INTERSECTION,
+  MESSAGE_INTERSECTION,
+  TYPE_ANY,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_NEVER,
+  TYPE_OBJECT,
+} from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import {
+  applyShape,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -11,16 +20,7 @@ import {
   ok,
   toDeepPartialShape,
 } from '../utils';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
-import {
-  CODE_INTERSECTION,
-  MESSAGE_INTERSECTION,
-  TYPE_ANY,
-  TYPE_ARRAY,
-  TYPE_DATE,
-  TYPE_NEVER,
-  TYPE_OBJECT,
-} from '../constants';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, ValueType } from './Shape';
 
 // prettier-ignore
 export type ToIntersection<U extends AnyShape> =
@@ -97,7 +97,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<ToIntersection<U[number]>['output']> {
+  protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>['output']> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -135,7 +135,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<ToIntersection<U[number]>['output']>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<ToIntersection<U[number]>['output']>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -168,7 +168,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
         index++;
 
         if (index !== shapesLength) {
-          return applyForResult(shapes[index], input, options, handleResult);
+          return applyShape(shapes[index], input, options, handleResult);
         }
         if (issues === null) {
           return this._applyIntersection(input, outputs, options);
@@ -186,7 +186,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   private _applyIntersection(
     input: any,
     outputs: any[] | null,
-    options: ParseOptions
+    options: ApplyOptions
   ): Result<ToIntersection<U[number]>['output']> {
     const { shapes, _applyChecks } = this;
 

@@ -1,17 +1,3 @@
-import { NEVER, Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import {
-  abs,
-  addConstraint,
-  cloneInstance,
-  createIssueFactory,
-  floor,
-  isArray,
-  isNumber,
-  max,
-  ok,
-  toPrimitive,
-} from '../utils';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -37,7 +23,10 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { addCheck, canonize, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { NEVER, Result, Shape, ValueType } from './Shape';
 
 /**
  * The shape that constrains the input as a number.
@@ -121,7 +110,7 @@ export class NumberShape extends CoercibleShape<number> {
   gt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-    return addConstraint(this, CODE_NUMBER_GT, value, (input, param, options) => {
+    return addCheck(this, CODE_NUMBER_GT, value, (input, param, options) => {
       if (input <= param) {
         return issueFactory(input, options);
       }
@@ -138,7 +127,7 @@ export class NumberShape extends CoercibleShape<number> {
   lt(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-    return addConstraint(this, CODE_NUMBER_LT, value, (input, param, options) => {
+    return addCheck(this, CODE_NUMBER_LT, value, (input, param, options) => {
       if (input >= param) {
         return issueFactory(input, options);
       }
@@ -155,7 +144,7 @@ export class NumberShape extends CoercibleShape<number> {
   gte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-    return addConstraint(this, CODE_NUMBER_GTE, value, (input, param, options) => {
+    return addCheck(this, CODE_NUMBER_GTE, value, (input, param, options) => {
       if (input < param) {
         return issueFactory(input, options);
       }
@@ -172,7 +161,7 @@ export class NumberShape extends CoercibleShape<number> {
   lte(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-    return addConstraint(this, CODE_NUMBER_LTE, value, (input, param, options) => {
+    return addCheck(this, CODE_NUMBER_LTE, value, (input, param, options) => {
       if (input > param) {
         return issueFactory(input, options);
       }
@@ -182,6 +171,13 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Constrains the number to be a multiple of the divisor.
    *
+   * This constraint uses the
+   * [modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which may
+   * produce unexpected results when used with floating point numbers. This happens because of
+   * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
+   *
+   * Use a custom check to constrain input to be a multiple of real number.
+   *
    * @param value The positive number by which the input should be divisible without a remainder.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
@@ -189,8 +185,8 @@ export class NumberShape extends CoercibleShape<number> {
   multipleOf(value: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
 
-    return addConstraint(this, CODE_NUMBER_MULTIPLE_OF, value, (input, param, options) => {
-      if (!isMultipleOf(input, param)) {
+    return addCheck(this, CODE_NUMBER_MULTIPLE_OF, value, (input, param, options) => {
+      if (input % param !== 0) {
         return issueFactory(input, options);
       }
     });
@@ -243,7 +239,7 @@ export class NumberShape extends CoercibleShape<number> {
     }
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<number> {
+  protected _apply(input: any, options: ApplyOptions): Result<number> {
     const { _applyChecks } = this;
 
     let output = input;
@@ -275,7 +271,7 @@ export class NumberShape extends CoercibleShape<number> {
       return 0;
     }
 
-    value = toPrimitive(value);
+    value = canonize(value);
 
     if (
       (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || value instanceof Date) &&
@@ -314,43 +310,3 @@ export interface NumberShape {
 NumberShape.prototype.min = NumberShape.prototype.gte;
 
 NumberShape.prototype.max = NumberShape.prototype.lte;
-
-/**
- * Checks that `a` is divisible without a remainder by `b`.
- */
-export function isMultipleOf(a: number, b: number): boolean {
-  if (b <= 0 || a !== a || b !== b || a === Infinity || a === -Infinity || b === Infinity) {
-    return false;
-  }
-  if (a === b || a % b === 0) {
-    return true;
-  }
-  if (abs(a) < b || a === floor(a) || b === floor(b)) {
-    // Integers had their chance
-    return false;
-  }
-
-  const aStr = a.toString();
-  const bStr = b.toString();
-
-  const aExpIndex = aStr.indexOf('e');
-  const bExpIndex = bStr.indexOf('e');
-
-  const aDotIndex = aStr.indexOf('.');
-  const bDotIndex = bStr.indexOf('.');
-
-  // The exponent extracted from e+XXX plus the number of decimal digits
-  const aDecLength =
-    (~aExpIndex && abs(+aStr.substring(aExpIndex + 1))) + (~aDotIndex && ~(~aExpIndex || ~aStr.length) + ~aDotIndex);
-
-  const bDecLength =
-    (~bExpIndex && abs(+bStr.substring(bExpIndex + 1))) + (~bDotIndex && ~(~bExpIndex || ~bStr.length) + ~bDotIndex);
-
-  const decLength = max(aDecLength, bDecLength);
-
-  // Undefined behaviour if long overflow occurs
-  const aLong = +a.toFixed(decLength).replace('.', '');
-  const bLong = +b.toFixed(decLength).replace('.', '');
-
-  return aLong % bLong === 0;
-}

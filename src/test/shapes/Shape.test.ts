@@ -1,12 +1,12 @@
 import {
   AnyShape,
+  ApplyOptions,
   CatchShape,
   ConstShape,
   DenyLiteralShape,
   ExcludeShape,
   NumberShape,
   ObjectShape,
-  ParseOptions,
   PipeShape,
   ReplaceLiteralShape,
   Shape,
@@ -39,7 +39,7 @@ beforeEach(() => {
       return true;
     }
 
-    protected _applyAsync(input: unknown, options: ParseOptions) {
+    protected _applyAsync(input: unknown, options: ApplyOptions) {
       return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
     }
   })();
@@ -53,356 +53,404 @@ describe('Shape', () => {
     expect(shape.inputTypes).toEqual([TYPE_ANY]);
   });
 
-  test('clones shape when check is added', () => {
-    const cb = () => null;
+  describe('_getInputTypes', () => {
+    test('creates input types', () => {
+      const shape = new (class extends Shape {
+        protected _getInputTypes(): ValueType[] {
+          return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
+        }
+      })();
 
-    const shape1 = new Shape();
-    const shape2 = shape1.check(cb);
-
-    expect(shape1).not.toBe(shape2);
-    expect(shape1.getCheck(cb)).toBe(undefined);
-    expect(shape2.getCheck(cb)).toEqual({ key: cb, callback: cb, isUnsafe: false });
+      expect(shape.inputTypes).toEqual([TYPE_STRING, TYPE_NUMBER]);
+    });
   });
 
-  test('deletes a check', () => {
-    const cbMock = jest.fn();
+  describe('deleteCheck', () => {
+    test('deletes a check', () => {
+      const cbMock = jest.fn();
 
-    const shape1 = new Shape().check(cbMock);
-    const shape2 = shape1.deleteCheck(cbMock);
+      const shape1 = new Shape().check(cbMock);
+      const shape2 = shape1.deleteCheck(cbMock);
 
-    shape2.parse(111);
+      shape2.parse(111);
 
-    expect(shape1).not.toBe(shape2);
-    expect(shape1.getCheck(cbMock)).not.toBe(undefined);
-    expect(shape2.getCheck(cbMock)).toBe(undefined);
-    expect(cbMock).not.toHaveBeenCalled();
+      expect(shape1).not.toBe(shape2);
+      expect(shape1.getCheck(cbMock)).not.toBe(undefined);
+      expect(shape2.getCheck(cbMock)).toBe(undefined);
+      expect(cbMock).not.toHaveBeenCalled();
+    });
   });
 
-  test('invokes a check', () => {
-    const cbMock = jest.fn(() => null);
-    const shape = new Shape().check(cbMock);
+  describe('check', () => {
+    test('clones shape when check is added', () => {
+      const cb = () => null;
 
-    shape.parse('aaa');
+      const shape1 = new Shape();
+      const shape2 = shape1.check(cb);
 
-    expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerced: false });
+      expect(shape1).not.toBe(shape2);
+      expect(shape1.getCheck(cb)).toBe(undefined);
+      expect(shape2.getCheck(cb)).toEqual({ key: cb, callback: cb, isUnsafe: false });
+    });
+
+    test('invokes a check', () => {
+      const cbMock = jest.fn(() => null);
+      const shape = new Shape().check(cbMock);
+
+      shape.parse('aaa');
+
+      expect(cbMock).toHaveBeenCalledTimes(1);
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerced: false });
+    });
+
+    test('invokes  a parameterized check', () => {
+      const cbMock = jest.fn(() => null);
+      const shape = new Shape().check(cbMock, 111);
+
+      shape.parse('aaa');
+
+      expect(cbMock).toHaveBeenCalledTimes(1);
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', 111, { verbose: false, coerced: false });
+    });
+
+    test('invokes checks in the same order they were added', () => {
+      const cbMock = jest.fn(index => null);
+      const shape = new Shape().check(() => cbMock(1)).check(() => cbMock(2));
+
+      shape.parse('aaa');
+
+      expect(cbMock).toHaveBeenCalledTimes(2);
+      expect(cbMock).toHaveBeenNthCalledWith(1, 1);
+      expect(cbMock).toHaveBeenNthCalledWith(2, 2);
+    });
+
+    test('does not add the same check callback without a key', () => {
+      const cbMock = jest.fn();
+      const shape = new Shape().check(cbMock).check(cbMock);
+
+      shape.parse(111);
+
+      expect(cbMock).toHaveBeenCalledTimes(1);
+    });
+
+    test('adds the same check callback with a key', () => {
+      const cbMock = jest.fn();
+      const shape = new Shape().check({ key: 'aaa' }, cbMock).check(cbMock);
+
+      shape.parse(111);
+
+      expect(cbMock).toHaveBeenCalledTimes(2);
+    });
+
+    test('replaces check callback with the same key', () => {
+      const cbMock = jest.fn();
+      const shape = new Shape().check({ key: 'aaa' }, cbMock).check({ key: 'aaa' }, cbMock);
+
+      shape.parse(111);
+
+      expect(cbMock).toHaveBeenCalledTimes(1);
+    });
   });
 
-  test('invokes  a parameterized check', () => {
-    const cbMock = jest.fn(() => null);
-    const shape = new Shape().check(cbMock, 111);
+  describe('try', () => {
+    test('returns ok when input was parsed', () => {
+      expect(new Shape().try('aaa')).toEqual({ ok: true, value: 'aaa' });
+    });
 
-    shape.parse('aaa');
+    test('returns err when input parsing failed', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', 111, { verbose: false, coerced: false });
+      expect(shape.try('aaa')).toEqual({ ok: false, issues: [{ code: 'xxx' }] });
+    });
+
+    test('returns ok if check returns an empty array', () => {
+      const shape = new Shape().check(() => []);
+
+      expect(shape.try('aaa')).toEqual({ ok: true, value: 'aaa' });
+    });
+
+    test('checks can safely throw ValidationError instances', () => {
+      const shape = new Shape().check(() => {
+        throw new ValidationError([{ code: 'xxx' }]);
+      });
+
+      expect(shape.try('aaa')).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+    });
+
+    test('does not swallow unrecognized errors', () => {
+      const shape = new Shape().check(() => {
+        throw new Error('expected');
+      });
+
+      expect(() => shape.try('aaa')).toThrow(new Error('expected'));
+    });
+
+    test('check is not called in verbose mode if preceding check failed', () => {
+      const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
+      const checkMock2 = jest.fn();
+
+      const shape = new Shape().check(checkMock1).check(checkMock2);
+
+      expect(shape.try('aaa', { verbose: true })).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+
+      expect(checkMock1).toHaveBeenCalledTimes(1);
+      expect(checkMock2).toHaveBeenCalledTimes(0);
+    });
+
+    test('unsafe checks are called in verbose mode even if preceding check failed', () => {
+      const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
+      const checkMock2 = jest.fn();
+
+      const shape = new Shape().check(checkMock1).check({ unsafe: true }, checkMock2);
+
+      expect(shape.try('aaa', { verbose: true })).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+
+      expect(checkMock1).toHaveBeenCalledTimes(1);
+      expect(checkMock2).toHaveBeenCalledTimes(1);
+      expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
+    });
+
+    test('collects all issues in verbose mode', () => {
+      const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
+      const checkMock2 = jest.fn(() => [{ code: 'yyy' }]);
+
+      const shape = new Shape().check(checkMock1).check({ unsafe: true }, checkMock2);
+
+      expect(shape.try('aaa', { verbose: true })).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }, { code: 'yyy' }],
+      });
+
+      expect(checkMock1).toHaveBeenCalledTimes(1);
+      expect(checkMock2).toHaveBeenCalledTimes(1);
+      expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
+    });
   });
 
-  test('invokes checks in the same order they were added', () => {
-    const cbMock = jest.fn(index => null);
-    const shape = new Shape().check(() => cbMock(1)).check(() => cbMock(2));
+  describe('parse', () => {
+    test('returns value when input was parsed', () => {
+      expect(new Shape().parse('aaa')).toEqual('aaa');
+    });
 
-    shape.parse('aaa');
+    test('throw ValidationError when input parsing failed', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    expect(cbMock).toHaveBeenCalledTimes(2);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 1);
-    expect(cbMock).toHaveBeenNthCalledWith(2, 2);
+      expect(() => shape.parse('aaa')).toThrow(new ValidationError([{ code: 'xxx' }]));
+    });
+
+    test('uses string errorMessage option', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]);
+
+      expect(() => shape.parse(111, { errorMessage: 'aaa' })).toThrow(new ValidationError([{ code: 'xxx' }], 'aaa'));
+    });
+
+    test('invokes errorMessage callback', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]);
+      const errorMessageMock = jest.fn(() => 'aaa');
+
+      expect(() => shape.parse(111, { errorMessage: errorMessageMock })).toThrow(
+        new ValidationError([{ code: 'xxx' }], 'aaa')
+      );
+      expect(errorMessageMock).toHaveBeenCalledTimes(1);
+      expect(errorMessageMock).toHaveBeenNthCalledWith(1, [{ code: 'xxx' }], 111);
+    });
   });
 
-  test('does not add the same check callback without a key', () => {
-    const cbMock = jest.fn();
-    const shape = new Shape().check(cbMock).check(cbMock);
+  describe('isAcceptedType', () => {
+    test('any shape accepts never', () => {
+      expect(new Shape().isAcceptedType(TYPE_NEVER)).toBe(true);
+    });
 
-    shape.parse(111);
+    test('any shape accepts any', () => {
+      expect(new Shape().isAcceptedType(TYPE_ANY)).toBe(true);
+    });
 
-    expect(cbMock).toHaveBeenCalledTimes(1);
+    test('any shape accepts other types', () => {
+      expect(new Shape().isAcceptedType(TYPE_STRING)).toBe(true);
+    });
+
+    test('detects accepted input types', () => {
+      const shape = new (class extends Shape {
+        protected _getInputTypes(): ValueType[] {
+          return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
+        }
+      })();
+
+      expect(shape.isAcceptedType(TYPE_ANY)).toBe(true);
+      expect(shape.isAcceptedType(TYPE_STRING)).toBe(true);
+      expect(shape.isAcceptedType(TYPE_NUMBER)).toBe(true);
+      expect(shape.isAcceptedType(TYPE_SYMBOL)).toBe(false);
+      expect(shape.isAcceptedType(TYPE_NEVER)).toBe(false);
+    });
   });
 
-  test('adds the same check callback with a key', () => {
-    const cbMock = jest.fn();
-    const shape = new Shape().check({ key: 'aaa' }, cbMock).check(cbMock);
+  describe('optional', () => {
+    test('allows undefined input', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).optional();
 
-    shape.parse(111);
+      expect(shape.parse(undefined)).toBe(undefined);
+    });
 
-    expect(cbMock).toHaveBeenCalledTimes(2);
-  });
+    test('result returned by optional can be safely mutated', () => {
+      const shape = new Shape().optional('aaa');
+      const result = shape.try(undefined);
 
-  test('replaces check callback with the same key', () => {
-    const cbMock = jest.fn();
-    const shape = new Shape().check({ key: 'aaa' }, cbMock).check({ key: 'aaa' }, cbMock);
-
-    shape.parse(111);
-
-    expect(cbMock).toHaveBeenCalledTimes(1);
-  });
-
-  test('creates input types', () => {
-    const shape = new (class extends Shape {
-      protected _getInputTypes(): ValueType[] {
-        return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
+      if (result.ok) {
+        result.value = 'bbb';
       }
-    })();
 
-    expect(shape.inputTypes).toEqual([TYPE_STRING, TYPE_NUMBER]);
-  });
-
-  test('any shape accepts never', () => {
-    expect(new Shape().isAcceptedType(TYPE_NEVER)).toBe(true);
-  });
-
-  test('any shape accepts any', () => {
-    expect(new Shape().isAcceptedType(TYPE_ANY)).toBe(true);
-  });
-
-  test('any shape accepts other types', () => {
-    expect(new Shape().isAcceptedType(TYPE_STRING)).toBe(true);
-  });
-
-  test('detects accepted input types', () => {
-    const shape = new (class extends Shape {
-      protected _getInputTypes(): ValueType[] {
-        return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
-      }
-    })();
-
-    expect(shape.isAcceptedType(TYPE_ANY)).toBe(true);
-    expect(shape.isAcceptedType(TYPE_STRING)).toBe(true);
-    expect(shape.isAcceptedType(TYPE_NUMBER)).toBe(true);
-    expect(shape.isAcceptedType(TYPE_SYMBOL)).toBe(false);
-    expect(shape.isAcceptedType(TYPE_NEVER)).toBe(false);
-  });
-
-  test('returns ok when input was parsed', () => {
-    expect(new Shape().try('aaa')).toEqual({ ok: true, value: 'aaa' });
-  });
-
-  test('returns err when input parsing failed', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]);
-
-    expect(shape.try('aaa')).toEqual({ ok: false, issues: [{ code: 'xxx', path: [] }] });
-  });
-
-  test('returns ok if check returns an empty array', () => {
-    const shape = new Shape().check(() => []);
-
-    expect(shape.try('aaa')).toEqual({ ok: true, value: 'aaa' });
-  });
-
-  test('returns value when input was parsed', () => {
-    expect(new Shape().parse('aaa')).toEqual('aaa');
-  });
-
-  test('throw ValidationError when input parsing failed', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]);
-
-    expect(() => shape.parse('aaa')).toThrow(new ValidationError([{ code: 'xxx' }]));
-  });
-
-  test('checks can safely throw ValidationError instances', () => {
-    const shape = new Shape().check(() => {
-      throw new ValidationError([{ code: 'xxx' }]);
+      expect(shape.parse(undefined)).toBe('aaa');
     });
 
-    expect(shape.try('aaa')).toEqual({
-      ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+    test('returns default value for an undefined input', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).optional('aaa');
+
+      expect(shape.parse(undefined)).toBe('aaa');
     });
   });
 
-  test('does not swallow unrecognized errors', () => {
-    const shape = new Shape().check(() => {
-      throw new Error('expected');
+  describe('nullable', () => {
+    test('allows null input', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).nullable();
+
+      expect(shape.parse(null)).toBe(null);
     });
 
-    expect(() => shape.try('aaa')).toThrow(new Error('expected'));
-  });
+    test('replaces null with undefined', () => {
+      const shape = new Shape().nullable(undefined);
 
-  test('check is not called in verbose mode if preceding check failed', () => {
-    const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
-    const checkMock2 = jest.fn();
-
-    const shape = new Shape().check(checkMock1).check(checkMock2);
-
-    expect(shape.try('aaa', { verbose: true })).toEqual({
-      ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      expect(shape.parse(null)).toBe(undefined);
     });
 
-    expect(checkMock1).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenCalledTimes(0);
+    test('returns default value for an null input', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).nullable('aaa');
+
+      expect(shape.parse(null)).toBe('aaa');
+    });
   });
 
-  test('unsafe checks are called in verbose mode even if preceding check failed', () => {
-    const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
-    const checkMock2 = jest.fn();
+  describe('nullish', () => {
+    test('allows null and undefined input', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish();
 
-    const shape = new Shape().check(checkMock1).check({ unsafe: true }, checkMock2);
-
-    expect(shape.try('aaa', { verbose: true })).toEqual({
-      ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      expect(shape.parse(null)).toBe(null);
+      expect(shape.parse(undefined)).toBe(undefined);
     });
 
-    expect(checkMock1).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
-  });
+    test('replaces null and undefined with undefined', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish(undefined);
 
-  test('collects all issues in verbose mode', () => {
-    const checkMock1 = jest.fn(() => [{ code: 'xxx' }]);
-    const checkMock2 = jest.fn(() => [{ code: 'yyy' }]);
-
-    const shape = new Shape().check(checkMock1).check({ unsafe: true }, checkMock2);
-
-    expect(shape.try('aaa', { verbose: true })).toEqual({
-      ok: false,
-      issues: [
-        { code: 'xxx', path: [] },
-        { code: 'yyy', path: [] },
-      ],
+      expect(shape.parse(null)).toBe(undefined);
+      expect(shape.parse(undefined)).toBe(undefined);
     });
 
-    expect(checkMock1).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenCalledTimes(1);
-    expect(checkMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
+    test('replaces null and undefined with null', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish(null);
+
+      expect(shape.parse(null)).toBe(null);
+      expect(shape.parse(undefined)).toBe(null);
+    });
+
+    test('returns default value for both null and undefined inputs', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish('aaa');
+
+      expect(shape.parse(null)).toBe('aaa');
+      expect(shape.parse(undefined)).toBe('aaa');
+    });
   });
 
-  test('allows undefined input', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).optional();
+  describe('parseOrDefault', () => {
+    test('returns default if parsing failed', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    expect(shape.parse(undefined)).toBe(undefined);
+      expect(shape.parseOrDefault(111, 222)).toBe(222);
+    });
   });
 
-  test('result returned by optional can be safely mutated', () => {
-    const shape = new Shape().optional('aaa');
-    const result = shape.try(undefined);
+  describe('transform', () => {
+    test('transforms input', () => {
+      expect(new Shape().transform(() => 222).parse(111)).toBe(222);
+    });
 
-    if (result.ok) {
-      result.value = 'bbb';
-    }
+    test('pipes input to another shape', () => {
+      const shape = new Shape().transform(() => 222);
 
-    expect(shape.parse(undefined)).toBe('aaa');
+      expect(new Shape().to(shape).parse(111)).toBe(222);
+    });
+
+    test('pipes from async shape to TransformShape that synchronously returns a promise', async () => {
+      const checkMock = jest.fn();
+
+      const shape = asyncShape.transform(value => Promise.resolve('__' + value)).check(checkMock);
+
+      const output = shape.parseAsync('aaa');
+
+      await expect(output).resolves.toBe('__aaa');
+      expect(checkMock).toHaveBeenCalledTimes(1);
+      expect(checkMock.mock.calls[0][0]).toBeInstanceOf(Promise);
+      await expect(checkMock.mock.calls[0][0]).resolves.toBe('__aaa');
+    });
   });
 
-  test('returns default value for an undefined input', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).optional('aaa');
+  describe('catch', () => {
+    test('returns the fallback value if parsing fails', () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).catch(222);
 
-    expect(shape.parse(undefined)).toBe('aaa');
+      expect(shape.parse(111)).toBe(222);
+    });
   });
 
-  test('allows null input', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullable();
+  describe('nonOptional', () => {
+    test('wraps in DenyLiteralShape', () => {
+      const shape = new Shape().nonOptional();
 
-    expect(shape.parse(null)).toBe(null);
+      expect(shape).toBeInstanceOf(DenyLiteralShape);
+      expect((shape as DenyLiteralShape<any, any>).deniedValue).toBe(undefined);
+    });
   });
 
-  test('replaces null with undefined', () => {
-    const shape = new Shape().nullable(undefined);
+  describe('brand', () => {
+    test('branding does not change shape identity', () => {
+      const shape = new Shape();
 
-    expect(shape.parse(null)).toBe(undefined);
+      expect(shape.brand()).toBe(shape);
+    });
   });
 
-  test('returns default value for an null input', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullable('aaa');
-
-    expect(shape.parse(null)).toBe('aaa');
+  describe('typeOf', () => {
+    test('returns value type', () => {
+      expect(Shape.typeOf([])).toBe('array');
+      expect(Shape.typeOf(111)).toBe('number');
+    });
   });
 
-  test('allows null and undefined input', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish();
+  describe('exclude', () => {
+    test('excludes a shape', () => {
+      const excludedShape = new Shape();
+      const shape = new Shape().exclude(excludedShape);
 
-    expect(shape.parse(null)).toBe(null);
-    expect(shape.parse(undefined)).toBe(undefined);
+      expect(shape).toBeInstanceOf(ExcludeShape);
+      expect(shape.excludedShape).toBe(excludedShape);
+    });
   });
 
-  test('replaces null and undefined with undefined', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish(undefined);
+  describe('not', () => {
+    test('excludes a shape', () => {
+      const excludedShape = new Shape();
+      const shape = new Shape().not(excludedShape);
 
-    expect(shape.parse(null)).toBe(undefined);
-    expect(shape.parse(undefined)).toBe(undefined);
-  });
-
-  test('replaces null and undefined with null', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish(null);
-
-    expect(shape.parse(null)).toBe(null);
-    expect(shape.parse(undefined)).toBe(null);
-  });
-
-  test('returns default value for both null and undefined inputs', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).nullish('aaa');
-
-    expect(shape.parse(null)).toBe('aaa');
-    expect(shape.parse(undefined)).toBe('aaa');
-  });
-
-  test('returns default if parsing failed', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]);
-
-    expect(shape.parseOrDefault(111, 222)).toBe(222);
-  });
-
-  test('transforms input', () => {
-    expect(new Shape().transform(() => 222).parse(111)).toBe(222);
-  });
-
-  test('pipes input to another shape', () => {
-    const shape = new Shape().transform(() => 222);
-
-    expect(new Shape().to(shape).parse(111)).toBe(222);
-  });
-
-  test('pipes from async shape to TransformShape that synchronously returns a promise', async () => {
-    const checkMock = jest.fn();
-
-    const shape = asyncShape.to(new TransformShape(value => Promise.resolve('__' + value))).check(checkMock);
-
-    const output = shape.parseAsync('aaa');
-
-    await expect(output).resolves.toBe('__aaa');
-    expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock.mock.calls[0][0]).toBeInstanceOf(Promise);
-    await expect(checkMock.mock.calls[0][0]).resolves.toBe('__aaa');
-  });
-
-  test('returns the fallback value if parsing fails', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]).catch(222);
-
-    expect(shape.parse(111)).toBe(222);
-  });
-
-  test('wraps in DenyLiteralShape', () => {
-    const shape = new Shape().nonOptional();
-
-    expect(shape).toBeInstanceOf(DenyLiteralShape);
-    expect((shape as DenyLiteralShape<any, any>).deniedValue).toBe(undefined);
-  });
-
-  test('branding does not change shape identity', () => {
-    const shape = new Shape();
-
-    expect(shape.brand()).toBe(shape);
-  });
-
-  test('returns value type', () => {
-    expect(Shape.typeOf([])).toBe('array');
-    expect(Shape.typeOf(111)).toBe('number');
-  });
-
-  test('excludes a shape', () => {
-    const excludedShape = new Shape();
-    const shape = new Shape().exclude(excludedShape);
-
-    expect(shape).toBeInstanceOf(ExcludeShape);
-    expect(shape.excludedShape).toBe(excludedShape);
-  });
-
-  test('excludes a shape', () => {
-    const excludedShape = new Shape();
-    const shape = new Shape().not(excludedShape);
-
-    expect(shape).toBeInstanceOf(ExcludeShape);
-    expect(shape.excludedShape).toBe(excludedShape);
+      expect(shape).toBeInstanceOf(ExcludeShape);
+      expect(shape.excludedShape).toBe(excludedShape);
+    });
   });
 
   describe('refine', () => {
@@ -422,7 +470,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
 
       expect(cbMock).toHaveBeenCalledTimes(0);
@@ -435,10 +483,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
-        issues: [
-          { code: 'xxx', path: [] },
-          { code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cbMock },
-        ],
+        issues: [{ code: 'xxx' }, { code: CODE_PREDICATE, input: 'aaa', message: MESSAGE_PREDICATE, param: cbMock }],
       });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
@@ -450,7 +495,7 @@ describe('Shape', () => {
 
       expect(new Shape().refine(cb).try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
+        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
       });
     });
 
@@ -461,7 +506,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
+        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: 'bbb', param: cb }],
       });
     });
 
@@ -472,7 +517,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, path: [], input: 'aaa', message: 'bbb', param: cb }],
+        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: 'bbb', param: cb }],
       });
     });
   });
@@ -483,21 +528,24 @@ describe('Shape', () => {
       expect(() => asyncShape.try('')).toThrow(Error);
     });
 
-    test('returns promise', async () => {
-      const outputPromise = asyncShape.parseAsync('aaa');
-      const resultPromise = asyncShape.tryAsync('aaa');
-
-      expect(outputPromise).toBeInstanceOf(Promise);
-      expect(resultPromise).toBeInstanceOf(Promise);
-
-      expect(await outputPromise).toBe('aaa');
-      expect(await resultPromise).toEqual({ ok: true, value: 'aaa' });
+    describe('parseAsync', () => {
+      test('returns promise', async () => {
+        await expect(asyncShape.parseAsync('aaa')).resolves.toBe('aaa');
+      });
     });
 
-    test('returns default if parsing failed', async () => {
-      const shape = new Shape().transformAsync(() => Promise.resolve()).check(() => [{ code: 'xxx' }]);
+    describe('tryAsync', () => {
+      test('returns promise', async () => {
+        await expect(asyncShape.tryAsync('aaa')).resolves.toEqual({ ok: true, value: 'aaa' });
+      });
+    });
 
-      await expect(shape.parseOrDefaultAsync(111, 222)).resolves.toBe(222);
+    describe('parseOrDefaultAsync', () => {
+      test('returns default if parsing failed', async () => {
+        const shape = new Shape().transformAsync(() => Promise.resolve()).check(() => [{ code: 'xxx' }]);
+
+        await expect(shape.parseOrDefaultAsync(111, 222)).resolves.toBe(222);
+      });
     });
   });
 });
@@ -521,7 +569,7 @@ describe('TransformShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -571,7 +619,7 @@ describe('TransformShape', () => {
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
 
@@ -706,7 +754,7 @@ describe('ReplaceLiteralShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -719,7 +767,7 @@ describe('ReplaceLiteralShape', () => {
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -754,7 +802,7 @@ describe('DenyLiteralShape', () => {
 
     expect(shape.try(undefined)).toEqual({
       ok: false,
-      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [] }],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined' }],
     });
   });
 
@@ -766,7 +814,7 @@ describe('DenyLiteralShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [], input: 111 }],
+      issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', input: 111 }],
     });
   });
 
@@ -778,7 +826,7 @@ describe('DenyLiteralShape', () => {
 
     expect(shape.try(111, { verbose: true })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -803,7 +851,7 @@ describe('DenyLiteralShape', () => {
 
       await expect(shape.tryAsync(undefined)).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [] }],
+        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined' }],
       });
     });
 
@@ -815,7 +863,7 @@ describe('DenyLiteralShape', () => {
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: [], input: 111 }],
+        issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', input: 111 }],
       });
     });
   });
@@ -843,7 +891,7 @@ describe('CatchShape', () => {
     expect(fallbackMock).toHaveBeenNthCalledWith(
       1,
       111,
-      [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, meta: undefined, param: TYPE_STRING, path: [] }],
+      [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
       { coerced: false, verbose: false }
     );
   });
@@ -863,7 +911,7 @@ describe('CatchShape', () => {
       }).try(111)
     ).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -903,7 +951,7 @@ describe('ExcludeShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -912,7 +960,7 @@ describe('ExcludeShape', () => {
 
     expect(new ExcludeShape(new Shape(), excludedShape).try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape, path: [] }],
+      issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape }],
     });
   });
 
@@ -921,7 +969,7 @@ describe('ExcludeShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: [] }],
+      issues: [{ code: 'xxx' }],
     });
   });
 
@@ -938,7 +986,7 @@ describe('ExcludeShape', () => {
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
 
@@ -947,7 +995,7 @@ describe('ExcludeShape', () => {
 
       await expect(new ExcludeShape(new Shape(), excludedShape).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape, path: [] }],
+        issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: excludedShape }],
       });
     });
 
@@ -956,7 +1004,7 @@ describe('ExcludeShape', () => {
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: [] }],
+        issues: [{ code: 'xxx' }],
       });
     });
   });

@@ -12,7 +12,7 @@ describe('integer', () => {
 
     expect(d.integer().try(0.5)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_INTEGER, input: 0.5, message: MESSAGE_NUMBER_INTEGER, param: undefined, path: [] }],
+      issues: [{ code: CODE_NUMBER_INTEGER, input: 0.5, message: MESSAGE_NUMBER_INTEGER, param: undefined }],
     });
   });
 });

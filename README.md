@@ -253,6 +253,48 @@ parseOrDefault(42);
 // ⮕ undefined
 ```
 
+Parsing methods accept options argument.
+
+```ts
+d.number().parse('42', { coerced: true });
+// ⮕ 42
+```
+
+Following options are available:
+
+<dl>
+<dt><code>verbose</code></dt>
+<dd>
+
+If `true` then Doubter collects all issues during parsing, otherwise parsing is aborted after the first issue is
+encountered. Refer to [Verbose mode](#verbose-mode) section for more details.
+
+</dd>
+<dt><code>coerced</code></dt>
+<dd>
+
+If `true` then all shapes that support type coercion would try to coerce an input to a required type. Refer to
+[Type coercion](#type-coercion) section for more details.
+
+</dd>
+<dt><code>context</code></dt>
+<dd>
+
+The custom context that can be accessed from custom check callbacks, refinement predicates, transformers, and fallback
+functions. Refer to [Parsing context](#parsing-context) section for more details.
+
+</dd>
+<dt><code>errorMessage</code></dt>
+<dd>
+
+This option is only available for [`parse` and `parseAsync`](#parse) methods. It configures a `ValidationError`
+message. If a callback is provided it receives issues and an input value, and must return a string message. If a string
+is provided, it is used as is. You can also configure global issue formatter that is used by `ValidationError`, refer to
+[Global error message formatter](#global-error-message-formatter) section for more details.
+
+</dd>
+</dl>
+
 ## `parse`
 
 You're already familiar with `parse` that takes an input value and returns an output value, or throws a validation error
@@ -312,9 +354,9 @@ Use `tryAsync` with [async shapes](#async-shapes). It has the same semantics and
 
 # Validation errors
 
-Validation errors which are thrown by `parse*` methods, and
-[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by `try*` methods have the `issues`
-property which holds an array of validation issues:
+Validation errors which are thrown by [`parse*` methods](#parse), and
+[`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) objects returned by [`try*` methods](#try) have the
+`issues` property which holds an array of validation issues:
 
 ```ts
 const shape = d.object({ age: d.number() });
@@ -323,7 +365,8 @@ const shape = d.object({ age: d.number() });
 const result = shape.try({ age: 'seventeen' });
 ```
 
-The `result` contains the [`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) object:
+The `result` contains the [`Err`](https://smikhalevski.github.io/doubter/interfaces/Err.html) object with the array of
+issues:
 
 ```ts
 {
@@ -353,8 +396,8 @@ The code of the validation issue. Shapes provide various checks and each check h
 <dt><code>path</code></dt>
 <dd>
 
-The object path as an array of keys. Keys can be strings, numbers (for example, array indices), symbols, and any other
-values since they can be `Map` keys.
+The object path as an array of keys, or `undefined` if there's no path. Keys can be strings, numbers (for example, array
+indices), symbols, and any other values since they can be `Map` keys.
 
 </dd>
 <dt><code>input</code></dt>
@@ -415,7 +458,29 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `tuple` | [`d.tuple([…])`](#tuple) | The expected tuple length |
 | `union` | [`d.or(…)`](#union-or) | [Issues raised by a union](#issues-raised-by-a-union) |
 | `unknownKeys` | [`d.object().exact()`](#unknown-keys) | The array of unknown keys |
-| `unknown` | — | Used if a partial issue doesn't have a code property |
+
+## Global error message formatter
+
+Be default, `ValidationError` uses `JSON.stringify` to produce an error message. While you can provide a custom error
+message by passing [`errorMessage` option](#parse) to `parse` and `parseAsync`, you also can configure the global
+formatter.
+
+```ts
+d.ValidationError.formatIssues = issues => {
+  // Return a human-readable error message that describes issues
+  return 'Something went wrong';
+};
+
+new d.ValidationError([]).message;
+// ⮕ 'Something went wrong'
+
+new d.ValidationError([], 'Kaputs').message;
+// ⮕ 'Kaputs'
+```
+
+`formatIssues` is called whenever a
+[`message` constructor argument](https://smikhalevski.github.io/doubter/classes/ValidationError.html#constructor) is
+omitted. 
 
 # Checks
 
@@ -425,7 +490,7 @@ to be greater than 5:
 ```ts
 const shape1 = d.number().check(value => {
   if (value <= 5) {
-    // 🟡 Return a partial issue, or an array of issues
+    // 🟡 Return an issue, or an array of issues
     return { code: 'kaputs' };
   }
 });
@@ -438,8 +503,7 @@ shape1.parse(3);
 // ❌ ValidationError: kaputs at /
 ```
 
-A check callback receives the shape output value and must return a partial issue or an array of partial issues if the
-value is invalid.
+A check callback receives the shape output value and must return an issue or an array of issues if the value is invalid.
 
 > **Note**&ensp;Check callbacks can throw a [`ValidationError`](#validation-errors) to notify Doubter that parsing
 > issues occurred. While this has the same effect as returning an array of issues, it is recommended to throw a
@@ -506,7 +570,7 @@ shape2.parse(['Venus']);
 
 Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
 to collect all issues that prevent input from being successfully parsed. To do this, pass the
-[`verbose`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#verbose) option to the
+[`verbose`](https://smikhalevski.github.io/doubter/interfaces/ApplyOptions.html#verbose) option to the
 [parse method](#parsing-and-trying).
 
 ```ts
@@ -854,12 +918,12 @@ asyncShape2.isAsync // ⮕ true
 
 # Parsing context
 
-Inside [check](#checks), [refinement predicates](#refinements), [transform](#transformations) and
-[fallback](#fallback-value) callbacks you can access options passed to the parser. The
-[`context`](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html#context) option may store arbitrary
+Inside [check](#checks) callbacks, [refinement predicates](#refinements), [transformers](#transformations) and
+[fallback](#fallback-value) functions you can access options passed to the parser. The
+[`context`](https://smikhalevski.github.io/doubter/interfaces/ApplyOptions.html#context) option may store arbitrary
 data, which is `undefined` by default.
 
-The example below shows how you can transform numbers to formatted strings using context:
+For example, here's how you can use context to transform numbers to formatted strings:
 
 ```ts
 const shape = d.number().transform(
@@ -1241,7 +1305,7 @@ shape2.parse('Mars');
 ```
 
 Fallback functions receive an input value, an array of issues and
-[parsing options](https://smikhalevski.github.io/doubter/interfaces/ParseOptions.html) (so you can access your
+[parsing options](https://smikhalevski.github.io/doubter/interfaces/ApplyOptions.html) (so you can access your
 [custom context](#parsing-context) if needed).
 
 ```ts
@@ -1739,17 +1803,14 @@ Let's create a custom shape that parses an input string as a number:
 ```ts
 class NumberLikeShape extends d.Shape<string, number> {
 
-  protected _apply(input: unknown, options: d.ParseOptions): d.Result<number> {
+  protected _apply(input: unknown, options: d.ApplyOptions): d.Result<number> {
 
     // 1️⃣ Validate the input
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {
       return [{
         code: 'kaputs',
-        message: 'Must be a numberish',
-        path: [],
+        message: 'Must be coercible to number',
         input,
-        param: undefined,
-        meta: undefined
       }];
     }
 
@@ -2217,26 +2278,26 @@ shape1.parse('Mars');
 // ❌ ValidationError: type at /: Must be a function
 ```
 
-The result of parsing is a delegator function that parses arguments, return and `this` values.
-See [Implementing a function](#implementing-a-function) for more details.
+The result of parsing is a wrapper function that parses arguments, return and `this` values. See
+[Implementing a function](#implementing-a-function) section for more details.
 
-If you want to prevent the parsed function from being wrapped in a delegator, use `bare`:
+If you want to prevent the input function from being wrapped, use `noWrap`:
 
 ```ts
-const shape2 = d.fn().bare();
+const shape2 = d.fn().noWrap();
 
-function implFn() {
+function impl() {
 }
 
-shape2.parse(implFn) === implFn // ⮕ true
+shape2.parse(impl) === impl // ⮕ true
 ```
 
 ## Implementing a function
 
-You can delegate a function implementation using a function shape. This would guarantee that the function implementation
-is called with arguments of requested types, and delegator returns the value of the requested type.
+You can wrap a function implementation using a `FunctionShape`. This would guarantee that the function implementation
+is called with arguments of requested types, and the wrapper returns the value of the requested type.
 
-Let's declare a function shape that takes two number arguments and returns a number:
+Let's declare a function shape that takes two number arguments and returns a number as well:
 
 ```ts
 const sumShape = d.fn([d.number(), d.number()]).return(d.number());
@@ -2250,23 +2311,23 @@ function sumImpl(arg1: number, arg2: number): number {
   return arg1 + arg2;
 }
 
-const sum = sumShape.delegate(sumImpl);
+const sumWrapper = sumShape.wrap(sumImpl);
 // ⮕ (arg1: number, arg2: number) => number
 
-sum(2, 3);
+sumWrapper(2, 3);
 // ⮕ 5
 ```
 
-The function `sum` (a delegator function) delegates its implementation to `sumImpl` (an implementation function) and
-guarantees that `sumImpl` is called with exactly two number arguments and returns a number.
+The wrapper function `sumWrapper` wraps implementation function `sumImpl` and guarantees that `sumImpl` is called with
+exactly two number arguments and returns a number.
 
-`sum` would throw a [`ValidationError`](#validation-errors) if the required signature is violated at runtime:
+`sumWrapper` would throw a [`ValidationError`](#validation-errors) if the required signature is violated at runtime:
 
 ```ts
-sum(2, '3');
+sumWrapper(2, '3');
 // ❌ ValidationError: type at /arguments/1: Must be a number
 
-sum(1, 2, 3);
+sumWrapper(1, 2, 3);
 // ❌ ValidationError: arrayMaxLength at /arguments: Must have the maximum length of 2
 ```
 
@@ -2284,7 +2345,7 @@ const userShape = d.object({
 const getLastNameShape = d.fn().this(userShape).return(d.string());
 // ⮕ Shape<(this: { name: string }) => string>
 
-const getLastName = getLastNameShape.delegate(user => {
+const getLastName = getLastNameShape.wrap(user => {
   // 🟡 Returns undefined at runtime if name doesn't include a space char. 
   return user.name.split(' ')[1]
 });
@@ -2326,15 +2387,15 @@ function plus2Impl(arg: number): number {
   return arg + 2;
 }
 
-const plus2 = plus2Shape.delegate(plus2Impl);
+const plus2Wrapper = plus2Shape.wrap(plus2Impl);
 // ⮕ (arg: number) => number
 ```
 
-While `plus2` requires a single number parameter, we can call it at runtime with a number-like string and get an
+While `plus2Wrapper` requires a single number parameter, we can call it at runtime with a number-like string and get an
 expected numeric result because of an argument coercion:
 
 ```ts
-plus2('40');
+plus2Wrapper('40');
 // ⮕ 42
 ```
 
@@ -2354,31 +2415,31 @@ const shape = d.fn([d.string().transform(parseFloat)]);
 // ⮕ Shape<(arg: number) => any, (arg: string) => any>
 ```
 
-Note that the input and output functions described by this shape have different signatures. Let's delegate the
+Note that the input and output functions described by this shape have different signatures. Let's wrap the
 implementation of this function:
 
 ```ts
-function implFn(arg: number) {
+function impl(arg: number) {
   return arg + 2;
 }
 
-const delegatorFn = shape.delegate(implFn);
+const wrapper = shape.wrap(impl);
 // ⮕ (arg: string) => any
 ```
 
-The argument of the implementation function is the output of the shape that parses arguments. The graph below
-demonstrates the data flow between the delegator and the implementation:
+Arguments of the implementation function is the output of the wrapper function. The graph below demonstrates the data
+flow between the wrapper and the implementation:
 
 ```mermaid
 ---
-title: delegatorFn
+title: wrapper
 ---
 flowchart TD
     InputArguments["Input arguments"]
-    -->|Parsed by argsShape| implFn
+    -->|Parsed by argsShape| impl
     -->|Parsed by returnShape| OutputReturnValue["Output return value"]
 
-    subgraph implFn
+    subgraph impl
     OutputArguments["Output arguments"]
     --> InputReturnValue["Input return value"]
     end

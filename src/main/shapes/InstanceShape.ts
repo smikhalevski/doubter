@@ -1,7 +1,7 @@
-import { Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { createIssueFactory, isSubclass } from '../utils';
 import { CODE_INSTANCE, MESSAGE_INSTANCE, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { createIssueFactory, isEqualOrSubclass } from '../utils';
+import { Result, Shape, ValueType } from './Shape';
 
 /**
  * The shape of the class instance.
@@ -25,16 +25,16 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
   }
 
   protected _getInputTypes(): readonly ValueType[] {
-    if (isSubclass(this.ctor, Array)) {
+    if (isEqualOrSubclass(this.ctor, Array)) {
       return [TYPE_ARRAY];
     }
-    if (isSubclass(this.ctor, Date)) {
+    if (isEqualOrSubclass(this.ctor, Date)) {
       return [TYPE_DATE];
     }
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result<InstanceType<C>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<InstanceType<C>> {
     const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {

@@ -1,7 +1,7 @@
-import { Result, Shape, ValueType } from './Shape';
-import { ConstraintOptions, Message, ParseOptions } from '../shared-types';
-import { cloneInstance, createIssueFactory, ok } from '../utils';
 import { CODE_JSON, CODE_TYPE, MESSAGE_JSON, MESSAGE_STRING_TYPE, TYPE_STRING } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { cloneInstance, createIssueFactory, ok } from '../utils';
+import { Result, Shape, ValueType } from './Shape';
 
 /**
  * The shape of a value deserialized from a JSON string.
@@ -48,7 +48,7 @@ export class JSONShape extends Shape<string, any> {
     return [TYPE_STRING];
   }
 
-  protected _apply(input: unknown, options: ParseOptions): Result {
+  protected _apply(input: unknown, options: ApplyOptions): Result {
     const { _applyChecks } = this;
 
     let output;

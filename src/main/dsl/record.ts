@@ -1,5 +1,5 @@
 import { AnyShape, RecordShape, Shape } from '../shapes';
-import { ConstraintOptions, Message } from '../shared-types';
+import { ConstraintOptions, Message } from '../types';
 
 /**
  * Creates the shape that describes an object with string keys and values that conform the given shape.

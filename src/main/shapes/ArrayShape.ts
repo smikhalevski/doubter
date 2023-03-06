@@ -1,18 +1,3 @@
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
-import { ConstraintOptions, Issue, Message, ParseOptions } from '../shared-types';
-import {
-  addConstraint,
-  concatIssues,
-  copyUnsafeChecks,
-  createIssueFactory,
-  isArray,
-  isAsyncShape,
-  isIterableObject,
-  ok,
-  toArrayIndex,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../utils';
 import {
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
@@ -26,7 +11,23 @@ import {
   TYPE_ARRAY,
   TYPE_OBJECT,
 } from '../constants';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import {
+  addCheck,
+  applyShape,
+  concatIssues,
+  copyUnsafeChecks,
+  createIssueFactory,
+  isArray,
+  isAsyncShape,
+  isIterable,
+  ok,
+  toArrayIndex,
+  toDeepPartialShape,
+  unshiftIssuesPath,
+} from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
 
 // prettier-ignore
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =
@@ -137,7 +138,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   min(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-    return addConstraint(this, CODE_ARRAY_MIN, length, (input, param, options) => {
+    return addCheck(this, CODE_ARRAY_MIN, length, (input, param, options) => {
       if (input.length < param) {
         return issueFactory(input, options);
       }
@@ -154,7 +155,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   max(length: number, options?: ConstraintOptions | Message): this {
     const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-    return addConstraint(this, CODE_ARRAY_MAX, length, (input, param, options) => {
+    return addCheck(this, CODE_ARRAY_MAX, length, (input, param, options) => {
       if (input.length > param) {
         return issueFactory(input, options);
       }
@@ -192,7 +193,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
   }
 
-  protected _apply(input: any, options: ParseOptions): Result<InferArray<U, R, 'output'>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, 'output'>> {
     const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
     let output = input;
@@ -248,7 +249,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ParseOptions): Promise<Result<InferArray<U, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferArray<U, R, 'output'>>> {
     return new Promise(resolve => {
       const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
@@ -295,9 +296,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
         index++;
 
         if (index !== outputLength && (shapes !== null || restShape !== null)) {
-          const valueShape = index < shapesLength ? shapes![index] : restShape!;
-
-          return valueShape['_applyAsync'](output[index], options).then(handleResult);
+          return applyShape(index < shapesLength ? shapes![index] : restShape!, output[index], options, handleResult);
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
@@ -319,7 +318,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    * @param value The non-array value to coerce.
    */
   protected _coerce(value: unknown): unknown[] {
-    if (isIterableObject(value)) {
+    if (isIterable(value)) {
       return Array.from(value);
     }
     return [value];
