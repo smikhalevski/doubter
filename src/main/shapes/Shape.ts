@@ -41,7 +41,7 @@ import {
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
-  uniqueArray,
+  toUniqueArray,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 
@@ -781,7 +781,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      let types = uniqueArray(this._getInputTypes());
+      let types = toUniqueArray(this._getInputTypes());
 
       if (types.length === 0 || types.includes(TYPE_ANY)) {
         types = [TYPE_ANY];
@@ -790,7 +790,7 @@ Object.defineProperties(Shape.prototype, {
         const neverIndex = types.indexOf(TYPE_NEVER);
 
         if (neverIndex !== -1) {
-          (types = types.slice(0)).splice(neverIndex, 1);
+          types.splice(neverIndex, 1);
         }
       }
 
@@ -807,7 +807,7 @@ Object.defineProperties(Shape.prototype, {
       let values = this._getInputValues();
 
       if (values !== null) {
-        values = uniqueArray(values);
+        values = toUniqueArray(values);
       }
 
       Object.defineProperty(this, 'inputValues', { writable: true, value: values });

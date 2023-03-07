@@ -1,7 +1,7 @@
 /**
  * Returns the new array that contains unique elements.
  */
-export function uniqueArray<T>(arr: readonly T[]): T[] {
+export function toUniqueArray<T>(arr: readonly T[]): T[] {
   let uniqueArr: T[] = [];
 
   for (let i = 0; i < arr.length; ++i) {

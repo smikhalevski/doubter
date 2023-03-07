@@ -1,6 +1,6 @@
 import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_OBJECT, TYPE_STRING } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { canonize, createIssueFactory, getValueType, isArray, ok, ReadonlyDict, uniqueArray } from '../utils';
+import { canonize, createIssueFactory, getValueType, isArray, ok, ReadonlyDict, toUniqueArray } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result, Type } from './Shape';
 
@@ -43,7 +43,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
 
     if (isArray(source)) {
       valueMapping = null;
-      values = uniqueArray(source);
+      values = toUniqueArray(source);
     } else {
       valueMapping = source;
       values = getUniqueEnumValues(source);
@@ -129,7 +129,7 @@ export function getUniqueEnumValues(source: ReadonlyDict): any[] {
     const bType = typeof b;
 
     if (((aType !== 'string' || bType !== 'number') && (aType !== 'number' || bType !== 'string')) || b != key) {
-      return uniqueArray(Object.values(source));
+      return toUniqueArray(Object.values(source));
     }
     if (typeof a === 'number' && !values.includes(a)) {
       values.push(a);

@@ -1,9 +1,9 @@
-import { deleteArrayIndex, toArrayIndex, uniqueArray } from '../../main/utils';
+import { deleteArrayIndex, toArrayIndex, toUniqueArray } from '../../main/utils';
 
-describe('uniqueArray', () => {
+describe('toUniqueArray', () => {
   test('removes duplicates', () => {
     const arr = [1, 2, 3, 3, 1];
-    const uniqueArr = uniqueArray(arr);
+    const uniqueArr = toUniqueArray(arr);
 
     expect(uniqueArr).not.toBe(arr);
     expect(uniqueArr).toEqual([1, 2, 3]);
@@ -11,7 +11,7 @@ describe('uniqueArray', () => {
 
   test('removes NaN duplicates', () => {
     const arr = [NaN, 1, NaN, 2, NaN];
-    const uniqueArr = uniqueArray(arr);
+    const uniqueArr = toUniqueArray(arr);
 
     expect(uniqueArr).not.toBe(arr);
     expect(uniqueArr).toEqual([NaN, 1, 2]);

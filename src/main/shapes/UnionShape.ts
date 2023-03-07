@@ -5,13 +5,14 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   Dict,
+  getShapeInputTypes,
   getShapeInputValues,
   getValueType,
   isArray,
   isAsyncShape,
   isObject,
   toDeepPartialShape,
-  uniqueArray,
+  toUniqueArray,
 } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, Type, ValueType } from './Shape';
@@ -58,7 +59,8 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected get _lookup(): Lookup {
-    const lookup = createDiscriminatorLookup(this.shapes) || createValueTypeLookup(this.shapes);
+    const shapes = toUniqueArray(this.shapes);
+    const lookup = createLookupByDiscriminator(shapes) || createLookupByType(shapes);
 
     Object.defineProperty(this, '_lookup', { value: lookup });
 
@@ -93,12 +95,8 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected _getInputTypes(): readonly Type[] {
-    const types: Type[] = [];
-
-    for (const shape of this.shapes) {
-      types.push(...shape.inputTypes);
-    }
-    return types;
+    // this.shapes.flatMap(getShapeInputTypes)
+    return ([] as Type[]).concat(...this.shapes.map(getShapeInputTypes));
   }
 
   protected _getInputValues(): readonly unknown[] | null {
@@ -210,7 +208,7 @@ export class UnionShape<U extends readonly AnyShape[]>
 /**
  * Creates a lookup that finds a shape using an input value type.
  */
-export function createValueTypeLookup(shapes: readonly AnyShape[]): Lookup {
+export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
   const emptyArray: AnyShape[] = [];
 
   const buckets: Record<ValueType, readonly AnyShape[]> = {
@@ -230,9 +228,9 @@ export function createValueTypeLookup(shapes: readonly AnyShape[]): Lookup {
     undefined: emptyArray,
   };
 
-  const bucketTypes = Object.keys(buckets) as Type[];
+  const bucketTypes = Object.keys(buckets) as ValueType[];
 
-  for (const shape of uniqueArray(shapes)) {
+  for (const shape of shapes) {
     for (const type of shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes) {
       if (type !== TYPE_ANY && type !== TYPE_NEVER) {
         buckets[type] = buckets[type].concat(shape);
@@ -246,12 +244,10 @@ export function createValueTypeLookup(shapes: readonly AnyShape[]): Lookup {
 /**
  * Creates a lookup that uses a discriminator property, or returns `null` if discriminator property cannot be detected.
  */
-export function createDiscriminatorLookup(shapes: readonly AnyShape[]): Lookup | null {
+export function createLookupByDiscriminator(shapes: readonly AnyShape[]): Lookup | null {
   const shapesLength = shapes.length;
 
-  shapes = uniqueArray(shapes);
-
-  if (shapesLength <= 1 || !shapes.every(isObjectShape)) {
+  if (shapesLength < 2 || !shapes.every(isObjectShape)) {
     return null;
   }
 
@@ -309,6 +305,10 @@ export interface Discriminator {
   valuesByShape: Array<readonly unknown[]>;
 }
 
+/**
+ * Returns a discriminator property description. Discriminator property is a property that presents in all given object
+ * shapes, and has discrete values that are unique for each shape.
+ */
 export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, any>[]): Discriminator | null {
   const shapesLength = shapes.length;
   const candidateKeys = shapes[0].keys;
@@ -338,6 +338,7 @@ export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, an
 
     let valueCount = 0;
 
+    // Check that values are unique
     for (const values of valuesByShape) {
       for (const value of values) {
         candidateValueSet.add(value);
