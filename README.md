@@ -1649,11 +1649,11 @@ To retrieve the array of all known discrete values, use
 [`inputValues`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputValues):
 
 ```ts
-d.enum(['Mars', 'Pluto']).inputValues
+d.enum(['Mars', 'Pluto']).inputValues;
 // ⮕ ['Mars', 'Pluto']
 ```
 
-You can retrieve a set of discrete values even for a composite shape:
+You can retrieve a set of discrete values from a composite shape too:
 
 ```ts
 const shape1 = d.union(
@@ -1679,15 +1679,16 @@ Things get interesting when you intersect shapes that allow continuous and discr
 ```ts
 const shape2 = d.and([
   d.number(),
-  d.enum([42, 33])
+  d.enum([42, 'zero'])
 ]);
 // ⮕ Shape<number>
 
 shape2.inputValues;
-// ⮕ [42, 33]
+// ⮕ [42]
 ```
 
-Since `inputTypes` of enum and number are compatible, the shape with discrete values slices its values continuous set.
+Only values that are compatible with both enum and number are preserved.
+
 If types are incompatible, then `inputValues` is an empty array:
 
 ```ts
