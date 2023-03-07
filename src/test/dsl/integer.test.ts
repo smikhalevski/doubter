@@ -2,7 +2,7 @@ import * as d from '../../main';
 import { CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER } from '../../main/constants';
 
 describe('integer', () => {
-  test('returns an integer shape', () => {
+  test('returns a number shape', () => {
     expect(d.integer()).toBeInstanceOf(d.NumberShape);
     expect(d.int()).toBeInstanceOf(d.NumberShape);
   });

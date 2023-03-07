@@ -2,7 +2,7 @@ import * as d from '../../main';
 import { Shape } from '../../main';
 
 describe('lazy', () => {
-  test('returns a shape', () => {
+  test('returns a lazy shape', () => {
     const shape = d.string();
     const lazyShape = d.lazy(() => shape);
 
