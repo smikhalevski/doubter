@@ -9,6 +9,7 @@ No-hassle runtime validation and transformation library.
 - TypeScript first;
 - Zero dependencies;
 - Sync and async validation and transformation flows;
+- Collect all validation issues or abort after the first issue is encountered;
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
@@ -792,8 +793,7 @@ d.string().refine(isMarsOrPluto)
 // ⮕ Shape<string, 'Mars' | 'Pluto'>
 ```
 
-By default, issues raised by `refine()` have [`predicate` code](#validation-errors). You can provide a custom issue
-code:
+By default, `refine` raises issues with have [`predicate`](#validation-errors) code. You can provide a custom code:
 
 ```ts
 const shape2 = d.string().refine(
@@ -1534,8 +1534,8 @@ shape4.inputType;
 
 ## `never` value type
 
-The `never` type represents the type of values that never occur and tells that the shape would always raise a validation
-issue when parsing any input.
+The `never` type represents the type of values that are impossible and tells that the shape would always raise a
+validation issue when parsing any input.
 
 ```ts
 const neverShape = d.never();
@@ -1581,28 +1581,28 @@ To check that the shape accepts a particular input type use
 [`isAcceptedType`](https://smikhalevski.github.io/doubter/classes/Shape.html#isAcceptedType):
 
 ```ts
-const stringShape = d.string();
+const shape1 = d.string();
 
-stringShape.isAcceptedType('string');
+shape1.isAcceptedType('string');
 // ⮕ true
 
-stringShape.isAcceptedType('number');
+shape1.isAcceptedType('number');
 // ⮕ false
 ```
 
-You can check that the shape is [optional](#optional-and-non-optional) by checking that it accepts `undefined` input
-value type:
+For example, you can check that the shape is [optional](#optional-and-non-optional) by checking that it accepts
+`undefined` input value type:
 
 ```ts
-const optionalShape = d.number().optional();
+const shape2 = d.number().optional();
 
-optionalShape.isAcceptedType('number');
+shape2.isAcceptedType('number');
 // ⮕ true
 
-optionalShape.isAcceptedType('undefined');
+shape2.isAcceptedType('undefined');
 // ⮕ true
 
-optionalShape.isAcceptedType('null');
+shape2.isAcceptedType('null');
 // ⮕ false
 ```
 
@@ -1614,7 +1614,7 @@ const fuzzyShape = d.any().to(d.string());
 // ⮕ Shape<any, string>
 ```
 
-This shape accepts [`any`](#any-value-type) input value type:
+`fuzzyShape` accepts [`any`](#any-value-type) input value type:
 
 ```ts
 fuzzyShape.inputTypes;
@@ -1628,11 +1628,77 @@ fuzzyShape.isAcceptedType('undefined');
 // ⮕ true
 ```
 
-But parsing `undefined` with `fuzzyShape` would produce an error:
+But parsing `undefined` with `fuzzyShape` would produce an error, since `undefined` isn't a string:
 
 ```ts
 fuzzyShape.parse('undefined');
 // ❌ ValidationError: type at /: Must be a string
+```
+
+## Input values
+
+Shapes can represent discrete and continuous sets of values. The best example of shapes with discrete value sets are
+[`d.const`](#const) and [`d.enum`](#enum). These shapes constrain input to match a set of values known beforehand.
+
+```ts
+d.enum(['Mars', 'Pluto']);
+// ⮕ Shape<'Mars' | 'Pluto'>
+```
+
+To retrieve the array of all known discrete values, use
+[`inputValues`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputValues):
+
+```ts
+d.enum(['Mars', 'Pluto']).inputValues
+// ⮕ ['Mars', 'Pluto']
+```
+
+You can retrieve a set of discrete values even for a composite shape:
+
+```ts
+const shape1 = d.union(
+  d.enum(['Mars', 'Pluto']),
+  d.const('Venus')
+);
+
+shape1.inputValues;
+// ⮕ ['Mars', 'Pluto', 'Venus']
+```
+
+The best example of shapes with continuous value sets are [`d.string`](#string) and [`d.number`](#number). These shapes
+constrain an input to be any string or any number, so there's no finite list of known values. For such shapes,
+`inputValues` is `null`.
+
+```ts
+d.string().inputValues;
+// ⮕ null
+```
+
+Things get interesting when you intersect shapes that allow continuous and discrete values:
+
+```ts
+const shape2 = d.and([
+  d.number(),
+  d.enum([42, 33])
+]);
+// ⮕ Shape<number>
+
+shape2.inputValues;
+// ⮕ [42, 33]
+```
+
+Since `inputTypes` of enum and number are compatible, the shape with discrete values slices its values continuous set.
+If types are incompatible, then `inputValues` is an empty array:
+
+```ts
+const shape3 = d.or([d.number(), d.const('Mars')])
+// ⮕ Shape<never>
+        
+shape3.inputValues;
+// ⮕ []
+        
+shape3.inputTypes;
+// ⮕ ['never']
 ```
 
 ## Nested shapes
@@ -1758,8 +1824,8 @@ Read more about [Refinements](#refinements) and how to [Add, get and delete chec
 You can create custom shapes by extending the [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html)
 class.
 
-> **Note**&ensp;Most of the time you don't need to implement a custom shape class and should prefer using
-[`transform`](#transform-transformasync) or similar features instead.
+> **Note**&ensp;If you don't know why you need to implement a custom shape instead of using
+> [`transform`](#transform-transformasync) or similar features, then you probably don't need a custom shape.
 
 `Shape` has several protected methods that you can override to alter different aspects of the shape logic.
 
@@ -1771,10 +1837,11 @@ class.
 </dt>
 <dd>
 
-Place the synchronous parsing logic inside this method. It receives an `input` that must be parsed and should return
-`null` if the output is the same as input, [`Ok`](https://smikhalevski.github.io/doubter/interfaces/Ok.html) if the
-output contains an updated value, or an array of
-[`Issue`](https://smikhalevski.github.io/doubter/interfaces/Issue.html) objects.
+Synchronous input parsing is delegated to this method. It receives an `input` that must be parsed and should return
+the [`Result`](https://smikhalevski.github.io/doubter/types/Result.html):
+- `null` if the output is the same as the input;
+- [`Ok`](https://smikhalevski.github.io/doubter/interfaces/Ok.html) if the output contains a new value;
+- an array of [`Issue`](https://smikhalevski.github.io/doubter/interfaces/Issue.html) objects.
 
 </dd>
 <dt>
@@ -1784,8 +1851,8 @@ output contains an updated value, or an array of
 </dt>
 <dd>
 
-Asynchronous parsing is handled by this method. It has the same semantics as `_apply` but returns a `Promise`. You need
-to override this method only if you have a separate logic for async parsing.
+Asynchronous input parsing is delegated to this method. It has the same semantics as `_apply` but returns a `Promise`.
+You need to override this method only if you have a separate logic for async parsing.
 
 </dd>
 <dt>
@@ -1795,7 +1862,7 @@ to override this method only if you have a separate logic for async parsing.
 </dt>
 <dd>
 
-Return `true` if your shape supports async parsing only, otherwise you don't need to override this method.
+Must return `true` if your shape supports async parsing only, otherwise you don't need to override this method.
 
 </dd>
 <dt>
@@ -1805,8 +1872,8 @@ Return `true` if your shape supports async parsing only, otherwise you don't nee
 </dt>
 <dd>
 
-Returns the array of [runtime value types](#introspection) that can be processed by the shape. Elements of the returned
-array don't have to be unique and are available publicly as a readonly
+Must return an array of [runtime value types](#introspection) that can be processed by the shape. Elements of the
+returned array don't have to be unique and are available publicly as a readonly
 [`inputTypes`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputTypes) array.
 
 </dd>
@@ -1817,7 +1884,9 @@ array don't have to be unique and are available publicly as a readonly
 </dt>
 <dd>
 
-If your shape is applicable only to a known list of literal values, return them using this method.
+Must return an array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous range
+of values. An empty array means that the shape doesn't accept any values at all, like
+[`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) for example.
 
 </dd>
 </dl>

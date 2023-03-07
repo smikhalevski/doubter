@@ -69,26 +69,22 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   at(key: unknown): AnyShape | null {
-    const { shapes } = this;
+    const shapes = [];
 
+    for (const shape of this.shapes) {
+      const valueShape = shape.at(key);
+
+      if (valueShape !== null) {
+        shapes.push(valueShape);
+      }
+    }
     if (shapes.length === 0) {
       return null;
     }
     if (shapes.length === 1) {
-      return shapes[0].at(key);
+      return shapes[0];
     }
-
-    const valueShapes = [];
-
-    for (const shape of shapes) {
-      const valueShape = shape.at(key);
-
-      if (valueShape === null) {
-        return null;
-      }
-      valueShapes.push(valueShape);
-    }
-    return new IntersectionShape(valueShapes);
+    return new IntersectionShape(shapes);
   }
 
   deepPartial(): DeepPartialIntersectionShape<U> {
@@ -100,9 +96,6 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   protected _getInputTypes(): readonly Type[] {
-    if (hasZeroValues(this.inputValues)) {
-      return [TYPE_NEVER];
-    }
     return intersectTypes(this.shapes.map(getShapeInputTypes));
   }
 
@@ -240,9 +233,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
  * @param typesByShape The array of arrays of unique input types associated with each shape in the intersection.
  */
 export function intersectTypes(typesByShape: Array<readonly Type[]>): Type[] {
-  const shapesLength = typesByShape.length;
-
-  if (shapesLength === 0) {
+  if (typesByShape.length === 0) {
     return [TYPE_NEVER];
   }
 
@@ -259,7 +250,7 @@ export function intersectTypes(typesByShape: Array<readonly Type[]>): Type[] {
     }
 
     for (let j = 0; j < types.length; ++j) {
-      if (!shapeTypes.includes(types[j])) {
+      if (shapeTypes.indexOf(types[j]) === -1) {
         types.splice(j--, 1);
       }
     }
@@ -278,32 +269,27 @@ export function intersectTypes(typesByShape: Array<readonly Type[]>): Type[] {
  * @param valuesByShape The array of arrays of discrete values accepted by shapes.
  */
 export function intersectValues(valuesByShape: Array<readonly unknown[] | null>): unknown[] | null {
-  const shapesLength = valuesByShape.length;
+  let values: unknown[] | null = null;
 
-  if (shapesLength === 0 || valuesByShape.some(hasZeroValues)) {
-    return [];
-  }
-  if (valuesByShape.indexOf(null) !== -1) {
-    return null;
-  }
-
-  const values = valuesByShape[0]!.slice(0);
-
-  for (let i = 1; i < shapesLength && values.length !== 0; ++i) {
-    const shapeValues = valuesByShape[i]!;
-
-    for (let j = 0; j < values.length; ++j) {
-      if (!shapeValues.includes(values[j])) {
-        values.splice(j--, 1);
+  for (const shapeValues of valuesByShape) {
+    if (shapeValues === null) {
+      continue;
+    }
+    if (values === null) {
+      values = shapeValues.slice(0);
+      continue;
+    }
+    for (let i = 0; i < values.length; ++i) {
+      if (!shapeValues.includes(values[i])) {
+        values.splice(i--, 1);
       }
+    }
+    if (values.length === 0) {
+      return values;
     }
   }
 
   return values;
-}
-
-function hasZeroValues(values: readonly unknown[] | null): boolean {
-  return values !== null && values.length === 0;
 }
 
 /**

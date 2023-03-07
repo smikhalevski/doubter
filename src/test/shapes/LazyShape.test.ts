@@ -1,5 +1,5 @@
 import { ApplyOptions, DeepPartialProtocol, LazyShape, ObjectShape, Result, Shape, StringShape } from '../../main';
-import { TYPE_ANY, TYPE_OBJECT } from '../../main/constants';
+import { TYPE_NEVER, TYPE_OBJECT } from '../../main/constants';
 
 describe('LazyShape', () => {
   class AsyncShape extends Shape {
@@ -72,7 +72,7 @@ describe('LazyShape', () => {
     test('prevents short circuit', () => {
       const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
 
-      expect(lazyShape['_getInputTypes']()).toEqual([TYPE_ANY]);
+      expect(lazyShape['_getInputTypes']()).toEqual([TYPE_NEVER]);
     });
 
     test('prevents infinite loop', () => {

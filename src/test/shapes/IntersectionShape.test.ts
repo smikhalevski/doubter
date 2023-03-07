@@ -171,16 +171,8 @@ describe('IntersectionShape', () => {
       expect(shape.shapes[1]).toBe(shape3);
     });
 
-    test('returns null if key does not exist in all children', () => {
-      const shape1 = new Shape();
-      const shape2 = new Shape();
-      const shape3 = new Shape();
-      const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
-      const arrShape = new ArrayShape(null, shape3);
-
-      const andShape = new IntersectionShape([objShape, arrShape]);
-
-      expect(andShape.at('key1')).toBeNull();
+    test('returns null if key does not exist in any of children', () => {
+      expect(new IntersectionShape([new Shape(), new Shape()]).at('aaa')).toBeNull();
     });
   });
 
@@ -232,7 +224,19 @@ describe('IntersectionShape', () => {
     });
 
     test('null if underlying shapes accept continuous value ranges', () => {
-      expect(new IntersectionShape([new NumberShape(), new EnumShape([111, 222])]).inputValues).toBeNull();
+      expect(new IntersectionShape([new NumberShape()]).inputValues).toBeNull();
+    });
+
+    test('slices values from the compatible continuous range', () => {
+      expect(new IntersectionShape([new NumberShape(), new EnumShape([111, 222])]).inputValues).toEqual([111, 222]);
+    });
+
+    test('an empty array if types are incompatible', () => {
+      expect(new IntersectionShape([new StringShape(), new EnumShape([111, 222])]).inputValues).toEqual([]);
+    });
+
+    test('complex composites', () => {
+      expect(new IntersectionShape([new StringShape(), new EnumShape(['aaa', 111])]).inputValues).toEqual(['aaa']);
     });
   });
 
@@ -319,16 +323,23 @@ describe('intersectValues', () => {
     ).toEqual([]);
   });
 
-  test('returns an empty array if there are no buckets', () => {
-    expect(intersectValues([])).toEqual([]);
+  test('returns an null if there are no buckets', () => {
+    expect(intersectValues([])).toBeNull();
   });
 
-  test('returns an empty array if some buckets are empty', () => {
+  test('returns an empty array if no common values', () => {
     expect(intersectValues([[1, 2, 3], [], null])).toEqual([]);
+    expect(intersectValues([[1, 2, 3], []])).toEqual([]);
+    expect(
+      intersectValues([
+        [1, 2],
+        [3, 4],
+      ])
+    ).toEqual([]);
   });
 
-  test('null if any of the buckets is null', () => {
-    expect(intersectValues([[1, 2, 3], null, ['aaa']])).toEqual(null);
+  test('null if all buckets are null', () => {
+    expect(intersectValues([null, null])).toBeNull();
   });
 });
 

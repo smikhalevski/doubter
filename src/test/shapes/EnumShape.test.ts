@@ -1,6 +1,6 @@
 import { EnumShape } from '../../main';
-import { CODE_ENUM, TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
-import { getUniqueEnumValues } from '../../main/shapes/EnumShape';
+import { CODE_ENUM, TYPE_ARRAY, TYPE_NEVER, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
+import { getEnumValues } from '../../main/shapes/EnumShape';
 
 enum NumberMockEnum {
   AAA,
@@ -16,19 +16,26 @@ describe('EnumShape', () => {
   test('creates an EnumShape from an array', () => {
     const shape = new EnumShape(['aaa', 'bbb']);
 
-    expect(shape.values).toEqual(['aaa', 'bbb']);
+    expect(shape.inputValues).toEqual(['aaa', 'bbb']);
     expect(shape.inputTypes).toEqual([TYPE_STRING]);
+  });
+
+  test('empty enums have never type', () => {
+    const shape = new EnumShape([]);
+
+    expect(shape.inputValues).toEqual([]);
+    expect(shape.inputTypes).toEqual([TYPE_NEVER]);
   });
 
   test('creates an enum shape from a native numeric enum', () => {
     const shape = new EnumShape(NumberMockEnum);
 
-    expect(shape.values).toEqual([NumberMockEnum.AAA, NumberMockEnum.BBB]);
+    expect(shape.inputValues).toEqual([NumberMockEnum.AAA, NumberMockEnum.BBB]);
     expect(shape.inputTypes).toEqual([TYPE_NUMBER]);
   });
 
   test('creates an enum shape from a native string enum', () => {
-    expect(new EnumShape(StringMockEnum).values).toEqual([StringMockEnum.AAA, StringMockEnum.BBB]);
+    expect(new EnumShape(StringMockEnum).inputValues).toEqual([StringMockEnum.AAA, StringMockEnum.BBB]);
   });
 
   test('creates an enum shape from a mapping object', () => {
@@ -37,7 +44,7 @@ describe('EnumShape', () => {
       BBB: 'bbb',
     };
 
-    expect(new EnumShape(obj).values).toEqual([obj.AAA, obj.BBB]);
+    expect(new EnumShape(obj).inputValues).toEqual([obj.AAA, obj.BBB]);
   });
 
   test('raises an issue if an input is not one of the numeric enum values', () => {
@@ -143,9 +150,9 @@ describe('EnumShape', () => {
   });
 });
 
-describe('getUniqueEnumValues', () => {
+describe('getEnumValues', () => {
   test('removes aliases from numerical enums', () => {
-    expect(getUniqueEnumValues(NumberMockEnum)).toEqual([0, 1]);
+    expect(getEnumValues(NumberMockEnum)).toEqual([0, 1]);
   });
 
   test('removes aliases from enum-like objects', () => {
@@ -156,7 +163,7 @@ describe('getUniqueEnumValues', () => {
       BBB: 1,
     };
 
-    expect(getUniqueEnumValues(obj)).toEqual([0, 1]);
+    expect(getEnumValues(obj)).toEqual([0, 1]);
   });
 
   test('preserves partial aliases', () => {
@@ -166,16 +173,6 @@ describe('getUniqueEnumValues', () => {
       BBB: 1,
     };
 
-    expect(getUniqueEnumValues(obj)).toEqual(['AAA', 0, 1]);
-  });
-
-  test('returns unique values', () => {
-    const obj = {
-      AAA: 0,
-      BBB: 1,
-      CCC: 1,
-    };
-
-    expect(getUniqueEnumValues(obj)).toEqual([0, 1]);
+    expect(getEnumValues(obj)).toEqual(['AAA', 0, 1]);
   });
 });

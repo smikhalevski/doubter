@@ -1,25 +1,20 @@
-import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_OBJECT, TYPE_STRING } from '../constants';
+import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_NEVER, TYPE_OBJECT, TYPE_STRING } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { canonize, createIssueFactory, getValueType, isArray, ok, ReadonlyDict, toUniqueArray } from '../utils';
+import { canonize, createIssueFactory, getValueType, isArray, ok, ReadonlyDict } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result, Type } from './Shape';
 
 /**
- * The shape that constrains an input to one of values.
+ * The shape that constrains an input to be one of values.
  *
  * @template T Allowed values.
  */
 export class EnumShape<T> extends CoercibleShape<T> {
   /**
-   * The array of unique values allowed as an input.
+   * The array of unique enum values.
    */
-  readonly values: readonly T[];
+  declare inputValues: readonly unknown[];
 
-  /**
-   * The key-value mapping that was passed as a source arguments to the constructor, or `null` if the source was an
-   * array of values.
-   */
-  protected _valueMapping: ReadonlyDict<T> | null;
   protected _typeIssueFactory;
 
   /**
@@ -38,54 +33,40 @@ export class EnumShape<T> extends CoercibleShape<T> {
   ) {
     super();
 
-    let valueMapping: ReadonlyDict | null;
-    let values: any[];
-
-    if (isArray(source)) {
-      valueMapping = null;
-      values = toUniqueArray(source);
-    } else {
-      valueMapping = source;
-      values = getUniqueEnumValues(source);
-    }
-
-    this.values = values;
-
-    this._valueMapping = valueMapping;
-    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, values);
+    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options);
   }
 
   protected _getInputTypes(): readonly Type[] {
-    const valueTypes = this.values.map(getValueType);
+    const types = this._getInputValues().map(getValueType);
 
+    if (types.length === 0) {
+      return [TYPE_NEVER];
+    }
     if (!this.isCoerced) {
-      return valueTypes;
+      return types;
     }
-
-    if (this._valueMapping !== null) {
-      valueTypes.push(TYPE_STRING);
+    if (!isArray(this.source)) {
+      types.push(TYPE_STRING);
     }
-    valueTypes.push(TYPE_ARRAY, TYPE_OBJECT);
-
-    return valueTypes;
+    return types.concat(TYPE_ARRAY, TYPE_OBJECT);
   }
 
-  protected _getInputValues(): readonly unknown[] | null {
-    return this.values;
+  protected _getInputValues(): readonly unknown[] {
+    return isArray(this.source) ? this.source : getEnumValues(this.source);
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<T> {
-    const { _applyChecks } = this;
+    const { inputValues, _applyChecks } = this;
 
     let output = input;
     let issues = null;
     let changed = false;
 
     if (
-      !this.values.includes(output) &&
+      !inputValues.includes(output) &&
       (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
     ) {
-      return this._typeIssueFactory(input, options);
+      return this._typeIssueFactory(input, options, inputValues);
     }
     if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
@@ -99,16 +80,13 @@ export class EnumShape<T> extends CoercibleShape<T> {
    * @param value The non-enum value to coerce.
    */
   protected _coerce(value: any): unknown {
-    const { _valueMapping } = this;
+    const { source } = this;
 
-    if (isArray(value) && value.length === 1 && this.values.includes((value = value[0]))) {
+    if (isArray(value) && value.length === 1 && this.inputValues.includes((value = value[0]))) {
       return value;
     }
-
-    value = canonize(value);
-
-    if (_valueMapping !== null && typeof value === 'string' && value in _valueMapping) {
-      return _valueMapping[value];
+    if (!isArray(source) && typeof (value = canonize(value)) === 'string' && source.hasOwnProperty(value)) {
+      return (source as ReadonlyDict)[value];
     }
     return NEVER;
   }
@@ -118,7 +96,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
  * Returns unique values of the enum. Source must contain key-value and value-key mapping to be considered a native
  * enum.
  */
-export function getUniqueEnumValues(source: ReadonlyDict): any[] {
+export function getEnumValues(source: ReadonlyDict): any[] {
   const values: number[] = [];
 
   for (const key in source) {
@@ -129,9 +107,9 @@ export function getUniqueEnumValues(source: ReadonlyDict): any[] {
     const bType = typeof b;
 
     if (((aType !== 'string' || bType !== 'number') && (aType !== 'number' || bType !== 'string')) || b != key) {
-      return toUniqueArray(Object.values(source));
+      return Object.values(source);
     }
-    if (typeof a === 'number' && !values.includes(a)) {
+    if (typeof a === 'number') {
       values.push(a);
     }
   }

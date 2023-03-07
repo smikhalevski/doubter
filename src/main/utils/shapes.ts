@@ -1,4 +1,14 @@
-import { TYPE_ARRAY, TYPE_DATE, TYPE_MAP, TYPE_NULL, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../constants';
+import {
+  TYPE_ANY,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_MAP,
+  TYPE_NEVER,
+  TYPE_NULL,
+  TYPE_OBJECT,
+  TYPE_PROMISE,
+  TYPE_SET,
+} from '../constants';
 import {
   AnyShape,
   ApplyChecksCallback,
@@ -48,6 +58,10 @@ export function getValueType(value: unknown): ValueType {
     return TYPE_MAP;
   }
   return type;
+}
+
+export function isAcceptedType(types: readonly Type[], type: Type): boolean {
+  return types[0] === TYPE_ANY || (types[0] !== TYPE_NEVER && type === TYPE_ANY) || types.indexOf(type) !== -1;
 }
 
 export function isAsyncShape(shape: AnyShape): boolean {

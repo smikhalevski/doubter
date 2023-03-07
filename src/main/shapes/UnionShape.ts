@@ -68,22 +68,22 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   at(key: unknown): AnyShape | null {
-    const valueShapes = [];
+    const shapes = [];
 
     for (const shape of this.shapes) {
       const valueShape = shape.at(key);
 
       if (valueShape !== null) {
-        valueShapes.push(valueShape);
+        shapes.push(valueShape);
       }
     }
-    if (valueShapes.length === 0) {
+    if (shapes.length === 0) {
       return null;
     }
-    if (valueShapes.length === 1) {
-      return valueShapes[0];
+    if (shapes.length === 1) {
+      return shapes[0];
     }
-    return new UnionShape(valueShapes);
+    return new UnionShape(shapes);
   }
 
   deepPartial(): DeepPartialUnionShape<U> {
@@ -211,7 +211,7 @@ export class UnionShape<U extends readonly AnyShape[]>
 export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
   const emptyArray: AnyShape[] = [];
 
-  const buckets: Record<ValueType, readonly AnyShape[]> = {
+  const buckets: Record<ValueType, AnyShape[]> = {
     object: emptyArray,
     array: emptyArray,
     function: emptyArray,
@@ -231,10 +231,13 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
   const bucketTypes = Object.keys(buckets) as ValueType[];
 
   for (const shape of shapes) {
-    for (const type of shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes) {
-      if (type !== TYPE_ANY && type !== TYPE_NEVER) {
-        buckets[type] = buckets[type].concat(shape);
+    const inputTypes = shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes;
+
+    for (const type of inputTypes) {
+      if (type === TYPE_ANY || type === TYPE_NEVER) {
+        continue;
       }
+      buckets[type] = buckets[type].concat(shape);
     }
   }
 

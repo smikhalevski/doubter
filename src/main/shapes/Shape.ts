@@ -33,6 +33,7 @@ import {
   getCheckIndex,
   getErrorMessage,
   getValueType,
+  isAcceptedType,
   isArray,
   isEqual,
   isObjectLike,
@@ -230,9 +231,7 @@ export class Shape<I = any, O = I> {
    * @param type The type that must be checked.
    */
   isAcceptedType(type: Type): boolean {
-    const types = this.inputTypes;
-
-    return types[0] === TYPE_ANY || (types[0] !== TYPE_NEVER && type === TYPE_ANY) || types.includes(type);
+    return isAcceptedType(this.inputTypes, type);
   }
 
   /**
@@ -780,39 +779,16 @@ Object.defineProperties(Shape.prototype, {
   inputTypes: {
     configurable: true,
 
-    get(this: Shape) {
-      let types = toUniqueArray(this._getInputTypes());
-
-      if (types.length === 0 || types.includes(TYPE_ANY)) {
-        types = [TYPE_ANY];
-      }
-      if (types.length !== 1) {
-        const neverIndex = types.indexOf(TYPE_NEVER);
-
-        if (neverIndex !== -1) {
-          types.splice(neverIndex, 1);
-        }
-      }
-
-      Object.defineProperty(this, 'inputTypes', { writable: true, value: types });
-
-      return types;
+    get() {
+      return setupShape(this).inputTypes;
     },
   },
 
   inputValues: {
     configurable: true,
 
-    get(this: Shape) {
-      let values = this._getInputValues();
-
-      if (values !== null) {
-        values = toUniqueArray(values);
-      }
-
-      Object.defineProperty(this, 'inputValues', { writable: true, value: values });
-
-      return values;
+    get() {
+      return setupShape(this).inputValues;
     },
   },
 
@@ -981,6 +957,51 @@ Object.defineProperties(Shape.prototype, {
     },
   },
 });
+
+/**
+ * Configure shape {@linkcode Shape.inputTypes} and {@linkcode Shape.inputValues}.
+ *
+ * @param shape The shape to configure.
+ * @returns The provided shape.
+ */
+function setupShape(shape: Shape): Shape {
+  let types = toUniqueArray(shape['_getInputTypes']());
+  let values;
+
+  if (types.length === 0 || types.includes(TYPE_ANY)) {
+    // Any absorbs other types
+    types = [TYPE_ANY];
+  }
+  if (types.length !== 1) {
+    // Never is erased
+    deleteArrayIndex(types, types.indexOf(TYPE_NEVER));
+  }
+
+  if (types[0] === TYPE_NEVER) {
+    // Never has no values
+    values = [];
+  } else if ((values = shape['_getInputValues']()) !== null) {
+    values = toUniqueArray(values);
+
+    // Exclude values that cannot be accepted
+    for (let i = 0; i < values.length; ++i) {
+      if (!isAcceptedType(types, getValueType(values[i]))) {
+        values.splice(i--, 1);
+      }
+    }
+
+    if (values.length === 0) {
+      // No values are accepted
+      types = [TYPE_NEVER];
+    }
+  }
+
+  Object.defineProperty(shape, 'inputTypes', { writable: true, value: types });
+
+  Object.defineProperty(shape, 'inputValues', { writable: true, value: values });
+
+  return shape;
+}
 
 /**
  * The shape that applies a transformer callback to the input.
