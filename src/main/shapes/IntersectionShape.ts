@@ -4,8 +4,11 @@ import {
   TYPE_ANY,
   TYPE_ARRAY,
   TYPE_DATE,
+  TYPE_MAP,
   TYPE_NEVER,
   TYPE_OBJECT,
+  TYPE_PROMISE,
+  TYPE_SET,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -20,6 +23,7 @@ import {
   isAsyncShape,
   isEqual,
   ok,
+  setObjectProperty,
   toDeepPartialShape,
 } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, Type } from './Shape';
@@ -190,7 +194,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   /**
-   * Finalizes the intersection by intersecting values and application of checks.
+   * Merge values and apply checks.
    */
   private _applyIntersection(
     input: any,
@@ -228,74 +232,6 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     }
     return issues;
   }
-}
-
-export function mergeValues(a: any, b: any): any {
-  if (isEqual(a, b)) {
-    return a;
-  }
-
-  const aType = getValueType(a);
-  const bType = getValueType(b);
-
-  if (aType !== bType) {
-    return NEVER;
-  }
-
-  if (aType === TYPE_DATE) {
-    if (a.getTime() === b.getTime()) {
-      return a;
-    }
-    return NEVER;
-  }
-
-  if (aType === TYPE_OBJECT) {
-    const output = Object.assign({}, a, b);
-
-    for (const key in a) {
-      if (key in b) {
-        const outputValue = mergeValues(a[key], b[key]);
-
-        if (outputValue === NEVER) {
-          return NEVER;
-        }
-        output[key] = outputValue;
-      }
-    }
-    return output;
-  }
-
-  if (aType === TYPE_ARRAY) {
-    const aLength = a.length;
-
-    if (aLength !== b.length) {
-      return NEVER;
-    }
-
-    let output = a;
-
-    for (let i = 0; i < aLength; ++i) {
-      const aValue = a[i];
-      const bValue = b[i];
-
-      if (isEqual(aValue, bValue)) {
-        continue;
-      }
-      if (output === a) {
-        output = a.slice(0);
-      }
-      const outputValue = mergeValues(aValue, bValue);
-
-      if (outputValue === NEVER) {
-        return NEVER;
-      }
-      output[i] = outputValue;
-    }
-
-    return output;
-  }
-
-  return NEVER;
 }
 
 /**
@@ -368,4 +304,78 @@ export function intersectValues(valuesByShape: Array<readonly unknown[] | null>)
 
 function hasZeroValues(values: readonly unknown[] | null): boolean {
   return values !== null && values.length === 0;
+}
+
+/**
+ * Merges values into one, or returns {@linkcode NEVER} if values are incompatible.
+ */
+export function mergeValues(a: any, b: any): any {
+  if (isEqual(a, b)) {
+    return a;
+  }
+
+  const aType = getValueType(a);
+  const bType = getValueType(b);
+
+  let output: any;
+
+  if (aType !== bType) {
+    return NEVER;
+  }
+
+  if (aType === TYPE_OBJECT) {
+    output = Object.assign({}, a);
+
+    for (const key in b) {
+      if (key in output && setObjectProperty(output, key, mergeValues(output[key], b[key])) === NEVER) {
+        return NEVER;
+      } else {
+        setObjectProperty(output, key, b[key]);
+      }
+    }
+    return output;
+  }
+
+  if (aType === TYPE_ARRAY) {
+    if (a.length !== b.length) {
+      return NEVER;
+    }
+
+    output = a.slice(0);
+
+    for (let i = 0; i < a.length; ++i) {
+      if ((output[i] = mergeValues(a[i], b[i])) === NEVER) {
+        return NEVER;
+      }
+    }
+    return output;
+  }
+
+  if (aType === TYPE_DATE) {
+    return a.getTime() === b.getTime() ? a : NEVER;
+  }
+
+  if (aType === TYPE_PROMISE) {
+    return a;
+  }
+
+  if (aType === TYPE_SET) {
+    return new Set(Array.from(a).concat(Array.from(b)));
+  }
+
+  if (aType === TYPE_MAP) {
+    output = new Map(a);
+
+    b.forEach((value: any, key: any) => {
+      if (output === NEVER || (output.has(key) && (value = mergeValues(output.get(key), value)) === NEVER)) {
+        output = NEVER;
+        return;
+      }
+      output.set(key, value);
+    });
+
+    return output;
+  }
+
+  return NEVER;
 }

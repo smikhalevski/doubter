@@ -5,6 +5,7 @@ import {
   EnumShape,
   IntersectionShape,
   NEVER,
+  NeverShape,
   NumberShape,
   ObjectShape,
   Shape,
@@ -214,6 +215,13 @@ describe('IntersectionShape', () => {
       expect(shape.inputTypes).toEqual([TYPE_NEVER]);
       expect(shape.inputValues!.length).toBe(0);
     });
+
+    test('never if contains a NeverShape', () => {
+      const shape = new IntersectionShape([new StringShape(), new NeverShape()]);
+
+      expect(shape.inputTypes).toEqual([TYPE_NEVER]);
+      expect(shape.inputValues!.length).toBe(0);
+    });
   });
 
   describe('inputValues', () => {
@@ -261,38 +269,6 @@ describe('IntersectionShape', () => {
         issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION }],
       });
     });
-  });
-});
-
-describe('mergeValues', () => {
-  test('returns value if primitives are equal', () => {
-    expect(mergeValues(111, 111)).toBe(111);
-  });
-
-  test('returns NEVER if primitive values are not equal', () => {
-    expect(mergeValues(111, 222)).toBe(NEVER);
-  });
-
-  test('returns value if dates have the same time', () => {
-    const date = new Date(111);
-
-    expect(mergeValues(date, new Date(111))).toBe(date);
-  });
-
-  test('returns NEVER if dates do not have the same time', () => {
-    expect(mergeValues(new Date(111), new Date(222))).toBe(NEVER);
-  });
-
-  test('merges objects', () => {
-    expect(mergeValues({ aaa: 111 }, { bbb: 222 })).toEqual({ aaa: 111, bbb: 222 });
-    expect(mergeValues({ aaa: 111 }, { aaa: 111, bbb: 222 })).toEqual({ aaa: 111, bbb: 222 });
-    expect(mergeValues({ aaa: 111 }, { aaa: 222 })).toEqual(NEVER);
-  });
-
-  test('merges arrays', () => {
-    expect(mergeValues([111], [111])).toEqual([111]);
-    expect(mergeValues([111], [111, 222])).toEqual(NEVER);
-    expect(mergeValues([111], [])).toEqual(NEVER);
   });
 });
 
@@ -353,5 +329,116 @@ describe('intersectValues', () => {
 
   test('null if any of the buckets is null', () => {
     expect(intersectValues([[1, 2, 3], null, ['aaa']])).toEqual(null);
+  });
+});
+
+describe('mergeValues', () => {
+  describe('primitive', () => {
+    test('returns value if primitives are equal', () => {
+      expect(mergeValues(111, 111)).toBe(111);
+      expect(mergeValues('aaa', 'aaa')).toBe('aaa');
+    });
+
+    test('returns NEVER if primitive values are not equal', () => {
+      expect(mergeValues(111, 222)).toBe(NEVER);
+    });
+  });
+
+  describe('Promise', () => {
+    test('always returns the left promise', () => {
+      const value = Promise.resolve(111);
+
+      expect(mergeValues(value, Promise.resolve(222))).toBe(value);
+    });
+  });
+
+  describe('Date', () => {
+    test('returns the left date if dates have the same time', () => {
+      const date = new Date(111);
+
+      expect(mergeValues(date, new Date(111))).toBe(date);
+    });
+
+    test('returns NEVER if dates do not have the same time', () => {
+      expect(mergeValues(new Date(111), new Date(222))).toBe(NEVER);
+    });
+  });
+
+  describe('Object', () => {
+    test('merges objects', () => {
+      expect(mergeValues({ aaa: 111 }, { aaa: 111, bbb: 222 })).toEqual({ aaa: 111, bbb: 222 });
+      expect(mergeValues({ aaa: 111 }, { bbb: 222, ccc: 333 })).toEqual({ aaa: 111, bbb: 222, ccc: 333 });
+    });
+
+    test('returns NEVER if objects have different values for the same key', () => {
+      expect(mergeValues({ aaa: 111 }, { aaa: 222 })).toEqual(NEVER);
+    });
+  });
+
+  describe('Array', () => {
+    test('merges equal arrays', () => {
+      expect(mergeValues([111], [111])).toEqual([111]);
+    });
+
+    test('merges nested objects', () => {
+      expect(mergeValues([{ aaa: 111 }], [{ bbb: 222 }])).toEqual([{ aaa: 111, bbb: 222 }]);
+    });
+
+    test('returns NEVER if arrays have different length', () => {
+      expect(mergeValues([111], [111, 222])).toEqual(NEVER);
+      expect(mergeValues([111], [])).toEqual(NEVER);
+    });
+
+    test('returns NEVER if arrays have different elements in same positions', () => {
+      expect(mergeValues([111], [222])).toEqual(NEVER);
+    });
+  });
+
+  describe('Set', () => {
+    test('merges Set instances', () => {
+      expect(mergeValues(new Set([111]), new Set([222, 333]))).toEqual(new Set([111, 222, 333]));
+    });
+  });
+
+  describe('Map', () => {
+    test('merges non-shared keys', () => {
+      expect(mergeValues(new Map([['aaa', 111]]), new Map([['bbb', 222]]))).toEqual(
+        new Map([
+          ['aaa', 111],
+          ['bbb', 222],
+        ])
+      );
+    });
+
+    test('merges nested objects', () => {
+      expect(mergeValues(new Map([['aaa', { bbb: 111 }]]), new Map([['aaa', { ccc: 222 }]]))).toEqual(
+        new Map([['aaa', { bbb: 111, ccc: 222 }]])
+      );
+    });
+
+    test('returns NEVER if nested objects cannot be intersected', () => {
+      expect(mergeValues(new Map([['aaa', { bbb: 111 }]]), new Map([['aaa', { bbb: 222 }]]))).toBe(NEVER);
+    });
+
+    test('preserves shared Map keys as is if they are equal', () => {
+      expect(
+        mergeValues(
+          new Map([['aaa', 111]]),
+          new Map([
+            ['aaa', 111],
+            ['bbb', 222],
+          ])
+        )
+      ).toEqual(
+        new Map([
+          ['aaa', 111],
+          ['bbb', 222],
+        ])
+      );
+    });
+
+    test('returns NEVER if Maps have non-equal values for shared keys', () => {
+      expect(mergeValues(new Map([['aaa', 111]]), new Map([['aaa', 222]]))).toBe(NEVER);
+    });
   });
 });
