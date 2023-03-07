@@ -3,7 +3,7 @@ import { ArrayShape, StringShape } from '../../main';
 import { CODE_TYPE, TYPE_FUNCTION } from '../../main/constants';
 
 describe('function', () => {
-  test('returns a shape', () => {
+  test('returns a function shape', () => {
     expect(d.fn()).toBeInstanceOf(d.FunctionShape);
     expect(d.function()).toBeInstanceOf(d.FunctionShape);
   });

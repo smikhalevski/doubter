@@ -1,8 +1,16 @@
-import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../constants';
+import {
+  CODE_TYPE,
+  MESSAGE_DATE_TYPE,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_NUMBER,
+  TYPE_OBJECT,
+  TYPE_STRING,
+} from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory, isArray, isValidDate, ok, canonize } from '../utils';
+import { canonize, createIssueFactory, isArray, isValidDate, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, ValueType } from './Shape';
+import { NEVER, Result, Type } from './Shape';
 
 /**
  * The shape of the `Date` object.
@@ -21,9 +29,9 @@ export class DateShape extends CoercibleShape<Date> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
-      return [TYPE_DATE, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
+      return [TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
     } else {
       return [TYPE_DATE];
     }

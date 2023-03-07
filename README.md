@@ -9,6 +9,7 @@ No-hassle runtime validation and transformation library.
 - TypeScript first;
 - Zero dependencies;
 - Sync and async validation and transformation flows;
+- Collect all validation issues or abort after the first issue is encountered;
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
@@ -771,13 +772,13 @@ Refinements are a simplified checks that use a predicate callback to validate an
 would raise an issue if the input string is less than six characters long.
 
 ```ts
-const shape = d.string().refine(value => value.length >= 6);
+const shape1 = d.string().refine(value => value.length >= 6);
 // ⮕ Shape<string>
 
-shape.parse('Uranus');
+shape1.parse('Uranus');
 // ⮕ 'Uranus'
 
-shape.parse('Mars');
+shape1.parse('Mars');
 // ❌ ValidationError: predicate at /: Must conform the predicate
 ```
 
@@ -792,8 +793,20 @@ d.string().refine(isMarsOrPluto)
 // ⮕ Shape<string, 'Mars' | 'Pluto'>
 ```
 
-A predicate callback receives the value that must be validated and parsing options, so you can access
-[your custom context](#parsing-context).
+By default, `refine` raises issues with have [`predicate`](#validation-errors) code. You can provide a custom code:
+
+```ts
+const shape2 = d.string().refine(
+  isMarsOrPluto,
+  {
+    code: 'unknownPlanet',
+    message: 'Must be Mars or Pluto'
+  }
+);
+
+shape2.parse('Venus');
+// ❌ ValidationError: unknownPlanet at /: Must be Mars or Pluto
+```
 
 # Transformations
 
@@ -1462,9 +1475,12 @@ Types returned from `Shape.typeOf` are a superset of types returned from the `ty
 
 <table>
 <tr><th><code>Shape.typeOf</code></th><th><code>typeof</code></th></tr>
-<tr><td><code>object</code></td><td rowspan="4"><code>object</code></td></tr>
+<tr><td><code>object</code></td><td rowspan="7"><code>object</code></td></tr>
 <tr><td><code>array</code></td></tr>
 <tr><td><code>date</code></td></tr>
+<tr><td><code>promise</code></td></tr>
+<tr><td><code>set</code></td></tr>
+<tr><td><code>map</code></td></tr>
 <tr><td><code>null</code></td></tr>
 <tr><td><code>function</code></td><td><code>function</code></td></tr>
 <tr><td><code>string</code></td><td><code>string</code></td></tr>
@@ -1518,8 +1534,8 @@ shape4.inputType;
 
 ## `never` value type
 
-The `never` type represents the type of values that never occur and tells that the shape would always raise a validation
-issue when parsing any input.
+The `never` type represents the type of values that are impossible and tells that the shape would always raise a
+validation issue when parsing any input.
 
 ```ts
 const neverShape = d.never();
@@ -1565,28 +1581,28 @@ To check that the shape accepts a particular input type use
 [`isAcceptedType`](https://smikhalevski.github.io/doubter/classes/Shape.html#isAcceptedType):
 
 ```ts
-const stringShape = d.string();
+const shape1 = d.string();
 
-stringShape.isAcceptedType('string');
+shape1.isAcceptedType('string');
 // ⮕ true
 
-stringShape.isAcceptedType('number');
+shape1.isAcceptedType('number');
 // ⮕ false
 ```
 
-You can check that the shape is [optional](#optional-and-non-optional) by checking that it accepts `undefined` input
-value type:
+For example, you can check that the shape is [optional](#optional-and-non-optional) by checking that it accepts
+`undefined` input value type:
 
 ```ts
-const optionalShape = d.number().optional();
+const shape2 = d.number().optional();
 
-optionalShape.isAcceptedType('number');
+shape2.isAcceptedType('number');
 // ⮕ true
 
-optionalShape.isAcceptedType('undefined');
+shape2.isAcceptedType('undefined');
 // ⮕ true
 
-optionalShape.isAcceptedType('null');
+shape2.isAcceptedType('null');
 // ⮕ false
 ```
 
@@ -1594,29 +1610,96 @@ The fact that a shape accepts a particular input type, does not guarantee that i
 of this type is parsed. For example, consider the [pipe](#shape-piping) from [`d.any`](#any) to [`d.string`](#string):
 
 ```ts
-const anyShape = d.any().to(d.string());
+const fuzzyShape = d.any().to(d.string());
 // ⮕ Shape<any, string>
 ```
 
-This shape accepts [`any`](#any-value-type) input value type:
+`fuzzyShape` accepts [`any`](#any-value-type) input value type:
 
 ```ts
-anyShape.inputTypes;
+fuzzyShape.inputTypes;
 // ⮕ ['any']
 ```
 
 Since anything can be assigned to `any`, an `undefined` type is accepted:
 
 ```ts
-anyShape.isAcceptedType('undefined');
+fuzzyShape.isAcceptedType('undefined');
 // ⮕ true
 ```
 
-But parsing `undefined` with `anyShape` would produce an error:
+But parsing `undefined` with `fuzzyShape` would produce an error, since `undefined` isn't a string:
 
 ```ts
-anyShape.parse('undefined');
+fuzzyShape.parse('undefined');
 // ❌ ValidationError: type at /: Must be a string
+```
+
+## Input values
+
+Shapes can represent discrete and continuous sets of values. The best example of shapes with discrete value sets are
+[`d.const`](#const) and [`d.enum`](#enum). These shapes constrain input to match a set of values known beforehand.
+
+```ts
+d.enum(['Mars', 'Pluto']);
+// ⮕ Shape<'Mars' | 'Pluto'>
+```
+
+To retrieve the array of all known discrete values, use
+[`inputValues`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputValues):
+
+```ts
+d.enum(['Mars', 'Pluto']).inputValues;
+// ⮕ ['Mars', 'Pluto']
+```
+
+You can retrieve a set of discrete values from a composite shape too:
+
+```ts
+const shape1 = d.union(
+  d.enum(['Mars', 'Pluto']),
+  d.const('Venus')
+);
+
+shape1.inputValues;
+// ⮕ ['Mars', 'Pluto', 'Venus']
+```
+
+The best example of shapes with continuous value sets are [`d.string`](#string) and [`d.number`](#number). These shapes
+constrain an input to be any string or any number, so there's no finite list of known values. For such shapes,
+`inputValues` is `null`.
+
+```ts
+d.string().inputValues;
+// ⮕ null
+```
+
+Things get interesting when you intersect shapes that allow continuous and discrete values:
+
+```ts
+const shape2 = d.and([
+  d.number(),
+  d.enum([42, 'zero'])
+]);
+// ⮕ Shape<number>
+
+shape2.inputValues;
+// ⮕ [42]
+```
+
+Only values that are compatible with both enum and number are preserved.
+
+If types are incompatible, then `inputValues` is an empty array:
+
+```ts
+const shape3 = d.or([d.number(), d.const('Mars')])
+// ⮕ Shape<never>
+        
+shape3.inputValues;
+// ⮕ []
+        
+shape3.inputTypes;
+// ⮕ ['never']
 ```
 
 ## Nested shapes
@@ -1742,8 +1825,8 @@ Read more about [Refinements](#refinements) and how to [Add, get and delete chec
 You can create custom shapes by extending the [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html)
 class.
 
-> **Note**&ensp;Most of the time you don't need to implement a custom shape class and should prefer using
-[`transform`](#transform-transformasync) or similar features instead.
+> **Note**&ensp;If you don't know why you need to implement a custom shape instead of using
+> [`transform`](#transform-transformasync) or similar features, then you probably don't need a custom shape.
 
 `Shape` has several protected methods that you can override to alter different aspects of the shape logic.
 
@@ -1755,10 +1838,11 @@ class.
 </dt>
 <dd>
 
-Place the synchronous parsing logic inside this method. It receives an `input` that must be parsed and should return
-`null` if the output is the same as input, [`Ok`](https://smikhalevski.github.io/doubter/interfaces/Ok.html) if the
-output contains an updated value, or an array of
-[`Issue`](https://smikhalevski.github.io/doubter/interfaces/Issue.html) objects.
+Synchronous input parsing is delegated to this method. It receives an `input` that must be parsed and should return
+the [`Result`](https://smikhalevski.github.io/doubter/types/Result.html):
+- `null` if the output is the same as the input;
+- [`Ok`](https://smikhalevski.github.io/doubter/interfaces/Ok.html) if the output contains a new value;
+- an array of [`Issue`](https://smikhalevski.github.io/doubter/interfaces/Issue.html) objects.
 
 </dd>
 <dt>
@@ -1768,8 +1852,8 @@ output contains an updated value, or an array of
 </dt>
 <dd>
 
-Asynchronous parsing is handled by this method. It has the same semantics as `_apply` but returns a `Promise`. You need
-to override this method only if you have a separate logic for async parsing.
+Asynchronous input parsing is delegated to this method. It has the same semantics as `_apply` but returns a `Promise`.
+You need to override this method only if you have a separate logic for async parsing.
 
 </dd>
 <dt>
@@ -1779,7 +1863,7 @@ to override this method only if you have a separate logic for async parsing.
 </dt>
 <dd>
 
-Return `true` if your shape supports async parsing only, otherwise you don't need to override this method.
+Must return `true` if your shape supports async parsing only, otherwise you don't need to override this method.
 
 </dd>
 <dt>
@@ -1789,8 +1873,8 @@ Return `true` if your shape supports async parsing only, otherwise you don't nee
 </dt>
 <dd>
 
-Returns the array of [runtime value types](#introspection) that can be processed by the shape. Elements of the returned
-array don't have to be unique and are available publicly as a readonly
+Must return an array of [runtime value types](#introspection) that can be processed by the shape. Elements of the
+returned array don't have to be unique and are available publicly as a readonly
 [`inputTypes`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputTypes) array.
 
 </dd>
@@ -1801,7 +1885,9 @@ array don't have to be unique and are available publicly as a readonly
 </dt>
 <dd>
 
-If your shape is applicable only to a known list of literal values, return them using this method.
+Must return an array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous range
+of values. An empty array means that the shape doesn't accept any values at all, like
+[`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) for example.
 
 </dd>
 </dl>
@@ -1909,7 +1995,8 @@ npm run perf -- --testNamePattern Overall
 
 # `any`
 
-Returns a [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
+[`any`](https://smikhalevski.github.io/doubter/functions/any.html) returns a
+[`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
 
 An unconstrained value that is inferred as `any`:
 
@@ -1935,7 +2022,8 @@ d.any((value): value is string => typeof value === 'string');
 
 # `array`
 
-Returns an [`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
+[`array`](https://smikhalevski.github.io/doubter/functions/array.html) returns an
+[`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
 
 Constrains a value to be an array:
 
@@ -1993,7 +2081,8 @@ shape.parse('Rose');
 
 # `bigint`
 
-Returns a [`BigIntShape`](https://smikhalevski.github.io/doubter/classes/BigIntShape.html) instance.
+[`bigint`](https://smikhalevski.github.io/doubter/functions/bigint.html) returns a
+[`BigIntShape`](https://smikhalevski.github.io/doubter/classes/BigIntShape.html) instance.
 
 Constrains a value to be a bigint.
 
@@ -2035,7 +2124,8 @@ shape.parse([BigInt(1), BigInt(2)]);
 
 # `boolean`, `bool`
 
-Returns a [`BooleanShape`](https://smikhalevski.github.io/doubter/classes/BooleanShape.html) instance.
+[`boolean`](https://smikhalevski.github.io/doubter/functions/boolean.html) returns a
+[`BooleanShape`](https://smikhalevski.github.io/doubter/classes/BooleanShape.html) instance.
 
 Constrains a value to be boolean.
 
@@ -2079,7 +2169,8 @@ shape.parse([0, 1]);
 
 # `const`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`const`](https://smikhalevski.github.io/doubter/functions/const.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 Constrains a value to be an exact value:
 
@@ -2094,7 +2185,8 @@ Consider using [`enum`](#enum) if you want a value to be one of multiple literal
 
 # `date`
 
-Returns a [`DateShape`](https://smikhalevski.github.io/doubter/classes/DateShape.html) instance.
+[`date`](https://smikhalevski.github.io/doubter/functions/date.html) returns a
+[`DateShape`](https://smikhalevski.github.io/doubter/classes/DateShape.html) instance.
 
 Constrains a value to be a valid date.
 
@@ -2129,7 +2221,8 @@ shape.parse(['2021-12-03', '2023-01-22']);
 
 # `enum`
 
-Returns an [`EnumShape`](https://smikhalevski.github.io/doubter/classes/EnumShape.html) instance.
+[`enum`](https://smikhalevski.github.io/doubter/functions/enum.html) returns an
+[`EnumShape`](https://smikhalevski.github.io/doubter/classes/EnumShape.html) instance.
 
 Constrains a value to be equal to one of predefined values:
 
@@ -2198,7 +2291,8 @@ shape.parse([1, 2]);
 
 # `finite`
 
-Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
+[`finite`](https://smikhalevski.github.io/doubter/functions/finite.html) returns a
+[`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
 Constrains a value to be a finite number.
 
@@ -2218,7 +2312,8 @@ Finite numbers follow [number type coercion rules](#coerce-to-a-number).
 
 # `function`, `fn`
 
-Returns a [`FunctionShape`](https://smikhalevski.github.io/doubter/classes/FunctionShape.html) instance.
+[`function`](https://smikhalevski.github.io/doubter/functions/function.html) returns a
+[`FunctionShape`](https://smikhalevski.github.io/doubter/classes/FunctionShape.html) instance.
 
 Constrain a value to be a function that has a particular signature.
 
@@ -2455,7 +2550,8 @@ flowchart TD
 
 # `instanceOf`
 
-Returns an [`InstanceShape`](https://smikhalevski.github.io/doubter/classes/InstanceShape.html) instance.
+[`instanceOf`](https://smikhalevski.github.io/doubter/functions/instanceOf.html) returns an
+[`InstanceShape`](https://smikhalevski.github.io/doubter/classes/InstanceShape.html) instance.
 
 Constrains a value to be an object that is an instance of a class:
 
@@ -2470,7 +2566,8 @@ d.instanceOf(User);
 
 # `integer`, `int`
 
-Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
+[`integer`](https://smikhalevski.github.io/doubter/functions/integer.html) returns a
+[`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
 Constrains a value to be an integer.
 
@@ -2493,7 +2590,8 @@ Integers follow [number type coercion rules](#coerce-to-a-number).
 
 # `intersection`, `and`
 
-Returns an [`IntersectionShape`](https://smikhalevski.github.io/doubter/classes/IntersectionShape.html) instance.
+[`intersection`](https://smikhalevski.github.io/doubter/functions/intersection.html) returns an
+[`IntersectionShape`](https://smikhalevski.github.io/doubter/classes/IntersectionShape.html) instance.
 
 Creates a shape that checks that the input value conforms to all shapes.
 
@@ -2558,7 +2656,8 @@ const shape = d.and([shape1, shape2]);
 
 # `lazy`
 
-Returns a [`LazyShape`](https://smikhalevski.github.io/doubter/classes/LazyShape.html) instance.
+[`lazy`](https://smikhalevski.github.io/doubter/functions/lazy.html) returns a
+[`LazyShape`](https://smikhalevski.github.io/doubter/classes/LazyShape.html) instance.
 
 With `lazy` you can declare recursive shapes. To showcase how to use it, let's create a shape that validates JSON data:
 
@@ -2597,7 +2696,8 @@ directly in its own initializer.
 
 # `map`
 
-Returns a [`MapShape`](https://smikhalevski.github.io/doubter/classes/MapShape.html) instance.
+[`map`](https://smikhalevski.github.io/doubter/functions/map.html) returns a
+[`MapShape`](https://smikhalevski.github.io/doubter/classes/MapShape.html) instance.
 
 Constrains an input to be a `Map` instance:
 
@@ -2636,7 +2736,8 @@ shape.parse({
 
 # `nan`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`nan`](https://smikhalevski.github.io/doubter/functions/nan.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 A shape that requires an input to be `NaN`:
 
@@ -2654,7 +2755,8 @@ d.number().nan();
 
 # `never`
 
-Returns a [`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) instance.
+[`never`](https://smikhalevski.github.io/doubter/functions/never.html) returns a
+[`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) instance.
 
 A shape that always raises a validation issue regardless of an input value:
 
@@ -2665,7 +2767,8 @@ d.never();
 
 # `not`
 
-Returns an [`ExcludeShape`](https://smikhalevski.github.io/doubter/classes/ExcludeShape.html) instance.
+[`not`](https://smikhalevski.github.io/doubter/functions/not.html) returns an
+[`ExcludeShape`](https://smikhalevski.github.io/doubter/classes/ExcludeShape.html) instance.
 
 A shape that allows any value that doesn't conform the negated shape:
 
@@ -2684,7 +2787,8 @@ More about exclusions in the [Exclude a shape](#exclude-a-shape) section.
 
 # `null`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`null`](https://smikhalevski.github.io/doubter/functions/null.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 A shape that requires an input to be `null`:
 
@@ -2695,7 +2799,8 @@ d.null();
 
 # `number`
 
-Returns a [`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
+[`number`](https://smikhalevski.github.io/doubter/functions/number.html) returns a
+[`NumberShape`](https://smikhalevski.github.io/doubter/classes/NumberShape.html) instance.
 
 A shape that requires an input to be a number.
 
@@ -2784,7 +2889,8 @@ shape.parse([1997, 1998]);
 
 # `object`
 
-Returns an [`ObjectShape`](https://smikhalevski.github.io/doubter/classes/ObjectShape.html) instance.
+[`object`](https://smikhalevski.github.io/doubter/functions/object.html) returns an
+[`ObjectShape`](https://smikhalevski.github.io/doubter/classes/ObjectShape.html) instance.
 
 Constrains a value to be an object with a set of properties:
 
@@ -3002,7 +3108,8 @@ const keyShape = shape.keyof();
 
 # `promise`
 
-Returns a [`PromiseShape`](https://smikhalevski.github.io/doubter/classes/PromiseShape.html) instance.
+[`promise`](https://smikhalevski.github.io/doubter/functions/promise.html) returns a
+[`PromiseShape`](https://smikhalevski.github.io/doubter/classes/PromiseShape.html) instance.
 
 A shape that constrains to the resolved value of a `Promise`.
 
@@ -3033,7 +3140,8 @@ shape.parseAsync(42);
 
 # `record`
 
-Returns a [`RecordShape`](https://smikhalevski.github.io/doubter/classes/RecordShape.html) instance.
+[`record`](https://smikhalevski.github.io/doubter/functions/record.html) returns a
+[`RecordShape`](https://smikhalevski.github.io/doubter/classes/RecordShape.html) instance.
 
 Constrain keys and values of a dictionary-like object:
 
@@ -3061,7 +3169,8 @@ d.record(keyShape, d.number());
 
 # `set`
 
-Returns a [`SetShape`](https://smikhalevski.github.io/doubter/classes/SetShape.html) instance.
+[`set`](https://smikhalevski.github.io/doubter/functions/set.html) returns a
+[`SetShape`](https://smikhalevski.github.io/doubter/classes/SetShape.html) instance.
 
 Constrains an input to be a `Set` instance:
 
@@ -3102,7 +3211,8 @@ shape.parse('J');
 
 # `string`
 
-Returns a [`StringShape`](https://smikhalevski.github.io/doubter/classes/StringShape.html) instance.
+[`string`](https://smikhalevski.github.io/doubter/functions/string.html) returns a
+[`StringShape`](https://smikhalevski.github.io/doubter/classes/StringShape.html) instance.
 
 Constrains a value to be string.
 
@@ -3175,7 +3285,8 @@ shape.parse(['Jill', 'Sarah']);
 
 # `symbol`
 
-Returns a [`SymbolShape`](https://smikhalevski.github.io/doubter/classes/SymbolShape.html) instance.
+[`symbol`](https://smikhalevski.github.io/doubter/functions/symbol.html) returns a
+[`SymbolShape`](https://smikhalevski.github.io/doubter/classes/SymbolShape.html) instance.
 
 A shape that constrains a value to be an arbitrary symbol.
 
@@ -3205,7 +3316,9 @@ d.enum([FOO, BAR]);
 
 # `transform`, `transformAsync`
 
-Returns a [`TransformShape`](https://smikhalevski.github.io/doubter/classes/TransformShape.html) instance.
+Both [`transform`](https://smikhalevski.github.io/doubter/functions/transform.html) and
+[`transformAsync`](https://smikhalevski.github.io/doubter/functions/transformAsync.html) return a
+[`TransformShape`](https://smikhalevski.github.io/doubter/classes/TransformShape.html) instance.
 
 Transforms the input value:
 
@@ -3231,7 +3344,8 @@ For more information, see [Transformations](#transformations) section.
 
 # `tuple`
 
-Returns an [`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
+[`tuple`](https://smikhalevski.github.io/doubter/functions/tuple.html) returns an
+[`ArrayShape`](https://smikhalevski.github.io/doubter/classes/ArrayShape.html) instance.
 
 Constrains a value to be a tuple where elements at particular positions have concrete types:
 
@@ -3255,7 +3369,8 @@ Tuples follow [array type coercion rules](#coerce-to-an-array).
 
 # `undefined`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`undefined`](https://smikhalevski.github.io/doubter/functions/undefined.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 A shape that requires an input to be `undefined`:
 
@@ -3266,7 +3381,8 @@ d.undefined();
 
 # `union`, `or`
 
-Returns a [`UnionShape`](https://smikhalevski.github.io/doubter/classes/UnionShape.html) instance.
+[`union`](https://smikhalevski.github.io/doubter/functions/union.html) returns a
+[`UnionShape`](https://smikhalevski.github.io/doubter/classes/UnionShape.html) instance.
 
 A constraint that allows a value to be one of the given types:
 
@@ -3438,7 +3554,8 @@ This behaviour is applied to discriminated unions as well.
 
 # `unknown`
 
-Returns a [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
+[`unknown`](https://smikhalevski.github.io/doubter/functions/unknown.html) returns a
+[`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html) instance.
 
 An unconstrained value that is inferred as `unknown`:
 
@@ -3449,7 +3566,8 @@ d.unknown();
 
 # `void`
 
-Returns a [`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
+[`void`](https://smikhalevski.github.io/doubter/functions/void.html) returns a
+[`ConstShape`](https://smikhalevski.github.io/doubter/classes/ConstShape.html) instance.
 
 A shape that requires an input to be `undefined` that is typed as `void`:
 

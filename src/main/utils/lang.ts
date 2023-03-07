@@ -7,7 +7,7 @@ export function isEqual(a: unknown, b: unknown): boolean {
   return a === b || (a !== a && b !== b);
 }
 
-export function isObjectLike(value: unknown): value is Record<any, any> {
+export function isObjectLike<T extends Record<any, any>>(value: unknown): value is T {
   return value !== null && typeof value === 'object';
 }
 

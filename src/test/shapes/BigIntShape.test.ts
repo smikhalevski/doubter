@@ -7,12 +7,13 @@ import {
   TYPE_BOOLEAN,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../../main/constants';
 
 describe('BigIntShape', () => {
-  test('creates a string shape', () => {
+  test('creates a BigIntShape', () => {
     const shape = new BigIntShape();
 
     expect(shape.isAsync).toBe(false);
@@ -39,34 +40,44 @@ describe('BigIntShape', () => {
     });
   });
 
-  test('updates input types when coerced', () => {
-    const shape = new BigIntShape().coerce();
+  describe('coerce', () => {
+    test('updates input types when coerced', () => {
+      const shape = new BigIntShape().coerce();
 
-    expect(shape.inputTypes).toEqual([
-      TYPE_BIGINT,
-      TYPE_STRING,
-      TYPE_NUMBER,
-      TYPE_BOOLEAN,
-      TYPE_ARRAY,
-      TYPE_UNDEFINED,
-      TYPE_NULL,
-    ]);
-  });
+      expect(shape.inputTypes).toEqual([
+        TYPE_BIGINT,
+        TYPE_OBJECT,
+        TYPE_STRING,
+        TYPE_NUMBER,
+        TYPE_BOOLEAN,
+        TYPE_ARRAY,
+        TYPE_UNDEFINED,
+        TYPE_NULL,
+      ]);
+    });
 
-  test('coerces an input', () => {
-    expect(new BigIntShape().coerce().parse(111)).toBe(BigInt(111));
-    expect(new BigIntShape().coerce().parse(true)).toBe(BigInt(1));
-    expect(new BigIntShape().parse(true, { coerced: true })).toBe(BigInt(1));
-  });
+    test('coerces an input', () => {
+      expect(new BigIntShape().coerce().parse(111)).toBe(BigInt(111));
+      expect(new BigIntShape().coerce().parse(new Number(111))).toBe(BigInt(111));
+      expect(new BigIntShape().coerce().parse([new Number(111)])).toBe(BigInt(111));
+      expect(new BigIntShape().coerce().parse(true)).toBe(BigInt(1));
+      expect(new BigIntShape().parse(true, { coerced: true })).toBe(BigInt(1));
+    });
 
-  test('raises an issue if coercion fails', () => {
-    expect(new BigIntShape().coerce().try(['aaa'])).toEqual({
-      ok: false,
-      issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_BIGINT_TYPE, param: TYPE_BIGINT }],
+    test('raises an issue if coercion fails', () => {
+      expect(new BigIntShape().coerce().try(['aaa'])).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_BIGINT_TYPE, param: TYPE_BIGINT }],
+      });
     });
   });
 
-  describe('coercion', () => {
+  describe('_coerce', () => {
+    test('coerces a String wrapper', () => {
+      expect(new BigIntShape()['_coerce'](String('111'))).toBe(BigInt(111));
+      expect(new BigIntShape()['_coerce']([String('111')])).toBe(BigInt(111));
+    });
+
     test('coerces a string', () => {
       expect(new BigIntShape()['_coerce']('111')).toBe(BigInt(111));
 

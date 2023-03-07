@@ -1,8 +1,8 @@
 import { ConstShape } from '../../main';
-import { CODE_CONST } from '../../main/constants';
+import { CODE_CONST, TYPE_STRING } from '../../main/constants';
 
 describe('ConstShape', () => {
-  test('allows exact value', () => {
+  test('parses exact value', () => {
     const shape = new ConstShape('aaa');
 
     expect(shape.value).toBe('aaa');
@@ -27,5 +27,13 @@ describe('ConstShape', () => {
       ok: false,
       issues: [{ code: 'xxx' }],
     });
+  });
+
+  test('returns input types of the value', () => {
+    expect(new ConstShape('aaa').inputTypes).toEqual([TYPE_STRING]);
+  });
+
+  test('returns the input value', () => {
+    expect(new ConstShape('aaa').inputValues).toEqual(['aaa']);
   });
 });

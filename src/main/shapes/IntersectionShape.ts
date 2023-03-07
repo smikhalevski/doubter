@@ -4,8 +4,11 @@ import {
   TYPE_ANY,
   TYPE_ARRAY,
   TYPE_DATE,
+  TYPE_MAP,
   TYPE_NEVER,
   TYPE_OBJECT,
+  TYPE_PROMISE,
+  TYPE_SET,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -13,14 +16,17 @@ import {
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
+  getShapeInputTypes,
+  getShapeInputValues,
   getValueType,
   isArray,
   isAsyncShape,
   isEqual,
   ok,
+  setObjectProperty,
   toDeepPartialShape,
 } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, Type } from './Shape';
 
 // prettier-ignore
 export type ToIntersection<U extends AnyShape> =
@@ -63,26 +69,22 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   at(key: unknown): AnyShape | null {
-    const { shapes } = this;
+    const shapes = [];
 
+    for (const shape of this.shapes) {
+      const valueShape = shape.at(key);
+
+      if (valueShape !== null) {
+        shapes.push(valueShape);
+      }
+    }
     if (shapes.length === 0) {
       return null;
     }
     if (shapes.length === 1) {
-      return shapes[0].at(key);
+      return shapes[0];
     }
-
-    const valueShapes = [];
-
-    for (const shape of shapes) {
-      const valueShape = shape.at(key);
-
-      if (valueShape === null) {
-        return null;
-      }
-      valueShapes.push(valueShape);
-    }
-    return new IntersectionShape(valueShapes);
+    return new IntersectionShape(shapes);
   }
 
   deepPartial(): DeepPartialIntersectionShape<U> {
@@ -93,8 +95,12 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return this.shapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
-    return intersectValueTypes(this.shapes.map(shape => shape.inputTypes));
+  protected _getInputTypes(): readonly Type[] {
+    return intersectTypes(this.shapes.map(getShapeInputTypes));
+  }
+
+  protected _getInputValues(): readonly unknown[] | null {
+    return intersectValues(this.shapes.map(getShapeInputValues));
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>['output']> {
@@ -181,7 +187,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 
   /**
-   * Finalizes the intersection by intersecting values and application of checks.
+   * Merge values and apply checks.
    */
   private _applyIntersection(
     input: any,
@@ -203,7 +209,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
       output = outputs[0];
 
       for (let i = 1; i < outputsLength && output !== NEVER; ++i) {
-        output = intersectValues(output, outputs[i]);
+        output = mergeValues(output, outputs[i]);
       }
       if (output === NEVER) {
         return this._typeIssueFactory(input, options);
@@ -221,83 +227,13 @@ export class IntersectionShape<U extends readonly AnyShape[]>
   }
 }
 
-export function intersectValues(a: any, b: any): any {
-  if (isEqual(a, b)) {
-    return a;
-  }
-
-  const aType = getValueType(a);
-  const bType = getValueType(b);
-
-  if (aType !== bType) {
-    return NEVER;
-  }
-
-  if (aType === TYPE_DATE) {
-    if (a.getTime() === b.getTime()) {
-      return a;
-    }
-    return NEVER;
-  }
-
-  if (aType === TYPE_OBJECT) {
-    const output = Object.assign({}, a, b);
-
-    for (const key in a) {
-      if (key in b) {
-        const outputValue = intersectValues(a[key], b[key]);
-
-        if (outputValue === NEVER) {
-          return NEVER;
-        }
-        output[key] = outputValue;
-      }
-    }
-    return output;
-  }
-
-  if (aType === TYPE_ARRAY) {
-    const aLength = a.length;
-
-    if (aLength !== b.length) {
-      return NEVER;
-    }
-
-    let output = a;
-
-    for (let i = 0; i < aLength; ++i) {
-      const aValue = a[i];
-      const bValue = b[i];
-
-      if (isEqual(aValue, bValue)) {
-        continue;
-      }
-      if (output === a) {
-        output = a.slice(0);
-      }
-      const outputValue = intersectValues(aValue, bValue);
-
-      if (outputValue === NEVER) {
-        return NEVER;
-      }
-      output[i] = outputValue;
-    }
-
-    return output;
-  }
-
-  return NEVER;
-}
-
 /**
  * Returns the intersection type.
  *
  * @param typesByShape The array of arrays of unique input types associated with each shape in the intersection.
  */
-export function intersectValueTypes(typesByShape: Array<readonly ValueType[]>): ValueType[] {
-  const shapesLength = typesByShape.length;
-
-  if (shapesLength === 0) {
+export function intersectTypes(typesByShape: Array<readonly Type[]>): Type[] {
+  if (typesByShape.length === 0) {
     return [TYPE_NEVER];
   }
 
@@ -314,7 +250,7 @@ export function intersectValueTypes(typesByShape: Array<readonly ValueType[]>): 
     }
 
     for (let j = 0; j < types.length; ++j) {
-      if (!shapeTypes.includes(types[j])) {
+      if (shapeTypes.indexOf(types[j]) === -1) {
         types.splice(j--, 1);
       }
     }
@@ -324,4 +260,108 @@ export function intersectValueTypes(typesByShape: Array<readonly ValueType[]>): 
     return [TYPE_NEVER];
   }
   return types;
+}
+
+/**
+ * Returns the array of discrete values accepted by all shapes, or returns `null` if some shapes accept continuous
+ * ranges of values.
+ *
+ * @param valuesByShape The array of arrays of discrete values accepted by shapes.
+ */
+export function intersectValues(valuesByShape: Array<readonly unknown[] | null>): unknown[] | null {
+  let values: unknown[] | null = null;
+
+  for (const shapeValues of valuesByShape) {
+    if (shapeValues === null) {
+      continue;
+    }
+    if (values === null) {
+      values = shapeValues.slice(0);
+      continue;
+    }
+    for (let i = 0; i < values.length; ++i) {
+      if (!shapeValues.includes(values[i])) {
+        values.splice(i--, 1);
+      }
+    }
+    if (values.length === 0) {
+      return values;
+    }
+  }
+
+  return values;
+}
+
+/**
+ * Merges values into one, or returns {@linkcode NEVER} if values are incompatible.
+ */
+export function mergeValues(a: any, b: any): any {
+  if (isEqual(a, b)) {
+    return a;
+  }
+
+  const aType = getValueType(a);
+  const bType = getValueType(b);
+
+  let output: any;
+
+  if (aType !== bType) {
+    return NEVER;
+  }
+
+  if (aType === TYPE_OBJECT) {
+    output = Object.assign({}, a);
+
+    for (const key in b) {
+      if (key in output && setObjectProperty(output, key, mergeValues(output[key], b[key])) === NEVER) {
+        return NEVER;
+      } else {
+        setObjectProperty(output, key, b[key]);
+      }
+    }
+    return output;
+  }
+
+  if (aType === TYPE_ARRAY) {
+    if (a.length !== b.length) {
+      return NEVER;
+    }
+
+    output = a.slice(0);
+
+    for (let i = 0; i < a.length; ++i) {
+      if ((output[i] = mergeValues(a[i], b[i])) === NEVER) {
+        return NEVER;
+      }
+    }
+    return output;
+  }
+
+  if (aType === TYPE_DATE) {
+    return a.getTime() === b.getTime() ? a : NEVER;
+  }
+
+  if (aType === TYPE_PROMISE) {
+    return a;
+  }
+
+  if (aType === TYPE_SET) {
+    return new Set(Array.from(a).concat(Array.from(b)));
+  }
+
+  if (aType === TYPE_MAP) {
+    output = new Map(a);
+
+    b.forEach((value: any, key: any) => {
+      if (output === NEVER || (output.has(key) && (value = mergeValues(output.get(key), value)) === NEVER)) {
+        output = NEVER;
+        return;
+      }
+      output.set(key, value);
+    });
+
+    return output;
+  }
+
+  return NEVER;
 }

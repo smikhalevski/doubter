@@ -12,6 +12,7 @@ import {
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
+  canonize,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -23,7 +24,7 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, Type } from './Shape';
 
 /**
  * The shape of a `Set` instance.
@@ -114,11 +115,11 @@ export class SetShape<S extends AnyShape>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
-      return this.shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
+      return this.shape.inputTypes.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
     } else {
-      return [TYPE_OBJECT];
+      return [TYPE_SET];
     }
   }
 
@@ -236,6 +237,8 @@ export class SetShape<S extends AnyShape>
    * @param value The non-`Set` value to coerce.
    */
   protected _coerceValues(value: unknown): unknown[] {
+    value = canonize(value);
+
     if (isArray(value)) {
       return value;
     }

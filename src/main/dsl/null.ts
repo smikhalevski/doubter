@@ -2,7 +2,7 @@ import { ConstShape } from '../shapes';
 import { ConstraintOptions, Message } from '../types';
 
 /**
- * Creates the shape that requires an input to equal to `null`.
+ * Creates the shape that requires an input to be equal to `null`.
  *
  * @param options The constraint options or an issue message.
  */

@@ -1,4 +1,4 @@
-import { ArrayShape, ObjectShape, PromiseShape, Shape, StringShape } from '../../main';
+import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
 import {
   CODE_TYPE,
   ERROR_REQUIRES_ASYNC,
@@ -9,24 +9,25 @@ import {
 } from '../../main/constants';
 
 describe('PromiseShape', () => {
-  test('create a promise shape', () => {
-    const shape = new StringShape();
+  test('create a PromiseShape', () => {
+    const shape = new Shape();
     const promiseShape = new PromiseShape(shape);
 
     expect(promiseShape.isAsync).toBe(true);
     expect(promiseShape.shape).toBe(shape);
+    expect(promiseShape.inputTypes).toEqual([TYPE_PROMISE]);
   });
 
   test('parses a promise', async () => {
-    await expect(new PromiseShape(new StringShape()).parseAsync(Promise.resolve('aaa'))).resolves.toBe('aaa');
+    await expect(new PromiseShape(new Shape()).parseAsync(Promise.resolve('aaa'))).resolves.toBe('aaa');
   });
 
   test('does not support sync parsing', () => {
-    expect(() => new PromiseShape(new StringShape()).try('aaa')).toThrow(new Error(ERROR_REQUIRES_ASYNC));
+    expect(() => new PromiseShape(new Shape()).try('aaa')).toThrow(new Error(ERROR_REQUIRES_ASYNC));
   });
 
   test('raises an issue if value is not a Promise', async () => {
-    await expect(new PromiseShape(new StringShape()).tryAsync('aaa')).resolves.toEqual({
+    await expect(new PromiseShape(new Shape()).tryAsync('aaa')).resolves.toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: TYPE_PROMISE }],
     });
@@ -36,7 +37,7 @@ describe('PromiseShape', () => {
     const checkMock = jest.fn(() => [{ code: 'xxx' }]);
 
     const input = Promise.resolve('aaa');
-    const promiseShape = new PromiseShape(new StringShape()).check(checkMock);
+    const promiseShape = new PromiseShape(new Shape()).check(checkMock);
 
     await expect(promiseShape.tryAsync(input)).resolves.toEqual({
       ok: false,
@@ -59,33 +60,41 @@ describe('PromiseShape', () => {
   });
 
   test('returns the same promise if the resolved value did not change', async () => {
-    const arrShape = new ArrayShape(null, new PromiseShape(new StringShape()));
+    const promise = Promise.resolve('aaa');
 
-    const arr = [Promise.resolve('aaa')];
+    const result = (await new PromiseShape(new Shape()).tryAsync(promise)) as Ok<unknown>;
 
-    await expect(arrShape.parseAsync(arr)).resolves.toBe(arr);
+    expect(result.value).toBe(promise);
   });
 
   test('returns the new promise if the resolved value was transformed', async () => {
-    const arrShape = new ArrayShape(null, new PromiseShape(new StringShape().transform(parseFloat)));
+    const promise = Promise.resolve('aaa');
 
-    const arr = [Promise.resolve('111.222'), Promise.resolve('333')];
+    const result = (await new PromiseShape(new Shape().transform(() => 111)).tryAsync(promise)) as Ok<unknown>;
 
-    const output = await arrShape.parseAsync(arr);
+    expect(result.value).not.toBe(promise);
 
-    expect(output).not.toBe(arr);
-    expect(output[0]).not.toBe(arr[0]);
-    expect(output[1]).not.toBe(arr[1]);
+    await expect(result.value).resolves.toBe(111);
+  });
 
-    await expect(output[0]).resolves.toBe(111.222);
-    await expect(output[1]).resolves.toBe(333);
+  describe('coerce', () => {
+    test('updates input types when coerced', () => {
+      expect(new PromiseShape(new StringShape()).coerce().inputTypes).toEqual([TYPE_STRING, TYPE_PROMISE]);
+    });
+
+    test('wraps an input value in a promise', async () => {
+      const result = (await new PromiseShape(new Shape()).coerce().tryAsync('aaa')) as Ok<unknown>;
+
+      expect(result.value).toBeInstanceOf(Promise);
+      await expect(result.value).resolves.toBe('aaa');
+    });
   });
 
   describe('deepPartial', () => {
     test('marks value as optional', async () => {
       const promiseShape = new PromiseShape(new StringShape()).deepPartial();
 
-      await expect(promiseShape.parseAsync(Promise.resolve(undefined))).resolves.toBe(undefined);
+      await expect(promiseShape.parseAsync(Promise.resolve(undefined))).resolves.toBeUndefined();
       await expect(promiseShape.parseAsync(Promise.resolve('aaa'))).resolves.toBe('aaa');
 
       await expect(promiseShape.tryAsync(Promise.resolve(111))).resolves.toEqual({
@@ -97,7 +106,7 @@ describe('PromiseShape', () => {
     test('parses deep optional object', async () => {
       const promiseShape = new PromiseShape(new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
 
-      await expect(promiseShape.parseAsync(Promise.resolve(undefined))).resolves.toBe(undefined);
+      await expect(promiseShape.parseAsync(Promise.resolve(undefined))).resolves.toBeUndefined();
       await expect(promiseShape.parseAsync(Promise.resolve({}))).resolves.toEqual({});
       await expect(promiseShape.parseAsync(Promise.resolve({ key1: undefined }))).resolves.toEqual({ key1: undefined });
       await expect(promiseShape.parseAsync(Promise.resolve({ key1: 'aaa' }))).resolves.toEqual({ key1: 'aaa' });

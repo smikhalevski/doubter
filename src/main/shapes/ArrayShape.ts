@@ -15,6 +15,7 @@ import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
   applyShape,
+  canonize,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -27,7 +28,7 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, Type } from './Shape';
 
 // prettier-ignore
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =
@@ -174,7 +175,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return this.shapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     const { shapes, restShape } = this;
 
     const shape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
@@ -318,6 +319,8 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    * @param value The non-array value to coerce.
    */
   protected _coerce(value: unknown): unknown[] {
+    value = canonize(value);
+
     if (isIterable(value)) {
       return Array.from(value);
     }

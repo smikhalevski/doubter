@@ -1,7 +1,7 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 import { ApplyOptions } from '../types';
 import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, Type } from './Shape';
 
 /**
  * Lazily resolves a shape using the provider callback.
@@ -59,7 +59,7 @@ export class LazyShape<S extends AnyShape>
     }
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     const { _getInputTypes } = this;
 
     this._getInputTypes = returnArray;
@@ -71,13 +71,13 @@ export class LazyShape<S extends AnyShape>
     }
   }
 
-  protected _getInputValues(): unknown[] {
+  protected _getInputValues(): readonly unknown[] | null {
     const { _getInputValues } = this;
 
     this._getInputValues = returnArray;
 
     try {
-      return this.shape['_getInputValues']();
+      return this.shape.inputValues;
     } finally {
       this._getInputValues = _getInputValues;
     }

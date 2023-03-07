@@ -32,6 +32,7 @@ export {
   Result,
   Shape,
   TransformShape,
+  Type,
   ValueType,
 } from './Shape';
 export { StringShape } from './StringShape';

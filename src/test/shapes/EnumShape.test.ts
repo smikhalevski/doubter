@@ -1,34 +1,41 @@
 import { EnumShape } from '../../main';
-import { CODE_ENUM, TYPE_ARRAY, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
+import { CODE_ENUM, TYPE_ARRAY, TYPE_NEVER, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
 import { getEnumValues } from '../../main/shapes/EnumShape';
 
+enum NumberMockEnum {
+  AAA,
+  BBB,
+}
+
+enum StringMockEnum {
+  AAA = 'aaa',
+  BBB = 'bbb',
+}
+
 describe('EnumShape', () => {
-  test('creates an enum shape from an array', () => {
+  test('creates an EnumShape from an array', () => {
     const shape = new EnumShape(['aaa', 'bbb']);
 
-    expect(shape.values).toEqual(['aaa', 'bbb']);
+    expect(shape.inputValues).toEqual(['aaa', 'bbb']);
     expect(shape.inputTypes).toEqual([TYPE_STRING]);
   });
 
+  test('empty enums have never type', () => {
+    const shape = new EnumShape([]);
+
+    expect(shape.inputValues).toEqual([]);
+    expect(shape.inputTypes).toEqual([TYPE_NEVER]);
+  });
+
   test('creates an enum shape from a native numeric enum', () => {
-    enum Foo {
-      AAA,
-      BBB,
-    }
+    const shape = new EnumShape(NumberMockEnum);
 
-    const shape = new EnumShape(Foo);
-
-    expect(shape.values).toEqual([Foo.AAA, Foo.BBB]);
+    expect(shape.inputValues).toEqual([NumberMockEnum.AAA, NumberMockEnum.BBB]);
     expect(shape.inputTypes).toEqual([TYPE_NUMBER]);
   });
 
   test('creates an enum shape from a native string enum', () => {
-    enum Foo {
-      AAA = 'aaa',
-      BBB = 'bbb',
-    }
-
-    expect(new EnumShape(Foo).values).toEqual([Foo.AAA, Foo.BBB]);
+    expect(new EnumShape(StringMockEnum).inputValues).toEqual([StringMockEnum.AAA, StringMockEnum.BBB]);
   });
 
   test('creates an enum shape from a mapping object', () => {
@@ -37,54 +44,53 @@ describe('EnumShape', () => {
       BBB: 'bbb',
     };
 
-    expect(new EnumShape(obj).values).toEqual([obj.AAA, obj.BBB]);
+    expect(new EnumShape(obj).inputValues).toEqual([obj.AAA, obj.BBB]);
   });
 
   test('raises an issue if an input is not one of the numeric enum values', () => {
-    enum Foo {
-      AAA,
-      BBB,
-    }
-
-    expect(new EnumShape(Foo).try(2)).toEqual({
+    expect(new EnumShape(NumberMockEnum).try(2)).toEqual({
       ok: false,
-      issues: [{ code: CODE_ENUM, input: 2, param: [Foo.AAA, Foo.BBB], message: 'Must be equal to one of 0,1' }],
+      issues: [
+        {
+          code: CODE_ENUM,
+          input: 2,
+          param: [NumberMockEnum.AAA, NumberMockEnum.BBB],
+          message: 'Must be equal to one of 0,1',
+        },
+      ],
     });
   });
 
   test('raises an issue when an input is the key of the numeric enum', () => {
-    enum Foo {
-      AAA,
-      BBB,
-    }
-
-    expect(new EnumShape(Foo).try('AAA')).toEqual({
+    expect(new EnumShape(NumberMockEnum).try('AAA')).toEqual({
       ok: false,
-      issues: [{ code: CODE_ENUM, input: 'AAA', param: [Foo.AAA, Foo.BBB], message: 'Must be equal to one of 0,1' }],
+      issues: [
+        {
+          code: CODE_ENUM,
+          input: 'AAA',
+          param: [NumberMockEnum.AAA, NumberMockEnum.BBB],
+          message: 'Must be equal to one of 0,1',
+        },
+      ],
     });
   });
 
   test('raises an issue when an input is not among the string enum values', () => {
-    enum Foo {
-      AAA = 'aaa',
-      BBB = 'bbb',
-    }
-
-    expect(new EnumShape(Foo).try('ccc')).toEqual({
+    expect(new EnumShape(StringMockEnum).try('ccc')).toEqual({
       ok: false,
       issues: [
-        { code: CODE_ENUM, input: 'ccc', param: [Foo.AAA, Foo.BBB], message: 'Must be equal to one of aaa,bbb' },
+        {
+          code: CODE_ENUM,
+          input: 'ccc',
+          param: [StringMockEnum.AAA, StringMockEnum.BBB],
+          message: 'Must be equal to one of aaa,bbb',
+        },
       ],
     });
   });
 
   test('parses the string enum value', () => {
-    enum Foo {
-      AAA = 'aaa',
-      BBB = 'bbb',
-    }
-
-    expect(new EnumShape(Foo).parse(Foo.AAA)).toBe(Foo.AAA);
+    expect(new EnumShape(StringMockEnum).parse(StringMockEnum.AAA)).toBe(StringMockEnum.AAA);
   });
 
   test('parses a value from the list', () => {
@@ -102,41 +108,6 @@ describe('EnumShape', () => {
     expect(new EnumShape([NaN]).parse(NaN)).toBe(NaN);
   });
 
-  test('coerces the key of the numeric enum', () => {
-    enum Foo {
-      AAA,
-      BBB,
-    }
-
-    const shape = new EnumShape(Foo);
-
-    expect(shape.coerce().inputTypes).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_ARRAY]);
-
-    expect(shape.coerce().parse('AAA')).toEqual(Foo.AAA);
-    expect(shape.parse('AAA', { coerced: true })).toEqual(Foo.AAA);
-  });
-
-  test('coerces the key of a const object', () => {
-    const shape = new EnumShape({
-      AAA: 'aaa',
-      BBB: 'bbb',
-    } as const);
-
-    expect(shape.coerce().inputTypes).toEqual([TYPE_STRING, TYPE_ARRAY]);
-
-    expect(shape.coerce().parse('AAA')).toEqual('aaa');
-    expect(shape.parse('AAA', { coerced: true })).toEqual('aaa');
-  });
-
-  test('coerces from an array', () => {
-    const shape = new EnumShape([111, 222]);
-
-    expect(shape.coerce().inputTypes).toEqual([TYPE_NUMBER, TYPE_ARRAY]);
-
-    expect(shape.coerce().parse([111])).toBe(111);
-    expect(shape.parse(111, { coerced: true })).toBe(111);
-  });
-
   test('applies checks', () => {
     const shape = new EnumShape(['aaa', 'bbb']).check(() => [{ code: 'xxx' }]);
 
@@ -145,16 +116,43 @@ describe('EnumShape', () => {
       issues: [{ code: 'xxx' }],
     });
   });
+
+  describe('coerce', () => {
+    test('coerces the key of the numeric enum', () => {
+      const shape = new EnumShape(NumberMockEnum);
+
+      expect(shape.coerce().inputTypes).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_ARRAY, TYPE_OBJECT]);
+
+      expect(shape.coerce().parse('AAA')).toEqual(NumberMockEnum.AAA);
+      expect(shape.parse('AAA', { coerced: true })).toEqual(NumberMockEnum.AAA);
+    });
+
+    test('coerces the key of a const object', () => {
+      const shape = new EnumShape({
+        AAA: 'aaa',
+        BBB: 'bbb',
+      } as const);
+
+      expect(shape.coerce().inputTypes).toEqual([TYPE_STRING, TYPE_ARRAY, TYPE_OBJECT]);
+
+      expect(shape.coerce().parse('AAA')).toEqual('aaa');
+      expect(shape.parse('AAA', { coerced: true })).toEqual('aaa');
+    });
+
+    test('coerces from an array', () => {
+      const shape = new EnumShape([111, 222]);
+
+      expect(shape.coerce().inputTypes).toEqual([TYPE_NUMBER, TYPE_ARRAY, TYPE_OBJECT]);
+
+      expect(shape.coerce().parse([111])).toBe(111);
+      expect(shape.parse(111, { coerced: true })).toBe(111);
+    });
+  });
 });
 
 describe('getEnumValues', () => {
   test('removes aliases from numerical enums', () => {
-    enum Foo {
-      AAA,
-      BBB,
-    }
-
-    expect(getEnumValues(Foo)).toEqual([0, 1]);
+    expect(getEnumValues(NumberMockEnum)).toEqual([0, 1]);
   });
 
   test('removes aliases from enum-like objects', () => {

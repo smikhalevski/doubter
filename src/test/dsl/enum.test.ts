@@ -5,6 +5,6 @@ describe('enum', () => {
     const shape = d.enum([111, 222]);
 
     expect(shape).toBeInstanceOf(d.EnumShape);
-    expect(shape.values).toEqual([111, 222]);
+    expect(shape.inputValues).toEqual([111, 222]);
   });
 });

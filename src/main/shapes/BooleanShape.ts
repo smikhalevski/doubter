@@ -5,13 +5,14 @@ import {
   TYPE_BOOLEAN,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory, isArray, ok, canonize } from '../utils';
+import { canonize, createIssueFactory, isArray, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, ValueType } from './Shape';
+import { NEVER, Result, Type } from './Shape';
 
 /**
  * The shape of the boolean value.
@@ -30,9 +31,9 @@ export class BooleanShape extends CoercibleShape<boolean> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
-      return [TYPE_BOOLEAN, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, TYPE_NULL, TYPE_UNDEFINED];
+      return [TYPE_BOOLEAN, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, TYPE_NULL, TYPE_UNDEFINED];
     } else {
       return [TYPE_BOOLEAN];
     }

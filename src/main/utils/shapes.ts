@@ -1,4 +1,14 @@
-import { TYPE_ARRAY, TYPE_DATE, TYPE_NULL, TYPE_OBJECT } from '../constants';
+import {
+  TYPE_ANY,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_MAP,
+  TYPE_NEVER,
+  TYPE_NULL,
+  TYPE_OBJECT,
+  TYPE_PROMISE,
+  TYPE_SET,
+} from '../constants';
 import {
   AnyShape,
   ApplyChecksCallback,
@@ -6,12 +16,15 @@ import {
   DeepPartialShape,
   Result,
   Shape,
+  Type,
   ValueType,
 } from '../shapes/Shape';
 import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
 import { cloneInstance } from './objects';
+
+export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
@@ -20,7 +33,7 @@ export function ok<T>(value: T): Ok<T> {
 /**
  * Returns the extended value type.
  */
-export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'> {
+export function getValueType(value: unknown): ValueType {
   const type = typeof value;
 
   if (type !== TYPE_OBJECT) {
@@ -35,11 +48,32 @@ export function getValueType(value: unknown): Exclude<ValueType, 'any' | 'never'
   if (value instanceof Date) {
     return TYPE_DATE;
   }
+  if (value instanceof Promise) {
+    return TYPE_PROMISE;
+  }
+  if (value instanceof Set) {
+    return TYPE_SET;
+  }
+  if (value instanceof Map) {
+    return TYPE_MAP;
+  }
   return type;
+}
+
+export function isAcceptedType(types: readonly Type[], type: Type): boolean {
+  return types[0] === TYPE_ANY || (types[0] !== TYPE_NEVER && type === TYPE_ANY) || types.indexOf(type) !== -1;
 }
 
 export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
+}
+
+export function getShapeInputTypes(shape: AnyShape): readonly Type[] {
+  return shape.inputTypes;
+}
+
+export function getShapeInputValues(shape: AnyShape): readonly unknown[] | null {
+  return shape.inputValues;
 }
 
 /**
@@ -189,7 +223,7 @@ export function createIssueFactory(
 export function createIssueFactory(
   code: string,
   defaultMessage: any,
-  options: any,
+  options: ConstraintOptions | Message | undefined,
   param?: unknown
 ): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[] {
   const paramRequired = arguments.length <= 3;
@@ -197,7 +231,7 @@ export function createIssueFactory(
   let meta: unknown;
   let message = defaultMessage;
 
-  if (isObjectLike(options)) {
+  if (isObjectLike<ConstraintOptions>(options)) {
     if (options.message !== undefined) {
       message = options.message;
     }

@@ -4,6 +4,7 @@ import { CODE_TYPE, MESSAGE_NEVER_TYPE, TYPE_ANY, TYPE_NEVER, TYPE_STRING } from
 describe('NeverShape', () => {
   test('has the never input type', () => {
     expect(new NeverShape().inputTypes).toEqual([TYPE_NEVER]);
+    expect(new NeverShape().inputValues!.length).toBe(0);
   });
 
   test('always raises an issue', () => {

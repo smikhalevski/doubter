@@ -5,6 +5,7 @@ import {
   BooleanShape,
   ConstShape,
   EnumShape,
+  IntersectionShape,
   NeverShape,
   NumberShape,
   ObjectShape,
@@ -14,24 +15,26 @@ import {
   UnionShape,
 } from '../../main';
 import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
-import { getDiscriminator } from '../../main/shapes/UnionShape';
+import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shapes/UnionShape';
 
 describe('UnionShape', () => {
-  let asyncShape: AnyShape;
+  class AsyncShape extends Shape {
+    protected _isAsync(): boolean {
+      return true;
+    }
+
+    protected _applyAsync(input: unknown, options: ApplyOptions) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    }
+  }
+
+  let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    asyncShape = new (class extends Shape {
-      protected _isAsync(): boolean {
-        return true;
-      }
-
-      protected _applyAsync(input: unknown, options: ApplyOptions) {
-        return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
-      }
-    })();
+    asyncShape = new AsyncShape();
   });
 
-  test('distributes buckets', () => {
+  test('distributes buckets by input types', () => {
     const shape1 = new NumberShape();
     const shape2 = new StringShape();
     const shape3 = new BooleanShape();
@@ -49,7 +52,7 @@ describe('UnionShape', () => {
     expect(applySpy3).not.toHaveBeenCalled();
   });
 
-  test('does not unwrap union shapes that have checks', () => {
+  test('parses nested unions', () => {
     const shape1 = new NumberShape();
     const shape2 = new StringShape();
     const shape3 = new BooleanShape();
@@ -69,6 +72,15 @@ describe('UnionShape', () => {
     expect(unionApplySpy).toHaveBeenCalledTimes(1);
   });
 
+  test('parses a discriminated union', () => {
+    const shape = new UnionShape([
+      new ObjectShape({ type: new ConstShape('aaa') }, null),
+      new ObjectShape({ type: new ConstShape('bbb') }, null),
+    ]);
+
+    expect(shape.parse({ type: 'bbb' })).toEqual({ type: 'bbb' });
+  });
+
   test('returns the result of the first shape that returned ok', () => {
     const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
     const shape2 = new Shape();
@@ -86,7 +98,7 @@ describe('UnionShape', () => {
     expect(applySpy3).not.toHaveBeenCalled();
   });
 
-  test('raises if no shapes returned ok', () => {
+  test('raises union issue if no shapes returned ok', () => {
     const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
     const shape2 = new Shape().check(() => [{ code: 'yyy' }]);
 
@@ -108,6 +120,18 @@ describe('UnionShape', () => {
     });
   });
 
+  test('raises issues of a single object shape from a discriminated union', () => {
+    const shape1 = new ObjectShape({ type: new ConstShape('aaa') }, null).check(() => [{ code: 'xxx' }]);
+    const shape2 = new ObjectShape({ type: new ConstShape('bbb') }, null).check(() => [{ code: 'yyy' }]);
+
+    const orShape = new UnionShape([shape1, shape2]);
+
+    expect(orShape.try({ type: 'bbb' })).toEqual({
+      ok: false,
+      issues: [{ code: 'yyy' }],
+    });
+  });
+
   test('applies checks', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
@@ -120,15 +144,6 @@ describe('UnionShape', () => {
     });
   });
 
-  test('parses a discriminated union', () => {
-    const shape = new UnionShape([
-      new ObjectShape({ type: new ConstShape('aaa') }, null),
-      new ObjectShape({ type: new ConstShape('bbb') }, null),
-    ]);
-
-    expect(shape.parse({ type: 'bbb' })).toEqual({ type: 'bbb' });
-  });
-
   describe('inputTypes', () => {
     test('never is erased', () => {
       expect(new UnionShape([new StringShape(), new NeverShape()]).inputTypes).toEqual([TYPE_STRING]);
@@ -137,6 +152,30 @@ describe('UnionShape', () => {
     test('any absorbs other types', () => {
       expect(new UnionShape([new StringShape(), new Shape()]).inputTypes).toEqual([TYPE_ANY]);
       expect(new UnionShape([new NeverShape(), new Shape()]).inputTypes).toEqual([TYPE_ANY]);
+    });
+  });
+
+  describe('inputValues', () => {
+    test('null if shapes have continuous values', () => {
+      expect(new UnionShape([new StringShape(), new NumberShape()]).inputValues).toBeNull();
+    });
+
+    test('the array of unique values', () => {
+      const shape = new UnionShape([new EnumShape(['aaa', 'bbb']), new EnumShape(['aaa', 'ccc'])]);
+
+      expect(shape.inputValues).toEqual(['aaa', 'bbb', 'ccc']);
+    });
+
+    test('never is ignored', () => {
+      const shape = new UnionShape([new EnumShape(['aaa', 'bbb']), new NeverShape()]);
+
+      expect(shape.inputValues).toEqual(['aaa', 'bbb']);
+    });
+
+    test('an empty array if union only contains never', () => {
+      const shape = new UnionShape([new NeverShape()]);
+
+      expect(shape.inputValues).toEqual([]);
     });
   });
 
@@ -205,7 +244,7 @@ describe('UnionShape', () => {
   });
 
   describe('async', () => {
-    test('distributes buckets', async () => {
+    test('distributes buckets by input types', async () => {
       const shape1 = new NumberShape();
       const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
       const shape3 = new BooleanShape();
@@ -224,7 +263,7 @@ describe('UnionShape', () => {
       expect(applySpy3).not.toHaveBeenCalled();
     });
 
-    test('does not unwrap union shapes that have checks', async () => {
+    test('parses nested unions', async () => {
       const shape1 = new NumberShape();
       const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
       const shape3 = new BooleanShape();
@@ -233,7 +272,7 @@ describe('UnionShape', () => {
       const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
       const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
       const applySpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
-      const unionApplyAsyncSpy = jest.spyOn<Shape, any>(orShape1, '_applyAsync');
+      const unionApplySpy = jest.spyOn<Shape, any>(orShape1, '_applyAsync');
 
       const orShape2 = new UnionShape([shape1, orShape1]);
 
@@ -243,7 +282,7 @@ describe('UnionShape', () => {
       expect(applySpy1).not.toHaveBeenCalled();
       expect(applySpy2).toHaveBeenCalledTimes(1);
       expect(applySpy3).not.toHaveBeenCalled();
-      expect(unionApplyAsyncSpy).toHaveBeenCalledTimes(1);
+      expect(unionApplySpy).toHaveBeenCalledTimes(1);
     });
 
     test('returns the result of the first shape that returned ok', async () => {
@@ -267,7 +306,7 @@ describe('UnionShape', () => {
       expect(applySpy3).not.toHaveBeenCalled();
     });
 
-    test('raises if no shapes returned ok', async () => {
+    test('raises union issue if no shapes returned ok', async () => {
       const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
       const shape2 = asyncShape.check(() => [{ code: 'yyy' }]);
 
@@ -286,6 +325,24 @@ describe('UnionShape', () => {
             },
           },
         ],
+      });
+    });
+
+    test('raises issues of a single object shape from a discriminated union', async () => {
+      const shape1 = new ObjectShape({ type: new ConstShape('aaa') }, null).check(() => [{ code: 'xxx' }]);
+      const shape2 = new ObjectShape(
+        {
+          type: new ConstShape('bbb'),
+          key1: asyncShape.check(() => [{ code: 'zzz' }]),
+        },
+        null
+      ).check({ unsafe: true }, () => [{ code: 'yyy' }]);
+
+      const orShape = new UnionShape([shape1, shape2]);
+
+      await expect(orShape.tryAsync({ type: 'bbb' }, { verbose: true })).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'zzz', path: ['key1'] }, { code: 'yyy' }],
       });
     });
 
@@ -309,7 +366,31 @@ describe('getDiscriminator', () => {
       ])
     ).toEqual({
       key: 'type',
-      valuesForShape: [['aaa'], ['bbb']],
+      valuesByShape: [['aaa'], ['bbb']],
+    });
+  });
+
+  test('returns the discriminator key if there are multiple keys', () => {
+    expect(
+      getDiscriminator([
+        new ObjectShape(
+          {
+            type1: new ConstShape('aaa'),
+            type2: new ConstShape('bbb'),
+          },
+          null
+        ),
+        new ObjectShape(
+          {
+            type1: new ConstShape('aaa'),
+            type2: new ConstShape('ccc'),
+          },
+          null
+        ),
+      ])
+    ).toEqual({
+      key: 'type2',
+      valuesByShape: [['bbb'], ['ccc']],
     });
   });
 
@@ -321,16 +402,119 @@ describe('getDiscriminator', () => {
       ])
     ).toEqual({
       key: 'type',
-      valuesForShape: [['aaa', 'bbb'], ['ccc']],
+      valuesByShape: [['aaa', 'bbb'], ['ccc']],
     });
   });
 
-  test('returns null if values are not distinct', () => {
+  test('returns null if there is no property with distinct discrete properties', () => {
     expect(
       getDiscriminator([
         new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null),
         new ObjectShape({ type: new ConstShape('bbb') }, null),
       ])
-    ).toBe(null);
+    ).toBeNull();
+
+    expect(
+      getDiscriminator([
+        new ObjectShape({ type: new NumberShape() }, null),
+        new ObjectShape({ type: new ConstShape(111) }, null),
+      ])
+    ).toBeNull();
+
+    expect(
+      getDiscriminator([
+        new ObjectShape({ type: new NeverShape() }, null),
+        new ObjectShape({ type: new ConstShape(111) }, null),
+      ])
+    ).toBeNull();
+  });
+
+  test('works with composite shapes', () => {
+    expect(
+      getDiscriminator([
+        new ObjectShape(
+          {
+            type: new UnionShape([
+              new IntersectionShape([new EnumShape(['aaa', 'bbb']), new ConstShape(['bbb', 'ccc'])]),
+              new EnumShape(['bbb', 'ddd']),
+            ]),
+          },
+          null
+        ),
+        new ObjectShape({ type: new ConstShape('aaa') }, null),
+      ])
+    ).toEqual({
+      key: 'type',
+      valuesByShape: [['bbb', 'ddd'], ['aaa']],
+    });
+  });
+});
+
+describe('createLookupByDiscriminator', () => {
+  test('returns null if not all shapes are objects', () => {
+    expect(
+      createLookupByDiscriminator([new ObjectShape({ key1: new ConstShape('aaa') }, null), new NumberShape()])
+    ).toBeNull();
+  });
+
+  test('returns null if only one shape in the union', () => {
+    expect(createLookupByDiscriminator([new ObjectShape({ key1: new ConstShape('aaa') }, null)])).toBeNull();
+  });
+
+  test('returns lookup for enum values', () => {
+    const shape1 = new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null);
+    const shape2 = new ObjectShape({ type: new EnumShape([111, 222]) }, null);
+
+    const lookup = createLookupByDiscriminator([shape1, shape2])!;
+
+    expect(lookup({ type: 'xxx' }).length).toBe(0);
+    expect(lookup({ type: 'aaa' })[0]).toBe(shape1);
+    expect(lookup({ type: 'bbb' })[0]).toBe(shape1);
+    expect(lookup({ type: 111 })[0]).toBe(shape2);
+    expect(lookup({ type: 222 })[0]).toBe(shape2);
+  });
+
+  test('returns lookup for const values', () => {
+    const shape1 = new ObjectShape({ type: new ConstShape('aaa') }, null);
+    const shape2 = new ObjectShape({ type: new ConstShape(111) }, null);
+
+    const lookup = createLookupByDiscriminator([shape1, shape2])!;
+
+    expect(lookup({ type: 'xxx' }).length).toBe(0);
+    expect(lookup({ type: 'aaa' })[0]).toBe(shape1);
+    expect(lookup({ type: 111 })[0]).toBe(shape2);
+  });
+});
+
+describe('createLookupByType', () => {
+  test('returns type-based lookup', () => {
+    const shape1 = new StringShape();
+    const shape2 = new NumberShape();
+
+    const lookup = createLookupByType([shape1, shape2]);
+
+    expect(lookup(true).length).toBe(0);
+    expect(lookup('aaa')[0]).toBe(shape1);
+    expect(lookup(111)[0]).toBe(shape2);
+  });
+
+  test('shapes with any input type are matched with any input', () => {
+    const shape1 = new Shape();
+    const shape2 = new NumberShape();
+
+    const lookup = createLookupByType([shape1, shape2]);
+
+    expect(lookup(true).length).toBe(1);
+    expect(lookup(true)[0]).toBe(shape1);
+
+    expect(lookup(111).length).toBe(2);
+    expect(lookup(111)[0]).toBe(shape1);
+    expect(lookup(111)[1]).toBe(shape2);
+  });
+
+  test('never shapes are ignored', () => {
+    const lookup = createLookupByType([new NeverShape()]);
+
+    expect(lookup(111).length).toBe(0);
   });
 });

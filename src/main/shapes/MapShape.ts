@@ -2,6 +2,7 @@ import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
+  canonize,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -21,7 +22,7 @@ import {
   NEVER,
   OptionalDeepPartialShape,
   Result,
-  ValueType,
+  Type,
 } from './Shape';
 
 /**
@@ -78,11 +79,11 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return this.keyShape.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
-      return [TYPE_OBJECT, TYPE_ARRAY];
+      return [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
     } else {
-      return [TYPE_OBJECT];
+      return [TYPE_MAP];
     }
   }
 
@@ -262,6 +263,9 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     if (isArray(value)) {
       return value.every(isMapEntry) ? value : NEVER;
     }
+
+    value = canonize(value);
+
     if (isIterable(value)) {
       value = Array.from(value);
 

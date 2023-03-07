@@ -20,13 +20,14 @@ import {
   TYPE_DATE,
   TYPE_NULL,
   TYPE_NUMBER,
+  TYPE_OBJECT,
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
 import { addCheck, canonize, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, Shape, ValueType } from './Shape';
+import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result, Type } from './Shape';
 
 /**
  * The shape that constrains the input as a number.
@@ -176,7 +177,7 @@ export class NumberShape extends CoercibleShape<number> {
    * produce unexpected results when used with floating point numbers. This happens because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
    *
-   * Use a custom check to constrain input to be a multiple of real number.
+   * Use a custom check to constrain input to be a multiple of a real number.
    *
    * @param value The positive number by which the input should be divisible without a remainder.
    * @param options The constraint options or an issue message.
@@ -223,17 +224,24 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * Allows `NaN` as an input and output value, or replaces an input `NaN` value with a default output value.
+   * Allows `NaN` as an input and output value.
+   */
+  nan(): AllowLiteralShape<this, number>;
+
+  /**
+   * Replaces an input `NaN` value with a default output value.
    *
    * @param defaultValue The value that is used instead of `NaN` in the output.
    */
-  nan(defaultValue = NaN): Shape<number> {
-    return this.replace(NaN, defaultValue);
+  nan<T extends Literal>(defaultValue: T): ReplaceLiteralShape<this, number, T>;
+
+  nan(defaultValue?: any) {
+    return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
-  protected _getInputTypes(): readonly ValueType[] {
+  protected _getInputTypes(): readonly Type[] {
     if (this.isCoerced) {
-      return [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
+      return [TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
     } else {
       return [TYPE_NUMBER];
     }

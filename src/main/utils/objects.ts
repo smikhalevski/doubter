@@ -9,12 +9,13 @@ export interface Dict<T = any> {
 /**
  * Updates object property value, prevents prototype pollution.
  */
-export function setObjectProperty(obj: any, key: any, value: unknown): void {
+export function setObjectProperty<T>(obj: any, key: any, value: T): T {
   if (key === '__proto__') {
     Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
   } else {
     obj[key] = value;
   }
+  return value;
 }
 
 /**

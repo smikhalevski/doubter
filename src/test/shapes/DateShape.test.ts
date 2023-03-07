@@ -1,5 +1,13 @@
 import { DateShape, NEVER } from '../../main';
-import { CODE_TYPE, MESSAGE_DATE_TYPE, TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
+import {
+  CODE_TYPE,
+  MESSAGE_DATE_TYPE,
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_NUMBER,
+  TYPE_OBJECT,
+  TYPE_STRING,
+} from '../../main/constants';
 
 describe('DateShape', () => {
   test('parses date values', () => {
@@ -22,26 +30,34 @@ describe('DateShape', () => {
     });
   });
 
-  test('updates input types when coerced', () => {
-    const shape = new DateShape().coerce();
+  describe('coerce', () => {
+    test('updates input types when coerced', () => {
+      const shape = new DateShape().coerce();
 
-    expect(shape.inputTypes).toEqual([TYPE_DATE, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
-  });
+      expect(shape.inputTypes).toEqual([TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
+    });
 
-  test('coerces an input', () => {
-    expect(new DateShape().coerce().parse(111)).toEqual(new Date(111));
-    expect(new DateShape().coerce().parse('2020-02-02')).toEqual(new Date('2020-02-02'));
-    expect(new DateShape().parse('2020-02-02', { coerced: true })).toEqual(new Date('2020-02-02'));
-  });
+    test('coerces an input', () => {
+      expect(new DateShape().coerce().parse(111)).toEqual(new Date(111));
+      expect(new DateShape().coerce().parse(new Number(111))).toEqual(new Date(111));
+      expect(new DateShape().coerce().parse([new Number(111)])).toEqual(new Date(111));
+      expect(new DateShape().coerce().parse('2020-02-02')).toEqual(new Date('2020-02-02'));
+      expect(new DateShape().parse('2020-02-02', { coerced: true })).toEqual(new Date('2020-02-02'));
+    });
 
-  test('raises an issue if coercion fails', () => {
-    expect(new DateShape().coerce().try('aaa')).toEqual({
-      ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_DATE_TYPE, param: TYPE_DATE }],
+    test('raises an issue if coercion fails', () => {
+      expect(new DateShape().coerce().try('aaa')).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_DATE_TYPE, param: TYPE_DATE }],
+      });
     });
   });
 
-  describe('coercion', () => {
+  describe('_coerce', () => {
+    test('coerces a String wrapper', () => {
+      expect(new DateShape()['_coerce'](new String('2020-02-02'))).toEqual(new Date('2020-02-02'));
+    });
+
     test('coerces a string', () => {
       expect(new DateShape()['_coerce']('2020-02-02')).toEqual(new Date('2020-02-02'));
     });
