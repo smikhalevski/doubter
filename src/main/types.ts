@@ -151,6 +151,11 @@ export interface ConstraintOptions {
 
 export interface RefineOptions extends ConstraintOptions {
   /**
+   * The unique key of the check in scope of the shape.
+   */
+  key?: unknown;
+
+  /**
    * The custom issue code. By default, an issue is raised with a "predicate" code.
    */
   code?: any;

@@ -269,6 +269,7 @@ export class Shape<I = any, O = I> {
    * @param cb The callback that checks the shape output.
    * @param param The param that is passed to `cb` as the second argument.
    * @returns The clone of the shape.
+   * @template P The check param.
    */
   check<P>(cb: CheckCallback<O, P>, param: P): this;
 
@@ -298,6 +299,7 @@ export class Shape<I = any, O = I> {
    * @param cb The callback that checks the shape output.
    * @param param The param that is passed to `cb` as the second argument.
    * @returns The clone of the shape.
+   * @template P The check param.
    */
   check<P>(options: CheckOptions, cb: CheckCallback<O, P>, param: P): this;
 
@@ -388,11 +390,11 @@ export class Shape<I = any, O = I> {
   ): this;
 
   refine(cb: (output: O, options: Readonly<ApplyOptions>) => unknown, options?: RefineOptions | Message) {
-    const { code = CODE_PREDICATE, unsafe = false } = isObjectLike<RefineOptions>(options) ? options : {};
+    const { key = cb, code = CODE_PREDICATE, unsafe = false } = isObjectLike<RefineOptions>(options) ? options : {};
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
-    return this.check({ key: cb, unsafe }, (input, param, options) => {
+    return this.check({ key, unsafe }, (input, param, options) => {
       if (!cb(input, options)) {
         return issueFactory(input, options);
       }
@@ -472,7 +474,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Input value is passed directly to the output without any checks.
+   * Allows a literal input value, so it is passed directly to the output without any checks.
    *
    * @param value The included value.
    * @returns The {@linkcode ReplaceLiteralShape} instance.
@@ -619,7 +621,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the array of runtime input value types that can be processed by the shape.
+   * Returns an array of runtime input value types that can be processed by the shape.
    *
    * Used for introspection and various optimizations. Elements of the returned array don't have to be unique.
    */
@@ -628,9 +630,8 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns the array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous
-   * range of values. An empty array means that shape doesn't accept any values, and {@linkcode _getInputTypes} must
-   * return `['never']` is this case.
+   * Returns an array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous
+   * range of values. An empty array means that the shape doesn't accept any values.
    */
   protected _getInputValues(): readonly unknown[] | null {
     return null;
@@ -685,9 +686,8 @@ export interface Shape<I, O> {
   readonly inputTypes: readonly Type[];
 
   /**
-   * The array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous range of
-   * values. If `inputValues` is an empty array then shape doesn't accept any values, so {@linkcode inputTypes} is
-   * `['never']`.
+   * The array of discrete unique input values that the shape accepts, or `null` if the shape accepts a continuous range
+   * of values. If `inputValues` is an empty array then the shape doesn't accept any values.
    */
   readonly inputValues: readonly unknown[] | null;
 
