@@ -2,7 +2,6 @@ import {
   CODE_DENIED,
   CODE_EXCLUDED,
   CODE_PREDICATE,
-  ERROR_FORBIDDEN_AT_RUNTIME,
   ERROR_REQUIRES_ASYNC,
   MESSAGE_DENIED,
   MESSAGE_EXCLUDED,
@@ -778,22 +777,6 @@ export interface Shape<I, O> {
 }
 
 Object.defineProperties(Shape.prototype, {
-  input: {
-    configurable: true,
-
-    get() {
-      throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
-    },
-  },
-
-  output: {
-    configurable: true,
-
-    get() {
-      throw new Error(ERROR_FORBIDDEN_AT_RUNTIME);
-    },
-  },
-
   inputTypes: {
     configurable: true,
 
