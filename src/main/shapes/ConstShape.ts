@@ -4,7 +4,7 @@ import { createIssueFactory, getValueType } from '../utils';
 import { Result, Shape, Type } from './Shape';
 
 /**
- * The shape that constrains an input to exactly equal to the expected value.
+ * The shape that constrains an input to be exactly equal to the expected value.
  *
  * @template T The expected value.
  */
