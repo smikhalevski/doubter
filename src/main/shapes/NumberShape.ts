@@ -24,10 +24,10 @@ import {
   TYPE_STRING,
   TYPE_UNDEFINED,
 } from '../constants';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
 import { addCheck, canonize, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, Shape, Type } from './Shape';
+import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result, Type } from './Shape';
 
 /**
  * The shape that constrains the input as a number.
@@ -224,12 +224,19 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * Allows `NaN` as an input and output value, or replaces an input `NaN` value with a default output value.
+   * Allows `NaN` as an input and output value.
+   */
+  nan(): AllowLiteralShape<this, number>;
+
+  /**
+   * Replaces an input `NaN` value with a default output value.
    *
    * @param defaultValue The value that is used instead of `NaN` in the output.
    */
-  nan(defaultValue = NaN): Shape<number> {
-    return this.replace(NaN, defaultValue);
+  nan<T extends Literal>(defaultValue: T): ReplaceLiteralShape<this, number, T>;
+
+  nan(defaultValue?: any) {
+    return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
   protected _getInputTypes(): readonly Type[] {

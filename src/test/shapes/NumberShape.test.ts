@@ -107,6 +107,10 @@ describe('NumberShape', () => {
     test('allows NaN', () => {
       expect(new NumberShape().nan().try(NaN)).toEqual({ ok: true, value: NaN });
     });
+
+    test('undefined can be used as a default value', () => {
+      expect(new NumberShape().nan(undefined).try(NaN)).toEqual({ ok: true, value: undefined });
+    });
   });
 
   describe('gt', () => {

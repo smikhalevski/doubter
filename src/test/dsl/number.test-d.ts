@@ -13,7 +13,17 @@ expectType<number>(d.number().replace(NaN, 0).input);
 
 expectType<number>(d.number().replace(NaN, 0).output);
 
+expectType<number>(d.number().nan().input);
+
 expectType<number>(d.number().nan().output);
+
+expectType<number>(d.number().nan(111).input);
+
+expectType<number>(d.number().nan(111).output);
+
+expectType<number>(d.number().nan('aaa').input);
+
+expectType<number | 'aaa'>(d.number().nan('aaa').output);
 
 expectType<number>(d.number().allow(Infinity).output);
 
