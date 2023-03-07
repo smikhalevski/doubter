@@ -7,6 +7,7 @@ import {
   createIssueFactory,
   getErrorMessage,
   isArray,
+  Mutable,
   ok,
   unshiftIssuesPath,
 } from '../utils';
@@ -33,7 +34,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   /**
    * `true` if input functions are wrapped during parsing, or `false` otherwise.
    */
-  public isWrapped = true;
+  readonly isWrapped: boolean = true;
 
   protected _typeIssueFactory;
   protected _parseOptions: Readonly<ParseOptions> = defaultApplyOptions;
@@ -102,7 +103,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    */
   noWrap(): this {
     const shape = cloneInstance(this);
-    shape.isWrapped = false;
+    (shape as Mutable<this>).isWrapped = false;
     return shape;
   }
 
