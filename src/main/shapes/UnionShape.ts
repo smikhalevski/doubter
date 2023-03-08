@@ -1,4 +1,4 @@
-import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_NEVER } from '../constants';
+import { CODE_UNION, MESSAGE_UNION, TYPE_NEVER, TYPE_UNKNOWN } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -100,12 +100,13 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected _getInputValues(): readonly unknown[] | null {
-    const valuesByShape = this.shapes.map(getShapeInputValues);
+    const valueGroups = this.shapes.map(getShapeInputValues);
 
-    if (valuesByShape.indexOf(null) !== -1) {
+    if (valueGroups.indexOf(null) !== -1) {
+      // Union accepts continuous values if at least one shape accepts continuous values
       return null;
     }
-    return ([] as unknown[]).concat(...valuesByShape);
+    return ([] as unknown[]).concat(...valueGroups);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<U[number]['output']> {
@@ -231,12 +232,17 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
   const bucketTypes = Object.keys(buckets) as ValueType[];
 
   for (const shape of shapes) {
-    const inputTypes = shape.inputTypes[0] === TYPE_ANY ? bucketTypes : shape.inputTypes;
+    let { inputTypes } = shape;
 
-    for (const type of inputTypes) {
-      if (type === TYPE_ANY || type === TYPE_NEVER) {
-        continue;
-      }
+    if (inputTypes[0] === TYPE_NEVER) {
+      // Never is excluded
+      continue;
+    }
+    if (inputTypes[0] === TYPE_UNKNOWN) {
+      // Unknown is added to each bucket
+      inputTypes = bucketTypes;
+    }
+    for (const type of inputTypes as ValueType[]) {
       buckets[type] = buckets[type].concat(shape);
     }
   }
@@ -248,35 +254,38 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
  * Creates a lookup that uses a discriminator property, or returns `null` if discriminator property cannot be detected.
  */
 export function createLookupByDiscriminator(shapes: readonly AnyShape[]): Lookup | null {
-  const shapesLength = shapes.length;
-
-  if (shapesLength < 2 || !shapes.every(isObjectShape)) {
-    return null;
-  }
-
-  const discriminator = getDiscriminator(shapes);
+  const discriminator = shapes.every(isObjectShape) ? getDiscriminator(shapes) : null;
 
   if (discriminator === null) {
     return null;
   }
 
-  const { key, valuesByShape } = discriminator;
-  const shapeArrays = shapes.map(shape => [shape]);
+  const { key, valueGroups } = discriminator;
+  const shapesLength = shapes.length;
+  const shapeGroups: [AnyShape][] = [];
   const emptyArray: AnyShape[] = [];
 
-  if (valuesByShape.every(values => values.length === 1 && values[0] === values[0])) {
-    const values = valuesByShape.map(values => values[0]);
+  let monoValues: unknown[] | null = [];
 
+  for (let i = 0; i < shapesLength; ++i) {
+    shapeGroups.push([shapes[i]]);
+
+    const valueGroup = valueGroups[i];
+
+    if (monoValues === null || valueGroup.length !== 1 || valueGroup[0] !== valueGroup[0]) {
+      monoValues = null;
+    } else {
+      monoValues.push(valueGroup[0]);
+    }
+  }
+
+  if (monoValues !== null) {
     return input => {
-      if (!isObject(input)) {
+      let index;
+      if (!isObject(input) || (index = monoValues!.indexOf(input[key])) === -1) {
         return emptyArray;
       }
-
-      const index = values.indexOf(input[key]);
-      if (index === -1) {
-        return emptyArray;
-      }
-      return shapeArrays[index];
+      return shapeGroups[index];
     };
   }
 
@@ -288,8 +297,8 @@ export function createLookupByDiscriminator(shapes: readonly AnyShape[]): Lookup
     const value = input[key];
 
     for (let i = 0; i < shapesLength; ++i) {
-      if (valuesByShape[i].includes(value)) {
-        return shapeArrays[i];
+      if (valueGroups[i].includes(value)) {
+        return shapeGroups[i];
       }
     }
     return emptyArray;
@@ -305,64 +314,60 @@ export interface Discriminator {
   /**
    * The values for each shape.
    */
-  valuesByShape: Array<readonly unknown[]>;
+  valueGroups: Array<readonly unknown[]>;
 }
 
 /**
- * Returns a discriminator property description. Discriminator property is a property that presents in all given object
- * shapes, and has discrete values that are unique for each shape.
+ * Returns a discriminator property description. Discriminator conforms the following rules:
+ *
+ * - has a key that is common for all provided object shapes;
+ * - its values are discrete;
+ * - its values uniquely identify each shape.
  */
 export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, any>[]): Discriminator | null {
-  const shapesLength = shapes.length;
-  const candidateKeys = shapes[0].keys;
-  const valuesByShape: Array<readonly unknown[]> = [];
-  const candidateValueSet = new Set<unknown>();
+  if (shapes.length < 2) {
+    // Discriminator may exist only among multiple objects
+    return null;
+  }
 
-  nextCandidate: for (const candidateKey of candidateKeys) {
-    for (let i = 0; i < shapesLength; ++i) {
+  const { keys } = shapes[0];
+  const valueGroups: Array<readonly unknown[]> = [];
+  const valueSet = new Set();
+
+  nextKey: for (const key of keys) {
+    for (let i = 0; i < shapes.length; ++i) {
       const shape = shapes[i];
 
-      // Key doesn't exist on every shape
-      if (!shape.keys.includes(candidateKey)) {
-        continue nextCandidate;
+      if (!shape.keys.includes(key)) {
+        // Key doesn't exist on every shape
+        continue nextKey;
       }
 
-      const { inputValues } = shape.shapes[candidateKey];
+      const { inputValues } = shape.shapes[key];
 
       if (inputValues === null || inputValues.length === 0) {
-        // Values of this key are continuous or absent for some shapes
-        continue nextCandidate;
+        // Values aren't discrete or input type is never
+        continue nextKey;
       }
-
-      valuesByShape[i] = inputValues;
+      valueGroups[i] = inputValues;
     }
 
-    candidateValueSet.clear();
+    valueSet.clear();
 
-    let valueCount = 0;
-
-    // Check that values are unique
-    for (const values of valuesByShape) {
-      for (const value of values) {
-        candidateValueSet.add(value);
-
-        ++valueCount;
-
-        if (valueCount !== candidateValueSet.size) {
-          // Values associated with the candidate key are not unique for each shape
-          continue nextCandidate;
+    for (let i = 0, valueCount = 0; i < valueGroups.length; ++i) {
+      for (const value of valueGroups[i]) {
+        if (++valueCount !== valueSet.add(value).size) {
+          // Values don't uniquely identify each shape
+          continue nextKey;
         }
       }
     }
 
-    return {
-      key: candidateKey,
-      valuesByShape,
-    };
+    return { key, valueGroups };
   }
   return null;
 }
 
-function isObjectShape(shape: AnyShape): shape is ObjectShape<any, any> {
+function isObjectShape(shape: AnyShape): shape is ObjectShape<Dict<AnyShape>, any> {
   return shape instanceof ObjectShape;
 }

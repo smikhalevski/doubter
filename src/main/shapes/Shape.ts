@@ -6,8 +6,8 @@ import {
   MESSAGE_DENIED,
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
-  TYPE_ANY,
   TYPE_NEVER,
+  TYPE_UNKNOWN,
 } from '../constants';
 import {
   ApplyOptions,
@@ -33,8 +33,8 @@ import {
   getCheckIndex,
   getErrorMessage,
   getValueType,
-  isAcceptedType,
   isArray,
+  isAssignableTo,
   isEqual,
   isObjectLike,
   Mutable,
@@ -54,10 +54,10 @@ export const NEVER = Object.freeze({ never: true }) as never;
 
 export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerced: false });
 
-// prettier-ignore
 /**
  * Excludes `U` from `T` only if `U` is a literal type.
  */
+// prettier-ignore
 export type ExcludeLiteral<T, U> =
   number extends U ? T :
   string extends U ? T :
@@ -149,25 +149,25 @@ export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<Dee
  * The detected runtime value type.
  */
 export type ValueType =
-  | 'object'
   | 'array'
-  | 'function'
-  | 'string'
-  | 'symbol'
-  | 'number'
   | 'bigint'
   | 'boolean'
   | 'date'
-  | 'promise'
-  | 'set'
+  | 'function'
   | 'map'
   | 'null'
+  | 'number'
+  | 'object'
+  | 'promise'
+  | 'set'
+  | 'string'
+  | 'symbol'
   | 'undefined';
 
 /**
  * The detected runtime type.
  */
-export type Type = ValueType | 'any' | 'never';
+export type Type = ValueType | 'never' | 'unknown';
 
 /**
  * The result that shape returns after being applied to an input value. This is the part of the internal API required
@@ -231,7 +231,7 @@ export class Shape<I = any, O = I> {
    * @param type The type that must be checked.
    */
   isAcceptedType(type: Type): boolean {
-    return isAcceptedType(this.inputTypes, type);
+    return isAssignableTo(type, this.inputTypes);
   }
 
   /**
@@ -622,15 +622,20 @@ export class Shape<I = any, O = I> {
   /**
    * Returns an array of runtime input value types that can be processed by the shape.
    *
-   * Used for introspection and various optimizations. Elements of the returned array don't have to be unique.
+   * - If an empty array is returned, it is treated as `['unknown']`.
+   * - If an array contains multiple types, then this means that shape accepts any of them.
+   * - Elements of the returned array don't have to be unique.
    */
   protected _getInputTypes(): readonly Type[] {
-    return [TYPE_ANY];
+    return [TYPE_UNKNOWN];
   }
 
   /**
    * Returns an array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous
-   * range of values. An empty array means that the shape doesn't accept any values.
+   * range of values.
+   *
+   * - An empty array means that the shape doesn't accept any values.
+   * - Elements of the returned array don't have to be unique.
    */
   protected _getInputValues(): readonly unknown[] | null {
     return null;
@@ -638,8 +643,6 @@ export class Shape<I = any, O = I> {
 
   /**
    * Synchronously parses the input.
-   *
-   * Override this method to implement a custom shape.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -656,8 +659,6 @@ export class Shape<I = any, O = I> {
 
   /**
    * Asynchronously parses the input.
-   *
-   * Override this method to implement a custom shape that requires an async execution context.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -780,7 +781,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get() {
-      return setupShape(this).inputTypes;
+      return setupShapeInput(this).inputTypes;
     },
   },
 
@@ -788,7 +789,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get() {
-      return setupShape(this).inputValues;
+      return setupShapeInput(this).inputValues;
     },
   },
 
@@ -807,7 +808,7 @@ Object.defineProperties(Shape.prototype, {
         this._applyAsync = _defaultApplyAsync;
       }
 
-      Object.defineProperty(this, 'isAsync', { writable: true, value: async });
+      Object.defineProperty(this, 'isAsync', { value: async });
 
       return async;
     },
@@ -959,46 +960,48 @@ Object.defineProperties(Shape.prototype, {
 });
 
 /**
- * Configure shape {@linkcode Shape.inputTypes} and {@linkcode Shape.inputValues}.
+ * Configures shape {@linkcode Shape.inputTypes} and {@linkcode Shape.inputValues}.
  *
  * @param shape The shape to configure.
- * @returns The provided shape.
  */
-function setupShape(shape: Shape): Shape {
+export function setupShapeInput(shape: Shape): Shape {
   let types = toUniqueArray(shape['_getInputTypes']());
-  let values;
 
-  if (types.length === 0 || types.includes(TYPE_ANY)) {
-    // Any absorbs other types
-    types = [TYPE_ANY];
+  if (types.length === 0 || types.includes(TYPE_UNKNOWN)) {
+    // Unknown absorbs other types in a union
+    types = [TYPE_UNKNOWN];
   }
   if (types.length !== 1) {
-    // Never is erased
+    // Never is erased in a union
     deleteArrayIndex(types, types.indexOf(TYPE_NEVER));
   }
 
+  let values;
+
   if (types[0] === TYPE_NEVER) {
-    // Never has no values
-    values = [];
+    // Never cannot have any values
+    values = Object.freeze([]);
   } else if ((values = shape['_getInputValues']()) !== null) {
     values = toUniqueArray(values);
 
-    // Exclude values that cannot be accepted
     for (let i = 0; i < values.length; ++i) {
-      if (!isAcceptedType(types, getValueType(values[i]))) {
+      // Remove values that aren't assignable to the input
+      if (!isAssignableTo(getValueType(values[i]), types)) {
         values.splice(i--, 1);
       }
     }
-
     if (values.length === 0) {
       // No values are accepted
       types = [TYPE_NEVER];
     }
+    Object.freeze(values);
   }
 
-  Object.defineProperty(shape, 'inputTypes', { writable: true, value: types });
+  Object.freeze(types);
 
-  Object.defineProperty(shape, 'inputValues', { writable: true, value: values });
+  Object.defineProperty(shape, 'inputTypes', { configurable: true, value: types });
+
+  Object.defineProperty(shape, 'inputValues', { configurable: true, value: values });
 
   return shape;
 }

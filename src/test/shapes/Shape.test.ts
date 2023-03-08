@@ -25,12 +25,11 @@ import {
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
   MESSAGE_STRING_TYPE,
-  TYPE_ANY,
   TYPE_ARRAY,
   TYPE_NEVER,
   TYPE_NUMBER,
   TYPE_STRING,
-  TYPE_SYMBOL,
+  TYPE_UNKNOWN,
 } from '../../main/constants';
 import { Result } from '../../main/shapes/Shape';
 
@@ -55,7 +54,7 @@ describe('Shape', () => {
     const shape = new Shape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputTypes).toEqual([TYPE_ANY]);
+    expect(shape.inputTypes).toEqual([TYPE_UNKNOWN]);
     expect(shape.inputValues).toBeNull();
   });
 
@@ -63,36 +62,6 @@ describe('Shape', () => {
     test('returns value type', () => {
       expect(Shape.typeOf([])).toBe(TYPE_ARRAY);
       expect(Shape.typeOf(111)).toBe(TYPE_NUMBER);
-    });
-  });
-
-  describe('isAcceptedType', () => {
-    test('any shape accepts never', () => {
-      expect(new Shape().isAcceptedType(TYPE_NEVER)).toBe(true);
-    });
-
-    test('any shape accepts any', () => {
-      expect(new Shape().isAcceptedType(TYPE_ANY)).toBe(true);
-    });
-
-    test('any shape accepts other types', () => {
-      expect(new Shape().isAcceptedType(TYPE_STRING)).toBe(true);
-    });
-
-    test('detects accepted input types', () => {
-      class MockShape extends Shape {
-        protected _getInputTypes(): Type[] {
-          return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
-        }
-      }
-
-      const shape = new MockShape();
-
-      expect(shape.isAcceptedType(TYPE_ANY)).toBe(true);
-      expect(shape.isAcceptedType(TYPE_STRING)).toBe(true);
-      expect(shape.isAcceptedType(TYPE_NUMBER)).toBe(true);
-      expect(shape.isAcceptedType(TYPE_SYMBOL)).toBe(false);
-      expect(shape.isAcceptedType(TYPE_NEVER)).toBe(false);
     });
   });
 

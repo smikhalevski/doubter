@@ -7,7 +7,7 @@ import {
   MESSAGE_ARRAY_TYPE,
   MESSAGE_NUMBER_TYPE,
   MESSAGE_STRING_TYPE,
-  TYPE_ANY,
+  TYPE_UNKNOWN,
   TYPE_ARRAY,
   TYPE_NUMBER,
   TYPE_OBJECT,
@@ -393,11 +393,12 @@ describe('ArrayShape', () => {
   });
 
   describe('coerce', () => {
-    test('allow any input types when shape is coerced and elements are unconstrained', () => {
+    test('allow any input type when shape is coerced and elements are unconstrained', () => {
       const arrShape = new ArrayShape(null, null).coerce();
 
-      expect(arrShape.inputTypes).toEqual([TYPE_ANY]);
+      expect(arrShape.inputTypes).toEqual([TYPE_UNKNOWN]);
     });
+
     test('allows only array-like types when tuple has two elements', () => {
       const arrShape = new ArrayShape([new StringShape(), new NumberShape()], null).coerce();
 

@@ -14,7 +14,7 @@ import {
   StringShape,
   UnionShape,
 } from '../../main';
-import { CODE_UNION, MESSAGE_UNION, TYPE_ANY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
+import { CODE_UNION, MESSAGE_UNION, TYPE_UNKNOWN, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
 import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shapes/UnionShape';
 
 describe('UnionShape', () => {
@@ -112,7 +112,7 @@ describe('UnionShape', () => {
           input: 'aaa',
           message: MESSAGE_UNION,
           param: {
-            inputTypes: [TYPE_ANY],
+            inputTypes: [TYPE_UNKNOWN],
             issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
           },
         },
@@ -150,8 +150,8 @@ describe('UnionShape', () => {
     });
 
     test('any absorbs other types', () => {
-      expect(new UnionShape([new StringShape(), new Shape()]).inputTypes).toEqual([TYPE_ANY]);
-      expect(new UnionShape([new NeverShape(), new Shape()]).inputTypes).toEqual([TYPE_ANY]);
+      expect(new UnionShape([new StringShape(), new Shape()]).inputTypes).toEqual([TYPE_UNKNOWN]);
+      expect(new UnionShape([new NeverShape(), new Shape()]).inputTypes).toEqual([TYPE_UNKNOWN]);
     });
   });
 
@@ -320,7 +320,7 @@ describe('UnionShape', () => {
             input: 'aaa',
             message: MESSAGE_UNION,
             param: {
-              inputTypes: [TYPE_ANY],
+              inputTypes: [TYPE_UNKNOWN],
               issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
             },
           },
@@ -366,7 +366,7 @@ describe('getDiscriminator', () => {
       ])
     ).toEqual({
       key: 'type',
-      valuesByShape: [['aaa'], ['bbb']],
+      valueGroups: [['aaa'], ['bbb']],
     });
   });
 
@@ -390,7 +390,7 @@ describe('getDiscriminator', () => {
       ])
     ).toEqual({
       key: 'type2',
-      valuesByShape: [['bbb'], ['ccc']],
+      valueGroups: [['bbb'], ['ccc']],
     });
   });
 
@@ -402,7 +402,7 @@ describe('getDiscriminator', () => {
       ])
     ).toEqual({
       key: 'type',
-      valuesByShape: [['aaa', 'bbb'], ['ccc']],
+      valueGroups: [['aaa', 'bbb'], ['ccc']],
     });
   });
 
@@ -429,6 +429,11 @@ describe('getDiscriminator', () => {
     ).toBeNull();
   });
 
+  test('returns null if there are not enough shapes', () => {
+    expect(getDiscriminator([])).toBeNull();
+    expect(getDiscriminator([new ObjectShape({ type: new ConstShape('aaa') }, null)])).toBeNull();
+  });
+
   test('works with composite shapes', () => {
     expect(
       getDiscriminator([
@@ -445,7 +450,7 @@ describe('getDiscriminator', () => {
       ])
     ).toEqual({
       key: 'type',
-      valuesByShape: [['bbb', 'ddd'], ['aaa']],
+      valueGroups: [['bbb', 'ddd'], ['aaa']],
     });
   });
 });

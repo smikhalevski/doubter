@@ -7,9 +7,9 @@ import {
   MESSAGE_ARRAY_MIN,
   MESSAGE_ARRAY_TYPE,
   MESSAGE_TUPLE,
-  TYPE_ANY,
   TYPE_ARRAY,
   TYPE_OBJECT,
+  TYPE_UNKNOWN,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -178,20 +178,20 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   protected _getInputTypes(): readonly Type[] {
     const { shapes, restShape } = this;
 
-    const shape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
+    const lonerShape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
 
     if (!this.isCoerced) {
       return [TYPE_ARRAY];
     }
     if (shapes === null && restShape === null) {
-      // Elements aren't parsed, any value can be wrapped
-      return [TYPE_ANY];
+      // Elements aren't parsed, so anything value can be coerced to an array
+      return [TYPE_UNKNOWN];
     }
-    if (shape === null) {
-      // Iterables and array-like objects
+    if (lonerShape === null) {
+      // Tuple with multiple elements, so only iterables and array-like objects are allowed
       return [TYPE_OBJECT, TYPE_ARRAY];
     }
-    return shape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
+    return lonerShape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, 'output'>> {

@@ -1,5 +1,4 @@
 import {
-  TYPE_ANY,
   TYPE_ARRAY,
   TYPE_DATE,
   TYPE_MAP,
@@ -8,6 +7,7 @@ import {
   TYPE_OBJECT,
   TYPE_PROMISE,
   TYPE_SET,
+  TYPE_UNKNOWN,
 } from '../constants';
 import {
   AnyShape,
@@ -60,8 +60,18 @@ export function getValueType(value: unknown): ValueType {
   return type;
 }
 
-export function isAcceptedType(types: readonly Type[], type: Type): boolean {
-  return types[0] === TYPE_ANY || (types[0] !== TYPE_NEVER && type === TYPE_ANY) || types.indexOf(type) !== -1;
+/**
+ * Returns `true` if `type` is assignable to `types`, or `false` otherwise. This function expects `types` to be
+ * normalized.
+ *
+ * - `never` can be assigned to anything;
+ * - nothing can be assigned to never, except `never`;
+ * - `unknown` can only be assigned to itself;
+ * - anything can be assigned to `unknown`;
+ * - value types can be assigned to a union with itself, and to `unknown`.
+ */
+export function isAssignableTo(type: Type, types: readonly Type[]): boolean {
+  return type === TYPE_NEVER || types[0] === TYPE_UNKNOWN || types.indexOf(type) !== -1;
 }
 
 export function isAsyncShape(shape: AnyShape): boolean {

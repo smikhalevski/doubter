@@ -1,5 +1,5 @@
 import { NeverShape } from '../../main';
-import { CODE_TYPE, MESSAGE_NEVER_TYPE, TYPE_ANY, TYPE_NEVER, TYPE_STRING } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_NEVER_TYPE, TYPE_UNKNOWN, TYPE_NEVER, TYPE_STRING } from '../../main/constants';
 
 describe('NeverShape', () => {
   test('has the never input type', () => {
@@ -19,7 +19,7 @@ describe('NeverShape', () => {
   });
 
   test('does not accept any', () => {
-    expect(new NeverShape().isAcceptedType(TYPE_ANY)).toBe(false);
+    expect(new NeverShape().isAcceptedType(TYPE_UNKNOWN)).toBe(false);
   });
 
   test('does not accept other types', () => {
