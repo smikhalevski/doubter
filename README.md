@@ -4,12 +4,13 @@
   </a>
 </p>
 
-No-hassle runtime validation and transformation library.
+Runtime validation and transformation library.
 
 - TypeScript first;
 - Zero dependencies;
 - Sync and async validation and transformation flows;
-- Collect all validation issues or abort after the first issue is encountered;
+- Can collect all validation issues, or exit early;
+- [Runtime type introspection;](#introspection)
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
@@ -24,10 +25,12 @@ npm install --save-prod doubter
 
 - [Basics](#basics)
 - [Parsing and trying](#parsing-and-trying)
+- [Sync and async shapes](#sync-and-async-shapes)
 - [Validation errors](#validation-errors)
 - [Checks](#checks)
 - [Refinements](#refinements)
 - [Transformations](#transformations)
+- [Metadata](#metadata)
 - [Parsing context](#parsing-context)
 - [Shape piping](#shape-piping)
 - [Replace, allow, and deny a value](#replace-allow-and-deny-a-value)
@@ -161,82 +164,6 @@ const user: User = {
 };
 ```
 
-## Shapes
-
-Shapes are validation and transformation pipelines that have an input and an output. Here's a shape that restricts an
-input to a string and produces a string as an output:
-
-```ts
-d.string();
-// ⮕ Shape<string>
-```
-
-Shapes can have different input and output types. For example, the shape below allows strings and
-[replaces `undefined`](#optional-and-non-optional) input values with a default value "Mars":
-
-```ts
-const shape = d.string().optional('Mars');
-// ⮕ Shape<string | undefined, string>
-
-shape.parse('Pluto');
-// ⮕ 'Pluto'
-
-shape.parse(undefined);
-// ⮕ 'Mars'
-```
-
-Infer the input and output types of the shape:
-
-```ts
-type ShapeInput = typeof shape['input'];
-// ⮕ string | undefined
-
-type ShapeOutput = typeof shape['output'];
-// ⮕ string
-```
-
-## Async shapes
-
-[Async transformations](#async-transformations) and reliance on [promise shapes](#promise) make dependent shapes async.
-
-Here's a shape of a promise that is expected to be fulfilled with a number:
-
-```ts
-const asyncShape = d.promise(d.number());
-// ⮕ Shape<Promise<number>>
-```
-
-You can check that the shape is async:
-
-```ts
-asyncShape.isAsync // ⮕ true
-```
-
-Async shapes don't support synchronous `parse` method, and would throw an error if it is called:
-
-```ts
-asyncShape.parse(Promise.resolve(42));
-// ❌ Error: Shape is async
-```
-
-Use `parseAsync` with async shapes instead:
-
-```ts
-asyncShape.parseAsync(Promise.resolve(42));
-// ⮕ Promise<42>
-```
-
-Any shape that relies on an async shape becomes async as well:
-
-```ts
-const objectShape = d.object({
-  foo: asyncShape
-});
-// ⮕ Shape<{ foo: Promise<number> }>
-
-objectShape.isAsync // ⮕ true
-```
-
 # Parsing and trying
 
 Each shape can parse input values and there are several methods for that purpose.
@@ -352,6 +279,93 @@ shape.try('Mars');
 
 Use `tryAsync` with [async shapes](#async-shapes). It has the same semantics and returns a promise.
 
+# Sync and async shapes
+
+Shapes are validation and transformation pipelines that have an input and an output. Here's a shape that restricts an
+input to a string and produces a string as an output:
+
+```ts
+d.string();
+// ⮕ Shape<string>
+```
+
+Shapes can have different input and output types. For example, the shape below allows strings and
+[replaces `undefined`](#optional-and-non-optional) input values with a default value "Mars":
+
+```ts
+const shape = d.string().optional('Mars');
+// ⮕ Shape<string | undefined, string>
+
+shape.parse('Pluto');
+// ⮕ 'Pluto'
+
+shape.parse(undefined);
+// ⮕ 'Mars'
+```
+
+Infer the input and output types of the shape:
+
+```ts
+type Input = typeof shape['input'];
+// ⮕ string | undefined
+
+type Output = typeof shape['output'];
+// ⮕ string
+```
+
+You can get the shape input types at runtime using [shape introspection](#introspection):
+
+```ts
+shape.inputTypes;
+// ⮕ ['string', 'undefined']
+```
+
+## Async shapes
+ 
+What can make a shape asynchronous:
+
+- [Async transformations;](#async-transformations)
+- Usage of [`d.promise`](#promise);
+- Usage of [custom async shapes.](#advanced-shapes)
+
+Here's a shape of a promise that is expected to be fulfilled with a number:
+
+```ts
+const shape = d.promise(d.number());
+// ⮕ Shape<Promise<number>>
+```
+
+You can check that the shape is async:
+
+```ts
+shape.isAsync // ⮕ true
+```
+
+Async shapes don't support synchronous [`parse`](#parse) method, and would throw an error if it is called:
+
+```ts
+shape.parse(Promise.resolve(42));
+// ❌ Error: Shape is async
+```
+
+Use [`parseAsync`](#parse) with async shapes instead:
+
+```ts
+shape.parseAsync(Promise.resolve(42));
+// ⮕ Promise<42>
+```
+
+Any shape that relies on an async shape becomes async as well:
+
+```ts
+const userShape = d.object({
+  name: d.promise(d.string())
+});
+// ⮕ Shape<{ name: Promise<string> }>
+
+userShape.isAsync // ⮕ true
+```
+
 # Validation errors
 
 Validation errors which are thrown by [`parse*` methods](#parse), and
@@ -397,7 +411,7 @@ The code of the validation issue. Shapes provide various checks and each check h
 <dd>
 
 The object path as an array of keys, or `undefined` if there's no path. Keys can be strings, numbers (for example, array
-indices), symbols, and any other values since they can be `Map` keys.
+indices), symbols, and any other values since they can be [`Map` keys](#map).
 
 </dd>
 <dt><code>input</code></dt>
@@ -487,7 +501,7 @@ Checks allow constraining the input value beyond type assertions. For example, i
 to be greater than 5:
 
 ```ts
-const shape1 = d.number().check(value => {
+const shape = d.number().check(value => {
   if (value <= 5) {
     // 🟡 Return an issue, or an array of issues
     return { code: 'kaputs' };
@@ -495,10 +509,10 @@ const shape1 = d.number().check(value => {
 });
 // ⮕ Shape<number>
 
-shape1.parse(10);
+shape.parse(10);
 // ⮕ 10
 
-shape1.parse(3);
+shape.parse(3);
 // ❌ ValidationError: kaputs at /
 ```
 
@@ -508,7 +522,7 @@ A check callback receives the shape output value and must return an issue or an 
 > issues occurred. While this has the same effect as returning an array of issues, it is recommended to throw a
 > `ValidationError` as the last resort since catching errors has a high performance penalty.
 
-If value is valid, a check callback must return `null` or `undefined`.
+If value is valid, a check callback must return `null`, `undefined`, or an empty array.
 
 Most shapes have a set of built-in checks. The check we've just implemented above is called `gt` (greater than):
 
@@ -555,13 +569,13 @@ const includesCheck: d.CheckCallback<string[], string> = (value, param) => {
   }
 };
 
-const shape2 = d.array(d.string()).check(includesCheck, 'Mars');
+const shape = d.array(d.string()).check(includesCheck, 'Mars');
 // ⮕ Shape<any[]>
 
-shape2.parse(['Mars', 'Pluto']);
+shape.parse(['Mars', 'Pluto']);
 // ⮕ ['Mars', 'Pluto']
 
-shape2.parse(['Venus']);
+shape.parse(['Venus']);
 // ❌ ValidationError: unknown at /: Must incude Mars
 ```
 
@@ -606,7 +620,7 @@ This would return the [`Err`](https://smikhalevski.github.io/doubter/interfaces/
 
 Checks that you add using a
 [`check`](https://smikhalevski.github.io/doubter/classes/Shape.html#check) method are "safe" by default, which means
-they are not executed if any of the preceding checks has failed. For example, let's declare the shape of a greeting
+they aren't applied if any of the preceding checks have failed. For example, let's declare the shape of a greeting
 message:
 
 ```ts
@@ -650,33 +664,35 @@ shape.parse(42);
 // ❌ ValidationError: type at /: Must be a number
 ```
 
-In the example above both `helloCheck` and `noDigitsCheck` _are not_ applied, since the input value 42 is of the invalid
-type, despite that `noDigitsCheck` is marked as unsafe.
+In the example above both `helloCheck` and `noDigitsCheck` _are not_ applied, despite that `noDigitsCheck` is marked as
+unsafe. This happens because the input value 42 is of the invalid type.
 
-For some composite shapes, unsafe checks may become truly unsafe. Let's consider an object with a custom safe check:
+For composite shapes, unsafe checks may become truly unsafe. Let's consider an object with a custom safe check:
 
 ```ts
-const userShape = d.object({
-  age: d.number(),
-  yearsOfExperience: d.number()
-}).check(value => {
-  if (value.age < value.yearsOfExperience) {
-    return { code: 'inconsistentAge' };
-  }
-});
+const userShape = d
+  .object({
+    age: d.number(),
+    yearsOfExperience: d.number()
+  })
+  .check(user => {
+    if (user.age < user.yearsOfExperience) {
+      return { code: 'inconsistentAge' };
+    }
+  });
 // ⮕ Shape<{ age: number, yearsOfExperience: number }>
 ```
 
-The check relies on `value` to be an object with the valid set of properties. So if any issues are detected in the input
+The check relies on `user` to be an object with the valid set of properties. So if any issues are detected in the input
 object the check won't be called:
 
 ```ts
 // 🟡 Check isn't applied
-nameShape.parse({ age: 18 });
+nameShape.parse({ age: 18 }, { verbose: true });
 // ❌ ValidationError: type at /yearsOfExperience: Must be a number
 ```
 
-Adding the `unsafe` option would cause the check to be applied even if _object properties are invalid_.
+Adding the `unsafe` option in this case would cause the check to be applied even if _object properties are invalid_.
 
 Some shapes cannot guarantee that the input value is of the required type. For example, if any of the underlying shapes
 in an intersection have raised issues, an intersection itself cannot guarantee that its checks would receive the value
@@ -731,40 +747,19 @@ Using a check callback identity as a key isn't always convenient. Pass the
 ```ts
 shape.check({ key: 'email' }, emailCheck);
 // ⮕ Shape<string>
-
-shape.getCheck(emailCheck);
-// ⮕ { key: 'email', callback: emailCheck, isUnsafe: false, param: undefined }
 ```
 
 Now you should use the key to get or delete the check:
 
 ```ts
+shape.getCheck('email');
+// ⮕ { key: 'email', callback: emailCheck, isUnsafe: false, param: undefined }
+
 shape.deleteCheck('email');
 // ⮕ Shape<string>
 ```
 
 Doubter considers checks to be identical if they have the same key.
-
-## Metadata
-
-Built-in checks support the [`meta`](https://smikhalevski.github.io/doubter/interfaces/ConstraintOptions.html#meta)
-option. Its value is assigned to the [`meta`](https://smikhalevski.github.io/doubter/interfaces/Issue.html#meta)
-property of the raised [validation issue](#validation-errors).
-
-```ts
-const shape = d.number().gt(5, { meta: 'Useful data' });
-// ⮕ Shape<number>
-
-const result = shape.try(2);
-// ⮕ { ok: false, issues: … }
-
-if (!result.ok) {
-  result.issues[0].meta // ⮕ 'Useful data'
-}
-```
-
-This comes handy if you want to enhance an issue with an additional data that can be used later during issues
-processing. For example, during [localization](#localization).
 
 # Refinements
 
@@ -927,6 +922,48 @@ asyncShape2.isAsync // ⮕ true
 > shape.isAsync // ⮕ true
 > ```
 
+# Metadata
+
+Shapes and issues can be enriched with additional metadata.
+
+Add an annotation to a shape:
+
+```ts
+const shape = d.string().annotate({ description: 'Username' });
+
+shape.annotations;
+// ⮕ { description: 'Username' }
+```
+
+`annotate` returns the clone of the shape with updated annotations. Annotations are merged when you add them:
+
+```ts
+shape.annotate({ foo: 'bar' }).annotations;
+// ⮕ { description: 'Username', foo: 'bar' }
+```
+
+[Validation issues](#validation-errors) have a
+[`meta`](https://smikhalevski.github.io/doubter/interfaces/Issue.html#meta) property that you can use to store
+arbitrary data.
+
+You can pass the [`meta`](https://smikhalevski.github.io/doubter/interfaces/ConstraintOptions.html#meta) option to any
+built-in check and its value is assigned to the `meta` property of the raised [validation issue](#validation-errors).
+
+```ts
+const shape = d.number().gt(5, { meta: 'Useful data' });
+// ⮕ Shape<number>
+
+const result = shape.try(2);
+// ⮕ { ok: false, issues: … }
+
+if (!result.ok) {
+  result.issues[0].meta // ⮕ 'Useful data'
+}
+```
+
+This comes handy if you want to enhance an issue with an additional data that can be used later during issues
+processing. For example, during [localization](#localization).
+
 # Parsing context
 
 Inside [check](#checks) callbacks, [refinement predicates](#refinements), [transformers](#transformations) and
@@ -959,7 +996,7 @@ With shape piping you to can pass the shape output to another shape.
 ```ts
 d.string()
   .transform(parseFloat)
-  .to(number().lt(5).gt(10));
+  .to(d.number().lt(5).gt(10));
 // ⮕ Shape<string, number>
 ```
 
@@ -1111,7 +1148,7 @@ shape3.parse(21);
 
 # Optional and non-optional
 
-Marking a shape as optional allows `undefined` in both its input and output:
+Marking a shape as optional [allows `undefined`](#allow-a-literal-value) in both its input and output:
 
 ```ts
 d.string().optional();
@@ -1168,7 +1205,7 @@ shape2.parse(undefined);
 
 # Nullable and nullish
 
-Marking a shape as nullable allows `null` for both input and output:
+Marking a shape as nullable [allows `null`](#allow-a-literal-value) for both input and output:
 
 ```ts
 d.string().nullable();
@@ -1219,11 +1256,11 @@ d.or([d.number(), d.string()]).exclude(d.string());
 // ⮕ Shape<number | string, number>
 ```
 
-Sometimes you don't need the exclusion on the type level. For example, let's define a shape that allows any number
-except the \[3, 5] range:
+Sometimes you need an exclusion at runtime, but don't need it on the type level. For example, let's define a shape that
+allows any number except the \[3, 5] range:
 
 ```ts
-// 🟡 Note that the output type is inferred as never
+// 🟡 Note that the shape output is inferred as never
 d.number().exclude(d.number().min(3).max(5));
 // ⮕ Shape<number, never>
 ```
@@ -1236,7 +1273,7 @@ d.number().not(d.number().min(3).max(5));
 // ⮕ Shape<number>
 ```
 
-`not` works exactly as `exclude` at runtime, but it doesn't perform the exclusion on the type level.
+`not` works exactly like `exclude` at runtime, but it doesn't perform the exclusion on the type level.
 
 ```ts
 d.enum(['Bill', 'Jill']).not(d.const('Jill'));
@@ -1266,10 +1303,12 @@ shape1.deepPartial();
 Unions, intersections and lazy shapes can also be converted to deep partial:
 
 ```ts
-const shape2 = d.or([
-  d.number(),
-  d.object({ name: d.string() })
-]).deepPartial()
+const shape2 = d
+  .or([
+    d.number(),
+    d.object({ name: d.string() })
+  ])
+  .deepPartial()
 // ⮕ Shape<number | { name?: string }>
 
 shape2.parse(42);
@@ -1288,13 +1327,16 @@ shape2.parse({ name: 8080 });
 Deep partial isn't applied to transformed shapes:
 
 ```ts
-const shape2 = d.object({
-  years: d.array(d.string()).transform(parseFloat)
-}).deepPartial();
+const shape2 = d
+  .object({
+    years: d.array(d.string()).transform(parseFloat)
+  })
+  .deepPartial();
 // ⮕ Shape<{ years?: string[] }, { years?: number[] }>
 ```
 
-Note that array elements aren't optional after `deepPartial` was applied.
+In the example above, array elements don't allow `undefined` after `deepPartial` was applied, this happened because
+array was transformed.
 
 # Fallback value
 
@@ -1315,7 +1357,7 @@ Pass a callback as a fallback value, it would be executed every time the catch c
 ```ts
 const shape2 = d.number().catch(Date.now);
 
-shape2.parse(42)
+shape2.parse(42);
 // ⮕ 42
 
 shape2.parse('Pluto');
@@ -1351,49 +1393,36 @@ shape3.parse({ name: 47 });
 
 # Branded types
 
-TypeScript's type system is structural, which means that any two types that are structurally equivalent are considered
-the same.
+In TypeScript, values are considered to be of equivalent type if they are structurally the same. For example, plain
+strings are assignable to one another:
 
 ```ts
-interface Cat {
-  name: string;
-}
+declare function bookTicket(flightCode: string): void;
 
-interface Dog {
-  name: string;
-}
-
-declare function petCat(cat: Cat): void;
-
-const fidoDog: Dog = {
-  name: 'Fido'
-};
-
-petCat(fidoDog);
-// ✅ Ok, yet types are different
+// 🟡 No type errors, but "Bill" isn't a flight code
+bookTicket('Bill');
 ```
 
-In some cases, its can be desirable to simulate nominal typing inside TypeScript. For instance, you may wish to write a
+In some cases, it can be desirable to simulate nominal typing inside TypeScript. For instance, you may wish to write a
 function that only accepts an input that has been validated by Doubter. This can be achieved with branded types:
 
 ```ts
-const catShape = d.object({ name: d.string() }).brand<'Cat'>();
+const flightCodeShape = d.string().refine(isFlightCode).brand<'flightCode'>();
+// ⮕ Shape<string, string & { [BRAND]: 'flightCode' }>
 
-type Cat = typeof catShape['input'];
+type FlightCode = typeof flightCodeShape['output'];
 
-declare function petCat(cat: Cat): void;
+// 🟡 Note that the argument type isn't a plain string
+declare function bookTicket(flightCode: FlightCode): void;
 
-petCat(catShape.parse({ name: 'Simba' }));
-// ✅ Ok, since the cat was validated
+bookTicket(flightCodeShape.parse('BA2490'));
+// Ok, valid flight code
 
-petCat({ name: 'Fido' });
-// ❌ Error: Expected BRAND to be Cat
+bookTicket('Bill');
+// ❌ Error: Expected BRAND to be flightCode
 ```
 
-Under the hood, this works by attaching a "brand" to the inferred type using an intersection type. This way,
-plain/unbranded data structures are no longer assignable to the inferred type of the shape.
-
-Note that branded types do not affect the runtime result of `parse`. It is a static-only construct.
+> **Note**&ensp;Branded types don't affect the runtime result of `parse`. It is a static-only construct.
 
 # Type coercion
 
@@ -1416,7 +1445,7 @@ shape1.parse(null);
 ```
 
 Coercion can be enabled on shape-by-shape basis (as shown in the example above), or it can be enabled for all shapes
-when `coerced` option is passed to a [parsing method](#parsing-and-trying):
+when [`coerced` option](#parsing-and-trying) is passed to `parse*` or `try*` methods:
 
 ```ts
 const shape2 = d.object({
@@ -1434,7 +1463,7 @@ shape2.parse(
 // ⮕ { name: 'Jake', birthday: new Date(-660700800000) }
 ```
 
-Coercion rules differ from JavaScript so the behavior is more predictable and human-like. With Doubter you can coerce
+Coercion rules differ from JavaScript so the behavior is more predictable and human-like. With Doubter, you can coerce
 input to the following types:
 
 - [string](#coerce-to-a-string)
@@ -1491,41 +1520,43 @@ Types returned from `Shape.typeOf` are a superset of types returned from the `ty
 <tr><td><code>undefined</code></td><td><code>undefined</code></td></tr>
 </table>
 
-`inputTypes` array can also contain two additional types `any` and `never`.
+`inputTypes` array can also contain two additional types `unknown` and `never`.
 
-## `any` value type
+## `unknown` value type
 
-`any` type emerges when type cannot be inferred at runtime. This happens when [`d.any`](#any), [`d.unknown`](#unknown),
-or [`d.transform`](#transform-transformasync) is used:
+`unknown` type emerges when type cannot be detected at runtime. This happens when [`d.any`](#any),
+[`d.unknown`](#unknown), or [`d.transform`](#transform-transformasync) is used:
 
 ```ts
 const shape1 = d.transfrorm(parseFloat);
 // ⮕ Shape<any>
 
 shape1.inputTypes;
-// ⮕ ['any']
+// ⮕ ['unknown']
 ```
 
-`any` absorbs other types in unions:
+`unknown` runtime type behaves like TypeScript's `unknown`.
+
+It absorbs other types in unions:
 
 ```ts
-const shape2 = d.or([d.string(), d.any()]);
-// ⮕ Shape<any>
+const shape2 = d.or([d.string(), d.unknown()]);
+// ⮕ Shape<unknown>
 
 shape2.inputType;
-// ⮕ ['any']
+// ⮕ ['unknown']
 ```
 
-`any` absorbs other types in intersections, except when intersected with `never`:
+And it is erased in intersections:
 
 ```ts
-const shape3 = d.and([d.string(), d.any()]);
-// ⮕ Shape<any>
+const shape3 = d.and([d.string(), d.unknown()]);
+// ⮕ Shape<string>
 
 shape3.inputType;
-// ⮕ ['any']
+// ⮕ ['string']
 
-const shape4 = d.and([d.never(), d.any()]);
+const shape4 = d.and([d.never(), d.unknown()]);
 // ⮕ Shape<never>
 
 shape4.inputType;
@@ -1547,7 +1578,9 @@ neverShape.parse('Pluto');
 // ❌ ValidationError: type at /: Must not be used
 ```
 
-`never` is erased in unions:
+`never` runtime type behaves like TypeScript's `never`.
+
+It is erased in unions:
 
 ```ts
 const shape1 = d.or([d.string(), d.never()]);
@@ -1556,7 +1589,7 @@ shape1.inputType;
 // ⮕ ['string']
 ```
 
-`never` absorbs other types in intersections:
+And it absorbs other types in intersections:
 
 ```ts
 const shape2 = d.and([d.string(), d.never()]);
@@ -1595,6 +1628,7 @@ For example, you can check that the shape is [optional](#optional-and-non-option
 
 ```ts
 const shape2 = d.number().optional();
+// ⮕ Shape<number | undefined>
 
 shape2.isAcceptedType('number');
 // ⮕ true
@@ -1602,6 +1636,7 @@ shape2.isAcceptedType('number');
 shape2.isAcceptedType('undefined');
 // ⮕ true
 
+// 🟡 Note that null isn't accepted
 shape2.isAcceptedType('null');
 // ⮕ false
 ```
@@ -1614,21 +1649,22 @@ const fuzzyShape = d.any().to(d.string());
 // ⮕ Shape<any, string>
 ```
 
-`fuzzyShape` accepts [`any`](#any-value-type) input value type:
+`fuzzyShape` accepts [`unknown`](#unknown-value-type) input type because it is based on `d.any`:
 
 ```ts
 fuzzyShape.inputTypes;
-// ⮕ ['any']
+// ⮕ ['unknown']
 ```
 
-Since anything can be assigned to `any`, an `undefined` type is accepted:
+Since anything can be assigned to `unknown`, an `undefined` type is accepted:
 
 ```ts
 fuzzyShape.isAcceptedType('undefined');
 // ⮕ true
 ```
 
-But parsing `undefined` with `fuzzyShape` would produce an error, since `undefined` isn't a string:
+But parsing `undefined` with `fuzzyShape` would produce an error, since `undefined` doesn't satisfy `d.string` on the
+right-hand side of the pipe:
 
 ```ts
 fuzzyShape.parse('undefined');
@@ -1704,37 +1740,37 @@ shape3.inputTypes;
 
 ## Nested shapes
 
-Object, array, union ond other shapes provide access to their nested shapes:
+Object, array, union ond other composite shapes provide access to their nested shapes:
 
 ```ts
-const objectShape = d.object({
+const userShape = d.object({
   name: d.string(),
   age: d.number()
 });
 // ⮕ Shape<{ name: string, age: number }>
 
-objectShape.shapes.name;
+userShape.shapes.name;
 // ⮕ Shape<number>
 
-const unionShape = d.or([d.string(), objectShape]);
-// ⮕ Shape<string | { name: string, age: number }>
+const userOrNameShape = d.or([userShape, d.string()]);
+// ⮕ Shape<{ name: string, age: number } | string>
 
-unionShape.shapes[1];
-// ⮕ objectShape
+userOrNameShape.shapes[0];
+// ⮕ userShape
 ```
 
 [`at`](https://smikhalevski.github.io/doubter/classes/Shape.html#at) method derives a sub-shape at the given key, and if
-there's no key `null` is returned:
+there's no such key then `null` is returned:
 
 ```ts
-objectShape.at('age');
+userShape.at('age');
 // ⮕ Shape<number>
 
-objectShape.at('unknownKey');
+userShape.at('emotionalDamage');
 // ⮕ null
 ```
 
-This is especially useful with composite shapes:
+This is especially useful with unions and intersections:
 
 ```ts
 const shape = d.or([
@@ -1784,8 +1820,8 @@ const minimumMessage: d.Message = (param, code, input, meta, options) => (
 d.number().min(5, minimumMessage);
 ```
 
-Semantics described above are also applied to the
-[`message`](https://smikhalevski.github.io/doubter/interfaces/ConstraintOptions.html#message) option as well:
+Semantics described above are applied to the
+[`message` option](https://smikhalevski.github.io/doubter/interfaces/ConstraintOptions.html#message) as well:
 
 ```ts
 d.string().length(3, { message: 'Expected length is %s' })
@@ -1824,9 +1860,6 @@ Read more about [Refinements](#refinements) and how to [Add, get and delete chec
 
 You can create custom shapes by extending the [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html)
 class.
-
-> **Note**&ensp;If you don't know why you need to implement a custom shape instead of using
-> [`transform`](#transform-transformasync) or similar features, then you probably don't need a custom shape.
 
 `Shape` has several protected methods that you can override to alter different aspects of the shape logic.
 
@@ -1873,9 +1906,8 @@ Must return `true` if your shape supports async parsing only, otherwise you don'
 </dt>
 <dd>
 
-Must return an array of [runtime value types](#introspection) that can be processed by the shape. Elements of the
-returned array don't have to be unique and are available publicly as a readonly
-[`inputTypes`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputTypes) array.
+Must return an array of runtime types that can be processed by the shape. Elements of the returned array don't have to
+be unique. Refer to [Introspection](#introspection) section for more details about types.
 
 </dd>
 <dt>
@@ -1887,7 +1919,8 @@ returned array don't have to be unique and are available publicly as a readonly
 
 Must return an array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous range
 of values. An empty array means that the shape doesn't accept any values at all, like
-[`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) for example.
+[`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) for example. Refer to
+[Input values](#input-values) section for more details.
 
 </dd>
 </dl>
@@ -1899,17 +1932,30 @@ class NumberLikeShape extends d.Shape<string, number> {
 
   protected _apply(input: unknown, options: d.ApplyOptions): d.Result<number> {
 
-    // 1️⃣ Validate the input
+    // 1️⃣ Validate the input and retun issues if it is invalid
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {
       return [{
         code: 'kaputs',
-        message: 'Must be coercible to number',
+        message: 'Must be a number-like',
         input,
       }];
     }
 
-    // 2️⃣ Return the output
-    return { ok: true, value: parseFloat(input) };
+    // 2️⃣ Prepare the output value
+    const output = parseFloat(input);
+
+    // 3️⃣ Apply checks to the output value
+    if (this._applyChecks !== null) {
+      const issues = this._applyChecks(output, null, options);
+      
+      if (issues !== null) {
+        // 4️⃣ Return issues if the output value is invalid
+        return issues;
+      }
+    }
+
+    // 5️⃣ Return the parsing result
+    return { ok: true, value: output };
   }
 }
 ```
@@ -1922,11 +1968,14 @@ const shape = d.array(new NumberLikeShape());
 
 shape.parse(['42', '33']);
 // ⮕ [42, 33]
+
+shape.parse(['seventeen']);
+// ❌ ValidationError: kaputs at /0: Must be a number-like
 ```
 
 ## Overriding type coercion
 
-You can extend existing shapes and override type coercion that they use.
+You can extend existing shapes and override type coercion that they implement.
 
 ```ts
 class YesNoShape extends d.BooleanShape {
@@ -2364,7 +2413,7 @@ To constrain a value of `this`:
 
 ```ts
 d.fn().this(d.object({ foo: d.string }));
-// ⮕ Shape<(this: { foo: d.string }) => any>
+// ⮕ Shape<(this: { foo: string }) => any>
 ```
 
 ## Parsing a function
@@ -3590,7 +3639,7 @@ const keyShape = d.enum(['foo', 'bar']).transform(
 // ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
 ```
 
-Then, create a [`record`](#record) shape that constrains keys and values or a dictionary-like object:
+Then, create a [`d.record`](#record) shape that constrains keys and values or a dictionary-like object:
 
 ```ts
 const shape = d.record(keyShape, d.number());
