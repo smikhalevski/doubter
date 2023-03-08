@@ -65,21 +65,15 @@ describe('Shape', () => {
     });
   });
 
-  describe('describe', () => {
-    test('updates the description', () => {
-      expect(new Shape().describe('aaa').description).toBe('aaa');
-    });
+  describe('annotate', () => {
+    test('updates annotations', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape().annotate({ key1: 111 });
 
-    test('returns a shape clone if description is changed', () => {
-      const shape = new Shape();
-
-      expect(shape.describe('aaa')).not.toBe(shape);
-    });
-
-    test('returns the same shape if description is not changed', () => {
-      const shape = new Shape().describe('aaa');
-
-      expect(shape.describe('aaa')).toBe(shape);
+      expect(shape1.annotations).toEqual({});
+      expect(shape2).not.toBe(shape1);
+      expect(shape2.annotations).toEqual({ key1: 111 });
+      expect(shape2.annotate({ key2: 222 }).annotations).toEqual({ key1: 111, key2: 222 });
     });
   });
 

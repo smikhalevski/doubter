@@ -39,6 +39,7 @@ import {
   isObjectLike,
   Mutable,
   ok,
+  ReadonlyDict,
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
@@ -195,9 +196,9 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * The human-readable shape description.
+   * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations.
    */
-  readonly description: string = '';
+  readonly annotations: ReadonlyDict = {};
 
   /**
    * The array of checks that were used to produce {@linkcode _applyChecks}.
@@ -235,18 +236,14 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Adds a human-readable description text to the shape.
+   * Assigns annotations to the shape.
    *
-   * @param text The description text.
-   * @returns The clone of the shape with the description added.
+   * @param annotations Annotations to add.
+   * @returns The clone of the shape with the updated annotations.
    */
-  describe(text: string): this {
-    if (this.description === text) {
-      return this;
-    }
-
+  annotate(annotations: ReadonlyDict): this {
     const shape = cloneInstance(this);
-    (shape as Mutable<this>).description = text;
+    (shape as Mutable<this>).annotations = Object.assign({}, this.annotations, annotations);
     return shape;
   }
 
