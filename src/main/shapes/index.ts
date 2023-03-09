@@ -38,3 +38,5 @@ export {
 export { StringShape } from './StringShape';
 export { SymbolShape } from './SymbolShape';
 export { UnionShape } from './UnionShape';
+
+export type { BRAND } from './Shape';

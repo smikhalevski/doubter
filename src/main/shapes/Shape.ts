@@ -102,12 +102,15 @@ export interface NotShape<S extends AnyShape, N extends AnyShape>
 }
 
 /**
- * The unique symbol that is used for type branding.
+ * This symbol doesn't exist at runtime!
+ *
+ * The ephemeral unique symbol that is used for type branding by {@linkcode BrandShape}.
  */
 export declare const BRAND: unique symbol;
 
 /**
- * An opaque shape that adds a brand to the output type.
+ * The shape that adds a brand to the output type. This shape doesn't affect the runtime and is used for emulation of
+ * nominal typing.
  *
  * @template S The shape which output must be branded.
  * @template T The brand value.
