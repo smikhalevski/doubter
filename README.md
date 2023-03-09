@@ -7,12 +7,13 @@
 Runtime validation and transformation library.
 
 - TypeScript first;
-- Zero dependencies;
 - Sync and async validation and transformation flows;
-- Can collect all validation issues, or exit early;
+- Collect all validation issues, or exit early;
 - [Runtime type introspection;](#introspection)
 - [Human-oriented type coercion;](#type-coercion)
+- No dynamic code evaluation;
 - [High performance and low memory consumption;](#performance)
+- Zero dependencies;
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
 🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
@@ -947,7 +948,7 @@ shape.annotate({ foo: 'bar' }).annotations;
 arbitrary data.
 
 You can pass the [`meta`](https://smikhalevski.github.io/doubter/interfaces/ConstraintOptions.html#meta) option to any
-built-in check and its value is assigned to the `meta` property of the raised [validation issue](#validation-errors).
+built-in check and its value is assigned to the `meta` property of the raised validation issue.
 
 ```ts
 const shape = d.number().gt(5, { meta: 'Useful data' });
