@@ -86,7 +86,7 @@ describe('string()', () => {
       const type = valita.string();
 
       measure(() => {
-        type.try(value);
+        type.try(value).issues;
       });
     });
 
@@ -186,7 +186,7 @@ describe('string().length(3)', () => {
       const type = valita.string().assert(v => v.length === 3);
 
       measure(() => {
-        type.try(value);
+        type.try(value).issues;
       });
     });
 
