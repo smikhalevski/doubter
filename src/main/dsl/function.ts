@@ -43,7 +43,7 @@ function function_(
     options = argShapes;
     argShapes = new ArrayShape([], null);
   }
-  return new FunctionShape(argShapes, null, null, options);
+  return new FunctionShape(argShapes as Shape, null, null, options);
 }
 
 // noinspection ReservedWordAsName

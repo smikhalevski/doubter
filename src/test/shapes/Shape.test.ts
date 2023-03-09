@@ -25,12 +25,11 @@ import {
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
   MESSAGE_STRING_TYPE,
-  TYPE_ANY,
   TYPE_ARRAY,
   TYPE_NEVER,
   TYPE_NUMBER,
   TYPE_STRING,
-  TYPE_SYMBOL,
+  TYPE_UNKNOWN,
 } from '../../main/constants';
 import { Result } from '../../main/shapes/Shape';
 
@@ -55,7 +54,7 @@ describe('Shape', () => {
     const shape = new Shape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputTypes).toEqual([TYPE_ANY]);
+    expect(shape.inputTypes).toEqual([TYPE_UNKNOWN]);
     expect(shape.inputValues).toBeNull();
   });
 
@@ -66,51 +65,15 @@ describe('Shape', () => {
     });
   });
 
-  describe('isAcceptedType', () => {
-    test('any shape accepts never', () => {
-      expect(new Shape().isAcceptedType(TYPE_NEVER)).toBe(true);
-    });
+  describe('annotate', () => {
+    test('updates annotations', () => {
+      const shape1 = new Shape();
+      const shape2 = new Shape().annotate({ key1: 111 });
 
-    test('any shape accepts any', () => {
-      expect(new Shape().isAcceptedType(TYPE_ANY)).toBe(true);
-    });
-
-    test('any shape accepts other types', () => {
-      expect(new Shape().isAcceptedType(TYPE_STRING)).toBe(true);
-    });
-
-    test('detects accepted input types', () => {
-      class MockShape extends Shape {
-        protected _getInputTypes(): Type[] {
-          return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
-        }
-      }
-
-      const shape = new MockShape();
-
-      expect(shape.isAcceptedType(TYPE_ANY)).toBe(true);
-      expect(shape.isAcceptedType(TYPE_STRING)).toBe(true);
-      expect(shape.isAcceptedType(TYPE_NUMBER)).toBe(true);
-      expect(shape.isAcceptedType(TYPE_SYMBOL)).toBe(false);
-      expect(shape.isAcceptedType(TYPE_NEVER)).toBe(false);
-    });
-  });
-
-  describe('describe', () => {
-    test('updates the description', () => {
-      expect(new Shape().describe('aaa').description).toBe('aaa');
-    });
-
-    test('returns a shape clone if description is changed', () => {
-      const shape = new Shape();
-
-      expect(shape.describe('aaa')).not.toBe(shape);
-    });
-
-    test('returns the same shape if description is not changed', () => {
-      const shape = new Shape().describe('aaa');
-
-      expect(shape.describe('aaa')).toBe(shape);
+      expect(shape1.annotations).toEqual({});
+      expect(shape2).not.toBe(shape1);
+      expect(shape2.annotations).toEqual({ key1: 111 });
+      expect(shape2.annotate({ key2: 222 }).annotations).toEqual({ key1: 111, key2: 222 });
     });
   });
 

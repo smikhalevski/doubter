@@ -5,13 +5,23 @@ const valita = require('@badrap/valita');
 const doubter = require('../../../lib');
 
 describe('Overall', () => {
-  const value = {
+  const validValue = {
     a1: [1, 2, 3],
     a2: 'foo',
     a3: false,
     a4: {
       a41: 'bar',
       a42: 3.1415,
+    },
+  };
+
+  const invalidValue = {
+    a1: [1, 2, '3'],
+    a2: 0xf00,
+    a3: false,
+    a4: {
+      a41: 'bar',
+      a42: '3.1415',
     },
   };
 
@@ -55,7 +65,11 @@ describe('Overall', () => {
       const validate = ajv.compile(schema);
 
       measure(() => {
-        validate(value);
+        validate(validValue);
+      });
+
+      measure(() => {
+        validate(invalidValue);
       });
     });
 
@@ -75,7 +89,11 @@ describe('Overall', () => {
         .passthrough();
 
       measure(() => {
-        type.parse(value);
+        type.parse(validValue);
+      });
+
+      measure(() => {
+        type.safeParse(invalidValue);
       });
     });
 
@@ -97,7 +115,11 @@ describe('Overall', () => {
       );
 
       measure(() => {
-        type.parse(value);
+        type.parse(validValue);
+      });
+
+      measure(() => {
+        type.try(invalidValue);
       });
     });
 
@@ -114,7 +136,11 @@ describe('Overall', () => {
       const options = { mode: 'passthrough' };
 
       measure(() => {
-        type.parse(value, options);
+        type.parse(validValue, options);
+      });
+
+      measure(() => {
+        type.try(invalidValue, options).issues;
       });
     });
 
@@ -130,7 +156,11 @@ describe('Overall', () => {
       });
 
       measure(() => {
-        shape.parse(value);
+        shape.parse(validValue);
+      });
+
+      measure(() => {
+        shape.try(invalidValue, { verbose: true });
       });
     });
   });
@@ -177,7 +207,11 @@ describe('Overall', () => {
       const validate = ajv.compile(schema);
 
       measure(() => {
-        validate(value);
+        validate(validValue);
+      });
+
+      measure(() => {
+        validate(invalidValue);
       });
     });
 
@@ -193,7 +227,11 @@ describe('Overall', () => {
       });
 
       measure(() => {
-        type.parse(value);
+        type.parse(validValue);
+      });
+
+      measure(() => {
+        type.safeParse(invalidValue);
       });
     });
 
@@ -209,7 +247,11 @@ describe('Overall', () => {
       });
 
       measure(() => {
-        type.parse(value);
+        type.parse(validValue);
+      });
+
+      measure(() => {
+        type.try(invalidValue);
       });
     });
 
@@ -225,7 +267,11 @@ describe('Overall', () => {
       });
 
       measure(() => {
-        type.parse(value);
+        type.parse(validValue);
+      });
+
+      measure(() => {
+        type.try(invalidValue).issues;
       });
     });
 
@@ -245,7 +291,11 @@ describe('Overall', () => {
         .exact();
 
       measure(() => {
-        shape.parse(value);
+        shape.parse(validValue);
+      });
+
+      measure(() => {
+        shape.try(invalidValue, { verbose: true });
       });
     });
   });

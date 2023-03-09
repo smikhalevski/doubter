@@ -85,23 +85,42 @@ describe('Advanced shapes', () => {
   test('NumberLikeShape', () => {
     class NumberLikeShape extends d.Shape<string, number> {
       protected _apply(input: unknown, options: d.ApplyOptions): d.Result<number> {
+        // 1️⃣ Validate the input and retun issues if it is invalid
         if (typeof input !== 'string' || isNaN(parseFloat(input))) {
           return [
             {
               code: 'kaputs',
-              message: 'Must be coercible to number',
+              message: 'Must be a number-like',
               input,
             },
           ];
         }
 
-        return { ok: true, value: parseFloat(input) };
+        // 2️⃣ Prepare the output value
+        const output = parseFloat(input);
+
+        // 3️⃣ Apply checks to the output value
+        if (this._applyChecks) {
+          const issues = this._applyChecks(output, null, options);
+
+          if (issues !== null) {
+            // 4️⃣ Return issues if the output value is invalid
+            return issues;
+          }
+        }
+
+        // 5️⃣ Return the parsing result
+        return { ok: true, value: output };
       }
     }
 
     const shape = d.array(new NumberLikeShape());
 
     expect(shape.parse(['42', '33'])).toEqual([42, 33]);
+    expect(shape.try(['seventeen'])).toEqual({
+      ok: false,
+      issues: [{ code: 'kaputs', message: 'Must be a number-like', input: 'seventeen', path: [0] }],
+    });
   });
 
   test('YesNoShape', () => {

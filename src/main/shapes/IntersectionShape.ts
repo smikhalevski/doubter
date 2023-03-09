@@ -1,14 +1,11 @@
 import {
   CODE_INTERSECTION,
   MESSAGE_INTERSECTION,
-  TYPE_ANY,
   TYPE_ARRAY,
   TYPE_DATE,
-  TYPE_MAP,
   TYPE_NEVER,
   TYPE_OBJECT,
-  TYPE_PROMISE,
-  TYPE_SET,
+  TYPE_UNKNOWN,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -230,35 +227,44 @@ export class IntersectionShape<U extends readonly AnyShape[]>
 /**
  * Returns the intersection type.
  *
- * @param typesByShape The array of arrays of unique input types associated with each shape in the intersection.
+ * @param typeGroups The array of arrays of unique input types accepted by intersected shapes.
  */
-export function intersectTypes(typesByShape: Array<readonly Type[]>): Type[] {
-  if (typesByShape.length === 0) {
-    return [TYPE_NEVER];
+export function intersectTypes(typeGroups: Array<readonly Type[]>): Type[] {
+  if (typeGroups.length === 0) {
+    // Empty intersections produce no issues
+    return [TYPE_UNKNOWN];
   }
 
-  const types = typesByShape[0].slice(0);
+  let types = typeGroups[0].slice(0);
 
-  for (let i = 1; i < typesByShape.length; ++i) {
-    const shapeTypes = typesByShape[i];
+  for (let i = 1; i < typeGroups.length; ++i) {
+    const typeGroup = typeGroups[i];
 
-    if (shapeTypes[0] === TYPE_NEVER) {
+    if (typeGroup[0] === TYPE_NEVER) {
+      // Never absorbs other types
       return [TYPE_NEVER];
     }
-    if (shapeTypes[0] === TYPE_ANY) {
-      return [TYPE_ANY];
+    if (typeGroup[0] === TYPE_UNKNOWN) {
+      // Unknown is erased in intersections
+      continue;
     }
-
+    if (types[0] === TYPE_UNKNOWN) {
+      // Unknown is erased in intersections
+      types = typeGroup.slice(0);
+      continue;
+    }
     for (let j = 0; j < types.length; ++j) {
-      if (shapeTypes.indexOf(types[j]) === -1) {
+      // Remove value types that aren't common
+      if (typeGroup.indexOf(types[j]) === -1) {
         types.splice(j--, 1);
       }
     }
+    if (types.length === 0) {
+      // There are no common value types
+      return [TYPE_NEVER];
+    }
   }
 
-  if (types.length === 0) {
-    return [TYPE_NEVER];
-  }
   return types;
 }
 
@@ -266,25 +272,30 @@ export function intersectTypes(typesByShape: Array<readonly Type[]>): Type[] {
  * Returns the array of discrete values accepted by all shapes, or returns `null` if some shapes accept continuous
  * ranges of values.
  *
- * @param valuesByShape The array of arrays of discrete values accepted by shapes.
+ * @param valuesGroups The array of arrays of values accepted by intersected shapes.
  */
-export function intersectValues(valuesByShape: Array<readonly unknown[] | null>): unknown[] | null {
+export function intersectValues(valuesGroups: Array<readonly unknown[] | null>): unknown[] | null {
+  // Empty intersections produce no issues, so value set is continuous by default
   let values: unknown[] | null = null;
 
-  for (const shapeValues of valuesByShape) {
-    if (shapeValues === null) {
+  for (const valuesGroup of valuesGroups) {
+    if (valuesGroup === null) {
+      // Continuous values are ignored
       continue;
     }
     if (values === null) {
-      values = shapeValues.slice(0);
+      // Discrete values are sliced from continuous values
+      values = valuesGroup.slice(0);
       continue;
     }
     for (let i = 0; i < values.length; ++i) {
-      if (!shapeValues.includes(values[i])) {
+      // Remove values that aren't common
+      if (!valuesGroup.includes(values[i])) {
         values.splice(i--, 1);
       }
     }
     if (values.length === 0) {
+      // No common values
       return values;
     }
   }
@@ -339,28 +350,6 @@ export function mergeValues(a: any, b: any): any {
 
   if (aType === TYPE_DATE) {
     return a.getTime() === b.getTime() ? a : NEVER;
-  }
-
-  if (aType === TYPE_PROMISE) {
-    return a;
-  }
-
-  if (aType === TYPE_SET) {
-    return new Set(Array.from(a).concat(Array.from(b)));
-  }
-
-  if (aType === TYPE_MAP) {
-    output = new Map(a);
-
-    b.forEach((value: any, key: any) => {
-      if (output === NEVER || (output.has(key) && (value = mergeValues(output.get(key), value)) === NEVER)) {
-        output = NEVER;
-        return;
-      }
-      output.set(key, value);
-    });
-
-    return output;
   }
 
   return NEVER;

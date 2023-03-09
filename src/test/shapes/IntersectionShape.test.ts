@@ -18,11 +18,11 @@ import {
   MESSAGE_BOOLEAN_TYPE,
   MESSAGE_INTERSECTION,
   MESSAGE_NUMBER_TYPE,
-  TYPE_ANY,
   TYPE_BOOLEAN,
   TYPE_NEVER,
   TYPE_NUMBER,
   TYPE_STRING,
+  TYPE_UNKNOWN,
 } from '../../main/constants';
 import { intersectTypes, intersectValues, mergeValues } from '../../main/shapes/IntersectionShape';
 
@@ -277,32 +277,44 @@ describe('IntersectionShape', () => {
 });
 
 describe('intersectTypes', () => {
-  test('never absorbs other types', () => {
+  test('returns unknown if there are no types to intersect', () => {
+    expect(intersectTypes([])).toEqual([TYPE_UNKNOWN]);
+  });
+
+  test('unknown is unknown', () => {
+    expect(intersectTypes([[TYPE_UNKNOWN], [TYPE_UNKNOWN]])).toEqual([TYPE_UNKNOWN]);
+  });
+
+  test('never is never', () => {
+    expect(intersectTypes([[TYPE_NEVER], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
+  });
+
+  test('never absorbs value types', () => {
     expect(intersectTypes([[TYPE_STRING], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
   });
 
-  test('any absorbs other types', () => {
-    expect(intersectTypes([[TYPE_STRING], [TYPE_ANY]])).toEqual([TYPE_ANY]);
+  test('unknown absorbs value types', () => {
+    expect(intersectTypes([[TYPE_STRING], [TYPE_UNKNOWN]])).toEqual([TYPE_STRING]);
   });
 
-  test('never absorbs any', () => {
-    expect(intersectTypes([[TYPE_ANY], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
+  test('never absorbs unknown', () => {
+    expect(intersectTypes([[TYPE_NEVER], [TYPE_UNKNOWN]])).toEqual([TYPE_NEVER]);
   });
 
-  test('returns the shared type', () => {
+  test('returns the common type', () => {
     expect(intersectTypes([[TYPE_STRING], [TYPE_STRING, TYPE_NUMBER]])).toEqual([TYPE_STRING]);
   });
 
-  test('returns never if there are no shared types', () => {
+  test('returns never if there are no common types', () => {
     expect(intersectTypes([[TYPE_STRING], [TYPE_NUMBER]])).toEqual([TYPE_NEVER]);
-  });
-
-  test('returns never if there are no types at all', () => {
-    expect(intersectTypes([])).toEqual([TYPE_NEVER]);
   });
 });
 
 describe('intersectValues', () => {
+  test('returns an null if there are no buckets', () => {
+    expect(intersectValues([])).toBeNull();
+  });
+
   test('returns values that present in all buckets', () => {
     expect(
       intersectValues([
@@ -321,10 +333,6 @@ describe('intersectValues', () => {
         [6, 7],
       ])
     ).toEqual([]);
-  });
-
-  test('returns an null if there are no buckets', () => {
-    expect(intersectValues([])).toBeNull();
   });
 
   test('returns an empty array if no common values', () => {
@@ -352,14 +360,6 @@ describe('mergeValues', () => {
 
     test('returns NEVER if primitive values are not equal', () => {
       expect(mergeValues(111, 222)).toBe(NEVER);
-    });
-  });
-
-  describe('Promise', () => {
-    test('always returns the left promise', () => {
-      const value = Promise.resolve(111);
-
-      expect(mergeValues(value, Promise.resolve(222))).toBe(value);
     });
   });
 
@@ -402,54 +402,6 @@ describe('mergeValues', () => {
 
     test('returns NEVER if arrays have different elements in same positions', () => {
       expect(mergeValues([111], [222])).toEqual(NEVER);
-    });
-  });
-
-  describe('Set', () => {
-    test('merges Set instances', () => {
-      expect(mergeValues(new Set([111]), new Set([222, 333]))).toEqual(new Set([111, 222, 333]));
-    });
-  });
-
-  describe('Map', () => {
-    test('merges non-shared keys', () => {
-      expect(mergeValues(new Map([['aaa', 111]]), new Map([['bbb', 222]]))).toEqual(
-        new Map([
-          ['aaa', 111],
-          ['bbb', 222],
-        ])
-      );
-    });
-
-    test('merges nested objects', () => {
-      expect(mergeValues(new Map([['aaa', { bbb: 111 }]]), new Map([['aaa', { ccc: 222 }]]))).toEqual(
-        new Map([['aaa', { bbb: 111, ccc: 222 }]])
-      );
-    });
-
-    test('returns NEVER if nested objects cannot be intersected', () => {
-      expect(mergeValues(new Map([['aaa', { bbb: 111 }]]), new Map([['aaa', { bbb: 222 }]]))).toBe(NEVER);
-    });
-
-    test('preserves shared Map keys as is if they are equal', () => {
-      expect(
-        mergeValues(
-          new Map([['aaa', 111]]),
-          new Map([
-            ['aaa', 111],
-            ['bbb', 222],
-          ])
-        )
-      ).toEqual(
-        new Map([
-          ['aaa', 111],
-          ['bbb', 222],
-        ])
-      );
-    });
-
-    test('returns NEVER if Maps have non-equal values for shared keys', () => {
-      expect(mergeValues(new Map([['aaa', 111]]), new Map([['aaa', 222]]))).toBe(NEVER);
     });
   });
 });
