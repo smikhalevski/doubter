@@ -9,15 +9,8 @@ import {
   CODE_TYPE,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_TYPE,
-  TYPE_ARRAY,
-  TYPE_BOOLEAN,
-  TYPE_DATE,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-  TYPE_UNDEFINED,
 } from '../../main/constants';
+import { ARRAY, BOOLEAN, DATE, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils/type-system';
 
 describe('NumberShape', () => {
   test('parses a number', () => {
@@ -27,12 +20,12 @@ describe('NumberShape', () => {
   test('raises if value is not a number', () => {
     expect(new NumberShape().try('111')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '111', param: TYPE_NUMBER, message: MESSAGE_NUMBER_TYPE }],
+      issues: [{ code: CODE_TYPE, input: '111', param: NUMBER, message: MESSAGE_NUMBER_TYPE }],
     });
 
     expect(new NumberShape().try(NaN)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: NaN, param: TYPE_NUMBER, message: expect.any(String) }],
+      issues: [{ code: CODE_TYPE, input: NaN, param: NUMBER, message: expect.any(String) }],
     });
 
     expect(new NumberShape().gt(2).parse(3)).toBe(3);
@@ -52,7 +45,7 @@ describe('NumberShape', () => {
   test('overrides message for type issue', () => {
     expect(new NumberShape({ message: 'aaa', meta: 'bbb' }).try('ccc')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'ccc', param: TYPE_NUMBER, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 'ccc', param: NUMBER, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -235,16 +228,7 @@ describe('NumberShape', () => {
     test('updates input types when coerced', () => {
       const shape = new NumberShape().coerce();
 
-      expect(shape.inputTypes).toEqual([
-        TYPE_NUMBER,
-        TYPE_OBJECT,
-        TYPE_STRING,
-        TYPE_BOOLEAN,
-        TYPE_ARRAY,
-        TYPE_DATE,
-        TYPE_UNDEFINED,
-        TYPE_NULL,
-      ]);
+      expect(shape.inputTypes).toEqual([NUMBER, OBJECT, STRING, BOOLEAN, ARRAY, DATE, UNDEFINED, NULL]);
     });
 
     test('coerces an input', () => {
@@ -257,7 +241,7 @@ describe('NumberShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new NumberShape().coerce().try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
+        issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_NUMBER_TYPE, param: NUMBER }],
       });
     });
   });

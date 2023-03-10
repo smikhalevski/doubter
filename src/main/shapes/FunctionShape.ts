@@ -1,4 +1,4 @@
-import { CODE_TYPE, ERROR_FUNCTION_WRAPPER_ASYNC, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
+import { CODE_TYPE, ERROR_FUNCTION_WRAPPER_ASYNC, MESSAGE_FUNCTION_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
 import {
   applyShape,
@@ -11,8 +11,9 @@ import {
   ok,
   unshiftIssuesPath,
 } from '../utils';
+import { FUNCTION } from '../utils/type-system';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, Result, Shape, Type } from './Shape';
+import { AnyShape, defaultApplyOptions, Result, Shape } from './Shape';
 
 // prettier-ignore
 export type InferFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
@@ -64,7 +65,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_FUNCTION_TYPE, options, TYPE_FUNCTION);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_FUNCTION_TYPE, options, FUNCTION);
   }
 
   /**
@@ -196,8 +197,8 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     };
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return [TYPE_FUNCTION];
+  protected _getInputTypes(): unknown[] {
+    return [FUNCTION];
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferWrapper<A, R, T>> {

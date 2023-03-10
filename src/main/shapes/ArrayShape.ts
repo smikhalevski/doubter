@@ -7,9 +7,6 @@ import {
   MESSAGE_ARRAY_MIN,
   MESSAGE_ARRAY_TYPE,
   MESSAGE_TUPLE,
-  TYPE_ARRAY,
-  TYPE_OBJECT,
-  TYPE_UNKNOWN,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -27,8 +24,9 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
+import { ARRAY, OBJECT, UNKNOWN } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, Type } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result } from './Shape';
 
 // prettier-ignore
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =
@@ -89,7 +87,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     if (shapes !== null && (shapes.length !== 0 || restShape === null)) {
       this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
     } else {
-      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, ARRAY);
     }
   }
 
@@ -175,23 +173,23 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return this.shapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputTypes(): unknown[] {
     const { shapes, restShape } = this;
 
     const lonerShape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
 
     if (!this.isCoerced) {
-      return [TYPE_ARRAY];
+      return [ARRAY];
     }
     if (shapes === null && restShape === null) {
       // Elements aren't parsed, so anything value can be coerced to an array
-      return [TYPE_UNKNOWN];
+      return [UNKNOWN];
     }
     if (lonerShape === null) {
       // Tuple with multiple elements, so only iterables and array-like objects are allowed
-      return [TYPE_OBJECT, TYPE_ARRAY];
+      return [OBJECT, ARRAY];
     }
-    return lonerShape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
+    return lonerShape.inputTypes.concat(OBJECT, ARRAY);
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, 'output'>> {

@@ -1,19 +1,9 @@
-import {
-  CODE_TYPE,
-  MESSAGE_BIGINT_TYPE,
-  TYPE_ARRAY,
-  TYPE_BIGINT,
-  TYPE_BOOLEAN,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-  TYPE_UNDEFINED,
-} from '../constants';
+import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { canonize, createIssueFactory, isArray, ok } from '../utils';
+import { ARRAY, BIGINT, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, Type } from './Shape';
+import { NEVER, Result } from './Shape';
 
 /**
  * The shape of the bigint value.
@@ -29,14 +19,14 @@ export class BigIntShape extends CoercibleShape<bigint> {
   constructor(options?: ConstraintOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, BIGINT);
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputTypes(): unknown[] {
     if (this.isCoerced) {
-      return [TYPE_BIGINT, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
+      return [BIGINT, OBJECT, STRING, NUMBER, BOOLEAN, ARRAY, UNDEFINED, NULL];
     } else {
-      return [TYPE_BIGINT];
+      return [BIGINT];
     }
   }
 

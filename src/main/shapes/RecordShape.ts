@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -13,7 +13,8 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, Type } from './Shape';
+import { OBJECT } from '../utils/type-system';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape } from './Shape';
 
 // prettier-ignore
 export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends 'input' | 'output'> =
@@ -55,7 +56,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
@@ -72,8 +73,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return this.keyShape?.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return [TYPE_OBJECT];
+  protected _getInputTypes(): unknown[] {
+    return [OBJECT];
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferRecord<K, V, 'output'>> {

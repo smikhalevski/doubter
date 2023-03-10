@@ -15,19 +15,12 @@ import {
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
-  TYPE_ARRAY,
-  TYPE_BOOLEAN,
-  TYPE_DATE,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-  TYPE_UNDEFINED,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
 import { addCheck, canonize, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
+import { ARRAY, BOOLEAN, DATE, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
-import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result, Type } from './Shape';
+import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
 
 /**
  * The shape that constrains the input as a number.
@@ -44,7 +37,7 @@ export class NumberShape extends CoercibleShape<number> {
   constructor(options?: ConstraintOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, NUMBER);
   }
 
   /**
@@ -239,11 +232,11 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputTypes(): unknown[] {
     if (this.isCoerced) {
-      return [TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, TYPE_UNDEFINED, TYPE_NULL];
+      return [NUMBER, OBJECT, STRING, BOOLEAN, ARRAY, DATE, UNDEFINED, NULL];
     } else {
-      return [TYPE_NUMBER];
+      return [NUMBER];
     }
   }
 

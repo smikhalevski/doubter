@@ -14,8 +14,9 @@ import {
   StringShape,
   UnionShape,
 } from '../../main';
-import { CODE_UNION, MESSAGE_UNION, TYPE_UNKNOWN, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/constants';
+import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
 import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shapes/UnionShape';
+import { BOOLEAN, NUMBER, STRING, UNKNOWN } from '../../main/utils/type-system';
 
 describe('UnionShape', () => {
   class AsyncShape extends Shape {
@@ -45,7 +46,7 @@ describe('UnionShape', () => {
 
     const orShape = new UnionShape([shape1, shape2, shape3]);
 
-    expect(orShape.inputTypes).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN]);
+    expect(orShape.inputTypes).toEqual([NUMBER, STRING, BOOLEAN]);
     expect(orShape.parse('aaa')).toBe('aaa');
     expect(applySpy1).not.toHaveBeenCalled();
     expect(applySpy2).toHaveBeenCalledTimes(1);
@@ -112,7 +113,7 @@ describe('UnionShape', () => {
           input: 'aaa',
           message: MESSAGE_UNION,
           param: {
-            inputTypes: [TYPE_UNKNOWN],
+            inputTypes: [UNKNOWN],
             issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
           },
         },
@@ -146,36 +147,36 @@ describe('UnionShape', () => {
 
   describe('inputTypes', () => {
     test('never is erased', () => {
-      expect(new UnionShape([new StringShape(), new NeverShape()]).inputTypes).toEqual([TYPE_STRING]);
+      expect(new UnionShape([new StringShape(), new NeverShape()]).inputTypes).toEqual([STRING]);
     });
 
     test('any absorbs other types', () => {
-      expect(new UnionShape([new StringShape(), new Shape()]).inputTypes).toEqual([TYPE_UNKNOWN]);
-      expect(new UnionShape([new NeverShape(), new Shape()]).inputTypes).toEqual([TYPE_UNKNOWN]);
+      expect(new UnionShape([new StringShape(), new Shape()]).inputTypes).toEqual([UNKNOWN]);
+      expect(new UnionShape([new NeverShape(), new Shape()]).inputTypes).toEqual([UNKNOWN]);
     });
   });
 
   describe('inputValues', () => {
     test('null if shapes have continuous values', () => {
-      expect(new UnionShape([new StringShape(), new NumberShape()]).inputValues).toBeNull();
+      expect(new UnionShape([new StringShape(), new NumberShape()]).inputTypes).toEqual([STRING, NUMBER]);
     });
 
     test('the array of unique values', () => {
       const shape = new UnionShape([new EnumShape(['aaa', 'bbb']), new EnumShape(['aaa', 'ccc'])]);
 
-      expect(shape.inputValues).toEqual(['aaa', 'bbb', 'ccc']);
+      expect(shape.inputTypes).toEqual(['bbb', 'aaa', 'ccc']);
     });
 
     test('never is ignored', () => {
       const shape = new UnionShape([new EnumShape(['aaa', 'bbb']), new NeverShape()]);
 
-      expect(shape.inputValues).toEqual(['aaa', 'bbb']);
+      expect(shape.inputTypes).toEqual(['aaa', 'bbb']);
     });
 
     test('an empty array if union only contains never', () => {
       const shape = new UnionShape([new NeverShape()]);
 
-      expect(shape.inputValues).toEqual([]);
+      expect(shape.inputTypes).toEqual([]);
     });
   });
 
@@ -234,7 +235,7 @@ describe('UnionShape', () => {
             code: CODE_UNION,
             message: MESSAGE_UNION,
             param: {
-              inputTypes: [TYPE_NUMBER],
+              inputTypes: [NUMBER],
               issueGroups: null,
             },
           },
@@ -320,7 +321,7 @@ describe('UnionShape', () => {
             input: 'aaa',
             message: MESSAGE_UNION,
             param: {
-              inputTypes: [TYPE_UNKNOWN],
+              inputTypes: [UNKNOWN],
               issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
             },
           },

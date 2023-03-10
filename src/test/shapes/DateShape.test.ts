@@ -1,13 +1,6 @@
 import { DateShape, NEVER } from '../../main';
-import {
-  CODE_TYPE,
-  MESSAGE_DATE_TYPE,
-  TYPE_ARRAY,
-  TYPE_DATE,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../../main/constants';
+import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../../main/constants';
+import { ARRAY, DATE, NUMBER, OBJECT, STRING } from '../../main/utils/type-system';
 
 describe('DateShape', () => {
   test('parses date values', () => {
@@ -19,14 +12,14 @@ describe('DateShape', () => {
   test('raises an issue if an input is not a Date instance', () => {
     expect(new DateShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_DATE, message: MESSAGE_DATE_TYPE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: DATE, message: MESSAGE_DATE_TYPE }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new DateShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, param: TYPE_DATE, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 111, param: DATE, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -34,7 +27,7 @@ describe('DateShape', () => {
     test('updates input types when coerced', () => {
       const shape = new DateShape().coerce();
 
-      expect(shape.inputTypes).toEqual([TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
+      expect(shape.inputTypes).toEqual([DATE, OBJECT, STRING, NUMBER, ARRAY]);
     });
 
     test('coerces an input', () => {
@@ -48,7 +41,7 @@ describe('DateShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new DateShape().coerce().try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_DATE_TYPE, param: TYPE_DATE }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_DATE_TYPE, param: DATE }],
       });
     });
   });

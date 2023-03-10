@@ -1,15 +1,6 @@
 import { BooleanShape, NEVER } from '../../main';
-import {
-  CODE_TYPE,
-  MESSAGE_BOOLEAN_TYPE,
-  TYPE_ARRAY,
-  TYPE_BOOLEAN,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-  TYPE_UNDEFINED,
-} from '../../main/constants';
+import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../../main/constants';
+import { ARRAY, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils/type-system';
 
 describe('BooleanShape', () => {
   test('parses boolean values', () => {
@@ -19,14 +10,14 @@ describe('BooleanShape', () => {
   test('raises an issue if an input is not a boolean', () => {
     expect(new BooleanShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_BOOLEAN, message: MESSAGE_BOOLEAN_TYPE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: BOOLEAN, message: MESSAGE_BOOLEAN_TYPE }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new BooleanShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, param: TYPE_BOOLEAN, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 111, param: BOOLEAN, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -34,15 +25,7 @@ describe('BooleanShape', () => {
     test('updates input types when coerced', () => {
       const shape = new BooleanShape().coerce();
 
-      expect(shape.inputTypes).toEqual([
-        TYPE_BOOLEAN,
-        TYPE_OBJECT,
-        TYPE_STRING,
-        TYPE_NUMBER,
-        TYPE_ARRAY,
-        TYPE_NULL,
-        TYPE_UNDEFINED,
-      ]);
+      expect(shape.inputTypes).toEqual([BOOLEAN, OBJECT, STRING, NUMBER, ARRAY, NULL, UNDEFINED]);
     });
 
     test('coerces an input', () => {
@@ -56,7 +39,7 @@ describe('BooleanShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new BooleanShape().coerce().try(222)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 222, message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN }],
+        issues: [{ code: CODE_TYPE, input: 222, message: MESSAGE_BOOLEAN_TYPE, param: BOOLEAN }],
       });
     });
   });

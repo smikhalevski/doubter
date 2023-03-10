@@ -1,13 +1,6 @@
 import { InstanceShape } from '../../main';
-import {
-  CODE_INSTANCE,
-  TYPE_ARRAY,
-  TYPE_DATE,
-  TYPE_FUNCTION,
-  TYPE_MAP,
-  TYPE_OBJECT,
-  TYPE_SET,
-} from '../../main/constants';
+import { CODE_INSTANCE } from '../../main/constants';
+import { ARRAY, DATE, FUNCTION, MAP, OBJECT, SET } from '../../main/utils/type-system';
 
 describe('InstanceShape', () => {
   class MockClass {}
@@ -16,7 +9,7 @@ describe('InstanceShape', () => {
     const shape = new InstanceShape(MockClass);
 
     expect(shape.ctor).toBe(MockClass);
-    expect(shape.inputTypes).toEqual([TYPE_OBJECT]);
+    expect(shape.inputTypes).toEqual([OBJECT]);
   });
 
   test('parses an instance of a class', () => {
@@ -41,28 +34,28 @@ describe('InstanceShape', () => {
 
   describe('inputTypes', () => {
     test('uses array input type for an Function and its subclasses', () => {
-      expect(new InstanceShape(Function).inputTypes).toEqual([TYPE_FUNCTION]);
-      expect(new InstanceShape(class extends Function {}).inputTypes).toEqual([TYPE_FUNCTION]);
+      expect(new InstanceShape(Function).inputTypes).toEqual([FUNCTION]);
+      expect(new InstanceShape(class extends Function {}).inputTypes).toEqual([FUNCTION]);
     });
 
     test('uses array input type for an Array and its subclasses', () => {
-      expect(new InstanceShape(Array).inputTypes).toEqual([TYPE_ARRAY]);
-      expect(new InstanceShape(class extends Array {}).inputTypes).toEqual([TYPE_ARRAY]);
+      expect(new InstanceShape(Array).inputTypes).toEqual([ARRAY]);
+      expect(new InstanceShape(class extends Array {}).inputTypes).toEqual([ARRAY]);
     });
 
     test('uses date input type for an Date and its subclasses', () => {
-      expect(new InstanceShape(Date).inputTypes).toEqual([TYPE_DATE]);
-      expect(new InstanceShape(class extends Date {}).inputTypes).toEqual([TYPE_DATE]);
+      expect(new InstanceShape(Date).inputTypes).toEqual([DATE]);
+      expect(new InstanceShape(class extends Date {}).inputTypes).toEqual([DATE]);
     });
 
     test('uses date input type for an Date and its subclasses', () => {
-      expect(new InstanceShape(Set).inputTypes).toEqual([TYPE_SET]);
-      expect(new InstanceShape(class extends Set {}).inputTypes).toEqual([TYPE_SET]);
+      expect(new InstanceShape(Set).inputTypes).toEqual([SET]);
+      expect(new InstanceShape(class extends Set {}).inputTypes).toEqual([SET]);
     });
 
     test('uses date input type for an Date and its subclasses', () => {
-      expect(new InstanceShape(Map).inputTypes).toEqual([TYPE_MAP]);
-      expect(new InstanceShape(class extends Map {}).inputTypes).toEqual([TYPE_MAP]);
+      expect(new InstanceShape(Map).inputTypes).toEqual([MAP]);
+      expect(new InstanceShape(class extends Map {}).inputTypes).toEqual([MAP]);
     });
   });
 });

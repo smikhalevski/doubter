@@ -1,8 +1,9 @@
-import { CODE_ENUM, MESSAGE_ENUM, TYPE_ARRAY, TYPE_NEVER, TYPE_OBJECT, TYPE_STRING } from '../constants';
+import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { canonize, createIssueFactory, getValueType, isArray, ok, ReadonlyDict } from '../utils';
+import { canonize, createIssueFactory, isArray, ok, ReadonlyDict, toUniqueArray } from '../utils';
+import { ARRAY, OBJECT } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, Type } from './Shape';
+import { NEVER, Result } from './Shape';
 
 /**
  * The shape that constrains an input to be one of values.
@@ -13,7 +14,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
   /**
    * The array of unique enum values.
    */
-  declare inputValues: readonly unknown[];
+  readonly values: T[];
 
   protected _typeIssueFactory;
 
@@ -33,40 +34,35 @@ export class EnumShape<T> extends CoercibleShape<T> {
   ) {
     super();
 
+    this.values = toUniqueArray(isArray(this.source) ? this.source : getEnumValues(this.source));
+
     this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options);
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    const types = this._getInputValues().map(getValueType);
+  protected _getInputTypes(): unknown[] {
+    const types: unknown[] = this.values.slice(0);
 
-    if (types.length === 0) {
-      return [TYPE_NEVER];
-    }
-    if (!this.isCoerced) {
+    if (!this.isCoerced || types.length === 0) {
       return types;
     }
     if (!isArray(this.source)) {
-      types.push(TYPE_STRING);
+      types.push(...Object.keys(this.source));
     }
-    return types.concat(TYPE_ARRAY, TYPE_OBJECT);
-  }
-
-  protected _getInputValues(): readonly unknown[] {
-    return isArray(this.source) ? this.source : getEnumValues(this.source);
+    return types.concat(ARRAY, OBJECT);
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<T> {
-    const { inputValues, _applyChecks } = this;
+    const { values, _applyChecks } = this;
 
     let output = input;
     let issues = null;
     let changed = false;
 
     if (
-      !inputValues.includes(output) &&
+      !values.includes(output) &&
       (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
     ) {
-      return this._typeIssueFactory(input, options, inputValues);
+      return this._typeIssueFactory(input, options, values);
     }
     if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
@@ -82,7 +78,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
   protected _coerce(value: any): unknown {
     const { source } = this;
 
-    if (isArray(value) && value.length === 1 && this.inputValues.includes((value = value[0]))) {
+    if (isArray(value) && value.length === 1 && this.values.includes((value = value[0]))) {
       return value;
     }
     if (!isArray(source) && typeof (value = canonize(value)) === 'string' && source.hasOwnProperty(value)) {

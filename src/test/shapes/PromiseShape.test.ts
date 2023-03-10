@@ -1,12 +1,6 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
-import {
-  CODE_TYPE,
-  ERROR_REQUIRES_ASYNC,
-  MESSAGE_PROMISE_TYPE,
-  MESSAGE_STRING_TYPE,
-  TYPE_PROMISE,
-  TYPE_STRING,
-} from '../../main/constants';
+import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { PROMISE, STRING } from '../../main/utils/type-system';
 
 describe('PromiseShape', () => {
   test('create a PromiseShape', () => {
@@ -15,7 +9,7 @@ describe('PromiseShape', () => {
 
     expect(promiseShape.isAsync).toBe(true);
     expect(promiseShape.shape).toBe(shape);
-    expect(promiseShape.inputTypes).toEqual([TYPE_PROMISE]);
+    expect(promiseShape.inputTypes).toEqual([PROMISE]);
   });
 
   test('parses a promise', async () => {
@@ -29,7 +23,7 @@ describe('PromiseShape', () => {
   test('raises an issue if value is not a Promise', async () => {
     await expect(new PromiseShape(new Shape()).tryAsync('aaa')).resolves.toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: TYPE_PROMISE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: PROMISE }],
     });
   });
 
@@ -79,7 +73,7 @@ describe('PromiseShape', () => {
 
   describe('coerce', () => {
     test('updates input types when coerced', () => {
-      expect(new PromiseShape(new StringShape()).coerce().inputTypes).toEqual([TYPE_STRING, TYPE_PROMISE]);
+      expect(new PromiseShape(new StringShape()).coerce().inputTypes).toEqual([STRING, PROMISE]);
     });
 
     test('wraps an input value in a promise', async () => {
@@ -99,7 +93,7 @@ describe('PromiseShape', () => {
 
       await expect(promiseShape.tryAsync(Promise.resolve(111))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: STRING }],
       });
     });
 
@@ -113,7 +107,7 @@ describe('PromiseShape', () => {
 
       await expect(promiseShape.tryAsync(Promise.resolve({ key1: 111 }))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1'] }],
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: STRING, path: ['key1'] }],
       });
     });
   });

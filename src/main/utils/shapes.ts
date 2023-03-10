@@ -1,24 +1,4 @@
-import {
-  TYPE_ARRAY,
-  TYPE_DATE,
-  TYPE_MAP,
-  TYPE_NEVER,
-  TYPE_NULL,
-  TYPE_OBJECT,
-  TYPE_PROMISE,
-  TYPE_SET,
-  TYPE_UNKNOWN,
-} from '../constants';
-import {
-  AnyShape,
-  ApplyChecksCallback,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  Result,
-  Shape,
-  Type,
-  ValueType,
-} from '../shapes/Shape';
+import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shapes/Shape';
 import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
@@ -30,60 +10,12 @@ export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
 
-/**
- * Returns the extended value type.
- */
-export function getValueType(value: unknown): ValueType {
-  const type = typeof value;
-
-  if (type !== TYPE_OBJECT) {
-    return type;
-  }
-  if (value === null) {
-    return TYPE_NULL;
-  }
-  if (isArray(value)) {
-    return TYPE_ARRAY;
-  }
-  if (value instanceof Date) {
-    return TYPE_DATE;
-  }
-  if (value instanceof Promise) {
-    return TYPE_PROMISE;
-  }
-  if (value instanceof Set) {
-    return TYPE_SET;
-  }
-  if (value instanceof Map) {
-    return TYPE_MAP;
-  }
-  return type;
-}
-
-/**
- * Returns `true` if `type` is assignable to `types`, or `false` otherwise. This function expects `types` to be
- * normalized.
- *
- * - `never` can be assigned to anything;
- * - nothing can be assigned to never, except `never`;
- * - `unknown` can only be assigned to itself;
- * - anything can be assigned to `unknown`;
- * - value types can be assigned to a union with itself, and to `unknown`.
- */
-export function isAssignableTo(type: Type, types: readonly Type[]): boolean {
-  return type === TYPE_NEVER || types[0] === TYPE_UNKNOWN || types.indexOf(type) !== -1;
-}
-
 export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
 }
 
-export function getShapeInputTypes(shape: AnyShape): readonly Type[] {
-  return shape.inputTypes;
-}
-
-export function getShapeInputValues(shape: AnyShape): readonly unknown[] | null {
-  return shape.inputValues;
+export function getShapeInputTypes(shape: AnyShape): unknown[] {
+  return shape.inputTypes.slice(0);
 }
 
 /**

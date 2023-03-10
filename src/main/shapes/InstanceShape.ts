@@ -1,16 +1,8 @@
-import {
-  CODE_INSTANCE,
-  MESSAGE_INSTANCE,
-  TYPE_ARRAY,
-  TYPE_DATE,
-  TYPE_FUNCTION,
-  TYPE_MAP,
-  TYPE_OBJECT,
-  TYPE_SET,
-} from '../constants';
+import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory, isEqualOrSubclass } from '../utils';
-import { Result, Shape, Type } from './Shape';
+import { ARRAY, DATE, FUNCTION, MAP, OBJECT, SET } from '../utils/type-system';
+import { Result, Shape } from './Shape';
 
 /**
  * The shape of the class instance.
@@ -33,25 +25,25 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputTypes(): unknown[] {
     const { ctor } = this;
 
     if (isEqualOrSubclass(ctor, Function)) {
-      return [TYPE_FUNCTION];
+      return [FUNCTION];
     }
     if (isEqualOrSubclass(ctor, Array)) {
-      return [TYPE_ARRAY];
+      return [ARRAY];
     }
     if (isEqualOrSubclass(ctor, Date)) {
-      return [TYPE_DATE];
+      return [DATE];
     }
     if (isEqualOrSubclass(ctor, Set)) {
-      return [TYPE_SET];
+      return [SET];
     }
     if (isEqualOrSubclass(ctor, Map)) {
-      return [TYPE_MAP];
+      return [MAP];
     }
-    return [TYPE_OBJECT];
+    return [OBJECT];
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<InstanceType<C>> {

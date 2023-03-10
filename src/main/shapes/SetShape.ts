@@ -5,9 +5,6 @@ import {
   MESSAGE_SET_MAX,
   MESSAGE_SET_MIN,
   MESSAGE_SET_TYPE,
-  TYPE_ARRAY,
-  TYPE_OBJECT,
-  TYPE_SET,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -23,8 +20,9 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
+import { ARRAY, OBJECT, SET } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, Type } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result } from './Shape';
 
 /**
  * The shape of a `Set` instance.
@@ -55,7 +53,7 @@ export class SetShape<S extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SET_TYPE, options, TYPE_SET);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SET_TYPE, options, SET);
   }
 
   at(key: unknown): AnyShape | null {
@@ -115,11 +113,11 @@ export class SetShape<S extends AnyShape>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputTypes(): unknown[] {
     if (this.isCoerced) {
-      return this.shape.inputTypes.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
+      return this.shape.inputTypes.concat(SET, OBJECT, ARRAY);
     } else {
-      return [TYPE_SET];
+      return [SET];
     }
   }
 

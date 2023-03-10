@@ -1,12 +1,4 @@
-import {
-  CODE_INTERSECTION,
-  MESSAGE_INTERSECTION,
-  TYPE_ARRAY,
-  TYPE_DATE,
-  TYPE_NEVER,
-  TYPE_OBJECT,
-  TYPE_UNKNOWN,
-} from '../constants';
+import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -14,8 +6,6 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   getShapeInputTypes,
-  getShapeInputValues,
-  getValueType,
   isArray,
   isAsyncShape,
   isEqual,
@@ -23,7 +13,8 @@ import {
   setObjectProperty,
   toDeepPartialShape,
 } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape, Type } from './Shape';
+import { ARRAY, DATE, distributeTypes, getTypeOf, OBJECT } from '../utils/type-system';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape } from './Shape';
 
 // prettier-ignore
 export type ToIntersection<U extends AnyShape> =
@@ -92,12 +83,8 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return this.shapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return intersectTypes(this.shapes.map(getShapeInputTypes));
-  }
-
-  protected _getInputValues(): readonly unknown[] | null {
-    return intersectValues(this.shapes.map(getShapeInputValues));
+  protected _getInputTypes(): unknown[] {
+    return distributeTypes(this.shapes.map(getShapeInputTypes));
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>['output']> {
@@ -225,85 +212,6 @@ export class IntersectionShape<U extends readonly AnyShape[]>
 }
 
 /**
- * Returns the intersection type.
- *
- * @param typeGroups The array of arrays of unique input types accepted by intersected shapes.
- */
-export function intersectTypes(typeGroups: Array<readonly Type[]>): Type[] {
-  if (typeGroups.length === 0) {
-    // Empty intersections produce no issues
-    return [TYPE_UNKNOWN];
-  }
-
-  let types = typeGroups[0].slice(0);
-
-  for (let i = 1; i < typeGroups.length; ++i) {
-    const typeGroup = typeGroups[i];
-
-    if (typeGroup[0] === TYPE_NEVER) {
-      // Never absorbs other types
-      return [TYPE_NEVER];
-    }
-    if (typeGroup[0] === TYPE_UNKNOWN) {
-      // Unknown is erased in intersections
-      continue;
-    }
-    if (types[0] === TYPE_UNKNOWN) {
-      // Unknown is erased in intersections
-      types = typeGroup.slice(0);
-      continue;
-    }
-    for (let j = 0; j < types.length; ++j) {
-      // Remove value types that aren't common
-      if (typeGroup.indexOf(types[j]) === -1) {
-        types.splice(j--, 1);
-      }
-    }
-    if (types.length === 0) {
-      // There are no common value types
-      return [TYPE_NEVER];
-    }
-  }
-
-  return types;
-}
-
-/**
- * Returns the array of discrete values accepted by all shapes, or returns `null` if some shapes accept continuous
- * ranges of values.
- *
- * @param valuesGroups The array of arrays of values accepted by intersected shapes.
- */
-export function intersectValues(valuesGroups: Array<readonly unknown[] | null>): unknown[] | null {
-  // Empty intersections produce no issues, so value set is continuous by default
-  let values: unknown[] | null = null;
-
-  for (const valuesGroup of valuesGroups) {
-    if (valuesGroup === null) {
-      // Continuous values are ignored
-      continue;
-    }
-    if (values === null) {
-      // Discrete values are sliced from continuous values
-      values = valuesGroup.slice(0);
-      continue;
-    }
-    for (let i = 0; i < values.length; ++i) {
-      // Remove values that aren't common
-      if (!valuesGroup.includes(values[i])) {
-        values.splice(i--, 1);
-      }
-    }
-    if (values.length === 0) {
-      // No common values
-      return values;
-    }
-  }
-
-  return values;
-}
-
-/**
  * Merges values into one, or returns {@linkcode NEVER} if values are incompatible.
  */
 export function mergeValues(a: any, b: any): any {
@@ -311,8 +219,8 @@ export function mergeValues(a: any, b: any): any {
     return a;
   }
 
-  const aType = getValueType(a);
-  const bType = getValueType(b);
+  const aType = getTypeOf(a);
+  const bType = getTypeOf(b);
 
   let output: any;
 
@@ -320,7 +228,7 @@ export function mergeValues(a: any, b: any): any {
     return NEVER;
   }
 
-  if (aType === TYPE_OBJECT) {
+  if (aType === OBJECT) {
     output = Object.assign({}, a);
 
     for (const key in b) {
@@ -333,7 +241,7 @@ export function mergeValues(a: any, b: any): any {
     return output;
   }
 
-  if (aType === TYPE_ARRAY) {
+  if (aType === ARRAY) {
     if (a.length !== b.length) {
       return NEVER;
     }
@@ -348,7 +256,7 @@ export function mergeValues(a: any, b: any): any {
     return output;
   }
 
-  if (aType === TYPE_DATE) {
+  if (aType === DATE) {
     return a.getTime() === b.getTime() ? a : NEVER;
   }
 

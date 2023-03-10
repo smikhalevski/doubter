@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_MAP_TYPE, TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../constants';
+import { CODE_TYPE, MESSAGE_MAP_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -14,16 +14,9 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
+import { ARRAY, MAP, OBJECT } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
-import {
-  AnyShape,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  NEVER,
-  OptionalDeepPartialShape,
-  Result,
-  Type,
-} from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, OptionalDeepPartialShape, Result } from './Shape';
 
 /**
  * The shape of a `Map` instance.
@@ -61,7 +54,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_MAP_TYPE, options, TYPE_MAP);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_MAP_TYPE, options, MAP);
   }
 
   at(key: unknown): AnyShape | null {
@@ -79,11 +72,11 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return this.keyShape.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputTypes(): unknown[] {
     if (this.isCoerced) {
-      return [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
+      return [MAP, OBJECT, ARRAY];
     } else {
-      return [TYPE_MAP];
+      return [MAP];
     }
   }
 

@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { TYPE_STRING, TYPE_UNDEFINED } from '../../main/constants';
+import { STRING } from '../../main/utils/type-system';
 
 describe('string', () => {
   test('returns a string shape', () => {
@@ -7,6 +7,6 @@ describe('string', () => {
   });
 
   test('returns input types for optional string', () => {
-    expect(d.string().optional().inputTypes).toEqual([TYPE_STRING, TYPE_UNDEFINED]);
+    expect(d.string().optional().inputTypes).toEqual([STRING, undefined]);
   });
 });

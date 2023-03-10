@@ -1,5 +1,5 @@
 import { ConstShape } from '../../main';
-import { CODE_CONST, TYPE_STRING } from '../../main/constants';
+import { CODE_CONST } from '../../main/constants';
 
 describe('ConstShape', () => {
   test('parses exact value', () => {
@@ -30,10 +30,6 @@ describe('ConstShape', () => {
   });
 
   test('returns input types of the value', () => {
-    expect(new ConstShape('aaa').inputTypes).toEqual([TYPE_STRING]);
-  });
-
-  test('returns the input value', () => {
-    expect(new ConstShape('aaa').inputValues).toEqual(['aaa']);
+    expect(new ConstShape('aaa').inputTypes).toEqual(['aaa']);
   });
 });

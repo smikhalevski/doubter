@@ -1,4 +1,4 @@
-import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
+import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -22,6 +22,7 @@ import {
   toggleBit,
   unshiftIssuesPath,
 } from '../utils';
+import { OBJECT } from '../utils/type-system';
 import { EnumShape } from './EnumShape';
 import {
   AllowLiteralShape,
@@ -31,7 +32,6 @@ import {
   OptionalDeepPartialShape,
   Result,
   Shape,
-  Type,
 } from './Shape';
 
 // prettier-ignore
@@ -124,7 +124,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
 
     this._options = options;
     this._valueShapes = Object.values(shapes);
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, OBJECT);
   }
 
   /**
@@ -333,8 +333,8 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return this.restShape?.isAsync || this._valueShapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return [TYPE_OBJECT];
+  protected _getInputTypes(): unknown[] {
+    return [OBJECT];
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferObject<P, R, 'output'>> {
