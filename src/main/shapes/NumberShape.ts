@@ -27,12 +27,10 @@ import {
   DATE,
   isArray,
   isNumber,
-  NULL,
   NUMBER,
   OBJECT,
   ok,
   STRING,
-  UNDEFINED
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
@@ -249,7 +247,7 @@ export class NumberShape extends CoercibleShape<number> {
 
   protected _getInputTypes(): unknown[] {
     if (this.isCoerced) {
-      return [NUMBER, OBJECT, STRING, BOOLEAN, ARRAY, DATE, UNDEFINED, NULL];
+      return [NUMBER, OBJECT, STRING, BOOLEAN, ARRAY, DATE, undefined, null];
     } else {
       return [NUMBER];
     }

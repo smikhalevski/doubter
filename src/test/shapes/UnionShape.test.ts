@@ -154,9 +154,7 @@ describe('UnionShape', () => {
       expect(new UnionShape([new StringShape(), new Shape()]).inputTypes).toEqual([UNKNOWN]);
       expect(new UnionShape([new NeverShape(), new Shape()]).inputTypes).toEqual([UNKNOWN]);
     });
-  });
 
-  describe('inputValues', () => {
     test('null if shapes have continuous values', () => {
       expect(new UnionShape([new StringShape(), new NumberShape()]).inputTypes).toEqual([STRING, NUMBER]);
     });

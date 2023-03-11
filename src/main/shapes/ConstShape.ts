@@ -9,11 +9,6 @@ import { Result, Shape } from './Shape';
  * @template T The expected value.
  */
 export class ConstShape<T> extends Shape<T> {
-  /**
-   * The tuple that contains the const value.
-   */
-  declare inputValues: readonly [unknown];
-
   protected _typePredicate: (input: unknown) => boolean;
   protected _typeIssueFactory;
 

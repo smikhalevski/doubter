@@ -46,7 +46,7 @@ type Type_ =
 
 export { Type_ as Type };
 
-export function getType(value: unknown): Type_ {
+export function getTypeOf(value: unknown): Type_ {
   const type = typeof value;
 
   if (type === 'undefined') {
@@ -115,7 +115,7 @@ export function isType(type: unknown): type is Type_ {
  * Returns `true` if type or literal `a` is assignable to the type or literal `b`.
  */
 function isAssignable(a: unknown, b: unknown): boolean {
-  return b === UNKNOWN || isEqual(a, b) || (!isType(a) && isType(b) && getType(a) === b);
+  return b === UNKNOWN || isEqual(a, b) || (!isType(a) && isType(b) && getTypeOf(a) === b);
 }
 
 /**

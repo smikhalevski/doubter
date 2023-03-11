@@ -1576,7 +1576,7 @@ neverShape.inputTypes;
 // ⮕ ['never']
 
 neverShape.parse('Pluto');
-// ❌ ValidationError: type at /: Must not be used
+// ❌ ValidationError: never at /: Must not be used
 ```
 
 `never` runtime type behaves like TypeScript's `never`.
@@ -1686,7 +1686,7 @@ To retrieve the array of all known discrete values, use
 [`inputValues`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputValues):
 
 ```ts
-d.enum(['Mars', 'Pluto']).inputValues;
+d.enum(['Mars', 'Pluto']).values;
 // ⮕ ['Mars', 'Pluto']
 ```
 

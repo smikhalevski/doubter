@@ -1,18 +1,6 @@
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import {
-  ARRAY,
-  BOOLEAN,
-  canonize,
-  createIssueFactory,
-  isArray,
-  NULL,
-  NUMBER,
-  OBJECT,
-  ok,
-  STRING,
-  UNDEFINED
-} from '../utils';
+import { ARRAY, BOOLEAN, canonize, createIssueFactory, isArray, NUMBER, OBJECT, ok, STRING } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
@@ -35,7 +23,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
 
   protected _getInputTypes(): unknown[] {
     if (this.isCoerced) {
-      return [BOOLEAN, OBJECT, STRING, NUMBER, ARRAY, NULL, UNDEFINED];
+      return [BOOLEAN, OBJECT, STRING, NUMBER, ARRAY, undefined, null];
     } else {
       return [BOOLEAN];
     }

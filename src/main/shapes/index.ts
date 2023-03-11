@@ -19,6 +19,7 @@ export { SetShape } from './SetShape';
 export {
   AllowLiteralShape,
   AnyShape,
+  Branded,
   BrandShape,
   CatchShape,
   DeepPartialProtocol,

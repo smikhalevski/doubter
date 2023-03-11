@@ -995,9 +995,7 @@ describe('PipeShape', () => {
     test('returns input types of the input shape', () => {
       expect(new PipeShape(new StringShape(), new Shape()).inputTypes).toEqual([STRING]);
     });
-  });
 
-  describe('inputValues', () => {
     test('returns the input values of the input shape', () => {
       expect(new PipeShape(new ConstShape('aaa'), new Shape()).inputTypes).toEqual(['aaa']);
     });
@@ -1107,9 +1105,7 @@ describe('ReplaceLiteralShape', () => {
     test('erases never', () => {
       expect(new ReplaceLiteralShape(new NeverShape(), 'aaa', 111).inputTypes).toEqual(['aaa']);
     });
-  });
 
-  describe('inputValues', () => {
     test('returns discrete values', () => {
       expect(new ReplaceLiteralShape(new ConstShape('aaa'), 'bbb', 111).inputTypes).toEqual(['aaa', 'bbb']);
     });
@@ -1231,9 +1227,7 @@ describe('DenyLiteralShape', () => {
     test('preserves never', () => {
       expect(new DenyLiteralShape(new NeverShape(), 111).inputTypes).toEqual([]);
     });
-  });
 
-  describe('inputValues', () => {
     test('removes denied value from the array of discrete input values', () => {
       expect(new DenyLiteralShape(new EnumShape(['aaa', 'bbb']), 'bbb').inputTypes).toEqual(['aaa']);
     });
@@ -1332,9 +1326,7 @@ describe('CatchShape', () => {
     test('returns input types of the underlying shape', () => {
       expect(new CatchShape(new StringShape(), 'aaa').inputTypes).toEqual([STRING]);
     });
-  });
 
-  describe('inputValues', () => {
     test('returns input values of the underlying shape', () => {
       expect(new CatchShape(new ConstShape('aaa'), 'bbb').inputTypes).toEqual(['aaa']);
     });
@@ -1403,9 +1395,7 @@ describe('ExcludeShape', () => {
     test('preserves never', () => {
       expect(new ExcludeShape(new NeverShape(), new StringShape()).inputTypes).toEqual([]);
     });
-  });
 
-  describe('inputValues', () => {
     test('removes the excluded value from the array of input values', () => {
       const shape = new ExcludeShape(new EnumShape(['aaa', 'bbb', 'ccc']), new EnumShape(['aaa', 'ccc']));
 

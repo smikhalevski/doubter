@@ -9,7 +9,7 @@ import {
   DATE,
   distributeTypes,
   getShapeInputTypes,
-  getType,
+  getTypeOf,
   isArray,
   isAsyncShape,
   isEqual,
@@ -223,8 +223,8 @@ export function mergeValues(a: any, b: any): any {
     return a;
   }
 
-  const aType = getType(a);
-  const bType = getType(b);
+  const aType = getTypeOf(a);
+  const bType = getTypeOf(b);
 
   let output: any;
 

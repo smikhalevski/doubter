@@ -208,9 +208,7 @@ describe('IntersectionShape', () => {
 
       expect(shape.inputTypes).toEqual([]);
     });
-  });
 
-  describe('inputValues', () => {
     test('the array of common values', () => {
       const shape = new IntersectionShape([new EnumShape(['aaa', 111]), new EnumShape([222, 'aaa'])]);
 

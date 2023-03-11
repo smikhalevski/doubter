@@ -1,19 +1,6 @@
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import {
-  ARRAY,
-  BIGINT,
-  BOOLEAN,
-  canonize,
-  createIssueFactory,
-  isArray,
-  NULL,
-  NUMBER,
-  OBJECT,
-  ok,
-  STRING,
-  UNDEFINED
-} from '../utils';
+import { ARRAY, BIGINT, BOOLEAN, canonize, createIssueFactory, isArray, NUMBER, OBJECT, ok, STRING } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
@@ -36,7 +23,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
 
   protected _getInputTypes(): unknown[] {
     if (this.isCoerced) {
-      return [BIGINT, OBJECT, STRING, NUMBER, BOOLEAN, ARRAY, UNDEFINED, NULL];
+      return [BIGINT, OBJECT, STRING, NUMBER, BOOLEAN, ARRAY, undefined, null];
     } else {
       return [BIGINT];
     }

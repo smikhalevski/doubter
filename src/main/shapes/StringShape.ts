@@ -18,12 +18,10 @@ import {
   createIssueFactory,
   isArray,
   isValidDate,
-  NULL,
   NUMBER,
   OBJECT,
   ok,
   STRING,
-  UNDEFINED
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
@@ -111,7 +109,7 @@ export class StringShape extends CoercibleShape<string> {
 
   protected _getInputTypes(): unknown[] {
     if (this.isCoerced) {
-      return [STRING, OBJECT, NUMBER, BOOLEAN, BIGINT, ARRAY, UNDEFINED, NULL];
+      return [STRING, OBJECT, NUMBER, BOOLEAN, BIGINT, ARRAY, undefined, null];
     } else {
       return [STRING];
     }

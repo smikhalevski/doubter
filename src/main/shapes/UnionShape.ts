@@ -6,7 +6,7 @@ import {
   createIssueFactory,
   Dict,
   getShapeInputTypes,
-  getType,
+  getTypeOf,
   isArray,
   isAsyncShape,
   isObject,
@@ -233,14 +233,14 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
       // Unknown is added to each bucket
       inputTypes = bucketTypes;
     } else {
-      inputTypes = toUniqueArray(inputTypes.map(type => (isType(type) ? type.type : getType(type).type)));
+      inputTypes = toUniqueArray(inputTypes.map(type => (isType(type) ? type.type : getTypeOf(type).type)));
     }
     for (const type of inputTypes) {
       buckets[type as string] = buckets[type as string].concat(shape);
     }
   }
 
-  return input => buckets[getType(input).type];
+  return input => buckets[getTypeOf(input).type];
 }
 
 /**

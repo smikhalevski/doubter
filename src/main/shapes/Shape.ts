@@ -30,7 +30,7 @@ import {
   deleteArrayIndex,
   getCheckIndex,
   getErrorMessage,
-  getType,
+  getTypeOf,
   isArray,
   isEqual,
   isObjectLike,
@@ -41,6 +41,7 @@ import {
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
+  Type,
   unionTypes,
   UNKNOWN,
 } from '../utils';
@@ -111,7 +112,7 @@ declare const BRAND: unique symbol;
  * The branded type.
  *
  * @template T The base type.
- * @template B The type brand.
+ * @template B The brand value.
  */
 export type Branded<T, B> = T & { [BRAND]: B };
 
@@ -120,7 +121,7 @@ export type Branded<T, B> = T & { [BRAND]: B };
  * nominal typing.
  *
  * @template S The shape which output must be branded.
- * @template T The brand value.
+ * @template B The brand value.
  */
 // prettier-ignore
 export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, B> =
@@ -128,7 +129,7 @@ export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape
   & Pick<S, keyof DeepPartialProtocol<AnyShape>>;
 
 /**
- * A shape should implement {@linkcode DeepPartialProtocol} to be converted to deep partial.
+ * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
  *
  * @template T The deep partial alternative of the shape.
  */
@@ -177,8 +178,8 @@ export class Shape<I = any, O = I> {
   /**
    * Returns the extended value type.
    */
-  static typeOf(value: unknown): unknown {
-    return getType(value);
+  static typeOf(value: unknown): Type {
+    return getTypeOf(value);
   }
 
   /**
@@ -220,7 +221,7 @@ export class Shape<I = any, O = I> {
   isAcceptedType(type: unknown): boolean {
     const types = this.inputTypes;
 
-    return types.includes(UNKNOWN) || types.includes(type) || (!isType(type) && types.includes(getType(type)));
+    return types.includes(UNKNOWN) || types.includes(type) || (!isType(type) && types.includes(getTypeOf(type)));
   }
 
   /**
