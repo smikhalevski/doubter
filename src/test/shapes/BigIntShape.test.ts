@@ -1,6 +1,6 @@
 import { BigIntShape, NEVER } from '../../main';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../../main/constants';
-import { ARRAY, BIGINT, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils/type-system';
+import { ARRAY, BIGINT, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils';
 
 describe('BigIntShape', () => {
   test('creates a BigIntShape', () => {

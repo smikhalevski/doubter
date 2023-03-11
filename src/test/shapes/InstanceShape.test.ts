@@ -1,6 +1,6 @@
 import { InstanceShape } from '../../main';
 import { CODE_INSTANCE } from '../../main/constants';
-import { ARRAY, DATE, FUNCTION, MAP, OBJECT, SET } from '../../main/utils/type-system';
+import { ARRAY, DATE, FUNCTION, MAP, OBJECT, SET } from '../../main/utils';
 
 describe('InstanceShape', () => {
   class MockClass {}

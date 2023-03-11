@@ -1,5 +1,5 @@
 import { ApplyOptions, DeepPartialProtocol, LazyShape, ObjectShape, Result, Shape, StringShape } from '../../main';
-import { OBJECT } from '../../main/utils/type-system';
+import { OBJECT } from '../../main/utils';
 
 describe('LazyShape', () => {
   class AsyncShape extends Shape {

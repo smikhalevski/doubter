@@ -1,7 +1,6 @@
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { applyShape, copyUnsafeChecks, createIssueFactory, isArray, ok, toDeepPartialShape } from '../utils';
-import { PROMISE } from '../utils/type-system';
+import { applyShape, copyUnsafeChecks, createIssueFactory, isArray, ok, PROMISE, toDeepPartialShape } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result } from './Shape';
 

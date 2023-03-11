@@ -17,8 +17,23 @@ import {
   MESSAGE_NUMBER_TYPE,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
-import { addCheck, canonize, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
-import { ARRAY, BOOLEAN, DATE, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../utils/type-system';
+import {
+  addCheck,
+  ARRAY,
+  BOOLEAN,
+  canonize,
+  cloneInstance,
+  createIssueFactory,
+  DATE,
+  isArray,
+  isNumber,
+  NULL,
+  NUMBER,
+  OBJECT,
+  ok,
+  STRING,
+  UNDEFINED
+} from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
 

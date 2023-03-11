@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { NUMBER, STRING } from '../../main/utils/type-system';
+import { NUMBER, STRING } from '../../main/utils';
 
 describe('union', () => {
   test('returns a union shape', () => {

@@ -1,6 +1,6 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { PROMISE, STRING } from '../../main/utils/type-system';
+import { PROMISE, STRING } from '../../main/utils';
 
 describe('PromiseShape', () => {
   test('create a PromiseShape', () => {

@@ -2,6 +2,7 @@ import { CODE_TYPE, MESSAGE_MAP_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
+  ARRAY,
   canonize,
   concatIssues,
   copyUnsafeChecks,
@@ -10,11 +11,12 @@ import {
   isIterable,
   isMapEntry,
   isObjectLike,
+  MAP,
+  OBJECT,
   ok,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { ARRAY, MAP, OBJECT } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, OptionalDeepPartialShape, Result } from './Shape';
 

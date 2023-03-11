@@ -2,54 +2,51 @@ import { isArray, isEqual } from './lang';
 
 declare const TYPE: unique symbol;
 
-class T<T extends string> {
-  private declare [TYPE]: unknown;
-
-  constructor(readonly type: T) {
-    Object.freeze(this);
-  }
-
-  toString() {
-    return this.type;
-  }
+interface Type<T extends string> {
+  readonly type: T;
+  [TYPE]: T;
 }
 
-Object.freeze(T.prototype);
+function createType<T extends string>(type: T): Type<T> {
+  return Object.freeze<any>({ type });
+}
 
-export const ARRAY = new T('array');
-export const BIGINT = new T('bigint');
-export const BOOLEAN = new T('boolean');
-export const DATE = new T('date');
-export const FUNCTION = new T('function');
-export const MAP = new T('map');
-export const NULL = new T('null');
-export const NUMBER = new T('number');
-export const OBJECT = new T('object');
-export const PROMISE = new T('promise');
-export const SET = new T('set');
-export const STRING = new T('string');
-export const SYMBOL = new T('symbol');
-export const UNDEFINED = new T('undefined');
-export const UNKNOWN = new T('unknown');
+export const ARRAY = createType('array');
+export const BIGINT = createType('bigint');
+export const BOOLEAN = createType('boolean');
+export const DATE = createType('date');
+export const FUNCTION = createType('function');
+export const MAP = createType('map');
+export const NULL = createType('null');
+export const NUMBER = createType('number');
+export const OBJECT = createType('object');
+export const PROMISE = createType('promise');
+export const SET = createType('set');
+export const STRING = createType('string');
+export const SYMBOL = createType('symbol');
+export const UNDEFINED = createType('undefined');
+export const UNKNOWN = createType('unknown');
 
-export type Type =
-  | T<'array'>
-  | T<'bigint'>
-  | T<'boolean'>
-  | T<'date'>
-  | T<'function'>
-  | T<'map'>
-  | T<'null'>
-  | T<'number'>
-  | T<'object'>
-  | T<'promise'>
-  | T<'set'>
-  | T<'string'>
-  | T<'symbol'>
-  | T<'undefined'>
-  | T<'unknown'>;
+type Type_ =
+  | Type<'array'>
+  | Type<'bigint'>
+  | Type<'boolean'>
+  | Type<'date'>
+  | Type<'function'>
+  | Type<'map'>
+  | Type<'null'>
+  | Type<'number'>
+  | Type<'object'>
+  | Type<'promise'>
+  | Type<'set'>
+  | Type<'string'>
+  | Type<'symbol'>
+  | Type<'undefined'>
+  | Type<'unknown'>;
 
-export function getTypeOf(value: unknown): Type {
+export { Type_ as Type };
+
+export function getType(value: unknown): Type_ {
   const type = typeof value;
 
   if (type === 'undefined') {
@@ -94,7 +91,7 @@ export function getTypeOf(value: unknown): Type {
   return OBJECT;
 }
 
-export function isType(type: unknown): type is Type {
+export function isType(type: unknown): type is Type_ {
   return (
     type === ARRAY ||
     type === BIGINT ||
@@ -114,10 +111,16 @@ export function isType(type: unknown): type is Type {
   );
 }
 
+/**
+ * Returns `true` if type or literal `a` is assignable to the type or literal `b`.
+ */
 function isAssignable(a: unknown, b: unknown): boolean {
-  return b === UNKNOWN || isEqual(a, b) || (!isType(a) && isType(b) && getTypeOf(a) === b);
+  return b === UNKNOWN || isEqual(a, b) || (!isType(a) && isType(b) && getType(a) === b);
 }
 
+/**
+ * Returns an array of unique types and literals that comprise a union.
+ */
 export function unionTypes(types: unknown[]): unknown[] {
   let t = types;
 
@@ -147,40 +150,14 @@ export function unionTypes(types: unknown[]): unknown[] {
   return t;
 }
 
-export function intersectTypes(types: unknown[]): unknown[] {
-  let t = types;
-
-  next: for (let i = 0; i < t.length; ++i) {
-    const ti = t[i];
-
-    for (let j = i + 1; j < t.length; ++j) {
-      const tj = t[j];
-
-      if (isAssignable(tj, ti)) {
-        if (t === types) {
-          t = types.slice(0);
-        }
-        t.splice(i--, 1);
-        // leave tj
-        continue next;
-      }
-
-      if (isAssignable(ti, tj)) {
-        if (t === types) {
-          t = types.slice(0);
-        }
-        t.splice(j--, 1);
-        // leave ti
-        continue;
-      }
-
-      return [];
-    }
-  }
-  return t;
-}
-
-// (a | b) & (a | b | c) → a | b
+/**
+ * Takes an array of arrays of types that are treated as an intersection of unions, and applied distribution rule that
+ * produces a union.
+ *
+ * ```
+ * (a | b) & (a | b | c) → a | b
+ * ```
+ */
 export function distributeTypes(types: unknown[][]): unknown[] {
   if (types.length === 0) {
     return [];

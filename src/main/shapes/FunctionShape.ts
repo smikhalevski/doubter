@@ -5,13 +5,13 @@ import {
   cloneInstance,
   copyChecks,
   createIssueFactory,
+  FUNCTION,
   getErrorMessage,
   isArray,
   Mutable,
   ok,
   unshiftIssuesPath,
 } from '../utils';
-import { FUNCTION } from '../utils/type-system';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, defaultApplyOptions, Result, Shape } from './Shape';
 

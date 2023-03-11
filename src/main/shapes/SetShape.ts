@@ -9,18 +9,20 @@ import {
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
+  ARRAY,
   canonize,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
   isIterable,
+  OBJECT,
   ok,
+  SET,
   toArrayIndex,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { ARRAY, OBJECT, SET } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result } from './Shape';
 

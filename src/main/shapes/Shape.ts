@@ -30,17 +30,20 @@ import {
   deleteArrayIndex,
   getCheckIndex,
   getErrorMessage,
+  getType,
   isArray,
   isEqual,
   isObjectLike,
+  isType,
   Mutable,
   ok,
   ReadonlyDict,
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
+  unionTypes,
+  UNKNOWN,
 } from '../utils';
-import { getTypeOf, isType, Type, unionTypes, UNKNOWN } from '../utils/type-system';
 import { ValidationError } from '../ValidationError';
 
 /**
@@ -102,7 +105,15 @@ export interface NotShape<S extends AnyShape, N extends AnyShape>
  *
  * The ephemeral unique symbol that is used for type branding by {@linkcode BrandShape}.
  */
-export declare const BRAND: unique symbol;
+declare const BRAND: unique symbol;
+
+/**
+ * The branded type.
+ *
+ * @template T The base type.
+ * @template B The type brand.
+ */
+export type Branded<T, B> = T & { [BRAND]: B };
 
 /**
  * The shape that adds a brand to the output type. This shape doesn't affect the runtime and is used for emulation of
@@ -112,8 +123,8 @@ export declare const BRAND: unique symbol;
  * @template T The brand value.
  */
 // prettier-ignore
-export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, T> =
-  & Shape<S['input'], S['output'] & { [BRAND]: T }>
+export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, B> =
+  & Shape<S['input'], Branded<S['output'], B>>
   & Pick<S, keyof DeepPartialProtocol<AnyShape>>;
 
 /**
@@ -164,10 +175,10 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
  */
 export class Shape<I = any, O = I> {
   /**
-   * Returns the {@link ValueType extended value type}.
+   * Returns the extended value type.
    */
-  static typeOf(value: unknown): Type {
-    return getTypeOf(value);
+  static typeOf(value: unknown): unknown {
+    return getType(value);
   }
 
   /**
@@ -206,10 +217,10 @@ export class Shape<I = any, O = I> {
    *
    * @param type The type that must be checked.
    */
-  isAcceptedType(type: Type): boolean {
+  isAcceptedType(type: unknown): boolean {
     const types = this.inputTypes;
 
-    return types.includes(UNKNOWN) || types.includes(type) || (!isType(type) && types.includes(getTypeOf(type)));
+    return types.includes(UNKNOWN) || types.includes(type) || (!isType(type) && types.includes(getType(type)));
   }
 
   /**
@@ -427,10 +438,10 @@ export class Shape<I = any, O = I> {
    * Returns an opaque shape that adds a brand to the output type.
    *
    * @returns A shape with the branded output type.
-   * @template T The brand value.
+   * @template B The brand value.
    */
-  brand<T = this>(): BrandShape<this, T> {
-    return this as BrandShape<this, T>;
+  brand<B = this>(): BrandShape<this, B> {
+    return this as BrandShape<this, B>;
   }
 
   /**

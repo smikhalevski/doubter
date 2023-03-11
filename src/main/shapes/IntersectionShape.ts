@@ -2,18 +2,22 @@ import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
+  ARRAY,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
+  DATE,
+  distributeTypes,
   getShapeInputTypes,
+  getType,
   isArray,
   isAsyncShape,
   isEqual,
+  OBJECT,
   ok,
   setObjectProperty,
   toDeepPartialShape,
 } from '../utils';
-import { ARRAY, DATE, distributeTypes, getTypeOf, OBJECT } from '../utils/type-system';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape } from './Shape';
 
 // prettier-ignore
@@ -219,8 +223,8 @@ export function mergeValues(a: any, b: any): any {
     return a;
   }
 
-  const aType = getTypeOf(a);
-  const bType = getTypeOf(b);
+  const aType = getType(a);
+  const bType = getType(b);
 
   let output: any;
 

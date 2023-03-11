@@ -1,7 +1,19 @@
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { canonize, createIssueFactory, isArray, ok } from '../utils';
-import { ARRAY, BIGINT, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../utils/type-system';
+import {
+  ARRAY,
+  BIGINT,
+  BOOLEAN,
+  canonize,
+  createIssueFactory,
+  isArray,
+  NULL,
+  NUMBER,
+  OBJECT,
+  ok,
+  STRING,
+  UNDEFINED
+} from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 

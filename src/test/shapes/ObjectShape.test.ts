@@ -7,7 +7,7 @@ import {
   MESSAGE_OBJECT_TYPE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
-import { OBJECT, STRING } from '../../main/utils/type-system';
+import { OBJECT, STRING } from '../../main/utils';
 
 describe('ObjectShape', () => {
   class AsyncShape extends Shape {

@@ -1,6 +1,6 @@
 import { BooleanShape, NEVER } from '../../main';
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../../main/constants';
-import { ARRAY, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils/type-system';
+import { ARRAY, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils';
 
 describe('BooleanShape', () => {
   test('parses boolean values', () => {

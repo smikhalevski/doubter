@@ -1,6 +1,6 @@
 import { ApplyOptions, ObjectShape, Ok, Result, SetShape, Shape, StringShape } from '../../main';
 import { CODE_SET_MAX, CODE_SET_MIN, CODE_TYPE, MESSAGE_SET_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { ARRAY, OBJECT, SET, STRING } from '../../main/utils/type-system';
+import { ARRAY, OBJECT, SET, STRING } from '../../main/utils';
 
 describe('SetShape', () => {
   class AsyncShape extends Shape {

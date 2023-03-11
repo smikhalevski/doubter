@@ -10,7 +10,7 @@ import {
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_TYPE,
 } from '../../main/constants';
-import { ARRAY, BOOLEAN, DATE, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils/type-system';
+import { ARRAY, BOOLEAN, DATE, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils';
 
 describe('NumberShape', () => {
   test('parses a number', () => {

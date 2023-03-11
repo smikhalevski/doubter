@@ -1,7 +1,7 @@
 import qs from 'qs';
 import * as d from '../main';
 import { CODE_UNION, MESSAGE_UNION } from '../main/constants';
-import { ARRAY, BOOLEAN, NUMBER, OBJECT, STRING } from '../main/utils/type-system';
+import { ARRAY, BOOLEAN, NUMBER, OBJECT, STRING } from '../main/utils';
 
 describe('Cookbook', () => {
   test('rename keys', () => {

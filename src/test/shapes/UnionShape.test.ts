@@ -16,7 +16,7 @@ import {
 } from '../../main';
 import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
 import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shapes/UnionShape';
-import { BOOLEAN, NUMBER, STRING, UNKNOWN } from '../../main/utils/type-system';
+import { BOOLEAN, NUMBER, STRING, UNKNOWN } from '../../main/utils';
 
 describe('UnionShape', () => {
   class AsyncShape extends Shape {

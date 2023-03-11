@@ -1,4 +1,4 @@
-import { distributeTypes, intersectTypes, NUMBER, STRING, unionTypes, UNKNOWN } from '../../main/utils/type-system';
+import { distributeTypes, NUMBER, STRING, unionTypes, UNKNOWN } from '../../main/utils';
 
 test('unionTypes', () => {
   expect(unionTypes([])).toEqual([]);
@@ -13,21 +13,6 @@ test('unionTypes', () => {
   expect(unionTypes([111, 'aaa'])).toEqual([111, 'aaa']);
   expect(unionTypes([111, 'aaa', UNKNOWN])).toEqual([UNKNOWN]);
   expect(unionTypes([STRING, UNKNOWN])).toEqual([UNKNOWN]);
-});
-
-test('intersectTypes', () => {
-  expect(intersectTypes([])).toEqual([]);
-  expect(intersectTypes([UNKNOWN])).toEqual([UNKNOWN]);
-  expect(intersectTypes([UNKNOWN, UNKNOWN])).toEqual([UNKNOWN]);
-  expect(intersectTypes([UNKNOWN, NUMBER, UNKNOWN])).toEqual([NUMBER]);
-  expect(intersectTypes([111])).toEqual([111]);
-  expect(intersectTypes([111, 111])).toEqual([111]);
-  expect(intersectTypes([111, NUMBER])).toEqual([111]);
-  expect(intersectTypes([NUMBER, 111])).toEqual([111]);
-  expect(intersectTypes([111, 'aaa'])).toEqual([]);
-  expect(intersectTypes([NUMBER, STRING])).toEqual([]);
-  expect(intersectTypes([NUMBER, NUMBER])).toEqual([NUMBER]);
-  expect(intersectTypes([NUMBER, UNKNOWN])).toEqual([NUMBER]);
 });
 
 test('distributeTypes', () => {

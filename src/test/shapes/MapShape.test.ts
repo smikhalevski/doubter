@@ -1,6 +1,6 @@
 import { ApplyOptions, MapShape, ObjectShape, Ok, Result, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_MAP_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { MAP, STRING } from '../../main/utils/type-system';
+import { MAP, STRING } from '../../main/utils';
 
 describe('MapShape', () => {
   class AsyncShape extends Shape {

@@ -1,6 +1,6 @@
 import { DateShape, NEVER } from '../../main';
 import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../../main/constants';
-import { ARRAY, DATE, NUMBER, OBJECT, STRING } from '../../main/utils/type-system';
+import { ARRAY, DATE, NUMBER, OBJECT, STRING } from '../../main/utils';
 
 describe('DateShape', () => {
   test('parses date values', () => {

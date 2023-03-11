@@ -12,6 +12,7 @@ import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
   applyShape,
+  ARRAY,
   canonize,
   concatIssues,
   copyUnsafeChecks,
@@ -19,12 +20,13 @@ import {
   isArray,
   isAsyncShape,
   isIterable,
+  OBJECT,
   ok,
   toArrayIndex,
   toDeepPartialShape,
+  UNKNOWN,
   unshiftIssuesPath,
 } from '../utils';
-import { ARRAY, OBJECT, UNKNOWN } from '../utils/type-system';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result } from './Shape';
 

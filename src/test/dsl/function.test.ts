@@ -1,7 +1,7 @@
 import * as d from '../../main';
 import { ArrayShape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { FUNCTION } from '../../main/utils/type-system';
+import { FUNCTION } from '../../main/utils';
 
 describe('function', () => {
   test('returns a function shape', () => {

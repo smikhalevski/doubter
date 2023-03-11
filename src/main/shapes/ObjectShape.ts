@@ -15,6 +15,7 @@ import {
   isAsyncShape,
   isObject,
   isPlainObject,
+  OBJECT,
   ok,
   ReadonlyDict,
   setObjectProperty,
@@ -22,7 +23,6 @@ import {
   toggleBit,
   unshiftIssuesPath,
 } from '../utils';
-import { OBJECT } from '../utils/type-system';
 import { EnumShape } from './EnumShape';
 import {
   AllowLiteralShape,

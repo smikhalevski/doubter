@@ -1,7 +1,18 @@
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { canonize, createIssueFactory, isArray, ok } from '../utils';
-import { ARRAY, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../utils/type-system';
+import {
+  ARRAY,
+  BOOLEAN,
+  canonize,
+  createIssueFactory,
+  isArray,
+  NULL,
+  NUMBER,
+  OBJECT,
+  ok,
+  STRING,
+  UNDEFINED
+} from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 

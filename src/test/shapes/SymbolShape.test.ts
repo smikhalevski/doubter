@@ -1,6 +1,6 @@
 import { SymbolShape } from '../../main';
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE } from '../../main/constants';
-import { SYMBOL } from '../../main/utils/type-system';
+import { SYMBOL } from '../../main/utils';
 
 describe('SymbolShape', () => {
   test('parses symbol values', () => {

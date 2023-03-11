@@ -11,7 +11,7 @@ import {
   ValidationError,
 } from '../../main';
 import { CODE_ARRAY_MAX, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { FUNCTION, NUMBER, STRING } from '../../main/utils/type-system';
+import { FUNCTION, NUMBER, STRING } from '../../main/utils';
 
 describe('FunctionShape', () => {
   class AsyncShape extends Shape {

@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { STRING } from '../../main/utils/type-system';
+import { STRING } from '../../main/utils';
 
 describe('any', () => {
   test('returns a shape', () => {

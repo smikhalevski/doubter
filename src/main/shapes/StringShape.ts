@@ -9,8 +9,22 @@ import {
   MESSAGE_STRING_TYPE,
 } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { addCheck, canonize, createIssueFactory, isArray, isValidDate, ok } from '../utils';
-import { ARRAY, BIGINT, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../utils/type-system';
+import {
+  addCheck,
+  ARRAY,
+  BIGINT,
+  BOOLEAN,
+  canonize,
+  createIssueFactory,
+  isArray,
+  isValidDate,
+  NULL,
+  NUMBER,
+  OBJECT,
+  ok,
+  STRING,
+  UNDEFINED
+} from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 

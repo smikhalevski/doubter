@@ -8,7 +8,7 @@ import {
   MESSAGE_NUMBER_TYPE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
-import { ARRAY, NUMBER, OBJECT, STRING, UNKNOWN } from '../../main/utils/type-system';
+import { ARRAY, NUMBER, OBJECT, STRING, UNKNOWN } from '../../main/utils';
 
 describe('ArrayShape', () => {
   class AsyncShape extends Shape {

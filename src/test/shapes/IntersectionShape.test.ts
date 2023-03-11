@@ -20,7 +20,7 @@ import {
   MESSAGE_NUMBER_TYPE,
 } from '../../main/constants';
 import { mergeValues } from '../../main/shapes/IntersectionShape';
-import { BOOLEAN, NUMBER } from '../../main/utils/type-system';
+import { BOOLEAN, NUMBER } from '../../main/utils';
 
 describe('IntersectionShape', () => {
   test('returns the input as is if it matches all intersected shapes', () => {

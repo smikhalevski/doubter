@@ -1,7 +1,6 @@
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { canonize, createIssueFactory, isArray, ok, ReadonlyDict, toUniqueArray } from '../utils';
-import { ARRAY, OBJECT } from '../utils/type-system';
+import { ARRAY, canonize, createIssueFactory, isArray, OBJECT, ok, ReadonlyDict, toUniqueArray } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 

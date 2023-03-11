@@ -8,12 +8,12 @@ import {
   createIssueFactory,
   isArray,
   isObject,
+  OBJECT,
   ok,
   setObjectProperty,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { OBJECT } from '../utils/type-system';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape } from './Shape';
 
 // prettier-ignore

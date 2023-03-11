@@ -26,7 +26,7 @@ import {
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
 import { Result } from '../../main/shapes/Shape';
-import { ARRAY, NUMBER, STRING, UNKNOWN } from '../../main/utils/type-system';
+import { ARRAY, NUMBER, STRING, UNKNOWN } from '../../main/utils';
 
 class AsyncShape extends Shape {
   protected _isAsync(): boolean {
