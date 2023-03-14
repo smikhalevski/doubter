@@ -1,6 +1,6 @@
 import { ApplyOptions, ObjectShape, Ok, Result, SetShape, Shape, StringShape } from '../../main';
 import { CODE_SET_MAX, CODE_SET_MIN, CODE_TYPE, MESSAGE_SET_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { ARRAY, OBJECT, SET, STRING } from '../../main/utils';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/Type';
 
 describe('SetShape', () => {
   class AsyncShape extends Shape {
@@ -25,7 +25,7 @@ describe('SetShape', () => {
     const setShape = new SetShape(shape);
 
     expect(setShape.shape).toEqual(shape);
-    expect(setShape.inputTypes).toEqual([SET]);
+    expect(setShape.inputs).toEqual([TYPE_SET]);
   });
 
   test('raises an issue if an input is not a Set', () => {
@@ -35,7 +35,7 @@ describe('SetShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: SET }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: TYPE_SET }],
     });
   });
 
@@ -164,7 +164,7 @@ describe('SetShape', () => {
     test('updates input types when coerced', () => {
       const setShape = new SetShape(new StringShape()).coerce();
 
-      expect(setShape.inputTypes).toEqual([STRING, SET, OBJECT, ARRAY]);
+      expect(setShape.inputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
     });
 
     test('coerces a string value', () => {
@@ -208,7 +208,7 @@ describe('SetShape', () => {
 
       expect(setShape.try(new Set([{ key1: 111 }]))).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: STRING, path: [0, 'key1'] }],
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [0, 'key1'] }],
       });
     });
   });
@@ -221,7 +221,7 @@ describe('SetShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: SET }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: TYPE_SET }],
       });
     });
 

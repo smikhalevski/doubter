@@ -1,6 +1,7 @@
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE } from '../constants';
+import { TYPE_SYMBOL } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory, SYMBOL } from '../utils';
+import { createIssueFactory } from '../utils';
 import { Result, Shape } from './Shape';
 
 /**
@@ -17,11 +18,11 @@ export class SymbolShape extends Shape<symbol> {
   constructor(options?: ConstraintOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SYMBOL_TYPE, options, SYMBOL);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SYMBOL_TYPE, options, TYPE_SYMBOL);
   }
 
-  protected _getInputTypes(): unknown[] {
-    return [SYMBOL];
+  protected _getInputs(): unknown[] {
+    return [TYPE_SYMBOL];
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<symbol> {

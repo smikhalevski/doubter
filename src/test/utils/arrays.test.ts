@@ -1,28 +1,10 @@
-import { deleteArrayIndex, toArrayIndex, toUniqueArray } from '../../main/utils';
+import { deleteAt, toArrayIndex } from '../../main/utils';
 
-describe('toUniqueArray', () => {
-  test('removes duplicates', () => {
-    const arr = [1, 2, 3, 3, 1];
-    const uniqueArr = toUniqueArray(arr);
-
-    expect(uniqueArr).not.toBe(arr);
-    expect(uniqueArr).toEqual([1, 2, 3]);
-  });
-
-  test('removes NaN duplicates', () => {
-    const arr = [NaN, 1, NaN, 2, NaN];
-    const uniqueArr = toUniqueArray(arr);
-
-    expect(uniqueArr).not.toBe(arr);
-    expect(uniqueArr).toEqual([NaN, 1, 2]);
-  });
-});
-
-describe('deleteArrayIndex', () => {
+describe('deleteAt', () => {
   test('deletes an element at index', () => {
     const arr = [111, 222, 333];
 
-    expect(deleteArrayIndex(arr, 1)).toBe(arr);
+    expect(deleteAt(arr, 1)).toBe(arr);
     expect(arr).toEqual([111, 333]);
   });
 });

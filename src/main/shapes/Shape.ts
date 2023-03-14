@@ -7,6 +7,7 @@ import {
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
 } from '../constants';
+import { TYPE_UNKNOWN } from '../Type';
 import {
   ApplyOptions,
   Check,
@@ -27,10 +28,9 @@ import {
   cloneInstance,
   copyUnsafeChecks,
   createIssueFactory,
-  deleteArrayIndex,
+  deleteAt,
   getCheckIndex,
   getErrorMessage,
-  getTypeOf,
   isArray,
   isEqual,
   isObjectLike,
@@ -41,9 +41,8 @@ import {
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
-  Type,
+  toType,
   unionTypes,
-  UNKNOWN,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 
@@ -51,7 +50,7 @@ import { ValidationError } from '../ValidationError';
  * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from `_coerce`
  * method, that is present on various shapes, when coercion is not possible.
  */
-export const NEVER = Object.freeze({ never: true }) as never;
+export const NEVER = Object.freeze({}) as never;
 
 export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerced: false });
 
@@ -176,13 +175,6 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
  */
 export class Shape<I = any, O = I> {
   /**
-   * Returns the extended value type.
-   */
-  static typeOf(value: unknown): Type {
-    return getTypeOf(value);
-  }
-
-  /**
    * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations.
    */
   readonly annotations: ReadonlyDict = {};
@@ -214,14 +206,14 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns `true` if the shape accepts values of the given input type, or `false` otherwise.
+   * Returns `true` if the shape accepts given type or input value, or `false` otherwise.
    *
-   * @param type The type that must be checked.
+   * @param input The type or value that must be checked.
    */
-  isAcceptedType(type: unknown): boolean {
-    const types = this.inputTypes;
+  accepts(input: unknown): boolean {
+    const { inputs } = this;
 
-    return types.includes(UNKNOWN) || types.includes(type) || (!isType(type) && types.includes(getTypeOf(type)));
+    return inputs.includes(TYPE_UNKNOWN) || inputs.includes(input) || inputs.includes(toType(input));
   }
 
   /**
@@ -300,7 +292,7 @@ export class Shape<I = any, O = I> {
     const index = getCheckIndex(this._checks, key);
     const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
 
-    return replaceChecks(cloneInstance(this), index !== -1 ? deleteArrayIndex(checks, index) : checks);
+    return replaceChecks(cloneInstance(this), deleteAt(checks, index));
   }
 
   /**
@@ -333,7 +325,7 @@ export class Shape<I = any, O = I> {
   deleteCheck(key: unknown): this {
     const index = getCheckIndex(this._checks, key);
 
-    return index !== -1 ? replaceChecks(cloneInstance(this), deleteArrayIndex(this._checks.slice(0), index)) : this;
+    return index !== -1 ? replaceChecks(cloneInstance(this), deleteAt(this._checks.slice(0), index)) : this;
   }
 
   /**
@@ -605,8 +597,8 @@ export class Shape<I = any, O = I> {
     return false;
   }
 
-  protected _getInputTypes(): unknown[] {
-    return [UNKNOWN];
+  protected _getInputs(): unknown[] {
+    return [TYPE_UNKNOWN];
   }
 
   /**
@@ -648,7 +640,7 @@ export interface Shape<I, O> {
    */
   readonly output: O;
 
-  readonly inputTypes: readonly unknown[];
+  readonly inputs: readonly unknown[];
 
   /**
    * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
@@ -736,15 +728,15 @@ export interface Shape<I, O> {
 }
 
 Object.defineProperties(Shape.prototype, {
-  inputTypes: {
+  inputs: {
     configurable: true,
 
     get(this: Shape) {
-      const types = Object.freeze(unionTypes(this['_getInputTypes']()));
+      const inputs = Object.freeze(unionTypes(this['_getInputs']()));
 
-      Object.defineProperty(this, 'inputTypes', { configurable: true, value: types });
+      Object.defineProperty(this, 'inputs', { configurable: true, value: inputs });
 
-      return types;
+      return inputs;
     },
   },
 
@@ -1024,8 +1016,8 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return this.inputShape.isAsync || this.outputShape.isAsync;
   }
 
-  protected _getInputTypes(): unknown[] {
-    return this.inputShape.inputTypes.slice(0);
+  protected _getInputs(): unknown[] {
+    return this.inputShape.inputs.slice(0);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<O['output']> {
@@ -1145,8 +1137,8 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): unknown[] {
-    return this.shape.inputTypes.concat(this.inputValue);
+  protected _getInputs(): unknown[] {
+    return this.shape.inputs.concat(this.inputValue);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], A> | B> {
@@ -1236,8 +1228,8 @@ export class DenyLiteralShape<S extends AnyShape, T>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): unknown[] {
-    return this.shape.inputTypes.filter(value => !isEqual(this.deniedValue, value));
+  protected _getInputs(): unknown[] {
+    return this.shape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], T>> {
@@ -1326,8 +1318,8 @@ export class CatchShape<S extends AnyShape, T>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): unknown[] {
-    return this.shape.inputTypes.slice(0);
+  protected _getInputs(): unknown[] {
+    return this.shape.inputs.slice(0);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<S['output'] | T> {
@@ -1409,14 +1401,8 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return this.shape.isAsync || this.excludedShape.isAsync;
   }
 
-  protected _getInputTypes(): unknown[] {
-    const types = this.shape.inputTypes;
-    const excludedTypes = this.excludedShape.inputTypes;
-
-    if (types !== null && excludedTypes !== null) {
-      return types.filter(value => isType(excludedTypes) || !excludedTypes.includes(value));
-    }
-    return types.slice(0);
+  protected _getInputs(): unknown[] {
+    return this.shape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<S['output'], N['input']>> {

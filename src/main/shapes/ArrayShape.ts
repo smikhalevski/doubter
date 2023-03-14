@@ -8,11 +8,11 @@ import {
   MESSAGE_ARRAY_TYPE,
   MESSAGE_TUPLE,
 } from '../constants';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
   applyShape,
-  ARRAY,
   canonize,
   concatIssues,
   copyUnsafeChecks,
@@ -20,11 +20,9 @@ import {
   isArray,
   isAsyncShape,
   isIterable,
-  OBJECT,
   ok,
   toArrayIndex,
   toDeepPartialShape,
-  UNKNOWN,
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -33,14 +31,14 @@ import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result 
 // prettier-ignore
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =
   U extends readonly AnyShape[]
-    ? { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }
-    : never;
+  ? { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }
+  : never;
 
 // prettier-ignore
 export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends 'input' | 'output'> =
   U extends readonly AnyShape[]
-    ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
-    : R extends AnyShape ? R[C][] : any[];
+  ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
+  : R extends AnyShape ? R[C][] : any[];
 
 export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
   U extends readonly AnyShape[]
@@ -89,7 +87,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     if (shapes !== null && (shapes.length !== 0 || restShape === null)) {
       this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
     } else {
-      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, ARRAY);
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
     }
   }
 
@@ -175,23 +173,27 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return this.shapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     const { shapes, restShape } = this;
 
-    const lonerShape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
-
     if (!this.isCoerced) {
-      return [ARRAY];
+      return [TYPE_ARRAY];
     }
-    if (shapes === null && restShape === null) {
-      // Elements aren't parsed, so anything value can be coerced to an array
-      return [UNKNOWN];
+
+    if (shapes !== null) {
+      if (shapes.length > 1) {
+        return [TYPE_OBJECT, TYPE_ARRAY];
+      }
+      if (shapes.length === 1) {
+        return shapes[0].inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
+      }
     }
-    if (lonerShape === null) {
-      // Tuple with multiple elements, so only iterables and array-like objects are allowed
-      return [OBJECT, ARRAY];
+
+    if (restShape !== null) {
+      return restShape.inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
     }
-    return lonerShape.inputTypes.concat(OBJECT, ARRAY);
+
+    return [TYPE_UNKNOWN];
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, 'output'>> {

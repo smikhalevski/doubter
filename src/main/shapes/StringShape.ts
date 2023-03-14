@@ -8,21 +8,9 @@ import {
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_TYPE,
 } from '../constants';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import {
-  addCheck,
-  ARRAY,
-  BIGINT,
-  BOOLEAN,
-  canonize,
-  createIssueFactory,
-  isArray,
-  isValidDate,
-  NUMBER,
-  OBJECT,
-  ok,
-  STRING,
-} from '../utils';
+import { addCheck, canonize, createIssueFactory, isArray, isValidDate, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
@@ -40,7 +28,7 @@ export class StringShape extends CoercibleShape<string> {
   constructor(options?: ConstraintOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, STRING);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_STRING_TYPE, options, TYPE_STRING);
   }
 
   /**
@@ -107,11 +95,11 @@ export class StringShape extends CoercibleShape<string> {
     });
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     if (this.isCoerced) {
-      return [STRING, OBJECT, NUMBER, BOOLEAN, BIGINT, ARRAY, undefined, null];
+      return [TYPE_STRING, TYPE_OBJECT, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_ARRAY, null, undefined];
     } else {
-      return [STRING];
+      return [TYPE_STRING];
     }
   }
 

@@ -30,6 +30,6 @@ describe('ConstShape', () => {
   });
 
   test('returns input types of the value', () => {
-    expect(new ConstShape('aaa').inputTypes).toEqual(['aaa']);
+    expect(new ConstShape('aaa').inputs).toEqual(['aaa']);
   });
 });

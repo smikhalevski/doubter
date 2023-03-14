@@ -1,13 +1,13 @@
 import { BigIntShape, NEVER } from '../../main';
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../../main/constants';
-import { ARRAY, BIGINT, BOOLEAN, NULL, NUMBER, OBJECT, STRING, UNDEFINED } from '../../main/utils';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('BigIntShape', () => {
   test('creates a BigIntShape', () => {
     const shape = new BigIntShape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputTypes).toEqual([BIGINT]);
+    expect(shape.inputs).toEqual([TYPE_BIGINT]);
   });
 
   test('parses bigint values', () => {
@@ -19,14 +19,14 @@ describe('BigIntShape', () => {
   test('raises an issue if an input is not a bigint', () => {
     expect(new BigIntShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: BIGINT, message: 'Must be a bigint' }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_BIGINT, message: 'Must be a bigint' }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new BigIntShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, param: BIGINT, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 111, param: TYPE_BIGINT, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -34,7 +34,16 @@ describe('BigIntShape', () => {
     test('updates input types when coerced', () => {
       const shape = new BigIntShape().coerce();
 
-      expect(shape.inputTypes).toEqual([BIGINT, OBJECT, STRING, NUMBER, BOOLEAN, ARRAY, UNDEFINED, NULL]);
+      expect(shape.inputs).toEqual([
+        TYPE_BIGINT,
+        TYPE_OBJECT,
+        TYPE_STRING,
+        TYPE_NUMBER,
+        TYPE_BOOLEAN,
+        TYPE_ARRAY,
+        null,
+        undefined,
+      ]);
     });
 
     test('coerces an input', () => {
@@ -48,7 +57,7 @@ describe('BigIntShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new BigIntShape().coerce().try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_BIGINT_TYPE, param: BIGINT }],
+        issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_BIGINT_TYPE, param: TYPE_BIGINT }],
       });
     });
   });

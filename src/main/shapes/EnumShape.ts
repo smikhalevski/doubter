@@ -1,6 +1,7 @@
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
+import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { ARRAY, canonize, createIssueFactory, isArray, OBJECT, ok, ReadonlyDict, toUniqueArray } from '../utils';
+import { canonize, createIssueFactory, isArray, ok, ReadonlyDict, unique } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
@@ -33,21 +34,21 @@ export class EnumShape<T> extends CoercibleShape<T> {
   ) {
     super();
 
-    this.values = toUniqueArray(isArray(this.source) ? this.source : getEnumValues(this.source));
+    this.values = (isArray(source) ? source : getEnumValues(source)).filter(unique);
 
-    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options);
+    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, this.values);
   }
 
-  protected _getInputTypes(): unknown[] {
-    const types: unknown[] = this.values.slice(0);
+  protected _getInputs(): unknown[] {
+    const inputs: unknown[] = this.values.slice(0);
 
-    if (!this.isCoerced || types.length === 0) {
-      return types;
+    if (!this.isCoerced || inputs.length === 0) {
+      return inputs;
     }
     if (!isArray(this.source)) {
-      types.push(...Object.keys(this.source));
+      inputs.push(...Object.keys(this.source));
     }
-    return types.concat(ARRAY, OBJECT);
+    return inputs.concat(TYPE_ARRAY, TYPE_OBJECT);
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<T> {
@@ -61,7 +62,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
       !values.includes(output) &&
       (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
     ) {
-      return this._typeIssueFactory(input, options, values);
+      return this._typeIssueFactory(input, options);
     }
     if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);

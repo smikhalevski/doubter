@@ -11,7 +11,7 @@ import {
   ValidationError,
 } from '../../main';
 import { CODE_ARRAY_MAX, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { FUNCTION, NUMBER, STRING } from '../../main/utils';
+import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 
 describe('FunctionShape', () => {
   class AsyncShape extends Shape {
@@ -39,7 +39,7 @@ describe('FunctionShape', () => {
     expect(shape.argsShape).toBe(arrayShape);
     expect(shape.returnShape).toBeNull();
     expect(shape.thisShape).toBeNull();
-    expect(shape.inputTypes).toEqual([FUNCTION]);
+    expect(shape.inputs).toEqual([TYPE_FUNCTION]);
   });
 
   test('wraps a function', () => {
@@ -157,7 +157,7 @@ describe('FunctionShape', () => {
 
       expect(() => shape.wrap(() => undefined).call({ key1: 111 } as any)).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: STRING },
+          { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -167,7 +167,7 @@ describe('FunctionShape', () => {
 
       expect(() => shape.wrap(() => undefined).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: STRING },
+          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -177,8 +177,8 @@ describe('FunctionShape', () => {
 
       expect(() => shape.wrap(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: STRING },
-          { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: NUMBER },
+          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
+          { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
         ])
       );
     });
@@ -188,7 +188,7 @@ describe('FunctionShape', () => {
 
       expect(() => shape.wrap(() => 111 as any)()).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_STRING_TYPE, param: STRING },
+          { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -231,7 +231,7 @@ describe('FunctionShape', () => {
 
       await expect(shape.wrapAsync(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: STRING },
+          { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -241,7 +241,7 @@ describe('FunctionShape', () => {
 
       await expect(shape.wrapAsync(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: STRING },
+          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
@@ -251,8 +251,8 @@ describe('FunctionShape', () => {
 
       await expect(shape.wrapAsync(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: STRING },
-          { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: NUMBER },
+          { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
+          { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
         ])
       );
     });
@@ -262,7 +262,7 @@ describe('FunctionShape', () => {
 
       await expect(shape.wrapAsync(() => 111 as any)()).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_STRING_TYPE, param: STRING },
+          { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });

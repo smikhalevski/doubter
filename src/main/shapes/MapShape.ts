@@ -1,8 +1,8 @@
 import { CODE_TYPE, MESSAGE_MAP_TYPE } from '../constants';
+import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
-  ARRAY,
   canonize,
   concatIssues,
   copyUnsafeChecks,
@@ -11,8 +11,6 @@ import {
   isIterable,
   isMapEntry,
   isObjectLike,
-  MAP,
-  OBJECT,
   ok,
   toDeepPartialShape,
   unshiftIssuesPath,
@@ -56,7 +54,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_MAP_TYPE, options, MAP);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_MAP_TYPE, options, TYPE_MAP);
   }
 
   at(key: unknown): AnyShape | null {
@@ -74,11 +72,11 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return this.keyShape.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     if (this.isCoerced) {
-      return [MAP, OBJECT, ARRAY];
+      return [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
     } else {
-      return [MAP];
+      return [TYPE_MAP];
     }
   }
 

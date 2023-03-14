@@ -1,6 +1,7 @@
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { ARRAY, createIssueFactory, DATE, FUNCTION, isEqualOrSubclass, MAP, OBJECT, SET } from '../utils';
+import { createIssueFactory, isEqualOrSubclass } from '../utils';
 import { Result, Shape } from './Shape';
 
 /**
@@ -24,25 +25,25 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     const { ctor } = this;
 
     if (isEqualOrSubclass(ctor, Function)) {
-      return [FUNCTION];
+      return [TYPE_FUNCTION];
     }
     if (isEqualOrSubclass(ctor, Array)) {
-      return [ARRAY];
+      return [TYPE_ARRAY];
     }
     if (isEqualOrSubclass(ctor, Date)) {
-      return [DATE];
+      return [TYPE_DATE];
     }
     if (isEqualOrSubclass(ctor, Set)) {
-      return [SET];
+      return [TYPE_SET];
     }
     if (isEqualOrSubclass(ctor, Map)) {
-      return [MAP];
+      return [TYPE_MAP];
     }
-    return [OBJECT];
+    return [TYPE_OBJECT];
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<InstanceType<C>> {

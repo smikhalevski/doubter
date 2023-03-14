@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { STRING } from '../../main/utils';
+import { TYPE_STRING } from '../../main/Type';
 
 describe('string', () => {
   test('returns a string shape', () => {
@@ -7,6 +7,6 @@ describe('string', () => {
   });
 
   test('returns input types for optional string', () => {
-    expect(d.string().optional().inputTypes).toEqual([STRING, undefined]);
+    expect(d.string().optional().inputs).toEqual([TYPE_STRING, undefined]);
   });
 });

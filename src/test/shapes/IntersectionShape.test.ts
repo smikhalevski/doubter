@@ -20,7 +20,7 @@ import {
   MESSAGE_NUMBER_TYPE,
 } from '../../main/constants';
 import { mergeValues } from '../../main/shapes/IntersectionShape';
-import { BOOLEAN, NUMBER } from '../../main/utils';
+import { TYPE_BOOLEAN, TYPE_NUMBER } from '../../main/Type';
 
 describe('IntersectionShape', () => {
   test('returns the input as is if it matches all intersected shapes', () => {
@@ -82,7 +82,7 @@ describe('IntersectionShape', () => {
 
     expect(andShape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: NUMBER }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
     });
   });
 
@@ -92,8 +92,8 @@ describe('IntersectionShape', () => {
     expect(andShape.try('aaa', { verbose: true })).toEqual({
       ok: false,
       issues: [
-        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: NUMBER },
-        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_BOOLEAN_TYPE, param: BOOLEAN },
+        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
+        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN },
       ],
     });
   });
@@ -191,44 +191,44 @@ describe('IntersectionShape', () => {
       expect(andShape.parse(111)).toBe(111);
       expect(andShape.try(undefined)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: NUMBER }],
+        issues: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
       });
     });
   });
 
-  describe('inputTypes', () => {
+  describe('inputs', () => {
     test('never if there are no common values', () => {
       const shape = new IntersectionShape([new EnumShape(['aaa', 'bbb']), new EnumShape([111, 222])]);
 
-      expect(shape.inputTypes).toEqual([]);
+      expect(shape.inputs).toEqual([]);
     });
 
     test('never if contains a NeverShape', () => {
       const shape = new IntersectionShape([new StringShape(), new NeverShape()]);
 
-      expect(shape.inputTypes).toEqual([]);
+      expect(shape.inputs).toEqual([]);
     });
 
     test('the array of common values', () => {
       const shape = new IntersectionShape([new EnumShape(['aaa', 111]), new EnumShape([222, 'aaa'])]);
 
-      expect(shape.inputTypes).toEqual(['aaa']);
+      expect(shape.inputs).toEqual(['aaa']);
     });
 
     test('null if underlying shapes accept continuous value ranges', () => {
-      expect(new IntersectionShape([new NumberShape()]).inputTypes).toEqual([]);
+      expect(new IntersectionShape([new NumberShape()]).inputs).toEqual([]);
     });
 
     test('slices values from the compatible continuous range', () => {
-      expect(new IntersectionShape([new NumberShape(), new EnumShape([111, 222])]).inputTypes).toEqual([111, 222]);
+      expect(new IntersectionShape([new NumberShape(), new EnumShape([111, 222])]).inputs).toEqual([111, 222]);
     });
 
     test('an empty array if types are incompatible', () => {
-      expect(new IntersectionShape([new StringShape(), new EnumShape([111, 222])]).inputTypes).toEqual([]);
+      expect(new IntersectionShape([new StringShape(), new EnumShape([111, 222])]).inputs).toEqual([]);
     });
 
     test('complex composites', () => {
-      expect(new IntersectionShape([new StringShape(), new EnumShape(['aaa', 111])]).inputTypes).toEqual(['aaa']);
+      expect(new IntersectionShape([new StringShape(), new EnumShape(['aaa', 111])]).inputs).toEqual(['aaa']);
     });
   });
 

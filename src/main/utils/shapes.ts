@@ -14,8 +14,8 @@ export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
 }
 
-export function getShapeInputTypes(shape: AnyShape): unknown[] {
-  return shape.inputTypes.slice(0);
+export function getShapeInputs(shape: AnyShape): readonly unknown[] {
+  return shape.inputs;
 }
 
 /**

@@ -1,19 +1,16 @@
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
+import { Type, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
-  ARRAY,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
-  DATE,
   distributeTypes,
-  getShapeInputTypes,
-  getTypeOf,
+  getShapeInputs,
   isArray,
   isAsyncShape,
   isEqual,
-  OBJECT,
   ok,
   setObjectProperty,
   toDeepPartialShape,
@@ -87,8 +84,8 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return this.shapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): unknown[] {
-    return distributeTypes(this.shapes.map(getShapeInputTypes));
+  protected _getInputs(): unknown[] {
+    return distributeTypes(this.shapes.map(getShapeInputs));
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>['output']> {
@@ -223,8 +220,8 @@ export function mergeValues(a: any, b: any): any {
     return a;
   }
 
-  const aType = getTypeOf(a);
-  const bType = getTypeOf(b);
+  const aType = Type.of(a);
+  const bType = Type.of(b);
 
   let output: any;
 
@@ -232,7 +229,7 @@ export function mergeValues(a: any, b: any): any {
     return NEVER;
   }
 
-  if (aType === OBJECT) {
+  if (aType === TYPE_OBJECT) {
     output = Object.assign({}, a);
 
     for (const key in b) {
@@ -245,7 +242,7 @@ export function mergeValues(a: any, b: any): any {
     return output;
   }
 
-  if (aType === ARRAY) {
+  if (aType === TYPE_ARRAY) {
     if (a.length !== b.length) {
       return NEVER;
     }
@@ -260,7 +257,7 @@ export function mergeValues(a: any, b: any): any {
     return output;
   }
 
-  if (aType === DATE) {
+  if (aType === TYPE_DATE) {
     return a.getTime() === b.getTime() ? a : NEVER;
   }
 

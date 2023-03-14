@@ -5,10 +5,10 @@ describe('enum', () => {
     const shape = d.enum([111, 222]);
 
     expect(shape).toBeInstanceOf(d.EnumShape);
-    expect(shape.inputTypes).toEqual([111, 222]);
+    expect(shape.inputs).toEqual([111, 222]);
   });
 
   test('enums with no common values produce never when intersected', () => {
-    expect(d.and([d.enum([111, 222]), d.enum([333])]).inputTypes).toEqual([]);
+    expect(d.and([d.enum([111, 222]), d.enum([333])]).inputs).toEqual([]);
   });
 });

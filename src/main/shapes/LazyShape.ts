@@ -59,15 +59,15 @@ export class LazyShape<S extends AnyShape>
     }
   }
 
-  protected _getInputTypes(): unknown[] {
-    const { _getInputTypes } = this;
+  protected _getInputs(): unknown[] {
+    const { _getInputs } = this;
 
-    this._getInputTypes = returnArray;
+    this._getInputs = returnArray;
 
     try {
-      return this.shape.inputTypes.slice(0);
+      return this.shape.inputs.slice(0);
     } finally {
-      this._getInputTypes = _getInputTypes;
+      this._getInputs = _getInputs;
     }
   }
 

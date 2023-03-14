@@ -1,4 +1,5 @@
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE } from '../constants';
+import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -8,7 +9,6 @@ import {
   createIssueFactory,
   isArray,
   isObject,
-  OBJECT,
   ok,
   setObjectProperty,
   toDeepPartialShape,
@@ -56,7 +56,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
@@ -73,8 +73,8 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return this.keyShape?.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): unknown[] {
-    return [OBJECT];
+  protected _getInputs(): unknown[] {
+    return [TYPE_OBJECT];
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferRecord<K, V, 'output'>> {

@@ -1,6 +1,7 @@
 import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE } from '../constants';
+import { TYPE_PROMISE } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { applyShape, copyUnsafeChecks, createIssueFactory, isArray, ok, PROMISE, toDeepPartialShape } from '../utils';
+import { applyShape, copyUnsafeChecks, createIssueFactory, isArray, ok, toDeepPartialShape } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result } from './Shape';
 
@@ -27,7 +28,7 @@ export class PromiseShape<S extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, PROMISE);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
   }
 
   deepPartial(): PromiseShape<OptionalDeepPartialShape<S>> {
@@ -38,11 +39,11 @@ export class PromiseShape<S extends AnyShape>
     return true;
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     if (this.isCoerced) {
-      return this.shape.inputTypes.concat(PROMISE);
+      return this.shape.inputs.concat(TYPE_PROMISE);
     } else {
-      return [PROMISE];
+      return [TYPE_PROMISE];
     }
   }
 

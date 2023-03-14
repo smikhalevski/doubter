@@ -1,7 +1,7 @@
 import * as d from '../../main';
 import { ArrayShape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { FUNCTION } from '../../main/utils';
+import { TYPE_FUNCTION } from '../../main/Type';
 
 describe('function', () => {
   test('returns a function shape', () => {
@@ -31,7 +31,7 @@ describe('function', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, message: 'aaa', param: FUNCTION }],
+      issues: [{ code: CODE_TYPE, input: 111, message: 'aaa', param: TYPE_FUNCTION }],
     });
   });
 });

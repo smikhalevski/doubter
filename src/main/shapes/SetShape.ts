@@ -6,19 +6,17 @@ import {
   MESSAGE_SET_MIN,
   MESSAGE_SET_TYPE,
 } from '../constants';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
-  ARRAY,
   canonize,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
   isIterable,
-  OBJECT,
   ok,
-  SET,
   toArrayIndex,
   toDeepPartialShape,
   unshiftIssuesPath,
@@ -55,7 +53,7 @@ export class SetShape<S extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SET_TYPE, options, SET);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SET_TYPE, options, TYPE_SET);
   }
 
   at(key: unknown): AnyShape | null {
@@ -115,11 +113,11 @@ export class SetShape<S extends AnyShape>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     if (this.isCoerced) {
-      return this.shape.inputTypes.concat(SET, OBJECT, ARRAY);
+      return this.shape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
     } else {
-      return [SET];
+      return [TYPE_SET];
     }
   }
 

@@ -32,7 +32,7 @@ export class ConstShape<T> extends Shape<T> {
     this._typeIssueFactory = createIssueFactory(CODE_CONST, MESSAGE_CONST, options, value);
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     return [this.value];
   }
 

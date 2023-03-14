@@ -1,6 +1,7 @@
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../constants';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { ARRAY, BIGINT, BOOLEAN, canonize, createIssueFactory, isArray, NUMBER, OBJECT, ok, STRING } from '../utils';
+import { canonize, createIssueFactory, isArray, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
@@ -18,14 +19,14 @@ export class BigIntShape extends CoercibleShape<bigint> {
   constructor(options?: ConstraintOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, BIGINT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     if (this.isCoerced) {
-      return [BIGINT, OBJECT, STRING, NUMBER, BOOLEAN, ARRAY, undefined, null];
+      return [TYPE_BIGINT, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_ARRAY, null, undefined];
     } else {
-      return [BIGINT];
+      return [TYPE_BIGINT];
     }
   }
 

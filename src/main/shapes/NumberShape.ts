@@ -16,22 +16,9 @@ import {
   MESSAGE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_TYPE,
 } from '../constants';
+import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
-import {
-  addCheck,
-  ARRAY,
-  BOOLEAN,
-  canonize,
-  cloneInstance,
-  createIssueFactory,
-  DATE,
-  isArray,
-  isNumber,
-  NUMBER,
-  OBJECT,
-  ok,
-  STRING,
-} from '../utils';
+import { addCheck, canonize, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
 
@@ -50,7 +37,7 @@ export class NumberShape extends CoercibleShape<number> {
   constructor(options?: ConstraintOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, NUMBER);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
   }
 
   /**
@@ -245,11 +232,11 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
-  protected _getInputTypes(): unknown[] {
+  protected _getInputs(): unknown[] {
     if (this.isCoerced) {
-      return [NUMBER, OBJECT, STRING, BOOLEAN, ARRAY, DATE, undefined, null];
+      return [TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, null, undefined];
     } else {
-      return [NUMBER];
+      return [TYPE_NUMBER];
     }
   }
 

@@ -1,11 +1,11 @@
 import { CODE_TYPE, ERROR_FUNCTION_WRAPPER_ASYNC, MESSAGE_FUNCTION_TYPE } from '../constants';
+import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
 import {
   applyShape,
   cloneInstance,
   copyChecks,
   createIssueFactory,
-  FUNCTION,
   getErrorMessage,
   isArray,
   Mutable,
@@ -65,7 +65,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_FUNCTION_TYPE, options, FUNCTION);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_FUNCTION_TYPE, options, TYPE_FUNCTION);
   }
 
   /**
@@ -197,8 +197,8 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     };
   }
 
-  protected _getInputTypes(): unknown[] {
-    return [FUNCTION];
+  protected _getInputs(): unknown[] {
+    return [TYPE_FUNCTION];
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferWrapper<A, R, T>> {

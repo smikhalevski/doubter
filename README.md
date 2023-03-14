@@ -317,7 +317,7 @@ type Output = typeof shape['output'];
 You can get the shape input types at runtime using [shape introspection](#introspection):
 
 ```ts
-shape.inputTypes;
+shape.inputs;
 // ⮕ ['string', 'undefined']
 ```
 
@@ -1484,13 +1484,13 @@ Doubter provides various features to introspect your shapes at runtime. Let's st
 by a particular shape.
 
 The supported input types of a shape can be accessed through the
-[`inputTypes`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputTypes) property:
+[`inputs`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputs) property:
 
 ```ts
 const shape = d.or([d.string(), d.boolean()]);
 // ⮕ Shape<string | boolean>
 
-shape.inputTypes;
+shape.inputs;
 // ⮕ ['string', 'boolean']
 ```
 
@@ -1521,7 +1521,7 @@ Types returned from `Shape.typeOf` are a superset of types returned from the `ty
 <tr><td><code>undefined</code></td><td><code>undefined</code></td></tr>
 </table>
 
-`inputTypes` array can also contain two additional types `unknown` and `never`.
+`inputs` array can also contain two additional types `unknown` and `never`.
 
 ## `unknown` value type
 
@@ -1532,7 +1532,7 @@ Types returned from `Shape.typeOf` are a superset of types returned from the `ty
 const shape1 = d.transfrorm(parseFloat);
 // ⮕ Shape<any>
 
-shape1.inputTypes;
+shape1.inputs;
 // ⮕ ['unknown']
 ```
 
@@ -1572,7 +1572,7 @@ validation issue when parsing any input.
 ```ts
 const neverShape = d.never();
 
-neverShape.inputTypes;
+neverShape.inputs;
 // ⮕ ['never']
 
 neverShape.parse('Pluto');
@@ -1612,15 +1612,15 @@ shape3.inputType;
 ## Check that an input type is accepted
 
 To check that the shape accepts a particular input type use
-[`isAcceptedType`](https://smikhalevski.github.io/doubter/classes/Shape.html#isAcceptedType):
+[`accepts`](https://smikhalevski.github.io/doubter/classes/Shape.html#accepts):
 
 ```ts
 const shape1 = d.string();
 
-shape1.isAcceptedType('string');
+shape1.accepts('string');
 // ⮕ true
 
-shape1.isAcceptedType('number');
+shape1.accepts('number');
 // ⮕ false
 ```
 
@@ -1631,14 +1631,14 @@ For example, you can check that the shape is [optional](#optional-and-non-option
 const shape2 = d.number().optional();
 // ⮕ Shape<number | undefined>
 
-shape2.isAcceptedType('number');
+shape2.accepts('number');
 // ⮕ true
 
-shape2.isAcceptedType('undefined');
+shape2.accepts('undefined');
 // ⮕ true
 
 // 🟡 Note that null isn't accepted
-shape2.isAcceptedType('null');
+shape2.accepts('null');
 // ⮕ false
 ```
 
@@ -1653,14 +1653,14 @@ const fuzzyShape = d.any().to(d.string());
 `fuzzyShape` accepts [`unknown`](#unknown-value-type) input type because it is based on `d.any`:
 
 ```ts
-fuzzyShape.inputTypes;
+fuzzyShape.inputs;
 // ⮕ ['unknown']
 ```
 
 Since anything can be assigned to `unknown`, an `undefined` type is accepted:
 
 ```ts
-fuzzyShape.isAcceptedType('undefined');
+fuzzyShape.accepts('undefined');
 // ⮕ true
 ```
 
@@ -1735,7 +1735,7 @@ const shape3 = d.or([d.number(), d.const('Mars')])
 shape3.inputValues;
 // ⮕ []
         
-shape3.inputTypes;
+shape3.inputs;
 // ⮕ ['never']
 ```
 
@@ -1902,7 +1902,7 @@ Must return `true` if your shape supports async parsing only, otherwise you don'
 </dd>
 <dt>
   <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_getInputTypes">
-    <code>_getInputTypes()</code>
+    <code>_getInputs()</code>
   </a>
 </dt>
 <dd>
@@ -3532,7 +3532,7 @@ The result of `try` would contain a grouping issue:
   },
   message: 'Must conform the union',
   param: {
-    inputTypes: ['object'],
+    inputs: ['object'],
     issueGroups: [
       [
         {
@@ -3557,7 +3557,7 @@ The result of `try` would contain a grouping issue:
 ```
 
 <dl>
-<dt><code>inputTypes</code></dt>
+<dt><code>inputs</code></dt>
 <dd>
 
 An array of all [input value types](#introspection) that the union supports.

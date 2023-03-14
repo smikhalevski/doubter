@@ -1,19 +1,19 @@
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
+import { Type, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   copyUnsafeChecks,
   createIssueFactory,
   Dict,
-  getShapeInputTypes,
-  getTypeOf,
+  getShapeInputs,
   isArray,
   isAsyncShape,
   isObject,
   isType,
   toDeepPartialShape,
-  toUniqueArray,
-  UNKNOWN,
+  toType,
+  unique,
 } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape } from './Shape';
@@ -60,7 +60,7 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected get _lookup(): Lookup {
-    const shapes = toUniqueArray(this.shapes);
+    const shapes = this.shapes.filter(unique);
     const lookup = createLookupByDiscriminator(shapes) || createLookupByType(shapes);
 
     Object.defineProperty(this, '_lookup', { value: lookup });
@@ -95,9 +95,9 @@ export class UnionShape<U extends readonly AnyShape[]>
     return this.shapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): unknown[] {
-    // this.shapes.flatMap(getShapeInputTypes)
-    return ([] as unknown[]).concat(...this.shapes.map(getShapeInputTypes));
+  protected _getInputs(): unknown[] {
+    // flatMap
+    return ([] as unknown[]).concat(...this.shapes.map(getShapeInputs));
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<U[number]['output']> {
@@ -135,7 +135,7 @@ export class UnionShape<U extends readonly AnyShape[]>
       if (shapesLength === 1) {
         return issues;
       }
-      return this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
+      return this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups });
     }
 
     if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
@@ -189,7 +189,7 @@ export class UnionShape<U extends readonly AnyShape[]>
         if (shapesLength === 1) {
           return issues;
         }
-        return this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
+        return this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups });
       };
 
       resolve(next());
@@ -220,27 +220,18 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
     undefined: emptyArray,
   };
 
-  const bucketTypes = Object.keys(buckets);
+  const bucketNames = Object.keys(buckets);
 
   for (const shape of shapes) {
-    let { inputTypes } = shape;
+    const names =
+      shape.inputs[0] === TYPE_UNKNOWN ? bucketNames : shape.inputs.map(input => toType(input).name).filter(unique);
 
-    if (inputTypes.length === 0) {
-      // Never is excluded
-      continue;
-    }
-    if (inputTypes[0] === UNKNOWN) {
-      // Unknown is added to each bucket
-      inputTypes = bucketTypes;
-    } else {
-      inputTypes = toUniqueArray(inputTypes.map(type => (isType(type) ? type.type : getTypeOf(type).type)));
-    }
-    for (const type of inputTypes) {
-      buckets[type as string] = buckets[type as string].concat(shape);
+    for (const name of names) {
+      buckets[name] = buckets[name].concat(shape);
     }
   }
 
-  return input => buckets[getTypeOf(input).type];
+  return input => buckets[Type.of(input).name];
 }
 
 /**
@@ -336,13 +327,13 @@ export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, an
         continue nextKey;
       }
 
-      const { inputTypes } = shape.shapes[key];
+      const { inputs } = shape.shapes[key];
 
-      if (inputTypes.length === 0 || inputTypes.some(isType)) {
+      if (inputs.length === 0 || inputs.some(isType)) {
         // Values aren't discrete or input type is never
         continue nextKey;
       }
-      valueGroups[i] = inputTypes;
+      valueGroups[i] = inputs;
     }
 
     valueSet.clear();
