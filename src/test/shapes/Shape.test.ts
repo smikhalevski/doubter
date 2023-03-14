@@ -576,6 +576,47 @@ describe('Shape', () => {
     });
   });
 
+  describe('accepts', () => {
+    test('returns true if shape accepts an input type', () => {
+      class MockShape extends Shape {
+        protected _getInputs() {
+          return [TYPE_STRING];
+        }
+      }
+
+      expect(new MockShape().accepts(TYPE_STRING)).toBe(true);
+      expect(new MockShape().accepts(TYPE_NUMBER)).toBe(false);
+      expect(new MockShape().accepts('aaa')).toBe(true);
+      expect(new MockShape().accepts(111)).toBe(false);
+    });
+
+    test('returns true if shape accepts an literal value', () => {
+      class MockShape extends Shape {
+        protected _getInputs() {
+          return ['aaa'];
+        }
+      }
+
+      expect(new MockShape().accepts(TYPE_STRING)).toBe(false);
+      expect(new MockShape().accepts(TYPE_NUMBER)).toBe(false);
+      expect(new MockShape().accepts('aaa')).toBe(true);
+      expect(new MockShape().accepts(111)).toBe(false);
+    });
+
+    test('returns true if shape accepts unknown type', () => {
+      class MockShape extends Shape {
+        protected _getInputs() {
+          return [TYPE_UNKNOWN];
+        }
+      }
+
+      expect(new MockShape().accepts(TYPE_STRING)).toBe(true);
+      expect(new MockShape().accepts(TYPE_NUMBER)).toBe(true);
+      expect(new MockShape().accepts('aaa')).toBe(true);
+      expect(new MockShape().accepts(111)).toBe(true);
+    });
+  });
+
   describe('try', () => {
     test('invokes _apply', async () => {
       const shape = new Shape();

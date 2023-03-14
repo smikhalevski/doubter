@@ -102,7 +102,7 @@ export interface NotShape<S extends AnyShape, N extends AnyShape>
 /**
  * This symbol doesn't exist at runtime!
  *
- * The ephemeral unique symbol that is used for type branding by {@linkcode BrandShape}.
+ * The ephemeral unique symbol that is used for type branding by {@linkcode Branded}.
  */
 declare const BRAND: unique symbol;
 
@@ -205,7 +205,7 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns `true` if the shape accepts given type or input value, or `false` otherwise.
+   * Returns `true` if the shape accepts given input type or value, or `false` otherwise.
    *
    * @param input The type or value that must be checked.
    */
@@ -639,6 +639,9 @@ export interface Shape<I, O> {
    */
   readonly output: O;
 
+  /**
+   * The array of unique input types and values that are accepted by the shape.
+   */
   readonly inputs: readonly unknown[];
 
   /**
