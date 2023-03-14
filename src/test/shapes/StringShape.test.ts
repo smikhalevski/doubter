@@ -120,7 +120,7 @@ describe('StringShape', () => {
     });
   });
 
-  test('updates input types when coerced', () => {
+  test('updates inputs when coerced', () => {
     const shape = new StringShape().coerce();
 
     expect(shape.inputs).toEqual([

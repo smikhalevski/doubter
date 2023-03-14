@@ -68,21 +68,7 @@ describe('LazyShape', () => {
     });
   });
 
-  describe('_getInputTypes', () => {
-    test('prevents short circuit', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
-
-      expect(lazyShape['_getInputs']()).toEqual([]);
-    });
-
-    test('prevents infinite loop', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
-
-      expect(lazyShape['_getInputs']()).toEqual([TYPE_OBJECT]);
-    });
-  });
-
-  describe('_getInputValues', () => {
+  describe('inputs', () => {
     test('prevents short circuit', () => {
       const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
 

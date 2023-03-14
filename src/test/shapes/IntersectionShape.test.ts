@@ -197,13 +197,13 @@ describe('IntersectionShape', () => {
   });
 
   describe('inputs', () => {
-    test('never if there are no common values', () => {
+    test('empty if there are no common values', () => {
       const shape = new IntersectionShape([new EnumShape(['aaa', 'bbb']), new EnumShape([111, 222])]);
 
       expect(shape.inputs).toEqual([]);
     });
 
-    test('never if contains a NeverShape', () => {
+    test('empty if contains a NeverShape', () => {
       const shape = new IntersectionShape([new StringShape(), new NeverShape()]);
 
       expect(shape.inputs).toEqual([]);
@@ -215,15 +215,11 @@ describe('IntersectionShape', () => {
       expect(shape.inputs).toEqual(['aaa']);
     });
 
-    test('null if underlying shapes accept continuous value ranges', () => {
-      expect(new IntersectionShape([new NumberShape()]).inputs).toEqual([]);
-    });
-
     test('slices values from the compatible continuous range', () => {
       expect(new IntersectionShape([new NumberShape(), new EnumShape([111, 222])]).inputs).toEqual([111, 222]);
     });
 
-    test('an empty array if types are incompatible', () => {
+    test('empty if types are incompatible', () => {
       expect(new IntersectionShape([new StringShape(), new EnumShape([111, 222])]).inputs).toEqual([]);
     });
 

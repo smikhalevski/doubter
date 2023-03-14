@@ -20,7 +20,7 @@ describe('EnumShape', () => {
     expect(shape.inputs).toEqual(['aaa', 'bbb']);
   });
 
-  test('empty enums have never type', () => {
+  test('an empty enum has empty inputs', () => {
     const shape = new EnumShape([]);
 
     expect(shape.inputs).toEqual([]);

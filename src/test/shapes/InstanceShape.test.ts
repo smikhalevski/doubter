@@ -33,7 +33,7 @@ describe('InstanceShape', () => {
   });
 
   describe('inputs', () => {
-    test('uses array input type for an Function and its subclasses', () => {
+    test('uses function input type for an Function and its subclasses', () => {
       expect(new InstanceShape(Function).inputs).toEqual([TYPE_FUNCTION]);
       expect(new InstanceShape(class extends Function {}).inputs).toEqual([TYPE_FUNCTION]);
     });
@@ -48,12 +48,12 @@ describe('InstanceShape', () => {
       expect(new InstanceShape(class extends Date {}).inputs).toEqual([TYPE_DATE]);
     });
 
-    test('uses date input type for an Date and its subclasses', () => {
+    test('uses Set input type for an Date and its subclasses', () => {
       expect(new InstanceShape(Set).inputs).toEqual([TYPE_SET]);
       expect(new InstanceShape(class extends Set {}).inputs).toEqual([TYPE_SET]);
     });
 
-    test('uses date input type for an Date and its subclasses', () => {
+    test('uses Map input type for an Date and its subclasses', () => {
       expect(new InstanceShape(Map).inputs).toEqual([TYPE_MAP]);
       expect(new InstanceShape(class extends Map {}).inputs).toEqual([TYPE_MAP]);
     });

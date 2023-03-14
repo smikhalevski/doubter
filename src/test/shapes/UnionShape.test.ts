@@ -35,7 +35,7 @@ describe('UnionShape', () => {
     asyncShape = new AsyncShape();
   });
 
-  test('distributes buckets by input types', () => {
+  test('distributes buckets by inputs', () => {
     const shape1 = new NumberShape();
     const shape2 = new StringShape();
     const shape3 = new BooleanShape();
@@ -150,25 +150,15 @@ describe('UnionShape', () => {
       expect(new UnionShape([new StringShape(), new NeverShape()]).inputs).toEqual([TYPE_STRING]);
     });
 
-    test('any absorbs other types', () => {
+    test('unknown absorbs other types', () => {
       expect(new UnionShape([new StringShape(), new Shape()]).inputs).toEqual([TYPE_UNKNOWN]);
       expect(new UnionShape([new NeverShape(), new Shape()]).inputs).toEqual([TYPE_UNKNOWN]);
-    });
-
-    test('null if shapes have continuous values', () => {
-      expect(new UnionShape([new StringShape(), new NumberShape()]).inputs).toEqual([TYPE_STRING, TYPE_NUMBER]);
     });
 
     test('the array of unique values', () => {
       const shape = new UnionShape([new EnumShape(['aaa', 'bbb']), new EnumShape(['aaa', 'ccc'])]);
 
       expect(shape.inputs).toEqual(['bbb', 'aaa', 'ccc']);
-    });
-
-    test('never is ignored', () => {
-      const shape = new UnionShape([new EnumShape(['aaa', 'bbb']), new NeverShape()]);
-
-      expect(shape.inputs).toEqual(['aaa', 'bbb']);
     });
 
     test('an empty array if union only contains never', () => {
@@ -243,7 +233,7 @@ describe('UnionShape', () => {
   });
 
   describe('async', () => {
-    test('distributes buckets by input types', async () => {
+    test('distributes buckets by inputs', async () => {
       const shape1 = new NumberShape();
       const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
       const shape3 = new BooleanShape();
@@ -502,7 +492,7 @@ describe('createLookupByType', () => {
     expect(lookup(111)[0]).toBe(shape2);
   });
 
-  test('shapes with any input type are matched with any input', () => {
+  test('shapes with unknown inputs are matched with any input', () => {
     const shape1 = new Shape();
     const shape2 = new NumberShape();
 

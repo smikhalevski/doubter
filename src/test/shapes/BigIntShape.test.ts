@@ -31,7 +31,7 @@ describe('BigIntShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates input types when coerced', () => {
+    test('updates inputs when coerced', () => {
       const shape = new BigIntShape().coerce();
 
       expect(shape.inputs).toEqual([

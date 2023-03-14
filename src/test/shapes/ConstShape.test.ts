@@ -29,7 +29,7 @@ describe('ConstShape', () => {
     });
   });
 
-  test('returns input types of the value', () => {
+  test('returns value in inputs', () => {
     expect(new ConstShape('aaa').inputs).toEqual(['aaa']);
   });
 });

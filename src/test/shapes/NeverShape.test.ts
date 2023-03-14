@@ -2,7 +2,7 @@ import { NeverShape } from '../../main';
 import { CODE_NEVER, MESSAGE_NEVER } from '../../main/constants';
 
 describe('NeverShape', () => {
-  test('has the never input type', () => {
+  test('has empty inputs', () => {
     expect(new NeverShape().inputs).toEqual([]);
   });
 

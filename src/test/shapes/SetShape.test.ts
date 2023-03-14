@@ -161,7 +161,7 @@ describe('SetShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates input types when coerced', () => {
+    test('updates inputs when coerced', () => {
       const setShape = new SetShape(new StringShape()).coerce();
 
       expect(setShape.inputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);

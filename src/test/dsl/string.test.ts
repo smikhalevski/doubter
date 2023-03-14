@@ -6,7 +6,7 @@ describe('string', () => {
     expect(d.string()).toBeInstanceOf(d.StringShape);
   });
 
-  test('returns input types for optional string', () => {
+  test('returns inputs for optional string', () => {
     expect(d.string().optional().inputs).toEqual([TYPE_STRING, undefined]);
   });
 });

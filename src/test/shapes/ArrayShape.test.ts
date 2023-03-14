@@ -389,7 +389,7 @@ describe('ArrayShape', () => {
   });
 
   describe('coerce', () => {
-    test('allow any input type when shape is coerced and elements are unconstrained', () => {
+    test('allow unknown input type when shape is coerced and elements are unconstrained', () => {
       const arrShape = new ArrayShape(null, null).coerce();
 
       expect(arrShape.inputs).toEqual([TYPE_UNKNOWN]);
@@ -401,7 +401,7 @@ describe('ArrayShape', () => {
       expect(arrShape.inputs).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
     });
 
-    test('allows input types of a single tuple element', () => {
+    test('allows inputs of a single tuple element', () => {
       const arrShape = new ArrayShape([new StringShape()], null).coerce();
 
       expect(arrShape.inputs).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);

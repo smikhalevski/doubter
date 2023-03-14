@@ -225,7 +225,7 @@ describe('NumberShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates input types when coerced', () => {
+    test('updates inputs when coerced', () => {
       const shape = new NumberShape().coerce();
 
       expect(shape.inputs).toEqual([
