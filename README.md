@@ -11,12 +11,12 @@ Runtime validation and transformation library.
 - Collect all validation issues, or exit early;
 - [Runtime type introspection;](#introspection)
 - [Human-oriented type coercion;](#type-coercion)
-- No dynamic code evaluation;
 - [High performance and low memory consumption;](#performance)
+- No dynamic code evaluation;
 - Zero dependencies;
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 
-🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/doubter-example-y5kec4)
+🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/y5kec4)
 
 ```shell
 npm install --save-prod doubter
@@ -1654,7 +1654,7 @@ const fuzzyShape = d.any().to(d.string());
 // ⮕ Shape<any, string>
 ```
 
-`fuzzyShape` accepts [`Type.UNKNOWN`](#unknown-value-type) type because it is based on `d.any`:
+`fuzzyShape` accepts [`Type.UNKNOWN`](#unknown-value-type) because it is based on `d.any`:
 
 ```ts
 fuzzyShape.inputs;
