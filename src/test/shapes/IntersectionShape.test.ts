@@ -20,7 +20,7 @@ import {
   MESSAGE_NUMBER_TYPE,
 } from '../../main/constants';
 import { mergeValues } from '../../main/shapes/IntersectionShape';
-import { TYPE_BOOLEAN, TYPE_NUMBER } from '../../main/Type';
+import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 
 describe('IntersectionShape', () => {
   test('returns the input as is if it matches all intersected shapes', () => {
@@ -225,6 +225,11 @@ describe('IntersectionShape', () => {
 
     test('complex composites', () => {
       expect(new IntersectionShape([new StringShape(), new EnumShape(['aaa', 111])]).inputs).toEqual(['aaa']);
+    });
+
+    test('unknown is erased', () => {
+      expect(new IntersectionShape([new StringShape(), new Shape()]).inputs).toEqual([TYPE_STRING]);
+      expect(new IntersectionShape([new NeverShape(), new Shape()]).inputs).toEqual([]);
     });
   });
 
