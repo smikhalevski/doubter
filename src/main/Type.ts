@@ -43,51 +43,10 @@ export class Type<T extends TypeName> {
   static readonly UNKNOWN = new Type('unknown');
 
   /**
-   * Returns the base type of the given value.
+   * Returns the type of the given value. If value is a type itself, it is returned as is.
    */
   static of(value: unknown): Type<TypeName> {
-    const type = typeof value;
-
-    if (type === 'undefined') {
-      return TYPE_UNDEFINED;
-    }
-    if (type === 'boolean') {
-      return TYPE_BOOLEAN;
-    }
-    if (type === 'number') {
-      return TYPE_NUMBER;
-    }
-    if (type === 'string') {
-      return TYPE_STRING;
-    }
-    if (type === 'function') {
-      return TYPE_FUNCTION;
-    }
-    if (type === 'symbol') {
-      return TYPE_SYMBOL;
-    }
-    if (type === 'bigint') {
-      return TYPE_BIGINT;
-    }
-    if (value === null) {
-      return TYPE_NULL;
-    }
-    if (isArray(value)) {
-      return TYPE_ARRAY;
-    }
-    if (value instanceof Date) {
-      return TYPE_DATE;
-    }
-    if (value instanceof Promise) {
-      return TYPE_PROMISE;
-    }
-    if (value instanceof Set) {
-      return TYPE_SET;
-    }
-    if (value instanceof Map) {
-      return TYPE_MAP;
-    }
-    return TYPE_OBJECT;
+    return getTypeOf(value);
   }
 
   private constructor(
@@ -124,3 +83,51 @@ export const TYPE_STRING = Type.STRING;
 export const TYPE_SYMBOL = Type.SYMBOL;
 export const TYPE_UNDEFINED = Type.UNDEFINED;
 export const TYPE_UNKNOWN = Type.UNKNOWN;
+
+export function getTypeOf(value: unknown): Type<TypeName> {
+  const type = typeof value;
+
+  if (type === 'undefined') {
+    return TYPE_UNDEFINED;
+  }
+  if (type === 'boolean') {
+    return TYPE_BOOLEAN;
+  }
+  if (type === 'number') {
+    return TYPE_NUMBER;
+  }
+  if (type === 'string') {
+    return TYPE_STRING;
+  }
+  if (type === 'function') {
+    return TYPE_FUNCTION;
+  }
+  if (type === 'symbol') {
+    return TYPE_SYMBOL;
+  }
+  if (type === 'bigint') {
+    return TYPE_BIGINT;
+  }
+  if (value === null) {
+    return TYPE_NULL;
+  }
+  if (isArray(value)) {
+    return TYPE_ARRAY;
+  }
+  if (value instanceof Type) {
+    return value;
+  }
+  if (value instanceof Date) {
+    return TYPE_DATE;
+  }
+  if (value instanceof Promise) {
+    return TYPE_PROMISE;
+  }
+  if (value instanceof Set) {
+    return TYPE_SET;
+  }
+  if (value instanceof Map) {
+    return TYPE_MAP;
+  }
+  return TYPE_OBJECT;
+}

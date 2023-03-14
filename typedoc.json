@@ -3,6 +3,7 @@
   "includeVersion": true,
   "excludePrivate": true,
   "excludeExternals": true,
+  "excludeInternal": true,
   "disableSources": true,
   "readme": "none"
 }

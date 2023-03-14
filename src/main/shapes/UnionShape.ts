@@ -1,5 +1,5 @@
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
-import { Type, TYPE_UNKNOWN } from '../Type';
+import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -12,7 +12,6 @@ import {
   isObject,
   isType,
   toDeepPartialShape,
-  toType,
   unique,
 } from '../utils';
 import { ObjectShape } from './ObjectShape';
@@ -224,14 +223,14 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
 
   for (const shape of shapes) {
     const names =
-      shape.inputs[0] === TYPE_UNKNOWN ? bucketNames : shape.inputs.map(input => toType(input).name).filter(unique);
+      shape.inputs[0] === TYPE_UNKNOWN ? bucketNames : shape.inputs.map(input => getTypeOf(input).name).filter(unique);
 
     for (const name of names) {
       buckets[name] = buckets[name].concat(shape);
     }
   }
 
-  return input => buckets[Type.of(input).name];
+  return input => buckets[getTypeOf(input).name];
 }
 
 /**
@@ -330,7 +329,7 @@ export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, an
       const { inputs } = shape.shapes[key];
 
       if (inputs.length === 0 || inputs.some(isType)) {
-        // Values aren't discrete or input type is never
+        // Values aren't discrete
         continue nextKey;
       }
       valueGroups[i] = inputs;

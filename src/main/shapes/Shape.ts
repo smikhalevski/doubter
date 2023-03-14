@@ -7,7 +7,7 @@ import {
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
 } from '../constants';
-import { TYPE_UNKNOWN } from '../Type';
+import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   ApplyOptions,
   Check,
@@ -41,7 +41,6 @@ import {
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
-  toType,
   unionTypes,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
@@ -213,7 +212,7 @@ export class Shape<I = any, O = I> {
   accepts(input: unknown): boolean {
     const { inputs } = this;
 
-    return inputs.includes(TYPE_UNKNOWN) || inputs.includes(input) || inputs.includes(toType(input));
+    return inputs.includes(TYPE_UNKNOWN) || inputs.includes(input) || inputs.includes(getTypeOf(input));
   }
 
   /**

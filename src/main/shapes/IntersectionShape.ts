@@ -1,5 +1,5 @@
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
-import { Type, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
+import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -220,8 +220,8 @@ export function mergeValues(a: any, b: any): any {
     return a;
   }
 
-  const aType = Type.of(a);
-  const bType = Type.of(b);
+  const aType = getTypeOf(a);
+  const bType = getTypeOf(b);
 
   let output: any;
 

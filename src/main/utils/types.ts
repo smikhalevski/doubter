@@ -1,19 +1,15 @@
-import { Type, TYPE_UNKNOWN, TypeName } from '../Type';
+import { getTypeOf, Type, TYPE_UNKNOWN, TypeName } from '../Type';
 import { isEqual } from './lang';
 
 export function isType(value: unknown): value is Type<TypeName> {
   return value instanceof Type;
 }
 
-export function toType(value: unknown): Type<TypeName> {
-  return isType(value) ? value : Type.of(value);
-}
-
 /**
  * Returns `true` if type or literal `a` is assignable to the type or literal `b`.
  */
 export function isAssignable(a: unknown, b: unknown): boolean {
-  return b === TYPE_UNKNOWN || isEqual(a, b) || toType(a) === b;
+  return b === TYPE_UNKNOWN || isEqual(a, b) || getTypeOf(a) === b;
 }
 
 /**

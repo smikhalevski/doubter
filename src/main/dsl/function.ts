@@ -1,5 +1,6 @@
 import { AnyShape, ArrayShape, FunctionShape, Shape } from '../shapes';
 import { ConstraintOptions, Message } from '../types';
+import { isArray } from '../utils';
 
 /**
  * Creates a shape of a function that has no arguments.
@@ -36,7 +37,7 @@ function function_(
   argShapes?: Shape | AnyShape[] | ConstraintOptions | Message,
   options?: ConstraintOptions | Message
 ) {
-  if (Array.isArray(argShapes)) {
+  if (isArray(argShapes)) {
     argShapes = new ArrayShape(argShapes, null);
   }
   if (!(argShapes instanceof Shape)) {

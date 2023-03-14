@@ -31,14 +31,14 @@ import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result 
 // prettier-ignore
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =
   U extends readonly AnyShape[]
-  ? { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }
-  : never;
+    ? { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }
+    : never;
 
 // prettier-ignore
 export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends 'input' | 'output'> =
   U extends readonly AnyShape[]
-  ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
-  : R extends AnyShape ? R[C][] : any[];
+    ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
+    : R extends AnyShape ? R[C][] : any[];
 
 export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
   U extends readonly AnyShape[]
