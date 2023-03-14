@@ -15,7 +15,7 @@ import {
   unique,
 } from '../utils';
 import { ObjectShape } from './ObjectShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 /**
  * Returns the array of shapes that are applicable to the input.
@@ -32,7 +32,7 @@ export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<{
  * @template U The array of shapes that comprise a union.
  */
 export class UnionShape<U extends readonly AnyShape[]>
-  extends Shape<U[number]['input'], U[number]['output']>
+  extends Shape<U[number][INPUT], U[number][OUTPUT]>
   implements DeepPartialProtocol<DeepPartialUnionShape<U>>
 {
   protected _options;
@@ -99,7 +99,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return ([] as unknown[]).concat(...this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<U[number]['output']> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<U[number][OUTPUT]> {
     const { _applyChecks } = this;
 
     let result = null;
@@ -143,7 +143,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<U[number]['output']>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<U[number][OUTPUT]>> {
     return new Promise(resolve => {
       const { _applyChecks } = this;
 

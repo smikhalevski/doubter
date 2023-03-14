@@ -29,17 +29,19 @@ import {
   AnyShape,
   DeepPartialProtocol,
   DenyLiteralShape,
+  INPUT,
   OptionalDeepPartialShape,
+  OUTPUT,
   Result,
   Shape,
 } from './Shape';
 
 // prettier-ignore
-export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null, C extends 'input' | 'output'> =
+export type InferObject<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null, C extends INPUT | OUTPUT> =
   Prettify<UndefinedAsOptionalProps<{ [K in keyof P]: P[K][C] }> & InferIndexer<R, C>>;
 
 // prettier-ignore
-export type InferIndexer<R extends AnyShape | null, C extends 'input' | 'output'> =
+export type InferIndexer<R extends AnyShape | null, C extends INPUT | OUTPUT> =
   R extends Shape ? { [key: string]: R[C] } : unknown;
 
 export type StringKeyof<T extends object> = Extract<keyof T, string>;
@@ -72,7 +74,7 @@ export type DeepPartialObjectShape<P extends ReadonlyDict<AnyShape>, R extends A
  * if there's no index signature.
  */
 export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | null>
-  extends Shape<InferObject<P, R, 'input'>, InferObject<P, R, 'output'>>
+  extends Shape<InferObject<P, R, INPUT>, InferObject<P, R, OUTPUT>>
   implements DeepPartialProtocol<DeepPartialObjectShape<P, R>>
 {
   /**
@@ -337,7 +339,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferObject<P, R, 'output'>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferObject<P, R, OUTPUT>> {
     if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -348,7 +350,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     }
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferObject<P, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferObject<P, R, OUTPUT>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
         resolve(this._typeIssueFactory(input, options));

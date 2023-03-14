@@ -26,16 +26,16 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
 // prettier-ignore
-export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =
+export type InferTuple<U extends readonly AnyShape[], C extends INPUT | OUTPUT> =
   U extends readonly AnyShape[]
     ? { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }
     : never;
 
 // prettier-ignore
-export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends 'input' | 'output'> =
+export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends INPUT | OUTPUT> =
   U extends readonly AnyShape[]
     ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
     : R extends AnyShape ? R[C][] : any[];
@@ -54,7 +54,7 @@ export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extend
  * @template R The shape of rest elements, or `null` if there are no rest elements.
  */
 export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null>
-  extends CoercibleShape<InferArray<U, R, 'input'>, InferArray<U, R, 'output'>>
+  extends CoercibleShape<InferArray<U, R, INPUT>, InferArray<U, R, OUTPUT>>
   implements DeepPartialProtocol<DeepPartialArrayShape<U, R>>
 {
   protected _options;
@@ -196,7 +196,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return [TYPE_UNKNOWN];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, 'output'>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, OUTPUT>> {
     const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 
     let output = input;
@@ -252,7 +252,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferArray<U, R, 'output'>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferArray<U, R, OUTPUT>>> {
     return new Promise(resolve => {
       const { shapes, restShape, _applyChecks, _isUnsafe } = this;
 

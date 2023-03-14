@@ -1,8 +1,9 @@
-import * as d from 'doubter';
 import { expectType } from 'tsd';
+import * as d from '../../main';
+import { OUTPUT } from '../../main/shapes/Shape';
 
-class FooClass {
+class TestClass {
   aaa = 111;
 }
 
-expectType<FooClass>(d.instanceOf(FooClass).output);
+expectType<TestClass>(d.instanceOf(TestClass)[OUTPUT]);

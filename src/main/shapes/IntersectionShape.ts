@@ -15,7 +15,7 @@ import {
   setObjectProperty,
   toDeepPartialShape,
 } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, NEVER, OUTPUT, Result, Shape } from './Shape';
 
 // prettier-ignore
 export type ToIntersection<U extends AnyShape> =
@@ -31,7 +31,7 @@ export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = Inters
  * @template U The array of shapes that comprise an intersection.
  */
 export class IntersectionShape<U extends readonly AnyShape[]>
-  extends Shape<ToIntersection<U[number]>['input'], ToIntersection<U[number]>['output']>
+  extends Shape<ToIntersection<U[number]>[INPUT], ToIntersection<U[number]>[OUTPUT]>
   implements DeepPartialProtocol<DeepPartialIntersectionShape<U>>
 {
   protected _options;
@@ -88,7 +88,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return distributeTypes(this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>['output']> {
+  protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>[OUTPUT]> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -126,7 +126,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<ToIntersection<U[number]>['output']>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<ToIntersection<U[number]>[OUTPUT]>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -178,7 +178,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     input: any,
     outputs: any[] | null,
     options: ApplyOptions
-  ): Result<ToIntersection<U[number]>['output']> {
+  ): Result<ToIntersection<U[number]>[OUTPUT]> {
     const { shapes, _applyChecks } = this;
 
     let output = input;

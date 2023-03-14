@@ -157,7 +157,7 @@ userShape.parse({
 Infer the user type from the shape:
 
 ```ts
-type User = typeof userShape['output'];
+type User = d.Output<typeof userShape>;
 
 const user: User = {
   name: 'Dan Aykroyd',
@@ -307,10 +307,10 @@ shape.parse(undefined);
 Infer the input and output types of the shape:
 
 ```ts
-type Input = typeof shape['input'];
+type MyInput = d.Input<typeof shape>;
 // ⮕ string | undefined
 
-type Output = typeof shape['output'];
+type MyOutput = d.Output<typeof shape>;
 // ⮕ string
 ```
 
@@ -1412,7 +1412,7 @@ function that only accepts an input that has been validated by Doubter. This can
 const flightCodeShape = d.string().refine(isFlightCode).brand<'flightCode'>();
 // ⮕ Shape<string, string & { [BRAND]: 'flightCode' }>
 
-type FlightCode = typeof flightCodeShape['output'];
+type FlightCode = d.Output<typeof flightCodeShape>;
 
 // 🟡 Note that the argument type isn't a plain string
 declare function bookTicket(flightCode: FlightCode): void;
