@@ -318,7 +318,7 @@ You can get input types and literal values that the shape accepts using [shape i
 
 ```ts
 shape.inputs;
-// ⮕ [d.Type.STRING, undefined]
+// ⮕ [Type.STRING, undefined]
 ```
 
 ## Async shapes
@@ -1489,7 +1489,7 @@ const shape1 = d.or([d.string(), d.boolean()]);
 // ⮕ Shape<string | boolean>
 
 shape1.inputs;
-// ⮕ [d.Type.STRING, d.Type.BOOLEAN]
+// ⮕ [Type.STRING, Type.BOOLEAN]
 ```
 
 `inputs` array may contain literal values:
@@ -1509,7 +1509,7 @@ const shape2 = d.or([
 // ⮕ Shape<'Uranus' | number>
 
 shape2.inputs;
-// ⮕ ['Uranus', d.Type.NUMBER]
+// ⮕ ['Uranus', Type.NUMBER]
 ```
 
 If `inputs` is an empty array, it means that the shape doesn't accept any input values, and would _always_ raise
@@ -1523,40 +1523,40 @@ shape3.inputs;
 // ⮕ []
 ```
 
-To detect the type of the value use [`d.Type.of`](https://smikhalevski.github.io/doubter/classes/Type.html#of):
+To detect the type of the value use [`Type.of`](https://smikhalevski.github.io/doubter/classes/Type.html#of):
 
 ```ts
-d.Type.of('Mars');
-// ⮕ d.Type.STRING
+Type.of('Mars');
+// ⮕ Type.STRING
 
-d.Type.of(d.Type.NUMBER);
-// ⮕ d.Type.NUMBER
+Type.of(Type.NUMBER);
+// ⮕ Type.NUMBER
 ```
 
-Types returned from `d.Type.of` are a superset of types returned from the `typeof` operator.
+Types returned from `Type.of` are a superset of types returned from the `typeof` operator.
 
 <table>
 <tr><th><code>Type.of</code></th><th><code>typeof</code></th></tr>
-<tr><td><code>Type.OBJECT</code></td><td rowspan="7"><code>object</code></td></tr>
+<tr><td><code>Type.OBJECT</code></td><td rowspan="7"><code>'object'</code></td></tr>
 <tr><td><code>Type.ARRAY</code></td></tr>
 <tr><td><code>Type.DATE</code></td></tr>
 <tr><td><code>Type.PROMISE</code></td></tr>
 <tr><td><code>Type.SET</code></td></tr>
 <tr><td><code>Type.MAP</code></td></tr>
 <tr><td><code>Type.NULL</code></td></tr>
-<tr><td><code>Type.FUNCTION</code></td><td><code>function</code></td></tr>
-<tr><td><code>Type.STRING</code></td><td><code>string</code></td></tr>
-<tr><td><code>Type.SYMBOL</code></td><td><code>symbol</code></td></tr>
-<tr><td><code>Type.NUMBER</code></td><td><code>number</code></td></tr>
-<tr><td><code>Type.BIGINT</code></td><td><code>bigint</code></td></tr>
-<tr><td><code>Type.BOOLEAN</code></td><td><code>boolean</code></td></tr>
-<tr><td><code>Type.UNDEFINED</code></td><td><code>undefined</code></td></tr>
+<tr><td><code>Type.FUNCTION</code></td><td><code>'function'</code></td></tr>
+<tr><td><code>Type.STRING</code></td><td><code>'string'</code></td></tr>
+<tr><td><code>Type.SYMBOL</code></td><td><code>'symbol'</code></td></tr>
+<tr><td><code>Type.NUMBER</code></td><td><code>'number'</code></td></tr>
+<tr><td><code>Type.BIGINT</code></td><td><code>'bigint'</code></td></tr>
+<tr><td><code>Type.BOOLEAN</code></td><td><code>'boolean'</code></td></tr>
+<tr><td><code>Type.UNDEFINED</code></td><td><code>'undefined'</code></td></tr>
 <tr><td><code>Type.UNKNOWN</code></td><td>—</tr>
 </table>
 
 ## Unknown value type
 
-`d.Type.UNKNOWN` type emerges when [`d.any`](#any), [`d.unknown`](#unknown), or
+`Type.UNKNOWN` type emerges when [`d.any`](#any), [`d.unknown`](#unknown), or
 [`d.transform`](#transform-transformasync) are used:
 
 ```ts
@@ -1564,10 +1564,10 @@ const shape1 = d.transfrorm(parseFloat);
 // ⮕ Shape<any>
 
 shape1.inputs;
-// ⮕ [d.Type.UNKNOWN]
+// ⮕ [Type.UNKNOWN]
 ```
 
-`d.Type.UNKNOWN` behaves like TypeScript's `unknown`.
+`Type.UNKNOWN` behaves like TypeScript's `unknown`.
 
 It absorbs other types in unions:
 
@@ -1576,7 +1576,7 @@ const shape2 = d.or([d.string(), d.unknown()]);
 // ⮕ Shape<unknown>
 
 shape2.inputs;
-// ⮕ [d.Type.UNKNOWN]
+// ⮕ [Type.UNKNOWN]
 ```
 
 And it is erased in intersections:
@@ -1586,7 +1586,7 @@ const shape3 = d.and([d.string(), d.unknown()]);
 // ⮕ Shape<string>
 
 shape3.inputs;
-// ⮕ [d.Type.STRING]
+// ⮕ [Type.STRING]
 
 const shape4 = d.and([d.never(), d.unknown()]);
 // ⮕ Shape<never>
@@ -1604,7 +1604,7 @@ To check that the shape accepts a particular input type or value use the
 const shape1 = d.string();
 // ⮕ Shape<string>
 
-shape1.accepts(d.Type.STRING);
+shape1.accepts(Type.STRING);
 // ⮕ true
 
 shape1.accepts('Venus');
@@ -1624,7 +1624,7 @@ shape2.accepts('Pluto');
 // ⮕ false
 
 // 🟡 Enum doesn't accept arbitrary strings
-shape2.accepts(d.Type.STRING);
+shape2.accepts(Type.STRING);
 // ⮕ false
 ```
 
@@ -1654,11 +1654,11 @@ const fuzzyShape = d.any().to(d.string());
 // ⮕ Shape<any, string>
 ```
 
-`fuzzyShape` accepts [`d.Type.UNKNOWN`](#unknown-value-type) type because it is based on `d.any`:
+`fuzzyShape` accepts [`Type.UNKNOWN`](#unknown-value-type) type because it is based on `d.any`:
 
 ```ts
 fuzzyShape.inputs;
-// ⮕ [d.Type.UNKNOWN]
+// ⮕ [Type.UNKNOWN]
 ```
 
 Since `fuzzyShape` accepts any values, an `undefined` is also accepted:
@@ -3456,7 +3456,7 @@ The result of `try` would contain a grouping issue:
   },
   message: 'Must conform the union',
   param: {
-    inputs: [d.Type.OBJECT],
+    inputs: [Type.OBJECT],
     issueGroups: [
       [
         {
