@@ -1,15 +1,6 @@
 import { ApplyOptions, ObjectShape, Ok, Result, SetShape, Shape, StringShape } from '../../main';
-import {
-  CODE_SET_MAX,
-  CODE_SET_MIN,
-  CODE_TYPE,
-  MESSAGE_SET_TYPE,
-  MESSAGE_STRING_TYPE,
-  TYPE_ARRAY,
-  TYPE_OBJECT,
-  TYPE_SET,
-  TYPE_STRING,
-} from '../../main/constants';
+import { CODE_SET_MAX, CODE_SET_MIN, CODE_TYPE, MESSAGE_SET_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/Type';
 
 describe('SetShape', () => {
   class AsyncShape extends Shape {
@@ -34,7 +25,7 @@ describe('SetShape', () => {
     const setShape = new SetShape(shape);
 
     expect(setShape.shape).toEqual(shape);
-    expect(setShape.inputTypes).toEqual([TYPE_SET]);
+    expect(setShape.inputs).toEqual([TYPE_SET]);
   });
 
   test('raises an issue if an input is not a Set', () => {
@@ -170,10 +161,10 @@ describe('SetShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates input types when coerced', () => {
+    test('updates inputs when coerced', () => {
       const setShape = new SetShape(new StringShape()).coerce();
 
-      expect(setShape.inputTypes).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
+      expect(setShape.inputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
     });
 
     test('coerces a string value', () => {

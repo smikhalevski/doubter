@@ -7,19 +7,12 @@ import {
   MESSAGE_STRING_MIN,
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_TYPE,
-  TYPE_ARRAY,
-  TYPE_BIGINT,
-  TYPE_BOOLEAN,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-  TYPE_UNDEFINED,
 } from '../constants';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { addCheck, canonize, createIssueFactory, isArray, isValidDate, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result, Type } from './Shape';
+import { NEVER, Result } from './Shape';
 
 /**
  * The shape that constrains the input as a string.
@@ -102,9 +95,9 @@ export class StringShape extends CoercibleShape<string> {
     });
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputs(): unknown[] {
     if (this.isCoerced) {
-      return [TYPE_STRING, TYPE_OBJECT, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_ARRAY, TYPE_UNDEFINED, TYPE_NULL];
+      return [TYPE_STRING, TYPE_OBJECT, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_ARRAY, null, undefined];
     } else {
       return [TYPE_STRING];
     }

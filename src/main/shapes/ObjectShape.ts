@@ -1,4 +1,5 @@
-import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS, TYPE_OBJECT } from '../constants';
+import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS } from '../constants';
+import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -31,7 +32,6 @@ import {
   OptionalDeepPartialShape,
   Result,
   Shape,
-  Type,
 } from './Shape';
 
 // prettier-ignore
@@ -333,7 +333,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
     return this.restShape?.isAsync || this._valueShapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputs(): unknown[] {
     return [TYPE_OBJECT];
   }
 

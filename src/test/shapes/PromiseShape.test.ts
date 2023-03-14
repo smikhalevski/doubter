@@ -1,12 +1,6 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
-import {
-  CODE_TYPE,
-  ERROR_REQUIRES_ASYNC,
-  MESSAGE_PROMISE_TYPE,
-  MESSAGE_STRING_TYPE,
-  TYPE_PROMISE,
-  TYPE_STRING,
-} from '../../main/constants';
+import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { TYPE_PROMISE, TYPE_STRING } from '../../main/Type';
 
 describe('PromiseShape', () => {
   test('create a PromiseShape', () => {
@@ -15,7 +9,7 @@ describe('PromiseShape', () => {
 
     expect(promiseShape.isAsync).toBe(true);
     expect(promiseShape.shape).toBe(shape);
-    expect(promiseShape.inputTypes).toEqual([TYPE_PROMISE]);
+    expect(promiseShape.inputs).toEqual([TYPE_PROMISE]);
   });
 
   test('parses a promise', async () => {
@@ -78,8 +72,8 @@ describe('PromiseShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates input types when coerced', () => {
-      expect(new PromiseShape(new StringShape()).coerce().inputTypes).toEqual([TYPE_STRING, TYPE_PROMISE]);
+    test('updates inputs when coerced', () => {
+      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
     });
 
     test('wraps an input value in a promise', async () => {

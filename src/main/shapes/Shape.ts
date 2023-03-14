@@ -6,9 +6,8 @@ import {
   MESSAGE_DENIED,
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
-  TYPE_NEVER,
-  TYPE_UNKNOWN,
 } from '../constants';
+import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   ApplyOptions,
   Check,
@@ -29,21 +28,20 @@ import {
   cloneInstance,
   copyUnsafeChecks,
   createIssueFactory,
-  deleteArrayIndex,
+  deleteAt,
   getCheckIndex,
   getErrorMessage,
-  getValueType,
   isArray,
-  isAssignableTo,
   isEqual,
   isObjectLike,
+  isType,
   Mutable,
   ok,
   ReadonlyDict,
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
-  toUniqueArray,
+  unionTypes,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 
@@ -51,7 +49,7 @@ import { ValidationError } from '../ValidationError';
  * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from `_coerce`
  * method, that is present on various shapes, when coercion is not possible.
  */
-export const NEVER = Object.freeze({ never: true }) as never;
+export const NEVER = Object.freeze({}) as never;
 
 export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerced: false });
 
@@ -104,24 +102,32 @@ export interface NotShape<S extends AnyShape, N extends AnyShape>
 /**
  * This symbol doesn't exist at runtime!
  *
- * The ephemeral unique symbol that is used for type branding by {@linkcode BrandShape}.
+ * The ephemeral unique symbol that is used for type branding by {@linkcode Branded}.
  */
-export declare const BRAND: unique symbol;
+declare const BRAND: unique symbol;
+
+/**
+ * The branded type.
+ *
+ * @template T The base type.
+ * @template B The brand value.
+ */
+export type Branded<T, B> = T & { [BRAND]: B };
 
 /**
  * The shape that adds a brand to the output type. This shape doesn't affect the runtime and is used for emulation of
  * nominal typing.
  *
  * @template S The shape which output must be branded.
- * @template T The brand value.
+ * @template B The brand value.
  */
 // prettier-ignore
-export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, T> =
-  & Shape<S['input'], S['output'] & { [BRAND]: T }>
+export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, B> =
+  & Shape<S['input'], Branded<S['output'], B>>
   & Pick<S, keyof DeepPartialProtocol<AnyShape>>;
 
 /**
- * A shape should implement {@linkcode DeepPartialProtocol} to be converted to deep partial.
+ * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
  *
  * @template T The deep partial alternative of the shape.
  */
@@ -150,30 +156,6 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
 export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<DeepPartialShape<S>, undefined>;
 
 /**
- * The detected runtime value type.
- */
-export type ValueType =
-  | 'array'
-  | 'bigint'
-  | 'boolean'
-  | 'date'
-  | 'function'
-  | 'map'
-  | 'null'
-  | 'number'
-  | 'object'
-  | 'promise'
-  | 'set'
-  | 'string'
-  | 'symbol'
-  | 'undefined';
-
-/**
- * The detected runtime type.
- */
-export type Type = ValueType | 'never' | 'unknown';
-
-/**
  * The result that shape returns after being applied to an input value. This is the part of the internal API required
  * for creating custom shapes.
  */
@@ -191,13 +173,6 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
  * @template O The output value.
  */
 export class Shape<I = any, O = I> {
-  /**
-   * Returns the {@link ValueType extended value type}.
-   */
-  static typeOf(value: unknown): ValueType {
-    return getValueType(value);
-  }
-
   /**
    * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations.
    */
@@ -230,12 +205,14 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Returns `true` if the shape accepts values of the given input type, or `false` otherwise.
+   * Returns `true` if the shape accepts given input type or value, or `false` otherwise.
    *
-   * @param type The type that must be checked.
+   * @param input The type or value that must be checked.
    */
-  isAcceptedType(type: Type): boolean {
-    return isAssignableTo(type, this.inputTypes);
+  accepts(input: unknown): boolean {
+    const { inputs } = this;
+
+    return inputs.includes(TYPE_UNKNOWN) || inputs.includes(input) || inputs.includes(getTypeOf(input));
   }
 
   /**
@@ -314,7 +291,7 @@ export class Shape<I = any, O = I> {
     const index = getCheckIndex(this._checks, key);
     const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
 
-    return replaceChecks(cloneInstance(this), index !== -1 ? deleteArrayIndex(checks, index) : checks);
+    return replaceChecks(cloneInstance(this), deleteAt(checks, index));
   }
 
   /**
@@ -347,7 +324,7 @@ export class Shape<I = any, O = I> {
   deleteCheck(key: unknown): this {
     const index = getCheckIndex(this._checks, key);
 
-    return index !== -1 ? replaceChecks(cloneInstance(this), deleteArrayIndex(this._checks.slice(0), index)) : this;
+    return index !== -1 ? replaceChecks(cloneInstance(this), deleteAt(this._checks.slice(0), index)) : this;
   }
 
   /**
@@ -453,10 +430,10 @@ export class Shape<I = any, O = I> {
    * Returns an opaque shape that adds a brand to the output type.
    *
    * @returns A shape with the branded output type.
-   * @template T The brand value.
+   * @template B The brand value.
    */
-  brand<T = this>(): BrandShape<this, T> {
-    return this as BrandShape<this, T>;
+  brand<B = this>(): BrandShape<this, B> {
+    return this as BrandShape<this, B>;
   }
 
   /**
@@ -619,26 +596,8 @@ export class Shape<I = any, O = I> {
     return false;
   }
 
-  /**
-   * Returns an array of runtime input value types that can be processed by the shape.
-   *
-   * - If an empty array is returned, it is treated as `['unknown']`.
-   * - If an array contains multiple types, then this means that shape accepts any of them.
-   * - Elements of the returned array don't have to be unique.
-   */
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputs(): unknown[] {
     return [TYPE_UNKNOWN];
-  }
-
-  /**
-   * Returns an array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous
-   * range of values.
-   *
-   * - An empty array means that the shape doesn't accept any values.
-   * - Elements of the returned array don't have to be unique.
-   */
-  protected _getInputValues(): readonly unknown[] | null {
-    return null;
   }
 
   /**
@@ -681,15 +640,9 @@ export interface Shape<I, O> {
   readonly output: O;
 
   /**
-   * The non-empty array of unique types of supported input values.
+   * The array of unique input types and values that are accepted by the shape.
    */
-  readonly inputTypes: readonly Type[];
-
-  /**
-   * The array of discrete unique input values that the shape accepts, or `null` if the shape accepts a continuous range
-   * of values. If `inputValues` is an empty array then the shape doesn't accept any values.
-   */
-  readonly inputValues: readonly unknown[] | null;
+  readonly inputs: readonly unknown[];
 
   /**
    * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
@@ -777,19 +730,15 @@ export interface Shape<I, O> {
 }
 
 Object.defineProperties(Shape.prototype, {
-  inputTypes: {
+  inputs: {
     configurable: true,
 
-    get() {
-      return setupShapeInput(this).inputTypes;
-    },
-  },
+    get(this: Shape) {
+      const inputs = Object.freeze(unionTypes(this['_getInputs']()));
 
-  inputValues: {
-    configurable: true,
+      Object.defineProperty(this, 'inputs', { configurable: true, value: inputs });
 
-    get() {
-      return setupShapeInput(this).inputValues;
+      return inputs;
     },
   },
 
@@ -960,53 +909,6 @@ Object.defineProperties(Shape.prototype, {
 });
 
 /**
- * Configures shape {@linkcode Shape.inputTypes} and {@linkcode Shape.inputValues}.
- *
- * @param shape The shape to configure.
- */
-export function setupShapeInput(shape: Shape): Shape {
-  let types = toUniqueArray(shape['_getInputTypes']());
-
-  if (types.length === 0 || types.includes(TYPE_UNKNOWN)) {
-    // Unknown absorbs other types in a union
-    types = [TYPE_UNKNOWN];
-  }
-  if (types.length !== 1) {
-    // Never is erased in a union
-    deleteArrayIndex(types, types.indexOf(TYPE_NEVER));
-  }
-
-  let values;
-
-  if (types[0] === TYPE_NEVER) {
-    // Never cannot have any values
-    values = Object.freeze([]);
-  } else if ((values = shape['_getInputValues']()) !== null) {
-    values = toUniqueArray(values);
-
-    for (let i = 0; i < values.length; ++i) {
-      // Remove values that aren't assignable to the input
-      if (!isAssignableTo(getValueType(values[i]), types)) {
-        values.splice(i--, 1);
-      }
-    }
-    if (values.length === 0) {
-      // No values are accepted
-      types = [TYPE_NEVER];
-    }
-    Object.freeze(values);
-  }
-
-  Object.freeze(types);
-
-  Object.defineProperty(shape, 'inputTypes', { configurable: true, value: types });
-
-  Object.defineProperty(shape, 'inputValues', { configurable: true, value: values });
-
-  return shape;
-}
-
-/**
  * The shape that applies a transformer callback to the input.
  *
  * @template T The output value.
@@ -1116,12 +1018,8 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return this.inputShape.isAsync || this.outputShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return this.inputShape.inputTypes;
-  }
-
-  protected _getInputValues(): readonly unknown[] | null {
-    return this.inputShape.inputValues;
+  protected _getInputs(): unknown[] {
+    return this.inputShape.inputs.slice(0);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<O['output']> {
@@ -1241,14 +1139,8 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return this.shape.inputTypes.concat(getValueType(this.inputValue));
-  }
-
-  protected _getInputValues(): readonly unknown[] | null {
-    const values = this.shape.inputValues;
-
-    return values !== null ? values.concat(this.inputValue) : null;
+  protected _getInputs(): unknown[] {
+    return this.shape.inputs.concat(this.inputValue);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], A> | B> {
@@ -1338,14 +1230,8 @@ export class DenyLiteralShape<S extends AnyShape, T>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return this.shape.inputTypes;
-  }
-
-  protected _getInputValues(): readonly unknown[] | null {
-    const values = this.shape.inputValues;
-
-    return values !== null ? values.filter(value => !isEqual(this.deniedValue, value)) : null;
+  protected _getInputs(): unknown[] {
+    return this.shape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], T>> {
@@ -1434,12 +1320,8 @@ export class CatchShape<S extends AnyShape, T>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return this.shape.inputTypes;
-  }
-
-  protected _getInputValues(): readonly unknown[] | null {
-    return this.shape.inputValues;
+  protected _getInputs(): unknown[] {
+    return this.shape.inputs.slice(0);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<S['output'] | T> {
@@ -1521,18 +1403,8 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return this.shape.isAsync || this.excludedShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    return this.shape.inputTypes;
-  }
-
-  protected _getInputValues(): readonly unknown[] | null {
-    const values = this.shape.inputValues;
-    const excludedValues = this.excludedShape.inputValues;
-
-    if (values !== null && excludedValues !== null) {
-      return values.filter(value => !excludedValues.includes(value));
-    }
-    return values;
+  protected _getInputs(): unknown[] {
+    return this.shape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<S['output'], N['input']>> {

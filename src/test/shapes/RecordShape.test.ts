@@ -1,5 +1,6 @@
 import { ApplyOptions, ObjectShape, Ok, RecordShape, Result, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('RecordShape', () => {
   class AsyncShape extends Shape {

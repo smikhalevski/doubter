@@ -9,15 +9,8 @@ import {
   CODE_TYPE,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_TYPE,
-  TYPE_ARRAY,
-  TYPE_BOOLEAN,
-  TYPE_DATE,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-  TYPE_UNDEFINED,
 } from '../../main/constants';
+import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('NumberShape', () => {
   test('parses a number', () => {
@@ -232,18 +225,18 @@ describe('NumberShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates input types when coerced', () => {
+    test('updates inputs when coerced', () => {
       const shape = new NumberShape().coerce();
 
-      expect(shape.inputTypes).toEqual([
+      expect(shape.inputs).toEqual([
         TYPE_NUMBER,
         TYPE_OBJECT,
         TYPE_STRING,
         TYPE_BOOLEAN,
         TYPE_ARRAY,
         TYPE_DATE,
-        TYPE_UNDEFINED,
-        TYPE_NULL,
+        null,
+        undefined,
       ]);
     });
 

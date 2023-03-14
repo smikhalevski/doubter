@@ -1,4 +1,5 @@
-import { CODE_TYPE, ERROR_FUNCTION_WRAPPER_ASYNC, MESSAGE_FUNCTION_TYPE, TYPE_FUNCTION } from '../constants';
+import { CODE_TYPE, ERROR_FUNCTION_WRAPPER_ASYNC, MESSAGE_FUNCTION_TYPE } from '../constants';
+import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
 import {
   applyShape,
@@ -12,7 +13,7 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, Result, Shape, Type } from './Shape';
+import { AnyShape, defaultApplyOptions, Result, Shape } from './Shape';
 
 // prettier-ignore
 export type InferFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
@@ -196,7 +197,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     };
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputs(): unknown[] {
     return [TYPE_FUNCTION];
   }
 

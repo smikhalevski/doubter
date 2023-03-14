@@ -1,4 +1,5 @@
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE, TYPE_OBJECT } from '../constants';
+import { CODE_TYPE, MESSAGE_OBJECT_TYPE } from '../constants';
+import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
@@ -13,7 +14,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape, Type } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape } from './Shape';
 
 // prettier-ignore
 export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends 'input' | 'output'> =
@@ -72,7 +73,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return this.keyShape?.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputs(): unknown[] {
     return [TYPE_OBJECT];
   }
 

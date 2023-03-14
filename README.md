@@ -314,11 +314,11 @@ type Output = typeof shape['output'];
 // ⮕ string
 ```
 
-You can get the shape input types at runtime using [shape introspection](#introspection):
+You can get input types and literal values that the shape accepts using [shape introspection](#introspection):
 
 ```ts
-shape.inputTypes;
-// ⮕ ['string', 'undefined']
+shape.inputs;
+// ⮕ [d.Type.STRING, undefined]
 ```
 
 ## Async shapes
@@ -456,6 +456,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `instance` | [`d.instanceOf(Class)`](#instanceof) | The class constructor `Class` |
 | `intersection` | [`d.and(…)`](#intersection-and) | — |
 | `predicate` | [`shape.refine(…)`](#refinements) | The predicate callback |
+| `never` | [`d.never()`](#never) | — |
 | `numberInteger` | [`d.integer()`](#integer-int) | — |
 | `numberFinite` | [`d.finite()`](#finite) | — |
 | `numberGreaterThan` | [`d.number().gt(x)`](#number) | The exclusive minimum value `x` |
@@ -1480,63 +1481,93 @@ input to the following types:
 
 # Introspection
 
-Doubter provides various features to introspect your shapes at runtime. Let's start by detecting input types supported
-by a particular shape.
-
-The supported input types of a shape can be accessed through the
-[`inputTypes`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputTypes) property:
+Doubter provides various features to introspect your shapes at runtime. Let's start by accessing a shape input types
+using the [`inputs`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputs) property:
 
 ```ts
-const shape = d.or([d.string(), d.boolean()]);
+const shape1 = d.or([d.string(), d.boolean()]);
 // ⮕ Shape<string | boolean>
 
-shape.inputTypes;
-// ⮕ ['string', 'boolean']
+shape1.inputs;
+// ⮕ [d.Type.STRING, d.Type.BOOLEAN]
 ```
 
-To detect the type of the value use [`Shape.typeOf`](https://smikhalevski.github.io/doubter/classes/Shape.html#typeOf):
+`inputs` array may contain literal values:
 
 ```ts
-d.Shape.typeOf('Mars');
-// ⮕ 'string'
+d.enum(['Mars', 42]).inputs;
+// ⮕ ['Mars', 42]
 ```
 
-Types returned from `Shape.typeOf` are a superset of types returned from the `typeof` operator.
+Literal values are absorbed by their type in unions.
+
+```ts
+const shape2 = d.or([
+  d.enum(['Uranus', 1984]),
+  d.number()
+]);
+// ⮕ Shape<'Uranus' | number>
+
+shape2.inputs;
+// ⮕ ['Uranus', d.Type.NUMBER]
+```
+
+If `inputs` is an empty array, it means that the shape doesn't accept any input values, and would _always_ raise
+validation issues.
+
+```ts
+const shape3 = d.and([d.number(), d.const('Mars')]);
+// ⮕ Shape<never>
+        
+shape3.inputs;
+// ⮕ []
+```
+
+To detect the type of the value use [`d.Type.of`](https://smikhalevski.github.io/doubter/classes/Type.html#of):
+
+```ts
+d.Type.of('Mars');
+// ⮕ d.Type.STRING
+
+d.Type.of(d.Type.NUMBER);
+// ⮕ d.Type.NUMBER
+```
+
+Types returned from `d.Type.of` are a superset of types returned from the `typeof` operator.
 
 <table>
 <tr><th><code>Shape.typeOf</code></th><th><code>typeof</code></th></tr>
-<tr><td><code>object</code></td><td rowspan="7"><code>object</code></td></tr>
-<tr><td><code>array</code></td></tr>
-<tr><td><code>date</code></td></tr>
-<tr><td><code>promise</code></td></tr>
-<tr><td><code>set</code></td></tr>
-<tr><td><code>map</code></td></tr>
-<tr><td><code>null</code></td></tr>
-<tr><td><code>function</code></td><td><code>function</code></td></tr>
-<tr><td><code>string</code></td><td><code>string</code></td></tr>
-<tr><td><code>symbol</code></td><td><code>symbol</code></td></tr>
-<tr><td><code>number</code></td><td><code>number</code></td></tr>
-<tr><td><code>bigint</code></td><td><code>bigint</code></td></tr>
-<tr><td><code>boolean</code></td><td><code>boolean</code></td></tr>
-<tr><td><code>undefined</code></td><td><code>undefined</code></td></tr>
+<tr><td><code>d.Type.OBJECT</code></td><td rowspan="7"><code>object</code></td></tr>
+<tr><td><code>d.Type.ARRAY</code></td></tr>
+<tr><td><code>d.Type.DATE</code></td></tr>
+<tr><td><code>d.Type.PROMISE</code></td></tr>
+<tr><td><code>d.Type.SET</code></td></tr>
+<tr><td><code>d.Type.MAP</code></td></tr>
+<tr><td><code>d.Type.NULL</code></td></tr>
+<tr><td><code>d.Type.FUNCTION</code></td><td><code>function</code></td></tr>
+<tr><td><code>d.Type.STRING</code></td><td><code>string</code></td></tr>
+<tr><td><code>d.Type.SYMBOL</code></td><td><code>symbol</code></td></tr>
+<tr><td><code>d.Type.NUMBER</code></td><td><code>number</code></td></tr>
+<tr><td><code>d.Type.BIGINT</code></td><td><code>bigint</code></td></tr>
+<tr><td><code>d.Type.BOOLEAN</code></td><td><code>boolean</code></td></tr>
+<tr><td><code>d.Type.UNDEFINED</code></td><td><code>undefined</code></td></tr>
+<tr><td><code>d.Type.UNKNOWN</code></td><td>—</tr>
 </table>
 
-`inputTypes` array can also contain two additional types `unknown` and `never`.
+## Unknown value type
 
-## `unknown` value type
-
-`unknown` type emerges when type cannot be detected at runtime. This happens when [`d.any`](#any),
-[`d.unknown`](#unknown), or [`d.transform`](#transform-transformasync) is used:
+`d.Type.UNKNOWN` type emerges when [`d.any`](#any), [`d.unknown`](#unknown), or
+[`d.transform`](#transform-transformasync) are used:
 
 ```ts
 const shape1 = d.transfrorm(parseFloat);
 // ⮕ Shape<any>
 
-shape1.inputTypes;
-// ⮕ ['unknown']
+shape1.inputs;
+// ⮕ [d.Type.UNKNOWN]
 ```
 
-`unknown` runtime type behaves like TypeScript's `unknown`.
+`d.Type.UNKNOWN` behaves like TypeScript's `unknown`.
 
 It absorbs other types in unions:
 
@@ -1544,8 +1575,8 @@ It absorbs other types in unions:
 const shape2 = d.or([d.string(), d.unknown()]);
 // ⮕ Shape<unknown>
 
-shape2.inputType;
-// ⮕ ['unknown']
+shape2.inputs;
+// ⮕ [d.Type.UNKNOWN]
 ```
 
 And it is erased in intersections:
@@ -1554,113 +1585,86 @@ And it is erased in intersections:
 const shape3 = d.and([d.string(), d.unknown()]);
 // ⮕ Shape<string>
 
-shape3.inputType;
-// ⮕ ['string']
+shape3.inputs;
+// ⮕ [d.Type.STRING]
 
 const shape4 = d.and([d.never(), d.unknown()]);
 // ⮕ Shape<never>
 
-shape4.inputType;
-// ⮕ ['never']
+shape4.inputs;
+// ⮕ []
 ```
 
-## `never` value type
+## Check that an input is accepted
 
-The `never` type represents the type of values that are impossible and tells that the shape would always raise a
-validation issue when parsing any input.
-
-```ts
-const neverShape = d.never();
-
-neverShape.inputTypes;
-// ⮕ ['never']
-
-neverShape.parse('Pluto');
-// ❌ ValidationError: type at /: Must not be used
-```
-
-`never` runtime type behaves like TypeScript's `never`.
-
-It is erased in unions:
-
-```ts
-const shape1 = d.or([d.string(), d.never()]);
-
-shape1.inputType;
-// ⮕ ['string']
-```
-
-And it absorbs other types in intersections:
-
-```ts
-const shape2 = d.and([d.string(), d.never()]);
-
-shape2.inputType;
-// ⮕ ['never']
-```
-
-Intersections of shapes that don't support any common types produce `never` type:
-
-```ts
-// This shape cannot be satisfied.
-const shape3 = d.and([d.string(), d.boolean()]);
-
-shape3.inputType;
-// ⮕ ['never']
-```
-
-## Check that an input type is accepted
-
-To check that the shape accepts a particular input type use
-[`isAcceptedType`](https://smikhalevski.github.io/doubter/classes/Shape.html#isAcceptedType):
+To check that the shape accepts a particular input type or value use the
+[`accepts`](https://smikhalevski.github.io/doubter/classes/Shape.html#accepts) method:
 
 ```ts
 const shape1 = d.string();
+// ⮕ Shape<string>
 
-shape1.isAcceptedType('string');
+shape1.accepts(d.Type.STRING);
 // ⮕ true
 
-shape1.isAcceptedType('number');
+shape1.accepts('Venus');
+// ⮕ true
+```
+
+Check that a literal value is accepted:
+
+```ts
+const shape2 = d.enum(['Mars', 'Venus']);
+// ⮕ Shape<'Mars' | 'Venus'>
+
+shape2.accepts('Mars');
+// ⮕ true
+
+shape2.accepts('Pluto');
+// ⮕ false
+
+// 🟡 Enum doesn't accept arbitrary strings
+shape2.accepts(d.Type.STRING);
 // ⮕ false
 ```
 
 For example, you can check that the shape is [optional](#optional-and-non-optional) by checking that it accepts
-`undefined` input value type:
+`undefined` input value:
 
 ```ts
-const shape2 = d.number().optional();
+const shape3 = d.number().optional();
 // ⮕ Shape<number | undefined>
 
-shape2.isAcceptedType('number');
+shape3.accepts(1984);
 // ⮕ true
 
-shape2.isAcceptedType('undefined');
+shape3.accepts(undefined);
 // ⮕ true
 
 // 🟡 Note that null isn't accepted
-shape2.isAcceptedType('null');
+shape3.accepts(null);
 // ⮕ false
 ```
 
-The fact that a shape accepts a particular input type, does not guarantee that it wouldn't raise an issue when a value
-of this type is parsed. For example, consider the [pipe](#shape-piping) from [`d.any`](#any) to [`d.string`](#string):
+The fact that a shape accepts a particular input type or value, does not guarantee that it wouldn't raise a validation
+issue. For example, consider the [pipe](#shape-piping) from [`d.any`](#any) to [`d.string`](#string):
 
 ```ts
 const fuzzyShape = d.any().to(d.string());
 // ⮕ Shape<any, string>
 ```
 
-`fuzzyShape` accepts [`unknown`](#unknown-value-type) input type because it is based on `d.any`:
+`fuzzyShape` accepts [`d.Type.UNKNOWN`](#unknown-value-type) type because it is based on `d.any`:
 
 ```ts
-fuzzyShape.inputTypes;
-// ⮕ ['unknown']
+fuzzyShape.inputs;
+// ⮕ [d.Type.UNKNOWN]
 ```
 
-Since anything can be assigned to `unknown`, an `undefined` type is accepted:
+Since `fuzzyShape` accepts any values, an `undefined` is also accepted:
 
 ```ts
-fuzzyShape.isAcceptedType('undefined');
+fuzzyShape.accepts(undefined);
 // ⮕ true
 ```
 
@@ -1668,75 +1672,8 @@ But parsing `undefined` with `fuzzyShape` would produce an error, since `undefin
 right-hand side of the pipe:
 
 ```ts
-fuzzyShape.parse('undefined');
+fuzzyShape.parse(undefined);
 // ❌ ValidationError: type at /: Must be a string
-```
-
-## Input values
-
-Shapes can represent discrete and continuous sets of values. The best example of shapes with discrete value sets are
-[`d.const`](#const) and [`d.enum`](#enum). These shapes constrain input to match a set of values known beforehand.
-
-```ts
-d.enum(['Mars', 'Pluto']);
-// ⮕ Shape<'Mars' | 'Pluto'>
-```
-
-To retrieve the array of all known discrete values, use
-[`inputValues`](https://smikhalevski.github.io/doubter/classes/Shape.html#inputValues):
-
-```ts
-d.enum(['Mars', 'Pluto']).inputValues;
-// ⮕ ['Mars', 'Pluto']
-```
-
-You can retrieve a set of discrete values from a composite shape too:
-
-```ts
-const shape1 = d.union(
-  d.enum(['Mars', 'Pluto']),
-  d.const('Venus')
-);
-
-shape1.inputValues;
-// ⮕ ['Mars', 'Pluto', 'Venus']
-```
-
-The best example of shapes with continuous value sets are [`d.string`](#string) and [`d.number`](#number). These shapes
-constrain an input to be any string or any number, so there's no finite list of known values. For such shapes,
-`inputValues` is `null`.
-
-```ts
-d.string().inputValues;
-// ⮕ null
-```
-
-Things get interesting when you intersect shapes that allow continuous and discrete values:
-
-```ts
-const shape2 = d.and([
-  d.number(),
-  d.enum([42, 'zero'])
-]);
-// ⮕ Shape<number>
-
-shape2.inputValues;
-// ⮕ [42]
-```
-
-Only values that are compatible with both enum and number are preserved.
-
-If types are incompatible, then `inputValues` is an empty array:
-
-```ts
-const shape3 = d.or([d.number(), d.const('Mars')])
-// ⮕ Shape<never>
-        
-shape3.inputValues;
-// ⮕ []
-        
-shape3.inputTypes;
-// ⮕ ['never']
 ```
 
 ## Nested shapes
@@ -1902,26 +1839,13 @@ Must return `true` if your shape supports async parsing only, otherwise you don'
 </dd>
 <dt>
   <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_getInputTypes">
-    <code>_getInputTypes()</code>
+    <code>_getInputs()</code>
   </a>
 </dt>
 <dd>
 
-Must return an array of runtime types that can be processed by the shape. Elements of the returned array don't have to
-be unique. Refer to [Introspection](#introspection) section for more details about types.
-
-</dd>
-<dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_getInputValues">
-    <code>_getInputValues()</code>
-  </a>
-</dt>
-<dd>
-
-Must return an array of discrete input values that the shape accepts, or `null` if the shape accepts a continuous range
-of values. An empty array means that the shape doesn't accept any values at all, like
-[`NeverShape`](https://smikhalevski.github.io/doubter/classes/NeverShape.html) for example. Refer to
-[Input values](#input-values) section for more details.
+Must return an array of types and values that can be processed by the shape. Elements of the returned array don't have
+to be unique. Refer to [Introspection](#introspection) section for more details about types.
 
 </dd>
 </dl>
@@ -3532,7 +3456,7 @@ The result of `try` would contain a grouping issue:
   },
   message: 'Must conform the union',
   param: {
-    inputTypes: ['object'],
+    inputs: [d.Type.OBJECT],
     issueGroups: [
       [
         {
@@ -3557,10 +3481,10 @@ The result of `try` would contain a grouping issue:
 ```
 
 <dl>
-<dt><code>inputTypes</code></dt>
+<dt><code>inputs</code></dt>
 <dd>
 
-An array of all [input value types](#introspection) that the union supports.
+An array of all input types and literal values that the union [accepts.](#check-that-an-input-is-accepted)
 
 </dd>
 <dt><code>issueGroups</code></dt>
@@ -3568,19 +3492,17 @@ An array of all [input value types](#introspection) that the union supports.
 
 An array of issue groups where each group contains issues raised by a separate shape in the union; or `null`.
 
-Union checks the input only against shapes that support the corresponding input value type, so `issueGroups` only
-contains issues raised by shapes that support the input.
-
-If there were no shapes in the union that support the type of the provided input, then `issueGroups` is `null`. For
-example, if you have a `number | string` union and parse a boolean value, there's no shape that supports `boolean`
-input type. So the raised union issue would have `issueGroups` set to `null`.
+Union checks the input only against shapes that [accept](#check-that-an-input-is-accepted) the input value type. If
+there were no shapes in the union that accept the provided input value type, then `issueGroups` is `null`. For example,
+if you have a `number | string` union and parse a boolean value, there's no shape that accepts `boolean` input type. So
+the raised union issue would have `issueGroups` set to `null`.
 
 `path` of issues in `issueGroups` is relative to the grouping issue.
 
 </dd>
 </dl>
 
-When union detects that only one of its shapes supports the provided input then issues produced by this shape are
+When union detects that only one of its shapes accepts the provided input value then issues produced by this shape are
 returned as is:
 
 ```ts

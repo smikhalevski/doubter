@@ -19,6 +19,7 @@ export { SetShape } from './SetShape';
 export {
   AllowLiteralShape,
   AnyShape,
+  Branded,
   BrandShape,
   CatchShape,
   DeepPartialProtocol,
@@ -32,11 +33,7 @@ export {
   Result,
   Shape,
   TransformShape,
-  Type,
-  ValueType,
 } from './Shape';
 export { StringShape } from './StringShape';
 export { SymbolShape } from './SymbolShape';
 export { UnionShape } from './UnionShape';
-
-export type { BRAND } from './Shape';

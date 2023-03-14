@@ -1,5 +1,6 @@
 import * as d from '../../main';
-import { CODE_TYPE, MESSAGE_NUMBER_TYPE, TYPE_NUMBER } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_NUMBER_TYPE } from '../../main/constants';
+import { TYPE_NUMBER } from '../../main/Type';
 
 describe('number', () => {
   test('returns a number shape', () => {

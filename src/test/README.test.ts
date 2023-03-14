@@ -1,15 +1,7 @@
 import qs from 'qs';
 import * as d from '../main';
-import {
-  CODE_UNION,
-  MESSAGE_UNION,
-  TYPE_ARRAY,
-  TYPE_BOOLEAN,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../main/constants';
+import { CODE_UNION, MESSAGE_UNION } from '../main/constants';
+import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/Type';
 
 describe('Cookbook', () => {
   test('rename keys', () => {
@@ -56,7 +48,7 @@ describe('JSON shape', () => {
           message: MESSAGE_UNION,
           input: value2,
           param: {
-            inputTypes: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
+            inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
             issueGroups: null,
           },
         },
@@ -71,7 +63,7 @@ describe('JSON shape', () => {
           input: value3.aaa.bbb,
           message: MESSAGE_UNION,
           param: {
-            inputTypes: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_NULL, TYPE_ARRAY, TYPE_OBJECT],
+            inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
             issueGroups: null,
           },
           path: ['aaa', 'bbb'],

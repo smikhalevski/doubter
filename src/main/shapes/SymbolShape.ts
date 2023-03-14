@@ -1,7 +1,8 @@
-import { CODE_TYPE, MESSAGE_SYMBOL_TYPE, TYPE_SYMBOL } from '../constants';
+import { CODE_TYPE, MESSAGE_SYMBOL_TYPE } from '../constants';
+import { TYPE_SYMBOL } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
-import { Result, Shape, Type } from './Shape';
+import { Result, Shape } from './Shape';
 
 /**
  * The shape of the arbitrary symbol.
@@ -20,7 +21,7 @@ export class SymbolShape extends Shape<symbol> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SYMBOL_TYPE, options, TYPE_SYMBOL);
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputs(): unknown[] {
     return [TYPE_SYMBOL];
   }
 

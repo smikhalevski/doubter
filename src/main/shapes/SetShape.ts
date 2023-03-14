@@ -5,10 +5,8 @@ import {
   MESSAGE_SET_MAX,
   MESSAGE_SET_MIN,
   MESSAGE_SET_TYPE,
-  TYPE_ARRAY,
-  TYPE_OBJECT,
-  TYPE_SET,
 } from '../constants';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
@@ -24,7 +22,7 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, Type } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result } from './Shape';
 
 /**
  * The shape of a `Set` instance.
@@ -115,9 +113,9 @@ export class SetShape<S extends AnyShape>
     return this.shape.isAsync;
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputs(): unknown[] {
     if (this.isCoerced) {
-      return this.shape.inputTypes.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
+      return this.shape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
     } else {
       return [TYPE_SET];
     }

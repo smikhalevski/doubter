@@ -1,21 +1,21 @@
-import { CODE_UNION, MESSAGE_UNION, TYPE_NEVER, TYPE_UNKNOWN } from '../constants';
+import { CODE_UNION, MESSAGE_UNION } from '../constants';
+import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   copyUnsafeChecks,
   createIssueFactory,
   Dict,
-  getShapeInputTypes,
-  getShapeInputValues,
-  getValueType,
+  getShapeInputs,
   isArray,
   isAsyncShape,
   isObject,
+  isType,
   toDeepPartialShape,
-  toUniqueArray,
+  unique,
 } from '../utils';
 import { ObjectShape } from './ObjectShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape, Type, ValueType } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape } from './Shape';
 
 /**
  * Returns the array of shapes that are applicable to the input.
@@ -59,7 +59,7 @@ export class UnionShape<U extends readonly AnyShape[]>
   }
 
   protected get _lookup(): Lookup {
-    const shapes = toUniqueArray(this.shapes);
+    const shapes = this.shapes.filter(unique);
     const lookup = createLookupByDiscriminator(shapes) || createLookupByType(shapes);
 
     Object.defineProperty(this, '_lookup', { value: lookup });
@@ -94,19 +94,9 @@ export class UnionShape<U extends readonly AnyShape[]>
     return this.shapes.some(isAsyncShape);
   }
 
-  protected _getInputTypes(): readonly Type[] {
-    // this.shapes.flatMap(getShapeInputTypes)
-    return ([] as Type[]).concat(...this.shapes.map(getShapeInputTypes));
-  }
-
-  protected _getInputValues(): readonly unknown[] | null {
-    const valueGroups = this.shapes.map(getShapeInputValues);
-
-    if (valueGroups.indexOf(null) !== -1) {
-      // Union accepts continuous values if at least one shape accepts continuous values
-      return null;
-    }
-    return ([] as unknown[]).concat(...valueGroups);
+  protected _getInputs(): unknown[] {
+    // flatMap
+    return ([] as unknown[]).concat(...this.shapes.map(getShapeInputs));
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<U[number]['output']> {
@@ -144,7 +134,7 @@ export class UnionShape<U extends readonly AnyShape[]>
       if (shapesLength === 1) {
         return issues;
       }
-      return this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
+      return this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups });
     }
 
     if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
@@ -198,7 +188,7 @@ export class UnionShape<U extends readonly AnyShape[]>
         if (shapesLength === 1) {
           return issues;
         }
-        return this._typeIssueFactory(input, options, { inputTypes: this.inputTypes, issueGroups });
+        return this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups });
       };
 
       resolve(next());
@@ -212,7 +202,7 @@ export class UnionShape<U extends readonly AnyShape[]>
 export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
   const emptyArray: AnyShape[] = [];
 
-  const buckets: Record<ValueType, AnyShape[]> = {
+  const buckets: Record<string, AnyShape[]> = {
     object: emptyArray,
     array: emptyArray,
     function: emptyArray,
@@ -229,25 +219,18 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
     undefined: emptyArray,
   };
 
-  const bucketTypes = Object.keys(buckets) as ValueType[];
+  const bucketNames = Object.keys(buckets);
 
   for (const shape of shapes) {
-    let { inputTypes } = shape;
+    const names =
+      shape.inputs[0] === TYPE_UNKNOWN ? bucketNames : shape.inputs.map(input => getTypeOf(input).name).filter(unique);
 
-    if (inputTypes[0] === TYPE_NEVER) {
-      // Never is excluded
-      continue;
-    }
-    if (inputTypes[0] === TYPE_UNKNOWN) {
-      // Unknown is added to each bucket
-      inputTypes = bucketTypes;
-    }
-    for (const type of inputTypes as ValueType[]) {
-      buckets[type] = buckets[type].concat(shape);
+    for (const name of names) {
+      buckets[name] = buckets[name].concat(shape);
     }
   }
 
-  return input => buckets[getValueType(input)];
+  return input => buckets[getTypeOf(input).name];
 }
 
 /**
@@ -343,13 +326,13 @@ export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, an
         continue nextKey;
       }
 
-      const { inputValues } = shape.shapes[key];
+      const { inputs } = shape.shapes[key];
 
-      if (inputValues === null || inputValues.length === 0) {
-        // Values aren't discrete or input type is never
+      if (inputs.length === 0 || inputs.some(isType)) {
+        // Values aren't discrete
         continue nextKey;
       }
-      valueGroups[i] = inputValues;
+      valueGroups[i] = inputs;
     }
 
     valueSet.clear();

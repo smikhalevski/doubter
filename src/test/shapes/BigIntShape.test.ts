@@ -1,23 +1,13 @@
 import { BigIntShape, NEVER } from '../../main';
-import {
-  CODE_TYPE,
-  MESSAGE_BIGINT_TYPE,
-  TYPE_ARRAY,
-  TYPE_BIGINT,
-  TYPE_BOOLEAN,
-  TYPE_NULL,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-  TYPE_UNDEFINED,
-} from '../../main/constants';
+import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../../main/constants';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('BigIntShape', () => {
   test('creates a BigIntShape', () => {
     const shape = new BigIntShape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputTypes).toEqual([TYPE_BIGINT]);
+    expect(shape.inputs).toEqual([TYPE_BIGINT]);
   });
 
   test('parses bigint values', () => {
@@ -41,18 +31,18 @@ describe('BigIntShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates input types when coerced', () => {
+    test('updates inputs when coerced', () => {
       const shape = new BigIntShape().coerce();
 
-      expect(shape.inputTypes).toEqual([
+      expect(shape.inputs).toEqual([
         TYPE_BIGINT,
         TYPE_OBJECT,
         TYPE_STRING,
         TYPE_NUMBER,
         TYPE_BOOLEAN,
         TYPE_ARRAY,
-        TYPE_UNDEFINED,
-        TYPE_NULL,
+        null,
+        undefined,
       ]);
     });
 

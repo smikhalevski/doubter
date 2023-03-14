@@ -18,13 +18,9 @@ import {
   MESSAGE_BOOLEAN_TYPE,
   MESSAGE_INTERSECTION,
   MESSAGE_NUMBER_TYPE,
-  TYPE_BOOLEAN,
-  TYPE_NEVER,
-  TYPE_NUMBER,
-  TYPE_STRING,
-  TYPE_UNKNOWN,
 } from '../../main/constants';
-import { intersectTypes, intersectValues, mergeValues } from '../../main/shapes/IntersectionShape';
+import { mergeValues } from '../../main/shapes/IntersectionShape';
+import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 
 describe('IntersectionShape', () => {
   test('returns the input as is if it matches all intersected shapes', () => {
@@ -200,43 +196,40 @@ describe('IntersectionShape', () => {
     });
   });
 
-  describe('inputTypes', () => {
-    test('never if there are no common values', () => {
+  describe('inputs', () => {
+    test('empty if there are no common values', () => {
       const shape = new IntersectionShape([new EnumShape(['aaa', 'bbb']), new EnumShape([111, 222])]);
 
-      expect(shape.inputTypes).toEqual([TYPE_NEVER]);
-      expect(shape.inputValues!.length).toBe(0);
+      expect(shape.inputs).toEqual([]);
     });
 
-    test('never if contains a NeverShape', () => {
+    test('empty if contains a NeverShape', () => {
       const shape = new IntersectionShape([new StringShape(), new NeverShape()]);
 
-      expect(shape.inputTypes).toEqual([TYPE_NEVER]);
-      expect(shape.inputValues!.length).toBe(0);
+      expect(shape.inputs).toEqual([]);
     });
-  });
 
-  describe('inputValues', () => {
     test('the array of common values', () => {
       const shape = new IntersectionShape([new EnumShape(['aaa', 111]), new EnumShape([222, 'aaa'])]);
 
-      expect(shape.inputValues).toEqual(['aaa']);
-    });
-
-    test('null if underlying shapes accept continuous value ranges', () => {
-      expect(new IntersectionShape([new NumberShape()]).inputValues).toBeNull();
+      expect(shape.inputs).toEqual(['aaa']);
     });
 
     test('slices values from the compatible continuous range', () => {
-      expect(new IntersectionShape([new NumberShape(), new EnumShape([111, 222])]).inputValues).toEqual([111, 222]);
+      expect(new IntersectionShape([new NumberShape(), new EnumShape([111, 222])]).inputs).toEqual([111, 222]);
     });
 
-    test('an empty array if types are incompatible', () => {
-      expect(new IntersectionShape([new StringShape(), new EnumShape([111, 222])]).inputValues).toEqual([]);
+    test('empty if types are incompatible', () => {
+      expect(new IntersectionShape([new StringShape(), new EnumShape([111, 222])]).inputs).toEqual([]);
     });
 
     test('complex composites', () => {
-      expect(new IntersectionShape([new StringShape(), new EnumShape(['aaa', 111])]).inputValues).toEqual(['aaa']);
+      expect(new IntersectionShape([new StringShape(), new EnumShape(['aaa', 111])]).inputs).toEqual(['aaa']);
+    });
+
+    test('unknown is erased', () => {
+      expect(new IntersectionShape([new StringShape(), new Shape()]).inputs).toEqual([TYPE_STRING]);
+      expect(new IntersectionShape([new NeverShape(), new Shape()]).inputs).toEqual([]);
     });
   });
 
@@ -273,81 +266,6 @@ describe('IntersectionShape', () => {
         issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION }],
       });
     });
-  });
-});
-
-describe('intersectTypes', () => {
-  test('returns unknown if there are no types to intersect', () => {
-    expect(intersectTypes([])).toEqual([TYPE_UNKNOWN]);
-  });
-
-  test('unknown is unknown', () => {
-    expect(intersectTypes([[TYPE_UNKNOWN], [TYPE_UNKNOWN]])).toEqual([TYPE_UNKNOWN]);
-  });
-
-  test('never is never', () => {
-    expect(intersectTypes([[TYPE_NEVER], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
-  });
-
-  test('never absorbs value types', () => {
-    expect(intersectTypes([[TYPE_STRING], [TYPE_NEVER]])).toEqual([TYPE_NEVER]);
-  });
-
-  test('unknown absorbs value types', () => {
-    expect(intersectTypes([[TYPE_STRING], [TYPE_UNKNOWN]])).toEqual([TYPE_STRING]);
-  });
-
-  test('never absorbs unknown', () => {
-    expect(intersectTypes([[TYPE_NEVER], [TYPE_UNKNOWN]])).toEqual([TYPE_NEVER]);
-  });
-
-  test('returns the common type', () => {
-    expect(intersectTypes([[TYPE_STRING], [TYPE_STRING, TYPE_NUMBER]])).toEqual([TYPE_STRING]);
-  });
-
-  test('returns never if there are no common types', () => {
-    expect(intersectTypes([[TYPE_STRING], [TYPE_NUMBER]])).toEqual([TYPE_NEVER]);
-  });
-});
-
-describe('intersectValues', () => {
-  test('returns an null if there are no buckets', () => {
-    expect(intersectValues([])).toBeNull();
-  });
-
-  test('returns values that present in all buckets', () => {
-    expect(
-      intersectValues([
-        [1, 2, 3],
-        [1, 2],
-        [2, 3],
-      ])
-    ).toEqual([2]);
-  });
-
-  test('returns an empty array if there are no common values', () => {
-    expect(
-      intersectValues([
-        [1, 2, 3],
-        [4, 5],
-        [6, 7],
-      ])
-    ).toEqual([]);
-  });
-
-  test('returns an empty array if no common values', () => {
-    expect(intersectValues([[1, 2, 3], [], null])).toEqual([]);
-    expect(intersectValues([[1, 2, 3], []])).toEqual([]);
-    expect(
-      intersectValues([
-        [1, 2],
-        [3, 4],
-      ])
-    ).toEqual([]);
-  });
-
-  test('null if all buckets are null', () => {
-    expect(intersectValues([null, null])).toBeNull();
   });
 });
 

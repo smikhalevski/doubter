@@ -16,7 +16,8 @@ function enum_<T extends Literal, U extends readonly [T, ...T[]]>(
 ): EnumShape<U[number]>;
 
 /**
- * Creates the shape that constrains input with values of [the enum-like object](https://www.typescriptlang.org/docs/handbook/enums.html).
+ * Creates the shape that constrains input with values of
+ * [the enum-like object](https://www.typescriptlang.org/docs/handbook/enums.html).
  *
  * @param valueMapping The native enum or a mapping object.
  * @param options The constraint options or an issue message.

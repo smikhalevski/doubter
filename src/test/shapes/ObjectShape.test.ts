@@ -6,9 +6,8 @@ import {
   CODE_UNKNOWN_KEYS,
   MESSAGE_OBJECT_TYPE,
   MESSAGE_STRING_TYPE,
-  TYPE_OBJECT,
-  TYPE_STRING,
 } from '../../main/constants';
+import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('ObjectShape', () => {
   class AsyncShape extends Shape {

@@ -1,46 +1,5 @@
 import { Issue, Shape, ValidationError } from '../../main';
-import { TYPE_NEVER, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/constants';
-import {
-  copyUnsafeChecks,
-  createApplyChecksCallback,
-  createIssueFactory,
-  getValueType,
-  isAssignableTo,
-} from '../../main/utils';
-
-describe('isAssignableTo', () => {
-  describe('never can NOT be assigned to anything', () => {
-    expect(isAssignableTo(TYPE_NEVER, [TYPE_UNKNOWN])).toBe(true);
-    expect(isAssignableTo(TYPE_NEVER, [TYPE_NEVER])).toBe(true);
-    expect(isAssignableTo(TYPE_NEVER, [TYPE_STRING])).toBe(true);
-  });
-
-  describe('unknown can only be assigned to itself', () => {
-    expect(isAssignableTo(TYPE_UNKNOWN, [TYPE_UNKNOWN])).toBe(true);
-    expect(isAssignableTo(TYPE_UNKNOWN, [TYPE_NEVER])).toBe(false);
-    expect(isAssignableTo(TYPE_UNKNOWN, [TYPE_STRING])).toBe(false);
-  });
-
-  describe('value type can be assigned to a union with itself, and to unknown', () => {
-    expect(isAssignableTo(TYPE_STRING, [TYPE_UNKNOWN])).toBe(true);
-    expect(isAssignableTo(TYPE_STRING, [TYPE_NEVER])).toBe(false);
-    expect(isAssignableTo(TYPE_STRING, [TYPE_STRING])).toBe(true);
-    expect(isAssignableTo(TYPE_STRING, [TYPE_STRING, TYPE_NUMBER])).toBe(true);
-    expect(isAssignableTo(TYPE_STRING, [TYPE_NUMBER])).toBe(false);
-  });
-});
-
-describe('getValueType', () => {
-  test('returns value type', () => {
-    expect(getValueType(111)).toBe('number');
-    expect(getValueType('aaa')).toBe('string');
-    expect(getValueType({})).toBe('object');
-    expect(getValueType([])).toBe('array');
-    expect(getValueType(null)).toBe('null');
-    expect(getValueType(undefined)).toBe('undefined');
-    expect(getValueType(new Date())).toBe('date');
-  });
-});
+import { copyUnsafeChecks, createApplyChecksCallback, createIssueFactory } from '../../main/utils';
 
 describe('copyUnsafeChecks', () => {
   test('returns the exact copy of the target shape is there are no unsafe check on the source shape', () => {

@@ -1,13 +1,6 @@
 import { DateShape, NEVER } from '../../main';
-import {
-  CODE_TYPE,
-  MESSAGE_DATE_TYPE,
-  TYPE_ARRAY,
-  TYPE_DATE,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../../main/constants';
+import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../../main/constants';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('DateShape', () => {
   test('parses date values', () => {
@@ -31,10 +24,10 @@ describe('DateShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates input types when coerced', () => {
+    test('updates inputs when coerced', () => {
       const shape = new DateShape().coerce();
 
-      expect(shape.inputTypes).toEqual([TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
+      expect(shape.inputs).toEqual([TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
     });
 
     test('coerces an input', () => {

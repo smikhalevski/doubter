@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { TYPE_UNKNOWN } from '../../main/constants';
+import { TYPE_UNKNOWN } from '../../main/Type';
 
 describe('or', () => {
   test('returns a union shape', () => {
@@ -7,6 +7,6 @@ describe('or', () => {
   });
 
   test('unknown absorbs other types in a union', () => {
-    expect(d.or([d.string(), d.any()]).inputTypes).toEqual([TYPE_UNKNOWN]);
+    expect(d.or([d.string(), d.any()]).inputs).toEqual([TYPE_UNKNOWN]);
   });
 });

@@ -13,7 +13,6 @@ import {
   Shape,
   StringShape,
   TransformShape,
-  Type,
   ValidationError,
 } from '../../main';
 import {
@@ -25,13 +24,9 @@ import {
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
   MESSAGE_STRING_TYPE,
-  TYPE_ARRAY,
-  TYPE_NEVER,
-  TYPE_NUMBER,
-  TYPE_STRING,
-  TYPE_UNKNOWN,
 } from '../../main/constants';
 import { Result } from '../../main/shapes/Shape';
+import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 
 class AsyncShape extends Shape {
   protected _isAsync(): boolean {
@@ -54,15 +49,7 @@ describe('Shape', () => {
     const shape = new Shape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputTypes).toEqual([TYPE_UNKNOWN]);
-    expect(shape.inputValues).toBeNull();
-  });
-
-  describe('typeOf', () => {
-    test('returns value type', () => {
-      expect(Shape.typeOf([])).toBe(TYPE_ARRAY);
-      expect(Shape.typeOf(111)).toBe(TYPE_NUMBER);
-    });
+    expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
   });
 
   describe('annotate', () => {
@@ -577,15 +564,56 @@ describe('Shape', () => {
     });
   });
 
-  describe('_getInputTypes', () => {
-    test('provides types for inputTypes', () => {
+  describe('inputs', () => {
+    test('returns unique types', () => {
       class MockShape extends Shape {
-        protected _getInputTypes(): Type[] {
+        protected _getInputs() {
           return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
         }
       }
 
-      expect(new MockShape().inputTypes).toEqual([TYPE_STRING, TYPE_NUMBER]);
+      expect(new MockShape().inputs).toEqual([TYPE_STRING, TYPE_NUMBER]);
+    });
+  });
+
+  describe('accepts', () => {
+    test('returns true if shape accepts an input type', () => {
+      class MockShape extends Shape {
+        protected _getInputs() {
+          return [TYPE_STRING];
+        }
+      }
+
+      expect(new MockShape().accepts(TYPE_STRING)).toBe(true);
+      expect(new MockShape().accepts(TYPE_NUMBER)).toBe(false);
+      expect(new MockShape().accepts('aaa')).toBe(true);
+      expect(new MockShape().accepts(111)).toBe(false);
+    });
+
+    test('returns true if shape accepts an literal value', () => {
+      class MockShape extends Shape {
+        protected _getInputs() {
+          return ['aaa'];
+        }
+      }
+
+      expect(new MockShape().accepts(TYPE_STRING)).toBe(false);
+      expect(new MockShape().accepts(TYPE_NUMBER)).toBe(false);
+      expect(new MockShape().accepts('aaa')).toBe(true);
+      expect(new MockShape().accepts(111)).toBe(false);
+    });
+
+    test('returns true if shape accepts unknown type', () => {
+      class MockShape extends Shape {
+        protected _getInputs() {
+          return [TYPE_UNKNOWN];
+        }
+      }
+
+      expect(new MockShape().accepts(TYPE_STRING)).toBe(true);
+      expect(new MockShape().accepts(TYPE_NUMBER)).toBe(true);
+      expect(new MockShape().accepts('aaa')).toBe(true);
+      expect(new MockShape().accepts(111)).toBe(true);
     });
   });
 
@@ -997,15 +1025,9 @@ describe('PipeShape', () => {
     });
   });
 
-  describe('inputTypes', () => {
-    test('returns input types of the input shape', () => {
-      expect(new PipeShape(new StringShape(), new Shape()).inputTypes).toEqual([TYPE_STRING]);
-    });
-  });
-
-  describe('inputValues', () => {
-    test('returns the input values of the input shape', () => {
-      expect(new PipeShape(new ConstShape('aaa'), new Shape()).inputValues).toEqual(['aaa']);
+  describe('inputs', () => {
+    test('returns inputs of the input shape', () => {
+      expect(new PipeShape(new StringShape(), new Shape()).inputs).toEqual([TYPE_STRING]);
     });
   });
 
@@ -1105,23 +1127,13 @@ describe('ReplaceLiteralShape', () => {
     expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { coerced: false, verbose: false });
   });
 
-  describe('inputTypes', () => {
-    test('concatenates input types of the underlying shape and with the type of the replaced value', () => {
-      expect(new ReplaceLiteralShape(new NumberShape(), 'aaa', 111).inputTypes).toEqual([TYPE_NUMBER, TYPE_STRING]);
+  describe('inputs', () => {
+    test('concatenates inputs of the underlying shape with the replaced value', () => {
+      expect(new ReplaceLiteralShape(new NumberShape(), 'aaa', 111).inputs).toEqual([TYPE_NUMBER, 'aaa']);
     });
 
     test('erases never', () => {
-      expect(new ReplaceLiteralShape(new NeverShape(), 'aaa', 111).inputTypes).toEqual([TYPE_STRING]);
-    });
-  });
-
-  describe('inputValues', () => {
-    test('returns discrete values', () => {
-      expect(new ReplaceLiteralShape(new ConstShape('aaa'), 'bbb', 111).inputValues).toEqual(['aaa', 'bbb']);
-    });
-
-    test('returns null if an underlying shape does not have discrete values', () => {
-      expect(new ReplaceLiteralShape(new NumberShape(), 'aaa', 111).inputValues).toBeNull();
+      expect(new ReplaceLiteralShape(new NeverShape(), 'aaa', 111).inputs).toEqual(['aaa']);
     });
   });
 
@@ -1229,23 +1241,17 @@ describe('DenyLiteralShape', () => {
     });
   });
 
-  describe('inputTypes', () => {
-    test('returns input types of the underlying shape', () => {
-      expect(new DenyLiteralShape(new StringShape(), 111).inputTypes).toEqual([TYPE_STRING]);
+  describe('inputs', () => {
+    test('returns inputs of the underlying shape', () => {
+      expect(new DenyLiteralShape(new StringShape(), 111).inputs).toEqual([TYPE_STRING]);
     });
 
-    test('preserves never', () => {
-      expect(new DenyLiteralShape(new NeverShape(), 111).inputTypes).toEqual([TYPE_NEVER]);
-    });
-  });
-
-  describe('inputValues', () => {
-    test('removes denied value from the array of discrete input values', () => {
-      expect(new DenyLiteralShape(new EnumShape(['aaa', 'bbb']), 'bbb').inputValues).toEqual(['aaa']);
+    test('returns an empty array if an underlying shape is NeverShape', () => {
+      expect(new DenyLiteralShape(new NeverShape(), 111).inputs).toEqual([]);
     });
 
-    test('returns null if an underlying shape does not have discrete values', () => {
-      expect(new DenyLiteralShape(new NumberShape(), 111).inputValues).toBeNull();
+    test('removes denied value from the array of discrete inputs', () => {
+      expect(new DenyLiteralShape(new EnumShape(['aaa', 'bbb']), 'bbb').inputs).toEqual(['aaa']);
     });
   });
 
@@ -1334,15 +1340,13 @@ describe('CatchShape', () => {
     });
   });
 
-  describe('inputTypes', () => {
-    test('returns input types of the underlying shape', () => {
-      expect(new CatchShape(new StringShape(), 'aaa').inputTypes).toEqual([TYPE_STRING]);
+  describe('inputs', () => {
+    test('returns inputs of the underlying shape', () => {
+      expect(new CatchShape(new StringShape(), 'aaa').inputs).toEqual([TYPE_STRING]);
     });
-  });
 
-  describe('inputValues', () => {
-    test('returns input values of the underlying shape', () => {
-      expect(new CatchShape(new ConstShape('aaa'), 'bbb').inputValues).toEqual(['aaa']);
+    test('returns inputs of the underlying shape', () => {
+      expect(new CatchShape(new ConstShape('aaa'), 'bbb').inputs).toEqual(['aaa']);
     });
   });
 
@@ -1401,29 +1405,23 @@ describe('ExcludeShape', () => {
     });
   });
 
-  describe('inputTypes', () => {
-    test('returns input types of the underlying shape', () => {
-      expect(new ExcludeShape(new ConstShape('aaa'), new StringShape()).inputTypes).toEqual([TYPE_STRING]);
+  describe('inputs', () => {
+    test('returns inputs of the underlying shape', () => {
+      expect(new ExcludeShape(new ConstShape('aaa'), new StringShape()).inputs).toEqual(['aaa']);
     });
 
-    test('preserves never', () => {
-      expect(new ExcludeShape(new NeverShape(), new StringShape()).inputTypes).toEqual([TYPE_NEVER]);
+    test('returns an empty array when underlying shape is NeverShape', () => {
+      expect(new ExcludeShape(new NeverShape(), new StringShape()).inputs).toEqual([]);
     });
-  });
 
-  describe('inputValues', () => {
-    test('removes the excluded value from the array of input values', () => {
+    test('removes the excluded value from inputs', () => {
       const shape = new ExcludeShape(new EnumShape(['aaa', 'bbb', 'ccc']), new EnumShape(['aaa', 'ccc']));
 
-      expect(shape.inputValues).toEqual(['bbb']);
+      expect(shape.inputs).toEqual(['bbb']);
     });
 
-    test('returns null if the base shape does not have discrete values', () => {
-      expect(new ExcludeShape(new NumberShape(), new ConstShape(111)).inputValues).toBeNull();
-    });
-
-    test('returns base shape input values if the excluded shape does not have discrete values', () => {
-      expect(new ExcludeShape(new ConstShape(111), new NumberShape()).inputValues).toEqual([111]);
+    test('returns base shape inputs if the excluded shape does not have discrete values', () => {
+      expect(new ExcludeShape(new ConstShape(111), new NumberShape()).inputs).toEqual([111]);
     });
   });
 

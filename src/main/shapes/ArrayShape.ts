@@ -7,10 +7,8 @@ import {
   MESSAGE_ARRAY_MIN,
   MESSAGE_ARRAY_TYPE,
   MESSAGE_TUPLE,
-  TYPE_ARRAY,
-  TYPE_OBJECT,
-  TYPE_UNKNOWN,
 } from '../constants';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
@@ -28,7 +26,7 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result, Type } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result } from './Shape';
 
 // prettier-ignore
 export type InferTuple<U extends readonly AnyShape[], C extends 'input' | 'output'> =
@@ -175,23 +173,27 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return this.shapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
   }
 
-  protected _getInputTypes(): readonly Type[] {
+  protected _getInputs(): unknown[] {
     const { shapes, restShape } = this;
-
-    const lonerShape = shapes === null ? restShape : shapes.length === 1 ? shapes[0] : null;
 
     if (!this.isCoerced) {
       return [TYPE_ARRAY];
     }
-    if (shapes === null && restShape === null) {
-      // Elements aren't parsed, so anything value can be coerced to an array
-      return [TYPE_UNKNOWN];
+
+    if (shapes !== null) {
+      if (shapes.length > 1) {
+        return [TYPE_OBJECT, TYPE_ARRAY];
+      }
+      if (shapes.length === 1) {
+        return shapes[0].inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
+      }
     }
-    if (lonerShape === null) {
-      // Tuple with multiple elements, so only iterables and array-like objects are allowed
-      return [TYPE_OBJECT, TYPE_ARRAY];
+
+    if (restShape !== null) {
+      return restShape.inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
     }
-    return lonerShape.inputTypes.concat(TYPE_OBJECT, TYPE_ARRAY);
+
+    return [TYPE_UNKNOWN];
   }
 
   protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, 'output'>> {

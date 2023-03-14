@@ -10,15 +10,8 @@ import {
   StringShape,
   ValidationError,
 } from '../../main';
-import {
-  CODE_ARRAY_MAX,
-  CODE_TYPE,
-  MESSAGE_NUMBER_TYPE,
-  MESSAGE_STRING_TYPE,
-  TYPE_FUNCTION,
-  TYPE_NUMBER,
-  TYPE_STRING,
-} from '../../main/constants';
+import { CODE_ARRAY_MAX, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 
 describe('FunctionShape', () => {
   class AsyncShape extends Shape {
@@ -46,7 +39,7 @@ describe('FunctionShape', () => {
     expect(shape.argsShape).toBe(arrayShape);
     expect(shape.returnShape).toBeNull();
     expect(shape.thisShape).toBeNull();
-    expect(shape.inputTypes).toEqual([TYPE_FUNCTION]);
+    expect(shape.inputs).toEqual([TYPE_FUNCTION]);
   });
 
   test('wraps a function', () => {

@@ -7,12 +7,8 @@ import {
   MESSAGE_ARRAY_TYPE,
   MESSAGE_NUMBER_TYPE,
   MESSAGE_STRING_TYPE,
-  TYPE_UNKNOWN,
-  TYPE_ARRAY,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
 } from '../../main/constants';
+import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 
 describe('ArrayShape', () => {
   class AsyncShape extends Shape {
@@ -39,7 +35,7 @@ describe('ArrayShape', () => {
 
     expect(arrShape.shapes).toEqual([shape1]);
     expect(arrShape.restShape).toBe(restShape);
-    expect(arrShape.inputTypes).toEqual([TYPE_ARRAY]);
+    expect(arrShape.inputs).toEqual([TYPE_ARRAY]);
   });
 
   test('raises an issue if an input is not an unconstrained array', () => {
@@ -393,22 +389,22 @@ describe('ArrayShape', () => {
   });
 
   describe('coerce', () => {
-    test('allow any input type when shape is coerced and elements are unconstrained', () => {
+    test('allow unknown input type when shape is coerced and elements are unconstrained', () => {
       const arrShape = new ArrayShape(null, null).coerce();
 
-      expect(arrShape.inputTypes).toEqual([TYPE_UNKNOWN]);
+      expect(arrShape.inputs).toEqual([TYPE_UNKNOWN]);
     });
 
     test('allows only array-like types when tuple has two elements', () => {
       const arrShape = new ArrayShape([new StringShape(), new NumberShape()], null).coerce();
 
-      expect(arrShape.inputTypes).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
+      expect(arrShape.inputs).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
     });
 
-    test('allows input types of a single tuple element', () => {
+    test('allows inputs of a single tuple element', () => {
       const arrShape = new ArrayShape([new StringShape()], null).coerce();
 
-      expect(arrShape.inputTypes).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
+      expect(arrShape.inputs).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
     });
 
     test('does not coerce if a tuple has no elements', () => {

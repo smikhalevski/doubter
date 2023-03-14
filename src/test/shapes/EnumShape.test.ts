@@ -1,6 +1,7 @@
 import { EnumShape } from '../../main';
-import { CODE_ENUM, TYPE_ARRAY, TYPE_NEVER, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/constants';
+import { CODE_ENUM } from '../../main/constants';
 import { getEnumValues } from '../../main/shapes/EnumShape';
+import { TYPE_ARRAY, TYPE_OBJECT } from '../../main/Type';
 
 enum NumberMockEnum {
   AAA,
@@ -16,26 +17,23 @@ describe('EnumShape', () => {
   test('creates an EnumShape from an array', () => {
     const shape = new EnumShape(['aaa', 'bbb']);
 
-    expect(shape.inputValues).toEqual(['aaa', 'bbb']);
-    expect(shape.inputTypes).toEqual([TYPE_STRING]);
+    expect(shape.inputs).toEqual(['aaa', 'bbb']);
   });
 
-  test('empty enums have never type', () => {
+  test('an empty enum has empty inputs', () => {
     const shape = new EnumShape([]);
 
-    expect(shape.inputValues).toEqual([]);
-    expect(shape.inputTypes).toEqual([TYPE_NEVER]);
+    expect(shape.inputs).toEqual([]);
   });
 
   test('creates an enum shape from a native numeric enum', () => {
     const shape = new EnumShape(NumberMockEnum);
 
-    expect(shape.inputValues).toEqual([NumberMockEnum.AAA, NumberMockEnum.BBB]);
-    expect(shape.inputTypes).toEqual([TYPE_NUMBER]);
+    expect(shape.inputs).toEqual([NumberMockEnum.AAA, NumberMockEnum.BBB]);
   });
 
   test('creates an enum shape from a native string enum', () => {
-    expect(new EnumShape(StringMockEnum).inputValues).toEqual([StringMockEnum.AAA, StringMockEnum.BBB]);
+    expect(new EnumShape(StringMockEnum).inputs).toEqual([StringMockEnum.AAA, StringMockEnum.BBB]);
   });
 
   test('creates an enum shape from a mapping object', () => {
@@ -44,7 +42,7 @@ describe('EnumShape', () => {
       BBB: 'bbb',
     };
 
-    expect(new EnumShape(obj).inputValues).toEqual([obj.AAA, obj.BBB]);
+    expect(new EnumShape(obj).inputs).toEqual([obj.AAA, obj.BBB]);
   });
 
   test('raises an issue if an input is not one of the numeric enum values', () => {
@@ -121,7 +119,7 @@ describe('EnumShape', () => {
     test('coerces the key of the numeric enum', () => {
       const shape = new EnumShape(NumberMockEnum);
 
-      expect(shape.coerce().inputTypes).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_ARRAY, TYPE_OBJECT]);
+      expect(shape.coerce().inputs).toEqual([0, 1, '0', '1', 'AAA', 'BBB', TYPE_ARRAY, TYPE_OBJECT]);
 
       expect(shape.coerce().parse('AAA')).toEqual(NumberMockEnum.AAA);
       expect(shape.parse('AAA', { coerced: true })).toEqual(NumberMockEnum.AAA);
@@ -133,7 +131,7 @@ describe('EnumShape', () => {
         BBB: 'bbb',
       } as const);
 
-      expect(shape.coerce().inputTypes).toEqual([TYPE_STRING, TYPE_ARRAY, TYPE_OBJECT]);
+      expect(shape.coerce().inputs).toEqual(['aaa', 'bbb', 'AAA', 'BBB', TYPE_ARRAY, TYPE_OBJECT]);
 
       expect(shape.coerce().parse('AAA')).toEqual('aaa');
       expect(shape.parse('AAA', { coerced: true })).toEqual('aaa');
@@ -142,7 +140,7 @@ describe('EnumShape', () => {
     test('coerces from an array', () => {
       const shape = new EnumShape([111, 222]);
 
-      expect(shape.coerce().inputTypes).toEqual([TYPE_NUMBER, TYPE_ARRAY, TYPE_OBJECT]);
+      expect(shape.coerce().inputs).toEqual([111, 222, TYPE_ARRAY, TYPE_OBJECT]);
 
       expect(shape.coerce().parse([111])).toBe(111);
       expect(shape.parse(111, { coerced: true })).toBe(111);
