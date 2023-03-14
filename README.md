@@ -1410,7 +1410,7 @@ function that only accepts an input that has been validated by Doubter. This can
 
 ```ts
 const flightCodeShape = d.string().refine(isFlightCode).brand<'flightCode'>();
-// ⮕ Shape<string, string & { [BRAND]: 'flightCode' }>
+// ⮕ Shape<string, Branded<string, 'flightCode'>>
 
 type FlightCode = d.Output<typeof flightCodeShape>;
 
@@ -1536,22 +1536,22 @@ d.Type.of(d.Type.NUMBER);
 Types returned from `d.Type.of` are a superset of types returned from the `typeof` operator.
 
 <table>
-<tr><th><code>Shape.typeOf</code></th><th><code>typeof</code></th></tr>
-<tr><td><code>d.Type.OBJECT</code></td><td rowspan="7"><code>object</code></td></tr>
-<tr><td><code>d.Type.ARRAY</code></td></tr>
-<tr><td><code>d.Type.DATE</code></td></tr>
-<tr><td><code>d.Type.PROMISE</code></td></tr>
-<tr><td><code>d.Type.SET</code></td></tr>
-<tr><td><code>d.Type.MAP</code></td></tr>
-<tr><td><code>d.Type.NULL</code></td></tr>
-<tr><td><code>d.Type.FUNCTION</code></td><td><code>function</code></td></tr>
-<tr><td><code>d.Type.STRING</code></td><td><code>string</code></td></tr>
-<tr><td><code>d.Type.SYMBOL</code></td><td><code>symbol</code></td></tr>
-<tr><td><code>d.Type.NUMBER</code></td><td><code>number</code></td></tr>
-<tr><td><code>d.Type.BIGINT</code></td><td><code>bigint</code></td></tr>
-<tr><td><code>d.Type.BOOLEAN</code></td><td><code>boolean</code></td></tr>
-<tr><td><code>d.Type.UNDEFINED</code></td><td><code>undefined</code></td></tr>
-<tr><td><code>d.Type.UNKNOWN</code></td><td>—</tr>
+<tr><th><code>Type.of</code></th><th><code>typeof</code></th></tr>
+<tr><td><code>Type.OBJECT</code></td><td rowspan="7"><code>object</code></td></tr>
+<tr><td><code>Type.ARRAY</code></td></tr>
+<tr><td><code>Type.DATE</code></td></tr>
+<tr><td><code>Type.PROMISE</code></td></tr>
+<tr><td><code>Type.SET</code></td></tr>
+<tr><td><code>Type.MAP</code></td></tr>
+<tr><td><code>Type.NULL</code></td></tr>
+<tr><td><code>Type.FUNCTION</code></td><td><code>function</code></td></tr>
+<tr><td><code>Type.STRING</code></td><td><code>string</code></td></tr>
+<tr><td><code>Type.SYMBOL</code></td><td><code>symbol</code></td></tr>
+<tr><td><code>Type.NUMBER</code></td><td><code>number</code></td></tr>
+<tr><td><code>Type.BIGINT</code></td><td><code>bigint</code></td></tr>
+<tr><td><code>Type.BOOLEAN</code></td><td><code>boolean</code></td></tr>
+<tr><td><code>Type.UNDEFINED</code></td><td><code>undefined</code></td></tr>
+<tr><td><code>Type.UNKNOWN</code></td><td>—</tr>
 </table>
 
 ## Unknown value type

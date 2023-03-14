@@ -82,6 +82,8 @@ expectType<{ aaa?: string } | 111>(d.object({ aaa: d.string() }).catch(111).deep
 
 // BrandShape
 
+expectType<d.Branded<string, 'foo'>>(d.string().brand<'foo'>()[OUTPUT]);
+
 const brandShape = d.any<string>().brand();
 
 expectType<d.Output<typeof brandShape>>(brandShape[OUTPUT]);
