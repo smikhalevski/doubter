@@ -1,15 +1,14 @@
+import * as d from 'doubter';
 import { expectType } from 'tsd';
-import * as d from '../../main';
-import { INPUT, OUTPUT } from '../../main/shapes/Shape';
 
-expectType<any[]>(d.array()[INPUT]);
+expectType<any[]>(d.array().__input);
 
-expectType<any[]>(d.array()[OUTPUT]);
+expectType<any[]>(d.array().__output);
 
-expectType<111[]>(d.array(d.const(111))[INPUT]);
+expectType<111[]>(d.array(d.const(111)).__input);
 
-expectType<111[]>(d.array(d.const(111))[OUTPUT]);
+expectType<111[]>(d.array(d.const(111)).__output);
 
-expectType<Array<number | undefined>>(d.array(d.number()).deepPartial()[OUTPUT]);
+expectType<Array<number | undefined>>(d.array(d.number()).deepPartial().__output);
 
-expectType<Array<{ aaa?: number } | undefined>>(d.array(d.object({ aaa: d.number() })).deepPartial()[OUTPUT]);
+expectType<Array<{ aaa?: number } | undefined>>(d.array(d.object({ aaa: d.number() })).deepPartial().__output);

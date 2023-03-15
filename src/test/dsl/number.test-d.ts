@@ -1,33 +1,32 @@
+import * as d from 'doubter';
 import { expectType } from 'tsd';
-import * as d from '../../main';
-import { INPUT, OUTPUT } from '../../main/shapes/Shape';
 
-expectType<number | 'aaa'>(d.number().replace('aaa', true)[INPUT]);
+expectType<number | 'aaa'>(d.number().replace('aaa', true).__input);
 
-expectType<number | true>(d.number().replace('aaa', true)[OUTPUT]);
+expectType<number | true>(d.number().replace('aaa', true).__output);
 
-expectType<number>(d.number().replace(222, 'aaa')[INPUT]);
+expectType<number>(d.number().replace(222, 'aaa').__input);
 
-expectType<number | 'aaa'>(d.number().replace(222, 'aaa')[OUTPUT]);
+expectType<number | 'aaa'>(d.number().replace(222, 'aaa').__output);
 
-expectType<number>(d.number().replace(NaN, 0)[INPUT]);
+expectType<number>(d.number().replace(NaN, 0).__input);
 
-expectType<number>(d.number().replace(NaN, 0)[OUTPUT]);
+expectType<number>(d.number().replace(NaN, 0).__output);
 
-expectType<number>(d.number().nan()[INPUT]);
+expectType<number>(d.number().nan().__input);
 
-expectType<number>(d.number().nan()[OUTPUT]);
+expectType<number>(d.number().nan().__output);
 
-expectType<number>(d.number().nan(111)[INPUT]);
+expectType<number>(d.number().nan(111).__input);
 
-expectType<number>(d.number().nan(111)[OUTPUT]);
+expectType<number>(d.number().nan(111).__output);
 
-expectType<number>(d.number().nan('aaa')[INPUT]);
+expectType<number>(d.number().nan('aaa').__input);
 
-expectType<number | 'aaa'>(d.number().nan('aaa')[OUTPUT]);
+expectType<number | 'aaa'>(d.number().nan('aaa').__output);
 
-expectType<number>(d.number().allow(Infinity)[OUTPUT]);
+expectType<number>(d.number().allow(Infinity).__output);
 
-expectType<number>(d.number().deny(111)[INPUT]);
+expectType<number>(d.number().deny(111).__input);
 
-expectType<number>(d.number().deny(111)[OUTPUT]);
+expectType<number>(d.number().deny(111).__output);

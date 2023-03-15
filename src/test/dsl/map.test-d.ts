@@ -1,18 +1,17 @@
+import * as d from 'doubter';
 import { expectType } from 'tsd';
-import * as d from '../../main';
-import { OUTPUT } from '../../main/shapes/Shape';
 
-expectType<Map<string, number>>(d.map(d.string(), d.number())[OUTPUT]);
+expectType<Map<string, number>>(d.map(d.string(), d.number()).__output);
 
 expectType<Map<'bbb', number>>(
   d.map(
     d.string().transform((): 'bbb' => 'bbb'),
     d.number()
-  )[OUTPUT]
+  ).__output
 );
 
-expectType<Map<string, number | undefined>>(d.map(d.string(), d.number()).deepPartial()[OUTPUT]);
+expectType<Map<string, number | undefined>>(d.map(d.string(), d.number()).deepPartial().__output);
 
 expectType<Map<{ aaa?: string }, { bbb?: number } | undefined>>(
-  d.map(d.object({ aaa: d.string() }), d.object({ bbb: d.number() })).deepPartial()[OUTPUT]
+  d.map(d.object({ aaa: d.string() }), d.object({ bbb: d.number() })).deepPartial().__output
 );

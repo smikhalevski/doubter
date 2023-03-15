@@ -21,7 +21,7 @@
     "build": "rollup --config --configPlugin typescript",
     "clean": "rimraf ./lib ./docs ./coverage",
     "test": "jest",
-    "test:definitions": "tsd --files './src/test/**/*.test-d.ts'",
+    "test:definitions": "ln -nsf .. ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
     "perf": "toofast",
     "docs": "typedoc ./src/main/index.ts"
   },

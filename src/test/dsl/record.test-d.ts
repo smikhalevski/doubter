@@ -1,14 +1,13 @@
+import * as d from 'doubter';
 import { expectType } from 'tsd';
-import * as d from '../../main';
-import { OUTPUT } from '../../main/shapes/Shape';
 
-expectType<Record<string, number>>(d.record(d.number())[OUTPUT]);
+expectType<Record<string, number>>(d.record(d.number()).__output);
 
 expectType<{ bbb: number }>(
   d.record(
     d.string().transform((): 'bbb' => 'bbb'),
     d.number()
-  )[OUTPUT]
+  ).__output
 );
 
-expectType<Record<string, boolean | undefined>>(d.record(d.string(), d.boolean().optional())[OUTPUT]);
+expectType<Record<string, boolean | undefined>>(d.record(d.string(), d.boolean().optional()).__output);

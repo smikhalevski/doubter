@@ -166,11 +166,11 @@ export type Result<T = any> = Ok<T> | Issue[] | null;
  */
 export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ApplyOptions) => Issue[] | null;
 
-export declare const INPUT: unique symbol;
-export declare const OUTPUT: unique symbol;
+export type INPUT = '__input';
+export type OUTPUT = '__output';
 
-export type INPUT = typeof INPUT;
-export type OUTPUT = typeof OUTPUT;
+declare const INPUT: INPUT;
+declare const OUTPUT: OUTPUT;
 
 /**
  * Extracts the shape input type.
