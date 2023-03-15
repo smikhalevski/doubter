@@ -1834,7 +1834,9 @@ You need to override this method only if you have a separate logic for async par
 </dt>
 <dd>
 
-Must return `true` if your shape supports async parsing only, otherwise you don't need to override this method.
+The value returned from this method alters what method is used for parsing:
+- if `true` is returned then `_applyAsync` would be used for parsing, and `_apply` would always throw an error;
+- if `false` is returned then `_apply` would be used for parsing, and `_applyAsync` would always redirect to `_apply`.
 
 </dd>
 <dt>
