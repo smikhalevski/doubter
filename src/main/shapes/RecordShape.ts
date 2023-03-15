@@ -14,10 +14,10 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../utils';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result, Shape } from './Shape';
 
 // prettier-ignore
-export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends 'input' | 'output'> =
+export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends INPUT | OUTPUT> =
   Record<K extends Shape ? K[C] : string, V[C]>;
 
 /**
@@ -27,7 +27,7 @@ export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends A
  * @template V The value shape.
  */
 export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends AnyShape>
-  extends Shape<InferRecord<K, V, 'input'>, InferRecord<K, V, 'output'>>
+  extends Shape<InferRecord<K, V, INPUT>, InferRecord<K, V, OUTPUT>>
   implements DeepPartialProtocol<RecordShape<K, OptionalDeepPartialShape<V>>>
 {
   protected _options;
@@ -77,7 +77,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferRecord<K, V, 'output'>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferRecord<K, V, OUTPUT>> {
     if (!isObject(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -145,7 +145,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferRecord<K, V, 'output'>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferRecord<K, V, OUTPUT>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
         resolve(this._typeIssueFactory(input, options));

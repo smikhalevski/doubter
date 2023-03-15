@@ -1,8 +1,8 @@
 import * as d from 'doubter';
 import { expectType } from 'tsd';
 
-class FooClass {
+class TestClass {
   aaa = 111;
 }
 
-expectType<FooClass>(d.instanceOf(FooClass).output);
+expectType<TestClass>(d.instanceOf(TestClass).__output);

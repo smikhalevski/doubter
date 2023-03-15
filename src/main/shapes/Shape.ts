@@ -75,7 +75,7 @@ export type AnyShape = Shape | Shape<never>;
  * An alias for {@linkcode ReplaceLiteralShape} that allows the same value as both an input and an output.
  *
  * @template S The shape that parses the input without the replaced value.
- * @template T The value that is allows as an input and output.
+ * @template T The value that is allowed as an input and output.
  */
 export type AllowLiteralShape<S extends AnyShape, T> = ReplaceLiteralShape<S, T, T>;
 
@@ -86,7 +86,7 @@ export type AllowLiteralShape<S extends AnyShape, T> = ReplaceLiteralShape<S, T,
  * @template N The shape to which the output must not conform.
  */
 export interface NotShape<S extends AnyShape, N extends AnyShape>
-  extends Shape<S['input'], S['output']>,
+  extends Shape<S[INPUT], S[OUTPUT]>,
     DeepPartialProtocol<NotShape<DeepPartialShape<S>, N>> {
   /**
    * The base shape.
@@ -123,7 +123,7 @@ export type Branded<T, B> = T & { [BRAND]: B };
  */
 // prettier-ignore
 export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, B> =
-  & Shape<S['input'], Branded<S['output'], B>>
+  & Shape<S[INPUT], Branded<S[OUTPUT], B>>
   & Pick<S, keyof DeepPartialProtocol<AnyShape>>;
 
 /**
@@ -166,6 +166,26 @@ export type Result<T = any> = Ok<T> | Issue[] | null;
  */
 export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options: ApplyOptions) => Issue[] | null;
 
+export type INPUT = '__input';
+export type OUTPUT = '__output';
+
+declare const INPUT: INPUT;
+declare const OUTPUT: OUTPUT;
+
+/**
+ * Extracts the shape input type.
+ *
+ * @template S The shape from which the input type must be inferred.
+ */
+export type Input<S extends AnyShape> = S[INPUT];
+
+/**
+ * Extracts the shape output type.
+ *
+ * @template S The shape from which the output type must be inferred.
+ */
+export type Output<S extends AnyShape> = S[OUTPUT];
+
 /**
  * The baseline shape implementation.
  *
@@ -173,6 +193,20 @@ export type ApplyChecksCallback = (output: any, issues: Issue[] | null, options:
  * @template O The output value.
  */
 export class Shape<I = any, O = I> {
+  /**
+   * The shape input type.
+   *
+   * @internal
+   */
+  declare readonly [INPUT]: I;
+
+  /**
+   * The shape output type.
+   *
+   * @internal
+   */
+  declare readonly [OUTPUT]: O;
+
   /**
    * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations.
    */
@@ -630,16 +664,6 @@ export class Shape<I = any, O = I> {
 
 export interface Shape<I, O> {
   /**
-   * The shape input type. Accessible only at compile time for type inference.
-   */
-  readonly input: I;
-
-  /**
-   * The shape output type. Accessible only at compile time for type inference.
-   */
-  readonly output: O;
-
-  /**
    * The array of unique input types and values that are accepted by the shape.
    */
   readonly inputs: readonly unknown[];
@@ -983,7 +1007,7 @@ export class TransformShape<T> extends Shape<any, T> {
  * @template O The output shape.
  */
 export class PipeShape<I extends AnyShape, O extends AnyShape>
-  extends Shape<I['input'], O['output']>
+  extends Shape<I[INPUT], O[OUTPUT]>
   implements DeepPartialProtocol<PipeShape<DeepPartialShape<I>, DeepPartialShape<O>>>
 {
   /**
@@ -1022,7 +1046,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return this.inputShape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<O['output']> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<O[OUTPUT]> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let issues;
@@ -1053,7 +1077,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<O['output']>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<O[OUTPUT]>> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     return inputShape['_applyAsync'](input, options).then(result => {
@@ -1094,7 +1118,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
  * @template B The output value.
  */
 export class ReplaceLiteralShape<S extends AnyShape, A, B>
-  extends Shape<S['input'] | A, ExcludeLiteral<S['output'], A> | B>
+  extends Shape<S[INPUT] | A, ExcludeLiteral<S[OUTPUT], A> | B>
   implements DeepPartialProtocol<ReplaceLiteralShape<DeepPartialShape<S>, A, B>>
 {
   private _result: Result<B>;
@@ -1143,13 +1167,13 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     return this.shape.inputs.concat(this.inputValue);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], A> | B> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S[OUTPUT], A> | B> {
     const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
 
     return this._handleResult(result, input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ExcludeLiteral<S['output'], A> | B>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ExcludeLiteral<S[OUTPUT], A> | B>> {
     if (isEqual(input, this.inputValue)) {
       return Promise.resolve(this._handleResult(this._result, input, options));
     }
@@ -1160,7 +1184,7 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     result: Result,
     input: unknown,
     options: ApplyOptions
-  ): Result<ExcludeLiteral<S['output'], A> | B> {
+  ): Result<ExcludeLiteral<S[OUTPUT], A> | B> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1187,7 +1211,7 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
  * @template T The denied value.
  */
 export class DenyLiteralShape<S extends AnyShape, T>
-  extends Shape<ExcludeLiteral<S['input'], T>, ExcludeLiteral<S['output'], T>>
+  extends Shape<ExcludeLiteral<S[INPUT], T>, ExcludeLiteral<S[OUTPUT], T>>
   implements DeepPartialProtocol<DenyLiteralShape<DeepPartialShape<S>, T>>
 {
   protected _options;
@@ -1234,21 +1258,21 @@ export class DenyLiteralShape<S extends AnyShape, T>
     return this.shape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], T>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S[OUTPUT], T>> {
     if (isEqual(input, this.deniedValue)) {
       return this._typeIssueFactory(input, options);
     }
     return this._handleResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ExcludeLiteral<S['output'], T>>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ExcludeLiteral<S[OUTPUT], T>>> {
     if (isEqual(input, this.deniedValue)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
     return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
   }
 
-  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S['output'], T>> {
+  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S[OUTPUT], T>> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1278,7 +1302,7 @@ export class DenyLiteralShape<S extends AnyShape, T>
  * @template S The shape that parses the input.
  */
 export class CatchShape<S extends AnyShape, T>
-  extends Shape<S['input'], S['output'] | T>
+  extends Shape<S[INPUT], S[OUTPUT] | T>
   implements DeepPartialProtocol<CatchShape<DeepPartialShape<S>, T>>
 {
   private _resultProvider: (input: unknown, issues: Issue[], options: Readonly<ApplyOptions>) => Ok<T>;
@@ -1324,15 +1348,15 @@ export class CatchShape<S extends AnyShape, T>
     return this.shape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<S['output'] | T> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<S[OUTPUT] | T> {
     return this._handleResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<S['output'] | T>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<S[OUTPUT] | T>> {
     return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
   }
 
-  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<S['output'] | T> {
+  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<S[OUTPUT] | T> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1363,7 +1387,7 @@ export class CatchShape<S extends AnyShape, T>
  * @template N The shape to which the output must not conform.
  */
 export class ExcludeShape<S extends AnyShape, N extends AnyShape>
-  extends Shape<S['input'], Exclude<S['output'], N['input']>>
+  extends Shape<S[INPUT], Exclude<S[OUTPUT], N[INPUT]>>
   implements DeepPartialProtocol<ExcludeShape<DeepPartialShape<S>, N>>
 {
   protected _options;
@@ -1407,7 +1431,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return this.shape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<S['output'], N['input']>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<S[OUTPUT], N[INPUT]>> {
     const { shape, excludedShape, _applyChecks } = this;
 
     let issues;
@@ -1432,7 +1456,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<Exclude<S['output'], N['input']>>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<Exclude<S[OUTPUT], N[INPUT]>>> {
     const { shape, excludedShape, _applyChecks } = this;
 
     return shape['_applyAsync'](input, options).then(result => {

@@ -16,7 +16,16 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, OptionalDeepPartialShape, Result } from './Shape';
+import {
+  AnyShape,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  INPUT,
+  NEVER,
+  OptionalDeepPartialShape,
+  OUTPUT,
+  Result
+} from './Shape';
 
 /**
  * The shape of a `Map` instance.
@@ -25,7 +34,7 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, NEVER, OptionalDeepPar
  * @template V The value shape.
  */
 export class MapShape<K extends AnyShape, V extends AnyShape>
-  extends CoercibleShape<Map<K['input'], V['input']>, Map<K['output'], V['output']>>
+  extends CoercibleShape<Map<K[INPUT], V[INPUT]>, Map<K[OUTPUT], V[OUTPUT]>>
   implements DeepPartialProtocol<MapShape<DeepPartialShape<K>, OptionalDeepPartialShape<V>>>
 {
   protected _options;
@@ -80,7 +89,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<Map<K['output'], V['output']>> {
+  protected _apply(input: any, options: ApplyOptions): Result<Map<K[OUTPUT], V[OUTPUT]>> {
     let changed = false;
     let entries;
 
@@ -153,7 +162,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Map<K['output'], V['output']>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Map<K[OUTPUT], V[OUTPUT]>>> {
     return new Promise(resolve => {
       let changed = false;
       let entries: [unknown, unknown][];

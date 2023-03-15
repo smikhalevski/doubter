@@ -22,7 +22,7 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
 /**
  * The shape of a `Set` instance.
@@ -30,7 +30,7 @@ import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Result 
  * @template S The value shape.
  */
 export class SetShape<S extends AnyShape>
-  extends CoercibleShape<Set<S['input']>, Set<S['output']>>
+  extends CoercibleShape<Set<S[INPUT]>, Set<S[OUTPUT]>>
   implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<S>>>
 {
   protected _options;
@@ -121,7 +121,7 @@ export class SetShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<Set<S['output']>> {
+  protected _apply(input: any, options: ApplyOptions): Result<Set<S[OUTPUT]>> {
     let changed = false;
     let values;
     let issues = null;
@@ -169,7 +169,7 @@ export class SetShape<S extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Set<S['output']>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Set<S[OUTPUT]>>> {
     return new Promise(resolve => {
       let changed = false;
       let values: unknown[];

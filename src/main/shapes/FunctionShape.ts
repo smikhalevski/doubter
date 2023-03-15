@@ -13,15 +13,15 @@ import {
   unshiftIssuesPath,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, Result, Shape } from './Shape';
+import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 // prettier-ignore
 export type InferFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
-  (this: T extends AnyShape ? T['output'] : any, ...args: A['output']) => R extends AnyShape ? R['input'] : any;
+  (this: T extends AnyShape ? T[OUTPUT] : any, ...args: A[OUTPUT]) => R extends AnyShape ? R[INPUT] : any;
 
 // prettier-ignore
 export type InferWrapper<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
-  (this: T extends AnyShape ? T['input'] : any, ...args: A['input']) => R extends AnyShape ? R['output'] : any;
+  (this: T extends AnyShape ? T[INPUT] : any, ...args: A[INPUT]) => R extends AnyShape ? R[OUTPUT] : any;
 
 /**
  * @template A The shape of the array of arguments.
@@ -161,9 +161,9 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The wrapper function.
    */
   wrapAsync(
-    fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R['input']> | R['input'], never> : null, T>,
+    fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R[INPUT]> | R[INPUT], never> : null, T>,
     options = this._parseOptions
-  ): InferWrapper<A, Shape<never, Promise<R extends AnyShape ? R['output'] : any>>, T> {
+  ): InferWrapper<A, Shape<never, Promise<R extends AnyShape ? R[OUTPUT] : any>>, T> {
     const { argsShape, returnShape, thisShape } = this;
 
     return function (...args) {

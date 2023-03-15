@@ -4,20 +4,20 @@ import { expectType } from 'tsd';
 expectType<{ aaa?: string }>(
   d.object({
     aaa: d.string().optional(),
-  }).output
+  }).__output
 );
 
 expectType<{ aaa?: any }>(
   d.object({
     aaa: d.any(),
-  }).output
+  }).__output
 );
 
 expectType<{ aaa: string; bbb: number }>(
   d.object({
     aaa: d.string(),
     bbb: d.number(),
-  }).output
+  }).__output
 );
 
 expectType<{ aaa: string }>(
@@ -26,7 +26,7 @@ expectType<{ aaa: string }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .pick(['aaa']).output
+    .pick(['aaa']).__output
 );
 
 expectType<{ bbb: number }>(
@@ -35,12 +35,12 @@ expectType<{ bbb: number }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .omit(['aaa']).output
+    .omit(['aaa']).__output
 );
 
-expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend({ bbb: d.number() }).output);
+expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend({ bbb: d.number() }).__output);
 
-expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend(d.object({ bbb: d.number() })).output);
+expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend(d.object({ bbb: d.number() })).__output);
 
 expectType<{ aaa?: string; bbb?: number }>(
   d
@@ -48,7 +48,7 @@ expectType<{ aaa?: string; bbb?: number }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .partial().output
+    .partial().__output
 );
 
 expectType<{ aaa?: string; bbb?: number }>(
@@ -57,7 +57,7 @@ expectType<{ aaa?: string; bbb?: number }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .deepPartial().output
+    .deepPartial().__output
 );
 
 expectType<{ aaa?: string; bbb?: { ccc?: number } }>(
@@ -66,7 +66,7 @@ expectType<{ aaa?: string; bbb?: { ccc?: number } }>(
       aaa: d.string(),
       bbb: d.object({ ccc: d.number() }),
     })
-    .deepPartial().output
+    .deepPartial().__output
 );
 
 expectType<{ aaa?: string; bbb?: Array<number | undefined> }>(
@@ -75,5 +75,5 @@ expectType<{ aaa?: string; bbb?: Array<number | undefined> }>(
       aaa: d.string(),
       bbb: d.array(d.number()),
     })
-    .deepPartial().output
+    .deepPartial().__output
 );

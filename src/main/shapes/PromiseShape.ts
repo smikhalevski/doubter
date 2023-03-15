@@ -3,7 +3,7 @@ import { TYPE_PROMISE } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { applyShape, copyUnsafeChecks, createIssueFactory, isArray, ok, toDeepPartialShape } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
 /**
  * The shape of a value wrapped in a `Promise` instance.
@@ -11,7 +11,7 @@ import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Result } from 
  * @template S The shape of the resolved value.
  */
 export class PromiseShape<S extends AnyShape>
-  extends CoercibleShape<Promise<S['input']>, Promise<S['output']>>
+  extends CoercibleShape<Promise<S[INPUT]>, Promise<S[OUTPUT]>>
   implements DeepPartialProtocol<PromiseShape<OptionalDeepPartialShape<S>>>
 {
   protected _options;
@@ -47,11 +47,11 @@ export class PromiseShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<Promise<S['output']>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<Promise<S[OUTPUT]>> {
     throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Promise<S['output']>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Promise<S[OUTPUT]>>> {
     if (!(input instanceof Promise) && !(options.coerced || this.isCoerced)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
