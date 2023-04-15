@@ -567,7 +567,7 @@ You can pass an additional parameter when adding a check:
 ```ts
 const includesCheck: d.CheckCallback<string[], string> = (value, param) => {
   if (!value.includes(param)) {
-    return { message: 'Must incude ' + param };
+    return { message: 'Must include ' + param };
   }
 };
 
