@@ -73,7 +73,7 @@ export function replaceChecks<S extends Shape>(shape: S, checks: readonly Check[
  * The shortcut to add built-in checks to shapes.
  */
 export function addCheck<S extends Shape, P>(shape: S, key: string, param: P, cb: CheckCallback<S[OUTPUT], P>): S {
-  return shape.check({ key, unsafe: true }, cb, param);
+  return shape.check(cb, { key, param, unsafe: true });
 }
 
 /**

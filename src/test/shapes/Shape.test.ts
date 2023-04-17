@@ -83,7 +83,7 @@ describe('Shape', () => {
 
     test('adds an unsafe check', () => {
       const cb = () => null;
-      expect(new Shape().check({ unsafe: true }, cb).getCheck(cb)?.isUnsafe).toBe(true);
+      expect(new Shape().check(cb, { unsafe: true }).getCheck(cb)?.isUnsafe).toBe(true);
     });
 
     test('added check is applied', () => {
@@ -98,7 +98,7 @@ describe('Shape', () => {
 
     test('added parameterized check is applied', () => {
       const cbMock = jest.fn(() => null);
-      const shape = new Shape().check(cbMock, 111);
+      const shape = new Shape().check(cbMock, { param: 111 });
 
       shape.parse('aaa');
 
@@ -128,7 +128,7 @@ describe('Shape', () => {
 
     test('does not add the same check callback twice if keys are equal', () => {
       const cbMock = jest.fn();
-      const shape = new Shape().check({ key: 'aaa' }, cbMock).check({ key: 'aaa' }, cbMock);
+      const shape = new Shape().check(cbMock, { key: 'aaa' }).check(cbMock, { key: 'aaa' });
 
       shape.parse(111);
 
@@ -137,7 +137,7 @@ describe('Shape', () => {
 
     test('adds the same check callback twice if keys are different', () => {
       const cbMock = jest.fn();
-      const shape = new Shape().check({ key: 'aaa' }, cbMock).check(cbMock);
+      const shape = new Shape().check(cbMock, { key: 'aaa' }).check(cbMock);
 
       shape.parse(111);
 
@@ -147,7 +147,7 @@ describe('Shape', () => {
     test('replaces check callback with the same key', () => {
       const cbMock1 = jest.fn();
       const cbMock2 = jest.fn();
-      const shape = new Shape().check({ key: 'aaa' }, cbMock1).check({ key: 'aaa' }, cbMock2);
+      const shape = new Shape().check(cbMock1, { key: 'aaa' }).check(cbMock2, { key: 'aaa' });
 
       shape.parse(111);
 
@@ -170,7 +170,7 @@ describe('Shape', () => {
 
     test('returns the check with custom key', () => {
       const cb = () => null;
-      const shape = new Shape().check({ key: 'aaa' }, cb);
+      const shape = new Shape().check(cb, { key: 'aaa' });
 
       expect(shape.getCheck('aaa')).toEqual({ key: 'aaa', callback: cb, isUnsafe: false });
     });
@@ -696,7 +696,7 @@ describe('Shape', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn();
 
-      const shape = new Shape().check(cbMock1).check({ unsafe: true }, cbMock2);
+      const shape = new Shape().check(cbMock1).check(cbMock2, { unsafe: true });
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
@@ -712,7 +712,7 @@ describe('Shape', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn(() => [{ code: 'yyy' }]);
 
-      const shape = new Shape().check(cbMock1).check({ unsafe: true }, cbMock2);
+      const shape = new Shape().check(cbMock1).check(cbMock2, { unsafe: true });
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
@@ -1110,7 +1110,7 @@ describe('ReplaceLiteralShape', () => {
       new Shape().check(() => [{ code: 'xxx' }]),
       111,
       222
-    ).check({ unsafe: true }, () => [{ code: 'yyy' }]);
+    ).check(() => [{ code: 'yyy' }], { unsafe: true });
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
@@ -1164,7 +1164,7 @@ describe('ReplaceLiteralShape', () => {
         asyncShape.check(() => [{ code: 'xxx' }]),
         111,
         222
-      ).check({ unsafe: true }, () => [{ code: 'yyy' }]);
+      ).check(() => [{ code: 'yyy' }], { unsafe: true });
 
       await expect(shape.tryAsync('aaa', { verbose: true })).resolves.toEqual({
         ok: false,

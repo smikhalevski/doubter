@@ -325,7 +325,7 @@ describe('UnionShape', () => {
           key1: asyncShape.check(() => [{ code: 'zzz' }]),
         },
         null
-      ).check({ unsafe: true }, () => [{ code: 'yyy' }]);
+      ).check(() => [{ code: 'yyy' }], { unsafe: true });
 
       const orShape = new UnionShape([shape1, shape2]);
 

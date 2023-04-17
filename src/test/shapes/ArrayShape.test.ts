@@ -230,7 +230,7 @@ describe('ArrayShape', () => {
   });
 
   test('applies unsafe checks if a tuple element raises an issue', () => {
-    const arrShape = new ArrayShape([new StringShape()], null).check({ unsafe: true }, () => [{ code: 'xxx' }]);
+    const arrShape = new ArrayShape([new StringShape()], null).check(() => [{ code: 'xxx' }], { unsafe: true });
 
     expect(arrShape.try([111], { verbose: true })).toEqual({
       ok: false,
@@ -295,7 +295,7 @@ describe('ArrayShape', () => {
       const cbMock1 = jest.fn();
       const cbMock2 = jest.fn();
 
-      const arrShape = new ArrayShape(null, null).check({ unsafe: true }, cbMock1).check(cbMock2);
+      const arrShape = new ArrayShape(null, null).check(cbMock1, { unsafe: true }).check(cbMock2);
 
       arrShape.rest(new Shape()).parse([]);
 

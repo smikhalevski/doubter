@@ -46,7 +46,7 @@ describe('LazyShape', () => {
 
   test('does not apply checks if an underlying shape raises an issue', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
-    const lazyShape = new LazyShape(() => shape).check({ unsafe: true }, () => [{ code: 'yyy' }]);
+    const lazyShape = new LazyShape(() => shape).check(() => [{ code: 'yyy' }], { unsafe: true });
 
     expect(lazyShape.try('aaa', { verbose: true })).toEqual({
       ok: false,
