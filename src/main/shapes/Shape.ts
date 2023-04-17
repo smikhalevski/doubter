@@ -264,24 +264,17 @@ export class Shape<I = any, O = I> {
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If check callback returns an empty array, it is considered that no issues have occurred.
-   *
-   * @param cb The callback that checks the shape output.
-   * @returns The clone of the shape.
-   */
-  check(cb: CheckCallback<O, undefined>): this;
-
-  /**
-   * Adds the check that is applied to the shape output.
+   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then the existing
+   * check is deleted and the new one is appended. If the key is `undefined` then the `cb` identity is used as a key.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
-   * @param param The param that is passed to `cb` as the second argument.
+   * @param options The check options.
    * @returns The clone of the shape.
    * @template P The check param.
    */
-  check<P>(cb: CheckCallback<O, P>, param: P): this;
+  check<P>(cb: CheckCallback<O, P>, options: CheckOptions & { param: P }): this;
 
   /**
    * Adds the check that is applied to the shape output.
@@ -291,36 +284,14 @@ export class Shape<I = any, O = I> {
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
-   * @param options The check options.
    * @param cb The callback that checks the shape output.
+   * @param options The check options.
    * @returns The clone of the shape.
    */
-  check(options: CheckOptions, cb: CheckCallback<O, undefined>): this;
+  check(cb: CheckCallback<O>, options?: CheckOptions): this;
 
-  /**
-   * Adds the check that is applied to the shape output.
-   *
-   * If the {@linkcode CheckOptions.key} is defined and there's already a check with the same key then the existing
-   * check is deleted and the new one is appended. If the key is `undefined` then the `cb` identity is used as a key.
-   *
-   * If check callback returns an empty array, it is considered that no issues have occurred.
-   *
-   * @param options The check options.
-   * @param cb The callback that checks the shape output.
-   * @param param The param that is passed to `cb` as the second argument.
-   * @returns The clone of the shape.
-   * @template P The check param.
-   */
-  check<P>(options: CheckOptions, cb: CheckCallback<O, P>, param: P): this;
-
-  check(options: any, cb?: any, param?: any): this {
-    if (typeof options === 'function') {
-      param = cb;
-      cb = options;
-      options = {};
-    }
-
-    const { key = cb, unsafe = false } = options;
+  check(cb: CheckCallback, options: CheckOptions = {}): this {
+    const { key = cb, param, unsafe = false } = options;
 
     const index = getCheckIndex(this._checks, key);
     const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
@@ -404,11 +375,14 @@ export class Shape<I = any, O = I> {
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
-    return this.check({ key, unsafe }, (input, param, options) => {
-      if (!cb(input, options)) {
-        return issueFactory(input, options);
-      }
-    });
+    return this.check(
+      (input, param, options) => {
+        if (!cb(input, options)) {
+          return issueFactory(input, options);
+        }
+      },
+      { key, param: cb, unsafe }
+    );
   }
 
   /**

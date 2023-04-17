@@ -45,7 +45,7 @@ describe('PromiseShape', () => {
   test('applies unsafe checks if value shape raised issues', async () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const promiseShape = new PromiseShape(shape).check({ unsafe: true }, () => [{ code: 'yyy' }]);
+    const promiseShape = new PromiseShape(shape).check(() => [{ code: 'yyy' }], { unsafe: true });
 
     await expect(promiseShape.tryAsync(Promise.resolve(111), { verbose: true })).resolves.toEqual({
       ok: false,

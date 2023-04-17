@@ -76,6 +76,11 @@ export interface CheckOptions {
   key?: unknown;
 
   /**
+   * The param passed to the {@linkcode CheckCallback} and stored in {@linkcode Check.param}.
+   */
+  param?: any;
+
+  /**
    * If `true` then the check would be executed even if the preceding check failed, otherwise check is
    * ignored.
    */

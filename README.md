@@ -571,7 +571,7 @@ const includesCheck: d.CheckCallback<string[], string> = (value, param) => {
   }
 };
 
-const shape = d.array(d.string()).check(includesCheck, 'Mars');
+const shape = d.array(d.string()).check(includesCheck, { param: 'Mars' });
 // ⮕ Shape<any[]>
 
 shape.parse(['Mars', 'Pluto']);
@@ -656,7 +656,7 @@ To force `noDigitsCheck` to be applied even if `helloCheck` has raised issues, p
 ```ts
 const shape = d.string()
   .check(helloCheck)
-  .check({ unsafe: true }, noDigitsCheck);
+  .check(noDigitsCheck, { unsafe: true });
 ```
 
 Safe and unsafe checks are applied only if the type of the input is valid.
@@ -747,7 +747,7 @@ Using a check callback identity as a key isn't always convenient. Pass the
 [`key`](https://smikhalevski.github.io/doubter/interfaces/CheckOptions.html#key) option to define a custom key:
 
 ```ts
-shape.check({ key: 'email' }, emailCheck);
+shape.check(emailCheck, { key: 'email' });
 // ⮕ Shape<string>
 ```
 
