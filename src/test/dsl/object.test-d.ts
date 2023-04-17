@@ -77,3 +77,27 @@ expectType<{ aaa?: string; bbb?: Array<number | undefined> }>(
     })
     .deepPartial().__output
 );
+
+const keys = ['aaa'] as const;
+
+expectType<{ aaa: string }>(d.object({ aaa: d.string(), bbb: d.number() }).pick(keys).__output);
+
+expectType<{ bbb: number }>(d.object({ aaa: d.string(), bbb: d.number() }).omit(keys).__output);
+
+expectType<{ aaa?: string | undefined; bbb: number }>(
+  d
+    .object({
+      aaa: d.string(),
+      bbb: d.number(),
+    })
+    .partial(keys).__output
+);
+
+expectType<{ aaa: string; bbb: number }>(
+  d
+    .object({
+      aaa: d.string().optional(),
+      bbb: d.number(),
+    })
+    .required(keys).__output
+);
