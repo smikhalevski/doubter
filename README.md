@@ -1859,7 +1859,7 @@ class NumberLikeShape extends d.Shape<string, number> {
 
   protected _apply(input: unknown, options: d.ApplyOptions): d.Result<number> {
 
-    // 1️⃣ Validate the input and retun issues if it is invalid
+    // 1️⃣ Validate the input and return issues if it is invalid
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {
       return [{
         code: 'kaputs',
