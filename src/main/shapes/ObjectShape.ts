@@ -179,7 +179,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    * @template K The tuple of keys to pick.
    */
-  pick<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Pick<P, K[number]>, R> {
+  pick<K extends readonly StringKeyof<P>[]>(keys: K): ObjectShape<Pick<P, K[number]>, R> {
     const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
@@ -197,7 +197,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    * @template K The tuple of keys to omit.
    */
-  omit<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]>, R> {
+  omit<K extends readonly StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]>, R> {
     const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
@@ -222,7 +222,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    * @template K The array of string keys.
    */
-  partial<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & OptionalProps<Pick<P, K[number]>>, R>;
+  partial<K extends readonly StringKeyof<P>[]>(
+    keys: K
+  ): ObjectShape<Omit<P, K[number]> & OptionalProps<Pick<P, K[number]>>, R>;
 
   partial(keys?: string[]) {
     const shapes: Dict<AnyShape> = {};
@@ -259,7 +261,9 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * @returns The new object shape.
    * @template K The array of string keys.
    */
-  required<K extends StringKeyof<P>[]>(keys: K): ObjectShape<Omit<P, K[number]> & RequiredProps<Pick<P, K[number]>>, R>;
+  required<K extends readonly StringKeyof<P>[]>(
+    keys: K
+  ): ObjectShape<Omit<P, K[number]> & RequiredProps<Pick<P, K[number]>>, R>;
 
   required(keys?: string[]) {
     const shapes: Dict<AnyShape> = {};
