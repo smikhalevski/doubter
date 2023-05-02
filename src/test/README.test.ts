@@ -4,7 +4,7 @@ import { CODE_UNION, MESSAGE_UNION } from '../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/Type';
 
 describe('Cookbook', () => {
-  test('rename keys', () => {
+  test('Rename object keys', () => {
     const keyShape = d.enum(['foo', 'bar']).transform(value => value.toUpperCase() as 'FOO' | 'BAR');
 
     const shape = d.record(keyShape, d.number());
@@ -12,17 +12,31 @@ describe('Cookbook', () => {
     expect(shape.parse({ foo: 1, bar: 2 })).toStrictEqual({ FOO: 1, BAR: 2 });
   });
 
-  test('query strings', () => {
+  test('Type-safe URL query params', () => {
     const queryShape = d
       .object({
         name: d.string(),
-        age: d.int().coerce().nonNegative().catch(),
+        age: d.int().nonNegative().catch(),
       })
       .partial();
 
-    expect(queryShape.parse(qs.parse('name=Frodo&age=50'))).toEqual({ name: 'Frodo', age: 50 });
+    expect(queryShape.parse(qs.parse('name=Frodo&age=50'), { coerced: true })).toEqual({ name: 'Frodo', age: 50 });
 
-    expect(queryShape.parse(qs.parse('age=-33'))).toStrictEqual({ age: undefined });
+    expect(queryShape.parse(qs.parse('age=-33'), { coerced: true })).toStrictEqual({ age: undefined });
+  });
+
+  test('Type-safe env variables', () => {
+    const envShape = d
+      .object({
+        TS_JEST: d.int(),
+        NODE_ENV: d.enum(['test', 'production']),
+      })
+      .strip();
+
+    expect(envShape.parse(process.env, { coerced: true })).toEqual({
+      NODE_ENV: 'test',
+      TS_JEST: 1,
+    });
   });
 });
 
