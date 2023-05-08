@@ -15,6 +15,7 @@ Runtime validation and transformation library.
 - No dynamic code evaluation;
 - Zero dependencies;
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- Check out the [Cookbook](#cookbook) for real-life examples!
 
 🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/y5kec4)
 
@@ -118,6 +119,7 @@ npm install --save-prod doubter
 
 - [Rename object keys](#rename-object-keys)
 - [Type-safe URL query params](#type-safe-url-query-params)
+- [Type-safe env variables](#type-safe-env-variables)
 - [Conditionally applied shapes](#conditionally-applied-shapes)
 
 # Basics
@@ -3586,27 +3588,77 @@ Let's define a shape that describes the query with `name` and `age` params:
 const queryShape = d
   .object({
     name: d.string(),
-    age: d.int().coerce().nonNegative().catch()
+    age: d.int().nonNegative().catch()
   })
   .partial();
-// ⮕ Shape<{ name: string | undefined, age: number | undefined }>
+// ⮕ Shape<{ name?: string | undefined, age?: number | undefined }>
 ```
 
-Note that the object shape is partial, so absence of any param won't raise a validation issue. Since query params are
-strings, `name` doesn't require additional attention. On the other hand, `age` is an integer, so we should enable
-[coercion](#type-coercion) for it. We also added [`catch`](#fallback-value) to ensure that if `age` cannot be parsed as
-a positive integer, Doubter would return `undefined`.
+Key takeaways:
 
-Now let's parse the query string with `qs` and then apply our shape:
+1. The object shape is marked as [partial](#making-objects-partial-and-required), so absence of any query param won't
+raise a validation issue. You can mark individual params as optional and
+[provide a default value](#optional-and-non-optional). 
+
+2. Query params are strings. So `name` doesn't require additional attention since it's constrained by
+[`d.string`](#string). On the other hand, `age` is an integer, so [type coercion](#type-coercion) must be enabled to
+coerce `age` to a number. To do this we're going to pass the [`coerced` option](#parsing-and-trying) to the `parse`
+method.
+
+3. We also added [`catch`](#fallback-value), so when `age` cannot be parsed as a positive integer, Doubter returns
+`undefined` instead of raising a validation issue.
+
+Now, let's parse the query string with `qs` and then apply our shape:
 
 ```ts
 import qs from 'qs';
 
-queryShape.parse(qs.parse('name=Frodo&age=50'));
+const query = queryShape.parse(
+  qs.parse('name=Frodo&age=50'),
+  { coerced: true }
+);
 // ⮕ { name: 'Frodo', age: 50 }
+```
 
-queryShape.parse(qs.parse('age=-33'));
+`age` is set to `undefined` if it is invalid:
+
+```ts
+queryShape.parse(
+  qs.parse('age=-33'),
+  { coerced: true }
+);
 // ⮕ { age: undefined }
+```
+
+## Type-safe env variables
+
+If you're developing an app that consumes environment variables you most likely want to validate them.
+
+```ts
+const envShape = d
+  .object({
+    NODE_ENV: d.enum(['test', 'production']),
+    DAYS_IN_YEAR: d.int().optional(365),
+  })
+  .strip();
+```
+
+Key takeaways:
+
+1. Env variables are strings, so [type coercion](#type-coercion) must be enabled to coerce `DAYS_IN_YEAR` to an integer.
+
+2. `NODE_ENV` is the required env variable, while `DAYS_IN_YEAR` is optional and would be set to 365 if it isn't
+available. Note that if `DAYS_IN_YEAR` is provided and isn't a valid integer, a validation error would be raised.
+
+3. Unknown env variables are [stripped](#unknown-keys), so they won't be visible inside the app. This prevents
+accidental usage of an unvalidated env variable.
+
+```ts
+const env = envShape.parse(
+  process.env,
+  { coerced: true }
+);
+// ⮕ { NODE_ENV: 'test' | 'production', DAYS_IN_YEAR: number }
 ```
 
 ## Conditionally applied shapes
