@@ -6,7 +6,6 @@ import {
   Bitmask,
   cloneDict,
   cloneDictKeys,
-  cloneInstance,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -330,7 +329,7 @@ export class ObjectShape<P extends ReadonlyDict<AnyShape>, R extends AnyShape | 
    * Constrains an object to be an `Object` instance or to have a `null` prototype.
    */
   plain(): this {
-    const shape = cloneInstance(this);
+    const shape = this._clone();
     shape._typePredicate = isPlainObject;
     return shape;
   }

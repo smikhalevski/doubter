@@ -18,7 +18,7 @@ import {
 } from '../constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
-import { addCheck, canonize, cloneInstance, createIssueFactory, isArray, isNumber, ok } from '../utils';
+import { addCheck, canonize, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
 
@@ -193,7 +193,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   finite(options?: ConstraintOptions | Message): this {
-    const shape = cloneInstance(this);
+    const shape = this._clone();
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
     shape._typePredicate = Number.isFinite;
@@ -208,7 +208,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @returns The clone of the shape.
    */
   integer(options?: ConstraintOptions | Message): this {
-    const shape = cloneInstance(this);
+    const shape = this._clone();
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
     shape._typePredicate = Number.isInteger;

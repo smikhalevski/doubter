@@ -3,7 +3,6 @@ import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
 import {
   applyShape,
-  cloneInstance,
   copyChecks,
   createIssueFactory,
   getErrorMessage,
@@ -103,7 +102,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The new function shape.
    */
   noWrap(): this {
-    const shape = cloneInstance(this);
+    const shape = this._clone();
     (shape as Mutable<this>).isWrapped = false;
     return shape;
   }
@@ -115,7 +114,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The new function shape.
    */
   options(options: ParseOptions): this {
-    const shape = cloneInstance(this);
+    const shape = this._clone();
     shape._parseOptions = options;
     return shape;
   }
