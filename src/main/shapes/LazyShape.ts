@@ -32,13 +32,15 @@ export class LazyShape<ProvidedShape extends AnyShape>
   constructor(shapeProvider: () => ProvidedShape) {
     super();
 
-    let shape: ProvidedShape | null = null;
+    // 0 = unavailable
+    // 1 = pending
+    let shape: 0 | 1 | ProvidedShape = 0;
 
     this._shapeProvider = () => {
-      if (shape !== null || (shape = shapeProvider()) instanceof Shape) {
+      if (shape !== 1 && (shape !== 0 || ((shape = 1), (shape = shapeProvider())) instanceof Shape)) {
         return shape;
       }
-      shape = null;
+      shape = 0;
       throw new Error(ERROR_SHAPE_EXPECTED);
     };
   }

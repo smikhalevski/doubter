@@ -127,6 +127,12 @@ describe('LazyShape', () => {
 
       expect(() => lazyShape.shape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
+
+    test('throws an exception if shape is accessed from the provider', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape.check(() => null).shape);
+
+      expect(() => lazyShape.shape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
+    });
   });
 
   describe('deepPartial', () => {
