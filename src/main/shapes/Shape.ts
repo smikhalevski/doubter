@@ -742,6 +742,8 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
+      Object.defineProperty(this, 'inputs', { configurable: true, value: [] });
+
       const inputs = Object.freeze(unionTypes(this['_getInputs']()));
 
       Object.defineProperty(this, 'inputs', { configurable: true, value: inputs });
@@ -754,6 +756,8 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
+      Object.defineProperty(this, 'isAsync', { configurable: true, value: false });
+
       const async = this._isAsync();
       const _defaultApplyAsync = Shape.prototype['_applyAsync'];
 
