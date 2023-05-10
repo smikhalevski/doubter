@@ -564,6 +564,23 @@ describe('Shape', () => {
     });
   });
 
+  describe('_clone', () => {
+    test('clones shape with enumerable properties', () => {
+      class MockShape extends Shape {
+        aaa = 111;
+      }
+
+      const obj1 = new MockShape();
+      obj1.aaa = 222;
+
+      const obj2 = obj1['_clone']();
+
+      expect(obj2).not.toBe(obj1);
+      expect(obj2).toBeInstanceOf(MockShape);
+      expect(obj2.aaa).toBe(222);
+    });
+  });
+
   describe('inputs', () => {
     test('returns unique types', () => {
       class MockShape extends Shape {

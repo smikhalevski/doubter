@@ -1,4 +1,4 @@
-import { cloneDict, cloneDictHead, cloneDictKeys, cloneInstance, setObjectProperty } from '../../main/utils';
+import { cloneDict, cloneDictHead, cloneDictKeys, setObjectProperty } from '../../main/utils';
 
 describe('setObjectProperty', () => {
   test('sets object value', () => {
@@ -63,22 +63,5 @@ describe('cloneDictKeys', () => {
 
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({ aaa: 111 });
-  });
-});
-
-describe('cloneInstance', () => {
-  test('clones object instance with properties', () => {
-    class Aaa {
-      aaa = 111;
-    }
-
-    const obj1 = new Aaa();
-    obj1.aaa = 222;
-
-    const obj2 = cloneInstance(obj1);
-
-    expect(obj2).not.toBe(obj1);
-    expect(obj2).toBeInstanceOf(Aaa);
-    expect(obj2.aaa).toBe(222);
   });
 });
