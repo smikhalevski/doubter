@@ -53,11 +53,3 @@ export function canonize(value: unknown): unknown {
 export function returnTrue(): boolean {
   return true;
 }
-
-export function returnFalse(): boolean {
-  return false;
-}
-
-export function returnArray(): any[] {
-  return [];
-}

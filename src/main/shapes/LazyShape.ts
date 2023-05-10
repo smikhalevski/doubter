@@ -1,6 +1,6 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 import { ApplyOptions } from '../types';
-import { copyUnsafeChecks, isArray, returnArray, returnFalse, toDeepPartialShape } from '../utils';
+import { copyUnsafeChecks, isArray, toDeepPartialShape } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 /**
@@ -12,31 +12,41 @@ export class LazyShape<S extends AnyShape>
   extends Shape<S[INPUT], S[OUTPUT]>
   implements DeepPartialProtocol<LazyShape<DeepPartialShape<S>>>
 {
-  protected _shapeProvider;
+  /**
+   * The provider that returns the memoized shape.
+   */
+  private _shapeProvider;
 
   /**
    * Creates a new {@linkcode LazyShape} instance.
    *
-   * @param shapeProvider The provider callback that returns the shape.
+   * @param shapeProvider The provider callback that returns the shape to which {@linkcode LazyShape} delegates input
+   * handling. The provider is called only once.
    * @template S The resolved shape.
    */
   constructor(shapeProvider: () => S) {
     super();
 
-    this._shapeProvider = shapeProvider;
+    let shape: S | null = null;
+
+    this._shapeProvider = () => {
+      if (shape !== null || (shape = shapeProvider()) instanceof Shape) {
+        return shape;
+      }
+      shape = null;
+      throw new Error(ERROR_SHAPE_EXPECTED);
+    };
   }
 
   /**
    * The lazy-loaded shape.
    */
   get shape(): S {
+    Object.defineProperty(this, 'shape', { configurable: true, value: undefined });
+
     const shape = this._shapeProvider();
 
-    if (!(shape instanceof Shape)) {
-      throw new Error(ERROR_SHAPE_EXPECTED);
-    }
-
-    Object.defineProperty(this, 'shape', { value: shape });
+    Object.defineProperty(this, 'shape', { configurable: true, value: shape });
 
     return shape;
   }
@@ -48,27 +58,11 @@ export class LazyShape<S extends AnyShape>
   }
 
   protected _isAsync(): boolean {
-    const { _isAsync } = this;
-
-    this._isAsync = returnFalse;
-
-    try {
-      return this.shape.isAsync;
-    } finally {
-      this._isAsync = _isAsync;
-    }
+    return this.shape.isAsync;
   }
 
   protected _getInputs(): unknown[] {
-    const { _getInputs } = this;
-
-    this._getInputs = returnArray;
-
-    try {
-      return this.shape.inputs.slice(0);
-    } finally {
-      this._getInputs = _getInputs;
-    }
+    return this.shape.inputs.slice(0);
   }
 
   protected _apply(input: unknown, options: ApplyOptions): Result<S[OUTPUT]> {

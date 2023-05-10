@@ -1,4 +1,14 @@
-import { ApplyOptions, DeepPartialProtocol, LazyShape, ObjectShape, Result, Shape, StringShape } from '../../main';
+import {
+  ApplyOptions,
+  DeepPartialProtocol,
+  LazyShape,
+  NumberShape,
+  ObjectShape,
+  Result,
+  Shape,
+  StringShape,
+} from '../../main';
+import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
 import { TYPE_OBJECT } from '../../main/Type';
 
 describe('LazyShape', () => {
@@ -54,6 +64,18 @@ describe('LazyShape', () => {
     });
   });
 
+  test('shape provider is called only once', () => {
+    const shape = new NumberShape();
+    const shapeProviderMock = jest.fn(() => shape);
+
+    const lazyShape1: LazyShape<any> = new LazyShape(shapeProviderMock);
+    const lazyShape2 = lazyShape1.check(() => null);
+
+    expect(lazyShape1.shape).toBe(shape);
+    expect(lazyShape2.shape).toBe(shape);
+    expect(shapeProviderMock).toHaveBeenCalledTimes(1);
+  });
+
   describe('_isAsync', () => {
     test('prevents short circuit', () => {
       const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
@@ -65,6 +87,14 @@ describe('LazyShape', () => {
       const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
 
       expect(lazyShape['_isAsync']()).toBe(false);
+    });
+
+    test('returns true if async', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(
+        () => new ObjectShape({ key1: lazyShape.transformAsync(() => Promise.resolve(111)) }, null)
+      );
+
+      expect(lazyShape['_isAsync']()).toBe(true);
     });
   });
 
@@ -79,6 +109,20 @@ describe('LazyShape', () => {
       const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
 
       expect(lazyShape.inputs).toEqual([TYPE_OBJECT]);
+    });
+  });
+
+  describe('shape', () => {
+    test('prevents short circuit', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+
+      expect(lazyShape.shape).toBe(lazyShape);
+    });
+
+    test('throws an exception on premature access', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape.shape);
+
+      expect(() => lazyShape.shape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
   });
 
