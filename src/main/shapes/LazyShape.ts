@@ -44,7 +44,7 @@ export class LazyShape<S extends AnyShape>
   get shape(): S {
     const shape = this._shapeProvider();
 
-    Object.defineProperty(this, 'shape', { writable: true, value: shape });
+    Object.defineProperty(this, 'shape', { value: shape });
 
     return shape;
   }
