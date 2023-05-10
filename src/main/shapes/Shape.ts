@@ -25,10 +25,10 @@ import {
 import {
   applyShape,
   captureIssues,
-  cloneInstance,
   copyUnsafeChecks,
   createIssueFactory,
   deleteAt,
+  Dict,
   getCheckIndex,
   getErrorMessage,
   isArray,
@@ -614,7 +614,7 @@ export class Shape<I = any, O = I> {
    * Clones the shape.
    */
   protected _clone(): this {
-    return cloneInstance(this);
+    return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
   }
 
   /**
