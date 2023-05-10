@@ -2359,13 +2359,12 @@ shape1.parse('Mars');
 // ❌ ValidationError: type at /: Must be a function
 ```
 
-The result of parsing is a wrapper function that parses arguments, return and `this` values. See
-[Implementing a function](#implementing-a-function) section for more details.
-
-If you want to prevent the input function from being wrapped, use `noWrap`:
+By default, the input function is returned as is. To enable input function wrapping during parsing in a signature
+insurance wrapper that parses arguments, `this`, and return values use `insure` method.
+See [Implementing a function](#implementing-a-function) section for more details.
 
 ```ts
-const shape2 = d.fn().noWrap();
+const shape2 = d.fn().insure();
 
 function impl() {
 }
@@ -2392,7 +2391,7 @@ function sumImpl(arg1: number, arg2: number): number {
   return arg1 + arg2;
 }
 
-const sumWrapper = sumShape.wrap(sumImpl);
+const sumWrapper = sumShape.insureFunction(sumImpl);
 // ⮕ (arg1: number, arg2: number) => number
 
 sumWrapper(2, 3);
@@ -2426,7 +2425,7 @@ const userShape = d.object({
 const getLastNameShape = d.fn().this(userShape).return(d.string());
 // ⮕ Shape<(this: { name: string }) => string>
 
-const getLastName = getLastNameShape.wrap(user => {
+const getLastName = getLastNameShape.insureFunction(user => {
   // 🟡 Returns undefined at runtime if name doesn't include a space char. 
   return user.name.split(' ')[1]
 });
@@ -2468,7 +2467,7 @@ function plus2Impl(arg: number): number {
   return arg + 2;
 }
 
-const plus2Wrapper = plus2Shape.wrap(plus2Impl);
+const plus2Wrapper = plus2Shape.insureFunction(plus2Impl);
 // ⮕ (arg: number) => number
 ```
 
@@ -2504,7 +2503,7 @@ function impl(arg: number) {
   return arg + 2;
 }
 
-const wrapper = shape.wrap(impl);
+const wrapper = shape.insureFunction(impl);
 // ⮕ (arg: string) => any
 ```
 

@@ -1,6 +1,6 @@
 export const ERROR_REQUIRES_ASYNC = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
 export const ERROR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';
-export const ERROR_FUNCTION_WRAPPER_ASYNC = 'The function signature is constrained by async shapes, use wrapAsync.';
+export const ERROR_ASYNC_FUNCTION = 'The function signature is constrained by async shapes, use insureAsyncFunction.';
 
 export const CODE_ARRAY_MIN = 'arrayMinLength';
 export const CODE_ARRAY_MAX = 'arrayMaxLength';

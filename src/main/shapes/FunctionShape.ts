@@ -1,43 +1,38 @@
-import { CODE_TYPE, ERROR_FUNCTION_WRAPPER_ASYNC, MESSAGE_FUNCTION_TYPE } from '../constants';
+import { CODE_TYPE, ERROR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../constants';
 import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
-import {
-  applyShape,
-  copyChecks,
-  createIssueFactory,
-  getErrorMessage,
-  isArray,
-  Mutable,
-  ok,
-  unshiftIssuesPath,
-} from '../utils';
+import { applyShape, copyChecks, createIssueFactory, getErrorMessage, isArray, ok, unshiftIssuesPath } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 // prettier-ignore
-export type InferFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
-  (this: T extends AnyShape ? T[OUTPUT] : any, ...args: A[OUTPUT]) => R extends AnyShape ? R[INPUT] : any;
+export type InferInputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> = (
+  this: T extends AnyShape ? T[OUTPUT] : any,
+  ...args: A[OUTPUT]
+) => R extends AnyShape ? R[INPUT] : any;
 
 // prettier-ignore
-export type InferWrapper<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
+export type InferOutputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
   (this: T extends AnyShape ? T[INPUT] : any, ...args: A[INPUT]) => R extends AnyShape ? R[OUTPUT] : any;
 
 /**
+ * The shape of the function value.
+ *
  * @template A The shape of the array of arguments.
  * @template R The return value shape, or `null` if unconstrained.
  * @template T The shape of `this` argument, or `null` if unconstrained.
  */
 export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> extends Shape<
-  InferFunction<A, R, T>,
-  InferWrapper<A, R, T>
+  InferInputFunction<A, R, T>,
+  InferOutputFunction<A, R, T>
 > {
   /**
-   * `true` if input functions are wrapped during parsing, or `false` otherwise.
+   * `true` if input functions are wrapped during parsing in a signature insurance wrapper, or `false` otherwise.
    */
-  readonly isWrapped: boolean = true;
+  isInsured = false;
 
   protected _typeIssueFactory;
-  protected _parseOptions: Readonly<ParseOptions> = defaultApplyOptions;
+  protected _parseOptions?: Readonly<ParseOptions>;
 
   /**
    * Creates a new {@linkcode FunctionShape} instance.
@@ -68,9 +63,10 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, or `false` otherwise.
+   * `true` if some shapes that describe the insured function signature are {@link Shape.isAsync async}, or `false`
+   * otherwise.
    */
-  get isWrapperAsync(): boolean {
+  get isAsyncFunction(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
   }
 
@@ -97,41 +93,36 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Prevent input functions from being wrapped during parsing.
+   * Wrap input functions in a signature insurance wrapper during parsing. This causes output functions to be wrapped
+   * in a wrapper that checks that arguments, `this`, and return values conform the respective shapes.
    *
+   * @param options Options that are used by the signature insurance wrapper to parse arguments, `this`, and return
+   * values. If omitted then default options are applied: not verbose, no type coercion.
    * @returns The new function shape.
    */
-  noWrap(): this {
+  insure(options?: ParseOptions): this {
     const shape = this._clone();
-    (shape as Mutable<this>).isWrapped = false;
-    return shape;
-  }
-
-  /**
-   * Set options that are used by the wrapper to parse arguments, `this` and return values.
-   *
-   * @param options Parsing options.
-   * @returns The new function shape.
-   */
-  options(options: ParseOptions): this {
-    const shape = this._clone();
+    shape.isInsured = true;
     shape._parseOptions = options;
     return shape;
   }
 
   /**
-   * Wraps a function in a wrapper that parses arguments and passes them to `fn`, and after `fn` synchronously returns
-   * the result, the wrapper parses it as well and returns.
+   * Wraps a function in a signature insurance wrapper that parses arguments and `this`, and passes them to `fn`, and
+   * after `fn` _synchronously_ returns the result, the wrapper parses it as well and returns.
    *
    * @param fn The underlying function that would receive parsed arguments.
-   * @param options Parsing options used by the wrapper. By default, options set via {@linkcode options} are used.
+   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode insure} are used.
    * @returns The wrapper function.
    */
-  wrap(fn: InferFunction<A, R, T>, options = this._parseOptions): InferWrapper<A, R, T> {
+  insureFunction(
+    fn: InferInputFunction<A, R, T>,
+    options = this._parseOptions || defaultApplyOptions
+  ): InferOutputFunction<A, R, T> {
     const { argsShape, returnShape, thisShape } = this;
 
-    if (this.isWrapperAsync) {
-      throw new Error(ERROR_FUNCTION_WRAPPER_ASYNC);
+    if (this.isAsyncFunction) {
+      throw new Error(ERROR_ASYNC_FUNCTION);
     }
 
     return function (...args) {
@@ -149,20 +140,20 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Wraps a function in a wrapper that parses arguments and passes them to `fn`, and after `fn` asynchronously returns
-   * the result, the wrapper parses it as well and returns.
+   * Wraps a function in a signature insurance wrapper that parses arguments and `this`, and passes them to `fn`, and
+   * after `fn` _asynchronously_ returns the result, the wrapper parses it as well and returns.
    *
-   * Use this method if {@link isWrapperAsync some shapes that describe the function signature} are
+   * Use this method if {@link isAsyncFunction some shapes that describe the function signature} are
    * {@link Shape.isAsync async}.
    *
    * @param fn The underlying function that would receive parsed arguments.
-   * @param options Parsing options used by the wrapper. By default, options set via {@linkcode options} are used.
+   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode insure} are used.
    * @returns The wrapper function.
    */
-  wrapAsync(
-    fn: InferFunction<A, R extends AnyShape ? Shape<Promise<R[INPUT]> | R[INPUT], never> : null, T>,
-    options = this._parseOptions
-  ): InferWrapper<A, Shape<never, Promise<R extends AnyShape ? R[OUTPUT] : any>>, T> {
+  insureAsyncFunction(
+    fn: InferInputFunction<A, R extends AnyShape ? Shape<Promise<R[INPUT]> | R[INPUT], never> : null, T>,
+    options = this._parseOptions || defaultApplyOptions
+  ): InferOutputFunction<A, Shape<never, Promise<R extends AnyShape ? R[OUTPUT] : any>>, T> {
     const { argsShape, returnShape, thisShape } = this;
 
     return function (...args) {
@@ -200,7 +191,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     return [TYPE_FUNCTION];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferWrapper<A, R, T>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferOutputFunction<A, R, T>> {
     const { _applyChecks } = this;
 
     let issues = null;
@@ -209,15 +200,15 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
       return this._typeIssueFactory(input, options);
     }
     if (_applyChecks === null || (issues = _applyChecks(input, null, options)) === null) {
-      return this.isWrapped ? ok(this._wrap(input)) : null;
+      return this.isInsured ? ok(this._insure(input)) : null;
     }
     return issues;
   }
 
   // noinspection InfiniteRecursionJS
-  private _wrap(fn: InferFunction<A, R, T>): InferWrapper<A, R, T> {
-    this._wrap = this.isWrapperAsync ? this.wrapAsync : this.wrap;
-    return this._wrap(fn);
+  private _insure(fn: InferInputFunction<A, R, T>): InferOutputFunction<A, R, T> {
+    this._insure = this.isAsyncFunction ? this.insureAsyncFunction : this.insureFunction;
+    return this._insure(fn);
   }
 }
 
