@@ -1108,7 +1108,7 @@ shape.parse(NaN);
 // ⮕ NaN
 
 shape.parse(Infinity);
-// ❌ ValidationError: numberFinite at /: Must be an finite number
+// ❌ ValidationError: numberFinite at /: Must be a finite number
 ```
 
 ## Deny a literal value
@@ -1842,7 +1842,7 @@ The value returned from this method alters what method is used for parsing:
 
 </dd>
 <dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_getInputTypes">
+  <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_getInputs">
     <code>_getInputs()</code>
   </a>
 </dt>

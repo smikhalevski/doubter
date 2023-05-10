@@ -10,7 +10,6 @@ import {
 import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
-import { cloneInstance } from './objects';
 
 export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 
@@ -90,7 +89,7 @@ export function copyChecks<S extends Shape>(baseShape: Shape, shape: S, predicat
   const checks = baseShape['_checks'];
 
   return replaceChecks(
-    cloneInstance(shape),
+    shape['_clone'](),
     checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
   );
 }

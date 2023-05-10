@@ -1,4 +1,4 @@
-import { cloneInstance, Mutable } from '../utils';
+import { Mutable } from '../utils';
 import { Shape } from './Shape';
 
 /**
@@ -23,7 +23,7 @@ export class CoercibleShape<I = any, O = I> extends Shape<I, O> {
       return this;
     }
 
-    const shape = cloneInstance(this);
+    const shape = this._clone();
     (shape as Mutable<this>).isCoerced = true;
     return shape;
   }

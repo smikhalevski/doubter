@@ -256,7 +256,7 @@ export class Shape<I = any, O = I> {
    * @returns The clone of the shape with the updated annotations.
    */
   annotate(annotations: ReadonlyDict): this {
-    const shape = cloneInstance(this);
+    const shape = this._clone();
     (shape as Mutable<this>).annotations = Object.assign({}, this.annotations, annotations);
     return shape;
   }
@@ -296,7 +296,7 @@ export class Shape<I = any, O = I> {
     const index = getCheckIndex(this._checks, key);
     const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
 
-    return replaceChecks(cloneInstance(this), deleteAt(checks, index));
+    return replaceChecks(this._clone(), deleteAt(checks, index));
   }
 
   /**
@@ -329,7 +329,7 @@ export class Shape<I = any, O = I> {
   deleteCheck(key: unknown): this {
     const index = getCheckIndex(this._checks, key);
 
-    return index !== -1 ? replaceChecks(cloneInstance(this), deleteAt(this._checks.slice(0), index)) : this;
+    return index !== -1 ? replaceChecks(this._clone(), deleteAt(this._checks.slice(0), index)) : this;
   }
 
   /**
@@ -604,8 +604,18 @@ export class Shape<I = any, O = I> {
     return false;
   }
 
+  /**
+   * Returns input types and literal values that this shape can accept as an input.
+   */
   protected _getInputs(): unknown[] {
     return [TYPE_UNKNOWN];
+  }
+
+  /**
+   * Clones the shape.
+   */
+  protected _clone(): this {
+    return cloneInstance(this);
   }
 
   /**
@@ -755,7 +765,7 @@ Object.defineProperties(Shape.prototype, {
         this._applyAsync = _defaultApplyAsync;
       }
 
-      Object.defineProperty(this, 'isAsync', { value: async });
+      Object.defineProperty(this, 'isAsync', { configurable: true, value: async });
 
       return async;
     },

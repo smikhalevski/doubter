@@ -24,7 +24,7 @@ import {
   NEVER,
   OptionalDeepPartialShape,
   OUTPUT,
-  Result
+  Result,
 } from './Shape';
 
 /**
