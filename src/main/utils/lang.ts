@@ -43,7 +43,7 @@ export function isMapEntry(value: unknown): value is [unknown, unknown] {
 /**
  * Returns primitive if an object is a wrapper, or returns value as is.
  */
-export function canonize(value: unknown): unknown {
+export function getCanonicalValueOf(value: unknown): unknown {
   if (isObjectLike(value) && (value instanceof String || value instanceof Number || value instanceof Boolean)) {
     return value.valueOf();
   }

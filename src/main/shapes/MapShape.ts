@@ -3,7 +3,7 @@ import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
-  canonize,
+  getCanonicalValueOf,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -266,7 +266,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
       return value.every(isMapEntry) ? value : NEVER;
     }
 
-    value = canonize(value);
+    value = getCanonicalValueOf(value);
 
     if (isIterable(value)) {
       value = Array.from(value);

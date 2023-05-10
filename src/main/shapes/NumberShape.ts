@@ -18,7 +18,7 @@ import {
 } from '../constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
-import { addCheck, canonize, createIssueFactory, isArray, isNumber, ok } from '../utils';
+import { addCheck, getCanonicalValueOf, createIssueFactory, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
 
@@ -272,7 +272,7 @@ export class NumberShape extends CoercibleShape<number> {
       return 0;
     }
 
-    value = canonize(value);
+    value = getCanonicalValueOf(value);
 
     if (
       (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || value instanceof Date) &&

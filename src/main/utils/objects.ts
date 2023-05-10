@@ -61,10 +61,3 @@ export function cloneDictKeys(dict: ReadonlyDict, keys: readonly string[]): Dict
   }
   return obj;
 }
-
-/**
- * Returns the shallow clone of the instance object.
- */
-export function cloneInstance<T extends object>(obj: T): T {
-  return Object.assign(Object.create(Object.getPrototypeOf(obj)), obj);
-}

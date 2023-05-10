@@ -13,7 +13,7 @@ import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
   applyShape,
-  canonize,
+  getCanonicalValueOf,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -321,7 +321,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    * @param value The non-array value to coerce.
    */
   protected _coerce(value: unknown): unknown[] {
-    value = canonize(value);
+    value = getCanonicalValueOf(value);
 
     if (isIterable(value)) {
       return Array.from(value);

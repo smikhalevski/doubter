@@ -1,7 +1,7 @@
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { canonize, createIssueFactory, isArray, ok } from '../utils';
+import { getCanonicalValueOf, createIssueFactory, isArray, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
@@ -59,7 +59,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
       return value;
     }
 
-    value = canonize(value);
+    value = getCanonicalValueOf(value);
 
     if (typeof value === 'boolean') {
       return value;

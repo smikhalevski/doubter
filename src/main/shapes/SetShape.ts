@@ -10,7 +10,7 @@ import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
-  canonize,
+  getCanonicalValueOf,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -235,7 +235,7 @@ export class SetShape<S extends AnyShape>
    * @param value The non-`Set` value to coerce.
    */
   protected _coerceValues(value: unknown): unknown[] {
-    value = canonize(value);
+    value = getCanonicalValueOf(value);
 
     if (isArray(value)) {
       return value;
