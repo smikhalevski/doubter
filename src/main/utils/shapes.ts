@@ -29,10 +29,8 @@ export function getShapeInputs(shape: AnyShape): readonly unknown[] {
  * Converts the shape to its deep partial alternative if shape implements {@linkcode DeepPartialProtocol}, or returns
  * the shape as is.
  */
-export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(
-  shape: S
-): DeepPartialShape<S> {
-  return typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
+export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialShape<S> {
+  return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
 export function isUnsafeCheck(check: Check): boolean {
