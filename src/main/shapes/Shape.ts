@@ -35,6 +35,7 @@ import {
   isEqual,
   isObjectLike,
   isType,
+  nextNonce,
   ok,
   ReadonlyDict,
   replaceChecks,
@@ -644,9 +645,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
+   * @param nonce The globally unique number that identifies the parsing process.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  protected _apply(input: unknown, options: ApplyOptions): Result<OutputValue> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<OutputValue> {
     const { _applyChecks } = this;
 
     if (_applyChecks !== null) {
@@ -660,10 +662,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
+   * @param nonce The globally unique number that identifies the parsing process.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<OutputValue>> {
-    return new Promise(resolve => resolve(this._apply(input, options)));
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<OutputValue>> {
+    return new Promise(resolve => resolve(this._apply(input, options, nonce)));
   }
 }
 
@@ -813,7 +816,7 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['try'] = (input, options) => {
-        const result = this._apply(input, options || defaultApplyOptions);
+        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
           return ok(input);
@@ -837,7 +840,7 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['tryAsync'] = (input, options) => {
-        return this._applyAsync(input, options || defaultApplyOptions).then(result => {
+        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return ok(input);
           }
@@ -861,7 +864,7 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['parse'] = (input, options) => {
-        const result = this._apply(input, options || defaultApplyOptions);
+        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
           return input;
@@ -885,7 +888,7 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['parseAsync'] = (input, options) => {
-        return this._applyAsync(input, options || defaultApplyOptions).then(result => {
+        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
@@ -909,7 +912,7 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ApplyOptions) => {
-        const result = this._apply(input, options || defaultApplyOptions);
+        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
           return input;
@@ -933,7 +936,7 @@ Object.defineProperties(Shape.prototype, {
       this.isAsync;
 
       const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ApplyOptions) => {
-        return this._applyAsync(input, options || defaultApplyOptions).then(result => {
+        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
@@ -987,7 +990,7 @@ export class TransformShape<TransformedValue> extends Shape<any, TransformedValu
     }
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<TransformedValue> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<TransformedValue> {
     const { callback, _applyChecks } = this;
 
     let issues = null;
@@ -1005,7 +1008,7 @@ export class TransformShape<TransformedValue> extends Shape<any, TransformedValu
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<TransformedValue>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<TransformedValue>> {
     const { _applyChecks } = this;
 
     return new Promise<TransformedValue>(resolve => resolve(this.callback(input, options))).then(output => {
@@ -1068,13 +1071,13 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     return this.inputShape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<OutputShape[OUTPUT]> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<OutputShape[OUTPUT]> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    let result = inputShape['_apply'](input, options);
+    let result = inputShape['_apply'](input, options, nonce);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1083,7 +1086,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
       output = result.value;
     }
 
-    const outputResult = outputShape['_apply'](output, options);
+    const outputResult = outputShape['_apply'](output, options, nonce);
 
     if (outputResult !== null) {
       if (isArray(outputResult)) {
@@ -1099,10 +1102,10 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<OutputShape[OUTPUT]>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<OutputShape[OUTPUT]>> {
     const { inputShape, outputShape, _applyChecks } = this;
 
-    return inputShape['_applyAsync'](input, options).then(result => {
+    return inputShape['_applyAsync'](input, options, nonce).then(result => {
       let output = input;
 
       if (result !== null) {
@@ -1112,7 +1115,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
         output = result.value;
       }
 
-      return applyShape(outputShape, output, options, outputResult => {
+      return applyShape(outputShape, output, options, nonce, outputResult => {
         let issues;
 
         if (outputResult !== null) {
@@ -1191,7 +1194,8 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
 
   protected _apply(
     input: unknown,
-    options: ApplyOptions
+    options: ApplyOptions,
+    nonce: number
   ): Result<ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue> {
     const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
 
@@ -1200,12 +1204,13 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
 
   protected _applyAsync(
     input: unknown,
-    options: ApplyOptions
+    options: ApplyOptions,
+    nonce: number
   ): Promise<Result<ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue>> {
     if (isEqual(input, this.inputValue)) {
       return Promise.resolve(this._handleResult(this._result, input, options));
     }
-    return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
+    return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
   }
 
   private _handleResult(
@@ -1293,21 +1298,22 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     return this.shape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>> {
     if (isEqual(input, this.deniedValue)) {
       return this._typeIssueFactory(input, options);
     }
-    return this._handleResult(this.shape['_apply'](input, options), input, options);
+    return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
   }
 
   protected _applyAsync(
     input: unknown,
-    options: ApplyOptions
+    options: ApplyOptions,
+    nonce: number
   ): Promise<Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>>> {
     if (isEqual(input, this.deniedValue)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
-    return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
+    return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
   }
 
   private _handleResult(
@@ -1392,12 +1398,12 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     return this.shape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<BaseShape[OUTPUT] | FallbackValue> {
-    return this._handleResult(this.shape['_apply'](input, options), input, options);
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<BaseShape[OUTPUT] | FallbackValue> {
+    return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<BaseShape[OUTPUT] | FallbackValue>> {
-    return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<BaseShape[OUTPUT] | FallbackValue>> {
+    return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
   }
 
   private _handleResult(
@@ -1486,13 +1492,13 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     return this.shape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>> {
     const { shape, excludedShape, _applyChecks } = this;
 
     let issues;
     let output = input;
 
-    let result = shape['_apply'](input, options);
+    let result = shape['_apply'](input, options, nonce);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1501,7 +1507,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
       output = result.value;
     }
 
-    if (!isArray(excludedShape['_apply'](output, options))) {
+    if (!isArray(excludedShape['_apply'](output, options, nonce))) {
       return this._typeIssueFactory(input, options);
     }
 
@@ -1513,11 +1519,12 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
 
   protected _applyAsync(
     input: unknown,
-    options: ApplyOptions
+    options: ApplyOptions,
+    nonce: number
   ): Promise<Result<Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>>> {
     const { shape, excludedShape, _applyChecks } = this;
 
-    return shape['_applyAsync'](input, options).then(result => {
+    return shape['_applyAsync'](input, options, nonce).then(result => {
       let output = input;
 
       if (result !== null) {
@@ -1527,7 +1534,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
         output = result.value;
       }
 
-      return applyShape(excludedShape, output, options, outputResult => {
+      return applyShape(excludedShape, output, options, nonce, outputResult => {
         let issues;
 
         if (!isArray(outputResult)) {

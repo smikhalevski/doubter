@@ -43,7 +43,7 @@ export class ConstShape<Value> extends Shape<Value> {
     return [this.value];
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<Value> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
     const { _applyChecks } = this;
 
     if (!this._typePredicate(input)) {

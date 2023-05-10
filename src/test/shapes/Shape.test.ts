@@ -27,20 +27,23 @@ import {
 } from '../../main/constants';
 import { Result } from '../../main/shapes/Shape';
 import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { nextNonce } from '../../main/utils';
 
 class AsyncShape extends Shape {
   protected _isAsync(): boolean {
     return true;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions) {
-    return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
+    return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options, nonce)));
   }
 }
 
 let asyncShape: AsyncShape;
 
 beforeEach(() => {
+  nextNonce.nonce = 0;
+
   asyncShape = new AsyncShape();
 });
 
@@ -642,7 +645,7 @@ describe('Shape', () => {
       shape.try('aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
@@ -653,7 +656,7 @@ describe('Shape', () => {
       shape.try('aaa', options);
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options, 0);
     });
 
     test('returns ok when an input was parsed', () => {
@@ -750,7 +753,7 @@ describe('Shape', () => {
       shape.parse('aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
@@ -761,7 +764,7 @@ describe('Shape', () => {
       shape.parse('aaa', options);
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options, 0);
     });
 
     test('returns a value when an input was parsed', () => {
@@ -800,7 +803,7 @@ describe('Shape', () => {
       shape.parseOrDefault('aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
@@ -811,7 +814,7 @@ describe('Shape', () => {
       shape.parseOrDefault('aaa', 'bbb', options);
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options, 0);
     });
 
     test('returns a value when an input was parsed', () => {
@@ -838,7 +841,7 @@ describe('Shape', () => {
         await asyncShape.tryAsync('aaa');
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
@@ -848,7 +851,7 @@ describe('Shape', () => {
         await asyncShape.tryAsync('aaa', options);
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options);
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options, 0);
       });
 
       test('returns a Promise', async () => {
@@ -863,7 +866,7 @@ describe('Shape', () => {
         await asyncShape.parseAsync('aaa');
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
@@ -873,7 +876,7 @@ describe('Shape', () => {
         await asyncShape.parseAsync('aaa', options);
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options);
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options, 0);
       });
 
       test('returns a Promise', async () => {
@@ -888,7 +891,7 @@ describe('Shape', () => {
         await asyncShape.parseOrDefaultAsync('aaa');
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
@@ -898,7 +901,7 @@ describe('Shape', () => {
         await asyncShape.parseOrDefaultAsync('aaa', 'bbb', options);
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options);
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', options, 0);
       });
 
       test('resolves with a default if parsing failed', async () => {
@@ -992,10 +995,10 @@ describe('PipeShape', () => {
     expect(pipeShape.parse('aaa')).toBe('aaa');
 
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
 
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
   });
 
   test('does not apply the output shape if the input shape parsing failed', () => {
@@ -1061,10 +1064,10 @@ describe('PipeShape', () => {
       await expect(pipeShape.parseAsync('aaa')).resolves.toBe('aaa');
 
       expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
 
       expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
     });
 
     test('does not apply the output shape if the input shape parsing failed', async () => {

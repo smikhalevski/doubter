@@ -54,7 +54,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     return inputs.concat(TYPE_ARRAY, TYPE_OBJECT);
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<Value> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
     const { values, _applyChecks } = this;
 
     let output = input;

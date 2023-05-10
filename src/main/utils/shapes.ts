@@ -11,6 +11,12 @@ import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, 
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
 
+export function nextNonce(): number {
+  return nextNonce.nonce++;
+}
+
+nextNonce.nonce = 0;
+
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
@@ -98,12 +104,13 @@ export function applyShape<T>(
   shape: AnyShape,
   input: unknown,
   options: ApplyOptions,
+  nonce: number,
   cb: (result: Result) => T
 ): T | Promise<Awaited<T>> {
   if (shape.isAsync) {
-    return shape['_applyAsync'](input, options).then(cb) as Promise<Awaited<T>>;
+    return shape['_applyAsync'](input, options, nonce).then(cb) as Promise<Awaited<T>>;
   } else {
-    return cb(shape['_apply'](input, options));
+    return cb(shape['_apply'](input, options, nonce));
   }
 }
 

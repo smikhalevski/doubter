@@ -28,7 +28,7 @@ export class SymbolShape extends Shape<symbol> {
     return [TYPE_SYMBOL];
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<symbol> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'symbol') {

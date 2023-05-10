@@ -95,7 +95,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return distributeTypes(this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<Shapes[number]>[OUTPUT]> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<ToIntersection<Shapes[number]>[OUTPUT]> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -103,7 +103,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     let issues = null;
 
     for (let i = 0; i < shapesLength; ++i) {
-      const result = shapes[i]['_apply'](input, options);
+      const result = shapes[i]['_apply'](input, options, nonce);
 
       if (result === null) {
         continue;
@@ -133,7 +133,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<ToIntersection<Shapes[number]>[OUTPUT]>> {
+  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<ToIntersection<Shapes[number]>[OUTPUT]>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -166,7 +166,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         index++;
 
         if (index !== shapesLength) {
-          return applyShape(shapes[index], input, options, handleResult);
+          return applyShape(shapes[index], input, options, nonce, handleResult);
         }
         if (issues === null) {
           return this._applyIntersection(input, outputs, options);

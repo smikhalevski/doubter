@@ -1,6 +1,6 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 import { ApplyOptions } from '../types';
-import { copyUnsafeChecks, isArray, toDeepPartialShape } from '../utils';
+import { cloneInstance, copyUnsafeChecks, isArray, toDeepPartialShape } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 /**
@@ -13,9 +13,14 @@ export class LazyShape<ProvidedShape extends AnyShape>
   implements DeepPartialProtocol<LazyShape<DeepPartialShape<ProvidedShape>>>
 {
   /**
-   * The provider that returns the memoized shape.
+   * The provider caches the returned shape.
    */
   private _shapeProvider;
+
+  /**
+   * The map from nonce to an array of inputs seen during parsing.
+   */
+  private _stackMap = new Map<number, unknown[]>();
 
   /**
    * Creates a new {@linkcode LazyShape} instance.
@@ -65,12 +70,67 @@ export class LazyShape<ProvidedShape extends AnyShape>
     return this.shape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<ProvidedShape[OUTPUT]> {
-    return this._handleResult(this.shape['_apply'](input, options), input, options);
+  protected _clone(): this {
+    const shape = cloneInstance(this);
+    shape._stackMap = new Map();
+    return shape;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ProvidedShape[OUTPUT]>> {
-    return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ProvidedShape[OUTPUT]> {
+    const { _stackMap } = this;
+
+    let stack = _stackMap.get(nonce);
+
+    const leading = stack === undefined;
+
+    if (stack === undefined) {
+      stack = [input];
+      _stackMap.set(nonce, stack);
+    } else if (stack.includes(input)) {
+      return null;
+    } else {
+      stack.push(input);
+    }
+
+    try {
+      return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
+    } finally {
+      if (leading) {
+        _stackMap.delete(nonce);
+      }
+    }
+  }
+
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ProvidedShape[OUTPUT]>> {
+    const { _stackMap } = this;
+
+    let stack = _stackMap.get(nonce);
+
+    const leading = stack === undefined;
+
+    if (stack === undefined) {
+      stack = [input];
+      _stackMap.set(nonce, stack);
+    } else if (stack.includes(input)) {
+      return Promise.resolve(null);
+    } else {
+      stack.push(input);
+    }
+
+    return this.shape['_applyAsync'](input, options, nonce).then(
+      result => {
+        if (leading) {
+          _stackMap.delete(nonce);
+        }
+        return this._handleResult(result, input, options);
+      },
+      error => {
+        if (leading) {
+          _stackMap.delete(nonce);
+        }
+        throw error;
+      }
+    );
   }
 
   private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<ProvidedShape[OUTPUT]> {

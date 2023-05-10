@@ -33,7 +33,7 @@ export class DateShape extends CoercibleShape<Date> {
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<Date> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Date> {
     const { _applyChecks } = this;
 
     let output = input;

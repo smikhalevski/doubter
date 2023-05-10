@@ -128,7 +128,7 @@ export class SetShape<ValueShape extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<Set<ValueShape[OUTPUT]>> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Set<ValueShape[OUTPUT]>> {
     let changed = false;
     let values;
     let issues = null;
@@ -147,7 +147,7 @@ export class SetShape<ValueShape extends AnyShape>
 
     for (let i = 0; i < valuesLength; ++i) {
       const value = values[i];
-      const result = shape['_apply'](value, options);
+      const result = shape['_apply'](value, options, nonce);
 
       if (result === null) {
         continue;
@@ -176,7 +176,7 @@ export class SetShape<ValueShape extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Set<ValueShape[OUTPUT]>>> {
+  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Set<ValueShape[OUTPUT]>>> {
     return new Promise(resolve => {
       let changed = false;
       let values: unknown[];
@@ -218,7 +218,7 @@ export class SetShape<ValueShape extends AnyShape>
         index++;
 
         if (index !== valuesLength) {
-          return shape['_applyAsync'](values[index], options).then(handleResult);
+          return shape['_applyAsync'](values[index], options, nonce).then(handleResult);
         }
 
         const output = changed ? new Set(values) : input;

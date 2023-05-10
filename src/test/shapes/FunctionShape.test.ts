@@ -12,6 +12,7 @@ import {
 } from '../../main';
 import { CODE_TUPLE, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
+import { nextNonce } from '../../main/utils';
 
 describe('FunctionShape', () => {
   class AsyncShape extends Shape {
@@ -19,8 +20,8 @@ describe('FunctionShape', () => {
       return true;
     }
 
-    protected _applyAsync(input: unknown, options: ApplyOptions) {
-      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options, nonce)));
     }
   }
 
@@ -28,6 +29,8 @@ describe('FunctionShape', () => {
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
+    nextNonce.nonce = 0;
+
     arrayShape = new ArrayShape([], null).length(0);
     asyncShape = new AsyncShape();
   });
@@ -156,7 +159,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
     });
 
     test('raises an issue if this is invalid', () => {
@@ -230,7 +233,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
     });
 
     test('raises an issue if this is invalid', async () => {

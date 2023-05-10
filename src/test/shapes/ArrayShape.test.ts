@@ -9,6 +9,7 @@ import {
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { nextNonce } from '../../main/utils';
 
 describe('ArrayShape', () => {
   class AsyncShape extends Shape {
@@ -16,14 +17,16 @@ describe('ArrayShape', () => {
       return true;
     }
 
-    protected _applyAsync(input: unknown, options: ApplyOptions) {
-      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options, nonce)));
     }
   }
 
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
+    nextNonce.nonce = 0;
+
     asyncShape = new AsyncShape();
   });
 
@@ -74,9 +77,9 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false });
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false }, 0);
   });
 
   test('parses rest elements', () => {
@@ -92,8 +95,8 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(restApplySpy).toHaveBeenCalledTimes(2);
-    expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-    expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
+    expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false }, 0);
   });
 
   test('parses both tuple and rest elements at the same time', () => {
@@ -113,12 +116,12 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false });
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false }, 0);
     expect(restApplySpy).toHaveBeenCalledTimes(2);
-    expect(restApplySpy).toHaveBeenNthCalledWith(1, 333, { verbose: false, coerced: false });
-    expect(restApplySpy).toHaveBeenNthCalledWith(2, 444, { verbose: false, coerced: false });
+    expect(restApplySpy).toHaveBeenNthCalledWith(1, 333, { verbose: false, coerced: false }, 0);
+    expect(restApplySpy).toHaveBeenNthCalledWith(2, 444, { verbose: false, coerced: false }, 0);
   });
 
   test('raises an issue if the tuple length does not match shapes', () => {
@@ -512,7 +515,7 @@ describe('ArrayShape', () => {
 
       await expect(arrShape.tryAsync([])).resolves.toEqual({ ok: true, value: [] });
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, [], { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, [], { verbose: false, coerced: false }, 0);
     });
 
     test('parses tuple elements', async () => {
@@ -533,9 +536,9 @@ describe('ArrayShape', () => {
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
       expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
       expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false });
+      expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerced: false }, 0);
     });
 
     test('does not apply tuple element shape if previous shape raised an issue', async () => {
@@ -555,7 +558,7 @@ describe('ArrayShape', () => {
 
       expect(result).toEqual({ ok: false, issues: [{ code: 'xxx', path: [0] }] });
       expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
       expect(applySpy2).not.toHaveBeenCalled();
     });
 
@@ -570,8 +573,8 @@ describe('ArrayShape', () => {
       expect(result).toEqual({ ok: true, value: arr });
       expect(result.value).toBe(arr);
       expect(restApplySpy).toHaveBeenCalledTimes(2);
-      expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-      expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
+      expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
+      expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false }, 0);
     });
 
     test('clones an array if a tuple element was transformed', async () => {

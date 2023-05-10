@@ -10,6 +10,7 @@ import {
 } from '../../main';
 import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
 import { TYPE_OBJECT } from '../../main/Type';
+import { nextNonce } from '../../main/utils';
 
 describe('LazyShape', () => {
   class AsyncShape extends Shape {
@@ -17,14 +18,16 @@ describe('LazyShape', () => {
       return true;
     }
 
-    protected _applyAsync(input: unknown, options: ApplyOptions) {
-      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options, nonce)));
     }
   }
 
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
+    nextNonce.nonce = 0;
+
     asyncShape = new AsyncShape();
   });
 
@@ -37,7 +40,7 @@ describe('LazyShape', () => {
     expect(lazyShape.isAsync).toBe(false);
     expect(lazyShape.parse('aaa')).toBe('aaa');
     expect(applySpy).toHaveBeenCalledTimes(1);
-    expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+    expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
   });
 
   test('applies checks to transformed value', () => {
@@ -146,6 +149,89 @@ describe('LazyShape', () => {
     });
   });
 
+  describe('recursive shapes', () => {
+    test('parses immediately recursive shape', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+
+      expect(lazyShape.parse(111)).toBe(111);
+      expect(lazyShape['_stackMap'].size).toBe(0);
+    });
+
+    test('parses recursive shapes', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
+
+      const obj: any = {};
+      obj.key1 = obj;
+
+      expect(lazyShape.parse(obj)).toBe(obj);
+      expect(lazyShape['_stackMap'].size).toBe(0);
+    });
+
+    test('shows issues only for the first input value', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(
+        () => new ObjectShape({ key1: new ObjectShape({ key2: lazyShape }, null), key3: new StringShape() }, null)
+      );
+
+      const obj: any = {};
+      obj.key1 = {};
+      obj.key1.key2 = obj;
+
+      expect(lazyShape.try(obj, { verbose: true })).toEqual({
+        ok: false,
+        issues: [
+          {
+            code: 'type',
+            message: 'Must be a string',
+            param: {
+              name: 'string',
+            },
+            path: ['key3'],
+          },
+        ],
+      });
+    });
+
+    test('clears stack if an error is thrown', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(
+        () =>
+          new ObjectShape(
+            {
+              key1: lazyShape.check(() => {
+                throw new Error('expected');
+              }),
+            },
+            null
+          )
+      );
+
+      const obj: any = {};
+      obj.key1 = obj;
+
+      expect(() => lazyShape.parse(obj)).toThrow('expected');
+      expect(lazyShape['_stackMap'].size).toBe(0);
+      expect(lazyShape.shape.shapes.key1['_stackMap'].size).toBe(0);
+    });
+
+    test('nested parse invocations are separated by nonce', () => {
+      const checkMock = jest.fn();
+
+      const lazyShape: LazyShape<any> = new LazyShape(() =>
+        lazyShape
+          .transform(value => {
+            return value !== 111 ? lazyShape.parse(111) : value;
+          })
+          .check(checkMock)
+      );
+
+      lazyShape.parse(222);
+
+      expect(nextNonce()).toBe(2);
+      expect(checkMock).toHaveBeenCalledTimes(2);
+      expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { coerced: false, verbose: false });
+      expect(checkMock).toHaveBeenNthCalledWith(2, 111, undefined, { coerced: false, verbose: false });
+    });
+  });
+
   describe('async', () => {
     test('parses values with an underlying shape', async () => {
       const lazyShape = new LazyShape(() => asyncShape);
@@ -155,7 +241,52 @@ describe('LazyShape', () => {
       expect(lazyShape.isAsync).toBe(true);
       await expect(lazyShape.parseAsync('aaa')).resolves.toBe('aaa');
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+    });
+
+    test('clears stack if an error is thrown', async () => {
+      const lazyShape: LazyShape<any> = new LazyShape(
+        () =>
+          new ObjectShape(
+            {
+              key1: lazyShape.check(() => {
+                throw new Error('expected');
+              }),
+              key2: new AsyncShape(),
+            },
+            null
+          )
+      );
+
+      const obj: any = {};
+      obj.key1 = obj;
+
+      await expect(lazyShape.parseAsync(obj)).rejects.toEqual(new Error('expected'));
+
+      expect(lazyShape['_stackMap'].size).toBe(0);
+      expect(lazyShape.shape.shapes.key1['_stackMap'].size).toBe(0);
+    });
+
+    test('parallel parse calls of recursive shapes are separated by nonce', async () => {
+      const lazyShape: LazyShape<any> = new LazyShape(
+        () => new ObjectShape({ key1: lazyShape, key2: new AsyncShape() }, null)
+      );
+
+      const applySpy = jest.spyOn<Shape, any>(lazyShape, '_applyAsync');
+
+      const obj1: any = { key2: 'aaa' };
+      obj1.key1 = obj1;
+
+      const obj2: any = { key2: 'bbb' };
+      obj2.key1 = obj2;
+
+      await Promise.all([lazyShape.parseAsync(obj1), lazyShape.parseAsync(obj2)]);
+
+      expect(applySpy).toHaveBeenCalledTimes(4);
+      expect(applySpy).toHaveBeenNthCalledWith(1, obj1, { coerced: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(2, obj2, { coerced: false, verbose: false }, 1);
+      expect(applySpy).toHaveBeenNthCalledWith(3, obj1, { coerced: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(4, obj2, { coerced: false, verbose: false }, 1);
     });
   });
 });

@@ -1,6 +1,7 @@
 import { ApplyOptions, ObjectShape, Ok, Result, SetShape, Shape, StringShape } from '../../main';
 import { CODE_SET_MAX, CODE_SET_MIN, CODE_TYPE, MESSAGE_SET_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/Type';
+import { nextNonce } from '../../main/utils';
 
 describe('SetShape', () => {
   class AsyncShape extends Shape {
@@ -8,14 +9,16 @@ describe('SetShape', () => {
       return true;
     }
 
-    protected _applyAsync(input: unknown, options: ApplyOptions) {
-      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options)));
+    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
+      return new Promise<Result>(resolve => resolve(Shape.prototype['_apply'].call(this, input, options, nonce)));
     }
   }
 
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
+    nextNonce.nonce = 0;
+
     asyncShape = new AsyncShape();
   });
 
@@ -52,8 +55,8 @@ describe('SetShape', () => {
     expect(result).toEqual({ ok: true, value: set });
     expect(result.value).toBe(set);
     expect(applySpy).toHaveBeenCalledTimes(2);
-    expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-    expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
+    expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
+    expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false }, 0);
   });
 
   test('raises a single issue captured by the value shape', () => {
@@ -232,7 +235,7 @@ describe('SetShape', () => {
 
       await expect(setShape.tryAsync(new Set())).resolves.toEqual({ ok: true, value: new Set() });
       expect(setApplySpy).toHaveBeenCalledTimes(1);
-      expect(setApplySpy).toHaveBeenNthCalledWith(1, new Set(), { verbose: false, coerced: false });
+      expect(setApplySpy).toHaveBeenNthCalledWith(1, new Set(), { verbose: false, coerced: false }, 0);
     });
 
     test('parses values in a Set', async () => {
@@ -246,8 +249,8 @@ describe('SetShape', () => {
       expect(result).toEqual({ ok: true, value: set });
       expect(result.value).toBe(set);
       expect(applySpy).toHaveBeenCalledTimes(2);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-      expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false }, 0);
     });
 
     test('does not apply value shape if the previous value raised an issue', async () => {
@@ -268,8 +271,8 @@ describe('SetShape', () => {
       await setShape.tryAsync(set);
 
       expect(applySpy).toHaveBeenCalledTimes(2);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false });
-      expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false });
+      expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerced: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerced: false }, 0);
     });
 
     test('returns a new set if some values were transformed', async () => {
