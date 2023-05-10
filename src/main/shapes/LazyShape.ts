@@ -42,9 +42,11 @@ export class LazyShape<S extends AnyShape>
    * The lazy-loaded shape.
    */
   get shape(): S {
+    Object.defineProperty(this, 'shape', { configurable: true, value: undefined });
+
     const shape = this._shapeProvider();
 
-    Object.defineProperty(this, 'shape', { value: shape });
+    Object.defineProperty(this, 'shape', { configurable: true, value: shape });
 
     return shape;
   }

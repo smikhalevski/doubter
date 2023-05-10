@@ -8,6 +8,7 @@ import {
   Shape,
   StringShape,
 } from '../../main';
+import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
 import { TYPE_OBJECT } from '../../main/Type';
 
 describe('LazyShape', () => {
@@ -116,6 +117,12 @@ describe('LazyShape', () => {
       const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
 
       expect(lazyShape.shape).toBe(lazyShape);
+    });
+
+    test('throws an exception on premature access', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape.shape);
+
+      expect(() => lazyShape.shape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
   });
 

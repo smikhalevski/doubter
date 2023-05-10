@@ -62,7 +62,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     const shapes = this.shapes.filter(unique);
     const lookup = createLookupByDiscriminator(shapes) || createLookupByType(shapes);
 
-    Object.defineProperty(this, '_lookup', { value: lookup });
+    Object.defineProperty(this, '_lookup', { configurable: true, value: lookup });
 
     return lookup;
   }
