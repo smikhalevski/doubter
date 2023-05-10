@@ -1818,7 +1818,7 @@ class.
 <dl>
 <dt>
   <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_apply">
-    <code>_apply(input, options)</code>
+    <code>_apply(input, options, nonce)</code>
   </a>
 </dt>
 <dd>
@@ -1832,7 +1832,7 @@ the [`Result`](https://smikhalevski.github.io/doubter/types/Result.html):
 </dd>
 <dt>
   <a href="https://smikhalevski.github.io/doubter/classes/Shape.html#_applyAsync">
-    <code>_applyAsync(input, options)</code>
+    <code>_applyAsync(input, options, nonce)</code>
   </a>
 </dt>
 <dd>

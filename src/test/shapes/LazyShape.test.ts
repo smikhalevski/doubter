@@ -8,7 +8,7 @@ import {
   Shape,
   StringShape,
 } from '../../main';
-import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
+import { CODE_CYCLIC, ERROR_SHAPE_EXPECTED, MESSAGE_CYCLIC } from '../../main/constants';
 import { TYPE_OBJECT } from '../../main/Type';
 import { nextNonce } from '../../main/utils';
 
@@ -155,16 +155,25 @@ describe('LazyShape', () => {
     });
   });
 
-  describe('recursive shapes', () => {
-    test('parses immediately recursive shape', () => {
+  describe('cyclic objects', () => {
+    test('throws if immediately recursive non-cyclic lazy shape', () => {
       const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+
+      expect(lazyShape.try(111)).toEqual({
+        ok: false,
+        issues: [{ code: CODE_CYCLIC, input: 111, message: MESSAGE_CYCLIC }],
+      });
+    });
+
+    test('parses immediately recursive lazy shape', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape).cyclic();
 
       expect(lazyShape.parse(111)).toBe(111);
       expect(lazyShape['_stackMap'].size).toBe(0);
     });
 
-    test('parses recursive shapes', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
+    test('parses cyclic shapes', () => {
+      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null)).cyclic();
 
       const obj: any = {};
       obj.key1 = obj;
@@ -176,7 +185,7 @@ describe('LazyShape', () => {
     test('shows issues only for the first input value', () => {
       const lazyShape: LazyShape<any> = new LazyShape(
         () => new ObjectShape({ key1: new ObjectShape({ key2: lazyShape }, null), key3: new StringShape() }, null)
-      );
+      ).cyclic();
 
       const obj: any = {};
       obj.key1 = {};
@@ -208,7 +217,7 @@ describe('LazyShape', () => {
             },
             null
           )
-      );
+      ).cyclic();
 
       const obj: any = {};
       obj.key1 = obj;
@@ -227,7 +236,7 @@ describe('LazyShape', () => {
             return value !== 111 ? lazyShape.parse(111) : value;
           })
           .check(checkMock)
-      );
+      ).cyclic();
 
       lazyShape.parse(222);
 
@@ -255,14 +264,16 @@ describe('LazyShape', () => {
         () =>
           new ObjectShape(
             {
-              key1: lazyShape.check(() => {
-                throw new Error('expected');
-              }),
+              key1: lazyShape,
               key2: new AsyncShape(),
             },
             null
           )
-      );
+      )
+        .check(() => {
+          throw new Error('expected');
+        })
+        .cyclic();
 
       const obj: any = {};
       obj.key1 = obj;
@@ -273,10 +284,10 @@ describe('LazyShape', () => {
       expect(lazyShape.shape.shapes.key1['_stackMap'].size).toBe(0);
     });
 
-    test('parallel parse calls of recursive shapes are separated by nonce', async () => {
+    test('parallel parse calls of cyclic shapes are separated by nonce', async () => {
       const lazyShape: LazyShape<any> = new LazyShape(
         () => new ObjectShape({ key1: lazyShape, key2: new AsyncShape() }, null)
-      );
+      ).cyclic();
 
       const applySpy = jest.spyOn<Shape, any>(lazyShape, '_applyAsync');
 

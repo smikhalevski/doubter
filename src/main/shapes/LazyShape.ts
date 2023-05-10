@@ -1,6 +1,6 @@
-import { ERROR_SHAPE_EXPECTED } from '../constants';
-import { ApplyOptions } from '../types';
-import { cloneInstance, copyUnsafeChecks, isArray, toDeepPartialShape } from '../utils';
+import { CODE_CYCLIC, ERROR_SHAPE_EXPECTED, MESSAGE_CYCLIC } from '../constants';
+import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { copyUnsafeChecks, createIssueFactory, isArray, toDeepPartialShape } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 /**
@@ -13,6 +13,11 @@ export class LazyShape<ProvidedShape extends AnyShape>
   implements DeepPartialProtocol<LazyShape<DeepPartialShape<ProvidedShape>>>
 {
   /**
+   * `true` is cyclic objects are handled, or `false` otherwise.
+   */
+  isCyclic = false;
+
+  /**
    * The provider caches the returned shape.
    */
   private _shapeProvider;
@@ -22,15 +27,20 @@ export class LazyShape<ProvidedShape extends AnyShape>
    */
   private _stackMap = new Map<number, unknown[]>();
 
+  private _cyclicProvider: (input: unknown, options: Readonly<ApplyOptions>) => Result<S>;
+
   /**
    * Creates a new {@linkcode LazyShape} instance.
    *
    * @param shapeProvider The provider callback that returns the shape to which {@linkcode LazyShape} delegates input
    * handling. The provider is called only once.
+   * @param options The constraint options or an issue message.
    * @template ProvidedShape The provided shape.
    */
-  constructor(shapeProvider: () => ProvidedShape) {
+  constructor(shapeProvider: () => ProvidedShape, options?: ConstraintOptions | Message) {
     super();
+
+    this._cyclicProvider = createIssueFactory(CODE_CYCLIC, MESSAGE_CYCLIC, options, undefined);
 
     // 0 = unavailable
     // 1 = pending
@@ -64,6 +74,16 @@ export class LazyShape<ProvidedShape extends AnyShape>
     return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_shapeProvider())));
   }
 
+  /**
+   * Allow the lazy shape to handle cyclic objects.
+   */
+  cyclic(): this {
+    const shape = this._clone();
+    shape.isCyclic = true;
+    shape._cyclicProvider = () => null;
+    return shape;
+  }
+
   protected _isAsync(): boolean {
     return this.shape.isAsync;
   }
@@ -73,7 +93,7 @@ export class LazyShape<ProvidedShape extends AnyShape>
   }
 
   protected _clone(): this {
-    const shape = cloneInstance(this);
+    const shape = super._clone();
     shape._stackMap = new Map();
     return shape;
   }
@@ -89,7 +109,7 @@ export class LazyShape<ProvidedShape extends AnyShape>
       stack = [input];
       _stackMap.set(nonce, stack);
     } else if (stack.includes(input)) {
-      return null;
+      return this._cyclicProvider(input, options);
     } else {
       stack.push(input);
     }
@@ -114,7 +134,7 @@ export class LazyShape<ProvidedShape extends AnyShape>
       stack = [input];
       _stackMap.set(nonce, stack);
     } else if (stack.includes(input)) {
-      return Promise.resolve(null);
+      return Promise.resolve(this._cyclicProvider(input, options));
     } else {
       stack.push(input);
     }
