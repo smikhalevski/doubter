@@ -2293,7 +2293,7 @@ Finite numbers follow [number type coercion rules](#coerce-to-a-number).
 [`function`](https://smikhalevski.github.io/doubter/functions/function.html) returns a
 [`FunctionShape`](https://smikhalevski.github.io/doubter/classes/FunctionShape.html) instance.
 
-Constrain a value to be a function that has a particular signature.
+Constrain a value to be a function that has an insured signature at runtime.
 
 A function that has no arguments and returns `any`:
 
@@ -2341,8 +2341,10 @@ d.fn().return(d.string());
 To constrain a value of `this`:
 
 ```ts
-d.fn().this(d.object({ foo: d.string }));
-// ⮕ Shape<(this: { foo: string }) => any>
+d.fn().this(
+  d.object({ userId: d.string })
+);
+// ⮕ Shape<(this: { userId: string }) => any>
 ```
 
 ## Parsing a function
@@ -2359,170 +2361,151 @@ shape1.parse('Mars');
 // ❌ ValidationError: type at /: Must be a function
 ```
 
-By default, the input function is returned as is. To enable input function wrapping during parsing in a signature
-insurance wrapper that parses arguments, `this`, and return values use `insure` method.
-See [Implementing a function](#implementing-a-function) section for more details.
+By default, the input function is returned as is during parsing. Tell the function shape to wrap the input function with
+a signature insurance wrapper during parsing by calling `insure` method.
 
 ```ts
-const shape2 = d.fn().insure();
+const greetShape = d.fn([d.string()])
+  .return(d.string())
+  .insure();
 
-function impl() {
-}
-
-shape2.parse(impl) === impl // ⮕ true
+const greet = greetShape.parse(name => `Hello, $name!`);
 ```
+
+`greet` guarantees that the input function is called with arguments, `this` and return values that conform the
+respective shapes.
 
 ## Implementing a function
 
-You can wrap a function implementation using a `FunctionShape`. This would guarantee that the function implementation
-is called with arguments of requested types, and the wrapper returns the value of the requested type.
+You can wrap an input function with a signature insurance wrapper that guarantees that the function signature is
+type-safe at runtime.
 
-Let's declare a function shape that takes two number arguments and returns a number as well:
+Let's declare a function shape that takes two integers arguments and returns an integer as well:
 
 ```ts
-const sumShape = d.fn([d.number(), d.number()]).return(d.number());
+const sumShape = d.fn([d.int(), d.int()]).return(d.int());
 // ⮕ Shape<(arg1: number, arg2: number) => number>
 ```
 
 Now let's provide a concrete implementation:
 
 ```ts
-function sumImpl(arg1: number, arg2: number): number {
-  return arg1 + arg2;
-}
-
-const sumWrapper = sumShape.insureFunction(sumImpl);
+const sum = sumShape.insureFunction(
+  (arg1, arg2) => arg1 + arg2
+);
 // ⮕ (arg1: number, arg2: number) => number
 
-sumWrapper(2, 3);
+sum(2, 3);
 // ⮕ 5
 ```
 
-The wrapper function `sumWrapper` wraps implementation function `sumImpl` and guarantees that `sumImpl` is called with
-exactly two number arguments and returns a number.
-
-`sumWrapper` would throw a [`ValidationError`](#validation-errors) if the required signature is violated at runtime:
+`sum` would throw a [`ValidationError`](#validation-errors) if the required signature is violated at runtime:
 
 ```ts
-sumWrapper(2, '3');
+sum(2, '3');
 // ❌ ValidationError: type at /arguments/1: Must be a number
 
-sumWrapper(1, 2, 3);
+sum(3.14, 2);
+// ❌ ValidationError: numberInteger at /arguments/0: Must be an integer
+
+sum(1, 2, 3);
 // ❌ ValidationError: arrayMaxLength at /arguments: Must have the maximum length of 2
 ```
 
-> **Note**&ensp;In the example above TypeScript compiler would raise an error since the function signature doesn't match
-> the provided parameters.
-
-Using function shape you can parse the return value and `this`.
+Using function shape you can parse `this` and return values.
 
 ```ts
-const userShape = d.object({
-  name: d.string(),
+const atShape = d.fn([d.int()])
+  .this(d.array(d.string()))
+  .return(d.number());
+// ⮕ Shape<(this: string[]) => number>
+
+const at = atShape.insureFunction(function (index) {
+  // 🟡 May be undefined if index is out of bounds
+  return this[index];
 });
-// ⮕ Shape<{ name: string }>
-
-const getLastNameShape = d.fn().this(userShape).return(d.string());
-// ⮕ Shape<(this: { name: string }) => string>
-
-const getLastName = getLastNameShape.insureFunction(user => {
-  // 🟡 Returns undefined at runtime if name doesn't include a space char. 
-  return user.name.split(' ')[1]
-});
-// ⮕ (this: { name: string }) => string
+// ⮕ (this: number[]) => number
 ```
 
-When called with a valid user as `this`, `getLastName` would extract the last name:
+When called with a valid index, a string is returned: 
 
 ```ts
-getLastName.call({ name: 'Indiana Jones' });
-// ⮕ 'Jones'
+at.call(['Jill', 'Sarah'], 1);
+// ⮕ 'Sarah'
 ```
 
-But if user is invalid, an error would be thrown:
+But if an index is out of bounds, an error is thrown:
 
 ```ts
-getLastName.call({});
-// ❌ ValidationError: type at /arguments/0/name: Must be a string
-```
-
-The implementation of `getLastName` expects that the first and the last name are separated with a space character. This
-may cause an unexpected behaviour if an input string doesn't contain a space char: and `undefined` would be returned.
-But since `getLastNameShape` constrains the return value with `d.string`, an error is thrown at runtime:
-
-```ts
-getLastName.call({ name: 'Indiana' });
+at.call(['James', 'Bob'], 33);
 // ❌ ValidationError: type at /return: Must be a string
+```
+
+An error is thrown if an argument isn't an integer:
+
+```ts
+at.call(['Bill', 'Tess'], 3.14);
+// ❌ ValidationError: numberInteger at /arguments/0: Must be an integer
 ```
 
 ## Coercing arguments
 
-Function shapes go well with type coercion:
+Function shapes go well with [type coercion](#type-coercion):
 
 ```ts
-const plus2Shape = d.fn([d.number().coerce()]).return(d.number());
+const plus2Shape = d.fn([d.int().coerce()]).return(d.int());
 // ⮕ Shape<(arg: number) => number>
 
-function plus2Impl(arg: number): number {
-  return arg + 2;
-}
-
-const plus2Wrapper = plus2Shape.insureFunction(plus2Impl);
+const plus2 = plus2Shape.insureFunction(
+  arg => arg + 2
+);
 // ⮕ (arg: number) => number
 ```
 
-While `plus2Wrapper` requires a single number parameter, we can call it at runtime with a number-like string and get an
-expected numeric result because of an argument coercion:
+While `plus2` requires a single integer parameter, we can call it at runtime with a number-like string and get an
+expected numeric result because an argument is coerced:
 
 ```ts
-plus2Wrapper('40');
+plus2('40');
 // ⮕ 42
-```
-
-In the meantime `plus2Impl` would return the result of string concatenation:
-
-```ts
-plus2Impl('40');
-// ⮕ '402'
 ```
 
 ## Transforming arguments and return values
 
-Here's a function shape that transforms the input argument by converting a string to a number:
+Here's a function shape that transforms the input argument by parsing a string as a number:
 
 ```ts
 const shape = d.fn([d.string().transform(parseFloat)]);
 // ⮕ Shape<(arg: number) => any, (arg: string) => any>
 ```
 
-Note that the input and output functions described by this shape have different signatures. Let's wrap the
-implementation of this function:
+Note that the input and output functions described by this shape have different signatures. Let's implement of this
+function:
 
 ```ts
-function impl(arg: number) {
+function inputFunction(arg: number): any {
   return arg + 2;
 }
 
-const wrapper = shape.insureFunction(impl);
+const outputFunction = shape.insureFunction(inputFunction);
 // ⮕ (arg: string) => any
 ```
 
-Arguments of the implementation function is the output of the wrapper function. The graph below demonstrates the data
-flow between the wrapper and the implementation:
+The pseudocode below demonstrates the inner workings of the `outputFunction`:
 
-```mermaid
----
-title: wrapper
----
-flowchart TD
-    InputArguments["Input arguments"]
-    -->|Parsed by argsShape| impl
-    -->|Parsed by returnShape| OutputReturnValue["Output return value"]
+```ts
+function outputFunction(...inputArguments) {
 
-    subgraph impl
-    OutputArguments["Output arguments"]
-    --> InputReturnValue["Input return value"]
-    end
+  const outputThis = shape.thisShape.parse(this);
+
+  const outputArguments = shape.argsShape.parse(inputArguments);
+
+  const inputResult = inputFunction.apply(outputThis, outputArguments);
+  
+  const outputResult = shape.resultShape.parse(inputResult);
+  
+  return outputResult;
+}
 ```
 
 # `instanceOf`

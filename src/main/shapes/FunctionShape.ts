@@ -6,10 +6,8 @@ import { ValidationError } from '../ValidationError';
 import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 // prettier-ignore
-export type InferInputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> = (
-  this: T extends AnyShape ? T[OUTPUT] : any,
-  ...args: A[OUTPUT]
-) => R extends AnyShape ? R[INPUT] : any;
+export type InferInputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
+  (this: T extends AnyShape ? T[OUTPUT] : any, ...args: A[OUTPUT]) => R extends AnyShape ? R[INPUT] : any;
 
 // prettier-ignore
 export type InferOutputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
@@ -27,12 +25,12 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   InferOutputFunction<A, R, T>
 > {
   /**
-   * `true` if input functions are wrapped during parsing in a signature insurance wrapper, or `false` otherwise.
+   * `true` if input functions are wrapped during parsing with a signature insurance wrapper, or `false` otherwise.
    */
   isInsured = false;
 
   protected _typeIssueFactory;
-  protected _parseOptions?: Readonly<ParseOptions>;
+  protected _parseOptions: Readonly<ParseOptions> | undefined;
 
   /**
    * Creates a new {@linkcode FunctionShape} instance.
@@ -93,10 +91,10 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Wrap input functions in a signature insurance wrapper during parsing. This causes output functions to be wrapped
-   * in a wrapper that checks that arguments, `this`, and return values conform the respective shapes.
+   * Wrap input functions in a signature insurance wrapper during parsing. This causes arguments, `this` and return
+   * values to conform the respective shapes.
    *
-   * @param options Options that are used by the signature insurance wrapper to parse arguments, `this`, and return
+   * @param options Options that are used by the signature insurance wrapper to parse arguments, `this` and return
    * values. If omitted then default options are applied: not verbose, no type coercion.
    * @returns The new function shape.
    */
@@ -108,8 +106,8 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Wraps a function in a signature insurance wrapper that parses arguments and `this`, and passes them to `fn`, and
-   * after `fn` _synchronously_ returns the result, the wrapper parses it as well and returns.
+   * Wraps a function in a signature insurance wrapper that parses arguments and `this` value, and passes them to `fn`.
+   * And after `fn` _synchronously_ returns the result, the wrapper parses it as well and returns.
    *
    * @param fn The underlying function that would receive parsed arguments.
    * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode insure} are used.
@@ -127,12 +125,12 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
 
     return function (...args) {
       const result = fn.apply(
-        thisShape !== null ? getOrThrow('this', thisShape['_apply'](this, options), this, options) : this,
-        getOrThrow('arguments', argsShape['_apply'](args, options), args, options)
+        thisShape !== null ? getOrDie('this', thisShape['_apply'](this, options), this, options) : this,
+        getOrDie('arguments', argsShape['_apply'](args, options), args, options)
       );
 
       if (returnShape !== null) {
-        return getOrThrow('return', returnShape['_apply'](result, options), result, options);
+        return getOrDie('return', returnShape['_apply'](result, options), result, options);
       }
 
       return result;
@@ -140,8 +138,8 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Wraps a function in a signature insurance wrapper that parses arguments and `this`, and passes them to `fn`, and
-   * after `fn` _asynchronously_ returns the result, the wrapper parses it as well and returns.
+   * Wraps a function in a signature insurance wrapper that parses arguments and `this` value, and passes them to `fn`.
+   * And after `fn` _asynchronously_ returns the result, the wrapper parses it as well and returns.
    *
    * Use this method if {@link isAsyncFunction some shapes that describe the function signature} are
    * {@link Shape.isAsync async}.
@@ -162,23 +160,21 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
 
         if (thisShape !== null) {
           result = applyShape(thisShape, this, options, thisResult => {
-            const thisValue = getOrThrow('this', thisResult, this, options);
+            const thisValue = getOrDie('this', thisResult, this, options);
 
             return applyShape(argsShape, args, options, argsResult =>
-              fn.apply(thisValue, getOrThrow('arguments', argsResult, args, options))
+              fn.apply(thisValue, getOrDie('arguments', argsResult, args, options))
             );
           });
         } else {
           result = applyShape(argsShape, args, options, argsResult =>
-            fn.apply(this, getOrThrow('arguments', argsResult, args, options))
+            fn.apply(this, getOrDie('arguments', argsResult, args, options))
           );
         }
 
         if (returnShape !== null) {
           result = Promise.resolve(result).then(result =>
-            applyShape(returnShape, result, options, resultResult =>
-              getOrThrow('return', resultResult, result, options)
-            )
+            applyShape(returnShape, result, options, resultResult => getOrDie('return', resultResult, result, options))
           );
         }
 
@@ -212,7 +208,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 }
 
-function getOrThrow<T>(key: 'this' | 'arguments' | 'return', result: Result<T>, input: any, options: ParseOptions): T {
+function getOrDie<T>(key: 'this' | 'arguments' | 'return', result: Result<T>, input: any, options: ParseOptions): T {
   if (result === null) {
     return input;
   }
