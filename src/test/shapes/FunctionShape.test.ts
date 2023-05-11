@@ -90,6 +90,15 @@ describe('FunctionShape', () => {
   });
 
   describe('insure', () => {
+    test('marks shape is insured', () => {
+      const cbMock = jest.fn();
+
+      const shape = new FunctionShape(arrayShape.check(cbMock), null, null);
+
+      expect(shape.isInsured).toBe(false);
+      expect(shape.insure().isInsured).toBe(true);
+    });
+
     test('sets options used by the wrapper', () => {
       const cbMock = jest.fn();
 
