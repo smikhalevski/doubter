@@ -1,5 +1,5 @@
 import * as d from 'doubter';
-import { expectType } from 'tsd';
+import { expectNotType, expectType } from 'tsd';
 
 // Alias
 
@@ -54,3 +54,70 @@ expectType<(this: string) => any>(d.fn().this(d.string()).__output);
 expectType<(this: number) => any>(d.fn().this(d.string().transform(parseFloat)).__input);
 
 expectType<(this: string) => any>(d.fn().this(d.string().transform(parseFloat)).__output);
+
+// ensureSignature
+
+expectType<(this: number, arg: boolean) => boolean>(
+  d
+    .fn([d.boolean().transform(() => 111)])
+    .this(d.number().transform(() => 'aaa'))
+    .return(d.string().transform(() => true))
+    .ensureSignature(function (arg) {
+      expectType<string>(this);
+      expectType<number>(arg);
+
+      return 'aaa';
+    })
+);
+
+expectNotType<(this: number, arg1: boolean, arg2: unknown) => string>(
+  d
+    .fn([d.boolean()])
+    .this(d.number())
+    .return(d.string())
+    .ensureSignature(function () {
+      expectType<number>(this);
+      return 'aaa';
+    })
+);
+
+expectType<(this: number, arg: boolean) => string>(
+  d
+    .fn([d.boolean()])
+    .this(d.number())
+    .return(d.string())
+    .ensureSignature(function () {
+      expectType<number>(this);
+      return 'aaa';
+    })
+);
+
+expectType<(this: number) => string>(
+  d
+    .fn()
+    .this(d.number())
+    .return(d.string())
+    .ensureSignature(function () {
+      expectType<number>(this);
+      return 'aaa';
+    })
+);
+
+expectType<(this: number) => string>(
+  d
+    .fn()
+    .return(d.string())
+    .ensureSignature(function (this: number) {
+      return 'aaa';
+    })
+);
+
+expectType<(this: number) => string>(
+  d.fn().ensureSignature(function (this: number) {
+    return 'aaa';
+  })
+);
+
+expectType<() => number>(d.fn().ensureSignature(() => 111));
+
+// ensureAsyncSignature

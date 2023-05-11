@@ -3,15 +3,28 @@ import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
 import { applyShape, copyChecks, createIssueFactory, getErrorMessage, isArray, ok, unshiftIssuesPath } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, defaultApplyOptions, Input, Output, Result, Shape } from './Shape';
+
+type InferThis<F> = F extends (this: infer T, ...args: any[]) => any ? T : any;
 
 // prettier-ignore
-export type InferInputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
-  (this: T extends AnyShape ? T[OUTPUT] : any, ...args: A[OUTPUT]) => R extends AnyShape ? R[INPUT] : any;
+type TryInput<S extends AnyShape | null | undefined, T = any> =
+  S extends null | undefined ? T : S extends AnyShape ? Input<S> : T;
 
 // prettier-ignore
-export type InferOutputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
-  (this: T extends AnyShape ? T[INPUT] : any, ...args: A[INPUT]) => R extends AnyShape ? R[OUTPUT] : any;
+type TryOutput<S extends AnyShape | null | undefined, T = any> =
+  S extends null | undefined ? T : S extends AnyShape ? Output<S> : T;
+
+// prettier-ignore
+type Awaited<T> =
+  T extends null | undefined ? T :
+  T extends object & { then(fn: infer F, ...args: any): any }
+    ? F extends (value: infer V, ...args: any) => any ? Awaited<V> : never
+    : T;
+
+type Promisify<T> = Promise<Awaited<T>>;
+
+type Awaitable<T> = T extends Awaited<T> ? Awaited<T> | Promisify<T> : Promisify<T>;
 
 /**
  * The shape of the function value.
@@ -20,16 +33,24 @@ export type InferOutputFunction<A extends Shape, R extends AnyShape | null, T ex
  * @template R The return value shape, or `null` if unconstrained.
  * @template T The shape of `this` argument, or `null` if unconstrained.
  */
-export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> extends Shape<
-  InferInputFunction<A, R, T>,
-  InferOutputFunction<A, R, T>
+export class FunctionShape<
+  A extends Shape<readonly any[], readonly any[]>,
+  R extends AnyShape | null,
+  T extends AnyShape | null
+> extends Shape<
+  (this: TryOutput<T>, ...args: Output<A>) => TryInput<R>,
+  (this: TryInput<T>, ...args: Input<A>) => TryOutput<R>
 > {
   /**
-   * `true` if input functions are wrapped during parsing with a signature insurance wrapper, or `false` otherwise.
+   * `true` if input functions are wrapped during parsing to ensure runtime signature type-safety, or `false` otherwise.
    */
-  isInsured = false;
+  isStrict = false;
 
   protected _typeIssueFactory;
+
+  /**
+   * Parsing options that are used by a wrapper.
+   */
   protected _parseOptions: Readonly<ParseOptions> | undefined;
 
   /**
@@ -61,10 +82,9 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * `true` if some shapes that describe the insured function signature are {@link Shape.isAsync async}, or `false`
-   * otherwise.
+   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, or `false` otherwise.
    */
-  get isAsyncFunction(): boolean {
+  get isAsyncSignature(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
   }
 
@@ -91,39 +111,43 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Wrap input functions in a signature insurance wrapper during parsing. This causes arguments, `this` and return
-   * values to conform the respective shapes.
+   * Enables input function wrapping during parsing to ensure runtime signature type-safety. Wrapper ensures that input
+   * function receives arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape}
+   * respectively, and returns the value that conforms {@link returnShape}.
    *
-   * @param options Options that are used by the signature insurance wrapper to parse arguments, `this` and return
-   * values. If omitted then default options are applied: not verbose, no type coercion.
+   * @param options Options that are used by the wrapper. If omitted then default options are applied: not verbose, no
+   * type coercion.
    * @returns The new function shape.
    */
-  insure(options?: ParseOptions): this {
+  strict(options?: ParseOptions): this {
     const shape = this._clone();
-    shape.isInsured = true;
+    shape.isStrict = true;
     shape._parseOptions = options;
     return shape;
   }
 
   /**
-   * Wraps a function in a signature insurance wrapper that parses arguments and `this` value, and passes them to `fn`.
-   * And after `fn` _synchronously_ returns the result, the wrapper parses it as well and returns.
+   * Wraps a function to ensure runtime signature type-safety. The returned wrapper function ensures that `fn` receives
+   * arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape} respectively, and
+   * _synchronously_ returns the value that conforms {@link returnShape}.
    *
-   * @param fn The underlying function that would receive parsed arguments.
-   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode insure} are used.
+   * @param fn The underlying function.
+   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode strict} are used.
    * @returns The wrapper function.
    */
-  insureFunction(
-    fn: InferInputFunction<A, R, T>,
-    options = this._parseOptions || defaultApplyOptions
-  ): InferOutputFunction<A, R, T> {
+  ensureSignature<F extends (this: TryOutput<T>, ...args: Output<A>) => TryInput<R>>(
+    fn: F,
+    options?: Readonly<ParseOptions>
+  ): (this: TryInput<T, InferThis<F>>, ...args: Input<A>) => TryOutput<R, ReturnType<F>>;
+
+  ensureSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
     const { argsShape, returnShape, thisShape } = this;
 
-    if (this.isAsyncFunction) {
+    if (this.isAsyncSignature) {
       throw new Error(ERROR_ASYNC_FUNCTION);
     }
 
-    return function (...args) {
+    return function (this: any, ...args: any) {
       const result = fn.apply(
         thisShape !== null ? getOrDie('this', thisShape['_apply'](this, options), this, options) : this,
         getOrDie('arguments', argsShape['_apply'](args, options), args, options)
@@ -138,23 +162,26 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Wraps a function in a signature insurance wrapper that parses arguments and `this` value, and passes them to `fn`.
-   * And after `fn` _asynchronously_ returns the result, the wrapper parses it as well and returns.
+   * Wraps a function to ensure runtime signature type-safety. The returned wrapper function ensures that `fn` receives
+   * arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape} respectively, and
+   * _asynchronously_ returns the value that conforms {@link returnShape}.
    *
-   * Use this method if {@link isAsyncFunction some shapes that describe the function signature} are
+   * Use this method if {@link isAsyncSignature some shapes that describe the function signature} are
    * {@link Shape.isAsync async}.
    *
-   * @param fn The underlying function that would receive parsed arguments.
-   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode insure} are used.
+   * @param fn The underlying function.
+   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode strict} are used.
    * @returns The wrapper function.
    */
-  insureAsyncFunction(
-    fn: InferInputFunction<A, R extends AnyShape ? Shape<Promise<R[INPUT]> | R[INPUT], never> : null, T>,
-    options = this._parseOptions || defaultApplyOptions
-  ): InferOutputFunction<A, Shape<never, Promise<R extends AnyShape ? R[OUTPUT] : any>>, T> {
+  ensureAsyncSignature<F extends (this: TryOutput<T>, ...args: Output<A>) => Awaitable<TryInput<R>>>(
+    fn: F,
+    options?: Readonly<ParseOptions>
+  ): (this: TryInput<T, InferThis<F>>, ...args: Input<A>) => Promisify<TryOutput<R, ReturnType<F>>>;
+
+  ensureAsyncSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
     const { argsShape, returnShape, thisShape } = this;
 
-    return function (...args) {
+    return function (this: any, ...args: any) {
       return new Promise(resolve => {
         let result;
 
@@ -187,7 +214,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     return [TYPE_FUNCTION];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferOutputFunction<A, R, T>> {
+  protected _apply(input: any, options: ApplyOptions): Result<(this: TryInput<T>, ...args: Input<A>) => TryOutput<R>> {
     const { _applyChecks } = this;
 
     let issues = null;
@@ -195,16 +222,13 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     if (typeof input !== 'function') {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks === null || (issues = _applyChecks(input, null, options)) === null) {
-      return this.isInsured ? ok(this._insure(input)) : null;
+    if (_applyChecks !== null && (issues = _applyChecks(input, null, options)) !== null) {
+      return issues;
     }
-    return issues;
-  }
-
-  // noinspection InfiniteRecursionJS
-  private _insure(fn: InferInputFunction<A, R, T>): InferOutputFunction<A, R, T> {
-    this._insure = this.isAsyncFunction ? this.insureAsyncFunction : this.insureFunction;
-    return this._insure(fn);
+    if (this.isStrict) {
+      return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(input) : this.ensureSignature(input));
+    }
+    return null;
   }
 }
 

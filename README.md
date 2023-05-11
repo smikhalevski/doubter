@@ -2293,7 +2293,7 @@ Finite numbers follow [number type coercion rules](#coerce-to-a-number).
 [`function`](https://smikhalevski.github.io/doubter/functions/function.html) returns a
 [`FunctionShape`](https://smikhalevski.github.io/doubter/classes/FunctionShape.html) instance.
 
-Constrain a value to be a function that has an insured signature at runtime.
+Constrain a value to be a function that has an ensured signature at runtime.
 
 A function that has no arguments and returns `any`:
 
@@ -2362,12 +2362,12 @@ shape1.parse('Mars');
 ```
 
 By default, the input function is returned as is during parsing. Tell the function shape to wrap the input function with
-a signature insurance wrapper during parsing by calling `insure` method.
+a signature ensurance wrapper during parsing by calling `strict` method.
 
 ```ts
 const greetShape = d.fn([d.string()])
   .return(d.string())
-  .insure();
+  .strict();
 
 const greet = greetShape.parse(name => `Hello, $name!`);
 ```
@@ -2377,7 +2377,7 @@ respective shapes.
 
 ## Implementing a function
 
-You can wrap an input function with a signature insurance wrapper that guarantees that the function signature is
+You can wrap an input function with a signature ensurance wrapper that guarantees that the function signature is
 type-safe at runtime.
 
 Let's declare a function shape that takes two integers arguments and returns an integer as well:
@@ -2390,7 +2390,7 @@ const sumShape = d.fn([d.int(), d.int()]).return(d.int());
 Now let's provide a concrete implementation:
 
 ```ts
-const sum = sumShape.insureFunction(
+const sum = sumShape.ensureSignature(
   (arg1, arg2) => arg1 + arg2
 );
 // ⮕ (arg1: number, arg2: number) => number
@@ -2420,7 +2420,7 @@ const atShape = d.fn([d.int()])
   .return(d.number());
 // ⮕ Shape<(this: string[]) => number>
 
-const at = atShape.insureFunction(function (index) {
+const at = atShape.ensureSignature(function (index) {
   // 🟡 May be undefined if index is out of bounds
   return this[index];
 });
@@ -2456,7 +2456,7 @@ Function shapes go well with [type coercion](#type-coercion):
 const plus2Shape = d.fn([d.int().coerce()]).return(d.int());
 // ⮕ Shape<(arg: number) => number>
 
-const plus2 = plus2Shape.insureFunction(
+const plus2 = plus2Shape.ensureSignature(
   arg => arg + 2
 );
 // ⮕ (arg: number) => number
@@ -2487,7 +2487,7 @@ function inputFunction(arg: number): any {
   return arg + 2;
 }
 
-const outputFunction = shape.insureFunction(inputFunction);
+const outputFunction = shape.ensureSignature(inputFunction);
 // ⮕ (arg: string) => any
 ```
 
