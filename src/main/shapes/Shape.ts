@@ -25,17 +25,16 @@ import {
 import {
   applyShape,
   captureIssues,
-  cloneInstance,
   copyUnsafeChecks,
   createIssueFactory,
   deleteAt,
+  Dict,
   getCheckIndex,
   getErrorMessage,
   isArray,
   isEqual,
   isObjectLike,
   isType,
-  Mutable,
   ok,
   ReadonlyDict,
   replaceChecks,
@@ -208,9 +207,9 @@ export class Shape<I = any, O = I> {
   declare readonly [OUTPUT]: O;
 
   /**
-   * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations.
+   * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations via DSL.
    */
-  readonly annotations: ReadonlyDict = {};
+  annotations: Dict = {};
 
   /**
    * The array of checks that were used to produce {@linkcode _applyChecks}.
@@ -257,7 +256,7 @@ export class Shape<I = any, O = I> {
    */
   annotate(annotations: ReadonlyDict): this {
     const shape = this._clone();
-    (shape as Mutable<this>).annotations = Object.assign({}, this.annotations, annotations);
+    shape.annotations = Object.assign({}, this.annotations, annotations);
     return shape;
   }
 
@@ -615,7 +614,7 @@ export class Shape<I = any, O = I> {
    * Clones the shape.
    */
   protected _clone(): this {
-    return cloneInstance(this);
+    return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
   }
 
   /**

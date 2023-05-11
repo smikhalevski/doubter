@@ -1,7 +1,7 @@
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { canonize, createIssueFactory, isArray, ok, ReadonlyDict, unique } from '../utils';
+import { getCanonicalValueOf, createIssueFactory, isArray, ok, ReadonlyDict, unique } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
@@ -81,7 +81,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     if (isArray(value) && value.length === 1 && this.values.includes((value = value[0]))) {
       return value;
     }
-    if (!isArray(source) && typeof (value = canonize(value)) === 'string' && source.hasOwnProperty(value)) {
+    if (!isArray(source) && typeof (value = getCanonicalValueOf(value)) === 'string' && source.hasOwnProperty(value)) {
       return (source as ReadonlyDict)[value];
     }
     return NEVER;

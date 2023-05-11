@@ -1,4 +1,11 @@
-import { canonize, isEqual, isEqualOrSubclass, isIterable, isPlainObject, isValidDate } from '../../main/utils';
+import {
+  getCanonicalValueOf,
+  isEqual,
+  isEqualOrSubclass,
+  isIterable,
+  isPlainObject,
+  isValidDate,
+} from '../../main/utils';
 
 describe('isEqual', () => {
   test('checks equality', () => {
@@ -70,16 +77,16 @@ describe('isValidDate', () => {
   });
 });
 
-describe('canonize', () => {
+describe('getCanonicalValueOf', () => {
   test('unwraps primitives', () => {
-    expect(canonize(new String('aaa'))).toBe('aaa');
-    expect(canonize(new Number(111))).toBe(111);
-    expect(canonize(new Boolean(true))).toBe(true);
+    expect(getCanonicalValueOf(new String('aaa'))).toBe('aaa');
+    expect(getCanonicalValueOf(new Number(111))).toBe(111);
+    expect(getCanonicalValueOf(new Boolean(true))).toBe(true);
   });
 
   test('preserves objects as is', () => {
     const obj = { valueOf: () => 111 };
 
-    expect(canonize(obj)).toBe(obj);
+    expect(getCanonicalValueOf(obj)).toBe(obj);
   });
 });

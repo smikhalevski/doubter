@@ -11,8 +11,6 @@ import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, 
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
 
-export type Mutable<T> = { -readonly [K in keyof T]: T[K] };
-
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
