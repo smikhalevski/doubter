@@ -1197,7 +1197,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     options: ApplyOptions,
     nonce: number
   ): Result<ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue> {
-    const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
+    const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options, nonce);
 
     return this._handleResult(result, input, options);
   }
@@ -1298,7 +1298,11 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     return this.shape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>> {
+  protected _apply(
+    input: unknown,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>> {
     if (isEqual(input, this.deniedValue)) {
       return this._typeIssueFactory(input, options);
     }
@@ -1402,7 +1406,11 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<BaseShape[OUTPUT] | FallbackValue>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<BaseShape[OUTPUT] | FallbackValue>> {
     return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
   }
 
@@ -1492,7 +1500,11 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     return this.shape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>> {
+  protected _apply(
+    input: unknown,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>> {
     const { shape, excludedShape, _applyChecks } = this;
 
     let issues;
