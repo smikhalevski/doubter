@@ -10,7 +10,7 @@ import {
   StringShape,
   ValidationError,
 } from '../../main';
-import { CODE_ARRAY_MAX, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { CODE_TUPLE, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 
 describe('FunctionShape', () => {
@@ -28,7 +28,7 @@ describe('FunctionShape', () => {
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    arrayShape = new ArrayShape(null, null).length(0);
+    arrayShape = new ArrayShape([], null).length(0);
     asyncShape = new AsyncShape();
   });
 
@@ -36,6 +36,7 @@ describe('FunctionShape', () => {
     const shape = new FunctionShape(arrayShape, null, null);
 
     expect(shape.isAsync).toBe(false);
+    expect(shape.isAsyncSignature).toBe(false);
     expect(shape.argsShape).toBe(arrayShape);
     expect(shape.returnShape).toBeNull();
     expect(shape.thisShape).toBeNull();
@@ -90,7 +91,7 @@ describe('FunctionShape', () => {
   });
 
   describe('strict', () => {
-    test('marks shape is ensured', () => {
+    test('marks shape is strict', () => {
       const cbMock = jest.fn();
 
       const shape = new FunctionShape(arrayShape.check(cbMock), null, null);
@@ -119,10 +120,10 @@ describe('FunctionShape', () => {
       expect(() => wrapper('aaa')).toThrow(
         new ValidationError([
           {
-            code: CODE_ARRAY_MAX,
+            code: CODE_TUPLE,
             path: ['arguments'],
             input: ['aaa'],
-            message: 'Must have the maximum length of 0',
+            message: 'Must be a tuple of length 0',
             param: 0,
           },
         ])
@@ -160,7 +161,7 @@ describe('FunctionShape', () => {
 
     test('raises an issue if this is invalid', () => {
       const shape = new FunctionShape(
-        new ArrayShape(null, null),
+        new ArrayShape([], null),
         null,
         new ObjectShape({ key1: new StringShape() }, null)
       );
@@ -194,7 +195,7 @@ describe('FunctionShape', () => {
     });
 
     test('raises an issue if a return value is invalid', () => {
-      const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
+      const shape = new FunctionShape(new ArrayShape([], null), new StringShape(), null);
 
       expect(() => shape.ensureSignature(() => 111 as any)()).toThrow(
         new ValidationError([
@@ -234,7 +235,7 @@ describe('FunctionShape', () => {
 
     test('raises an issue if this is invalid', async () => {
       const shape = new FunctionShape(
-        new ArrayShape(null, null),
+        new ArrayShape([], null),
         null,
         new ObjectShape({ key1: new StringShape() }, null)
       );
@@ -270,7 +271,7 @@ describe('FunctionShape', () => {
     });
 
     test('raises an issue if a return value is invalid', async () => {
-      const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
+      const shape = new FunctionShape(new ArrayShape([], null), new StringShape(), null);
 
       await expect(shape.ensureAsyncSignature(() => 111 as any)()).rejects.toEqual(
         new ValidationError([

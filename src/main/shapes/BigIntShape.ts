@@ -6,9 +6,12 @@ import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
 /**
- * The shape of the bigint value.
+ * The shape of a bigint value.
  */
 export class BigIntShape extends CoercibleShape<bigint> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**

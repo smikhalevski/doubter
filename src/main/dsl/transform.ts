@@ -5,9 +5,9 @@ import { ApplyOptions } from '../types';
  * Creates the shape that synchronously transforms the input value.
  *
  * @param cb The callback that transforms the input value.
- * @template T The output value.
+ * @template TransformedValue The output value.
  */
-export function transform<T>(
+export function transform<TransformedValue>(
   /**
    * The callback that transforms the input value.
    *
@@ -16,8 +16,8 @@ export function transform<T>(
    * @return The transformation result.
    * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => T
-): TransformShape<T> {
+  cb: (value: any, options: Readonly<ApplyOptions>) => TransformedValue
+): TransformShape<TransformedValue> {
   return new TransformShape(cb);
 }
 
@@ -25,9 +25,9 @@ export function transform<T>(
  * Creates the shape that asynchronously transforms the input value.
  *
  * @param cb The callback that transforms the input value.
- * @template T The output value.
+ * @template TransformedValue The output value.
  */
-export function transformAsync<T>(
+export function transformAsync<TransformedValue>(
   /**
    * The callback that transforms the input value.
    *
@@ -36,7 +36,7 @@ export function transformAsync<T>(
    * @return The transformation result.
    * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => Promise<T>
-): TransformShape<T> {
+  cb: (value: any, options: Readonly<ApplyOptions>) => Promise<TransformedValue>
+): TransformShape<TransformedValue> {
   return new TransformShape(cb, true);
 }

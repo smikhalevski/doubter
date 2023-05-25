@@ -6,12 +6,12 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param shapes The array of tuple element shapes.
  * @param options The constraint options or an issue message.
- * @template U The tuple elements.
+ * @template HeadShapes The head tuple elements.
  */
-export function tuple<U extends readonly [AnyShape, ...AnyShape[]]>(
-  shapes: U,
+export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]]>(
+  shapes: HeadShapes,
   options?: ConstraintOptions | Message
-): ArrayShape<U, null>;
+): ArrayShape<HeadShapes, null>;
 
 /**
  * Creates the tuple shape with rest elements.
@@ -19,14 +19,14 @@ export function tuple<U extends readonly [AnyShape, ...AnyShape[]]>(
  * @param shapes The array of tuple element shapes.
  * @param restShape The shape of rest elements.
  * @param options The constraint options or an issue message.
- * @template U The head tuple elements.
- * @template R The rest tuple elements.
+ * @template HeadShapes The head tuple elements.
+ * @template RestShape The rest tuple elements.
  */
-export function tuple<U extends readonly [AnyShape, ...AnyShape[]], R extends AnyShape | null>(
-  shapes: U,
-  restShape: R,
+export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]], RestShape extends AnyShape | null>(
+  shapes: HeadShapes,
+  restShape: RestShape,
   options?: ConstraintOptions | Message
-): ArrayShape<U, R>;
+): ArrayShape<HeadShapes, RestShape>;
 
 export function tuple(
   shapes: [AnyShape, ...AnyShape[]],

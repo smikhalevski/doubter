@@ -6,8 +6,11 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param shape The shape of the resolved value.
  * @param options The constraint options or an issue message.
- * @template S The shape of the resolved value.
+ * @template ValueShape The shape of the resolved value.
  */
-export function promise<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): PromiseShape<S> {
+export function promise<ValueShape extends AnyShape>(
+  shape: ValueShape,
+  options?: ConstraintOptions | Message
+): PromiseShape<ValueShape> {
   return new PromiseShape(shape, options);
 }

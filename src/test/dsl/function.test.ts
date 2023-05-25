@@ -13,21 +13,21 @@ describe('function', () => {
     const shape = d.fn();
 
     expect(shape.argsShape).toBeInstanceOf(ArrayShape);
-    expect(shape.argsShape.shapes.length).toBe(0);
+    expect(shape.argsShape.headShapes.length).toBe(0);
   });
 
   test('wraps arguments into an array shape', () => {
     const shape = d.fn([d.string()]);
 
-    expect(shape.argsShape.shapes.length).toBe(1);
-    expect(shape.argsShape.shapes[0]).toBeInstanceOf(StringShape);
+    expect(shape.argsShape.headShapes.length).toBe(1);
+    expect(shape.argsShape.headShapes[0]).toBeInstanceOf(StringShape);
   });
 
   test('recognizes options as the first argument', () => {
     const shape = d.fn({ message: 'aaa' });
 
     expect(shape.argsShape).toBeInstanceOf(ArrayShape);
-    expect(shape.argsShape.shapes.length).toBe(0);
+    expect(shape.argsShape.headShapes.length).toBe(0);
 
     expect(shape.try(111)).toEqual({
       ok: false,

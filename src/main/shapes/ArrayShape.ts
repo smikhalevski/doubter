@@ -13,13 +13,13 @@ import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
   applyShape,
-  getCanonicalValueOf,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
+  getCanonicalValueOf,
   isArray,
   isAsyncShape,
-  isIterable,
+  isIterableObject,
   ok,
   toArrayIndex,
   toDeepPartialShape,
@@ -28,79 +28,89 @@ import {
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
-// prettier-ignore
-export type InferTuple<U extends readonly AnyShape[], C extends INPUT | OUTPUT> =
-  U extends readonly AnyShape[]
-    ? { [K in keyof U]: U[K] extends AnyShape ? U[K][C] : never }
-    : never;
+export type InferArray<
+  HeadShapes extends readonly AnyShape[],
+  RestShape extends AnyShape | null,
+  Leg extends INPUT | OUTPUT
+> = [
+  ...{ [K in keyof HeadShapes]: HeadShapes[K][Leg] },
+  ...(RestShape extends null | undefined ? [] : RestShape extends AnyShape ? RestShape[Leg][] : [])
+];
 
-// prettier-ignore
-export type InferArray<U extends readonly AnyShape[] | null, R extends AnyShape | null, C extends INPUT | OUTPUT> =
-  U extends readonly AnyShape[]
-    ? R extends AnyShape ? [...InferTuple<U, C>, ...R[C][]] : InferTuple<U, C>
-    : R extends AnyShape ? R[C][] : any[];
-
-export type DeepPartialArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null> = ArrayShape<
-  U extends readonly AnyShape[]
-    ? { [K in keyof U]: U[K] extends AnyShape ? OptionalDeepPartialShape<U[K]> : never }
-    : null,
-  R extends AnyShape ? OptionalDeepPartialShape<R> : null
+export type DeepPartialArrayShape<
+  HeadShapes extends readonly AnyShape[],
+  RestShape extends AnyShape | null
+> = ArrayShape<
+  { [K in keyof HeadShapes]: OptionalDeepPartialShape<HeadShapes[K]> },
+  RestShape extends null | undefined ? null : RestShape extends AnyShape ? OptionalDeepPartialShape<RestShape> : null
 >;
 
 /**
- * The shape of an array or a tuple.
+ * The shape of an array or a tuple value.
  *
- * @template U The array of positioned element shapes, or `null` if there are no positioned elements.
- * @template R The shape of rest elements, or `null` if there are no rest elements.
+ * | Shape | Type |
+ * | :-- | :-- |
+ * | `ArrayShape<[], null>` | `[]` |
+ * | `ArrayShape<[], Shape<B>>` | `B[]` |
+ * | `ArrayShape<[Shape<A>, Shape<B>], null>` | `[A, B]` |
+ * | `ArrayShape<[Shape<A>], Shape<B>>` | `[A, ...B[]]` |
+ *
+ * @template HeadShapes The array of positioned element shapes.
+ * @template RestShape The shape of rest elements, or `null` if there are no rest elements.
  */
-export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape | null>
-  extends CoercibleShape<InferArray<U, R, INPUT>, InferArray<U, R, OUTPUT>>
-  implements DeepPartialProtocol<DeepPartialArrayShape<U, R>>
+export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null>
+  extends CoercibleShape<InferArray<HeadShapes, RestShape, INPUT>, InferArray<HeadShapes, RestShape, OUTPUT>>
+  implements DeepPartialProtocol<DeepPartialArrayShape<HeadShapes, RestShape>>
 {
+  /**
+   * The type constraint options or the type issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode ArrayShape} instance.
    *
-   * @param shapes The array of positioned element shapes or `null` if there are no positioned elements.
+   * @param headShapes The array of positioned element shapes.
    * @param restShape The shape of rest elements or `null` if there are no rest elements.
    * @param options The type constraint options or the type issue message.
-   * @template U The array of positioned element shapes, or `null` if there are no positioned elements.
-   * @template R The shape of rest elements, or `null` if there are no rest elements.
+   * @template HeadShapes The array of positioned element shapes.
+   * @template RestShape The shape of rest elements, or `null` if there are no rest elements.
    */
   constructor(
     /**
-     * The array of positioned element shapes or `null` if there are no positioned elements.
+     * The array of positioned element shapes.
      */
-    readonly shapes: U,
+    readonly headShapes: HeadShapes,
     /**
      * The shape of rest elements or `null` if there are no rest elements.
      */
-    readonly restShape: R,
+    readonly restShape: RestShape,
     options?: ConstraintOptions | Message
   ) {
     super();
 
     this._options = options;
 
-    if (shapes !== null && (shapes.length !== 0 || restShape === null)) {
-      this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, shapes.length);
+    if (headShapes.length !== 0 || restShape === null) {
+      this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, headShapes.length);
     } else {
       this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
     }
   }
 
   at(key: unknown): AnyShape | null {
-    const { shapes } = this;
-
     const index = toArrayIndex(key);
 
     if (index === -1) {
       return null;
     }
-    if (shapes !== null && index < shapes.length) {
-      return shapes[index];
+    if (index < this.headShapes.length) {
+      return this.headShapes[index];
     }
     return this.restShape;
   }
@@ -110,10 +120,10 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
    *
    * @param restShape The shape of rest elements, or `null` if there are no rest elements.
    * @returns The new array shape.
-   * @template T The shape of rest elements.
+   * @template S The shape of rest elements.
    */
-  rest<T extends AnyShape | null>(restShape: T): ArrayShape<U, T> {
-    return copyUnsafeChecks(this, new ArrayShape(this.shapes, restShape, this._options));
+  rest<S extends AnyShape | null>(restShape: S): ArrayShape<HeadShapes, S> {
+    return copyUnsafeChecks(this, new ArrayShape(this.headShapes, restShape, this._options));
   }
 
   /**
@@ -161,65 +171,58 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     });
   }
 
-  deepPartial(): DeepPartialArrayShape<U, R> {
-    const shapes = this.shapes !== null ? this.shapes.map(shape => toDeepPartialShape(shape).optional()) : null;
+  deepPartial(): DeepPartialArrayShape<HeadShapes, RestShape> {
+    const headShapes = this.headShapes.map(shape => toDeepPartialShape(shape).optional());
 
     const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
-    return copyUnsafeChecks(this, new ArrayShape<any, any>(shapes, restShape, this._options));
+    return copyUnsafeChecks(this, new ArrayShape<any, any>(headShapes, restShape, this._options));
   }
 
   protected _isAsync(): boolean {
-    return this.shapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
+    return this.headShapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
   }
 
   protected _getInputs(): unknown[] {
-    const { shapes, restShape } = this;
+    const { headShapes, restShape } = this;
 
     if (!this.isCoerced) {
       return [TYPE_ARRAY];
     }
-
-    if (shapes !== null) {
-      if (shapes.length > 1) {
-        return [TYPE_OBJECT, TYPE_ARRAY];
-      }
-      if (shapes.length === 1) {
-        return shapes[0].inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
-      }
+    if (headShapes.length > 1) {
+      return [TYPE_OBJECT, TYPE_ARRAY];
     }
-
+    if (headShapes.length === 1) {
+      return headShapes[0].inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
+    }
     if (restShape !== null) {
       return restShape.inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
     }
-
     return [TYPE_UNKNOWN];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferArray<U, R, OUTPUT>> {
-    const { shapes, restShape, _applyChecks, _isUnsafe } = this;
+  protected _apply(input: any, options: ApplyOptions): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
+    const { headShapes, restShape, _applyChecks, _isUnsafe } = this;
 
     let output = input;
     let outputLength;
-    let shapesLength = 0;
+    let headShapesLength = headShapes.length;
     let issues = null;
 
-    // noinspection CommaExpressionJS
     if (
       // Not an array or not coercible
       (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)) ||
       // Invalid tuple length
-      ((outputLength = output.length),
-      shapes !== null &&
-        (outputLength < (shapesLength = shapes.length) || (restShape === null && outputLength !== shapesLength)))
+      (outputLength = output.length) < headShapesLength ||
+      (restShape === null && outputLength !== headShapesLength)
     ) {
       return this._typeIssueFactory(input, options);
     }
 
-    if (shapes !== null || restShape !== null) {
+    if (headShapesLength !== 0 || restShape !== null) {
       for (let i = 0; i < outputLength; ++i) {
         const value = output[i];
-        const valueShape = i < shapesLength ? shapes![i] : restShape!;
+        const valueShape = i < headShapesLength ? headShapes[i] : restShape!;
         const result = valueShape['_apply'](value, options);
 
         if (result === null) {
@@ -252,22 +255,20 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferArray<U, R, OUTPUT>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
-      const { shapes, restShape, _applyChecks, _isUnsafe } = this;
+      const { headShapes, restShape, _applyChecks, _isUnsafe } = this;
 
       let output = input;
       let outputLength: number;
-      let shapesLength = 0;
+      let headShapesLength = headShapes.length;
 
-      // noinspection CommaExpressionJS
       if (
         // Not an array or not coercible
         (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)) ||
         // Invalid tuple length
-        ((outputLength = output.length),
-        shapes !== null &&
-          (outputLength < (shapesLength = shapes.length) || (restShape === null && outputLength !== shapesLength)))
+        (outputLength = output.length) < headShapesLength ||
+        (restShape === null && outputLength !== headShapesLength)
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;
@@ -298,8 +299,13 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
       const next = (): Result | Promise<Result> => {
         index++;
 
-        if (index !== outputLength && (shapes !== null || restShape !== null)) {
-          return applyShape(index < shapesLength ? shapes![index] : restShape!, output[index], options, handleResult);
+        if (index !== outputLength && (headShapesLength !== 0 || restShape !== null)) {
+          return applyShape(
+            index < headShapesLength ? headShapes[index] : restShape!,
+            output[index],
+            options,
+            handleResult
+          );
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
@@ -323,7 +329,7 @@ export class ArrayShape<U extends readonly AnyShape[] | null, R extends AnyShape
   protected _coerce(value: unknown): unknown[] {
     value = getCanonicalValueOf(value);
 
-    if (isIterable(value)) {
+    if (isIterableObject(value)) {
       return Array.from(value);
     }
     return [value];

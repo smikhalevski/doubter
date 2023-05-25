@@ -6,16 +6,19 @@ import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
 /**
- * The shape that constrains an input to be one of values.
+ * The shape of a value enumeration.
  *
- * @template T Allowed values.
+ * @template Value The union of allowed enum values.
  */
-export class EnumShape<T> extends CoercibleShape<T> {
+export class EnumShape<Value> extends CoercibleShape<Value> {
   /**
    * The array of unique enum values.
    */
-  readonly values: T[];
+  readonly values: readonly Value[];
 
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -23,13 +26,13 @@ export class EnumShape<T> extends CoercibleShape<T> {
    *
    * @param source The array of allowed values, a const key-value mapping, or an enum object.
    * @param options The type constraint options or an issue message.
-   * @template T Allowed values.
+   * @template Value The union of allowed enum values.
    */
   constructor(
     /**
-     * The array of allowed values, a const key-value mapping, or an enum object.
+     * The array of allowed values, a const key-value mapping, or an TypeScript enum object.
      */
-    readonly source: readonly T[] | ReadonlyDict<T>,
+    readonly source: readonly Value[] | ReadonlyDict<Value>,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -51,7 +54,7 @@ export class EnumShape<T> extends CoercibleShape<T> {
     return inputs.concat(TYPE_ARRAY, TYPE_OBJECT);
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<T> {
+  protected _apply(input: any, options: ApplyOptions): Result<Value> {
     const { values, _applyChecks } = this;
 
     let output = input;

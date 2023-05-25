@@ -6,13 +6,13 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param shapes The array of shapes to try.
  * @param options The constraint options or an issue message.
- * @template U The tuple of united shapes.
+ * @template Shapes The tuple of united shapes.
  */
-export function union<U extends [AnyShape, ...AnyShape[]]>(
-  shapes: U,
+export function union<Shapes extends [AnyShape, ...AnyShape[]]>(
+  shapes: Shapes,
   options?: ConstraintOptions | Message
-): UnionShape<U> {
-  return new UnionShape<U>(shapes, options);
+): UnionShape<Shapes> {
+  return new UnionShape<Shapes>(shapes, options);
 }
 
 export { union as or };

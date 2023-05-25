@@ -9,6 +9,9 @@ import { NEVER, Result } from './Shape';
  * The shape of the `Date` object.
  */
 export class DateShape extends CoercibleShape<Date> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**

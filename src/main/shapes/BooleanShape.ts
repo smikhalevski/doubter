@@ -6,9 +6,12 @@ import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
 /**
- * The shape of the boolean value.
+ * The shape of a boolean value.
  */
 export class BooleanShape extends CoercibleShape<boolean> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**

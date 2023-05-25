@@ -70,6 +70,7 @@ expectType<(this: number, arg: boolean) => boolean>(
     })
 );
 
+// arg2 is excessive
 expectNotType<(this: number, arg1: boolean, arg2: unknown) => string>(
   d
     .fn([d.boolean()])
@@ -121,3 +122,117 @@ expectType<(this: number) => string>(
 expectType<() => number>(d.fn().ensureSignature(() => 111));
 
 // ensureAsyncSignature
+
+expectType<() => Promise<string>>(
+  d
+    .fn()
+    .return(d.promise(d.string()))
+    .ensureAsyncSignature(async function () {
+      return 'aaa';
+    })
+);
+
+expectType<(this: number, arg: boolean) => Promise<boolean>>(
+  d
+    .fn([d.boolean().transform(() => 111)])
+    .this(d.number().transform(() => 'aaa'))
+    .return(d.string().transform(() => true))
+    .ensureAsyncSignature(function (arg) {
+      expectType<string>(this);
+      expectType<number>(arg);
+
+      return 'aaa';
+    })
+);
+
+expectType<(this: number, arg: boolean) => Promise<boolean>>(
+  d
+    .fn([d.boolean().transform(() => 111)])
+    .this(d.number().transform(() => 'aaa'))
+    .return(d.string().transform(() => true))
+    .ensureAsyncSignature(async function (arg) {
+      expectType<string>(this);
+      expectType<number>(arg);
+
+      return 'aaa';
+    })
+);
+
+expectType<(this: number, arg: boolean) => Promise<boolean>>(
+  d
+    .fn([d.boolean().transformAsync(() => Promise.resolve(111))])
+    .this(d.number().transform(() => 'aaa'))
+    .return(d.string().transform(() => true))
+    .ensureAsyncSignature(function (arg) {
+      expectType<string>(this);
+      expectType<number>(arg);
+
+      return 'aaa';
+    })
+);
+
+// arg2 is excessive
+expectNotType<(this: number, arg1: boolean, arg2: unknown) => Promise<string>>(
+  d
+    .fn([d.boolean()])
+    .this(d.number())
+    .return(d.string())
+    .ensureAsyncSignature(function () {
+      expectType<number>(this);
+      return 'aaa';
+    })
+);
+
+expectType<(this: number, arg: boolean) => Promise<string>>(
+  d
+    .fn([d.boolean()])
+    .this(d.number())
+    .return(d.string())
+    .ensureAsyncSignature(function () {
+      expectType<number>(this);
+      return 'aaa';
+    })
+);
+
+expectType<(this: number) => Promise<string>>(
+  d
+    .fn()
+    .this(d.number())
+    .return(d.string())
+    .ensureAsyncSignature(function () {
+      expectType<number>(this);
+      return 'aaa';
+    })
+);
+
+expectType<(this: number) => Promise<string>>(
+  d
+    .fn()
+    .return(d.string())
+    .ensureAsyncSignature(function (this: number) {
+      return 'aaa';
+    })
+);
+
+expectType<(this: number) => Promise<string>>(
+  d
+    .fn()
+    .return(d.promise(d.string()))
+    .ensureAsyncSignature(async function (this: number) {
+      return 'aaa';
+    })
+);
+
+expectType<(this: number) => Promise<string>>(
+  d.fn().ensureAsyncSignature(function (this: number) {
+    return 'aaa';
+  })
+);
+
+expectType<() => Promise<string>>(
+  d.fn().ensureAsyncSignature(async function () {
+    return 'aaa';
+  })
+);
+
+expectType<() => Promise<number>>(d.fn().ensureAsyncSignature(() => 111));

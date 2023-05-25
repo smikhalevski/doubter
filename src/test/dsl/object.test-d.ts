@@ -1,4 +1,4 @@
-import * as d from 'doubter';
+import * as d from '../../main';
 import { expectType } from 'tsd';
 
 expectType<{ aaa?: string }>(

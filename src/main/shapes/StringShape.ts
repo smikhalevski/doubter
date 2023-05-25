@@ -15,9 +15,12 @@ import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
 /**
- * The shape that constrains the input as a string.
+ * The shape of a string value.
  */
 export class StringShape extends CoercibleShape<string> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**

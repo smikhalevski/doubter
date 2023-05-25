@@ -1,21 +1,21 @@
 import { Shape } from './Shape';
 
 /**
- * The shape which value can be coerced to a proper type during parsing.
+ * The shape can coerce input value type during parsing.
  *
- * @template I The input value.
- * @template O The output value.
+ * @template InputValue The input value.
+ * @template OutputValue The output value.
  */
-export class CoercibleShape<I = any, O = I> extends Shape<I, O> {
+export class CoercibleShape<InputValue = any, OutputValue = InputValue> extends Shape<InputValue, OutputValue> {
   /**
-   * `true` if input value is coerced to required type during parsing, or `false` otherwise.
+   * `true` if input value is coerced to the required type during parsing, or `false` otherwise.
    */
   isCoerced = false;
 
   /**
-   * Enables input value coercion.
+   * Enables an input value coercion.
    *
-   * @returns The clone of the shape, or this shape if it is already coerced.
+   * @returns The clone of the shape.
    */
   coerce(): this {
     const shape = this._clone();

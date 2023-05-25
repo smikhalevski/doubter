@@ -8,7 +8,7 @@ import {
   copyUnsafeChecks,
   createIssueFactory,
   isArray,
-  isIterable,
+  isIterableObject,
   isMapEntry,
   isObjectLike,
   ok,
@@ -30,14 +30,21 @@ import {
 /**
  * The shape of a `Map` instance.
  *
- * @template K The key shape.
- * @template V The value shape.
+ * @template KeyShape The key shape.
+ * @template ValueShape The value shape.
  */
-export class MapShape<K extends AnyShape, V extends AnyShape>
-  extends CoercibleShape<Map<K[INPUT], V[INPUT]>, Map<K[OUTPUT], V[OUTPUT]>>
-  implements DeepPartialProtocol<MapShape<DeepPartialShape<K>, OptionalDeepPartialShape<V>>>
+export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
+  extends CoercibleShape<Map<KeyShape[INPUT], ValueShape[INPUT]>, Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>>
+  implements DeepPartialProtocol<MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>>>
 {
+  /**
+   * The type constraint options or an issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -46,18 +53,18 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
    * @param keyShape The key shape.
    * @param valueShape The value shape.
    * @param options The type constraint options or an issue message.
-   * @template K The key shape.
-   * @template V The value shape.
+   * @template KeyShape The key shape.
+   * @template ValueShape The value shape.
    */
   constructor(
     /**
      * The key shape.
      */
-    readonly keyShape: K,
+    readonly keyShape: KeyShape,
     /**
      * The value shape.
      */
-    readonly valueShape: V,
+    readonly valueShape: ValueShape,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -70,7 +77,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return this.valueShape;
   }
 
-  deepPartial(): MapShape<DeepPartialShape<K>, OptionalDeepPartialShape<V>> {
+  deepPartial(): MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>> {
     const keyShape = toDeepPartialShape(this.keyShape);
     const valueShape = toDeepPartialShape(this.valueShape).optional();
 
@@ -89,7 +96,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<Map<K[OUTPUT], V[OUTPUT]>> {
+  protected _apply(input: any, options: ApplyOptions): Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>> {
     let changed = false;
     let entries;
 
@@ -162,7 +169,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Map<K[OUTPUT], V[OUTPUT]>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>>> {
     return new Promise(resolve => {
       let changed = false;
       let entries: [unknown, unknown][];
@@ -259,7 +266,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
   /**
    * Coerces a value to an array of `Map` entries, or returns {@linkcode NEVER} if coercion isn't possible.
    *
-   * @param value The non-`Map` value to coerce.
+   * @param value A non-`Map` value to coerce.
    */
   protected _coerceEntries(value: any): [unknown, unknown][] {
     if (isArray(value)) {
@@ -268,7 +275,7 @@ export class MapShape<K extends AnyShape, V extends AnyShape>
 
     value = getCanonicalValueOf(value);
 
-    if (isIterable(value)) {
+    if (isIterableObject(value)) {
       value = Array.from(value);
 
       return value.every(isMapEntry) ? value : NEVER;

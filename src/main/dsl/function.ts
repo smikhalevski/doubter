@@ -14,24 +14,27 @@ function function_(options?: ConstraintOptions | Message): FunctionShape<ArraySh
  *
  * @param argShapes The array of argument shapes.
  * @param options The constraint options or an issue message.
- * @template A The array of argument shapes.
+ * @template ArgShapes The array of argument shapes.
  */
-function function_<A extends readonly [AnyShape, ...AnyShape[]] | []>(
-  argShapes: A,
+function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
+  argShapes: ArgShapes,
   options?: ConstraintOptions | Message
-): FunctionShape<ArrayShape<A, null>, null, null>;
+): FunctionShape<ArrayShape<ArgShapes, null>, null, null>;
 
 /**
  * Creates a shape of a function with arguments parsed by an array shape.
  *
  * @param argsShape The shape of the array of arguments.
  * @param options The constraint options or an issue message.
- * @template A The shape of the array of arguments.
+ * @template InputArgValues The array of input arguments.
+ * @template OutputArgValues The array of input arguments.
+ * @template ArgsShape The shape of the array of arguments.
  */
-function function_<I extends readonly any[], O extends readonly any[], A extends Shape<I, O>>(
-  argsShape: A,
-  options?: ConstraintOptions | Message
-): FunctionShape<A, null, null>;
+function function_<
+  InputArgValues extends readonly any[],
+  OutputArgValues extends readonly any[],
+  ArgsShape extends Shape<InputArgValues, OutputArgValues>
+>(argsShape: ArgsShape, options?: ConstraintOptions | Message): FunctionShape<ArgsShape, null, null>;
 
 function function_(
   argShapes?: Shape | AnyShape[] | ConstraintOptions | Message,

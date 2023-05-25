@@ -6,15 +6,22 @@ import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
 /**
- * The shape of a value wrapped in a `Promise` instance.
+ * The shape of a `Promise` value.
  *
- * @template S The shape of the resolved value.
+ * @template ValueShape The shape of the resolved value.
  */
-export class PromiseShape<S extends AnyShape>
-  extends CoercibleShape<Promise<S[INPUT]>, Promise<S[OUTPUT]>>
-  implements DeepPartialProtocol<PromiseShape<OptionalDeepPartialShape<S>>>
+export class PromiseShape<ValueShape extends AnyShape>
+  extends CoercibleShape<Promise<ValueShape[INPUT]>, Promise<ValueShape[OUTPUT]>>
+  implements DeepPartialProtocol<PromiseShape<OptionalDeepPartialShape<ValueShape>>>
 {
+  /**
+   * The type constraint options or the type issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -22,16 +29,16 @@ export class PromiseShape<S extends AnyShape>
    *
    * @param shape The shape of the resolved value.
    * @param options The type constraint options or the type issue message.
-   * @template S The shape of the resolved value.
+   * @template ValueShape The shape of the resolved value.
    */
-  constructor(readonly shape: S, options?: ConstraintOptions | Message) {
+  constructor(readonly shape: ValueShape, options?: ConstraintOptions | Message) {
     super();
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
   }
 
-  deepPartial(): PromiseShape<OptionalDeepPartialShape<S>> {
+  deepPartial(): PromiseShape<OptionalDeepPartialShape<ValueShape>> {
     return copyUnsafeChecks(this, new PromiseShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
   }
 
@@ -47,17 +54,17 @@ export class PromiseShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<Promise<S[OUTPUT]>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<Promise<ValueShape[OUTPUT]>> {
     throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Promise<S[OUTPUT]>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Promise<ValueShape[OUTPUT]>>> {
     if (!(input instanceof Promise) && !(options.coerced || this.isCoerced)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
 
-    const handleValue = (value: unknown) => {
-      return applyShape(this.shape, value, options, result => {
+    const handleValue = (value: unknown) =>
+      applyShape(this.shape, value, options, result => {
         const { _applyChecks } = this;
 
         let output = input;
@@ -81,7 +88,6 @@ export class PromiseShape<S extends AnyShape>
         }
         return issues;
       });
-    };
 
     if (input instanceof Promise) {
       return input.then(handleValue);

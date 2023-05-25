@@ -7,10 +7,11 @@ import { ReadonlyDict } from '../utils';
  *
  * @param shapes The mapping from an object key to a corresponding shape.
  * @param options The constraint options or an issue message.
+ * @template PropertyShapes The mapping from a string object key to a corresponding value shape.
  */
-export function object<P extends ReadonlyDict<AnyShape>>(
-  shapes: P,
+export function object<PropertyShapes extends ReadonlyDict<AnyShape>>(
+  shapes: PropertyShapes,
   options?: ConstraintOptions | Message
-): ObjectShape<P, null> {
+): ObjectShape<PropertyShapes, null> {
   return new ObjectShape(shapes, null, options);
 }

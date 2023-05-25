@@ -6,24 +6,27 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param options The constraint options or an issue message.
  */
-export function array(options?: ConstraintOptions | Message): ArrayShape<null, null>;
+export function array(options?: ConstraintOptions | Message): ArrayShape<[], Shape>;
 
 /**
  * Creates the array shape with elements that conform the element shape.
  *
- * @param shape The shape of an array element.
+ * @param shape The shape of array elements.
  * @param options The constraint options or an issue message.
- * @template S The shape of array elements.
+ * @template ValueShape The shape of array elements.
  */
-export function array<S extends AnyShape | null>(shape: S, options?: ConstraintOptions | Message): ArrayShape<null, S>;
+export function array<ValueShape extends AnyShape>(
+  shape: ValueShape,
+  options?: ConstraintOptions | Message
+): ArrayShape<[], ValueShape>;
 
 export function array(
   shape?: AnyShape | ConstraintOptions | Message,
   options?: ConstraintOptions | Message
-): ArrayShape<any, any> {
-  if (shape === null || shape === undefined || shape instanceof Shape) {
-    return new ArrayShape(null, shape || null, options);
+): ArrayShape<[], AnyShape> {
+  if (shape instanceof Shape) {
+    return new ArrayShape([], shape, options);
   } else {
-    return new ArrayShape(null, null, shape);
+    return new ArrayShape([], new Shape(), shape);
   }
 }

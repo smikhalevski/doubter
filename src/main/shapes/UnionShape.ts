@@ -22,20 +22,27 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result,
  */
 export type Lookup = (input: any) => readonly AnyShape[];
 
-export type DeepPartialUnionShape<U extends readonly AnyShape[]> = UnionShape<{
-  [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
+export type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
+  [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;
 }>;
 
 /**
  * The shape that requires an input to conform at least one of shapes.
  *
- * @template U The array of shapes that comprise a union.
+ * @template UnitedShapes The array of shapes that comprise a union.
  */
-export class UnionShape<U extends readonly AnyShape[]>
-  extends Shape<U[number][INPUT], U[number][OUTPUT]>
-  implements DeepPartialProtocol<DeepPartialUnionShape<U>>
+export class UnionShape<Shapes extends readonly AnyShape[]>
+  extends Shape<Shapes[number][INPUT], Shapes[number][OUTPUT]>
+  implements DeepPartialProtocol<DeepPartialUnionShape<Shapes>>
 {
+  /**
+   * The union constraint options or an issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -43,13 +50,13 @@ export class UnionShape<U extends readonly AnyShape[]>
    *
    * @param shapes The array of shapes that comprise a union.
    * @param options The union constraint options or an issue message.
-   * @template U The array of shapes that comprise a union.
+   * @template Shapes The array of shapes that comprise a union.
    */
   constructor(
     /**
      * The array of shapes that comprise a union.
      */
-    readonly shapes: U,
+    readonly shapes: Shapes,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -86,7 +93,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return new UnionShape(shapes);
   }
 
-  deepPartial(): DeepPartialUnionShape<U> {
+  deepPartial(): DeepPartialUnionShape<Shapes> {
     return copyUnsafeChecks(this, new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
   }
 
@@ -99,7 +106,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return ([] as unknown[]).concat(...this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<U[number][OUTPUT]> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<Shapes[number][OUTPUT]> {
     const { _applyChecks } = this;
 
     let result = null;
@@ -143,7 +150,7 @@ export class UnionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<U[number][OUTPUT]>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<Shapes[number][OUTPUT]>> {
     return new Promise(resolve => {
       const { _applyChecks } = this;
 

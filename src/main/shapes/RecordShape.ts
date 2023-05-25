@@ -16,21 +16,33 @@ import {
 } from '../utils';
 import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result, Shape } from './Shape';
 
-// prettier-ignore
-export type InferRecord<K extends Shape<string, PropertyKey> | null, V extends AnyShape, C extends INPUT | OUTPUT> =
-  Record<K extends Shape ? K[C] : string, V[C]>;
+export type InferRecord<
+  KeyShape extends Shape<string, PropertyKey> | null,
+  ValueShape extends AnyShape,
+  Leg extends INPUT | OUTPUT
+> = Record<
+  KeyShape extends null | undefined ? string : KeyShape extends Shape ? KeyShape[Leg] : string,
+  ValueShape[Leg]
+>;
 
 /**
  * The shape that describes an object with string keys and values that conform the given shape.
  *
- * @template K The key shape.
- * @template V The value shape.
+ * @template KeyShape The key shape.
+ * @template ValueShape The value shape.
  */
-export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends AnyShape>
-  extends Shape<InferRecord<K, V, INPUT>, InferRecord<K, V, OUTPUT>>
-  implements DeepPartialProtocol<RecordShape<K, OptionalDeepPartialShape<V>>>
+export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, ValueShape extends AnyShape>
+  extends Shape<InferRecord<KeyShape, ValueShape, INPUT>, InferRecord<KeyShape, ValueShape, OUTPUT>>
+  implements DeepPartialProtocol<RecordShape<KeyShape, OptionalDeepPartialShape<ValueShape>>>
 {
+  /**
+   * The type constraint options or an issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -39,18 +51,18 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
    * @param keyShape The key shape, or `null` if keys should be preserved intact.
    * @param valueShape The value shape.
    * @param options The type constraint options or an issue message.
-   * @template K The key shape.
-   * @template V The value shape.
+   * @template KeyShape The key shape.
+   * @template ValueShape The value shape.
    */
   constructor(
     /**
      * The key shape or `null` if keys are preserved intact.
      */
-    readonly keyShape: K,
+    readonly keyShape: KeyShape,
     /**
      * The value shape.
      */
-    readonly valueShape: V,
+    readonly valueShape: ValueShape,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -63,7 +75,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return typeof key === 'string' || typeof key === 'number' ? this.valueShape : null;
   }
 
-  deepPartial(): RecordShape<K, OptionalDeepPartialShape<V>> {
+  deepPartial(): RecordShape<KeyShape, OptionalDeepPartialShape<ValueShape>> {
     const valueShape = toDeepPartialShape(this.valueShape).optional();
 
     return copyUnsafeChecks(this, new RecordShape<any, any>(this.keyShape, valueShape, this._options));
@@ -77,7 +89,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferRecord<K, V, OUTPUT>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferRecord<KeyShape, ValueShape, OUTPUT>> {
     if (!isObject(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -145,7 +157,7 @@ export class RecordShape<K extends Shape<string, PropertyKey> | null, V extends 
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferRecord<K, V, OUTPUT>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferRecord<KeyShape, ValueShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
         resolve(this._typeIssueFactory(input, options));
