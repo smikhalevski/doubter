@@ -50,8 +50,8 @@ export interface Check {
   readonly key: any;
 
   /**
-   * The callback that validates the shape output and returns the array of issues or throws a {@linkcode Validation}
-   * error.
+   * The callback that validates the shape output and returns the array of issues or throws a
+   * {@linkcode ValidationError}.
    */
   readonly callback: CheckCallback;
 

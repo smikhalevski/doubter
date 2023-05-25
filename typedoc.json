@@ -5,5 +5,28 @@
   "excludeExternals": true,
   "excludeInternal": true,
   "disableSources": true,
-  "readme": "none"
+  "readme": "none",
+  "intentionallyNotExported": [
+    "ApplyChecksCallback",
+    "Awaitable",
+    "DeepPartialArrayShape",
+    "DeepPartialIntersectionShape",
+    "DeepPartialObjectShape",
+    "DeepPartialUnionShape",
+    "Dict",
+    "OptionalDeepPartialShape",
+    "ExcludeLiteral",
+    "InferRecord",
+    "Lookup",
+    "OptionalKeys",
+    "OptionalProps",
+    "ReadonlyDict",
+    "RequiredProps",
+    "ShapeValue",
+    "ThisType",
+    "ToIntersection",
+    "ToPromise",
+    "INPUT",
+    "OUTPUT"
+  ]
 }
