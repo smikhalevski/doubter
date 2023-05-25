@@ -26,12 +26,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Push docs to ghpages
+      - name: Configure git user
         run: |
-          set -x
-
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
+
+      - name: Update docs
+        run: |
+          set -x
 
           TEMP_DIR=$(mktemp -d)
           mv ./docs $TEMP_DIR
@@ -46,6 +48,16 @@ jobs:
           git add .
           git commit -m "Updated docs ($(git rev-parse --short $GITHUB_SHA))"
           git push origin ghpages
+
+      - name: Update latest
+        run: |
+          set -x
+
+          git reset HEAD --hard
+          git fetch origin master:master
+          git checkout master
+          git checkout -b latest
+          git push --force origin latest
 
       - run: gh release create ${{ github.ref_name }} --generate-notes --draft
         env:
