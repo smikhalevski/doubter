@@ -18,7 +18,7 @@ import {
 } from '../constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
-import { addCheck, getCanonicalValueOf, createIssueFactory, isArray, isNumber, ok } from '../utils';
+import { addCheck, createIssueFactory, getCanonicalValueOf, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
 

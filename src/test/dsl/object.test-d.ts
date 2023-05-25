@@ -1,5 +1,5 @@
-import * as d from '../../main';
 import { expectType } from 'tsd';
+import * as d from '../../main';
 
 expectType<{ aaa?: string }>(
   d.object({

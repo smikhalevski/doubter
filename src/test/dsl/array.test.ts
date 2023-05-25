@@ -1,5 +1,5 @@
-import { Shape } from '../../main';
 import * as d from '../../main';
+import { Shape } from '../../main';
 
 describe('array', () => {
   test('returns an unconstrained array shape', () => {

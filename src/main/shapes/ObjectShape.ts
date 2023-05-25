@@ -37,11 +37,11 @@ import {
 
 // prettier-ignore
 type InferObject<
-  PropertyShapes extends ReadonlyDict<AnyShape>,
+  PropShapes extends ReadonlyDict<AnyShape>,
   RestShape extends AnyShape | null,
   Leg extends INPUT | OUTPUT
 > = Squash<
-  & UndefinedToOptional<{ [K in keyof PropertyShapes]: PropertyShapes[K][Leg] }>
+  & UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][Leg] }>
   & (RestShape extends null | undefined ? {} : RestShape extends AnyShape ? { [key: string]: RestShape[Leg] } : {})
 >;
 
@@ -53,19 +53,16 @@ type Squash<T> = { [K in keyof T]: T[K] } & {};
 
 type StringKeyof<T extends object> = Extract<keyof T, string>;
 
-type OptionalProps<PropertyShapes extends ReadonlyDict<AnyShape>> = {
-  [K in keyof PropertyShapes]: AllowLiteralShape<PropertyShapes[K], undefined>;
+type OptionalProps<PropShapes extends ReadonlyDict<AnyShape>> = {
+  [K in keyof PropShapes]: AllowLiteralShape<PropShapes[K], undefined>;
 };
 
-type RequiredProps<PropertyShapes extends ReadonlyDict<AnyShape>> = {
-  [K in keyof PropertyShapes]: DenyLiteralShape<PropertyShapes[K], undefined>;
+type RequiredProps<PropShapes extends ReadonlyDict<AnyShape>> = {
+  [K in keyof PropShapes]: DenyLiteralShape<PropShapes[K], undefined>;
 };
 
-type DeepPartialObjectShape<
-  PropertyShapes extends ReadonlyDict<AnyShape>,
-  RestShape extends AnyShape | null
-> = ObjectShape<
-  { [K in keyof PropertyShapes]: OptionalDeepPartialShape<PropertyShapes[K]> },
+type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> = ObjectShape<
+  { [K in keyof PropShapes]: OptionalDeepPartialShape<PropShapes[K]> },
   RestShape extends null | undefined ? null : RestShape extends AnyShape ? OptionalDeepPartialShape<RestShape> : null
 >;
 
@@ -74,19 +71,19 @@ export type KeysMode = 'preserved' | 'stripped' | 'exact';
 /**
  * The shape of an object.
  *
- * @template PropertyShapes The mapping from a string object key to a corresponding value shape.
+ * @template PropShapes The mapping from a string object key to a corresponding value shape.
  * @template RestShape The shape that constrains values of
  * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures), or `null`
  * if there's no index signature.
  */
-export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null>
-  extends Shape<InferObject<PropertyShapes, RestShape, INPUT>, InferObject<PropertyShapes, RestShape, OUTPUT>>
-  implements DeepPartialProtocol<DeepPartialObjectShape<PropertyShapes, RestShape>>
+export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null>
+  extends Shape<InferObject<PropShapes, RestShape, INPUT>, InferObject<PropShapes, RestShape, OUTPUT>>
+  implements DeepPartialProtocol<DeepPartialObjectShape<PropShapes, RestShape>>
 {
   /**
    * The array of known object keys.
    */
-  readonly keys: readonly StringKeyof<PropertyShapes>[];
+  readonly keys: readonly StringKeyof<PropShapes>[];
 
   /**
    * The mode of keys handling.
@@ -127,7 +124,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    * then values thea fall under the index signature are unconstrained.
    * @param options The type constraint options or an issue message.
    * @param keysMode The mode of keys handling.
-   * @template PropertyShapes The mapping from an object key to a corresponding value shape.
+   * @template PropShapes The mapping from an object key to a corresponding value shape.
    * @template RestShape The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
    */
@@ -135,7 +132,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
     /**
      * The mapping from an object key to a corresponding value shape.
      */
-    readonly shapes: PropertyShapes,
+    readonly shapes: PropShapes,
     /**
      * The shape that constrains values of
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
@@ -146,7 +143,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
   ) {
     super();
 
-    this.keys = Object.keys(shapes) as StringKeyof<PropertyShapes>[];
+    this.keys = Object.keys(shapes) as StringKeyof<PropShapes>[];
     this.keysMode = keysMode;
 
     this._options = options;
@@ -177,7 +174,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    */
   extend<T extends ReadonlyDict<AnyShape>>(
     shape: ObjectShape<T, any>
-  ): ObjectShape<Pick<PropertyShapes, Exclude<keyof PropertyShapes, keyof T>> & T, RestShape>;
+  ): ObjectShape<Pick<PropShapes, Exclude<keyof PropShapes, keyof T>> & T, RestShape>;
 
   /**
    * Add properties to an object shape.
@@ -191,7 +188,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    */
   extend<T extends ReadonlyDict<AnyShape>>(
     shapes: T
-  ): ObjectShape<Pick<PropertyShapes, Exclude<keyof PropertyShapes, keyof T>> & T, RestShape>;
+  ): ObjectShape<Pick<PropShapes, Exclude<keyof PropShapes, keyof T>> & T, RestShape>;
 
   extend(shape: ObjectShape<any, any> | ReadonlyDict) {
     const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
@@ -206,9 +203,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    * @returns The new object shape.
    * @template K The tuple of keys to pick.
    */
-  pick<K extends readonly StringKeyof<PropertyShapes>[]>(
-    keys: K
-  ): ObjectShape<Pick<PropertyShapes, K[number]>, RestShape> {
+  pick<K extends readonly StringKeyof<PropShapes>[]>(keys: K): ObjectShape<Pick<PropShapes, K[number]>, RestShape> {
     const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
@@ -226,9 +221,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    * @returns The new object shape.
    * @template K The tuple of keys to omit.
    */
-  omit<K extends readonly StringKeyof<PropertyShapes>[]>(
-    keys: K
-  ): ObjectShape<Omit<PropertyShapes, K[number]>, RestShape> {
+  omit<K extends readonly StringKeyof<PropShapes>[]>(keys: K): ObjectShape<Omit<PropShapes, K[number]>, RestShape> {
     const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
@@ -244,7 +237,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    *
    * @returns The new object shape.
    */
-  partial(): ObjectShape<OptionalProps<PropertyShapes>, RestShape>;
+  partial(): ObjectShape<OptionalProps<PropShapes>, RestShape>;
 
   /**
    * Returns an object shape with keys marked as optional.
@@ -253,9 +246,9 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    * @returns The new object shape.
    * @template K The array of string keys.
    */
-  partial<K extends readonly StringKeyof<PropertyShapes>[]>(
+  partial<K extends readonly StringKeyof<PropShapes>[]>(
     keys: K
-  ): ObjectShape<Omit<PropertyShapes, K[number]> & OptionalProps<Pick<PropertyShapes, K[number]>>, RestShape>;
+  ): ObjectShape<Omit<PropShapes, K[number]> & OptionalProps<Pick<PropShapes, K[number]>>, RestShape>;
 
   partial(keys?: string[]) {
     const shapes: Dict<AnyShape> = {};
@@ -266,7 +259,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
     return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
   }
 
-  deepPartial(): DeepPartialObjectShape<PropertyShapes, RestShape> {
+  deepPartial(): DeepPartialObjectShape<PropShapes, RestShape> {
     const shapes: Dict<AnyShape> = {};
 
     for (const key in this.shapes) {
@@ -283,7 +276,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    *
    * @returns The new object shape.
    */
-  required(): ObjectShape<RequiredProps<PropertyShapes>, RestShape>;
+  required(): ObjectShape<RequiredProps<PropShapes>, RestShape>;
 
   /**
    * Returns an object shape with keys marked as required.
@@ -292,9 +285,9 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    * @returns The new object shape.
    * @template K The array of string keys.
    */
-  required<K extends readonly StringKeyof<PropertyShapes>[]>(
+  required<K extends readonly StringKeyof<PropShapes>[]>(
     keys: K
-  ): ObjectShape<Omit<PropertyShapes, K[number]> & RequiredProps<Pick<PropertyShapes, K[number]>>, RestShape>;
+  ): ObjectShape<Omit<PropShapes, K[number]> & RequiredProps<Pick<PropShapes, K[number]>>, RestShape>;
 
   required(keys?: string[]) {
     const shapes: Dict<AnyShape> = {};
@@ -311,7 +304,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    * @param options The constraint options or an issue message.
    * @returns The new object shape.
    */
-  exact(options?: ConstraintOptions | Message): ObjectShape<PropertyShapes, null> {
+  exact(options?: ConstraintOptions | Message): ObjectShape<PropShapes, null> {
     const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
 
     shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options);
@@ -324,7 +317,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    *
    * @returns The new object shape.
    */
-  strip(): ObjectShape<PropertyShapes, null> {
+  strip(): ObjectShape<PropShapes, null> {
     return copyUnsafeChecks(this, new ObjectShape(this.shapes, null, this._options, 'stripped'));
   }
 
@@ -333,7 +326,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    *
    * @returns The new object shape.
    */
-  preserve(): ObjectShape<PropertyShapes, null> {
+  preserve(): ObjectShape<PropShapes, null> {
     return copyUnsafeChecks(this, new ObjectShape(this.shapes, null, this._options));
   }
 
@@ -346,14 +339,14 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
    * @returns The new object shape.
    * @template S The index signature shape.
    */
-  rest<S extends AnyShape | null>(restShape: S): ObjectShape<PropertyShapes, S> {
+  rest<S extends AnyShape | null>(restShape: S): ObjectShape<PropShapes, S> {
     return copyUnsafeChecks(this, new ObjectShape(this.shapes, restShape, this._options));
   }
 
   /**
    * Returns the enum shape of keys of this object.
    */
-  keyof(): EnumShape<StringKeyof<PropertyShapes>> {
+  keyof(): EnumShape<StringKeyof<PropShapes>> {
     return new EnumShape(this.keys);
   }
 
@@ -374,7 +367,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferObject<PropertyShapes, RestShape, OUTPUT>> {
+  protected _apply(input: any, options: ApplyOptions): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
     if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -388,7 +381,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
   protected _applyAsync(
     input: any,
     options: ApplyOptions
-  ): Promise<Result<InferObject<PropertyShapes, RestShape, OUTPUT>>> {
+  ): Promise<Result<InferObject<PropShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
         resolve(this._typeIssueFactory(input, options));
@@ -411,7 +404,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
 
       for (const key in input) {
         const value = input[key];
-        const index = keys.indexOf(key as StringKeyof<PropertyShapes>);
+        const index = keys.indexOf(key as StringKeyof<PropShapes>);
 
         let valueShape: AnyShape | null = restShape;
 
@@ -574,7 +567,7 @@ export class ObjectShape<PropertyShapes extends ReadonlyDict<AnyShape>, RestShap
 
     for (const key in input) {
       const value = input[key];
-      const index = keys.indexOf(key as StringKeyof<PropertyShapes>);
+      const index = keys.indexOf(key as StringKeyof<PropShapes>);
 
       let valueShape: AnyShape | null = restShape;
 

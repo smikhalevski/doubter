@@ -10,10 +10,10 @@ import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
-  getCanonicalValueOf,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
+  getCanonicalValueOf,
   isArray,
   isIterableObject,
   ok,

@@ -3,10 +3,10 @@ import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
-  getCanonicalValueOf,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
+  getCanonicalValueOf,
   isArray,
   isIterableObject,
   isMapEntry,
