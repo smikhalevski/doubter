@@ -5,31 +5,53 @@ import { applyShape, copyChecks, createIssueFactory, getErrorMessage, isArray, o
 import { ValidationError } from '../ValidationError';
 import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';
 
-// prettier-ignore
-export type InferInputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
-  (this: T extends AnyShape ? T[OUTPUT] : any, ...args: A[OUTPUT]) => R extends AnyShape ? R[INPUT] : any;
+type ShapeValue<
+  Shape extends AnyShape | null | undefined,
+  Leg extends INPUT | OUTPUT,
+  DefaultValue = any
+> = Shape extends null | undefined ? DefaultValue : Shape extends AnyShape ? Shape[Leg] : DefaultValue;
+
+type ThisType<F> = F extends (this: infer T, ...args: any[]) => any ? T : any;
 
 // prettier-ignore
-export type InferOutputFunction<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> =
-  (this: T extends AnyShape ? T[INPUT] : any, ...args: A[INPUT]) => R extends AnyShape ? R[OUTPUT] : any;
+type Awaited<T> =
+  T extends null | undefined ? T :
+  T extends object & { then(fn: infer F, ...args: any): any } ?
+    F extends (value: infer V, ...args: any) => any ? Awaited<V> : never :
+  T;
+
+type ToPromise<T> = Promise<Awaited<T>>;
+
+type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
 /**
- * The shape of the function value.
+ * The shape of a function.
  *
- * @template A The shape of the array of arguments.
- * @template R The return value shape, or `null` if unconstrained.
- * @template T The shape of `this` argument, or `null` if unconstrained.
+ * @template ArgsShape The shape of the array of arguments.
+ * @template ReturnShape The return value shape, or `null` if unconstrained.
+ * @template ThisShape The shape of `this` argument, or `null` if unconstrained.
  */
-export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends AnyShape | null> extends Shape<
-  InferInputFunction<A, R, T>,
-  InferOutputFunction<A, R, T>
+export class FunctionShape<
+  ArgsShape extends Shape<readonly any[], readonly any[]>,
+  ReturnShape extends AnyShape | null,
+  ThisShape extends AnyShape | null
+> extends Shape<
+  (this: ShapeValue<ThisShape, OUTPUT>, ...args: ArgsShape[OUTPUT]) => ShapeValue<ReturnShape, INPUT>,
+  (this: ShapeValue<ThisShape, INPUT>, ...args: ArgsShape[INPUT]) => ShapeValue<ReturnShape, OUTPUT>
 > {
   /**
-   * `true` if input functions are wrapped during parsing with a signature insurance wrapper, or `false` otherwise.
+   * `true` if input functions are wrapped during parsing to ensure runtime signature type-safety, or `false` otherwise.
    */
-  isInsured = false;
+  isStrict = false;
 
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
+
+  /**
+   * Parsing options that are used by a wrapper.
+   */
   protected _parseOptions: Readonly<ParseOptions> | undefined;
 
   /**
@@ -39,20 +61,23 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @param returnShape The return value shape, or `null` if unconstrained.
    * @param thisShape The shape of `this` argument, or `null` if unconstrained.
    * @param options The type constraint options or the type issue message.
+   * @template ArgsShape The shape of the array of arguments.
+   * @template ReturnShape The return value shape, or `null` if unconstrained.
+   * @template ThisShape The shape of `this` argument, or `null` if unconstrained.
    */
   constructor(
     /**
      * The shape of the array of arguments.
      */
-    readonly argsShape: A,
+    readonly argsShape: ArgsShape,
     /**
      * The return value shape, or `null` if unconstrained.
      */
-    readonly returnShape: R,
+    readonly returnShape: ReturnShape,
     /**
      * The shape of `this` value, or `null` if unconstrained.
      */
-    readonly thisShape: T,
+    readonly thisShape: ThisShape,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -61,10 +86,9 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * `true` if some shapes that describe the insured function signature are {@link Shape.isAsync async}, or `false`
-   * otherwise.
+   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, or `false` otherwise.
    */
-  get isAsyncFunction(): boolean {
+  get isAsyncSignature(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
   }
 
@@ -75,7 +99,7 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The new function shape.
    * @template S The return value shape.
    */
-  return<S extends AnyShape | null>(shape: S): FunctionShape<A, S, T> {
+  return<S extends AnyShape | null>(shape: S): FunctionShape<ArgsShape, S, ThisShape> {
     return copyChecks(this, new FunctionShape(this.argsShape, shape, this.thisShape));
   }
 
@@ -86,44 +110,54 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
    * @returns The new function shape.
    * @template S The shape of `this` argument.
    */
-  this<S extends AnyShape | null>(shape: S): FunctionShape<A, R, S> {
+  this<S extends AnyShape | null>(shape: S): FunctionShape<ArgsShape, ReturnShape, S> {
     return copyChecks(this, new FunctionShape(this.argsShape, this.returnShape, shape));
   }
 
   /**
-   * Wrap input functions in a signature insurance wrapper during parsing. This causes arguments, `this` and return
-   * values to conform the respective shapes.
+   * Enables input function wrapping during parsing to ensure runtime signature type-safety. Wrapper ensures that input
+   * function receives arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape}
+   * respectively, and returns the value that conforms {@link returnShape}.
    *
-   * @param options Options that are used by the signature insurance wrapper to parse arguments, `this` and return
-   * values. If omitted then default options are applied: not verbose, no type coercion.
+   * @param options Options that are used by the wrapper. If omitted then default options are applied: not verbose, no
+   * type coercion.
    * @returns The new function shape.
    */
-  insure(options?: ParseOptions): this {
+  strict(options?: ParseOptions): this {
     const shape = this._clone();
-    shape.isInsured = true;
+    shape.isStrict = true;
     shape._parseOptions = options;
     return shape;
   }
 
   /**
-   * Wraps a function in a signature insurance wrapper that parses arguments and `this` value, and passes them to `fn`.
-   * And after `fn` _synchronously_ returns the result, the wrapper parses it as well and returns.
+   * Wraps a function to ensure runtime signature type-safety. The returned wrapper function ensures that `fn` receives
+   * arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape} respectively, and
+   * _synchronously_ returns the value that conforms {@linkcode returnShape}.
    *
-   * @param fn The underlying function that would receive parsed arguments.
-   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode insure} are used.
+   * @param fn The underlying function.
+   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode strict} are used.
    * @returns The wrapper function.
+   * @template F The function to wrap.
    */
-  insureFunction(
-    fn: InferInputFunction<A, R, T>,
-    options = this._parseOptions || defaultApplyOptions
-  ): InferOutputFunction<A, R, T> {
+  ensureSignature<
+    F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: ArgsShape[OUTPUT]) => ShapeValue<ReturnShape, INPUT>
+  >(
+    fn: F,
+    options?: Readonly<ParseOptions>
+  ): (
+    this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
+    ...args: ArgsShape[INPUT]
+  ) => ShapeValue<ReturnShape, OUTPUT, ReturnType<F>>;
+
+  ensureSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
     const { argsShape, returnShape, thisShape } = this;
 
-    if (this.isAsyncFunction) {
+    if (this.isAsyncSignature) {
       throw new Error(ERROR_ASYNC_FUNCTION);
     }
 
-    return function (...args) {
+    return function (this: any, ...args: any) {
       const result = fn.apply(
         thisShape !== null ? getOrDie('this', thisShape['_apply'](this, options), this, options) : this,
         getOrDie('arguments', argsShape['_apply'](args, options), args, options)
@@ -138,23 +172,35 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
   }
 
   /**
-   * Wraps a function in a signature insurance wrapper that parses arguments and `this` value, and passes them to `fn`.
-   * And after `fn` _asynchronously_ returns the result, the wrapper parses it as well and returns.
+   * Wraps a function to ensure runtime signature type-safety. The returned wrapper function ensures that `fn` receives
+   * arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape} respectively, and
+   * _asynchronously_ returns the value that conforms {@linkcode returnShape}.
    *
-   * Use this method if {@link isAsyncFunction some shapes that describe the function signature} are
+   * Use this method if {@link isAsyncSignature some shapes that describe the function signature} are
    * {@link Shape.isAsync async}.
    *
-   * @param fn The underlying function that would receive parsed arguments.
-   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode insure} are used.
+   * @param fn The underlying function.
+   * @param options Parsing options used by the wrapper. By default, options provided to {@linkcode strict} are used.
    * @returns The wrapper function.
+   * @template F The function to wrap.
    */
-  insureAsyncFunction(
-    fn: InferInputFunction<A, R extends AnyShape ? Shape<Promise<R[INPUT]> | R[INPUT], never> : null, T>,
-    options = this._parseOptions || defaultApplyOptions
-  ): InferOutputFunction<A, Shape<never, Promise<R extends AnyShape ? R[OUTPUT] : any>>, T> {
+  ensureAsyncSignature<
+    F extends (
+      this: ShapeValue<ThisShape, OUTPUT>,
+      ...args: ArgsShape[OUTPUT]
+    ) => Awaitable<ShapeValue<ReturnShape, INPUT>>
+  >(
+    fn: F,
+    options?: Readonly<ParseOptions>
+  ): (
+    this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
+    ...args: ArgsShape[INPUT]
+  ) => ToPromise<ShapeValue<ReturnShape, OUTPUT, ReturnType<F>>>;
+
+  ensureAsyncSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
     const { argsShape, returnShape, thisShape } = this;
 
-    return function (...args) {
+    return function (this: any, ...args: any) {
       return new Promise(resolve => {
         let result;
 
@@ -187,7 +233,10 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     return [TYPE_FUNCTION];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferOutputFunction<A, R, T>> {
+  protected _apply(
+    input: any,
+    options: ApplyOptions
+  ): Result<(this: ShapeValue<ThisShape, INPUT>, ...args: ArgsShape[INPUT]) => ShapeValue<ReturnShape, OUTPUT>> {
     const { _applyChecks } = this;
 
     let issues = null;
@@ -195,16 +244,13 @@ export class FunctionShape<A extends Shape, R extends AnyShape | null, T extends
     if (typeof input !== 'function') {
       return this._typeIssueFactory(input, options);
     }
-    if (_applyChecks === null || (issues = _applyChecks(input, null, options)) === null) {
-      return this.isInsured ? ok(this._insure(input)) : null;
+    if (_applyChecks !== null && (issues = _applyChecks(input, null, options)) !== null) {
+      return issues;
     }
-    return issues;
-  }
-
-  // noinspection InfiniteRecursionJS
-  private _insure(fn: InferInputFunction<A, R, T>): InferOutputFunction<A, R, T> {
-    this._insure = this.isAsyncFunction ? this.insureAsyncFunction : this.insureFunction;
-    return this._insure(fn);
+    if (this.isStrict) {
+      return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(input) : this.ensureSignature(input));
+    }
+    return null;
   }
 }
 

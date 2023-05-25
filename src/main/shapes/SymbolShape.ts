@@ -5,9 +5,12 @@ import { createIssueFactory } from '../utils';
 import { Result, Shape } from './Shape';
 
 /**
- * The shape of the arbitrary symbol.
+ * The shape of an arbitrary symbol value.
  */
 export class SymbolShape extends Shape<symbol> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**

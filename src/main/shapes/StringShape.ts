@@ -10,14 +10,17 @@ import {
 } from '../constants';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { addCheck, getCanonicalValueOf, createIssueFactory, isArray, isValidDate, ok } from '../utils';
+import { addCheck, createIssueFactory, getCanonicalValueOf, isArray, isValidDate, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
 /**
- * The shape that constrains the input as a string.
+ * The shape of a string value.
  */
 export class StringShape extends CoercibleShape<string> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**

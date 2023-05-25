@@ -10,12 +10,12 @@ import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   addCheck,
-  getCanonicalValueOf,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
+  getCanonicalValueOf,
   isArray,
-  isIterable,
+  isIterableObject,
   ok,
   toArrayIndex,
   toDeepPartialShape,
@@ -27,27 +27,34 @@ import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, 
 /**
  * The shape of a `Set` instance.
  *
- * @template S The value shape.
+ * @template ValueShape The value shape.
  */
-export class SetShape<S extends AnyShape>
-  extends CoercibleShape<Set<S[INPUT]>, Set<S[OUTPUT]>>
-  implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<S>>>
+export class SetShape<ValueShape extends AnyShape>
+  extends CoercibleShape<Set<ValueShape[INPUT]>, Set<ValueShape[OUTPUT]>>
+  implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<ValueShape>>>
 {
+  /**
+   * The type constraint options or the type issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode SetShape} instance.
    *
-   * @param shape The value shape
+   * @param shape The value shape.
    * @param options The type constraint options or the type issue message.
-   * @template S The value shape.
+   * @template ValueShape The value shape.
    */
   constructor(
     /**
-     * The value shape
+     * The value shape.
      */
-    readonly shape: S,
+    readonly shape: ValueShape,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -105,7 +112,7 @@ export class SetShape<S extends AnyShape>
     });
   }
 
-  deepPartial(): SetShape<OptionalDeepPartialShape<S>> {
+  deepPartial(): SetShape<OptionalDeepPartialShape<ValueShape>> {
     return copyUnsafeChecks(this, new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
   }
 
@@ -121,7 +128,7 @@ export class SetShape<S extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<Set<S[OUTPUT]>> {
+  protected _apply(input: any, options: ApplyOptions): Result<Set<ValueShape[OUTPUT]>> {
     let changed = false;
     let values;
     let issues = null;
@@ -169,7 +176,7 @@ export class SetShape<S extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Set<S[OUTPUT]>>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Set<ValueShape[OUTPUT]>>> {
     return new Promise(resolve => {
       let changed = false;
       let values: unknown[];
@@ -240,7 +247,7 @@ export class SetShape<S extends AnyShape>
     if (isArray(value)) {
       return value;
     }
-    if (isIterable(value)) {
+    if (isIterableObject(value)) {
       return Array.from(value);
     }
     return [value];

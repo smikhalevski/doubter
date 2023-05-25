@@ -73,29 +73,31 @@ export type AnyShape = Shape | Shape<never>;
 /**
  * An alias for {@linkcode ReplaceLiteralShape} that allows the same value as both an input and an output.
  *
- * @template S The shape that parses the input without the replaced value.
- * @template T The value that is allowed as an input and output.
+ * @template BaseShape The shape that parses the input without the replaced value.
+ * @template AllowedValue The value that is allowed as an input and output.
  */
-export type AllowLiteralShape<S extends AnyShape, T> = ReplaceLiteralShape<S, T, T>;
+// prettier-ignore
+export type AllowLiteralShape<BaseShape extends AnyShape, AllowedValue> =
+  ReplaceLiteralShape<BaseShape, AllowedValue, AllowedValue>;
 
 /**
- * An alias for {@linkcode ExcludeShape} that doesn't impose the type exclusion.
+ * An alias for {@linkcode ExcludeShape} that doesn't impose the exclusion on the type level.
  *
- * @template S The base shape.
- * @template N The shape to which the output must not conform.
+ * @template BaseShape The base shape.
+ * @template ExcludedShape The shape to which the output must not conform.
  */
-export interface NotShape<S extends AnyShape, N extends AnyShape>
-  extends Shape<S[INPUT], S[OUTPUT]>,
-    DeepPartialProtocol<NotShape<DeepPartialShape<S>, N>> {
+export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
+  extends Shape<BaseShape[INPUT], BaseShape[OUTPUT]>,
+    DeepPartialProtocol<NotShape<DeepPartialShape<BaseShape>, ExcludedShape>> {
   /**
    * The base shape.
    */
-  readonly shape: S;
+  readonly shape: BaseShape;
 
   /**
    * The shape to which the output must not conform.
    */
-  readonly excludedShape: N;
+  readonly excludedShape: ExcludedShape;
 }
 
 /**
@@ -108,35 +110,35 @@ declare const BRAND: unique symbol;
 /**
  * The branded type.
  *
- * @template T The base type.
- * @template B The brand value.
+ * @template Value The value to brand.
+ * @template BrandValue The brand value.
  */
-export type Branded<T, B> = T & { [BRAND]: B };
+export type Branded<Value, BrandValue> = Value & { [BRAND]: BrandValue };
 
 /**
  * The shape that adds a brand to the output type. This shape doesn't affect the runtime and is used for emulation of
  * nominal typing.
  *
- * @template S The shape which output must be branded.
- * @template B The brand value.
+ * @template BaseShape The shape which output must be branded.
+ * @template BrandValue The brand value.
  */
 // prettier-ignore
-export type BrandShape<S extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, B> =
-  & Shape<S[INPUT], Branded<S[OUTPUT], B>>
-  & Pick<S, keyof DeepPartialProtocol<AnyShape>>;
+export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, BrandValue> =
+  & Shape<BaseShape[INPUT], Branded<BaseShape[OUTPUT], BrandValue>>
+  & Pick<BaseShape, keyof DeepPartialProtocol<AnyShape>>;
 
 /**
  * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
  *
- * @template T The deep partial alternative of the shape.
+ * @template S The deep partial alternative of the shape.
  */
-export interface DeepPartialProtocol<T extends AnyShape> {
+export interface DeepPartialProtocol<S extends AnyShape> {
   /**
    * Converts the shape and its child shapes to deep partial alternatives.
    *
    * @returns The deep partial clone of the shape.
    */
-  deepPartial(): T;
+  deepPartial(): S;
 }
 
 /**
@@ -188,23 +190,23 @@ export type Output<S extends AnyShape> = S[OUTPUT];
 /**
  * The baseline shape implementation.
  *
- * @template I The input value.
- * @template O The output value.
+ * @template InputValue The input value.
+ * @template OutputValue The output value.
  */
-export class Shape<I = any, O = I> {
+export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * The shape input type.
    *
    * @internal
    */
-  declare readonly [INPUT]: I;
+  declare readonly [INPUT]: InputValue;
 
   /**
    * The shape output type.
    *
    * @internal
    */
-  declare readonly [OUTPUT]: O;
+  declare readonly [OUTPUT]: OutputValue;
 
   /**
    * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations via DSL.
@@ -271,9 +273,9 @@ export class Shape<I = any, O = I> {
    * @param cb The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
-   * @template P The check param.
+   * @template ParamValue The check param value, passed to {@link CheckCallback the check callback}.
    */
-  check<P>(cb: CheckCallback<O, P>, options: CheckOptions & { param: P }): this;
+  check<ParamValue>(cb: CheckCallback<OutputValue, ParamValue>, options: CheckOptions & { param: ParamValue }): this;
 
   /**
    * Adds the check that is applied to the shape output.
@@ -287,7 +289,7 @@ export class Shape<I = any, O = I> {
    * @param options The check options.
    * @returns The clone of the shape.
    */
-  check(cb: CheckCallback<O>, options?: CheckOptions): this;
+  check(cb: CheckCallback<OutputValue>, options?: CheckOptions): this;
 
   check(cb: CheckCallback, options: CheckOptions = {}): this {
     const { key = cb, param, unsafe = false } = options;
@@ -338,18 +340,18 @@ export class Shape<I = any, O = I> {
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The constraint options or an issue message.
    * @returns The shape with the narrowed output.
-   * @template T The narrowed output value.
+   * @template RefinedOutputValue The narrowed output value.
    */
-  refine<T extends O>(
+  refine<RefinedOutputValue extends OutputValue>(
     /**
      * @param output The shape output value.
      * @param options Parsing options.
      * @return `true` if value matches the predicate, or `false` otherwise.
      * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
      */
-    cb: (output: O, options: Readonly<ApplyOptions>) => output is T,
+    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => output is RefinedOutputValue,
     options?: RefineOptions | Message
-  ): Shape<I, T>;
+  ): Shape<InputValue, RefinedOutputValue>;
 
   /**
    * Checks that the output value conforms the predicate.
@@ -365,11 +367,11 @@ export class Shape<I = any, O = I> {
      * @return `true` if value matches the predicate, or `false` otherwise.
      * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
      */
-    cb: (output: O, options: Readonly<ApplyOptions>) => boolean,
+    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => boolean,
     options?: RefineOptions | Message
   ): this;
 
-  refine(cb: (output: O, options: Readonly<ApplyOptions>) => unknown, options?: RefineOptions | Message) {
+  refine(cb: (output: OutputValue, options: Readonly<ApplyOptions>) => unknown, options?: RefineOptions | Message) {
     const { key = cb, code = CODE_PREDICATE, unsafe = false } = isObjectLike<RefineOptions>(options) ? options : {};
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
@@ -385,13 +387,13 @@ export class Shape<I = any, O = I> {
   }
 
   /**
-   * Pipes the shape output to another shape.
+   * Pipes the output of this shape to the input of another shape.
    *
    * @param shape The shape that validates the output if this shape.
    * @returns The {@linkcode PipeShape} instance.
-   * @template T The output value.
+   * @template OutputShape The output value.
    */
-  to<S extends AnyShape>(shape: S): PipeShape<this, S> {
+  to<OutputShape extends AnyShape>(shape: OutputShape): PipeShape<this, OutputShape> {
     return new PipeShape(this, shape);
   }
 
@@ -400,17 +402,17 @@ export class Shape<I = any, O = I> {
    *
    * @param cb The callback that transforms the shape output value.
    * @returns The {@linkcode TransformShape} instance.
-   * @template T The output value.
+   * @template TransformedValue The value returned from the callback that transforms the output value of this shape.
    */
-  transform<T>(
+  transform<TransformedValue>(
     /**
      * @param output The shape output value.
      * @param options Parsing options.
      * @return The transformed value.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    cb: (output: O, options: Readonly<ApplyOptions>) => T
-  ): Shape<I, T> {
+    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => TransformedValue
+  ): Shape<InputValue, TransformedValue> {
     return this.to(new TransformShape(cb));
   }
 
@@ -419,17 +421,17 @@ export class Shape<I = any, O = I> {
    *
    * @param cb The callback that transforms the shape output value.
    * @returns The {@linkcode TransformShape} instance.
-   * @template T The transformed value.
+   * @template TransformedValue The value returned from the callback that transforms the output value of this shape.
    */
-  transformAsync<T>(
+  transformAsync<TransformedValue>(
     /**
      * @param output The shape output value.
      * @param options Parsing options.
      * @return The transformed value.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    cb: (output: O, options: Readonly<ApplyOptions>) => Promise<T>
-  ): Shape<I, T> {
+    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => Promise<TransformedValue>
+  ): Shape<InputValue, TransformedValue> {
     return this.to(new TransformShape(cb, true));
   }
 
@@ -437,10 +439,10 @@ export class Shape<I = any, O = I> {
    * Returns an opaque shape that adds a brand to the output type.
    *
    * @returns A shape with the branded output type.
-   * @template B The brand value.
+   * @template BrandValue The brand value.
    */
-  brand<B = this>(): BrandShape<this, B> {
-    return this as BrandShape<this, B>;
+  brand<BrandValue = this>(): BrandShape<this, BrandValue> {
+    return this as BrandShape<this, BrandValue>;
   }
 
   /**
@@ -449,21 +451,24 @@ export class Shape<I = any, O = I> {
    * @param inputValue The input value to replace.
    * @param outputValue The output value that is returned if an `inputValue` is received.
    * @returns The {@linkcode ReplaceLiteralShape} instance.
-   * @template A The input value to replace.
-   * @template B The output value.
+   * @template InputValue The input value to replace.
+   * @template OutputValue The output value that is used as the replacement for an input value.
    */
-  replace<A extends Literal, B extends Literal>(inputValue: A, outputValue: B): ReplaceLiteralShape<this, A, B> {
+  replace<InputValue extends Literal, OutputValue extends Literal>(
+    inputValue: InputValue,
+    outputValue: OutputValue
+  ): ReplaceLiteralShape<this, InputValue, OutputValue> {
     return new ReplaceLiteralShape(this, inputValue, outputValue);
   }
 
   /**
    * Allows a literal input value, so it is passed directly to the output without any checks.
    *
-   * @param value The included value.
+   * @param value The allowed value.
    * @returns The {@linkcode ReplaceLiteralShape} instance.
-   * @template T The included value.
+   * @template AllowedValue The allowed value.
    */
-  allow<T extends Literal>(value: T): AllowLiteralShape<this, T> {
+  allow<AllowedValue extends Literal>(value: AllowedValue): AllowLiteralShape<this, AllowedValue> {
     return this.replace(value, value);
   }
 
@@ -473,9 +478,12 @@ export class Shape<I = any, O = I> {
    * @param value The excluded value.
    * @param options The constraint options or an issue message.
    * @returns The {@linkcode DenyLiteralShape} instance.
-   * @template T The excluded value.
+   * @template DeniedValue The denied value.
    */
-  deny<T extends I | O>(value: T, options?: ConstraintOptions | Message): DenyLiteralShape<this, T> {
+  deny<DeniedValue extends InputValue | OutputValue>(
+    value: DeniedValue,
+    options?: ConstraintOptions | Message
+  ): DenyLiteralShape<this, DeniedValue> {
     return new DenyLiteralShape(this, value, options);
   }
 
@@ -490,9 +498,12 @@ export class Shape<I = any, O = I> {
    * Replaces `undefined` input value with a default output value.
    *
    * @param defaultValue The value that should be used if an input value is `undefined`.
+   * @template DefaultValue The value that is used as the replacement for `undefined`.
    * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
-  optional<T extends Literal>(defaultValue: T): ReplaceLiteralShape<this, undefined, T>;
+  optional<DefaultValue extends Literal>(
+    defaultValue: DefaultValue
+  ): ReplaceLiteralShape<this, undefined, DefaultValue>;
 
   optional(defaultValue?: any) {
     return this.replace(undefined, defaultValue);
@@ -509,9 +520,10 @@ export class Shape<I = any, O = I> {
    * Replaces `null` input value with a default output value.
    *
    * @param defaultValue The value that should be used if an input value is `null`.
+   * @template DefaultValue The value that is used as the replacement for `null`.
    * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
-  nullable<T extends Literal>(defaultValue: T): ReplaceLiteralShape<this, null, T>;
+  nullable<DefaultValue extends Literal>(defaultValue: DefaultValue): ReplaceLiteralShape<this, null, DefaultValue>;
 
   nullable(defaultValue?: any) {
     return this.replace(null, arguments.length === 0 ? null : defaultValue);
@@ -528,12 +540,15 @@ export class Shape<I = any, O = I> {
    * Replaces `null` and `undefined` input value with a default output value.
    *
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
+   * @template DefaultValue The value that is used as the replacement for `undefined` and `null`.
    * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
-  nullish<T extends Literal>(defaultValue?: T): ReplaceLiteralShape<ReplaceLiteralShape<this, null, T>, undefined, T>;
+  nullish<DefaultValue extends Literal>(
+    defaultValue?: DefaultValue
+  ): ReplaceLiteralShape<ReplaceLiteralShape<this, null, DefaultValue>, undefined, DefaultValue>;
 
   nullish(defaultValue?: any) {
-    return this.nullable(arguments.length === 0 ? null : defaultValue).optional(defaultValue);
+    return this.nullable(arguments.length === 0 ? null : defaultValue).replace(undefined, defaultValue);
   }
 
   /**
@@ -558,11 +573,12 @@ export class Shape<I = any, O = I> {
    *
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed. A callback
    * receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
+   * @template FallbackValue The fallback value.
    * @returns The {@linkcode CatchShape} instance.
    */
-  catch<T extends Literal>(
-    fallback: T | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => T)
-  ): CatchShape<this, T>;
+  catch<FallbackValue extends Literal>(
+    fallback: FallbackValue | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => FallbackValue)
+  ): CatchShape<this, FallbackValue>;
 
   catch(fallback?: unknown): Shape {
     return new CatchShape(this, fallback);
@@ -573,10 +589,13 @@ export class Shape<I = any, O = I> {
    *
    * @param shape The shape to which the output must not conform.
    * @param options The constraint options or an issue message.
-   * @template S The shape to which the output must not conform.
+   * @template ExcludedShape The shape to which the output must not conform.
    * @returns The {@linkcode ExcludeShape} instance.
    */
-  exclude<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): ExcludeShape<this, S> {
+  exclude<ExcludedShape extends AnyShape>(
+    shape: ExcludedShape,
+    options?: ConstraintOptions | Message
+  ): ExcludeShape<this, ExcludedShape> {
     return new ExcludeShape(this, shape, options);
   }
 
@@ -588,10 +607,13 @@ export class Shape<I = any, O = I> {
    *
    * @param shape The shape to which the output must not conform.
    * @param options The constraint options or an issue message.
-   * @template S The shape to which the output must not conform.
+   * @template ExcludedShape The shape to which the output must not conform.
    * @returns The {@linkcode ExcludeShape} instance.
    */
-  not<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): NotShape<this, S> {
+  not<ExcludedShape extends AnyShape>(
+    shape: ExcludedShape,
+    options?: ConstraintOptions | Message
+  ): NotShape<this, ExcludedShape> {
     return this.exclude(shape, options);
   }
 
@@ -624,7 +646,7 @@ export class Shape<I = any, O = I> {
    * @param options Parsing options.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  protected _apply(input: unknown, options: ApplyOptions): Result<O> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<OutputValue> {
     const { _applyChecks } = this;
 
     if (_applyChecks !== null) {
@@ -640,12 +662,12 @@ export class Shape<I = any, O = I> {
    * @param options Parsing options.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<O>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<OutputValue>> {
     return new Promise(resolve => resolve(this._apply(input, options)));
   }
 }
 
-export interface Shape<I, O> {
+export interface Shape<InputValue, OutputValue> {
   /**
    * The array of unique input types and values that are accepted by the shape.
    */
@@ -665,7 +687,7 @@ export interface Shape<I, O> {
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
    * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
-  try(input: unknown, options?: ApplyOptions): Ok<O> | Err;
+  try(input: unknown, options?: ApplyOptions): Ok<OutputValue> | Err;
 
   /**
    * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
@@ -674,7 +696,7 @@ export interface Shape<I, O> {
    * @param options Parsing options.
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
    */
-  tryAsync(input: unknown, options?: ApplyOptions): Promise<Ok<O> | Err>;
+  tryAsync(input: unknown, options?: ApplyOptions): Promise<Ok<OutputValue> | Err>;
 
   /**
    * Synchronously parses the value.
@@ -685,7 +707,7 @@ export interface Shape<I, O> {
    * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
-  parse(input: unknown, options?: ParseOptions): O;
+  parse(input: unknown, options?: ParseOptions): OutputValue;
 
   /**
    * Asynchronously parses the value.
@@ -695,7 +717,7 @@ export interface Shape<I, O> {
    * @returns The value that conforms the output type of the shape.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
-  parseAsync(input: unknown, options?: ParseOptions): Promise<O>;
+  parseAsync(input: unknown, options?: ParseOptions): Promise<OutputValue>;
 
   /**
    * Synchronously parses the value and returns `undefined` if parsing fails.
@@ -704,7 +726,7 @@ export interface Shape<I, O> {
    * @returns The value that conforms the output type of the shape.
    * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
-  parseOrDefault(input: unknown): O | undefined;
+  parseOrDefault(input: unknown): OutputValue | undefined;
 
   /**
    * Synchronously parses the value and returns the default value if parsing fails.
@@ -712,10 +734,15 @@ export interface Shape<I, O> {
    * @param input The value to parse.
    * @param defaultValue The default value that is returned if parsing fails.
    * @param options Parsing options.
+   * @template DefaultValue The default value that is returned if parsing fails.
    * @returns The value that conforms the output type of the shape.
    * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
-  parseOrDefault<T>(input: unknown, defaultValue: T, options?: ApplyOptions): O | T;
+  parseOrDefault<DefaultValue>(
+    input: unknown,
+    defaultValue: DefaultValue,
+    options?: ApplyOptions
+  ): OutputValue | DefaultValue;
 
   /**
    * Asynchronously parses the value and returns `undefined` value if parsing fails.
@@ -723,7 +750,7 @@ export interface Shape<I, O> {
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
    */
-  parseOrDefaultAsync(input: unknown): Promise<O | undefined>;
+  parseOrDefaultAsync(input: unknown): Promise<OutputValue | undefined>;
 
   /**
    * Asynchronously parses the value and returns the default value if parsing fails.
@@ -731,9 +758,14 @@ export interface Shape<I, O> {
    * @param input The value to parse.
    * @param defaultValue The default value that is returned if parsing fails.
    * @param options Parsing options.
+   * @template DefaultValue The default value that is returned if parsing fails.
    * @returns The value that conforms the output type of the shape.
    */
-  parseOrDefaultAsync<T>(input: unknown, defaultValue: T, options?: ApplyOptions): Promise<O | T>;
+  parseOrDefaultAsync<DefaultValue>(
+    input: unknown,
+    defaultValue: DefaultValue,
+    options?: ApplyOptions
+  ): Promise<OutputValue | DefaultValue>;
 }
 
 Object.defineProperties(Shape.prototype, {
@@ -922,16 +954,16 @@ Object.defineProperties(Shape.prototype, {
 /**
  * The shape that applies a transformer callback to the input.
  *
- * @template T The output value.
+ * @template TransformedValue The output value of the callback that transforms the input value.
  */
-export class TransformShape<T> extends Shape<any, T> {
+export class TransformShape<TransformedValue> extends Shape<any, TransformedValue> {
   /**
    * Creates the new {@linkcode TransformShape} instance.
    *
    * @param callback The callback that transforms the input value.
    * @param async If `true` then the transform shape waits for the promise returned from the callback to be
    * fulfilled. Otherwise, the value that is synchronously returned from the callback is used as an output.
-   * @template T The output value.
+   * @template TransformedValue The output value of the callback that transforms the input value.
    */
   constructor(
     /**
@@ -942,7 +974,10 @@ export class TransformShape<T> extends Shape<any, T> {
      * @return The transformation result.
      * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
      */
-    readonly callback: (value: any, options: Readonly<ApplyOptions>) => PromiseLike<T> | T,
+    readonly callback: (
+      value: any,
+      options: Readonly<ApplyOptions>
+    ) => PromiseLike<TransformedValue> | TransformedValue,
     async?: boolean
   ) {
     super();
@@ -952,14 +987,14 @@ export class TransformShape<T> extends Shape<any, T> {
     }
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<T> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<TransformedValue> {
     const { callback, _applyChecks } = this;
 
     let issues = null;
     let output;
 
     try {
-      output = callback(input, options) as T;
+      output = callback(input, options) as TransformedValue;
     } catch (error) {
       return captureIssues(error);
     }
@@ -970,10 +1005,10 @@ export class TransformShape<T> extends Shape<any, T> {
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<T>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<TransformedValue>> {
     const { _applyChecks } = this;
 
-    return new Promise<T>(resolve => resolve(this.callback(input, options))).then(output => {
+    return new Promise<TransformedValue>(resolve => resolve(this.callback(input, options))).then(output => {
       let issues = null;
 
       if (
@@ -990,35 +1025,35 @@ export class TransformShape<T> extends Shape<any, T> {
 /**
  * The shape that parses the output of the input shape with the output shape.
  *
- * @template I The input shape.
- * @template O The output shape.
+ * @template InputShape The input shape.
+ * @template OutputShape The output shape.
  */
-export class PipeShape<I extends AnyShape, O extends AnyShape>
-  extends Shape<I[INPUT], O[OUTPUT]>
-  implements DeepPartialProtocol<PipeShape<DeepPartialShape<I>, DeepPartialShape<O>>>
+export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape>
+  extends Shape<InputShape[INPUT], OutputShape[OUTPUT]>
+  implements DeepPartialProtocol<PipeShape<DeepPartialShape<InputShape>, DeepPartialShape<OutputShape>>>
 {
   /**
    * Creates the new {@linkcode PipeShape} instance.
    *
    * @param inputShape The shape that parses the input value.
    * @param outputShape The shape that parses the output of `inputShape`.
-   * @template I The input shape.
-   * @template O The output shape.
+   * @template InputShape The input shape.
+   * @template OutputShape The output shape.
    */
   constructor(
     /**
      * The input shape.
      */
-    readonly inputShape: I,
+    readonly inputShape: InputShape,
     /**
      * The output shape.
      */
-    readonly outputShape: O
+    readonly outputShape: OutputShape
   ) {
     super();
   }
 
-  deepPartial(): PipeShape<DeepPartialShape<I>, DeepPartialShape<O>> {
+  deepPartial(): PipeShape<DeepPartialShape<InputShape>, DeepPartialShape<OutputShape>> {
     return copyUnsafeChecks(
       this,
       new PipeShape(toDeepPartialShape(this.inputShape), toDeepPartialShape(this.outputShape))
@@ -1033,7 +1068,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return this.inputShape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<O[OUTPUT]> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<OutputShape[OUTPUT]> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     let issues;
@@ -1064,7 +1099,7 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<O[OUTPUT]>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<OutputShape[OUTPUT]>> {
     const { inputShape, outputShape, _applyChecks } = this;
 
     return inputShape['_applyAsync'](input, options).then(result => {
@@ -1100,15 +1135,15 @@ export class PipeShape<I extends AnyShape, O extends AnyShape>
 /**
  * The shape that replaces an input literal value with an output literal value.
  *
- * @template S The shape that parses the input without the replaced value.
- * @template A The input value to replace.
- * @template B The output value.
+ * @template BaseShape The shape that parses the input without the replaced value.
+ * @template InputValue The input value to replace.
+ * @template OutputValue The output value that is used as the replacement for an input value.
  */
-export class ReplaceLiteralShape<S extends AnyShape, A, B>
-  extends Shape<S[INPUT] | A, ExcludeLiteral<S[OUTPUT], A> | B>
-  implements DeepPartialProtocol<ReplaceLiteralShape<DeepPartialShape<S>, A, B>>
+export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputValue>
+  extends Shape<BaseShape[INPUT] | InputValue, ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue>
+  implements DeepPartialProtocol<ReplaceLiteralShape<DeepPartialShape<BaseShape>, InputValue, OutputValue>>
 {
-  private _result: Result<B>;
+  private _result: Result<OutputValue>;
 
   /**
    * Creates the new {@linkcode ReplaceLiteralShape} instance.
@@ -1116,30 +1151,30 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
    * @param shape The shape that parses the input without the replaced value.
    * @param inputValue The input value to replace.
    * @param outputValue The output value that is returned if an `inputValue` is received.
-   * @template S The shape that parses the input without the replaced value.
-   * @template A The input value to replace.
-   * @template B The output value.
+   * @template BaseShape The shape that parses the input without the replaced value.
+   * @template InputValue The input value to replace.
+   * @template OutputValue The output value that is used as the replacement for an input value.
    */
   constructor(
     /**
      * The shape that parses the input without the replaced value.
      */
-    readonly shape: S,
+    readonly shape: BaseShape,
     /**
      * The input value to replace.
      */
-    readonly inputValue: A,
+    readonly inputValue: InputValue,
     /**
      * The output value that is returned if an {@linkcode inputValue} is received.
      */
-    readonly outputValue: B
+    readonly outputValue: OutputValue
   ) {
     super();
 
     this._result = isEqual(inputValue, outputValue) ? null : ok(outputValue);
   }
 
-  deepPartial(): ReplaceLiteralShape<DeepPartialShape<S>, A, B> {
+  deepPartial(): ReplaceLiteralShape<DeepPartialShape<BaseShape>, InputValue, OutputValue> {
     return copyUnsafeChecks(
       this,
       new ReplaceLiteralShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue)
@@ -1154,13 +1189,19 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     return this.shape.inputs.concat(this.inputValue);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S[OUTPUT], A> | B> {
+  protected _apply(
+    input: unknown,
+    options: ApplyOptions
+  ): Result<ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue> {
     const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options);
 
     return this._handleResult(result, input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ExcludeLiteral<S[OUTPUT], A> | B>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ApplyOptions
+  ): Promise<Result<ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue>> {
     if (isEqual(input, this.inputValue)) {
       return Promise.resolve(this._handleResult(this._result, input, options));
     }
@@ -1171,7 +1212,7 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
     result: Result,
     input: unknown,
     options: ApplyOptions
-  ): Result<ExcludeLiteral<S[OUTPUT], A> | B> {
+  ): Result<ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1194,14 +1235,21 @@ export class ReplaceLiteralShape<S extends AnyShape, A, B>
 /**
  * The shape that prevents both input and output from being equal to a denied literal value.
  *
- * @template S The shape that parses the input without the denied value.
- * @template T The denied value.
+ * @template BaseShape The shape that parses the input without the denied value.
+ * @template DeniedValue The denied value.
  */
-export class DenyLiteralShape<S extends AnyShape, T>
-  extends Shape<ExcludeLiteral<S[INPUT], T>, ExcludeLiteral<S[OUTPUT], T>>
-  implements DeepPartialProtocol<DenyLiteralShape<DeepPartialShape<S>, T>>
+export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
+  extends Shape<ExcludeLiteral<BaseShape[INPUT], DeniedValue>, ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>>
+  implements DeepPartialProtocol<DenyLiteralShape<DeepPartialShape<BaseShape>, DeniedValue>>
 {
+  /**
+   * The constraint options or an issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -1210,18 +1258,18 @@ export class DenyLiteralShape<S extends AnyShape, T>
    * @param shape The shape that parses the input without the denied value.
    * @param deniedValue The dined value.
    * @param options The constraint options or an issue message.
-   * @template S The shape that parses the input without the denied value.
-   * @template T The dined value.
+   * @template BaseShape The shape that parses the input without the denied value.
+   * @template DeniedValue The denied value.
    */
   constructor(
     /**
      * The shape that parses the input without the denied value.
      */
-    readonly shape: S,
+    readonly shape: BaseShape,
     /**
      * The dined value.
      */
-    readonly deniedValue: T,
+    readonly deniedValue: DeniedValue,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -1230,7 +1278,7 @@ export class DenyLiteralShape<S extends AnyShape, T>
     this._typeIssueFactory = createIssueFactory(CODE_DENIED, MESSAGE_DENIED, options, deniedValue);
   }
 
-  deepPartial(): DenyLiteralShape<DeepPartialShape<S>, T> {
+  deepPartial(): DenyLiteralShape<DeepPartialShape<BaseShape>, DeniedValue> {
     return copyUnsafeChecks(
       this,
       new DenyLiteralShape(toDeepPartialShape(this.shape), this.deniedValue, this._options)
@@ -1245,21 +1293,28 @@ export class DenyLiteralShape<S extends AnyShape, T>
     return this.shape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S[OUTPUT], T>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>> {
     if (isEqual(input, this.deniedValue)) {
       return this._typeIssueFactory(input, options);
     }
     return this._handleResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<ExcludeLiteral<S[OUTPUT], T>>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ApplyOptions
+  ): Promise<Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>>> {
     if (isEqual(input, this.deniedValue)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
     return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
   }
 
-  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<ExcludeLiteral<S[OUTPUT], T>> {
+  private _handleResult(
+    result: Result,
+    input: unknown,
+    options: ApplyOptions
+  ): Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1286,32 +1341,34 @@ export class DenyLiteralShape<S extends AnyShape, T>
 /**
  * The shape that returns the fallback value if parsing fails.
  *
- * @template S The shape that parses the input.
+ * @template BaseShape The shape that parses the input.
+ * @template FallbackValue The fallback value.
  */
-export class CatchShape<S extends AnyShape, T>
-  extends Shape<S[INPUT], S[OUTPUT] | T>
-  implements DeepPartialProtocol<CatchShape<DeepPartialShape<S>, T>>
+export class CatchShape<BaseShape extends AnyShape, FallbackValue>
+  extends Shape<BaseShape[INPUT], BaseShape[OUTPUT] | FallbackValue>
+  implements DeepPartialProtocol<CatchShape<DeepPartialShape<BaseShape>, FallbackValue>>
 {
-  private _resultProvider: (input: unknown, issues: Issue[], options: Readonly<ApplyOptions>) => Ok<T>;
+  private _resultProvider: (input: unknown, issues: Issue[], options: Readonly<ApplyOptions>) => Ok<FallbackValue>;
 
   /**
    * Creates the new {@linkcode CatchShape} instance.
    *
    * @param shape The shape that parses the input.
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
-   * @template S The shape that parses the input.
+   * @template BaseShape The shape that parses the input.
+   * @template FallbackValue The fallback value.
    */
   constructor(
     /**
      * The shape that parses the input.
      */
-    readonly shape: S,
+    readonly shape: BaseShape,
     /**
      * The value or a callback that returns a value that is returned if parsing has failed.
      *
      *  A callback receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
      */
-    readonly fallback: T | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => T)
+    readonly fallback: FallbackValue | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => FallbackValue)
   ) {
     super();
 
@@ -1323,7 +1380,7 @@ export class CatchShape<S extends AnyShape, T>
     }
   }
 
-  deepPartial(): CatchShape<DeepPartialShape<S>, T> {
+  deepPartial(): CatchShape<DeepPartialShape<BaseShape>, FallbackValue> {
     return copyUnsafeChecks(this, new CatchShape(toDeepPartialShape(this.shape), this.fallback));
   }
 
@@ -1335,15 +1392,19 @@ export class CatchShape<S extends AnyShape, T>
     return this.shape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<S[OUTPUT] | T> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<BaseShape[OUTPUT] | FallbackValue> {
     return this._handleResult(this.shape['_apply'](input, options), input, options);
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<S[OUTPUT] | T>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<BaseShape[OUTPUT] | FallbackValue>> {
     return this.shape['_applyAsync'](input, options).then(result => this._handleResult(result, input, options));
   }
 
-  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<S[OUTPUT] | T> {
+  private _handleResult(
+    result: Result,
+    input: unknown,
+    options: ApplyOptions
+  ): Result<BaseShape[OUTPUT] | FallbackValue> {
     const { _applyChecks } = this;
 
     let issues;
@@ -1370,14 +1431,21 @@ export class CatchShape<S extends AnyShape, T>
 /**
  * Checks that the input doesn't match the shape.
  *
- * @template S The base shape.
- * @template N The shape to which the output must not conform.
+ * @template BaseShape The base shape.
+ * @template ExcludedShape The shape to which the output must not conform.
  */
-export class ExcludeShape<S extends AnyShape, N extends AnyShape>
-  extends Shape<S[INPUT], Exclude<S[OUTPUT], N[INPUT]>>
-  implements DeepPartialProtocol<ExcludeShape<DeepPartialShape<S>, N>>
+export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
+  extends Shape<BaseShape[INPUT], Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>>
+  implements DeepPartialProtocol<ExcludeShape<DeepPartialShape<BaseShape>, ExcludedShape>>
 {
+  /**
+   * The constraint options or an issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -1386,18 +1454,18 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
    * @param shape The shape that parses the input.
    * @param excludedShape The shape to which the output must not conform.
    * @param options The constraint options or an issue message.
-   * @template S The base shape.
-   * @template N The shape to which the output must not conform.
+   * @template BaseShape The base shape.
+   * @template ExcludedShape The shape to which the output must not conform.
    */
   constructor(
     /**
      * The base shape.
      */
-    readonly shape: S,
+    readonly shape: BaseShape,
     /**
      * The shape to which the output must not conform.
      */
-    readonly excludedShape: N,
+    readonly excludedShape: ExcludedShape,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -1406,7 +1474,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     this._typeIssueFactory = createIssueFactory(CODE_EXCLUDED, MESSAGE_EXCLUDED, options, excludedShape);
   }
 
-  deepPartial(): ExcludeShape<DeepPartialShape<S>, N> {
+  deepPartial(): ExcludeShape<DeepPartialShape<BaseShape>, ExcludedShape> {
     return copyUnsafeChecks(this, new ExcludeShape(toDeepPartialShape(this.shape), this.excludedShape, this._options));
   }
 
@@ -1418,7 +1486,7 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return this.shape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<S[OUTPUT], N[INPUT]>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>> {
     const { shape, excludedShape, _applyChecks } = this;
 
     let issues;
@@ -1443,7 +1511,10 @@ export class ExcludeShape<S extends AnyShape, N extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<Exclude<S[OUTPUT], N[INPUT]>>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ApplyOptions
+  ): Promise<Result<Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>>> {
     const { shape, excludedShape, _applyChecks } = this;
 
     return shape['_applyAsync'](input, options).then(result => {

@@ -6,11 +6,11 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param ctor The instance constructor.
  * @param options The constraint options or an issue message.
- * @template C The instance constructor.
+ * @template Ctor The instance constructor.
  */
-export function instanceOf<C extends new (...args: any[]) => any>(
-  ctor: C,
+export function instanceOf<Ctor extends new (...args: any[]) => any>(
+  ctor: Ctor,
   options?: ConstraintOptions | Message
-): InstanceShape<C> {
+): InstanceShape<Ctor> {
   return new InstanceShape(ctor, options);
 }

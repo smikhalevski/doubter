@@ -7,9 +7,12 @@ import { Result, Shape } from './Shape';
 /**
  * The shape of the class instance.
  *
- * @template C The class constructor.
+ * @template Ctor The class constructor.
  */
-export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<InstanceType<C>> {
+export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape<InstanceType<Ctor>> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -17,9 +20,9 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
    *
    * @param ctor The class constructor.
    * @param options The type constraint options or the type issue message.
-   * @template C The class constructor.
+   * @template Ctor The class constructor.
    */
-  constructor(readonly ctor: C, options?: ConstraintOptions | Message) {
+  constructor(readonly ctor: Ctor, options?: ConstraintOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
@@ -46,7 +49,7 @@ export class InstanceShape<C extends new (...args: any[]) => any> extends Shape<
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<InstanceType<C>> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<InstanceType<Ctor>> {
     const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {

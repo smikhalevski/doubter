@@ -174,7 +174,7 @@ describe('UnionShape', () => {
       const shape2 = new Shape();
       const shape3 = new Shape();
       const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
-      const arrShape = new ArrayShape(null, shape3);
+      const arrShape = new ArrayShape([], shape3);
 
       const orShape = new UnionShape([objShape, arrShape]);
 
@@ -191,7 +191,7 @@ describe('UnionShape', () => {
       const shape2 = new Shape();
       const shape3 = new Shape();
       const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
-      const arrShape = new ArrayShape(null, shape3);
+      const arrShape = new ArrayShape([], shape3);
 
       const orShape = new UnionShape([objShape, arrShape]);
 

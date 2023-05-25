@@ -4,6 +4,29 @@ const myzod = require('myzod');
 const valita = require('@badrap/valita');
 const doubter = require('../../../lib');
 
+describe('array()', () => {
+  const value = [1, 2, 3];
+
+  test('Ajv', measure => {
+    const validate = new Ajv().compile({
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      type: 'array',
+    });
+
+    measure(() => {
+      validate(value);
+    });
+  });
+
+  test('doubter', measure => {
+    const shape = doubter.array();
+
+    measure(() => {
+      shape.parse(value);
+    });
+  });
+});
+
 describe('array(number())', () => {
   const value = [1, 2, 3];
 

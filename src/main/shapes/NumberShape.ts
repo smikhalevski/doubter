@@ -18,16 +18,23 @@ import {
 } from '../constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
-import { addCheck, getCanonicalValueOf, createIssueFactory, isArray, isNumber, ok } from '../utils';
+import { addCheck, createIssueFactory, getCanonicalValueOf, isArray, isNumber, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
 
 /**
- * The shape that constrains the input as a number.
+ * The shape of a number value.
  */
 export class NumberShape extends CoercibleShape<number> {
-  protected _typeIssueFactory;
+  /**
+   * Returns `true` if an input is equal to the const value, or `false` otherwise.
+   */
   protected _typePredicate = isNumber;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
+  protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode NumberShape} instance.
@@ -167,10 +174,19 @@ export class NumberShape extends CoercibleShape<number> {
    *
    * This constraint uses the
    * [modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which may
-   * produce unexpected results when used with floating point numbers. This happens because of
+   * produce unexpected results when used with floating point numbers. Unexpected results happen because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
    *
-   * Use a custom check to constrain input to be a multiple of a real number.
+   * Use a custom check to constrain input to be a multiple of a real number:
+   *
+   * ```ts
+   * const precision = 100;
+   *
+   * d.number().refine(
+   *   (value, param) => Math.trunc(value * precision) % Math.trunc(param * precision) === 0,
+   *   { param: 0.05 }
+   * );
+   * ```
    *
    * @param value The positive number by which the input should be divisible without a remainder.
    * @param options The constraint options or an issue message.

@@ -6,13 +6,13 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param shapes The array of shapes.
  * @param options The constraint options or an issue message.
- * @template U The tuple of intersected shapes.
+ * @template Shapes The tuple of intersected shapes.
  */
-export function intersection<U extends [AnyShape, ...AnyShape[]]>(
-  shapes: U,
+export function intersection<Shapes extends [AnyShape, ...AnyShape[]]>(
+  shapes: Shapes,
   options?: ConstraintOptions | Message
-): IntersectionShape<U> {
-  return new IntersectionShape<U>(shapes, options);
+): IntersectionShape<Shapes> {
+  return new IntersectionShape<Shapes>(shapes, options);
 }
 
 export { intersection as and };

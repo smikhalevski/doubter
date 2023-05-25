@@ -6,8 +6,11 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param shape The value shape
  * @param options The constraint options or an issue message.
- * @template S The value shape.
+ * @template ValueShape The value shape.
  */
-export function set<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): SetShape<S> {
+export function set<ValueShape extends AnyShape>(
+  shape: ValueShape,
+  options?: ConstraintOptions | Message
+): SetShape<ValueShape> {
   return new SetShape(shape, options);
 }

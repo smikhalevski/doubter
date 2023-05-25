@@ -10,7 +10,7 @@ import {
   StringShape,
   ValidationError,
 } from '../../main';
-import { CODE_ARRAY_MAX, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { CODE_TUPLE, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 
 describe('FunctionShape', () => {
@@ -28,7 +28,7 @@ describe('FunctionShape', () => {
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    arrayShape = new ArrayShape(null, null).length(0);
+    arrayShape = new ArrayShape([], null).length(0);
     asyncShape = new AsyncShape();
   });
 
@@ -36,6 +36,7 @@ describe('FunctionShape', () => {
     const shape = new FunctionShape(arrayShape, null, null);
 
     expect(shape.isAsync).toBe(false);
+    expect(shape.isAsyncSignature).toBe(false);
     expect(shape.argsShape).toBe(arrayShape);
     expect(shape.returnShape).toBeNull();
     expect(shape.thisShape).toBeNull();
@@ -73,38 +74,38 @@ describe('FunctionShape', () => {
     });
   });
 
-  describe('isAsyncFunction', () => {
+  describe('isAsyncSignature', () => {
     test('wrapper is async if any of the arguments is async', () => {
       const argsShape = new ArrayShape([asyncShape], null);
 
-      expect(new FunctionShape(argsShape, null, null).isAsyncFunction).toBe(true);
+      expect(new FunctionShape(argsShape, null, null).isAsyncSignature).toBe(true);
     });
 
     test('wrapper is async if return shape is async', () => {
-      expect(new FunctionShape(arrayShape, asyncShape, null).isAsyncFunction).toBe(true);
+      expect(new FunctionShape(arrayShape, asyncShape, null).isAsyncSignature).toBe(true);
     });
 
     test('wrapper is async if this shape is async', () => {
-      expect(new FunctionShape(arrayShape, null, asyncShape).isAsyncFunction).toBe(true);
+      expect(new FunctionShape(arrayShape, null, asyncShape).isAsyncSignature).toBe(true);
     });
   });
 
-  describe('insure', () => {
-    test('marks shape is insured', () => {
+  describe('strict', () => {
+    test('marks shape is strict', () => {
       const cbMock = jest.fn();
 
       const shape = new FunctionShape(arrayShape.check(cbMock), null, null);
 
-      expect(shape.isInsured).toBe(false);
-      expect(shape.insure().isInsured).toBe(true);
+      expect(shape.isStrict).toBe(false);
+      expect(shape.strict().isStrict).toBe(true);
     });
 
     test('sets options used by the wrapper', () => {
       const cbMock = jest.fn();
 
       new FunctionShape(arrayShape.check(cbMock), null, null)
-        .insure({ coerced: true })
-        .insureFunction(() => undefined)();
+        .strict({ coerced: true })
+        .ensureSignature(() => undefined)();
 
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, [], undefined, { coerced: true });
@@ -112,17 +113,17 @@ describe('FunctionShape', () => {
 
     test('wraps a function', () => {
       const fn = () => undefined;
-      const wrapper = new FunctionShape(arrayShape, null, null).insure().parse(fn);
+      const wrapper = new FunctionShape(arrayShape, null, null).strict().parse(fn);
 
       expect(wrapper).not.toBe(fn);
 
       expect(() => wrapper('aaa')).toThrow(
         new ValidationError([
           {
-            code: CODE_ARRAY_MAX,
+            code: CODE_TUPLE,
             path: ['arguments'],
             input: ['aaa'],
-            message: 'Must have the maximum length of 0',
+            message: 'Must be a tuple of length 0',
             param: 0,
           },
         ])
@@ -130,12 +131,12 @@ describe('FunctionShape', () => {
     });
   });
 
-  describe('insureFunction', () => {
+  describe('ensureSignature', () => {
     test('wraps a function with 0 arguments', () => {
       const fnMock = jest.fn();
       const shape = new FunctionShape(arrayShape, null, null);
 
-      shape.insureFunction(fnMock)();
+      shape.ensureSignature(fnMock)();
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1);
@@ -149,7 +150,7 @@ describe('FunctionShape', () => {
 
       const applySpy = jest.spyOn<Shape, any>(argShape, '_apply');
 
-      shape.insureFunction(fnMock)('aaa');
+      shape.ensureSignature(fnMock)('aaa');
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
@@ -160,12 +161,12 @@ describe('FunctionShape', () => {
 
     test('raises an issue if this is invalid', () => {
       const shape = new FunctionShape(
-        new ArrayShape(null, null),
+        new ArrayShape([], null),
         null,
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      expect(() => shape.insureFunction(() => undefined).call({ key1: 111 } as any)).toThrow(
+      expect(() => shape.ensureSignature(() => undefined).call({ key1: 111 } as any)).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -175,7 +176,7 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.insureFunction(() => undefined).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.ensureSignature(() => undefined).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -185,7 +186,7 @@ describe('FunctionShape', () => {
     test('raises issues if arguments are invalid in verbose mode', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.insureFunction(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.ensureSignature(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
           { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
@@ -194,9 +195,9 @@ describe('FunctionShape', () => {
     });
 
     test('raises an issue if a return value is invalid', () => {
-      const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
+      const shape = new FunctionShape(new ArrayShape([], null), new StringShape(), null);
 
-      expect(() => shape.insureFunction(() => 111 as any)()).toThrow(
+      expect(() => shape.ensureSignature(() => 111 as any)()).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -204,12 +205,12 @@ describe('FunctionShape', () => {
     });
   });
 
-  describe('insureAsyncFunction', () => {
+  describe('ensureAsyncSignature', () => {
     test('wraps a function with 0 arguments', async () => {
       const fnMock = jest.fn();
       const shape = new FunctionShape(arrayShape, null, null);
 
-      await shape.insureAsyncFunction(fnMock)();
+      await shape.ensureAsyncSignature(fnMock)();
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1);
@@ -223,7 +224,7 @@ describe('FunctionShape', () => {
 
       const applySpy = jest.spyOn<Shape, any>(argShape, '_apply');
 
-      await shape.insureAsyncFunction(fnMock)('aaa');
+      await shape.ensureAsyncSignature(fnMock)('aaa');
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
@@ -234,12 +235,12 @@ describe('FunctionShape', () => {
 
     test('raises an issue if this is invalid', async () => {
       const shape = new FunctionShape(
-        new ArrayShape(null, null),
+        new ArrayShape([], null),
         null,
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      await expect(shape.insureAsyncFunction(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
+      await expect(shape.ensureAsyncSignature(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -249,7 +250,7 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(shape.insureAsyncFunction(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
+      await expect(shape.ensureAsyncSignature(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -260,7 +261,7 @@ describe('FunctionShape', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
       await expect(
-        shape.insureAsyncFunction(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')
+        shape.ensureAsyncSignature(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')
       ).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
@@ -270,9 +271,9 @@ describe('FunctionShape', () => {
     });
 
     test('raises an issue if a return value is invalid', async () => {
-      const shape = new FunctionShape(new ArrayShape(null, null), new StringShape(), null);
+      const shape = new FunctionShape(new ArrayShape([], null), new StringShape(), null);
 
-      await expect(shape.insureAsyncFunction(() => 111 as any)()).rejects.toEqual(
+      await expect(shape.ensureAsyncSignature(() => 111 as any)()).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])

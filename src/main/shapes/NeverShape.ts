@@ -7,6 +7,9 @@ import { Result, Shape } from './Shape';
  * The shape that doesn't match any input.
  */
 export class NeverShape extends Shape<never> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**

@@ -4,12 +4,19 @@ import { createIssueFactory } from '../utils';
 import { Result, Shape } from './Shape';
 
 /**
- * The shape that constrains an input to be exactly equal to the expected value.
+ * The shape of a constant value.
  *
- * @template T The expected value.
+ * @template Value The expected constant value.
  */
-export class ConstShape<T> extends Shape<T> {
+export class ConstShape<Value> extends Shape<Value> {
+  /**
+   * Returns `true` if an input is equal to the const value, or `false` otherwise.
+   */
   protected _typePredicate: (input: unknown) => boolean;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
@@ -17,13 +24,13 @@ export class ConstShape<T> extends Shape<T> {
    *
    * @param value The expected value.
    * @param options The type constraint options or an issue message.
-   * @template T The expected value.
+   * @template Value The expected value.
    */
   constructor(
     /**
-     * The expected value.
+     * The expected constant value.
      */
-    readonly value: T,
+    readonly value: Value,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -36,7 +43,7 @@ export class ConstShape<T> extends Shape<T> {
     return [this.value];
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<T> {
+  protected _apply(input: unknown, options: ApplyOptions): Result<Value> {
     const { _applyChecks } = this;
 
     if (!this._typePredicate(input)) {

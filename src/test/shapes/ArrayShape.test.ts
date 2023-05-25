@@ -33,13 +33,13 @@ describe('ArrayShape', () => {
 
     const arrShape = new ArrayShape([shape1], restShape);
 
-    expect(arrShape.shapes).toEqual([shape1]);
+    expect(arrShape.headShapes).toEqual([shape1]);
     expect(arrShape.restShape).toBe(restShape);
     expect(arrShape.inputs).toEqual([TYPE_ARRAY]);
   });
 
   test('raises an issue if an input is not an unconstrained array', () => {
-    const arrShape = new ArrayShape(null, null);
+    const arrShape = new ArrayShape([], new Shape());
 
     const result = arrShape.try('aaa');
 
@@ -50,7 +50,7 @@ describe('ArrayShape', () => {
   });
 
   test('does not check array elements if there are no tuple element shapes and no rest element shape', () => {
-    const arrShape = new ArrayShape(null, null);
+    const arrShape = new ArrayShape([], new Shape());
 
     const arr = [111, 222];
     const result = arrShape.try(arr) as Ok<unknown>;
@@ -84,7 +84,7 @@ describe('ArrayShape', () => {
 
     const restApplySpy = jest.spyOn<Shape, any>(restShape, '_apply');
 
-    const arrShape = new ArrayShape(null, restShape);
+    const arrShape = new ArrayShape([], restShape);
 
     const arr = [111, 222];
     const result = arrShape.try(arr) as Ok<unknown>;
@@ -140,7 +140,7 @@ describe('ArrayShape', () => {
   });
 
   test('raises an issue if an input is not an array', () => {
-    const arrShape = new ArrayShape(null, new Shape());
+    const arrShape = new ArrayShape([], new Shape());
 
     expect(arrShape.try('aaa')).toEqual({
       ok: false,
@@ -160,7 +160,7 @@ describe('ArrayShape', () => {
   test('raises a single issue captured by the rest shape', () => {
     const restShape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const arrShape = new ArrayShape(null, restShape);
+    const arrShape = new ArrayShape([], restShape);
 
     expect(arrShape.try(['aaa', 'bbb'])).toEqual({
       ok: false,
@@ -171,7 +171,7 @@ describe('ArrayShape', () => {
   test('raises multiple issues captured by the rest shape in verbose mode', () => {
     const restShape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const arrShape = new ArrayShape(null, restShape);
+    const arrShape = new ArrayShape([], restShape);
 
     expect(arrShape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
       ok: false,
@@ -212,7 +212,7 @@ describe('ArrayShape', () => {
   });
 
   test('applies checks', () => {
-    const arrShape = new ArrayShape(null, new Shape()).check(() => [{ code: 'xxx' }]);
+    const arrShape = new ArrayShape([], new Shape()).check(() => [{ code: 'xxx' }]);
 
     expect(arrShape.try([111])).toEqual({
       ok: false,
@@ -266,7 +266,7 @@ describe('ArrayShape', () => {
     test('returns the rest element shape', () => {
       const restShape = new Shape();
 
-      const arrShape = new ArrayShape(null, restShape);
+      const arrShape = new ArrayShape([], restShape);
 
       expect(arrShape.at(0)).toBe(restShape);
       expect(arrShape.at(1)).toBe(restShape);
@@ -288,14 +288,14 @@ describe('ArrayShape', () => {
     test('returns the shape clone with updated rest elements', () => {
       const restShape = new Shape();
 
-      expect(new ArrayShape(null, null).rest(restShape).restShape).toBe(restShape);
+      expect(new ArrayShape([], null).rest(restShape).restShape).toBe(restShape);
     });
 
     test('copies unsafe checks', () => {
       const cbMock1 = jest.fn();
       const cbMock2 = jest.fn();
 
-      const arrShape = new ArrayShape(null, null).check(cbMock1, { unsafe: true }).check(cbMock2);
+      const arrShape = new ArrayShape([], null).check(cbMock1, { unsafe: true }).check(cbMock2);
 
       arrShape.rest(new Shape()).parse([]);
 
@@ -306,7 +306,7 @@ describe('ArrayShape', () => {
 
   describe('length', () => {
     test('checks length', () => {
-      const arrShape = new ArrayShape(null, new Shape()).length(2);
+      const arrShape = new ArrayShape([], new Shape()).length(2);
 
       expect(arrShape.try([111, 222])).toEqual({ ok: true, value: [111, 222] });
       expect(arrShape.try([111])).toEqual({ ok: false, issues: expect.any(Array) });
@@ -316,7 +316,7 @@ describe('ArrayShape', () => {
 
   describe('min', () => {
     test('checks min length', () => {
-      const arrShape = new ArrayShape(null, new Shape()).min(2);
+      const arrShape = new ArrayShape([], new Shape()).min(2);
 
       expect(arrShape.try([111, 222])).toEqual({ ok: true, value: [111, 222] });
       expect(arrShape.try([111])).toEqual({
@@ -328,7 +328,7 @@ describe('ArrayShape', () => {
 
   describe('max', () => {
     test('checks max length', () => {
-      const arrShape = new ArrayShape(null, new Shape()).max(2);
+      const arrShape = new ArrayShape([], new Shape()).max(2);
 
       expect(arrShape.try([111, 222])).toEqual({ ok: true, value: [111, 222] });
       expect(arrShape.try([111, 222, 333])).toEqual({
@@ -356,7 +356,7 @@ describe('ArrayShape', () => {
     });
 
     test('raises an issue if deep partial element is invalid', () => {
-      const arrShape = new ArrayShape(null, new NumberShape()).deepPartial();
+      const arrShape = new ArrayShape([], new NumberShape()).deepPartial();
 
       expect(arrShape.try(['aaa'])).toEqual({
         ok: false,
@@ -379,7 +379,7 @@ describe('ArrayShape', () => {
     });
 
     test('parses deep partial array', () => {
-      const arrShape = new ArrayShape(null, new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
+      const arrShape = new ArrayShape([], new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
 
       expect(arrShape.parse([undefined])).toEqual([undefined]);
       expect(arrShape.parse([{}])).toEqual([{}]);
@@ -390,7 +390,7 @@ describe('ArrayShape', () => {
 
   describe('coerce', () => {
     test('allow unknown input type when shape is coerced and elements are unconstrained', () => {
-      const arrShape = new ArrayShape(null, null).coerce();
+      const arrShape = new ArrayShape([], null).coerce();
 
       expect(arrShape.inputs).toEqual([TYPE_UNKNOWN]);
     });
@@ -432,7 +432,7 @@ describe('ArrayShape', () => {
     });
 
     test('coerces a non-array to an array', () => {
-      const arrShape = new ArrayShape(null, new Shape()).coerce();
+      const arrShape = new ArrayShape([], new Shape()).coerce();
 
       expect(arrShape.parse('aaa')).toEqual(['aaa']);
     });
@@ -450,13 +450,13 @@ describe('ArrayShape', () => {
     });
 
     test('coerces a Set', () => {
-      const arrShape = new ArrayShape(null, new Shape()).coerce();
+      const arrShape = new ArrayShape([], new Shape()).coerce();
 
       expect(arrShape.parse(new Set(['aaa']))).toEqual(['aaa']);
     });
 
     test('coerces a Map to an array of entries', () => {
-      const arrShape = new ArrayShape(null, new Shape()).coerce();
+      const arrShape = new ArrayShape([], new Shape()).coerce();
 
       expect(
         arrShape.parse(
@@ -472,13 +472,13 @@ describe('ArrayShape', () => {
     });
 
     test('coerces an array-like object', () => {
-      const arrShape = new ArrayShape(null, new Shape()).coerce();
+      const arrShape = new ArrayShape([], new Shape()).coerce();
 
       expect(arrShape.parse({ length: 1, 0: 'aaa' })).toEqual(['aaa']);
     });
 
     test('coerces a String wrapper', () => {
-      const arrShape = new ArrayShape(null, new Shape()).coerce();
+      const arrShape = new ArrayShape([], new Shape()).coerce();
 
       expect(arrShape.parse(new String('aaa'))).toEqual(['aaa']);
     });
@@ -495,7 +495,7 @@ describe('ArrayShape', () => {
 
   describe('async', () => {
     test('raises an issue if an input is not an unconstrained array', async () => {
-      const arrShape = new ArrayShape(null, asyncShape);
+      const arrShape = new ArrayShape([], asyncShape);
 
       const result = await arrShape.tryAsync('aaa');
 
@@ -506,7 +506,7 @@ describe('ArrayShape', () => {
     });
 
     test('downgrades to sync implementation if there are no async element shapes', async () => {
-      const arrShape = new ArrayShape(null, new Shape());
+      const arrShape = new ArrayShape([], new Shape());
 
       const applySpy = jest.spyOn<Shape, any>(arrShape, '_apply');
 
@@ -562,7 +562,7 @@ describe('ArrayShape', () => {
     test('parses rest elements', async () => {
       const restApplySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
 
-      const arrShape = new ArrayShape(null, asyncShape);
+      const arrShape = new ArrayShape([], asyncShape);
 
       const arr = [111, 222];
       const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
@@ -588,7 +588,7 @@ describe('ArrayShape', () => {
     });
 
     test('applies checks', async () => {
-      const arrShape = new ArrayShape(null, asyncShape).check(() => [{ code: 'xxx' }]);
+      const arrShape = new ArrayShape([], asyncShape).check(() => [{ code: 'xxx' }]);
 
       await expect(arrShape.tryAsync([111])).resolves.toEqual({
         ok: false,
@@ -598,7 +598,7 @@ describe('ArrayShape', () => {
 
     describe('coerce', () => {
       test('coerces a non-array to an array', async () => {
-        const arrShape = new ArrayShape(null, asyncShape).coerce();
+        const arrShape = new ArrayShape([], asyncShape).coerce();
 
         await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
       });

@@ -1,7 +1,7 @@
 import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../constants';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { getCanonicalValueOf, createIssueFactory, isArray, isValidDate, ok } from '../utils';
+import { createIssueFactory, getCanonicalValueOf, isArray, isValidDate, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 
@@ -9,6 +9,9 @@ import { NEVER, Result } from './Shape';
  * The shape of the `Date` object.
  */
 export class DateShape extends CoercibleShape<Date> {
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**

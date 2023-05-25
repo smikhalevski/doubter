@@ -20,7 +20,7 @@ export function isPlainObject(value: any): boolean {
   return isObjectLike(value) && ((proto = Object.getPrototypeOf(value)) === null || proto.constructor === Object);
 }
 
-export function isIterable(value: any): value is Iterable<any> {
+export function isIterableObject(value: any): value is Iterable<any> {
   return isObjectLike(value) && ((typeof Symbol !== 'undefined' && Symbol.iterator in value) || !isNaN(value.length));
 }
 

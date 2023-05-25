@@ -7,13 +7,13 @@ import { ConstraintOptions, Message } from '../types';
  * @param keyShape The key shape.
  * @param valueShape The value shape.
  * @param options The type constraint options or an issue message.
- * @template K The key shape.
- * @template V The value shape.
+ * @template KeyShape The key shape.
+ * @template ValueShape The value shape.
  */
-export function map<K extends AnyShape, V extends AnyShape>(
-  keyShape: K,
-  valueShape: V,
+export function map<KeyShape extends AnyShape, ValueShape extends AnyShape>(
+  keyShape: KeyShape,
+  valueShape: ValueShape,
   options?: ConstraintOptions | Message
-): MapShape<K, V> {
+): MapShape<KeyShape, ValueShape> {
   return new MapShape(keyShape, valueShape, options);
 }

@@ -6,8 +6,11 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param shape The shape to which the output must not conform.
  * @param options The constraint options or an issue message.
- * @template S The shape to which the output must not conform.
+ * @template ExcludedShape The shape to which the output must not conform.
  */
-export function not<S extends AnyShape>(shape: S, options?: ConstraintOptions | Message): NotShape<Shape, S> {
+export function not<ExcludedShape extends AnyShape>(
+  shape: ExcludedShape,
+  options?: ConstraintOptions | Message
+): NotShape<Shape, ExcludedShape> {
   return new Shape().not(shape, options);
 }

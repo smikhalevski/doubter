@@ -21,34 +21,41 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, NEVER, OUTPUT, 
 export type ToIntersection<U extends AnyShape> =
   (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
 
-export type DeepPartialIntersectionShape<U extends readonly AnyShape[]> = IntersectionShape<{
-  [K in keyof U]: U[K] extends AnyShape ? DeepPartialShape<U[K]> : never;
+export type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = IntersectionShape<{
+  [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;
 }>;
 
 /**
  * The shape that requires an input to conform all given shapes.
  *
- * @template U The array of shapes that comprise an intersection.
+ * @template Shapes The array of shapes that comprise an intersection.
  */
-export class IntersectionShape<U extends readonly AnyShape[]>
-  extends Shape<ToIntersection<U[number]>[INPUT], ToIntersection<U[number]>[OUTPUT]>
-  implements DeepPartialProtocol<DeepPartialIntersectionShape<U>>
+export class IntersectionShape<Shapes extends readonly AnyShape[]>
+  extends Shape<ToIntersection<Shapes[number]>[INPUT], ToIntersection<Shapes[number]>[OUTPUT]>
+  implements DeepPartialProtocol<DeepPartialIntersectionShape<Shapes>>
 {
+  /**
+   * The intersection constraint options or an issue message.
+   */
   protected _options;
+
+  /**
+   * Returns issues associated with an invalid input value type.
+   */
   protected _typeIssueFactory;
 
   /**
    * Creates a new {@linkcode IntersectionShape} instance.
    *
    * @param shapes The array of shapes that comprise an intersection.
-   * @param options The union constraint options or an issue message.
-   * @template U The array of shapes that comprise an intersection.
+   * @param options The intersection constraint options or an issue message.
+   * @template Shapes The array of shapes that comprise an intersection.
    */
   constructor(
     /**
      * The array of shapes that comprise an intersection.
      */
-    readonly shapes: U,
+    readonly shapes: Shapes,
     options?: ConstraintOptions | Message
   ) {
     super();
@@ -76,7 +83,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return new IntersectionShape(shapes);
   }
 
-  deepPartial(): DeepPartialIntersectionShape<U> {
+  deepPartial(): DeepPartialIntersectionShape<Shapes> {
     return copyUnsafeChecks(this, new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
   }
 
@@ -88,7 +95,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return distributeTypes(this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<U[number]>[OUTPUT]> {
+  protected _apply(input: any, options: ApplyOptions): Result<ToIntersection<Shapes[number]>[OUTPUT]> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -126,7 +133,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<ToIntersection<U[number]>[OUTPUT]>> {
+  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<ToIntersection<Shapes[number]>[OUTPUT]>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -178,7 +185,7 @@ export class IntersectionShape<U extends readonly AnyShape[]>
     input: any,
     outputs: any[] | null,
     options: ApplyOptions
-  ): Result<ToIntersection<U[number]>[OUTPUT]> {
+  ): Result<ToIntersection<Shapes[number]>[OUTPUT]> {
     const { shapes, _applyChecks } = this;
 
     let output = input;

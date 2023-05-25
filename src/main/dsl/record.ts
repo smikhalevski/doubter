@@ -6,9 +6,12 @@ import { ConstraintOptions, Message } from '../types';
  *
  * @param valueShape The shape of the record values.
  * @param options The constraint options or an issue message.
- * @template V The value shape.
+ * @template ValueShape The value shape.
  */
-export function record<V extends AnyShape>(valueShape: V, options?: ConstraintOptions | Message): RecordShape<null, V>;
+export function record<ValueShape extends AnyShape>(
+  valueShape: ValueShape,
+  options?: ConstraintOptions | Message
+): RecordShape<null, ValueShape>;
 
 /**
  * Creates the shape that describes an object with string keys and values that conform the given shape.
@@ -16,14 +19,14 @@ export function record<V extends AnyShape>(valueShape: V, options?: ConstraintOp
  * @param keyShape The shape of record keys.
  * @param valueShape The shape of the record values.
  * @param options The constraint options or an issue message.
- * @template K The key shape.
- * @template V The value shape.
+ * @template KeyShape The key shape.
+ * @template ValueShape The value shape.
  */
-export function record<K extends Shape<string, PropertyKey>, V extends AnyShape>(
-  keyShape: K,
-  valueShape: V,
+export function record<KeyShape extends Shape<string, PropertyKey>, ValueShape extends AnyShape>(
+  keyShape: KeyShape,
+  valueShape: ValueShape,
   options?: ConstraintOptions | Message
-): RecordShape<K, V>;
+): RecordShape<KeyShape, ValueShape>;
 
 export function record(
   keyShape: AnyShape,
