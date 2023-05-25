@@ -29,7 +29,7 @@ export type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionSha
 /**
  * The shape that requires an input to conform at least one of shapes.
  *
- * @template UnitedShapes The array of shapes that comprise a union.
+ * @template Shapes The array of shapes that comprise a union.
  */
 export class UnionShape<Shapes extends readonly AnyShape[]>
   extends Shape<Shapes[number][INPUT], Shapes[number][OUTPUT]>
