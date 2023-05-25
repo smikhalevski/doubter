@@ -19,9 +19,21 @@ Runtime validation and transformation library.
 
 🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/y5kec4)
 
+<br/>
+
+[Read the docs](https://github.com/smikhalevski/doubter/tree/latest#readme) and install the `latest` stable release:
+
 ```shell
 npm install --save-prod doubter
 ```
+
+Or install the canary release:
+
+```shell
+npm install --save-prod doubter@next
+```
+
+<br/>
 
 **Features**
 

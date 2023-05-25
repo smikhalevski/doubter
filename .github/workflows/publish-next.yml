@@ -1,0 +1,30 @@
+name: publish-next
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+
+  publish-next:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run docs
+      - run: npm test
+      - run: npm run test:definitions
+
+      - name: Bump version
+        run: npm version --no-git-tag-version "$(node -p 'require("./package.json").version')-next.${GITHUB_SHA::7}"
+
+      - run: npm publish --tag next
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
