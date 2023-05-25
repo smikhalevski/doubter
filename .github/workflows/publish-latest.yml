@@ -1,4 +1,4 @@
-name: release
+name: publish-latest
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
 
 jobs:
 
-  publish:
+  publish-latest:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
