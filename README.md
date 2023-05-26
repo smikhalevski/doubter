@@ -8,7 +8,8 @@ Runtime validation and transformation library.
 
 - TypeScript first;
 - Sync and async validation and transformation flows;
-- Collect all validation issues, or exit early;
+- [Circular object references support;](#circular-object-references)
+- [Collect all validation issues](#verbose-mode), or exit early;
 - [Runtime type introspection;](#introspection)
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
@@ -19,21 +20,13 @@ Runtime validation and transformation library.
 
 🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/y5kec4)
 
-<br/>
-
-[Read the docs](https://github.com/smikhalevski/doubter/tree/latest#readme) and install the `latest` stable release:
-
 ```shell
 npm install --save-prod doubter
 ```
 
-Or install the canary release:
-
-```shell
-npm install --save-prod doubter@next
-```
-
-<br/>
+> **Note**&ensp;Docs on the [`master`](https://github.com/smikhalevski/doubter/tree/master#readme) branch describe the
+> canary release `doubter@next`. Navigate to the [`latest`](https://github.com/smikhalevski/doubter/tree/latest#readme)
+> branch for docs that describe the latest stable release.
 
 **Features**
 
@@ -120,12 +113,11 @@ npm install --save-prod doubter@next
 - Unconstrained values<br>
   [`any`](#any)
   [`unknown`](#unknown)
-  [`never`](#never)
 
 - Other<br>
   [`transform`](#transform-transformasync)
-  [`transformAsync`](#transform-transformasync)
   [`lazy`](#lazy)
+  [`never`](#never)
 
 **Cookbook**
 
@@ -581,7 +573,7 @@ You can pass an additional parameter when adding a check:
 ```ts
 const includesCheck: d.CheckCallback<string[], string> = (value, param) => {
   if (!value.includes(param)) {
-    return { message: 'Must incude ' + param };
+    return { message: 'Must include ' + param };
   }
 };
 
@@ -2657,14 +2649,112 @@ jsonShape.parse({ name: 'Jill' });
 // ⮕ { name: 'Jill' }
 
 jsonShape.parse({ tag: Symbol() });
-// ❌ ValidationError: intersection at /tag: Must conform the intersection
+// ❌ ValidationError: intersection at /tag: Must conform the union
 ```
 
 Note that the `JSON` type is defined explicitly, because it cannot be inferred from the shape which references itself
 directly in its own initializer.
 
-> **Warning**&ensp;While Doubter supports cyclic types, it doesn't support cyclic data structures. The latter would
-> cause an infinite loop at runtime.
+You can also use `d.lazy` like this:
+
+```ts
+const jsonShape: d.Shape<JSON> = d.or([
+  d.number(),
+  d.string(),
+  d.boolean(),
+  d.null(),
+  d.array(d.lazy(() => jsonShape)),
+  d.record(d.lazy(() => jsonShape))
+]);
+```
+
+## Circular object references
+
+Doubter supports circular object references out-of-the-box:
+
+```ts
+interface User {
+  friends: User[];
+}
+
+const hank: User = {
+  friends: []
+};
+
+// 🟡 The circular reference
+hank.friends.push(hank);
+
+const userShape1: d.Shape<User> = d.lazy(() =>
+  d.object({
+    friends: d.array(userShape1)
+  })
+);
+
+userShape1.parse(hank);
+// ⮕ hank
+
+userShape1.parse(hank).friends[0];
+// ⮕ hank
+```
+
+You can replace circular references with a replacement value:
+
+```ts
+const userShape2: d.Shape<User> = d.lazy(() =>
+  d.object({
+    friends: d.array(userShape2)
+  })
+).circular('Me and Myself');
+
+userShape1.parse(hank);
+// ⮕ hank
+
+userShape2.parse(hank).friends[0];
+// ⮕ 'Me and Myself'
+```
+
+You can [provide a callback](https://smikhalevski.github.io/doubter/classes/LazyShape.html#circular) that returns a
+value that is used as a replacement value for circular references. Or it can throw a
+[`ValidationError`](#validation-errors) from the callback to indicate that circular references aren't allowed:
+
+```ts
+const userShape3: d.Shape<User> = d.lazy(() =>
+  d.object({
+    friends: d.array(userShape3)
+  })
+).circular((input, options) => {
+  throw new d.ValidationError([{ code: 'kaputs' }]);
+});
+
+userShape1.parse(hank);
+// ❌ ValidationError: kaputs at /friends/0
+```
+
+By default, Doubter neither parses nor validates an object if it was already seen, and returns such object as is. This
+behaviour was chosen as the default for `d.lazy` because otherwise the result would be ambiguous when transformations
+are introduced.
+
+```ts
+interface Foo {
+  bar?: Foo;
+}
+
+const foo: Foo = {};
+
+foo.bar = foo;
+
+const fooShape: d.Shape<Foo, string> = d.lazy(() =>
+  d.object({
+    bar: fooShape.optional(),
+  })
+).transform(output => {
+  //        ⮕ {bar?: Foo} | {bar?: string}
+  return 'hello';
+});
+
+fooShape.parse(foo);
+// ⮕ 'hello'
+```
 
 # `map`
 

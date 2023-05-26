@@ -43,7 +43,7 @@ describe('Cookbook', () => {
 describe('JSON shape', () => {
   type JSON = number | string | boolean | null | JSON[] | { [key: string]: JSON };
 
-  test('can parse JSON', () => {
+  test('parses JSON', () => {
     const jsonShape: d.Shape<JSON> = d.lazy(() =>
       d.or([d.number(), d.string(), d.boolean(), d.null(), d.array(jsonShape), d.record(jsonShape)])
     );
@@ -85,6 +85,59 @@ describe('JSON shape', () => {
       ],
     });
   });
+
+  test('defer lazy usage', () => {
+    const jsonShape: d.Shape<JSON> = d.or([
+      d.number(),
+      d.string(),
+      d.boolean(),
+      d.null(),
+      d.array(d.lazy(() => jsonShape)),
+      d.record(d.lazy(() => jsonShape)),
+    ]);
+
+    const value1 = { aaa: { bbb: 111 } };
+    const value2 = Symbol();
+
+    expect(jsonShape.parse(value1)).toBe(value1);
+
+    expect(jsonShape.try(value2)).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_UNION,
+          message: MESSAGE_UNION,
+          input: value2,
+          param: {
+            inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
+            issueGroups: null,
+          },
+        },
+      ],
+    });
+  });
+});
+
+test('Circular object references', () => {
+  interface User {
+    friends: User[];
+  }
+
+  const hank: User = {
+    friends: [],
+  };
+
+  // 🟡 The circular reference
+  hank.friends.push(hank);
+
+  const userShape: d.Shape<User> = d.lazy(() =>
+    d.object({
+      friends: d.array(userShape),
+    })
+  );
+
+  expect(userShape.parse(hank)).toBe(hank);
+  expect(userShape.parse(hank).friends![0]).toBe(hank);
 });
 
 describe('Advanced shapes', () => {
