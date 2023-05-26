@@ -666,7 +666,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<OutputValue>> {
-    return new Promise(resolve => resolve(this._apply(input, options, nonce)));
+    return new Promise(resolve => {
+      resolve(this._apply(input, options, nonce));
+    });
   }
 }
 
@@ -1011,7 +1013,9 @@ export class TransformShape<TransformedValue> extends Shape<any, TransformedValu
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<TransformedValue>> {
     const { _applyChecks } = this;
 
-    return new Promise<TransformedValue>(resolve => resolve(this.callback(input, options))).then(output => {
+    return new Promise<TransformedValue>(resolve => {
+      resolve(this.callback(input, options));
+    }).then(output => {
       let issues = null;
 
       if (
