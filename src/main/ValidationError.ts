@@ -6,12 +6,6 @@ import { Issue } from './types';
  */
 export class ValidationError extends Error {
   /**
-   * The global function that stringifies issues as an error message, if a message is omitted when
-   * {@linkcode ValidationError} is instantiated.
-   */
-  static formatIssues = (issues: Issue[]): string => JSON.stringify(issues, jsonReplacer, 2);
-
-  /**
    * Creates a new {@linkcode ValidationError} instance.
    *
    * @param issues The array of issues that caused the validation error.
@@ -31,6 +25,12 @@ export class ValidationError extends Error {
 
     this.name = 'ValidationError';
   }
+
+  /**
+   * The global function that stringifies issues as an error message, if a message is omitted when
+   * {@linkcode ValidationError} is instantiated.
+   */
+  static formatIssues = (issues: Issue[]): string => JSON.stringify(issues, jsonReplacer, 2);
 }
 
 function jsonReplacer(key: any, value: any): any {

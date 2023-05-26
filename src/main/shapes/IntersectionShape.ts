@@ -133,7 +133,11 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<ToIntersection<Shapes[number]>[OUTPUT]>> {
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<ToIntersection<Shapes[number]>[OUTPUT]>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;

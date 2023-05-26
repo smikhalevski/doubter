@@ -96,7 +96,11 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>> {
+  protected _apply(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>> {
     let changed = false;
     let entries;
 
@@ -169,7 +173,11 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>>> {
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>>> {
     return new Promise(resolve => {
       let changed = false;
       let entries: [unknown, unknown][];

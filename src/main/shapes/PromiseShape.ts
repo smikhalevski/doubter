@@ -58,7 +58,11 @@ export class PromiseShape<ValueShape extends AnyShape>
     throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Promise<ValueShape[OUTPUT]>>> {
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<Promise<ValueShape[OUTPUT]>>> {
     if (!(input instanceof Promise) && !(options.coerced || this.isCoerced)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }

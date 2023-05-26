@@ -367,7 +367,11 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
+  protected _apply(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
     if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }

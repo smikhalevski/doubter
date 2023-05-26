@@ -9,7 +9,7 @@ import {
   isArray,
   nextNonce,
   ok,
-  unshiftIssuesPath
+  unshiftIssuesPath,
 } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';

@@ -89,7 +89,11 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferRecord<KeyShape, ValueShape, OUTPUT>> {
+  protected _apply(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<InferRecord<KeyShape, ValueShape, OUTPUT>> {
     if (!isObject(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -157,7 +161,11 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<InferRecord<KeyShape, ValueShape, OUTPUT>>> {
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<InferRecord<KeyShape, ValueShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
         resolve(this._typeIssueFactory(input, options));
