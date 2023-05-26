@@ -112,20 +112,20 @@ declare const BRAND: unique symbol;
  * The branded type.
  *
  * @template Value The value to brand.
- * @template BrandValue The brand value.
+ * @template Brand The brand value.
  */
-export type Branded<Value, BrandValue> = Value & { [BRAND]: BrandValue };
+export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
 
 /**
  * The shape that adds a brand to the output type. This shape doesn't affect the runtime and is used for emulation of
  * nominal typing.
  *
  * @template BaseShape The shape which output must be branded.
- * @template BrandValue The brand value.
+ * @template Brand The brand value.
  */
 // prettier-ignore
-export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, BrandValue> =
-  & Shape<BaseShape[INPUT], Branded<BaseShape[OUTPUT], BrandValue>>
+export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, Brand> =
+  & Shape<BaseShape[INPUT], Branded<BaseShape[OUTPUT], Brand>>
   & Pick<BaseShape, keyof DeepPartialProtocol<AnyShape>>;
 
 /**
@@ -274,9 +274,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
-   * @template ParamValue The check param value, passed to {@link CheckCallback the check callback}.
+   * @template Param The check param value, passed to {@link CheckCallback the check callback}.
    */
-  check<ParamValue>(cb: CheckCallback<OutputValue, ParamValue>, options: CheckOptions & { param: ParamValue }): this;
+  check<Param>(cb: CheckCallback<OutputValue, Param>, options: CheckOptions & { param: Param }): this;
 
   /**
    * Adds the check that is applied to the shape output.
@@ -440,10 +440,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Returns an opaque shape that adds a brand to the output type.
    *
    * @returns A shape with the branded output type.
-   * @template BrandValue The brand value.
+   * @template Brand The brand value.
    */
-  brand<BrandValue = this>(): BrandShape<this, BrandValue> {
-    return this as BrandShape<this, BrandValue>;
+  brand<Brand = this>(): BrandShape<this, Brand> {
+    return this as BrandShape<this, Brand>;
   }
 
   /**

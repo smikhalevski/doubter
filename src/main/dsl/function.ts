@@ -26,14 +26,14 @@ function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
  *
  * @param argsShape The shape of the array of arguments.
  * @param options The constraint options or an issue message.
- * @template InputArgValues The array of input arguments.
- * @template OutputArgValues The array of input arguments.
+ * @template InputArgs The array of input arguments.
+ * @template OutputArgs The array of input arguments.
  * @template ArgsShape The shape of the array of arguments.
  */
 function function_<
-  InputArgValues extends readonly any[],
-  OutputArgValues extends readonly any[],
-  ArgsShape extends Shape<InputArgValues, OutputArgValues>
+  InputArgs extends readonly any[],
+  OutputArgs extends readonly any[],
+  ArgsShape extends Shape<InputArgs, OutputArgs>
 >(argsShape: ArgsShape, options?: ConstraintOptions | Message): FunctionShape<ArgsShape, null, null>;
 
 function function_(
