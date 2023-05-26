@@ -89,7 +89,11 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferRecord<KeyShape, ValueShape, OUTPUT>> {
+  protected _apply(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<InferRecord<KeyShape, ValueShape, OUTPUT>> {
     if (!isObject(input)) {
       return this._typeIssueFactory(input, options);
     }
@@ -107,7 +111,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
       index++;
 
       if (keyShape !== null) {
-        keyResult = keyShape['_apply'](key, options);
+        keyResult = keyShape['_apply'](key, options, nonce);
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
@@ -124,7 +128,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         }
       }
 
-      let valueResult = valueShape['_apply'](value, options);
+      let valueResult = valueShape['_apply'](value, options, nonce);
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
@@ -157,7 +161,11 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferRecord<KeyShape, ValueShape, OUTPUT>>> {
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<InferRecord<KeyShape, ValueShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
         resolve(this._typeIssueFactory(input, options));
@@ -193,7 +201,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
             keyChanged = true;
           }
         }
-        return applyShape(valueShape, value, options, handleValueResult);
+        return applyShape(valueShape, value, options, nonce, handleValueResult);
       };
 
       const handleValueResult = (valueResult: Result) => {
@@ -229,9 +237,9 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           value = input[key];
 
           if (keyShape !== null) {
-            return applyShape(keyShape, key, options, handleKeyResult);
+            return applyShape(keyShape, key, options, nonce, handleKeyResult);
           } else {
-            return valueShape['_applyAsync'](value, options).then(handleValueResult);
+            return valueShape['_applyAsync'](value, options, nonce).then(handleValueResult);
           }
         }
 

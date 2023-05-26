@@ -33,7 +33,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<boolean> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<boolean> {
     const { _applyChecks } = this;
 
     let output = input;

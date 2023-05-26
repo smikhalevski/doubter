@@ -201,7 +201,11 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     return [TYPE_UNKNOWN];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
+  protected _apply(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
     const { headShapes, restShape, _applyChecks, _isUnsafe } = this;
 
     let output = input;
@@ -223,7 +227,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       for (let i = 0; i < outputLength; ++i) {
         const value = output[i];
         const valueShape = i < headShapesLength ? headShapes[i] : restShape!;
-        const result = valueShape['_apply'](value, options);
+        const result = valueShape['_apply'](value, options, nonce);
 
         if (result === null) {
           continue;
@@ -255,7 +259,11 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
       const { headShapes, restShape, _applyChecks, _isUnsafe } = this;
 
@@ -304,6 +312,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
             index < headShapesLength ? headShapes[index] : restShape!,
             output[index],
             options,
+            nonce,
             handleResult
           );
         }

@@ -256,7 +256,7 @@ export class NumberShape extends CoercibleShape<number> {
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<number> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<number> {
     const { _applyChecks } = this;
 
     let output = input;

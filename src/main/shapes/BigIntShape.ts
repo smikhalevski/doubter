@@ -33,7 +33,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<bigint> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<bigint> {
     const { _applyChecks } = this;
 
     let output = input;

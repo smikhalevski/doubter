@@ -54,17 +54,21 @@ export class PromiseShape<ValueShape extends AnyShape>
     }
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<Promise<ValueShape[OUTPUT]>> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Promise<ValueShape[OUTPUT]>> {
     throw new Error(ERROR_REQUIRES_ASYNC);
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Promise<ValueShape[OUTPUT]>>> {
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<Promise<ValueShape[OUTPUT]>>> {
     if (!(input instanceof Promise) && !(options.coerced || this.isCoerced)) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
 
     const handleValue = (value: unknown) =>
-      applyShape(this.shape, value, options, result => {
+      applyShape(this.shape, value, options, nonce, result => {
         const { _applyChecks } = this;
 
         let output = input;

@@ -96,7 +96,11 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>> {
+  protected _apply(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>> {
     let changed = false;
     let entries;
 
@@ -119,7 +123,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
       let [key, value] = entry;
 
-      let keyResult = keyShape['_apply'](key, options);
+      let keyResult = keyShape['_apply'](key, options, nonce);
 
       if (keyResult !== null) {
         if (isArray(keyResult)) {
@@ -135,7 +139,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         }
       }
 
-      let valueResult = valueShape['_apply'](value, options);
+      let valueResult = valueShape['_apply'](value, options, nonce);
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
@@ -169,7 +173,11 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions): Promise<Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>>> {
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>>> {
     return new Promise(resolve => {
       let changed = false;
       let entries: [unknown, unknown][];
@@ -211,7 +219,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
             keyChanged = true;
           }
         }
-        return applyShape(valueShape, value, options, handleValueResult);
+        return applyShape(valueShape, value, options, nonce, handleValueResult);
       };
 
       const handleValueResult = (valueResult: Result) => {
@@ -245,7 +253,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           key = entry[0];
           value = entry[1];
 
-          return applyShape(keyShape, key, options, handleKeyResult);
+          return applyShape(keyShape, key, options, nonce, handleKeyResult);
         }
 
         const output = changed ? new Map(entries) : input;

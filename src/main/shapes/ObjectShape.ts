@@ -367,20 +367,25 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     return [TYPE_OBJECT];
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
+  protected _apply(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
     if (!this._typePredicate(input)) {
       return this._typeIssueFactory(input, options);
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
-      return this._applyRestUnchecked(input, options);
+      return this._applyRestUnchecked(input, options, nonce);
     } else {
-      return this._applyRestChecked(input, options);
+      return this._applyRestChecked(input, options, nonce);
     }
   }
 
   protected _applyAsync(
     input: any,
-    options: ApplyOptions
+    options: ApplyOptions,
+    nonce: number
   ): Promise<Result<InferObject<PropShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
@@ -488,7 +493,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         if (index !== entriesLength) {
           const entry = entries[index];
           key = entry[0];
-          return applyShape(entry[2], entry[1], options, handleValueResult);
+          return applyShape(entry[2], entry[1], options, nonce, handleValueResult);
         }
 
         if (_applyChecks !== null && (_isUnsafe || issues === null)) {
@@ -507,7 +512,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Unknown keys are preserved as is and aren't checked.
    */
-  private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions): Result {
+  private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
     const { keys, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
@@ -518,7 +523,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     for (let i = 0; i < keysLength; ++i) {
       const key = keys[i];
       const value = input[key];
-      const result = _valueShapes[i]['_apply'](value, options);
+      const result = _valueShapes[i]['_apply'](value, options, nonce);
 
       if (result === null) {
         continue;
@@ -552,7 +557,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
-  private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions): Result {
+  private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
     const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
 
     const keysLength = keys.length;
@@ -581,7 +586,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
       // The key is known or indexed
       if (valueShape !== null) {
-        const result = valueShape['_apply'](value, options);
+        const result = valueShape['_apply'](value, options, nonce);
 
         if (result === null) {
           continue;
@@ -644,7 +649,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
         const key = keys[i];
         const value = input[key];
-        const result = _valueShapes[i]['_apply'](value, options);
+        const result = _valueShapes[i]['_apply'](value, options, nonce);
 
         if (result === null) {
           continue;

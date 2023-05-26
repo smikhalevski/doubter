@@ -1,7 +1,16 @@
 import { CODE_TYPE, ERROR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../constants';
 import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
-import { applyShape, copyChecks, createIssueFactory, getErrorMessage, isArray, ok, unshiftIssuesPath } from '../utils';
+import {
+  applyShape,
+  copyChecks,
+  createIssueFactory,
+  getErrorMessage,
+  isArray,
+  nextNonce,
+  ok,
+  unshiftIssuesPath,
+} from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';
 
@@ -159,12 +168,12 @@ export class FunctionShape<
 
     return function (this: any, ...args: any) {
       const result = fn.apply(
-        thisShape !== null ? getOrDie('this', thisShape['_apply'](this, options), this, options) : this,
-        getOrDie('arguments', argsShape['_apply'](args, options), args, options)
+        thisShape !== null ? getOrDie('this', thisShape['_apply'](this, options, nextNonce()), this, options) : this,
+        getOrDie('arguments', argsShape['_apply'](args, options, nextNonce()), args, options)
       );
 
       if (returnShape !== null) {
-        return getOrDie('return', returnShape['_apply'](result, options), result, options);
+        return getOrDie('return', returnShape['_apply'](result, options, nextNonce()), result, options);
       }
 
       return result;
@@ -205,22 +214,24 @@ export class FunctionShape<
         let result;
 
         if (thisShape !== null) {
-          result = applyShape(thisShape, this, options, thisResult => {
+          result = applyShape(thisShape, this, options, nextNonce(), thisResult => {
             const thisValue = getOrDie('this', thisResult, this, options);
 
-            return applyShape(argsShape, args, options, argsResult =>
+            return applyShape(argsShape, args, options, nextNonce(), argsResult =>
               fn.apply(thisValue, getOrDie('arguments', argsResult, args, options))
             );
           });
         } else {
-          result = applyShape(argsShape, args, options, argsResult =>
+          result = applyShape(argsShape, args, options, nextNonce(), argsResult =>
             fn.apply(this, getOrDie('arguments', argsResult, args, options))
           );
         }
 
         if (returnShape !== null) {
           result = Promise.resolve(result).then(result =>
-            applyShape(returnShape, result, options, resultResult => getOrDie('return', resultResult, result, options))
+            applyShape(returnShape, result, options, nextNonce(), resultResult =>
+              getOrDie('return', resultResult, result, options)
+            )
           );
         }
 
@@ -235,7 +246,8 @@ export class FunctionShape<
 
   protected _apply(
     input: any,
-    options: ApplyOptions
+    options: ApplyOptions,
+    nonce: number
   ): Result<(this: ShapeValue<ThisShape, INPUT>, ...args: ArgsShape[INPUT]) => ShapeValue<ReturnShape, OUTPUT>> {
     const { _applyChecks } = this;
 

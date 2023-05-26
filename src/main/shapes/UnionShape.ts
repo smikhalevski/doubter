@@ -106,7 +106,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return ([] as unknown[]).concat(...this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<Shapes[number][OUTPUT]> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Shapes[number][OUTPUT]> {
     const { _applyChecks } = this;
 
     let result = null;
@@ -119,7 +119,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     const shapesLength = shapes.length;
 
     while (index < shapesLength) {
-      result = shapes[index]['_apply'](input, options);
+      result = shapes[index]['_apply'](input, options, nonce);
 
       if (result === null) {
         break;
@@ -150,7 +150,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions): Promise<Result<Shapes[number][OUTPUT]>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Shapes[number][OUTPUT]>> {
     return new Promise(resolve => {
       const { _applyChecks } = this;
 
@@ -190,7 +190,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
         index++;
 
         if (index !== shapesLength) {
-          return applyShape(shapes[index], input, options, handleResult);
+          return applyShape(shapes[index], input, options, nonce, handleResult);
         }
         if (shapesLength === 1) {
           return issues;

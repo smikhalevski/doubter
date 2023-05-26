@@ -27,7 +27,7 @@ export class NeverShape extends Shape<never> {
     return [];
   }
 
-  protected _apply(input: unknown, options: ApplyOptions): Result<never> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<never> {
     return this._typeIssueFactory(input, options);
   }
 }

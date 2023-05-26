@@ -42,13 +42,6 @@ export class Type<T extends TypeName> {
   static readonly UNDEFINED = new Type('undefined');
   static readonly UNKNOWN = new Type('unknown');
 
-  /**
-   * Returns the type of the given value. If value is a type itself, it is returned as is.
-   */
-  static of(value: unknown): Type<TypeName> {
-    return getTypeOf(value);
-  }
-
   private constructor(
     /**
      * The name of the type.
@@ -56,6 +49,13 @@ export class Type<T extends TypeName> {
     readonly name: T
   ) {
     Object.freeze(this);
+  }
+
+  /**
+   * Returns the type of the given value. If value is a type itself, it is returned as is.
+   */
+  static of(value: unknown): Type<TypeName> {
+    return getTypeOf(value);
   }
 
   /**

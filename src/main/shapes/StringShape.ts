@@ -106,7 +106,7 @@ export class StringShape extends CoercibleShape<string> {
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions): Result<string> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<string> {
     const { _applyChecks } = this;
 
     let output = input;
