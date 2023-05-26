@@ -7,10 +7,11 @@ import {
   Result,
   Shape,
   StringShape,
+  ValidationError,
 } from '../../main';
-import { CODE_CIRCULAR_REFERENCE, ERROR_SHAPE_EXPECTED, MESSAGE_CIRCULAR_REFERENCE } from '../../main/constants';
+import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
 import { TYPE_OBJECT } from '../../main/Type';
-import { nextNonce } from '../../main/utils';
+import { identity, nextNonce } from '../../main/utils';
 
 describe('LazyShape', () => {
   class AsyncShape extends Shape {
@@ -35,7 +36,7 @@ describe('LazyShape', () => {
 
   test('parses values with an underlying shape', () => {
     const shape = new StringShape();
-    const lazyShape = new LazyShape(() => shape);
+    const lazyShape = new LazyShape(() => shape, identity);
 
     const applySpy = jest.spyOn<Shape, any>(shape, '_apply');
 
@@ -49,7 +50,7 @@ describe('LazyShape', () => {
     const checkMock = jest.fn(() => [{ code: 'xxx' }]);
 
     const shape = new StringShape().transform(parseFloat);
-    const lazyShape = new LazyShape(() => shape).check(checkMock);
+    const lazyShape = new LazyShape(() => shape, identity).check(checkMock);
 
     expect(lazyShape.try('111')).toEqual({
       ok: false,
@@ -61,7 +62,7 @@ describe('LazyShape', () => {
 
   test('does not apply checks if an underlying shape raises an issue', () => {
     const shape = new Shape().check(() => [{ code: 'xxx' }]);
-    const lazyShape = new LazyShape(() => shape).check(() => [{ code: 'yyy' }], { unsafe: true });
+    const lazyShape = new LazyShape(() => shape, identity).check(() => [{ code: 'yyy' }], { unsafe: true });
 
     expect(lazyShape.try('aaa', { verbose: true })).toEqual({
       ok: false,
@@ -73,7 +74,7 @@ describe('LazyShape', () => {
     const shape = new NumberShape();
     const shapeProviderMock = jest.fn(() => shape);
 
-    const lazyShape1: LazyShape<any> = new LazyShape(shapeProviderMock);
+    const lazyShape1: LazyShape<any, any> = new LazyShape(shapeProviderMock, identity);
     const lazyShape2 = lazyShape1.check(() => null);
 
     expect(lazyShape1.shape).toBe(shape);
@@ -83,20 +84,21 @@ describe('LazyShape', () => {
 
   describe('_isAsync', () => {
     test('prevents short circuit', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape, identity);
 
       expect(lazyShape['_isAsync']()).toBe(false);
     });
 
     test('prevents infinite loop', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null), identity);
 
       expect(lazyShape['_isAsync']()).toBe(false);
     });
 
     test('returns true if async', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(
-        () => new ObjectShape({ key1: lazyShape.transformAsync(() => Promise.resolve(111)) }, null)
+      const lazyShape: LazyShape<any, any> = new LazyShape(
+        () => new ObjectShape({ key1: lazyShape.transformAsync(() => Promise.resolve(111)) }, null),
+        identity
       );
 
       expect(lazyShape['_isAsync']()).toBe(true);
@@ -105,13 +107,13 @@ describe('LazyShape', () => {
 
   describe('inputs', () => {
     test('prevents short circuit', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape, identity);
 
       expect(lazyShape.inputs).toEqual([]);
     });
 
     test('prevents infinite loop', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null));
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null), identity);
 
       expect(lazyShape.inputs).toEqual([TYPE_OBJECT]);
     });
@@ -119,19 +121,19 @@ describe('LazyShape', () => {
 
   describe('shape', () => {
     test('prevents short circuit', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape, identity);
 
       expect(lazyShape.shape).toBe(lazyShape);
     });
 
     test('throws an exception on premature access', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape.shape);
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape.shape, identity);
 
       expect(() => lazyShape.shape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
 
     test('throws an exception if shape is accessed from the provider', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape.check(() => null).shape);
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape.check(() => null).shape, identity);
 
       expect(() => lazyShape.shape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
@@ -148,7 +150,7 @@ describe('LazyShape', () => {
       const deepPartialShape = new MockShape();
       const shapeProviderMock = jest.fn(() => new MockShape());
 
-      const shape = new LazyShape(shapeProviderMock).deepPartial();
+      const shape = new LazyShape(shapeProviderMock, identity).deepPartial();
 
       expect(shapeProviderMock).not.toHaveBeenCalled();
 
@@ -158,26 +160,26 @@ describe('LazyShape', () => {
   });
 
   describe('cyclic objects', () => {
-    test('throws if immediately recursive non-cyclic lazy shape', () => {
-      const lazyShape: LazyShape<any> = new LazyShape(() => lazyShape);
+    test('raises issues', () => {
+      const lazyShape: LazyShape<any, any> = new LazyShape(
+        () => lazyShape,
+        () => {
+          throw new ValidationError([{ code: 'xxx' }]);
+        }
+      );
 
-      expect(lazyShape.try(111)).toEqual({
-        ok: false,
-        issues: [{ code: CODE_CIRCULAR_REFERENCE, input: 111, message: MESSAGE_CIRCULAR_REFERENCE }],
-      });
+      expect(lazyShape.try(111)).toEqual({ ok: false, issues: [{ code: 'xxx' }] });
     });
 
     test('parses immediately recursive lazy shape', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape).preserveCyclicReferences();
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape, identity);
 
       expect(lazyShape.parse(111)).toBe(111);
       expect(lazyShape['_stackMap'].size).toBe(0);
     });
 
     test('parses cyclic shapes', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(
-        () => new ObjectShape({ key1: lazyShape }, null)
-      ).preserveCyclicReferences();
+      const lazyShape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null), identity);
 
       const obj: any = {};
       obj.key1 = obj;
@@ -188,8 +190,9 @@ describe('LazyShape', () => {
 
     test('shows issues only for the first input value', () => {
       const lazyShape: LazyShape<any, any> = new LazyShape(
-        () => new ObjectShape({ key1: new ObjectShape({ key2: lazyShape }, null), key3: new StringShape() }, null)
-      ).preserveCyclicReferences();
+        () => new ObjectShape({ key1: new ObjectShape({ key2: lazyShape }, null), key3: new StringShape() }, null),
+        identity
+      );
 
       const obj: any = {};
       obj.key1 = {};
@@ -220,8 +223,9 @@ describe('LazyShape', () => {
               }),
             },
             null
-          )
-      ).preserveCyclicReferences();
+          ),
+        identity
+      );
 
       const obj: any = {};
       obj.key1 = obj;
@@ -234,13 +238,15 @@ describe('LazyShape', () => {
     test('nested parse invocations are separated by nonce', () => {
       const checkMock = jest.fn();
 
-      const lazyShape: LazyShape<any, any> = new LazyShape(() =>
-        lazyShape
-          .transform(value => {
-            return value !== 111 ? lazyShape.parse(111) : value;
-          })
-          .check(checkMock)
-      ).preserveCyclicReferences();
+      const lazyShape: LazyShape<any, any> = new LazyShape(
+        () =>
+          lazyShape
+            .transform(value => {
+              return value !== 111 ? lazyShape.parse(111) : value;
+            })
+            .check(checkMock),
+        identity
+      );
 
       lazyShape.parse(222);
 
@@ -253,7 +259,7 @@ describe('LazyShape', () => {
 
   describe('async', () => {
     test('parses values with an underlying shape', async () => {
-      const lazyShape = new LazyShape(() => asyncShape);
+      const lazyShape = new LazyShape(() => asyncShape, identity);
 
       const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
 
@@ -272,13 +278,11 @@ describe('LazyShape', () => {
               key2: new AsyncShape(),
             },
             null
-          )
-      )
-        .check(() => {
-          throw new Error('expected');
-        })
-        .preserveCyclicReferences();
-
+          ),
+        identity
+      ).check(() => {
+        throw new Error('expected');
+      });
       const obj: any = {};
       obj.key1 = obj;
 
@@ -290,8 +294,9 @@ describe('LazyShape', () => {
 
     test('parallel parse calls of cyclic shapes are separated by nonce', async () => {
       const lazyShape: LazyShape<any, any> = new LazyShape(
-        () => new ObjectShape({ key1: lazyShape, key2: new AsyncShape() }, null)
-      ).preserveCyclicReferences();
+        () => new ObjectShape({ key1: lazyShape, key2: new AsyncShape() }, null),
+        identity
+      );
 
       const applySpy = jest.spyOn<Shape, any>(lazyShape, '_applyAsync');
 

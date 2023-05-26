@@ -1,5 +1,9 @@
 export const isArray = Array.isArray;
 
+export function identity<T>(value: T): T {
+  return value;
+}
+
 /**
  * [SameValueZero](https://tc39.es/ecma262/multipage/abstract-operations.html#sec-samevaluezero) comparison.
  */

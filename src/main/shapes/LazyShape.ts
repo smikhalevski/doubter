@@ -1,22 +1,18 @@
-import { CODE_CIRCULAR_REFERENCE, ERROR_SHAPE_EXPECTED, MESSAGE_CIRCULAR_REFERENCE } from '../constants';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { captureIssues, copyUnsafeChecks, createIssueFactory, isArray, ok, toDeepPartialShape } from '../utils';
+import { ERROR_SHAPE_EXPECTED } from '../constants';
+import { ApplyOptions, Literal } from '../types';
+import { captureIssues, copyUnsafeChecks, identity, isArray, ok, toDeepPartialShape } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 /**
  * Lazily resolves a shape using the provider callback.
  *
  * @template ProvidedShape The provided shape.
- * @template PlaceholderValue The value returned when a cyclic reference is detected.
+ * @template CircularValue The value returned when a cyclic reference is detected.
  */
-export class LazyShape<ProvidedShape extends AnyShape, PlaceholderValue = never>
-  extends Shape<ProvidedShape[INPUT], ProvidedShape[OUTPUT] | PlaceholderValue>
-  implements DeepPartialProtocol<LazyShape<DeepPartialShape<ProvidedShape>, PlaceholderValue>>
+export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
+  extends Shape<ProvidedShape[INPUT], ProvidedShape[OUTPUT] | CircularValue>
+  implements DeepPartialProtocol<LazyShape<DeepPartialShape<ProvidedShape>, CircularValue>>
 {
-  protected _circularReferenceIssueFactory;
-
-  protected _placeholderProvider: ((value: any, options: Readonly<ApplyOptions>) => PlaceholderValue) | null = null;
-
   /**
    * The provider that caches the returned shape.
    */
@@ -32,7 +28,7 @@ export class LazyShape<ProvidedShape extends AnyShape, PlaceholderValue = never>
    *
    * @param shapeProvider The provider callback that returns the shape to which {@linkcode LazyShape} delegates input
    * handling. The provider is called only once.
-   * @param options The constraint options or an issue message.
+   * @param circularValueProvider The provider callback that returns the value that is used instead of a circular reference.
    * @template ProvidedShape The provided shape.
    */
   constructor(
@@ -40,16 +36,12 @@ export class LazyShape<ProvidedShape extends AnyShape, PlaceholderValue = never>
      * The provider callback that returns the shape to which {@linkcode LazyShape} delegates input handling.
      */
     readonly shapeProvider: () => ProvidedShape,
-    options?: ConstraintOptions | Message
+    /**
+     * The provider callback that returns the value that is used instead of a circular reference.
+     */
+    readonly circularValueProvider: (value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => CircularValue
   ) {
     super();
-
-    this._circularReferenceIssueFactory = createIssueFactory(
-      CODE_CIRCULAR_REFERENCE,
-      MESSAGE_CIRCULAR_REFERENCE,
-      options,
-      undefined
-    );
 
     // 0 = unavailable
     // 1 = recursive resolution
@@ -77,28 +69,19 @@ export class LazyShape<ProvidedShape extends AnyShape, PlaceholderValue = never>
     return shape;
   }
 
-  deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, PlaceholderValue> {
+  deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, DeepPartialShape<ProvidedShape>[INPUT]> {
     const { _cachingShapeProvider } = this;
 
-    return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_cachingShapeProvider())));
+    return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_cachingShapeProvider()), identity));
   }
 
-  cyclicReferences(): LazyShape<ProvidedShape, undefined>;
-
-  cyclicReferences<PlaceholderValue>(
-    placeholder: PlaceholderValue | ((value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => PlaceholderValue)
-  ): LazyShape<ProvidedShape, PlaceholderValue>;
-
-  cyclicReferences(placeholder?: any): Shape {
-    const shape = this._clone();
-
-    shape._placeholderProvider = typeof placeholder === 'function' ? placeholder : () => placeholder;
-
-    return shape;
-  }
-
-  preserveCyclicReferences(): LazyShape<ProvidedShape, ProvidedShape[INPUT]> {
-    return this.cyclicReferences((value, options) => value);
+  circular<CircularValue extends Literal>(
+    value: CircularValue | ((value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => CircularValue)
+  ): LazyShape<ProvidedShape, CircularValue> {
+    return copyUnsafeChecks(
+      this,
+      new LazyShape(this.shapeProvider, typeof value === 'function' ? (value as () => CircularValue) : () => value)
+    );
   }
 
   protected _isAsync(): boolean {
@@ -119,8 +102,8 @@ export class LazyShape<ProvidedShape extends AnyShape, PlaceholderValue = never>
     input: unknown,
     options: ApplyOptions,
     nonce: number
-  ): Result<ProvidedShape[OUTPUT] | PlaceholderValue> {
-    const { _placeholderProvider, _stackMap } = this;
+  ): Result<ProvidedShape[OUTPUT] | CircularValue> {
+    const { _stackMap } = this;
 
     let stack = _stackMap.get(nonce);
 
@@ -130,13 +113,9 @@ export class LazyShape<ProvidedShape extends AnyShape, PlaceholderValue = never>
       stack = [input];
       _stackMap.set(nonce, stack);
     } else if (stack.includes(input)) {
-      if (_placeholderProvider === null) {
-        return this._circularReferenceIssueFactory(input, options);
-      }
-
       let output;
       try {
-        output = _placeholderProvider(input, options);
+        output = this.circularValueProvider(input, options);
       } catch (error) {
         return captureIssues(error);
       }
@@ -155,7 +134,7 @@ export class LazyShape<ProvidedShape extends AnyShape, PlaceholderValue = never>
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ProvidedShape[OUTPUT]>> {
-    const { _placeholderProvider, _stackMap } = this;
+    const { _stackMap } = this;
 
     let stack = _stackMap.get(nonce);
 
@@ -165,14 +144,10 @@ export class LazyShape<ProvidedShape extends AnyShape, PlaceholderValue = never>
       stack = [input];
       _stackMap.set(nonce, stack);
     } else if (stack.includes(input)) {
-      if (_placeholderProvider === null) {
-        return Promise.resolve(this._circularReferenceIssueFactory(input, options));
-      }
-
       return new Promise(resolve => {
         let output;
         try {
-          output = _placeholderProvider(input, options);
+          output = this.circularValueProvider(input, options);
         } catch (error) {
           resolve(captureIssues(error));
           return;
