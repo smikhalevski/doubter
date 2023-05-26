@@ -12,3 +12,14 @@ expectType<{ aaa?: string } | { aaa?: number }>(
 );
 
 expectType<string | 111>(d.lazy(() => d.string()).circular(111).__output);
+
+expectType<{ aaa: number } | 111>(
+  d.lazy(() => d.object({ aaa: d.string().transform(parseFloat) })).circular(111).__output
+);
+
+expectType<{ aaa?: string } | { aaa?: number }>(
+  d
+    .lazy(() => d.object({ aaa: d.string().transform(parseFloat) }))
+    .circular(111)
+    .deepPartial().__output
+);

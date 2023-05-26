@@ -4,14 +4,14 @@ import { captureIssues, copyUnsafeChecks, identity, isArray, ok, toDeepPartialSh
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 /**
- * Lazily resolves a shape using the provider callback.
+ * Lazily loads a shape using the provider callback.
  *
- * @template ProvidedShape The provided shape.
- * @template CircularValue The value returned when a cyclic reference is detected.
+ * @template ProvidedShape The lazy-loaded shape.
+ * @template Pointer The value returned when a cyclic reference is detected.
  */
-export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
-  extends Shape<ProvidedShape[INPUT], ProvidedShape[OUTPUT] | CircularValue>
-  implements DeepPartialProtocol<LazyShape<DeepPartialShape<ProvidedShape>, CircularValue>>
+export class LazyShape<ProvidedShape extends AnyShape, Pointer>
+  extends Shape<ProvidedShape[INPUT], ProvidedShape[OUTPUT] | Pointer>
+  implements DeepPartialProtocol<LazyShape<DeepPartialShape<ProvidedShape>, Pointer>>
 {
   /**
    * The provider that caches the returned shape.
@@ -28,8 +28,10 @@ export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
    *
    * @param shapeProvider The provider callback that returns the shape to which {@linkcode LazyShape} delegates input
    * handling. The provider is called only once.
-   * @param circularValueProvider The provider callback that returns the value that is used instead of a circular reference.
-   * @template ProvidedShape The provided shape.
+   * @param pointerProvider The provider callback that returns the value that is used instead of a circular
+   * reference.
+   * @template ProvidedShape The lazy-loaded shape.
+   * @template Pointer The value returned when a cyclic reference is detected.
    */
   constructor(
     /**
@@ -39,7 +41,7 @@ export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
     /**
      * The provider callback that returns the value that is used instead of a circular reference.
      */
-    readonly circularValueProvider: (value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => CircularValue
+    readonly pointerProvider: (value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => Pointer
   ) {
     super();
 
@@ -75,12 +77,20 @@ export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
     return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_cachingShapeProvider()), identity));
   }
 
-  circular<CircularValue extends Literal>(
-    value: CircularValue | ((value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => CircularValue)
-  ): LazyShape<ProvidedShape, CircularValue> {
+  /**
+   * Replace circular references with a placeholder.
+   *
+   * @param pointer The value that would be used instead of circular references, or a callback that returns such a
+   * value.
+   * @template Pointer The value returned when a cyclic reference is detected.
+   * @returns The clone of the shape.
+   */
+  circular<Pointer extends Literal>(
+    pointer: Pointer | ((value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => Pointer)
+  ): LazyShape<ProvidedShape, Pointer> {
     return copyUnsafeChecks(
       this,
-      new LazyShape(this.shapeProvider, typeof value === 'function' ? (value as () => CircularValue) : () => value)
+      new LazyShape(this.shapeProvider, typeof pointer === 'function' ? (pointer as () => Pointer) : () => pointer)
     );
   }
 
@@ -98,11 +108,7 @@ export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
     return shape;
   }
 
-  protected _apply(
-    input: unknown,
-    options: ApplyOptions,
-    nonce: number
-  ): Result<ProvidedShape[OUTPUT] | CircularValue> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ProvidedShape[OUTPUT] | Pointer> {
     const { _stackMap } = this;
 
     let stack = _stackMap.get(nonce);
@@ -115,7 +121,7 @@ export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
     } else if (stack.includes(input)) {
       let output;
       try {
-        output = this.circularValueProvider(input, options);
+        output = this.pointerProvider(input, options);
       } catch (error) {
         return captureIssues(error);
       }
@@ -133,7 +139,11 @@ export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
     }
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ProvidedShape[OUTPUT]>> {
+  protected _applyAsync(
+    input: unknown,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<ProvidedShape[OUTPUT] | Pointer>> {
     const { _stackMap } = this;
 
     let stack = _stackMap.get(nonce);
@@ -147,7 +157,7 @@ export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
       return new Promise(resolve => {
         let output;
         try {
-          output = this.circularValueProvider(input, options);
+          output = this.pointerProvider(input, options);
         } catch (error) {
           resolve(captureIssues(error));
           return;
@@ -174,7 +184,11 @@ export class LazyShape<ProvidedShape extends AnyShape, CircularValue>
     );
   }
 
-  private _handleResult(result: Result, input: unknown, options: ApplyOptions): Result<ProvidedShape[OUTPUT]> {
+  private _handleResult(
+    result: Result,
+    input: unknown,
+    options: ApplyOptions
+  ): Result<ProvidedShape[OUTPUT] | Pointer> {
     const { _applyChecks } = this;
 
     let output = input;
