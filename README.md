@@ -584,7 +584,7 @@ shape.parse(['Mars', 'Pluto']);
 // ⮕ ['Mars', 'Pluto']
 
 shape.parse(['Venus']);
-// ❌ ValidationError: unknown at /: Must incude Mars
+// ❌ ValidationError: unknown at /: Must include Mars
 ```
 
 ## Verbose mode
