@@ -1,15 +1,7 @@
-import {
-  CODE_SET_MAX,
-  CODE_SET_MIN,
-  CODE_TYPE,
-  MESSAGE_SET_MAX,
-  MESSAGE_SET_MIN,
-  MESSAGE_SET_TYPE,
-} from '../constants';
+import { CODE_TYPE, MESSAGE_SET_TYPE } from '../constants';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
-  addCheck,
   concatIssues,
   copyUnsafeChecks,
   createIssueFactory,
@@ -65,51 +57,6 @@ export class SetShape<ValueShape extends AnyShape>
 
   at(key: unknown): AnyShape | null {
     return toArrayIndex(key) === -1 ? null : this.shape;
-  }
-
-  /**
-   * Constrains the set size.
-   *
-   * @param size The minimum set size.
-   * @param options The constraint options or an issue message.
-   * @returns The clone of the shape.
-   */
-  size(size: number, options?: ConstraintOptions | Message): this {
-    return this.min(size, options).max(size, options);
-  }
-
-  /**
-   * Constrains the minimum set size.
-   *
-   * @param size The minimum set size.
-   * @param options The constraint options or an issue message.
-   * @returns The clone of the shape.
-   */
-  min(size: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
-
-    return addCheck(this, CODE_SET_MIN, size, (input, param, options) => {
-      if (input.size < param) {
-        return issueFactory(input, options);
-      }
-    });
-  }
-
-  /**
-   * Constrains the maximum set size.
-   *
-   * @param size The maximum set size.
-   * @param options The constraint options or an issue message.
-   * @returns The clone of the shape.
-   */
-  max(size: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
-
-    return addCheck(this, CODE_SET_MAX, size, (input, param, options) => {
-      if (input.size > param) {
-        return issueFactory(input, options);
-      }
-    });
   }
 
   deepPartial(): SetShape<OptionalDeepPartialShape<ValueShape>> {

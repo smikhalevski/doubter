@@ -7,21 +7,43 @@
   "types": "./lib/index.d.ts",
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.mjs",
-      "require": "./lib/index.js"
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    },
+    "./validators": {
+      "types": "./validators/index.d.ts",
+      "import": "./validators/index.mjs",
+      "require": "./validators/index.js"
+    },
+    "./validators/arrays": {
+      "types": "./validators/arrays.d.ts",
+      "import": "./validators/arrays.mjs",
+      "require": "./validators/arrays.js"
+    },
+    "./validators/numbers": {
+      "types": "./validators/numbers.d.ts",
+      "import": "./validators/numbers.mjs",
+      "require": "./validators/numbers.js"
+    },
+    "./validators/sets": {
+      "types": "./validators/sets.d.ts",
+      "import": "./validators/sets.mjs",
+      "require": "./validators/sets.js"
+    },
+    "./validators/strings": {
+      "types": "./validators/strings.d.ts",
+      "import": "./validators/strings.mjs",
+      "require": "./validators/strings.js"
     },
     "./package.json": "./package.json"
   },
   "sideEffects": false,
-  "files": [
-    "lib"
-  ],
   "scripts": {
-    "build": "rollup --config --configPlugin typescript",
+    "build": "rollup --config && cp package.json README.md LICENSE.txt lib/",
     "clean": "rimraf ./lib ./docs ./coverage",
     "test": "jest",
-    "test:definitions": "ln -nsf .. ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
+    "test:definitions": "ln -nsf ../lib ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
     "perf": "toofast",
     "docs": "typedoc ./src/main/index.ts"
   },

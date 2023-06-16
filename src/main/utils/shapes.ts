@@ -1,13 +1,5 @@
-import {
-  AnyShape,
-  ApplyChecksCallback,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  OUTPUT,
-  Result,
-  Shape,
-} from '../shapes/Shape';
-import { ApplyOptions, Check, CheckCallback, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
+import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shapes/Shape';
+import { ApplyOptions, Check, ConstraintOptions, Issue, Message, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
 
@@ -68,13 +60,6 @@ export function replaceChecks<S extends Shape>(shape: S, checks: readonly Check[
   shape['_isUnsafe'] = checks.some(isUnsafeCheck);
 
   return shape;
-}
-
-/**
- * The shortcut to add built-in checks to shapes.
- */
-export function addCheck<S extends Shape, P>(shape: S, key: string, param: P, cb: CheckCallback<S[OUTPUT], P>): S {
-  return shape.check(cb, { key, param, unsafe: true });
 }
 
 /**
