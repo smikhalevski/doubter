@@ -22,7 +22,10 @@ jobs:
       - run: npm test
       - run: npm run test:definitions
 
-      - run: npm publish
+      - name: Publish
+        run: |
+          cd ./lib
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
