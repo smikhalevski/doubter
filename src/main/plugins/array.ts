@@ -7,7 +7,7 @@ declare module 'doubter' {
     /**
      * Constrains the array length.
      *
-     * ⚠️ Requires [doubter/plugins/arrays](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param length The minimum array length.
      * @param options The constraint options or an issue message.
@@ -18,7 +18,7 @@ declare module 'doubter' {
     /**
      * Constrains the minimum array length.
      *
-     * ⚠️ Requires [doubter/plugins/arrays](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param length The minimum array length.
      * @param options The constraint options or an issue message.
@@ -29,7 +29,7 @@ declare module 'doubter' {
     /**
      * Constrains the maximum array length.
      *
-     * ⚠️ Requires [doubter/plugins/arrays](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param length The maximum array length.
      * @param options The constraint options or an issue message.

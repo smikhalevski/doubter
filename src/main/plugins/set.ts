@@ -7,7 +7,7 @@ declare module 'doubter' {
     /**
      * Constrains the set size.
      *
-     * ⚠️ Requires [doubter/plugins/sets](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param size The minimum set size.
      * @param options The constraint options or an issue message.
@@ -18,7 +18,7 @@ declare module 'doubter' {
     /**
      * Constrains the minimum set size.
      *
-     * ⚠️ Requires [doubter/plugins/sets](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param size The minimum set size.
      * @param options The constraint options or an issue message.
@@ -29,7 +29,7 @@ declare module 'doubter' {
     /**
      * Constrains the maximum set size.
      *
-     * ⚠️ Requires [doubter/plugins/sets](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param size The maximum set size.
      * @param options The constraint options or an issue message.

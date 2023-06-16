@@ -1,11 +1,11 @@
-import arraysPlugin from 'doubter/plugins/arrays';
-import numbersPlugin from 'doubter/plugins/numbers';
-import setsPlugin from 'doubter/plugins/sets';
-import stringsPlugin from 'doubter/plugins/strings';
+import enhanceArrayShape from 'doubter/plugins/array';
+import enhanceNumberShape from 'doubter/plugins/number';
+import enhanceSetShape from 'doubter/plugins/set';
+import enhanceStringShape from 'doubter/plugins/string';
 
 export default function () {
-  arraysPlugin();
-  numbersPlugin();
-  setsPlugin();
-  stringsPlugin();
+  enhanceArrayShape();
+  enhanceNumberShape();
+  enhanceSetShape();
+  enhanceStringShape();
 }

@@ -5,11 +5,12 @@ const path = require('path');
 
 module.exports = [
   'index',
+  'core',
   'plugins/index',
-  'plugins/arrays',
-  'plugins/numbers',
-  'plugins/sets',
-  'plugins/strings',
+  'plugins/array',
+  'plugins/number',
+  'plugins/set',
+  'plugins/string',
 ].flatMap(name => [
   {
     input: './src/main/' + name + '.ts',

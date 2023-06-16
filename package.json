@@ -11,30 +11,35 @@
       "import": "./index.mjs",
       "require": "./index.js"
     },
+    "./core": {
+      "types": "./core.d.ts",
+      "import": "./core.mjs",
+      "require": "./core.js"
+    },
     "./plugins": {
       "types": "./plugins/index.d.ts",
       "import": "./plugins/index.mjs",
       "require": "./plugins/index.js"
     },
-    "./plugins/arrays": {
-      "types": "./plugins/arrays.d.ts",
-      "import": "./plugins/arrays.mjs",
-      "require": "./plugins/arrays.js"
+    "./plugins/array": {
+      "types": "./plugins/array.d.ts",
+      "import": "./plugins/array.mjs",
+      "require": "./plugins/array.js"
     },
-    "./plugins/numbers": {
-      "types": "./plugins/numbers.d.ts",
-      "import": "./plugins/numbers.mjs",
-      "require": "./plugins/numbers.js"
+    "./plugins/number": {
+      "types": "./plugins/number.d.ts",
+      "import": "./plugins/number.mjs",
+      "require": "./plugins/number.js"
     },
-    "./plugins/sets": {
-      "types": "./plugins/sets.d.ts",
-      "import": "./plugins/sets.mjs",
-      "require": "./plugins/sets.js"
+    "./plugins/set": {
+      "types": "./plugins/set.d.ts",
+      "import": "./plugins/set.mjs",
+      "require": "./plugins/set.js"
     },
-    "./plugins/strings": {
-      "types": "./plugins/strings.d.ts",
-      "import": "./plugins/strings.mjs",
-      "require": "./plugins/strings.js"
+    "./plugins/string": {
+      "types": "./plugins/string.d.ts",
+      "import": "./plugins/string.mjs",
+      "require": "./plugins/string.js"
     },
     "./package.json": "./package.json"
   },
@@ -45,7 +50,7 @@
     "test": "jest",
     "test:definitions": "ln -nsf ../lib ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
     "perf": "toofast",
-    "docs": "typedoc ./src/main/index.typedoc.ts"
+    "docs": "typedoc src/main/index.ts"
   },
   "repository": {
     "type": "git",

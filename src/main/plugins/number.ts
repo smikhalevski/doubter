@@ -18,7 +18,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be greater than zero.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
@@ -28,7 +28,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be less than zero.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
@@ -38,7 +38,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be less or equal to zero.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
@@ -48,7 +48,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be greater or equal to zero.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
@@ -58,7 +58,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be greater than the value.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param value The exclusive minimum value.
      * @param options The constraint options or an issue message.
@@ -69,7 +69,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be less than the value.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param value The exclusive maximum value.
      * @param options The constraint options or an issue message.
@@ -80,7 +80,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be greater than or equal to the value.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param value The inclusive minimum value.
      * @param options The constraint options or an issue message.
@@ -91,7 +91,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be less than or equal to the value.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param value The inclusive maximum value.
      * @param options The constraint options or an issue message.
@@ -102,7 +102,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be greater than or equal to the value.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * Alias for {@linkcode gte}.
      *
@@ -115,7 +115,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be less than or equal to the value.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * Alias for {@linkcode lte}.
      *
@@ -128,7 +128,7 @@ declare module 'doubter' {
     /**
      * Constrains the number to be a multiple of the divisor.
      *
-     * ⚠️ Requires [doubter/plugins/numbers](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * This constraint uses the
      * [modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which may
