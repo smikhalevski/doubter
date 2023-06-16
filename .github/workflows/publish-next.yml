@@ -16,15 +16,18 @@ jobs:
           cache: npm
           registry-url: "https://registry.npmjs.org"
 
+      - name: Bump version
+        run: npm version --no-git-tag-version "$(node -p 'require("./package.json").version')-next.${GITHUB_SHA::7}"
+
       - run: npm ci
       - run: npm run build
       - run: npm run docs
       - run: npm test
       - run: npm run test:definitions
 
-      - name: Bump version
-        run: npm version --no-git-tag-version "$(node -p 'require("./package.json").version')-next.${GITHUB_SHA::7}"
-
-      - run: npm publish --tag next
+      - name: Publish
+        run: |
+          cd ./lib
+          npm publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -2,28 +2,55 @@
   "name": "doubter",
   "version": "2.1.0",
   "description": "No-hassle runtime validation and transformation library.",
-  "main": "./lib/index.js",
-  "module": "./lib/index.mjs",
-  "types": "./lib/index.d.ts",
+  "main": "./index.js",
+  "module": "./index.mjs",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.mjs",
-      "require": "./lib/index.js"
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    },
+    "./core": {
+      "types": "./core.d.ts",
+      "import": "./core.mjs",
+      "require": "./core.js"
+    },
+    "./plugins": {
+      "types": "./plugins/index.d.ts",
+      "import": "./plugins/index.mjs",
+      "require": "./plugins/index.js"
+    },
+    "./plugins/array": {
+      "types": "./plugins/array.d.ts",
+      "import": "./plugins/array.mjs",
+      "require": "./plugins/array.js"
+    },
+    "./plugins/number": {
+      "types": "./plugins/number.d.ts",
+      "import": "./plugins/number.mjs",
+      "require": "./plugins/number.js"
+    },
+    "./plugins/set": {
+      "types": "./plugins/set.d.ts",
+      "import": "./plugins/set.mjs",
+      "require": "./plugins/set.js"
+    },
+    "./plugins/string": {
+      "types": "./plugins/string.d.ts",
+      "import": "./plugins/string.mjs",
+      "require": "./plugins/string.js"
     },
     "./package.json": "./package.json"
   },
   "sideEffects": false,
-  "files": [
-    "lib"
-  ],
   "scripts": {
-    "build": "rollup --config --configPlugin typescript",
+    "build": "node --max-old-space-size=4096 ./node_modules/.bin/rollup --config && cp README.md LICENSE.txt lib/ && node -p 'var pkg = require(\"./package.json\"); delete pkg.devDependencies; delete pkg.scripts; JSON.stringify(pkg, null, 2)' > ./lib/package.json",
     "clean": "rimraf ./lib ./docs ./coverage",
     "test": "jest",
-    "test:definitions": "ln -nsf .. ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
+    "test:definitions": "tsd --typings ./lib/index.d.ts --files './src/test/**/*.test-d.ts'",
     "perf": "toofast",
-    "docs": "typedoc ./src/main/index.ts"
+    "docs": "typedoc src/main/index.ts"
   },
   "repository": {
     "type": "git",
@@ -44,25 +71,25 @@
   },
   "homepage": "https://github.com/smikhalevski/doubter#readme",
   "devDependencies": {
-    "@badrap/valita": "^0.2.0",
-    "@rollup/plugin-node-resolve": "^15.0.2",
-    "@rollup/plugin-typescript": "^11.1.0",
-    "@types/jest": "^29.5.1",
+    "@badrap/valita": "^0.2.1",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-typescript": "^11.1.1",
+    "@types/jest": "^29.5.2",
     "@types/qs": "^6.9.7",
     "ajv": "^8.12.0",
     "jest": "^29.5.0",
     "myzod": "^1.10.0",
     "prettier": "^2.8.8",
-    "qs": "^6.11.1",
-    "rimraf": "^5.0.0",
-    "rollup": "^3.21.6",
+    "qs": "^6.11.2",
+    "rimraf": "^5.0.1",
+    "rollup": "^3.25.1",
     "rollup-plugin-dts": "^5.3.0",
     "toofast": "^2.0.0",
     "ts-jest": "^29.1.0",
     "tsd": "^0.28.1",
-    "tslib": "^2.5.0",
-    "typedoc": "^0.24.7",
-    "typescript": "^5.0.4",
+    "tslib": "^2.5.3",
+    "typedoc": "^0.24.8",
+    "typescript": "^5.1.3",
     "zod": "^3.21.4"
   }
 }

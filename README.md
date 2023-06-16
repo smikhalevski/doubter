@@ -15,6 +15,7 @@ Runtime validation and transformation library.
 - [High performance and low memory consumption;](#performance)
 - No dynamic code evaluation;
 - Zero dependencies;
+- [Pluggable architecture;](#plugins)
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
@@ -51,6 +52,7 @@ npm install --save-prod doubter
 - [Introspection](#introspection)
 - [Localization](#localization)
 - [Integrations](#integrations)
+- [Plugins](#plugins)
 - [Advanced shapes](#advanced-shapes)
 
 [**Performance**](#performance)
@@ -584,7 +586,7 @@ shape.parse(['Mars', 'Pluto']);
 // ⮕ ['Mars', 'Pluto']
 
 shape.parse(['Venus']);
-// ❌ ValidationError: unknown at /: Must incude Mars
+// ❌ ValidationError: unknown at /: Must include Mars
 ```
 
 ## Verbose mode
@@ -1799,6 +1801,41 @@ emailShape.hasCheck(isEmail);
 ```
 
 Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).
+
+# Plugins
+
+By default, when you import Doubter, you get the most full set of available features:
+
+```ts
+import * as d from 'doubter';
+
+d.string().min(2); // ✅ min is defined
+
+d.number().gte(3); // ✅ gte is defined
+```
+
+If you import `doubter/core`, you would get only core set of shapes without any plugins:
+
+```ts
+import * as d from 'doubter/core';
+
+d.string().min(2); // ❌ min is undefined
+
+d.number().gte(3); // ❌ gte is undefined
+```
+
+You can cherry-pick plugins that you need:
+
+```ts
+import * as d from 'doubter/core';
+import enhanceStringShape from 'doubter/plugins/string';
+
+enhanceStringShape();
+
+d.string().min(2); // ✅ min is defined
+
+d.number().gte(3); // ❌ gte is undefined
+```
 
 # Advanced shapes
 

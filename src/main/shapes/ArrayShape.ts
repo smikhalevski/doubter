@@ -1,17 +1,7 @@
-import {
-  CODE_ARRAY_MAX,
-  CODE_ARRAY_MIN,
-  CODE_TUPLE,
-  CODE_TYPE,
-  MESSAGE_ARRAY_MAX,
-  MESSAGE_ARRAY_MIN,
-  MESSAGE_ARRAY_TYPE,
-  MESSAGE_TUPLE,
-} from '../constants';
+import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE } from '../constants';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
-  addCheck,
   applyShape,
   concatIssues,
   copyUnsafeChecks,
@@ -124,51 +114,6 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
    */
   rest<S extends AnyShape | null>(restShape: S): ArrayShape<HeadShapes, S> {
     return copyUnsafeChecks(this, new ArrayShape(this.headShapes, restShape, this._options));
-  }
-
-  /**
-   * Constrains the array length.
-   *
-   * @param length The minimum array length.
-   * @param options The constraint options or an issue message.
-   * @returns The clone of the shape.
-   */
-  length(length: number, options?: ConstraintOptions | Message): this {
-    return this.min(length, options).max(length, options);
-  }
-
-  /**
-   * Constrains the minimum array length.
-   *
-   * @param length The minimum array length.
-   * @param options The constraint options or an issue message.
-   * @returns The clone of the shape.
-   */
-  min(length: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
-
-    return addCheck(this, CODE_ARRAY_MIN, length, (input, param, options) => {
-      if (input.length < param) {
-        return issueFactory(input, options);
-      }
-    });
-  }
-
-  /**
-   * Constrains the maximum array length.
-   *
-   * @param length The maximum array length.
-   * @param options The constraint options or an issue message.
-   * @returns The clone of the shape.
-   */
-  max(length: number, options?: ConstraintOptions | Message): this {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
-
-    return addCheck(this, CODE_ARRAY_MAX, length, (input, param, options) => {
-      if (input.length > param) {
-        return issueFactory(input, options);
-      }
-    });
   }
 
   deepPartial(): DeepPartialArrayShape<HeadShapes, RestShape> {
