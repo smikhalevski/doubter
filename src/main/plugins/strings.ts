@@ -14,6 +14,8 @@ declare module 'doubter' {
     /**
      * The shortcut to apply both {@linkcode min} and {@linkcode max} constraints.
      *
+     * ⚠️ Requires [doubter/plugins/strings](https://github.com/smikhalevski/doubter#plugins) plugin.
+     *
      * @param length The exact length a string must have.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
@@ -22,6 +24,8 @@ declare module 'doubter' {
 
     /**
      * Constrains the string length to be greater than or equal to the length.
+     *
+     * ⚠️ Requires [doubter/plugins/strings](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param length The minimum string length.
      * @param options The constraint options or an issue message.
@@ -32,6 +36,8 @@ declare module 'doubter' {
     /**
      * Constrains the string length to be less than or equal to the length.
      *
+     * ⚠️ Requires [doubter/plugins/strings](https://github.com/smikhalevski/doubter#plugins) plugin.
+     *
      * @param length The maximum string length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
@@ -40,6 +46,8 @@ declare module 'doubter' {
 
     /**
      * Constrains the string to match a regexp.
+     *
+     * ⚠️ Requires [doubter/plugins/strings](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * @param re The regular expression that the sting must conform.
      * @param options The constraint options or an issue message.

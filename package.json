@@ -11,30 +11,30 @@
       "import": "./index.mjs",
       "require": "./index.js"
     },
-    "./validators": {
-      "types": "./validators/index.d.ts",
-      "import": "./validators/index.mjs",
-      "require": "./validators/index.js"
+    "./plugins": {
+      "types": "./plugins/index.d.ts",
+      "import": "./plugins/index.mjs",
+      "require": "./plugins/index.js"
     },
-    "./validators/arrays": {
-      "types": "./validators/arrays.d.ts",
-      "import": "./validators/arrays.mjs",
-      "require": "./validators/arrays.js"
+    "./plugins/arrays": {
+      "types": "./plugins/arrays.d.ts",
+      "import": "./plugins/arrays.mjs",
+      "require": "./plugins/arrays.js"
     },
-    "./validators/numbers": {
-      "types": "./validators/numbers.d.ts",
-      "import": "./validators/numbers.mjs",
-      "require": "./validators/numbers.js"
+    "./plugins/numbers": {
+      "types": "./plugins/numbers.d.ts",
+      "import": "./plugins/numbers.mjs",
+      "require": "./plugins/numbers.js"
     },
-    "./validators/sets": {
-      "types": "./validators/sets.d.ts",
-      "import": "./validators/sets.mjs",
-      "require": "./validators/sets.js"
+    "./plugins/sets": {
+      "types": "./plugins/sets.d.ts",
+      "import": "./plugins/sets.mjs",
+      "require": "./plugins/sets.js"
     },
-    "./validators/strings": {
-      "types": "./validators/strings.d.ts",
-      "import": "./validators/strings.mjs",
-      "require": "./validators/strings.js"
+    "./plugins/strings": {
+      "types": "./plugins/strings.d.ts",
+      "import": "./plugins/strings.mjs",
+      "require": "./plugins/strings.js"
     },
     "./package.json": "./package.json"
   },
