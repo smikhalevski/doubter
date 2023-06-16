@@ -45,7 +45,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "rollup --config && cp README.md LICENSE.txt lib/ && node -p 'var pkg = require(\"./package.json\"); delete pkg.devDependencies; delete pkg.scripts; JSON.stringify(pkg, null, 2)' > ./lib/package.json",
+    "build": "node --max-old-space-size=4096 ./node_modules/.bin/rollup --config && cp README.md LICENSE.txt lib/ && node -p 'var pkg = require(\"./package.json\"); delete pkg.devDependencies; delete pkg.scripts; JSON.stringify(pkg, null, 2)' > ./lib/package.json",
     "clean": "rimraf ./lib ./docs ./coverage",
     "test": "jest",
     "test:definitions": "ln -nsf ../lib ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
