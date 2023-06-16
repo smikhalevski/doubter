@@ -45,7 +45,7 @@
     "test": "jest",
     "test:definitions": "ln -nsf ../lib ./node_modules/doubter && tsd --files './src/test/**/*.test-d.ts'",
     "perf": "toofast",
-    "docs": "typedoc ./src/main/index.ts"
+    "docs": "typedoc ./src/main/index.typedoc.ts"
   },
   "repository": {
     "type": "git",
