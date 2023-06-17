@@ -103,7 +103,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 
   protected _getInputs(): unknown[] {
     // flatMap
-    return ([] as unknown[]).concat(...this.shapes.map(getShapeInputs));
+    return Array.prototype.concat.apply([], this.shapes.map(getShapeInputs));
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Shapes[number][OUTPUT]> {
