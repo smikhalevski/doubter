@@ -1,5 +1,5 @@
-import { AnyShape, LazyShape } from '../shapes';
-import { INPUT } from '../shapes/Shape';
+import { AnyShape, LazyShape } from '../shape';
+import { INPUT } from '../shape/Shape';
 import { identity } from '../utils';
 
 /**

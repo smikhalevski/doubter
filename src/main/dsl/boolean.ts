@@ -1,4 +1,4 @@
-import { BooleanShape } from '../shapes';
+import { BooleanShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 
 /**

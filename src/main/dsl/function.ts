@@ -1,4 +1,4 @@
-import { AnyShape, ArrayShape, FunctionShape, Shape } from '../shapes';
+import { AnyShape, ArrayShape, FunctionShape, Shape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 import { isArray } from '../utils';
 

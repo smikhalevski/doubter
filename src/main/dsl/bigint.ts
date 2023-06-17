@@ -1,4 +1,4 @@
-import { BigIntShape } from '../shapes';
+import { BigIntShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 
 /**

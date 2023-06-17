@@ -1,4 +1,4 @@
-import { NumberShape } from '../shapes';
+import { NumberShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 
 /**

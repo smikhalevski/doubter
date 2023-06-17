@@ -1828,9 +1828,9 @@ You can cherry-pick plugins that you need:
 
 ```ts
 import * as d from 'doubter/core';
-import enhanceStringShape from 'doubter/plugins/string';
+import stringChecks from 'doubter/plugin/string-checks';
 
-enhanceStringShape();
+stringChecks();
 
 d.string().min(2); // ✅ min is defined
 

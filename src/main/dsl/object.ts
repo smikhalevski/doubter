@@ -1,4 +1,4 @@
-import { AnyShape, ObjectShape } from '../shapes';
+import { AnyShape, ObjectShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 import { ReadonlyDict } from '../utils';
 

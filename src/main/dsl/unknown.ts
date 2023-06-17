@@ -1,4 +1,4 @@
-import { Shape } from '../shapes';
+import { Shape } from '../shape';
 
 /**
  * Creates the unconstrained shape with unknown value.

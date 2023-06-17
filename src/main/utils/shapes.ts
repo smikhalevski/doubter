@@ -1,4 +1,4 @@
-import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shapes/Shape';
+import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shape/Shape';
 import { ApplyOptions, Check, Issue, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';

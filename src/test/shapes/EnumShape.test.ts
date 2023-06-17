@@ -1,6 +1,6 @@
 import { EnumShape } from '../../main';
 import { CODE_ENUM } from '../../main/constants';
-import { getEnumValues } from '../../main/shapes/EnumShape';
+import { getEnumValues } from '../../main/shape/EnumShape';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../../main/Type';
 
 enum NumberMockEnum {

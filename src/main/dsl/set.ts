@@ -1,4 +1,4 @@
-import { AnyShape, SetShape } from '../shapes';
+import { AnyShape, SetShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 
 /**

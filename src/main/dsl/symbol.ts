@@ -1,4 +1,4 @@
-import { SymbolShape } from '../shapes';
+import { SymbolShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 
 /**
