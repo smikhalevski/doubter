@@ -1,5 +1,7 @@
 export const isArray = Array.isArray;
 
+export const trunc = Math.trunc;
+
 export function identity<T>(value: T): T {
   return value;
 }

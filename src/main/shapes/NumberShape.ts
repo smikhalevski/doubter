@@ -39,20 +39,6 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * `true` if the shape constrains a finite number, or `false` otherwise.
-   */
-  get isFinite(): boolean {
-    return this._typePredicate === Number.isFinite || this.isInteger;
-  }
-
-  /**
-   * `true` if the shape constrains an integer number, or `false` otherwise.
-   */
-  get isInteger(): boolean {
-    return this._typePredicate === Number.isInteger;
-  }
-
-  /**
    * Constrains the number to be a finite number.
    *
    * @param options The constraint options or an issue message.

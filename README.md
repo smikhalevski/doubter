@@ -1,6 +1,6 @@
 <p align="center">
   <a href="#readme">
-    <img src="./images/logo.png" alt="Doubter" width="400"/>
+    <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/images/logo.png" alt="Doubter" width="400"/>
   </a>
 </p>
 
@@ -1998,7 +1998,7 @@ This is sufficient to enable type inference and runtime support for `deepPartial
 The chart below showcases the performance comparison in terms of millions of operations per second (greater is better).
 
 <p align="center">
-  <img src="./images/perf.svg" alt="Performance comparison chart"/>
+  <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/images/perf.svg" alt="Performance comparison chart"/>
 </p>
 
 Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast).

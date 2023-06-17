@@ -5,6 +5,20 @@ import { addCheck, createIssueFactory } from '../helpers';
 declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {
     /**
+     * The minimum set size, or `undefined` if there's no minimum size.
+     *
+     * @requires [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly minSize: number | undefined;
+
+    /**
+     * The maximum set size, or `undefined` if there's no maximum size.
+     *
+     * @requires [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly maxSize: number | undefined;
+
+    /**
      * Constrains the set size.
      *
      * @param size The minimum set size.
@@ -37,9 +51,27 @@ declare module '../core' {
 }
 
 export default function () {
-  SetShape.prototype.size = size;
-  SetShape.prototype.min = min;
-  SetShape.prototype.max = max;
+  const prototype = SetShape.prototype;
+
+  Object.defineProperties(prototype, {
+    minSize: {
+      configurable: true,
+      get(this: SetShape<any>) {
+        return this.getCheck(CODE_SET_MIN)?.param;
+      },
+    },
+
+    maxSize: {
+      configurable: true,
+      get(this: SetShape<any>) {
+        return this.getCheck(CODE_SET_MAX)?.param;
+      },
+    },
+  });
+
+  prototype.size = size;
+  prototype.min = min;
+  prototype.max = max;
 }
 
 function size(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {

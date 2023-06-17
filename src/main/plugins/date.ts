@@ -5,6 +5,20 @@ import { addCheck, createIssueFactory } from '../helpers';
 declare module '../core' {
   export interface DateShape {
     /**
+     * The inclusive minimum date, or `undefined` if there's no minimum date.
+     *
+     * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly minDate: Date | undefined;
+
+    /**
+     * The inclusive maximum date, or `undefined` if there's no maximum date.
+     *
+     * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly maxDate: Date | undefined;
+
+    /**
      * Constrains the input date to be greater than or equal to another date.
      *
      * @param date The inclusive minimum date.
@@ -27,11 +41,10 @@ declare module '../core' {
     /**
      * Constrains the input date to be greater than or equal to another date.
      *
-     * Alias for {@linkcode min}.
-     *
      * @param date The inclusive minimum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @alias {@linkcode min}
      * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
      */
     after(date: Date | number | string, options?: ConstraintOptions | Message): this;
@@ -39,11 +52,11 @@ declare module '../core' {
     /**
      * Constrains the input date to be less than or equal to another date.
      *
-     * Alias for {@linkcode max}.
      *
      * @param date The inclusive maximum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @alias {@linkcode max}
      * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
      */
     before(date: Date | number | string, options?: ConstraintOptions | Message): this;
@@ -65,12 +78,30 @@ declare module '../core' {
 }
 
 export default function () {
-  DateShape.prototype.min = min;
-  DateShape.prototype.max = max;
-  DateShape.prototype.after = min;
-  DateShape.prototype.before = max;
-  DateShape.prototype.iso = iso;
-  DateShape.prototype.timestamp = timestamp;
+  const prototype = DateShape.prototype;
+
+  Object.defineProperties(prototype, {
+    minDate: {
+      configurable: true,
+      get(this: DateShape) {
+        return this.getCheck(CODE_DATE_MIN)?.param;
+      },
+    },
+
+    maxDate: {
+      configurable: true,
+      get(this: DateShape) {
+        return this.getCheck(CODE_DATE_MAX)?.param;
+      },
+    },
+  });
+
+  prototype.min = min;
+  prototype.max = max;
+  prototype.after = min;
+  prototype.before = max;
+  prototype.iso = iso;
+  prototype.timestamp = timestamp;
 }
 
 function min(this: DateShape, date: Date | number | string, options?: ConstraintOptions | Message): DateShape {

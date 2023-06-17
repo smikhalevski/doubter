@@ -12,6 +12,27 @@ import { addCheck, createIssueFactory } from '../helpers';
 declare module '../core' {
   export interface StringShape {
     /**
+     * The minimum length, or `undefined` if there's no minimum length.
+     *
+     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly minLength: number | undefined;
+
+    /**
+     * The maximum length, or `undefined` if there's no maximum length.
+     *
+     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly maxLength: number | undefined;
+
+    /**
+     * The pattern that the string should match set via {@linkcode regex}, or `undefined` if there's no pattern.
+     *
+     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly pattern: RegExp | undefined;
+
+    /**
      * The shortcut to apply both {@linkcode min} and {@linkcode max} constraints.
      *
      * @param length The exact length a string must have.
@@ -54,10 +75,35 @@ declare module '../core' {
 }
 
 export default function () {
-  StringShape.prototype.length = length;
-  StringShape.prototype.min = min;
-  StringShape.prototype.max = max;
-  StringShape.prototype.regex = regex;
+  const prototype = StringShape.prototype;
+
+  Object.defineProperties(prototype, {
+    minLength: {
+      configurable: true,
+      get(this: StringShape) {
+        return this.getCheck(CODE_STRING_MIN)?.param;
+      },
+    },
+
+    maxLength: {
+      configurable: true,
+      get(this: StringShape) {
+        return this.getCheck(CODE_STRING_MAX)?.param;
+      },
+    },
+
+    pattern: {
+      configurable: true,
+      get(this: StringShape) {
+        return this.getCheck(CODE_STRING_REGEX)?.param;
+      },
+    },
+  });
+
+  prototype.length = length;
+  prototype.min = min;
+  prototype.max = max;
+  prototype.regex = regex;
 }
 
 function length(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {

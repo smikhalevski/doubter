@@ -12,6 +12,20 @@ import { addCheck, createIssueFactory } from '../helpers';
 declare module '../core' {
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
     /**
+     * The minimum array length, or `undefined` if there's no minimum length.
+     *
+     * @requires [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly minLength: number | undefined;
+
+    /**
+     * The maximum array length, or `undefined` if there's no maximum length.
+     *
+     * @requires [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins)
+     */
+    readonly maxLength: number | undefined;
+
+    /**
      * Constrains the array length.
      *
      * @param length The minimum array length.
@@ -42,7 +56,7 @@ declare module '../core' {
     max(length: number, options?: ConstraintOptions | Message): this;
 
     /**
-     * Constrains the array length to be at least 1.
+     * Constrains the array length to be at least one element.
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
@@ -51,7 +65,7 @@ declare module '../core' {
     nonEmpty(options?: ConstraintOptions | Message): this;
 
     /**
-     * Requires an element to contain at least one element that conforms the shape.
+     * Requires an array to contain at least one element that conforms the given shape.
      *
      * @param shape The shape of the required element.
      * @param options The constraint options or an issue message.
@@ -63,11 +77,29 @@ declare module '../core' {
 }
 
 export default function () {
-  ArrayShape.prototype.length = length;
-  ArrayShape.prototype.min = min;
-  ArrayShape.prototype.max = max;
-  ArrayShape.prototype.nonEmpty = nonEmpty;
-  ArrayShape.prototype.includes = includes;
+  const prototype = ArrayShape.prototype;
+
+  Object.defineProperties(prototype, {
+    minLength: {
+      configurable: true,
+      get(this: ArrayShape<any, any>) {
+        return this.getCheck(CODE_ARRAY_MIN)?.param;
+      },
+    },
+
+    maxLength: {
+      configurable: true,
+      get(this: ArrayShape<any, any>) {
+        return this.getCheck(CODE_ARRAY_MAX)?.param;
+      },
+    },
+  });
+
+  prototype.length = length;
+  prototype.min = min;
+  prototype.max = max;
+  prototype.nonEmpty = nonEmpty;
+  prototype.includes = includes;
 }
 
 function length(

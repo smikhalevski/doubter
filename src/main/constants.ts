@@ -32,7 +32,7 @@ export const CODE_TYPE = 'type';
 export const CODE_TUPLE = 'tuple';
 export const CODE_UNION = 'union';
 
-export const MESSAGE_ARRAY_INCLUDES = 'Must include a required value';
+export const MESSAGE_ARRAY_INCLUDES = 'Must include a value';
 export const MESSAGE_ARRAY_TYPE = 'Must be an array';
 export const MESSAGE_ARRAY_MIN = 'Must have the minimum length of %s';
 export const MESSAGE_ARRAY_MAX = 'Must have the maximum length of %s';

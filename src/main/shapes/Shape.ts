@@ -776,7 +776,6 @@ export interface Shape<InputValue, OutputValue> {
 Object.defineProperties(Shape.prototype, {
   inputs: {
     configurable: true,
-
     get(this: Shape) {
       Object.defineProperty(this, 'inputs', { configurable: true, value: [] });
 
@@ -790,7 +789,6 @@ Object.defineProperties(Shape.prototype, {
 
   isAsync: {
     configurable: true,
-
     get(this: Shape) {
       Object.defineProperty(this, 'isAsync', { configurable: true, value: false });
 
@@ -813,7 +811,6 @@ Object.defineProperties(Shape.prototype, {
 
   try: {
     configurable: true,
-
     get(this: Shape) {
       this.isAsync;
 
@@ -837,7 +834,6 @@ Object.defineProperties(Shape.prototype, {
 
   tryAsync: {
     configurable: true,
-
     get(this: Shape) {
       this.isAsync;
 
@@ -861,7 +857,6 @@ Object.defineProperties(Shape.prototype, {
 
   parse: {
     configurable: true,
-
     get(this: Shape) {
       this.isAsync;
 
@@ -885,7 +880,6 @@ Object.defineProperties(Shape.prototype, {
 
   parseAsync: {
     configurable: true,
-
     get(this: Shape) {
       this.isAsync;
 
@@ -909,7 +903,6 @@ Object.defineProperties(Shape.prototype, {
 
   parseOrDefault: {
     configurable: true,
-
     get(this: Shape) {
       this.isAsync;
 
@@ -933,7 +926,6 @@ Object.defineProperties(Shape.prototype, {
 
   parseOrDefaultAsync: {
     configurable: true,
-
     get(this: Shape) {
       this.isAsync;
 
