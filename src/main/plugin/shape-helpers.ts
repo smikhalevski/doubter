@@ -5,21 +5,21 @@ declare module '../core' {
     /**
      * `true` if shape accepts `null` input values, or `false` otherwise.
      *
-     * @requires [doubter/plugins/shape](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly isNullable: boolean;
 
     /**
      * `true` if shape accepts `undefined` input values, or `false` otherwise.
      *
-     * @requires [doubter/plugins/shape](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly isOptional: boolean;
 
     /**
      * `true` if shape accepts both `null` and `undefined` input values, or `false` otherwise.
      *
-     * @requires [doubter/plugins/shape](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly isNullish: boolean;
   }

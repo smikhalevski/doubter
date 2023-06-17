@@ -14,14 +14,14 @@ declare module '../core' {
     /**
      * The minimum array length, or `undefined` if there's no minimum length.
      *
-     * @requires [doubter/plugins/array-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly minLength: number | undefined;
 
     /**
      * The maximum array length, or `undefined` if there's no maximum length.
      *
-     * @requires [doubter/plugins/array-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly maxLength: number | undefined;
 
@@ -31,7 +31,7 @@ declare module '../core' {
      * @param length The minimum array length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/array-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     length(length: number, options?: ConstraintOptions | Message): this;
 
@@ -41,7 +41,7 @@ declare module '../core' {
      * @param length The minimum array length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/array-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     min(length: number, options?: ConstraintOptions | Message): this;
 
@@ -51,7 +51,7 @@ declare module '../core' {
      * @param length The maximum array length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/array-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     max(length: number, options?: ConstraintOptions | Message): this;
 
@@ -60,7 +60,7 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/array-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     nonEmpty(options?: ConstraintOptions | Message): this;
 
@@ -70,7 +70,7 @@ declare module '../core' {
      * @param shape The shape of the required element.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/array-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     includes(shape: AnyShape, options?: ConstraintOptions | Message): this;
   }
