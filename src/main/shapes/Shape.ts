@@ -160,8 +160,10 @@ export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<Dee
 /**
  * The result that shape returns after being applied to an input value. This is the part of the internal API required
  * for creating custom shapes.
+ *
+ * @template Value The output value.
  */
-export type Result<T = any> = Ok<T> | Issue[] | null;
+export type Result<Value = any> = Ok<Value> | Issue[] | null;
 
 /**
  * The callback to which shape checks are compiled, see {@linkcode Shape._applyChecks}.

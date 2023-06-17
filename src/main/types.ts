@@ -1,15 +1,15 @@
 /**
  * Carries the result of successful input parsing.
  *
- * @template T The output value.
+ * @template Value The output value.
  */
-export interface Ok<T> {
+export interface Ok<Value> {
   ok: true;
 
   /**
    * The output value.
    */
-  value: T;
+  value: Value;
 }
 
 /**
@@ -30,13 +30,13 @@ export interface Err {
  *
  * @param value The value that must be checked.
  * @param param The check param.
- * @template T The value that must be checked.
- * @template P The check param.
+ * @template Value The value that must be checked.
+ * @template Param The check param.
  * @throws {@linkcode ValidationError} to notify that the check cannot be completed.
  */
-export type CheckCallback<T = any, P = any> = (
-  value: T,
-  param: P,
+export type CheckCallback<Value = any, Param = any> = (
+  value: Value,
+  param: Param,
   options: Readonly<ApplyOptions>
 ) => Issue[] | Issue | null | undefined | void;
 
