@@ -1,6 +1,6 @@
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
 import { Result, Shape } from './Shape';
 
 /**

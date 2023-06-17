@@ -2,8 +2,8 @@ import { ApplyOptions, ObjectShape, Ok, Result, Shape, StringShape } from '../..
 import {
   CODE_DENIED,
   CODE_ENUM,
-  CODE_TYPE,
   CODE_OBJECT_UNKNOWN_KEYS,
+  CODE_TYPE,
   MESSAGE_OBJECT_TYPE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';

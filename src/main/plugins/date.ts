@@ -1,68 +1,64 @@
-import { ConstraintOptions, createIssueFactory, DateShape, Message, Shape } from '../core';
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
-import { addCheck } from '../helpers';
+import { ConstraintOptions, DateShape, Message, Shape } from '../core';
+import { addCheck, createIssueFactory } from '../helpers';
 
 declare module '../core' {
   export interface DateShape {
     /**
      * Constrains the input date to be greater than or equal to another date.
      *
-     * ⚠️ Provided by [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param date The inclusive minimum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
      */
     min(date: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the input date to be less than or equal to another date.
      *
-     * ⚠️ Provided by [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param date The inclusive maximum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
      */
     max(date: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the input date to be greater than or equal to another date.
      *
-     * ⚠️ Provided by [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * Alias for {@linkcode min}.
      *
      * @param date The inclusive minimum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
      */
     after(date: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the input date to be less than or equal to another date.
      *
-     * ⚠️ Provided by [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * Alias for {@linkcode max}.
      *
      * @param date The inclusive maximum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
      */
     before(date: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
      * Transforms date to an ISO string.
      *
-     * ⚠️ Provided by [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
      */
     iso(): Shape<Date, string>;
 
     /**
      * Transforms date to a timestamp integer number.
      *
-     * ⚠️ Provided by [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins) plugin.
+     * @requires [doubter/plugins/date](https://github.com/smikhalevski/doubter#plugins)
      */
     timestamp(): Shape<Date, number>;
   }

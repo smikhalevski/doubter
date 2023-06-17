@@ -1,7 +1,7 @@
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { TYPE_SYMBOL } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
 import { Result, Shape } from './Shape';
 
 /**

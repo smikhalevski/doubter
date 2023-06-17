@@ -1,4 +1,3 @@
-import { ConstraintOptions, createIssueFactory, Message, NumberShape } from '../core';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -11,7 +10,8 @@ import {
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
-import { addCheck } from '../helpers';
+import { ConstraintOptions, Message, NumberShape } from '../core';
+import { addCheck, createIssueFactory } from '../helpers';
 
 export interface MultipleOfConstraintOptions extends ConstraintOptions {
   precision: number;
@@ -22,117 +22,105 @@ declare module '../core' {
     /**
      * Constrains the number to be greater than zero.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     positive(options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be less than zero.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     negative(options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be less or equal to zero.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     nonPositive(options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be greater or equal to zero.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     nonNegative(options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be greater than the value.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param value The exclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     gt(value: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be less than the value.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param value The exclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     lt(value: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be greater than or equal to the value.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param value The inclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     gte(value: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be less than or equal to the value.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param value The inclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     lte(value: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be greater than or equal to the value.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * Alias for {@linkcode gte}.
      *
      * @param value The inclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     min(value: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be less than or equal to the value.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * Alias for {@linkcode lte}.
      *
      * @param value The inclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     max(value: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be a multiple of the divisor.
-     *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
      *
      * This constraint uses the
      * [modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which may
@@ -153,18 +141,18 @@ declare module '../core' {
      * @param value The positive number by which the input should be divisible without a remainder.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     multipleOf(value: number, options?: MultipleOfConstraintOptions | Message): this;
 
     /**
      * Constrains the number to be between inclusive minimum and inclusive maximum.
      *
-     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param minValue The inclusive minimum value.
      * @param maxValue The inclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     between(minValue: number, maxValue: number, options?: ConstraintOptions | Message): NumberShape;
 

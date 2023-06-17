@@ -1,4 +1,3 @@
-import { AnyShape, ArrayShape, ConstraintOptions, createIssueFactory, Message } from '../core';
 import {
   CODE_ARRAY_INCLUDES,
   CODE_ARRAY_MAX,
@@ -7,61 +6,57 @@ import {
   MESSAGE_ARRAY_MAX,
   MESSAGE_ARRAY_MIN,
 } from '../constants';
-import { addCheck } from '../helpers';
+import { AnyShape, ArrayShape, ConstraintOptions, Message } from '../core';
+import { addCheck, createIssueFactory } from '../helpers';
 
 declare module '../core' {
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
     /**
      * Constrains the array length.
      *
-     * ⚠️ Provided by [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param length The minimum array length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins)
      */
     length(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the minimum array length.
      *
-     * ⚠️ Provided by [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param length The minimum array length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins)
      */
     min(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the maximum array length.
      *
-     * ⚠️ Provided by [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param length The maximum array length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins)
      */
     max(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the array length to be at least 1.
      *
-     * ⚠️ Provided by [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins)
      */
     nonEmpty(options?: ConstraintOptions | Message): this;
 
     /**
      * Requires an element to contain at least one element that conforms the shape.
      *
-     * ⚠️ Provided by [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param shape The shape of the required element.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/array](https://github.com/smikhalevski/doubter#plugins)
      */
     includes(shape: AnyShape, options?: ConstraintOptions | Message): this;
   }

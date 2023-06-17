@@ -1,7 +1,8 @@
 import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { createIssueFactory, getCanonicalValueOf, isArray, isValidDate, ok } from '../utils';
+import { getCanonicalValueOf, isArray, isValidDate, ok } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 

@@ -1,39 +1,36 @@
-import { AnyShape, ConstraintOptions, createIssueFactory, Message, SetShape } from '../core';
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
-import { addCheck } from '../helpers';
+import { AnyShape, ConstraintOptions, Message, SetShape } from '../core';
+import { addCheck, createIssueFactory } from '../helpers';
 
 declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {
     /**
      * Constrains the set size.
      *
-     * ⚠️ Provided by [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param size The minimum set size.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins)
      */
     size(size: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the minimum set size.
      *
-     * ⚠️ Provided by [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param size The minimum set size.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins)
      */
     min(size: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the maximum set size.
      *
-     * ⚠️ Provided by [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param size The maximum set size.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/set](https://github.com/smikhalevski/doubter#plugins)
      */
     max(size: number, options?: ConstraintOptions | Message): this;
   }

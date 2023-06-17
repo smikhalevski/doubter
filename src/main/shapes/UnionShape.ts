@@ -1,10 +1,10 @@
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   copyUnsafeChecks,
-  createIssueFactory,
   Dict,
   getShapeInputs,
   isArray,

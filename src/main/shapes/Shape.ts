@@ -7,6 +7,7 @@ import {
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
 } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   ApplyOptions,
@@ -26,7 +27,6 @@ import {
   applyShape,
   captureIssues,
   copyUnsafeChecks,
-  createIssueFactory,
   deleteAt,
   Dict,
   getCheckIndex,

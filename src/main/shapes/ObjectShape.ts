@@ -1,4 +1,5 @@
-import { CODE_TYPE, CODE_OBJECT_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_UNKNOWN_KEYS } from '../constants';
+import { CODE_OBJECT_UNKNOWN_KEYS, CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_UNKNOWN_KEYS } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -8,7 +9,6 @@ import {
   cloneDictKeys,
   concatIssues,
   copyUnsafeChecks,
-  createIssueFactory,
   Dict,
   getBit,
   isArray,

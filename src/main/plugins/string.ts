@@ -1,4 +1,3 @@
-import { ConstraintOptions, createIssueFactory, Message, StringShape } from '../core';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -7,51 +6,48 @@ import {
   MESSAGE_STRING_MIN,
   MESSAGE_STRING_REGEX,
 } from '../constants';
-import { addCheck } from '../helpers';
+import { ConstraintOptions, Message, StringShape } from '../core';
+import { addCheck, createIssueFactory } from '../helpers';
 
 declare module '../core' {
   export interface StringShape {
     /**
      * The shortcut to apply both {@linkcode min} and {@linkcode max} constraints.
      *
-     * ⚠️ Provided by [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param length The exact length a string must have.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
      */
     length(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the string length to be greater than or equal to the length.
      *
-     * ⚠️ Provided by [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param length The minimum string length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
      */
     min(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the string length to be less than or equal to the length.
      *
-     * ⚠️ Provided by [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param length The maximum string length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
      */
     max(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the string to match a regexp.
      *
-     * ⚠️ Provided by [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins) plugin.
-     *
      * @param re The regular expression that the sting must conform.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
      */
     regex(re: RegExp, options?: ConstraintOptions | Message): this;
   }

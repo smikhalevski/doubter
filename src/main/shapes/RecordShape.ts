@@ -1,4 +1,5 @@
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -6,7 +7,6 @@ import {
   cloneDictHead,
   concatIssues,
   copyUnsafeChecks,
-  createIssueFactory,
   isArray,
   isObject,
   ok,

@@ -1,11 +1,11 @@
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   concatIssues,
   copyUnsafeChecks,
-  createIssueFactory,
   distributeTypes,
   getShapeInputs,
   isArray,

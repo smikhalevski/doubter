@@ -1,11 +1,11 @@
 import { CODE_TYPE, MESSAGE_MAP_TYPE } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   concatIssues,
   copyUnsafeChecks,
-  createIssueFactory,
   getCanonicalValueOf,
   isArray,
   isIterableObject,

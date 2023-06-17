@@ -1,10 +1,10 @@
 import { CODE_TYPE, MESSAGE_SET_TYPE } from '../constants';
+import { createIssueFactory } from '../helpers';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   concatIssues,
   copyUnsafeChecks,
-  createIssueFactory,
   getCanonicalValueOf,
   isArray,
   isIterableObject,
