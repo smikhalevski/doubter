@@ -52,7 +52,6 @@ declare module '../core' {
     /**
      * Constrains the input date to be less than or equal to another date.
      *
-     *
      * @param date The inclusive maximum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.

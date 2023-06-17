@@ -30,28 +30,28 @@ declare module '../core' {
     readonly isInteger: boolean;
 
     /**
-     * Inclusive minimum value set via {@linkcode gte} or {@linkcode min}, or `undefined` if there's no such value.
+     * The inclusive minimum value set via {@linkcode gte} or {@linkcode min}, or `undefined` if there's no such value.
      *
      * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly minValue: number | undefined;
 
     /**
-     * Inclusive maximum value set via {@linkcode lte} or {@linkcode max}, or `undefined` if there's no such value.
+     * The inclusive maximum value set via {@linkcode lte} or {@linkcode max}, or `undefined` if there's no such value.
      *
      * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly maxValue: number | undefined;
 
     /**
-     * Exclusive minimum value set via {@linkcode gt}, or `undefined` if there's no such value.
+     * The exclusive minimum value set via {@linkcode gt}, or `undefined` if there's no such value.
      *
      * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly exclusiveMinValue: number | undefined;
 
     /**
-     * Exclusive maximum value set via {@linkcode lt}, or `undefined` if there's no such value.
+     * The exclusive maximum value set via {@linkcode lt}, or `undefined` if there's no such value.
      *
      * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
@@ -136,7 +136,6 @@ declare module '../core' {
     /**
      * Constrains the number to be greater than or equal to the value.
      *
-     *
      * @param value The inclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
@@ -147,7 +146,6 @@ declare module '../core' {
 
     /**
      * Constrains the number to be less than or equal to the value.
-     *
      *
      * @param value The inclusive maximum value.
      * @param options The constraint options or an issue message.
@@ -188,6 +186,7 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
+     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
      */
     safe(options?: ConstraintOptions | Message): this;
   }
