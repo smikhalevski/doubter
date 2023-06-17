@@ -3,7 +3,7 @@ import {
   CODE_DENIED,
   CODE_ENUM,
   CODE_TYPE,
-  CODE_UNKNOWN_KEYS,
+  CODE_OBJECT_UNKNOWN_KEYS,
   MESSAGE_OBJECT_TYPE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
@@ -505,7 +505,7 @@ describe('ObjectShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_UNKNOWN_KEYS,
+            code: CODE_OBJECT_UNKNOWN_KEYS,
             input: obj,
             message: 'Must not have unknown keys: yay',
             param: ['yay'],
@@ -526,7 +526,7 @@ describe('ObjectShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_UNKNOWN_KEYS,
+            code: CODE_OBJECT_UNKNOWN_KEYS,
             input: obj,
             message: 'Must not have unknown keys: yay,wow',
             param: ['yay', 'wow'],
@@ -645,7 +645,7 @@ describe('ObjectShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_UNKNOWN_KEYS,
+            code: CODE_OBJECT_UNKNOWN_KEYS,
             input: obj,
             message: 'Must not have unknown keys: yay',
             param: ['yay'],
@@ -664,7 +664,7 @@ describe('ObjectShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_UNKNOWN_KEYS,
+            code: CODE_OBJECT_UNKNOWN_KEYS,
             input: obj,
             message: 'Must not have unknown keys: yay,wow',
             param: ['yay', 'wow'],

@@ -13,7 +13,7 @@ declare module 'doubter' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      */
-    size(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): this;
+    size(size: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the minimum set size.
@@ -24,7 +24,7 @@ declare module 'doubter' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      */
-    min(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): this;
+    min(size: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the maximum set size.
@@ -35,7 +35,7 @@ declare module 'doubter' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      */
-    max(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): this;
+    max(size: number, options?: ConstraintOptions | Message): this;
   }
 }
 

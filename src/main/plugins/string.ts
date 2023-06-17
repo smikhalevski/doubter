@@ -20,7 +20,7 @@ declare module 'doubter' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      */
-    length(this: StringShape, length: number, options?: ConstraintOptions | Message): this;
+    length(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the string length to be greater than or equal to the length.
@@ -31,7 +31,7 @@ declare module 'doubter' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      */
-    min(this: StringShape, length: number, options?: ConstraintOptions | Message): this;
+    min(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the string length to be less than or equal to the length.
@@ -42,7 +42,7 @@ declare module 'doubter' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      */
-    max(this: StringShape, length: number, options?: ConstraintOptions | Message): this;
+    max(length: number, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the string to match a regexp.
@@ -53,7 +53,7 @@ declare module 'doubter' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      */
-    regex(this: StringShape, re: RegExp, options?: ConstraintOptions | Message): this;
+    regex(re: RegExp, options?: ConstraintOptions | Message): this;
   }
 }
 

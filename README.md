@@ -3816,3 +3816,7 @@ shape.parse(42);
 shape.parse(-273.15);
 // ❌ ValidationError: numberGreaterThan at /: Must be greater than 0
 ```
+
+<hr/>
+
+<p align="center">:octocat: :heart:</p>

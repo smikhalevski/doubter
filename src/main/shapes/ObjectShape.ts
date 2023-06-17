@@ -1,4 +1,4 @@
-import { CODE_TYPE, CODE_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_UNKNOWN_KEYS } from '../constants';
+import { CODE_TYPE, CODE_OBJECT_UNKNOWN_KEYS, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_UNKNOWN_KEYS } from '../constants';
 import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
@@ -307,7 +307,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   exact(options?: ConstraintOptions | Message): ObjectShape<PropShapes, null> {
     const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
 
-    shape._exactIssueFactory = createIssueFactory(CODE_UNKNOWN_KEYS, MESSAGE_UNKNOWN_KEYS, options);
+    shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_UNKNOWN_KEYS, MESSAGE_OBJECT_UNKNOWN_KEYS, options);
 
     return copyUnsafeChecks(this, shape);
   }
