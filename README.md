@@ -1837,6 +1837,18 @@ d.string().min(2); // ✅ min is defined
 d.number().gte(3); // ❌ gte is undefined
 ```
 
+## Available plugins
+
+| Import from                    | Description                                                                                               |
+|--------------------------------|-----------------------------------------------------------------------------------------------------------|
+| `doubter/plugin/array-checks`  | [Common array checks](https://smikhalevski.github.io/doubter/classes/ArrayShape.html#maxLength)           |
+| `doubter/plugin/bigint-checks` | [Common bigint checks](https://smikhalevski.github.io/doubter/classes/BigIntShape.html#maxValue)          |
+| `doubter/plugin/date-checks`   | [Common `Date` checks](https://smikhalevski.github.io/doubter/classes/DateShape.html#maxDate)             |
+| `doubter/plugin/number-checks` | [Common number checks](https://smikhalevski.github.io/doubter/classes/NumberShape.html#exclusiveMaxValue) |
+| `doubter/plugin/set-checks`    | [Common `Set` checks](https://smikhalevski.github.io/doubter/classes/SetShape.html#maxSize)               |
+| `doubter/plugin/shape-helpers` | [Shape introspection helpers](https://smikhalevski.github.io/doubter/classes/Shape.html#isNullable)       |
+| `doubter/plugin/string-checks` | [Common string checks](https://smikhalevski.github.io/doubter/classes/StringShape.html#maxLength)         |
+
 # Advanced shapes
 
 You can create custom shapes by extending the [`Shape`](https://smikhalevski.github.io/doubter/classes/Shape.html)
