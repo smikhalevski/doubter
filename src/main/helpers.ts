@@ -1,4 +1,4 @@
-import { CheckCallback, Output, Shape } from 'doubter';
+import { CheckCallback, Output, Shape } from './core';
 
 /**
  * The shortcut to add built-in checks to shapes.

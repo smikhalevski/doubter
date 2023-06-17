@@ -1,4 +1,4 @@
-import { AnyShape, ArrayShape, ConstraintOptions, createIssueFactory, Message } from 'doubter';
+import { AnyShape, ArrayShape, ConstraintOptions, createIssueFactory, Message } from '../core';
 import {
   CODE_ARRAY_INCLUDES,
   CODE_ARRAY_MAX,
@@ -7,9 +7,9 @@ import {
   MESSAGE_ARRAY_MAX,
   MESSAGE_ARRAY_MIN,
 } from '../constants';
-import { addCheck } from './utils';
+import { addCheck } from '../helpers';
 
-declare module 'doubter' {
+declare module '../core' {
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
     /**
      * Constrains the array length.

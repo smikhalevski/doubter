@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "declaration": true,
     "importHelpers": true,
     "moduleResolution": "Node",
     "esModuleInterop": true,
@@ -7,15 +8,7 @@
     "strict": true,
     "target": "ES5",
     "module": "ES6",
-    "baseUrl": ".",
-    "paths": {
-      "doubter": [
-        "./src/main"
-      ],
-      "doubter/*": [
-        "./src/main/*"
-      ]
-    }
+    "outDir": "./gen"
   },
   "include": [
     "./src/main/**/*"

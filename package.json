@@ -16,11 +16,6 @@
       "import": "./core.mjs",
       "require": "./core.js"
     },
-    "./plugins": {
-      "types": "./plugins/index.d.ts",
-      "import": "./plugins/index.mjs",
-      "require": "./plugins/index.js"
-    },
     "./plugins/array": {
       "types": "./plugins/array.d.ts",
       "import": "./plugins/array.mjs",
@@ -45,12 +40,13 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "node --max-old-space-size=4096 ./node_modules/.bin/rollup --config && cp README.md LICENSE.txt lib/ && node -p 'var pkg = require(\"./package.json\"); delete pkg.devDependencies; delete pkg.scripts; JSON.stringify(pkg, null, 2)' > ./lib/package.json",
-    "clean": "rimraf ./lib ./docs ./coverage",
+    "build": "tsc && rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
+    "clean": "rimraf gen lib docs coverage",
     "test": "jest",
-    "test:definitions": "tsd --typings ./lib/index.d.ts --files './src/test/**/*.test-d.ts'",
+    "test:definitions": "tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",
     "perf": "toofast",
-    "docs": "typedoc src/main/index.ts"
+    "docs": "typedoc src/main/index.ts",
+    "link": "ln -nsf ../lib node_modules/doubter && cd lib && npm link"
   },
   "repository": {
     "type": "git",
@@ -73,7 +69,6 @@
   "devDependencies": {
     "@badrap/valita": "^0.2.1",
     "@rollup/plugin-node-resolve": "^15.1.0",
-    "@rollup/plugin-typescript": "^11.1.1",
     "@types/jest": "^29.5.2",
     "@types/qs": "^6.9.7",
     "ajv": "^8.12.0",
@@ -82,7 +77,7 @@
     "prettier": "^2.8.8",
     "qs": "^6.11.2",
     "rimraf": "^5.0.1",
-    "rollup": "^3.25.1",
+    "rollup": "^3.24.1",
     "rollup-plugin-dts": "^5.3.0",
     "toofast": "^2.0.0",
     "ts-jest": "^29.1.0",

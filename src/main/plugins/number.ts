@@ -1,4 +1,4 @@
-import { ConstraintOptions, createIssueFactory, Message, NumberShape } from 'doubter';
+import { ConstraintOptions, createIssueFactory, Message, NumberShape } from '../core';
 import {
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
@@ -11,9 +11,13 @@ import {
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
-import { addCheck } from './utils';
+import { addCheck } from '../helpers';
 
-declare module 'doubter' {
+export interface MultipleOfConstraintOptions extends ConstraintOptions {
+  precision: number;
+}
+
+declare module '../core' {
   export interface NumberShape {
     /**
      * Constrains the number to be greater than zero.
@@ -150,7 +154,27 @@ declare module 'doubter' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      */
-    multipleOf(value: number, options?: ConstraintOptions | Message): this;
+    multipleOf(value: number, options?: MultipleOfConstraintOptions | Message): this;
+
+    /**
+     * Constrains the number to be between inclusive minimum and inclusive maximum.
+     *
+     * ⚠️ Provided by [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins) plugin.
+     *
+     * @param minValue The inclusive minimum value.
+     * @param maxValue The inclusive maximum value.
+     * @param options The constraint options or an issue message.
+     * @returns The clone of the shape.
+     */
+    between(minValue: number, maxValue: number, options?: ConstraintOptions | Message): NumberShape;
+
+    /**
+     * Number must be between `Number.MIN_SAFE_INTEGER` and `Number.MAX_SAFE_INTEGER`.
+     *
+     * @param options The constraint options or an issue message.
+     * @returns The clone of the shape.
+     */
+    safe(options?: ConstraintOptions | Message): this;
   }
 }
 
@@ -166,6 +190,8 @@ export default function () {
   NumberShape.prototype.min = gte;
   NumberShape.prototype.max = lte;
   NumberShape.prototype.multipleOf = multipleOf;
+  NumberShape.prototype.between = between;
+  NumberShape.prototype.safe = safe;
 }
 
 function positive(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {
@@ -224,12 +250,27 @@ function lte(this: NumberShape, value: number, options?: ConstraintOptions | Mes
   });
 }
 
-function multipleOf(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
+function multipleOf(this: NumberShape, value: number, options?: MultipleOfConstraintOptions | Message): NumberShape {
+  const precision = 10;
+
   const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
 
   return addCheck(this, CODE_NUMBER_MULTIPLE_OF, value, (input, param, options) => {
-    if (input % param !== 0) {
+    if (Math.trunc(input * precision) % Math.trunc(param * precision) !== 0) {
       return issueFactory(input, options);
     }
   });
+}
+
+function between(
+  this: NumberShape,
+  minValue: number,
+  maxValue: number,
+  options?: ConstraintOptions | Message
+): NumberShape {
+  return this.min(minValue, options).max(maxValue, options);
+}
+
+function safe(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {
+  return this.between(Number.MIN_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, options);
 }

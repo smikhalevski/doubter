@@ -1,4 +1,4 @@
-import { ConstraintOptions, createIssueFactory, Message, StringShape } from 'doubter';
+import { ConstraintOptions, createIssueFactory, Message, StringShape } from '../core';
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -7,9 +7,9 @@ import {
   MESSAGE_STRING_MIN,
   MESSAGE_STRING_REGEX,
 } from '../constants';
-import { addCheck } from './utils';
+import { addCheck } from '../helpers';
 
-declare module 'doubter' {
+declare module '../core' {
   export interface StringShape {
     /**
      * The shortcut to apply both {@linkcode min} and {@linkcode max} constraints.

@@ -1,8 +1,8 @@
-import { AnyShape, ConstraintOptions, createIssueFactory, Message, SetShape } from 'doubter';
+import { AnyShape, ConstraintOptions, createIssueFactory, Message, SetShape } from '../core';
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
-import { addCheck } from './utils';
+import { addCheck } from '../helpers';
 
-declare module 'doubter' {
+declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {
     /**
      * Constrains the set size.
