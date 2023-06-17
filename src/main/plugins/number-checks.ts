@@ -18,42 +18,42 @@ declare module '../core' {
     /**
      * `true` if the shape constrains a finite number, or `false` otherwise.
      *
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly isFinite: boolean;
 
     /**
      * `true` if the shape constrains an integer number, or `false` otherwise.
      *
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly isInteger: boolean;
 
     /**
      * The inclusive minimum value set via {@linkcode gte} or {@linkcode min}, or `undefined` if there's no such value.
      *
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly minValue: number | undefined;
 
     /**
      * The inclusive maximum value set via {@linkcode lte} or {@linkcode max}, or `undefined` if there's no such value.
      *
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly maxValue: number | undefined;
 
     /**
      * The exclusive minimum value set via {@linkcode gt}, or `undefined` if there's no such value.
      *
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly exclusiveMinValue: number | undefined;
 
     /**
      * The exclusive maximum value set via {@linkcode lt}, or `undefined` if there's no such value.
      *
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly exclusiveMaxValue: number | undefined;
 
@@ -62,7 +62,7 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     positive(options?: ConstraintOptions | Message): this;
 
@@ -71,7 +71,7 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     negative(options?: ConstraintOptions | Message): this;
 
@@ -80,7 +80,7 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     nonPositive(options?: ConstraintOptions | Message): this;
 
@@ -89,7 +89,7 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     nonNegative(options?: ConstraintOptions | Message): this;
 
@@ -99,7 +99,7 @@ declare module '../core' {
      * @param value The exclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     gt(value: number, options?: ConstraintOptions | Message): this;
 
@@ -109,7 +109,7 @@ declare module '../core' {
      * @param value The exclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     lt(value: number, options?: ConstraintOptions | Message): this;
 
@@ -119,7 +119,7 @@ declare module '../core' {
      * @param value The inclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     gte(value: number, options?: ConstraintOptions | Message): this;
 
@@ -129,7 +129,7 @@ declare module '../core' {
      * @param value The inclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     lte(value: number, options?: ConstraintOptions | Message): this;
 
@@ -140,7 +140,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode gte}
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     min(value: number, options?: ConstraintOptions | Message): this;
 
@@ -151,7 +151,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode lte}
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     max(value: number, options?: ConstraintOptions | Message): this;
 
@@ -177,7 +177,7 @@ declare module '../core' {
      * @param value The positive number by which the input should be divisible without a remainder.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     multipleOf(value: number, options?: ConstraintOptions | Message): this;
 
@@ -186,7 +186,7 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/number](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/number-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     safe(options?: ConstraintOptions | Message): this;
   }

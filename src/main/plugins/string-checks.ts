@@ -14,21 +14,21 @@ declare module '../core' {
     /**
      * The minimum length, or `undefined` if there's no minimum length.
      *
-     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/string-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly minLength: number | undefined;
 
     /**
      * The maximum length, or `undefined` if there's no maximum length.
      *
-     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/string-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly maxLength: number | undefined;
 
     /**
      * The pattern that the string should match set via {@linkcode regex}, or `undefined` if there's no pattern.
      *
-     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/string-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     readonly pattern: RegExp | undefined;
 
@@ -38,7 +38,7 @@ declare module '../core' {
      * @param length The exact length a string must have.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/string-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     length(length: number, options?: ConstraintOptions | Message): this;
 
@@ -48,7 +48,7 @@ declare module '../core' {
      * @param length The minimum string length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/string-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     min(length: number, options?: ConstraintOptions | Message): this;
 
@@ -58,7 +58,7 @@ declare module '../core' {
      * @param length The maximum string length.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/string-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     max(length: number, options?: ConstraintOptions | Message): this;
 
@@ -68,7 +68,7 @@ declare module '../core' {
      * @param re The regular expression that the sting must conform.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @requires [doubter/plugins/string](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugins/string-checks](https://github.com/smikhalevski/doubter#plugins)
      */
     regex(re: RegExp, options?: ConstraintOptions | Message): this;
   }

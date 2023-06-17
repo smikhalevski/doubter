@@ -1,25 +1,25 @@
-import arrayPlugin from './plugins/array';
-import bigintPlugin from './plugins/bigint';
-import datePlugin from './plugins/date';
-import numberPlugin from './plugins/number';
-import setPlugin from './plugins/set';
-import shapePlugin from './plugins/shape';
-import stringPlugin from './plugins/string';
+import arrayChecks from './plugins/array-checks';
+import bigintChecks from './plugins/bigint-checks';
+import dateChecks from './plugins/date-checks';
+import numberChecks from './plugins/number-checks';
+import setChecks from './plugins/set-checks';
+import shape from './plugins/shape';
+import stringChecks from './plugins/string-checks';
 
-export type * from './plugins/array';
-export type * from './plugins/bigint';
-export type * from './plugins/date';
-export type * from './plugins/number';
-export type * from './plugins/set';
+export type * from './plugins/array-checks';
+export type * from './plugins/bigint-checks';
+export type * from './plugins/date-checks';
+export type * from './plugins/number-checks';
+export type * from './plugins/set-checks';
 export type * from './plugins/shape';
-export type * from './plugins/string';
+export type * from './plugins/string-checks';
 
 export * from './core';
 
-arrayPlugin();
-bigintPlugin();
-datePlugin();
-numberPlugin();
-setPlugin();
-shapePlugin();
-stringPlugin();
+arrayChecks();
+bigintChecks();
+dateChecks();
+numberChecks();
+setChecks();
+shape();
+stringChecks();
