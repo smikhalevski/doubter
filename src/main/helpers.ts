@@ -18,8 +18,8 @@ export function addCheck<S extends Shape, P>(shape: S, key: string, param: P, cb
  * @returns The callback that takes an input and options, and returns an array with a single issue.
  */
 export function createIssueFactory(
-  code: string,
-  defaultMessage: string,
+  code: unknown,
+  defaultMessage: unknown,
   options: ConstraintOptions | Message | undefined,
   param: unknown
 ): (input: unknown, options: Readonly<ApplyOptions>) => Issue[];
@@ -33,13 +33,13 @@ export function createIssueFactory(
  * @returns The callback that takes an input, options, and a param, and returns an array with a single issue.
  */
 export function createIssueFactory(
-  code: string,
-  defaultMessage: string,
+  code: unknown,
+  defaultMessage: unknown,
   options: ConstraintOptions | Message | undefined
 ): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[];
 
 export function createIssueFactory(
-  code: string,
+  code: unknown,
   defaultMessage: any,
   options: ConstraintOptions | Message | undefined,
   param?: unknown

@@ -1,7 +1,7 @@
-import { getTypeOf, Type, TYPE_UNKNOWN, TypeName } from '../Type';
+import { getTypeOf, Type, TYPE_UNKNOWN } from '../Type';
 import { isEqual } from './lang';
 
-export function isType(value: unknown): value is Type<TypeName> {
+export function isType(value: unknown): value is Type {
   return value instanceof Type;
 }
 
