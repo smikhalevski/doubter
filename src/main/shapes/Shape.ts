@@ -72,7 +72,7 @@ export type ExcludeLiteral<T, U> =
 export type AnyShape = Shape | Shape<never>;
 
 /**
- * An alias for {@linkcode ReplaceLiteralShape} that allows the same value as both an input and an output.
+ * Shortcut for {@linkcode ReplaceLiteralShape} that allows the same value as both an input and an output.
  *
  * @template BaseShape The shape that parses the input without the replaced value.
  * @template AllowedValue The value that is allowed as an input and output.
@@ -82,7 +82,7 @@ export type AllowLiteralShape<BaseShape extends AnyShape, AllowedValue> =
   ReplaceLiteralShape<BaseShape, AllowedValue, AllowedValue>;
 
 /**
- * An alias for {@linkcode ExcludeShape} that doesn't impose the exclusion on the type level.
+ * Shortcut for {@linkcode ExcludeShape} that doesn't impose the exclusion on the type level.
  *
  * @template BaseShape The base shape.
  * @template ExcludedShape The shape to which the output must not conform.

@@ -79,7 +79,7 @@ function min(this: DateShape, date: Date | number | string, options?: Constraint
   const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, date);
 
   return addCheck(this, CODE_DATE_MIN, date, (input, param, options) => {
-    if (input.getTime() <= param.getTime()) {
+    if (input.getTime() < param.getTime()) {
       return issueFactory(input, options);
     }
   });
@@ -91,7 +91,7 @@ function max(this: DateShape, date: Date | number | string, options?: Constraint
   const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, date);
 
   return addCheck(this, CODE_DATE_MAX, date, (input, param, options) => {
-    if (input.getTime() >= param.getTime()) {
+    if (input.getTime() > param.getTime()) {
       return issueFactory(input, options);
     }
   });
