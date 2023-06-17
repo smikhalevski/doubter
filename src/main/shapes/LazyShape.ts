@@ -71,6 +71,10 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     return shape;
   }
 
+  at(key: unknown): AnyShape | null {
+    return this.shape.at(key);
+  }
+
   deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, DeepPartialShape<ProvidedShape>[INPUT]> {
     const { _cachingShapeProvider } = this;
 
