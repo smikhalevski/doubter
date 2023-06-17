@@ -16,25 +16,45 @@
       "import": "./core.mjs",
       "require": "./core.js"
     },
-    "./plugins/array": {
-      "types": "./plugins/array.d.ts",
-      "import": "./plugins/array.mjs",
-      "require": "./plugins/array.js"
+    "./helpers": {
+      "types": "./helpers.d.ts",
+      "import": "./helpers.mjs",
+      "require": "./helpers.js"
     },
-    "./plugins/number": {
-      "types": "./plugins/number.d.ts",
-      "import": "./plugins/number.mjs",
-      "require": "./plugins/number.js"
+    "./plugin/array-checks": {
+      "types": "./plugin/array-checks.d.ts",
+      "import": "./plugin/array-checks.mjs",
+      "require": "./plugin/array-checks.js"
     },
-    "./plugins/set": {
-      "types": "./plugins/set.d.ts",
-      "import": "./plugins/set.mjs",
-      "require": "./plugins/set.js"
+    "./plugin/bigint-checks": {
+      "types": "./plugin/bigint-checks.d.ts",
+      "import": "./plugin/bigint-checks.mjs",
+      "require": "./plugin/bigint-checks.js"
     },
-    "./plugins/string": {
-      "types": "./plugins/string.d.ts",
-      "import": "./plugins/string.mjs",
-      "require": "./plugins/string.js"
+    "./plugin/date-checks": {
+      "types": "./plugin/date-checks.d.ts",
+      "import": "./plugin/date-checks.mjs",
+      "require": "./plugin/date-checks.js"
+    },
+    "./plugin/number-checks": {
+      "types": "./plugin/number-checks.d.ts",
+      "import": "./plugin/number-checks.mjs",
+      "require": "./plugin/number-checks.js"
+    },
+    "./plugin/set-checks": {
+      "types": "./plugin/set-checks.d.ts",
+      "import": "./plugin/set-checks.mjs",
+      "require": "./plugin/set-checks.js"
+    },
+    "./plugin/shape-helpers": {
+      "types": "./plugin/shape-helpers.d.ts",
+      "import": "./plugin/shape-helpers.mjs",
+      "require": "./plugin/shape-helpers.js"
+    },
+    "./plugin/string-checks": {
+      "types": "./plugin/string-checks.d.ts",
+      "import": "./plugin/string-checks.mjs",
+      "require": "./plugin/string-checks.js"
     },
     "./package.json": "./package.json"
   },
