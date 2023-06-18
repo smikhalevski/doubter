@@ -19,7 +19,7 @@ declare module '../core' {
      * The minimum array length, or `undefined` if there's no minimum length.
      *
      * @group Plugin Properties
-     * @plugin [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_array_checks.html)
+     * @plugin {@link doubter/plugin/array-checks!}
      */
     readonly minLength: number | undefined;
 
@@ -27,7 +27,7 @@ declare module '../core' {
      * The maximum array length, or `undefined` if there's no maximum length.
      *
      * @group Plugin Properties
-     * @plugin [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_array_checks.html)
+     * @plugin {@link doubter/plugin/array-checks!}
      */
     readonly maxLength: number | undefined;
 
@@ -38,7 +38,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_array_checks.html)
+     * @plugin {@link doubter/plugin/array-checks!}
      */
     length(length: number, options?: ConstraintOptions | Message): this;
 
@@ -49,7 +49,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_array_checks.html)
+     * @plugin {@link doubter/plugin/array-checks!}
      */
     min(length: number, options?: ConstraintOptions | Message): this;
 
@@ -60,7 +60,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_array_checks.html)
+     * @plugin {@link doubter/plugin/array-checks!}
      */
     max(length: number, options?: ConstraintOptions | Message): this;
 
@@ -70,7 +70,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_array_checks.html)
+     * @plugin {@link doubter/plugin/array-checks!}
      */
     nonEmpty(options?: ConstraintOptions | Message): this;
 
@@ -81,7 +81,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin [doubter/plugin/array-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_array_checks.html)
+     * @plugin {@link doubter/plugin/array-checks!}
      */
     includes(shape: AnyShape, options?: ConstraintOptions | Message): this;
   }

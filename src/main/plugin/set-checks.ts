@@ -11,7 +11,7 @@ declare module '../core' {
      * The minimum set size, or `undefined` if there's no minimum size.
      *
      * @group Plugin Properties
-     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @plugin {@link doubter/plugin/set-checks!}
      */
     readonly minSize: number | undefined;
 
@@ -19,7 +19,7 @@ declare module '../core' {
      * The maximum set size, or `undefined` if there's no maximum size.
      *
      * @group Plugin Properties
-     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @plugin {@link doubter/plugin/set-checks!}
      */
     readonly maxSize: number | undefined;
 
@@ -30,7 +30,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @plugin {@link doubter/plugin/set-checks!}
      */
     size(size: number, options?: ConstraintOptions | Message): this;
 
@@ -41,7 +41,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @plugin {@link doubter/plugin/set-checks!}
      */
     min(size: number, options?: ConstraintOptions | Message): this;
 
@@ -52,7 +52,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @plugin {@link doubter/plugin/set-checks!}
      */
     max(size: number, options?: ConstraintOptions | Message): this;
   }
