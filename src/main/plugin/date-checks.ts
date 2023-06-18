@@ -1,4 +1,12 @@
 /**
+ * The plugin that enhances {@linkcode doubter/core!DateShape} with additional checks.
+ *
+ * ```ts
+ * import dateChecks from 'doubter/plugin/date-checks';
+ *
+ * dateChecks();
+ * ```
+ *
  * @module doubter/plugin/date-checks
  */
 
@@ -88,6 +96,9 @@ declare module '../core' {
   }
 }
 
+/**
+ * Enhances {@linkcode doubter/core!DateShape} with additional checks.
+ */
 export default function () {
   const prototype = DateShape.prototype;
 

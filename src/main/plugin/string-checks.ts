@@ -1,4 +1,12 @@
 /**
+ * The plugin that enhances {@linkcode doubter/core!StringShape} with additional checks.
+ *
+ * ```ts
+ * import stringChecks from 'doubter/plugin/string-checks';
+ *
+ * stringChecks();
+ * ```
+ *
  * @module doubter/plugin/string-checks
  */
 
@@ -85,6 +93,9 @@ declare module '../core' {
   }
 }
 
+/**
+ * Enhances {@linkcode doubter/core!StringShape} with additional checks.
+ */
 export default function () {
   const prototype = StringShape.prototype;
 

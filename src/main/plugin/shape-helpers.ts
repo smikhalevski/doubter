@@ -1,4 +1,12 @@
 /**
+ * The plugin that enhances {@linkcode doubter/core!Shape} with additional members.
+ *
+ * ```ts
+ * import shapeHelpers from 'doubter/plugin/shape-helpers';
+ *
+ * shapeHelpers();
+ * ```
+ *
  * @module doubter/plugin/shape-helpers
  */
 
@@ -32,6 +40,9 @@ declare module '../core' {
   }
 }
 
+/**
+ * Enhances {@linkcode doubter/core!Shape} with additional members.
+ */
 export default function () {
   Object.defineProperties(Shape.prototype, {
     isNullable: {

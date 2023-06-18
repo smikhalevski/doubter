@@ -1,4 +1,12 @@
 /**
+ * The plugin that enhances {@linkcode doubter/core!BigIntShape} with additional checks.
+ *
+ * ```ts
+ * import bigintChecks from 'doubter/plugin/bigint-checks';
+ *
+ * bigintChecks();
+ * ```
+ *
  * @module doubter/plugin/bigint-checks
  */
 
@@ -88,6 +96,9 @@ declare module '../core' {
   }
 }
 
+/**
+ * Enhances {@linkcode doubter/core!BigIntShape} with additional checks.
+ */
 export default function () {
   const prototype = BigIntShape.prototype;
 

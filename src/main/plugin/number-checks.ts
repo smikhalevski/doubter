@@ -1,4 +1,12 @@
 /**
+ * The plugin that enhances {@linkcode doubter/core!NumberShape} with additional checks.
+ *
+ * ```ts
+ * import numberChecks from 'doubter/plugin/number-checks';
+ *
+ * numberChecks();
+ * ```
+ *
  * @module doubter/plugin/number-checks
  */
 
@@ -214,6 +222,9 @@ declare module '../core' {
   }
 }
 
+/**
+ * Enhances {@linkcode doubter/core!NumberShape} with additional checks.
+ */
 export default function () {
   const prototype = NumberShape.prototype;
 

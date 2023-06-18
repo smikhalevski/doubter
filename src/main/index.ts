@@ -1,4 +1,10 @@
 /**
+ * The module with the core Doubter functionality.
+ *
+ * ```ts
+ * import * as d from 'doubter/core';
+ * ```
+ *
  * @module doubter/core
  */
 

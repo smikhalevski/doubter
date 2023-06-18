@@ -1,4 +1,12 @@
 /**
+ * The plugin that enhances {@linkcode doubter/core!SetShape} with additional checks.
+ *
+ * ```ts
+ * import setChecks from 'doubter/plugin/set-checks';
+ *
+ * setChecks();
+ * ```
+ *
  * @module doubter/plugin/set-checks
  */
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
@@ -58,6 +66,9 @@ declare module '../core' {
   }
 }
 
+/**
+ * Enhances {@linkcode doubter/core!SetShape} with additional checks.
+ */
 export default function () {
   const prototype = SetShape.prototype;
 

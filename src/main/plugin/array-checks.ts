@@ -1,4 +1,12 @@
 /**
+ * The plugin that enhances {@linkcode doubter/core!ArrayShape} with additional checks.
+ *
+ * ```ts
+ * import arrayChecks from 'doubter/plugin/array-checks';
+ *
+ * arrayChecks();
+ * ```
+ *
  * @module doubter/plugin/array-checks
  */
 
@@ -87,6 +95,9 @@ declare module '../core' {
   }
 }
 
+/**
+ * Enhances {@linkcode doubter/core!ArrayShape} with additional checks.
+ */
 export default function () {
   const prototype = ArrayShape.prototype;
 
