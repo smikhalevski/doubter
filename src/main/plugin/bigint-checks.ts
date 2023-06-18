@@ -11,16 +11,16 @@ declare module '../core' {
     /**
      * The inclusive minimum value set via {@linkcode min}, or `undefined` if there's no such value.
      *
-     * @group From doubter/plugin/bigint-checks
-     * @requires [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
      */
     readonly minValue: bigint | undefined;
 
     /**
      * The inclusive maximum value set via {@linkcode max}, or `undefined` if there's no such value.
      *
-     * @group From doubter/plugin/bigint-checks
-     * @requires [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
      */
     readonly maxValue: bigint | undefined;
 
@@ -29,8 +29,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/bigint-checks
-     * @requires [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
      */
     positive(options?: ConstraintOptions | Message): this;
 
@@ -39,8 +39,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/bigint-checks
-     * @requires [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
      */
     negative(options?: ConstraintOptions | Message): this;
 
@@ -49,8 +49,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/bigint-checks
-     * @requires [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
      */
     nonPositive(options?: ConstraintOptions | Message): this;
 
@@ -59,8 +59,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/bigint-checks
-     * @requires [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
      */
     nonNegative(options?: ConstraintOptions | Message): this;
 
@@ -70,8 +70,8 @@ declare module '../core' {
      * @param value The inclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/bigint-checks
-     * @requires [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
      */
     min(value: bigint | number, options?: ConstraintOptions | Message): this;
 
@@ -81,8 +81,8 @@ declare module '../core' {
      * @param value The inclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/bigint-checks
-     * @requires [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/bigint-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_bigint_checks.html)
      */
     max(value: bigint | number, options?: ConstraintOptions | Message): this;
   }

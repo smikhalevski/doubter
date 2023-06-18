@@ -9,24 +9,24 @@ declare module '../core' {
     /**
      * `true` if shape accepts `null` input values, or `false` otherwise.
      *
-     * @group From doubter/plugin/shape-helpers
-     * @requires [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter/modules/doubter_plugin_shape_helpers.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter/modules/doubter_plugin_shape_helpers.html)
      */
     readonly isNullable: boolean;
 
     /**
      * `true` if shape accepts `undefined` input values, or `false` otherwise.
      *
-     * @group From doubter/plugin/shape-helpers
-     * @requires [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter/modules/doubter_plugin_shape_helpers.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter/modules/doubter_plugin_shape_helpers.html)
      */
     readonly isOptional: boolean;
 
     /**
      * `true` if shape accepts both `null` and `undefined` input values, or `false` otherwise.
      *
-     * @group From doubter/plugin/shape-helpers
-     * @requires [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter/modules/doubter_plugin_shape_helpers.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/shape-helpers](https://github.com/smikhalevski/doubter/modules/doubter_plugin_shape_helpers.html)
      */
     readonly isNullish: boolean;
   }

@@ -22,48 +22,48 @@ declare module '../core' {
     /**
      * `true` if the shape constrains a finite number, or `false` otherwise.
      *
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     readonly isFinite: boolean;
 
     /**
      * `true` if the shape constrains an integer number, or `false` otherwise.
      *
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     readonly isInteger: boolean;
 
     /**
      * The inclusive minimum value set via {@linkcode gte} or {@linkcode min}, or `undefined` if there's no such value.
      *
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     readonly minValue: number | undefined;
 
     /**
      * The inclusive maximum value set via {@linkcode lte} or {@linkcode max}, or `undefined` if there's no such value.
      *
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     readonly maxValue: number | undefined;
 
     /**
      * The exclusive minimum value set via {@linkcode gt}, or `undefined` if there's no such value.
      *
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     readonly exclusiveMinValue: number | undefined;
 
     /**
      * The exclusive maximum value set via {@linkcode lt}, or `undefined` if there's no such value.
      *
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     readonly exclusiveMaxValue: number | undefined;
 
@@ -72,8 +72,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     positive(options?: ConstraintOptions | Message): this;
 
@@ -82,8 +82,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     negative(options?: ConstraintOptions | Message): this;
 
@@ -92,8 +92,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     nonPositive(options?: ConstraintOptions | Message): this;
 
@@ -102,8 +102,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     nonNegative(options?: ConstraintOptions | Message): this;
 
@@ -113,8 +113,8 @@ declare module '../core' {
      * @param value The exclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     gt(value: number, options?: ConstraintOptions | Message): this;
 
@@ -124,8 +124,8 @@ declare module '../core' {
      * @param value The exclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     lt(value: number, options?: ConstraintOptions | Message): this;
 
@@ -135,8 +135,8 @@ declare module '../core' {
      * @param value The inclusive minimum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     gte(value: number, options?: ConstraintOptions | Message): this;
 
@@ -146,8 +146,8 @@ declare module '../core' {
      * @param value The inclusive maximum value.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     lte(value: number, options?: ConstraintOptions | Message): this;
 
@@ -158,8 +158,8 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode gte}
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     min(value: number, options?: ConstraintOptions | Message): this;
 
@@ -170,8 +170,8 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode lte}
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     max(value: number, options?: ConstraintOptions | Message): this;
 
@@ -197,8 +197,8 @@ declare module '../core' {
      * @param value The positive number by which the input should be divisible without a remainder.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     multipleOf(value: number, options?: ConstraintOptions | Message): this;
 
@@ -207,8 +207,8 @@ declare module '../core' {
      *
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/number-checks
-     * @requires [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/number-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_number_checks.html)
      */
     safe(options?: ConstraintOptions | Message): this;
   }

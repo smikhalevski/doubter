@@ -10,16 +10,16 @@ declare module '../core' {
     /**
      * The minimum set size, or `undefined` if there's no minimum size.
      *
-     * @group From doubter/plugin/set-checks
-     * @requires [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
      */
     readonly minSize: number | undefined;
 
     /**
      * The maximum set size, or `undefined` if there's no maximum size.
      *
-     * @group From doubter/plugin/set-checks
-     * @requires [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @group Plugin Properties
+     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
      */
     readonly maxSize: number | undefined;
 
@@ -29,8 +29,8 @@ declare module '../core' {
      * @param size The minimum set size.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/set-checks
-     * @requires [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
      */
     size(size: number, options?: ConstraintOptions | Message): this;
 
@@ -40,8 +40,8 @@ declare module '../core' {
      * @param size The minimum set size.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/set-checks
-     * @requires [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
      */
     min(size: number, options?: ConstraintOptions | Message): this;
 
@@ -51,8 +51,8 @@ declare module '../core' {
      * @param size The maximum set size.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
-     * @group From doubter/plugin/set-checks
-     * @requires [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
+     * @group Plugin Methods
+     * @plugin [doubter/plugin/set-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_set_checks.html)
      */
     max(size: number, options?: ConstraintOptions | Message): this;
   }
