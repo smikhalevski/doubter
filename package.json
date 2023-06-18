@@ -87,6 +87,7 @@
   "homepage": "https://github.com/smikhalevski/doubter#readme",
   "devDependencies": {
     "@badrap/valita": "^0.2.1",
+    "@rollup/plugin-alias": "^5.0.0",
     "@rollup/plugin-node-resolve": "^15.1.0",
     "@types/jest": "^29.5.2",
     "@types/qs": "^6.9.7",
