@@ -6,7 +6,7 @@ const path = require('path');
 module.exports = fs
   .readdirSync('./src/main/plugin')
   .map(name => 'plugin/' + path.basename(name, '.ts'))
-  .concat('index', 'core', 'helpers')
+  .concat('index', 'core', 'utils')
   .flatMap(name => [
     {
       input: './gen/' + name + '.js',
@@ -15,12 +15,12 @@ module.exports = fs
         { file: './lib/' + name + '.mjs', format: 'es' },
       ],
       plugins: [nodeResolve()],
-      external: /\.\/(plugin|core|helpers)/,
+      external: /\.\/(plugin|core|utils)/,
     },
     {
       input: './gen/' + name + '.d.ts',
       output: { file: './lib/' + name + '.d.ts', format: 'es' },
       plugins: [dts.default()],
-      external: /\.\/(plugin|core|helpers)/,
+      external: /\.\/(plugin|core|utils)/,
     },
   ]);

@@ -1,6 +1,6 @@
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
 import { AnyShape, ConstraintOptions, Message, SetShape } from '../core';
-import { addCheck, createIssueFactory } from '../helpers';
+import { addCheck, createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {

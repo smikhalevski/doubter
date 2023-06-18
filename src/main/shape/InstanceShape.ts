@@ -1,8 +1,8 @@
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
-import { createIssueFactory } from '../helpers';
+import { isEqualOrSubclass } from '../internal';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { isEqualOrSubclass } from '../utils';
+import { createIssueFactory } from '../utils';
 import { Result, Shape } from './Shape';
 
 /**

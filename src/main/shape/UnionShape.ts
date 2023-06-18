@@ -1,7 +1,4 @@
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
-import { createIssueFactory } from '../helpers';
-import { getTypeOf, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   copyUnsafeChecks,
@@ -13,7 +10,10 @@ import {
   isType,
   toDeepPartialShape,
   unique,
-} from '../utils';
+} from '../internal';
+import { getTypeOf, TYPE_UNKNOWN } from '../Type';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
 

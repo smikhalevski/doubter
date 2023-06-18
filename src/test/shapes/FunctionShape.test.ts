@@ -11,8 +11,8 @@ import {
   ValidationError,
 } from '../../main';
 import { CODE_TUPLE, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { nextNonce } from '../../main/internal';
 import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
-import { nextNonce } from '../../main/utils';
 
 describe('FunctionShape', () => {
   class AsyncShape extends Shape {

@@ -1,6 +1,6 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
+import { captureIssues, copyUnsafeChecks, identity, isArray, ok, toDeepPartialShape } from '../internal';
 import { ApplyOptions, Literal } from '../types';
-import { captureIssues, copyUnsafeChecks, identity, isArray, ok, toDeepPartialShape } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
 
 /**

@@ -1,7 +1,4 @@
 import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
-import { createIssueFactory } from '../helpers';
-import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   concatIssues,
@@ -14,7 +11,10 @@ import {
   ok,
   setObjectProperty,
   toDeepPartialShape,
-} from '../utils';
+} from '../internal';
+import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, NEVER, OUTPUT, Result, Shape } from './Shape';
 
 // prettier-ignore

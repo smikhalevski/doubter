@@ -1,4 +1,4 @@
-import { getBit, toggleBit } from '../../main/utils';
+import { getBit, toggleBit } from '../../main/internal';
 
 describe('toggleBit', () => {
   test('sets bit', () => {

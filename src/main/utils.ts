@@ -1,5 +1,5 @@
 import { ApplyOptions, CheckCallback, ConstraintOptions, Issue, Message, Output, Shape } from './core';
-import { isObjectLike } from './utils';
+import { isObjectLike } from './internal';
 
 /**
  * The shortcut to add built-in checks to shapes.

@@ -7,7 +7,7 @@ import {
   MESSAGE_STRING_REGEX,
 } from '../constants';
 import { ConstraintOptions, Message, StringShape } from '../core';
-import { addCheck, createIssueFactory } from '../helpers';
+import { addCheck, createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface StringShape {

@@ -7,8 +7,8 @@ import {
   MESSAGE_OBJECT_TYPE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
+import { nextNonce } from '../../main/internal';
 import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
-import { nextNonce } from '../../main/utils';
 
 describe('ObjectShape', () => {
   class AsyncShape extends Shape {

@@ -1,7 +1,4 @@
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE } from '../constants';
-import { createIssueFactory } from '../helpers';
-import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   cloneDictHead,
@@ -13,7 +10,10 @@ import {
   setObjectProperty,
   toDeepPartialShape,
   unshiftIssuesPath,
-} from '../utils';
+} from '../internal';
+import { TYPE_OBJECT } from '../Type';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result, Shape } from './Shape';
 
 export type InferRecord<

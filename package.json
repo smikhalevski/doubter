@@ -16,10 +16,10 @@
       "import": "./core.mjs",
       "require": "./core.js"
     },
-    "./helpers": {
-      "types": "./helpers.d.ts",
-      "import": "./helpers.mjs",
-      "require": "./helpers.js"
+    "./utils": {
+      "types": "./utils.d.ts",
+      "import": "./utils.mjs",
+      "require": "./utils.js"
     },
     "./plugin/array-checks": {
       "types": "./plugin/array-checks.d.ts",

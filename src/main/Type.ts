@@ -1,4 +1,4 @@
-import { isArray } from './utils/lang';
+import { isArray } from './internal/lang';
 
 /**
  * The name of the value type.

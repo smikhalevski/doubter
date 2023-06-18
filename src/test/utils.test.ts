@@ -1,4 +1,4 @@
-import { createIssueFactory } from '../main/helpers';
+import { createIssueFactory } from '../main/utils';
 
 describe('createIssueFactory', () => {
   describe('known param', () => {

@@ -1,5 +1,5 @@
 import { Issue, Shape, ValidationError } from '../../main';
-import { copyUnsafeChecks, createApplyChecksCallback } from '../../main/utils';
+import { copyUnsafeChecks, createApplyChecksCallback } from '../../main/internal';
 
 describe('copyUnsafeChecks', () => {
   test('returns the exact copy of the target shape is there are no unsafe check on the source shape', () => {

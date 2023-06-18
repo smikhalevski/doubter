@@ -1,8 +1,8 @@
 import { CODE_TYPE, MESSAGE_STRING_TYPE } from '../constants';
-import { createIssueFactory } from '../helpers';
+import { getCanonicalValueOf, isArray, isValidDate, ok } from '../internal';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { getCanonicalValueOf, isArray, isValidDate, ok } from '../utils';
+import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 

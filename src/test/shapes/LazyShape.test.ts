@@ -10,8 +10,8 @@ import {
   ValidationError,
 } from '../../main';
 import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
+import { identity, nextNonce } from '../../main/internal';
 import { TYPE_OBJECT } from '../../main/Type';
-import { identity, nextNonce } from '../../main/utils';
 
 describe('LazyShape', () => {
   class AsyncShape extends Shape {

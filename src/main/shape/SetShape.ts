@@ -1,7 +1,4 @@
 import { CODE_TYPE, MESSAGE_SET_TYPE } from '../constants';
-import { createIssueFactory } from '../helpers';
-import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   concatIssues,
   copyUnsafeChecks,
@@ -12,7 +9,10 @@ import {
   toArrayIndex,
   toDeepPartialShape,
   unshiftIssuesPath,
-} from '../utils';
+} from '../internal';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 

@@ -1,4 +1,4 @@
-import { deleteAt, toArrayIndex } from '../../main/utils';
+import { deleteAt, toArrayIndex } from '../../main/internal';
 
 describe('deleteAt', () => {
   test('deletes an element at index', () => {

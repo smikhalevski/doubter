@@ -1,8 +1,8 @@
 import { CODE_TYPE, ERROR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../constants';
-import { createIssueFactory } from '../helpers';
+import { applyShape, copyChecks, getErrorMessage, isArray, nextNonce, ok, unshiftIssuesPath } from '../internal';
 import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
-import { applyShape, copyChecks, getErrorMessage, isArray, nextNonce, ok, unshiftIssuesPath } from '../utils';
+import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';
 

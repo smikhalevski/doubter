@@ -1,6 +1,6 @@
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
 import { ConstraintOptions, DateShape, Message, Shape } from '../core';
-import { addCheck, createIssueFactory } from '../helpers';
+import { addCheck, createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface DateShape {

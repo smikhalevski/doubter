@@ -25,9 +25,9 @@ import {
   MESSAGE_PREDICATE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
+import { nextNonce } from '../../main/internal';
 import { Result } from '../../main/shape/Shape';
 import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
-import { nextNonce } from '../../main/utils';
 
 class AsyncShape extends Shape {
   protected _isAsync(): boolean {

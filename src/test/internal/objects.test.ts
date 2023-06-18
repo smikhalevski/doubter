@@ -1,4 +1,4 @@
-import { cloneDict, cloneDictHead, cloneDictKeys, setObjectProperty } from '../../main/utils';
+import { cloneDict, cloneDictHead, cloneDictKeys, setObjectProperty } from '../../main/internal';
 
 describe('setObjectProperty', () => {
   test('sets object value', () => {

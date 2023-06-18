@@ -1,8 +1,8 @@
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
-import { createIssueFactory } from '../helpers';
+import { getCanonicalValueOf, isArray, ok, ReadonlyDict, unique } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
-import { getCanonicalValueOf, isArray, ok, ReadonlyDict, unique } from '../utils';
+import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
 

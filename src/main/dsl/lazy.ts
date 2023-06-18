@@ -1,6 +1,6 @@
+import { identity } from '../internal';
 import { AnyShape, LazyShape } from '../shape';
 import { INPUT } from '../shape/Shape';
-import { identity } from '../utils';
 
 /**
  * Creates the shape that resolves the underlying shape on-demand.

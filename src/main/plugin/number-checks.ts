@@ -11,7 +11,7 @@ import {
   MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { ConstraintOptions, Message, NumberShape } from '../core';
-import { addCheck, createIssueFactory } from '../helpers';
+import { addCheck, createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface NumberShape {

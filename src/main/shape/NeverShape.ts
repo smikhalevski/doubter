@@ -1,6 +1,6 @@
 import { CODE_NEVER, MESSAGE_NEVER } from '../constants';
-import { createIssueFactory } from '../helpers';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { createIssueFactory } from '../utils';
 import { Result, Shape } from './Shape';
 
 /**

@@ -7,7 +7,7 @@ import {
   MESSAGE_ARRAY_MIN,
 } from '../constants';
 import { AnyShape, ArrayShape, ConstraintOptions, Message } from '../core';
-import { addCheck, createIssueFactory } from '../helpers';
+import { addCheck, createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {

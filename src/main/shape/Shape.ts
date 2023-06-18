@@ -7,22 +7,6 @@ import {
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
 } from '../constants';
-import { createIssueFactory } from '../helpers';
-import { getTypeOf, TYPE_UNKNOWN } from '../Type';
-import {
-  ApplyOptions,
-  Check,
-  CheckCallback,
-  CheckOptions,
-  ConstraintOptions,
-  Err,
-  Issue,
-  Literal,
-  Message,
-  Ok,
-  ParseOptions,
-  RefineOptions,
-} from '../types';
 import {
   applyShape,
   captureIssues,
@@ -42,7 +26,23 @@ import {
   returnTrue,
   toDeepPartialShape,
   unionTypes,
-} from '../utils';
+} from '../internal';
+import { getTypeOf, TYPE_UNKNOWN } from '../Type';
+import {
+  ApplyOptions,
+  Check,
+  CheckCallback,
+  CheckOptions,
+  ConstraintOptions,
+  Err,
+  Issue,
+  Literal,
+  Message,
+  Ok,
+  ParseOptions,
+  RefineOptions,
+} from '../types';
+import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 /**

@@ -5,7 +5,7 @@ import {
   isIterableObject,
   isPlainObject,
   isValidDate,
-} from '../../main/utils';
+} from '../../main/internal';
 
 describe('isEqual', () => {
   test('checks equality', () => {

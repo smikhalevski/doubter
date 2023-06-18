@@ -1,7 +1,4 @@
 import { CODE_OBJECT_UNKNOWN_KEYS, CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_UNKNOWN_KEYS } from '../constants';
-import { createIssueFactory } from '../helpers';
-import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import {
   applyShape,
   Bitmask,
@@ -21,7 +18,10 @@ import {
   toDeepPartialShape,
   toggleBit,
   unshiftIssuesPath,
-} from '../utils';
+} from '../internal';
+import { TYPE_OBJECT } from '../Type';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
 import {
   AllowLiteralShape,

@@ -6,8 +6,8 @@ import {
   MESSAGE_NUMBER_TYPE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
+import { nextNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
-import { nextNonce } from '../../main/utils';
 
 describe('ArrayShape', () => {
   class AsyncShape extends Shape {
