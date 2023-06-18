@@ -5,6 +5,7 @@
   "excludeExternals": true,
   "excludeInternal": true,
   "disableSources": true,
+  "hideGenerator": true,
   "readme": "none",
   "groupOrder": [
     "Functions",
