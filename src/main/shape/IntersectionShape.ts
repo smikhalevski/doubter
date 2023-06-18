@@ -18,10 +18,10 @@ import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, NEVER, OUTPUT, Result, Shape } from './Shape';
 
 // prettier-ignore
-export type ToIntersection<U extends AnyShape> =
+type ToIntersection<U extends AnyShape> =
   (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
 
-export type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = IntersectionShape<{
+type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = IntersectionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;
 }>;
 

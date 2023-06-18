@@ -16,7 +16,7 @@ import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result, Shape } from './Shape';
 
-export type InferRecord<
+type InferRecord<
   KeyShape extends Shape<string, PropertyKey> | null,
   ValueShape extends AnyShape,
   Leg extends INPUT | OUTPUT

@@ -20,9 +20,9 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result,
 /**
  * Returns the array of shapes that are applicable to the input.
  */
-export type Lookup = (input: any) => readonly AnyShape[];
+type Lookup = (input: any) => readonly AnyShape[];
 
-export type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
+type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;
 }>;
 

@@ -18,7 +18,7 @@ import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
-export type InferArray<
+type InferArray<
   HeadShapes extends readonly AnyShape[],
   RestShape extends AnyShape | null,
   Leg extends INPUT | OUTPUT
@@ -27,10 +27,7 @@ export type InferArray<
   ...(RestShape extends null | undefined ? [] : RestShape extends AnyShape ? RestShape[Leg][] : [])
 ];
 
-export type DeepPartialArrayShape<
-  HeadShapes extends readonly AnyShape[],
-  RestShape extends AnyShape | null
-> = ArrayShape<
+type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> = ArrayShape<
   { [K in keyof HeadShapes]: OptionalDeepPartialShape<HeadShapes[K]> },
   RestShape extends null | undefined ? null : RestShape extends AnyShape ? OptionalDeepPartialShape<RestShape> : null
 >;
