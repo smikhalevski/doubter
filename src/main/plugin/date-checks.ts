@@ -1,3 +1,7 @@
+/**
+ * @module doubter/plugin/date-checks
+ */
+
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
 import { ConstraintOptions, DateShape, Message, Shape } from '../core';
 import { addCheck, createIssueFactory } from '../utils';
@@ -8,7 +12,7 @@ declare module '../core' {
      * The inclusive minimum date, or `undefined` if there's no minimum date.
      *
      * @group From doubter/plugin/date-checks
-     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_date_checks.html)
      */
     readonly minDate: Date | undefined;
 
@@ -16,7 +20,7 @@ declare module '../core' {
      * The inclusive maximum date, or `undefined` if there's no maximum date.
      *
      * @group From doubter/plugin/date-checks
-     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_date_checks.html)
      */
     readonly maxDate: Date | undefined;
 
@@ -27,7 +31,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group From doubter/plugin/date-checks
-     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_date_checks.html)
      */
     min(date: Date | number | string, options?: ConstraintOptions | Message): this;
 
@@ -38,7 +42,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group From doubter/plugin/date-checks
-     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_date_checks.html)
      */
     max(date: Date | number | string, options?: ConstraintOptions | Message): this;
 
@@ -50,7 +54,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode min}
      * @group From doubter/plugin/date-checks
-     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_date_checks.html)
      */
     after(date: Date | number | string, options?: ConstraintOptions | Message): this;
 
@@ -62,7 +66,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode max}
      * @group From doubter/plugin/date-checks
-     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_date_checks.html)
      */
     before(date: Date | number | string, options?: ConstraintOptions | Message): this;
 
@@ -70,7 +74,7 @@ declare module '../core' {
      * Transforms date to an ISO string.
      *
      * @group From doubter/plugin/date-checks
-     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_date_checks.html)
      */
     iso(): Shape<Date, string>;
 
@@ -78,7 +82,7 @@ declare module '../core' {
      * Transforms date to a timestamp integer number.
      *
      * @group From doubter/plugin/date-checks
-     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/date-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_date_checks.html)
      */
     timestamp(): Shape<Date, number>;
   }

@@ -1,3 +1,7 @@
+/**
+ * @module doubter/plugin/string-checks
+ */
+
 import {
   CODE_STRING_MAX,
   CODE_STRING_MIN,
@@ -15,7 +19,7 @@ declare module '../core' {
      * The minimum length, or `undefined` if there's no minimum length.
      *
      * @group From doubter/plugin/string-checks
-     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_string_checks.html)
      */
     readonly minLength: number | undefined;
 
@@ -23,7 +27,7 @@ declare module '../core' {
      * The maximum length, or `undefined` if there's no maximum length.
      *
      * @group From doubter/plugin/string-checks
-     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_string_checks.html)
      */
     readonly maxLength: number | undefined;
 
@@ -31,7 +35,7 @@ declare module '../core' {
      * The pattern that the string should match set via {@linkcode regex}, or `undefined` if there's no pattern.
      *
      * @group From doubter/plugin/string-checks
-     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_string_checks.html)
      */
     readonly pattern: RegExp | undefined;
 
@@ -42,7 +46,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group From doubter/plugin/string-checks
-     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_string_checks.html)
      */
     length(length: number, options?: ConstraintOptions | Message): this;
 
@@ -53,7 +57,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group From doubter/plugin/string-checks
-     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_string_checks.html)
      */
     min(length: number, options?: ConstraintOptions | Message): this;
 
@@ -64,7 +68,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group From doubter/plugin/string-checks
-     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_string_checks.html)
      */
     max(length: number, options?: ConstraintOptions | Message): this;
 
@@ -75,7 +79,7 @@ declare module '../core' {
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group From doubter/plugin/string-checks
-     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter#plugins)
+     * @requires [doubter/plugin/string-checks](https://github.com/smikhalevski/doubter/modules/doubter_plugin_string_checks.html)
      */
     regex(re: RegExp, options?: ConstraintOptions | Message): this;
   }
