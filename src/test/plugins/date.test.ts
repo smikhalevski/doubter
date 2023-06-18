@@ -7,23 +7,23 @@ const nextDate = new Date(currDate.getTime() + 1);
 
 describe('minimum', () => {
   test('undefined is no minimum date', () => {
-    expect(new DateShape().minDate).toBeUndefined();
+    expect(new DateShape().minValue).toBeUndefined();
   });
 
   test('clones the date', () => {
-    expect(new DateShape().min(currDate).minDate).not.toBe(currDate);
-    expect(new DateShape().min(currDate).minDate).toEqual(currDate);
+    expect(new DateShape().min(currDate).minValue).not.toBe(currDate);
+    expect(new DateShape().min(currDate).minValue).toEqual(currDate);
   });
 });
 
 describe('maximum', () => {
   test('undefined is no maximum date', () => {
-    expect(new DateShape().maxDate).toBeUndefined();
+    expect(new DateShape().maxValue).toBeUndefined();
   });
 
   test('clones the date', () => {
-    expect(new DateShape().max(currDate).maxDate).not.toBe(currDate);
-    expect(new DateShape().max(currDate).maxDate).toEqual(currDate);
+    expect(new DateShape().max(currDate).maxValue).not.toBe(currDate);
+    expect(new DateShape().max(currDate).maxValue).toEqual(currDate);
   });
 });
 

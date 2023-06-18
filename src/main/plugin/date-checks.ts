@@ -22,7 +22,7 @@ declare module '../core' {
      * @group Plugin Properties
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    readonly minDate: Date | undefined;
+    readonly minValue: Date | undefined;
 
     /**
      * The inclusive maximum date, or `undefined` if there's no maximum date.
@@ -30,7 +30,7 @@ declare module '../core' {
      * @group Plugin Properties
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    readonly maxDate: Date | undefined;
+    readonly maxValue: Date | undefined;
 
     /**
      * Constrains the input date to be greater than or equal to another date.
@@ -103,14 +103,14 @@ export default function () {
   const prototype = DateShape.prototype;
 
   Object.defineProperties(prototype, {
-    minDate: {
+    minValue: {
       configurable: true,
       get(this: DateShape) {
         return this.getCheck(CODE_DATE_MIN)?.param;
       },
     },
 
-    maxDate: {
+    maxValue: {
       configurable: true,
       get(this: DateShape) {
         return this.getCheck(CODE_DATE_MAX)?.param;
