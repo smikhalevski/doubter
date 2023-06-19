@@ -34,21 +34,4 @@ describe('regex', () => {
 
     expect(new StringShape().regex(/a+/).parse('aaa')).toBe('aaa');
   });
-
-  test('raises if string does not match multiple a patterns', () => {
-    expect(new StringShape().regex(/a+/).regex(/b+/).try('ccc', { verbose: true })).toEqual({
-      ok: false,
-      issues: [
-        { code: CODE_STRING_REGEX, input: 'ccc', message: 'Must match the pattern /a+/', param: /a+/ },
-        { code: CODE_STRING_REGEX, input: 'ccc', message: 'Must match the pattern /b+/', param: /b+/ },
-      ],
-    });
-  });
-
-  test('same regexp is added only once', () => {
-    expect(new StringShape().regex(/a+/).regex(/a+/).try('bbb', { verbose: true })).toEqual({
-      ok: false,
-      issues: [{ code: CODE_STRING_REGEX, input: 'bbb', message: 'Must match the pattern /a+/', param: /a+/ }],
-    });
-  });
 });

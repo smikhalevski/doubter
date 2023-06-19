@@ -1,12 +1,5 @@
-import { ApplyOptions, CheckCallback, ConstraintOptions, Issue, Message, Output, Shape } from './core';
+import { ApplyOptions, ConstraintOptions, Issue, Message } from './core';
 import { isObjectLike } from './internal';
-
-/**
- * The shortcut to add built-in checks to shapes.
- */
-export function addCheck<S extends Shape, P>(shape: S, key: string, param: P, cb: CheckCallback<Output<S>, P>): S {
-  return shape.check(cb, { key, param, unsafe: true });
-}
 
 /**
  * Returns a function that creates a new array with a single issue.

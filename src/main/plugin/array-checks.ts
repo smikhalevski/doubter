@@ -19,7 +19,7 @@ import {
   MESSAGE_ARRAY_MIN,
 } from '../constants';
 import { AnyShape, ArrayShape, ConstraintOptions, Message } from '../core';
-import { addCheck, createIssueFactory } from '../utils';
+import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
@@ -135,21 +135,27 @@ function length(
 function min(this: ArrayShape<any, any>, length: number, options?: ConstraintOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-  return addCheck(this, CODE_ARRAY_MIN, length, (input, param, options) => {
-    if (input.length < param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input.length < param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_ARRAY_MIN, param: length, unsafe: true }
+  );
 }
 
 function max(this: ArrayShape<any, any>, length: number, options?: ConstraintOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-  return addCheck(this, CODE_ARRAY_MAX, length, (input, param, options) => {
-    if (input.length > param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input.length > param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_ARRAY_MAX, param: length, unsafe: true }
+  );
 }
 
 function nonEmpty(this: ArrayShape<any, any>, options?: ConstraintOptions | Message): ArrayShape<any, any> {
@@ -163,12 +169,15 @@ function includes(
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, MESSAGE_ARRAY_INCLUDES, options, undefined);
 
-  return addCheck(this, CODE_ARRAY_INCLUDES, length, (input, param, options) => {
-    for (const value of input) {
-      if (shape.try(value, options).ok) {
-        return;
+  return this.check(
+    (input, param, options) => {
+      for (const value of input) {
+        if (shape.try(value, options).ok) {
+          return;
+        }
       }
-    }
-    return issueFactory(input, options);
-  });
+      return issueFactory(input, options);
+    },
+    { key: CODE_ARRAY_INCLUDES, param: length, unsafe: true }
+  );
 }

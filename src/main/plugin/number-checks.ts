@@ -23,7 +23,7 @@ import {
   MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { ConstraintOptions, Message, NumberShape } from '../core';
-import { addCheck, createIssueFactory } from '../utils';
+import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface NumberShape {
@@ -305,51 +305,66 @@ function nonNegative(this: NumberShape, options?: ConstraintOptions | Message): 
 function gt(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-  return addCheck(this, CODE_NUMBER_GT, value, (input, param, options) => {
-    if (input <= param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input <= param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_NUMBER_GT, param: value, unsafe: true }
+  );
 }
 
 function lt(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-  return addCheck(this, CODE_NUMBER_LT, value, (input, param, options) => {
-    if (input >= param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input >= param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_NUMBER_LT, param: value, unsafe: true }
+  );
 }
 
 function gte(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-  return addCheck(this, CODE_NUMBER_GTE, value, (input, param, options) => {
-    if (input < param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input < param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_NUMBER_GTE, param: value, unsafe: true }
+  );
 }
 
 function lte(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-  return addCheck(this, CODE_NUMBER_LTE, value, (input, param, options) => {
-    if (input > param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input > param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_NUMBER_LTE, param: value, unsafe: true }
+  );
 }
 
 function multipleOf(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
 
-  return addCheck(this, CODE_NUMBER_MULTIPLE_OF, value, (input, param, options) => {
-    if (input % param !== 0) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input % param !== 0) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_NUMBER_MULTIPLE_OF, param: value, unsafe: true }
+  );
 }
 
 function safe(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {

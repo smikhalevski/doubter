@@ -19,7 +19,7 @@ import {
   MESSAGE_STRING_REGEX,
 } from '../constants';
 import { ConstraintOptions, Message, StringShape } from '../core';
-import { addCheck, createIssueFactory } from '../utils';
+import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface StringShape {
@@ -135,31 +135,40 @@ function length(this: StringShape, length: number, options?: ConstraintOptions |
 function min(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-  return addCheck(this, CODE_STRING_MIN, length, (input, param, options) => {
-    if (input.length < param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input.length < param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_STRING_MIN, param: length, unsafe: true }
+  );
 }
 
 function max(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-  return addCheck(this, CODE_STRING_MAX, length, (input, param, options) => {
-    if (input.length > param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input.length > param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_STRING_MAX, param: length, unsafe: true }
+  );
 }
 
 function regex(this: StringShape, re: RegExp, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-  return addCheck(this, re.toString(), re, (input, param, options) => {
-    param.lastIndex = 0;
+  return this.check(
+    (input, param, options) => {
+      param.lastIndex = 0;
 
-    if (!param.test(input)) {
-      return issueFactory(input, options);
-    }
-  });
+      if (!param.test(input)) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_STRING_REGEX, param: re, unsafe: true }
+  );
 }

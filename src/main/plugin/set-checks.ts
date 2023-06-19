@@ -11,7 +11,7 @@
  */
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
 import { AnyShape, ConstraintOptions, Message, SetShape } from '../core';
-import { addCheck, createIssueFactory } from '../utils';
+import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {
@@ -100,19 +100,25 @@ function size(this: SetShape<any>, size: number, options?: ConstraintOptions | M
 function min(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-  return addCheck(this, CODE_SET_MIN, size, (input, param, options) => {
-    if (input.size < param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input.size < param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_SET_MIN, param: size, unsafe: true }
+  );
 }
 
 function max(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-  return addCheck(this, CODE_SET_MAX, size, (input, param, options) => {
-    if (input.size > param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input.size > param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_SET_MAX, param: size, unsafe: true }
+  );
 }

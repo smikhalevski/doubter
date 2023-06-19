@@ -12,7 +12,7 @@
 
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
 import { ConstraintOptions, DateShape, Message, Shape } from '../core';
-import { addCheck, createIssueFactory } from '../utils';
+import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface DateShape {
@@ -131,11 +131,14 @@ function min(this: DateShape, date: Date | number | string, options?: Constraint
 
   const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, date);
 
-  return addCheck(this, CODE_DATE_MIN, date, (input, param, options) => {
-    if (input.getTime() < param.getTime()) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input.getTime() < param.getTime()) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_DATE_MIN, param: date, unsafe: true }
+  );
 }
 
 function max(this: DateShape, date: Date | number | string, options?: ConstraintOptions | Message): DateShape {
@@ -143,11 +146,14 @@ function max(this: DateShape, date: Date | number | string, options?: Constraint
 
   const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, date);
 
-  return addCheck(this, CODE_DATE_MAX, date, (input, param, options) => {
-    if (input.getTime() > param.getTime()) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input.getTime() > param.getTime()) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_DATE_MAX, param: date, unsafe: true }
+  );
 }
 
 function iso(this: DateShape): Shape<Date, string> {

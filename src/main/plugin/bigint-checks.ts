@@ -12,7 +12,7 @@
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
 import { BigIntShape, ConstraintOptions, Message } from '../core';
-import { addCheck, createIssueFactory } from '../utils';
+import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface BigIntShape {
@@ -147,11 +147,14 @@ function min(this: BigIntShape, value: bigint, options?: ConstraintOptions | Mes
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, value);
 
-  return addCheck(this, CODE_BIGINT_MIN, value, (input, param, options) => {
-    if (input < param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input < param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_BIGINT_MIN, param: value, unsafe: true }
+  );
 }
 
 function max(this: BigIntShape, value: bigint, options?: ConstraintOptions | Message): BigIntShape {
@@ -159,9 +162,12 @@ function max(this: BigIntShape, value: bigint, options?: ConstraintOptions | Mes
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, value);
 
-  return addCheck(this, CODE_BIGINT_MAX, value, (input, param, options) => {
-    if (input > param) {
-      return issueFactory(input, options);
-    }
-  });
+  return this.check(
+    (input, param, options) => {
+      if (input > param) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_BIGINT_MAX, param: value, unsafe: true }
+  );
 }
