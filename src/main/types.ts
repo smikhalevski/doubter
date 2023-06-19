@@ -123,19 +123,18 @@ export interface Issue {
 }
 
 /**
- * The message callback or a string.
+ * The callback that returns a message for an issue. You can assign the {@linkcode Issue.message issue.message} property
+ * directly or return the message, so it would be assigned by Doubter.
  *
- * @param param The check param or `undefined` if there's no param.
- * @param code The issue code.
- * @param input The input value that the shape was trying to parse.
- * @param meta The metadata passed as a check option during shape declaration.
+ * @param issue The issue for which the message should be produced.
  * @param options The parsing options.
  * @returns Any value that should be used as an issue message.
  */
-export type MessageCallback = (param: any, code: any, input: any, meta: any, options: Readonly<ApplyOptions>) => any;
+export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) => any;
 
 /**
- * A callback that returns an issue message or a message string.
+ * A callback that returns an issue message or a message string. In message `%s` placeholder is replaced with the
+ * {@link CheckOptions.param issue param}.
  */
 export type Message = MessageCallback | string;
 

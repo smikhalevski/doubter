@@ -20,7 +20,11 @@ describe('createIssueFactory', () => {
 
       expect(issueFactory('xxx', {})).toEqual({ code: 'aaa', input: 'xxx', message: 222, param: 'eee' });
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', undefined, {});
+      expect(cbMock).toHaveBeenNthCalledWith(
+        1,
+        { code: 'aaa', input: 'xxx', message: 222, meta: undefined, param: 'eee', path: undefined },
+        {}
+      );
     });
 
     test('creates a factory with a string message in options', () => {
@@ -41,7 +45,11 @@ describe('createIssueFactory', () => {
 
       expect(issueFactory('xxx', {})).toEqual({ code: 'aaa', input: 'xxx', message: 222, meta: 111, param: 'eee' });
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', 111, {});
+      expect(cbMock).toHaveBeenNthCalledWith(
+        1,
+        { code: 'aaa', input: 'xxx', message: 222, meta: 111, param: 'eee', path: undefined },
+        {}
+      );
     });
   });
 
@@ -64,7 +72,11 @@ describe('createIssueFactory', () => {
 
       expect(issueFactory('xxx', {}, 'eee')).toEqual({ code: 'aaa', input: 'xxx', message: 222, param: 'eee' });
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', undefined, {});
+      expect(cbMock).toHaveBeenNthCalledWith(
+        1,
+        { code: 'aaa', input: 'xxx', message: 222, meta: undefined, param: 'eee', path: undefined },
+        {}
+      );
     });
 
     test('creates a factory with a string message in options', () => {
@@ -91,7 +103,11 @@ describe('createIssueFactory', () => {
         param: 'eee',
       });
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'eee', 'aaa', 'xxx', 111, { context: 333 });
+      expect(cbMock).toHaveBeenNthCalledWith(
+        1,
+        { code: 'aaa', input: 'xxx', message: 222, meta: 111, param: 'eee', path: undefined },
+        { context: 333 }
+      );
     });
   });
 });
