@@ -70,7 +70,7 @@ export class PromiseShape<ValueShape extends AnyShape>
       !(input instanceof Promise) &&
       (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
-      return Promise.resolve(this._typeIssueFactory(input, options));
+      return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
 
     return output.then((value: unknown) =>

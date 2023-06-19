@@ -1,5 +1,4 @@
 import { ApplyOptions, ConstraintOptions, Issue, Message } from './core';
-import { isObjectLike } from './internal';
 
 /**
  * Returns a function that creates a new array with a single issue.
@@ -15,7 +14,7 @@ export function createIssueFactory(
   defaultMessage: unknown,
   options: ConstraintOptions | Message | undefined,
   param: unknown
-): (input: unknown, options: Readonly<ApplyOptions>) => Issue[];
+): (input: unknown, options: Readonly<ApplyOptions>) => Issue;
 
 /**
  * Returns a function that creates a new array with a single issue.
@@ -29,20 +28,20 @@ export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: ConstraintOptions | Message | undefined
-): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[];
+): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue;
 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: any,
   options: ConstraintOptions | Message | undefined,
   param?: unknown
-): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[] {
+): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue {
   const paramRequired = arguments.length <= 3;
 
   let meta: unknown;
   let message = defaultMessage;
 
-  if (isObjectLike<ConstraintOptions>(options)) {
+  if (typeof options === 'object') {
     if (options.message !== undefined) {
       message = options.message;
     }
@@ -55,22 +54,37 @@ export function createIssueFactory(
 
   if (typeof message === 'function') {
     if (paramRequired) {
-      return (input, options, param) => [
-        { code, path: undefined, input, message: message(param, code, input, meta, options), param, meta },
-      ];
+      return (input, options, param) => ({
+        code,
+        path: undefined,
+        input,
+        message: message(param, code, input, meta, options),
+        param,
+        meta,
+      });
     }
 
-    return (input, options) => [
-      { code, path: undefined, input, message: message(param, code, input, meta, options), param, meta },
-    ];
+    return (input, options) => ({
+      code,
+      path: undefined,
+      input,
+      message: message(param, code, input, meta, options),
+      param,
+      meta,
+    });
   }
 
   if (typeof message === 'string') {
     if (paramRequired) {
       if (message.indexOf('%s') !== -1) {
-        return (input, options, param) => [
-          { code, path: undefined, input, message: message.replace('%s', String(param)), param, meta },
-        ];
+        return (input, options, param) => ({
+          code,
+          path: undefined,
+          input,
+          message: message.replace('%s', String(param)),
+          param,
+          meta,
+        });
       }
     } else {
       message = message.replace('%s', String(param));
@@ -78,8 +92,8 @@ export function createIssueFactory(
   }
 
   if (paramRequired) {
-    return (input, options, param) => [{ code, path: undefined, input, message, param, meta }];
+    return (input, options, param) => ({ code, path: undefined, input, message, param, meta });
   }
 
-  return input => [{ code, path: undefined, input, message, param, meta }];
+  return input => ({ code, path: undefined, input, message, param, meta });
 }

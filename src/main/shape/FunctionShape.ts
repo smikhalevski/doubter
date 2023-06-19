@@ -246,7 +246,7 @@ export class FunctionShape<
     let issues = null;
 
     if (typeof input !== 'function') {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null && (issues = _applyChecks(input, null, options)) !== null) {
       return issues;

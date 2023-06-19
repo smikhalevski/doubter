@@ -1302,7 +1302,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     nonce: number
   ): Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>> {
     if (isEqual(input, this.deniedValue)) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
   }
@@ -1313,7 +1313,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     nonce: number
   ): Promise<Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>>> {
     if (isEqual(input, this.deniedValue)) {
-      return Promise.resolve(this._typeIssueFactory(input, options));
+      return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
     return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
   }
@@ -1335,7 +1335,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
       output = result.value;
 
       if (isEqual(output, this.deniedValue)) {
-        return this._typeIssueFactory(input, options);
+        return [this._typeIssueFactory(input, options)];
       }
     }
 
@@ -1518,7 +1518,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     }
 
     if (!isArray(excludedShape['_apply'](output, options, nonce))) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
 
     if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
@@ -1548,7 +1548,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
         let issues;
 
         if (!isArray(outputResult)) {
-          return this._typeIssueFactory(input, options);
+          return [this._typeIssueFactory(input, options)];
         }
 
         if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {

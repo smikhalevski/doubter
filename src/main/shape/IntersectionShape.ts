@@ -208,7 +208,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         output = mergeValues(output, outputs[i]);
       }
       if (output === NEVER) {
-        return this._typeIssueFactory(input, options);
+        return [this._typeIssueFactory(input, options)];
       }
     }
 

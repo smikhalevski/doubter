@@ -141,7 +141,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
       if (shapesLength === 1) {
         return issues;
       }
-      return this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups });
+      return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
     }
 
     if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
@@ -195,7 +195,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
         if (shapesLength === 1) {
           return issues;
         }
-        return this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups });
+        return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
       };
 
       resolve(next());

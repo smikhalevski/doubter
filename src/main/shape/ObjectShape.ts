@@ -113,7 +113,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns issues which describe that an object has unknown properties.
    */
-  protected _exactIssueFactory?: (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[];
+  protected _exactIssueFactory?: (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue;
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.
@@ -373,7 +373,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     nonce: number
   ): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
     if (!this._typePredicate(input)) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
       return this._applyRestUnchecked(input, options, nonce);
@@ -389,7 +389,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): Promise<Result<InferObject<PropShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
-        resolve(this._typeIssueFactory(input, options));
+        resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 
@@ -445,13 +445,12 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
 
       if (unknownKeys !== null) {
-        const issue = this._exactIssueFactory!(input, options, unknownKeys);
+        issues = [this._exactIssueFactory!(input, options, unknownKeys)];
 
         if (!options.verbose) {
-          resolve(issue);
+          resolve(issues);
           return;
         }
-        issues = concatIssues(issues, issue);
       }
 
       if (seenCount !== keysLength) {
@@ -635,9 +634,9 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       const issue = this._exactIssueFactory!(input, options, unknownKeys);
 
       if (!options.verbose) {
-        return issue;
+        return [issue];
       }
-      issues = concatIssues(issues, issue);
+      issues = concatIssues(issues, [issue]);
     }
 
     // Parse absent known keys

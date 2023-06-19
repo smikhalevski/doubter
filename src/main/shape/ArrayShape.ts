@@ -162,7 +162,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
     ) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
 
     if (headShapesLength !== 0 || restShape !== null) {
@@ -220,7 +220,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)
       ) {
-        resolve(this._typeIssueFactory(input, options));
+        resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 

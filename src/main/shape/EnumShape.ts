@@ -66,7 +66,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
       !values.includes(output) &&
       (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);
