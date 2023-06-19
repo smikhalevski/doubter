@@ -60,7 +60,7 @@
   },
   "sideEffects": false,
   "scripts": {
-    "build": "tsc && rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
+    "build": "tsc --project tsconfig.build.json && rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
     "clean": "rimraf gen lib docs coverage",
     "test": "jest",
     "test:definitions": "ln -nsf ../lib node_modules/doubter && tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",

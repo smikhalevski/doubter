@@ -8,6 +8,18 @@ describe('createIssueFactory', () => {
       expect(issueFactory('xxx', {})).toEqual({ code: 'aaa', input: 'xxx', message: 'bbb', param: 'eee' });
     });
 
+    test('ignores null message', () => {
+      const issueFactory = createIssueFactory('aaa', 'bbb', null as unknown as undefined, 'eee');
+
+      expect(issueFactory('xxx', {})).toEqual({ code: 'aaa', input: 'xxx', message: 'bbb', param: 'eee' });
+    });
+
+    test('ignores number message', () => {
+      const issueFactory = createIssueFactory('aaa', 'bbb', 111 as unknown as undefined, 'eee');
+
+      expect(issueFactory('xxx', {})).toEqual({ code: 'aaa', input: 'xxx', message: 'bbb', param: 'eee' });
+    });
+
     test('creates a factory with a string message', () => {
       const issueFactory = createIssueFactory('aaa', 'bbb', 'ccc %s', 'eee');
 

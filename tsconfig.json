@@ -11,6 +11,6 @@
     "outDir": "./gen"
   },
   "include": [
-    "./src/main/**/*"
+    "./src/**/*"
   ]
 }
