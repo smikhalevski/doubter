@@ -118,7 +118,7 @@ export class FunctionShape<
   /**
    * Enables input function wrapping during parsing to ensure runtime signature type-safety. Wrapper ensures that input
    * function receives arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape}
-   * respectively, and returns the value that conforms {@link returnShape}.
+   * respectively, and returns the value that conforms {@linkcode returnShape}.
    *
    * @param options Options that are used by the wrapper. If omitted then default options are applied: not verbose, no
    * type coercion.

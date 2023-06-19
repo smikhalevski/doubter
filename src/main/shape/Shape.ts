@@ -212,7 +212,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   declare readonly [OUTPUT]: OutputValue;
 
   /**
-   * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations via DSL.
+   * The dictionary of shape annotations. Use {@linkcode Shape#annotate} to add new annotations via DSL.
    */
   annotations: Dict = {};
 
@@ -605,7 +605,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Checks that the input doesn't match the shape.
    *
-   * This method works exactly as {@linkcode exclude} at runtime, but it doesn't perform the exclusion on the type
+   * This method works exactly as {@linkcode Shape#exclude} at runtime, but it doesn't perform the exclusion on the type
    * level.
    *
    * @param shape The shape to which the output must not conform.
@@ -681,8 +681,8 @@ export interface Shape<InputValue, OutputValue> {
   readonly inputs: readonly unknown[];
 
   /**
-   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
-   * `false` if the shape can be used in both sync and async contexts.
+   * `true` if the shape allows only {@linkcode Shape#parseAsync} and throws an error if {@linkcode Shape#parse} is
+   * called, or `false` if the shape can be used in both sync and async contexts.
    */
   readonly isAsync: boolean;
 
@@ -692,7 +692,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
    */
   try(input: unknown, options?: ApplyOptions): Ok<OutputValue> | Err;
 
@@ -711,7 +711,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parse(input: unknown, options?: ParseOptions): OutputValue;
@@ -731,7 +731,7 @@ export interface Shape<InputValue, OutputValue> {
    *
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
    */
   parseOrDefault(input: unknown): OutputValue | undefined;
 
@@ -743,7 +743,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param options Parsing options.
    * @template DefaultValue The default value that is returned if parsing fails.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
    */
   parseOrDefault<DefaultValue>(
     input: unknown,
@@ -1166,7 +1166,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
      */
     readonly inputValue: InputValue,
     /**
-     * The output value that is returned if an {@linkcode inputValue} is received.
+     * The output value that is returned if an {@linkcode ReplaceLiteralShape#inputValue} is received.
      */
     readonly outputValue: OutputValue
   ) {
