@@ -11,12 +11,18 @@
  */
 
 import {
+  CODE_STRING_ENDS_WITH,
+  CODE_STRING_INCLUDES,
   CODE_STRING_MAX,
   CODE_STRING_MIN,
   CODE_STRING_REGEX,
+  CODE_STRING_STARTS_WITH,
+  MESSAGE_STRING_ENDS_WITH,
+  MESSAGE_STRING_INCLUDES,
   MESSAGE_STRING_MAX,
   MESSAGE_STRING_MIN,
   MESSAGE_STRING_REGEX,
+  MESSAGE_STRING_STARTS_WITH,
 } from '../constants';
 import { ConstraintOptions, Message, StringShape } from '../core';
 import { createIssueFactory } from '../utils';
@@ -90,6 +96,39 @@ declare module '../core' {
      * @plugin {@link doubter/plugin/string-checks!}
      */
     regex(re: RegExp, options?: ConstraintOptions | Message): this;
+
+    /**
+     * Checks that the string includes a substring.
+     *
+     * @param value The substring to look for.
+     * @param options The constraint options or an issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/string-checks!}
+     */
+    includes(value: string, options?: ConstraintOptions | Message): this;
+
+    /**
+     * Checks that the string starts with a substring.
+     *
+     * @param value The substring to look for.
+     * @param options The constraint options or an issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/string-checks!}
+     */
+    startsWith(value: string, options?: ConstraintOptions | Message): this;
+
+    /**
+     * Checks that the string ends with a substring.
+     *
+     * @param value The substring to look for.
+     * @param options The constraint options or an issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/string-checks!}
+     */
+    endsWith(value: string, options?: ConstraintOptions | Message): this;
   }
 }
 
@@ -126,6 +165,9 @@ export default function () {
   prototype.min = min;
   prototype.max = max;
   prototype.regex = regex;
+  prototype.includes = includes;
+  prototype.startsWith = startsWith;
+  prototype.endsWith = endsWith;
 }
 
 function length(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
@@ -170,5 +212,44 @@ function regex(this: StringShape, re: RegExp, options?: ConstraintOptions | Mess
       }
     },
     { key: CODE_STRING_REGEX, param: re, unsafe: true }
+  );
+}
+
+function includes(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+  const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
+
+  return this.check(
+    (input, param, options) => {
+      if (input.includes(param)) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_STRING_INCLUDES, param: value, unsafe: true }
+  );
+}
+
+function startsWith(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+  const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
+
+  return this.check(
+    (input, param, options) => {
+      if (input.startsWith(param)) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_STRING_STARTS_WITH, param: value, unsafe: true }
+  );
+}
+
+function endsWith(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+  const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
+
+  return this.check(
+    (input, param, options) => {
+      if (input.endsWith(param)) {
+        return issueFactory(input, options);
+      }
+    },
+    { key: CODE_STRING_ENDS_WITH, param: value, unsafe: true }
   );
 }
