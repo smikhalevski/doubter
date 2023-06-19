@@ -1,6 +1,6 @@
-import { AnyShape, ArrayShape, FunctionShape, Shape } from '../shapes';
+import { isArray } from '../internal';
+import { AnyShape, ArrayShape, FunctionShape, Shape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
-import { isArray } from '../utils';
 
 /**
  * Creates a shape of a function that has no arguments.

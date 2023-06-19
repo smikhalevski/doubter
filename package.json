@@ -16,41 +16,56 @@
       "import": "./core.mjs",
       "require": "./core.js"
     },
-    "./plugins": {
-      "types": "./plugins/index.d.ts",
-      "import": "./plugins/index.mjs",
-      "require": "./plugins/index.js"
+    "./utils": {
+      "types": "./utils.d.ts",
+      "import": "./utils.mjs",
+      "require": "./utils.js"
     },
-    "./plugins/array": {
-      "types": "./plugins/array.d.ts",
-      "import": "./plugins/array.mjs",
-      "require": "./plugins/array.js"
+    "./plugin/array-checks": {
+      "types": "./plugin/array-checks.d.ts",
+      "import": "./plugin/array-checks.mjs",
+      "require": "./plugin/array-checks.js"
     },
-    "./plugins/number": {
-      "types": "./plugins/number.d.ts",
-      "import": "./plugins/number.mjs",
-      "require": "./plugins/number.js"
+    "./plugin/bigint-checks": {
+      "types": "./plugin/bigint-checks.d.ts",
+      "import": "./plugin/bigint-checks.mjs",
+      "require": "./plugin/bigint-checks.js"
     },
-    "./plugins/set": {
-      "types": "./plugins/set.d.ts",
-      "import": "./plugins/set.mjs",
-      "require": "./plugins/set.js"
+    "./plugin/date-checks": {
+      "types": "./plugin/date-checks.d.ts",
+      "import": "./plugin/date-checks.mjs",
+      "require": "./plugin/date-checks.js"
     },
-    "./plugins/string": {
-      "types": "./plugins/string.d.ts",
-      "import": "./plugins/string.mjs",
-      "require": "./plugins/string.js"
+    "./plugin/number-checks": {
+      "types": "./plugin/number-checks.d.ts",
+      "import": "./plugin/number-checks.mjs",
+      "require": "./plugin/number-checks.js"
+    },
+    "./plugin/set-checks": {
+      "types": "./plugin/set-checks.d.ts",
+      "import": "./plugin/set-checks.mjs",
+      "require": "./plugin/set-checks.js"
+    },
+    "./plugin/shape-helpers": {
+      "types": "./plugin/shape-helpers.d.ts",
+      "import": "./plugin/shape-helpers.mjs",
+      "require": "./plugin/shape-helpers.js"
+    },
+    "./plugin/string-checks": {
+      "types": "./plugin/string-checks.d.ts",
+      "import": "./plugin/string-checks.mjs",
+      "require": "./plugin/string-checks.js"
     },
     "./package.json": "./package.json"
   },
   "sideEffects": false,
   "scripts": {
-    "build": "node --max-old-space-size=4096 ./node_modules/.bin/rollup --config && cp README.md LICENSE.txt lib/ && node -p 'var pkg = require(\"./package.json\"); delete pkg.devDependencies; delete pkg.scripts; JSON.stringify(pkg, null, 2)' > ./lib/package.json",
-    "clean": "rimraf ./lib ./docs ./coverage",
+    "build": "tsc && rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
+    "clean": "rimraf gen lib docs coverage",
     "test": "jest",
-    "test:definitions": "tsd --typings ./lib/index.d.ts --files './src/test/**/*.test-d.ts'",
+    "test:definitions": "ln -nsf ../lib node_modules/doubter && tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",
     "perf": "toofast",
-    "docs": "typedoc src/main/index.ts"
+    "docs": "typedoc src/main/index.ts src/main/plugin/*"
   },
   "repository": {
     "type": "git",
@@ -72,8 +87,8 @@
   "homepage": "https://github.com/smikhalevski/doubter#readme",
   "devDependencies": {
     "@badrap/valita": "^0.2.1",
+    "@rollup/plugin-alias": "^5.0.0",
     "@rollup/plugin-node-resolve": "^15.1.0",
-    "@rollup/plugin-typescript": "^11.1.1",
     "@types/jest": "^29.5.2",
     "@types/qs": "^6.9.7",
     "ajv": "^8.12.0",
@@ -82,7 +97,7 @@
     "prettier": "^2.8.8",
     "qs": "^6.11.2",
     "rimraf": "^5.0.1",
-    "rollup": "^3.25.1",
+    "rollup": "^3.24.1",
     "rollup-plugin-dts": "^5.3.0",
     "toofast": "^2.0.0",
     "ts-jest": "^29.1.0",

@@ -1,4 +1,4 @@
-import { AnyShape, Shape } from '../shapes';
+import { AnyShape, Shape } from '../shape';
 import { ApplyOptions, Message, RefineOptions } from '../types';
 
 /**

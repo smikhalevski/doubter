@@ -19,7 +19,7 @@ import {
   MESSAGE_INTERSECTION,
   MESSAGE_NUMBER_TYPE,
 } from '../../main/constants';
-import { mergeValues } from '../../main/shapes/IntersectionShape';
+import { mergeValues } from '../../main/shape/IntersectionShape';
 import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 
 describe('IntersectionShape', () => {

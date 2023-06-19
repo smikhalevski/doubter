@@ -1,6 +1,5 @@
 export * from './dsl';
-export * from './shapes';
+export * from './shape';
 export * from './types';
-export { createIssueFactory } from './utils';
+export * from './ValidationError';
 export { Type, TypeName } from './Type';
-export { ValidationError } from './ValidationError';

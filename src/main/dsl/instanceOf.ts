@@ -1,4 +1,4 @@
-import { InstanceShape } from '../shapes';
+import { InstanceShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 
 /**

@@ -1,4 +1,4 @@
-import { ConstShape } from '../shapes';
+import { ConstShape } from '../shape';
 import { ConstraintOptions, Literal, Message } from '../types';
 
 /**

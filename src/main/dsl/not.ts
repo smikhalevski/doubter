@@ -1,4 +1,4 @@
-import { AnyShape, NotShape, Shape } from '../shapes';
+import { AnyShape, NotShape, Shape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 
 /**

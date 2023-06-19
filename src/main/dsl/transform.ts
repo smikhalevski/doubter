@@ -1,4 +1,4 @@
-import { TransformShape } from '../shapes';
+import { TransformShape } from '../shape';
 import { ApplyOptions } from '../types';
 
 /**

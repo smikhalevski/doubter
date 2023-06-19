@@ -1,7 +1,7 @@
 import { ApplyOptions, ObjectShape, Ok, Result, SetShape, Shape, StringShape } from '../../main';
-import { CODE_SET_MAX, CODE_SET_MIN, CODE_TYPE, MESSAGE_SET_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_SET_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { nextNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/Type';
-import { nextNonce } from '../../main/utils';
 
 describe('SetShape', () => {
   class AsyncShape extends Shape {
@@ -126,42 +126,6 @@ describe('SetShape', () => {
       expect(setShape.at(-111)).toBeNull();
       expect(setShape.at(111.222)).toBeNull();
       expect(setShape.at('aaa')).toBeNull();
-    });
-  });
-
-  describe('size', () => {
-    test('checks size', () => {
-      const setShape = new SetShape(new Shape()).size(2);
-
-      expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
-      expect(setShape.try(new Set([111]))).toEqual({ ok: false, issues: expect.any(Array) });
-      expect(setShape.try(new Set([111, 222, 333]))).toEqual({ ok: false, issues: expect.any(Array) });
-    });
-  });
-
-  describe('min', () => {
-    test('checks min size', () => {
-      const setShape = new SetShape(new Shape()).min(2);
-
-      expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
-      expect(setShape.try(new Set([111]))).toEqual({
-        ok: false,
-        issues: [{ code: CODE_SET_MIN, input: new Set([111]), message: 'Must have the minimum size of 2', param: 2 }],
-      });
-    });
-  });
-
-  describe('max', () => {
-    test('checks max size', () => {
-      const setShape = new SetShape(new Shape()).max(2);
-
-      expect(setShape.try(new Set([111, 222]))).toEqual({ ok: true, value: new Set([111, 222]) });
-      expect(setShape.try(new Set([111, 222, 333]))).toEqual({
-        ok: false,
-        issues: [
-          { code: CODE_SET_MAX, input: new Set([111, 222, 333]), message: 'Must have the maximum size of 2', param: 2 },
-        ],
-      });
     });
   });
 

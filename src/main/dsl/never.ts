@@ -1,4 +1,4 @@
-import { NeverShape } from '../shapes';
+import { NeverShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
 
 /**

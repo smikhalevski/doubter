@@ -1,4 +1,4 @@
-import { isArray } from './utils/lang';
+import { isArray } from './internal/lang';
 
 /**
  * The name of the value type.
@@ -25,7 +25,7 @@ export type TypeName =
  *
  * @template T The name of the value type.
  */
-export class Type<T extends TypeName> {
+export class Type<T extends TypeName = TypeName> {
   static readonly ARRAY = new Type('array');
   static readonly BIGINT = new Type('bigint');
   static readonly BOOLEAN = new Type('boolean');
@@ -54,7 +54,7 @@ export class Type<T extends TypeName> {
   /**
    * Returns the type of the given value. If value is a type itself, it is returned as is.
    */
-  static of(value: unknown): Type<TypeName> {
+  static of(value: unknown): Type {
     return getTypeOf(value);
   }
 
@@ -84,7 +84,7 @@ export const TYPE_SYMBOL = Type.SYMBOL;
 export const TYPE_UNDEFINED = Type.UNDEFINED;
 export const TYPE_UNKNOWN = Type.UNKNOWN;
 
-export function getTypeOf(value: unknown): Type<TypeName> {
+export function getTypeOf(value: unknown): Type {
   const type = typeof value;
 
   if (type === 'undefined') {

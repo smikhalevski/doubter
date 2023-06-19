@@ -15,7 +15,7 @@ import {
   UnionShape,
 } from '../../main';
 import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
-import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shapes/UnionShape';
+import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shape/UnionShape';
 import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 
 describe('UnionShape', () => {

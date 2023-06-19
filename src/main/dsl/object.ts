@@ -1,6 +1,6 @@
-import { AnyShape, ObjectShape } from '../shapes';
+import { ReadonlyDict } from '../internal';
+import { AnyShape, ObjectShape } from '../shape';
 import { ConstraintOptions, Message } from '../types';
-import { ReadonlyDict } from '../utils';
 
 /**
  * Creates the object shape.
