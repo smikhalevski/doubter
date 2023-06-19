@@ -5,6 +5,8 @@ import { Result, Shape } from './Shape';
 
 /**
  * The shape that doesn't match any input.
+ *
+ * @group Shapes
  */
 export class NeverShape extends Shape<never> {
   /**

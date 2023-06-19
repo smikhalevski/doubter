@@ -8,6 +8,10 @@
   "hideGenerator": true,
   "readme": "none",
   "groupOrder": [
+    "DSL",
+    "Shapes",
+    "Type Inference",
+    "Errors",
     "Functions",
     "References",
     "Constructors",

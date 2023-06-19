@@ -31,6 +31,7 @@ type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
  * @template ArgsShape The shape of the array of arguments.
  * @template ReturnShape The return value shape, or `null` if unconstrained.
  * @template ThisShape The shape of `this` argument, or `null` if unconstrained.
+ * @group Shapes
  */
 export class FunctionShape<
   ArgsShape extends Shape<readonly any[], readonly any[]>,

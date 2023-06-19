@@ -6,6 +6,8 @@ import { Result, Shape } from './Shape';
 
 /**
  * The shape of an arbitrary symbol value.
+ *
+ * @group Shapes
  */
 export class SymbolShape extends Shape<symbol> {
   /**

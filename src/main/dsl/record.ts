@@ -7,6 +7,7 @@ import { ConstraintOptions, Message } from '../types';
  * @param valueShape The shape of the record values.
  * @param options The constraint options or an issue message.
  * @template ValueShape The value shape.
+ * @group DSL
  */
 export function record<ValueShape extends AnyShape>(
   valueShape: ValueShape,
@@ -21,6 +22,7 @@ export function record<ValueShape extends AnyShape>(
  * @param options The constraint options or an issue message.
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
+ * @group DSL
  */
 export function record<KeyShape extends Shape<string, PropertyKey>, ValueShape extends AnyShape>(
   keyShape: KeyShape,

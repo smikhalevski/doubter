@@ -8,6 +8,8 @@ import { NEVER, Result } from './Shape';
 
 /**
  * The shape of a bigint value.
+ *
+ * @group Shapes
  */
 export class BigIntShape extends CoercibleShape<bigint> {
   /**

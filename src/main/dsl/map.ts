@@ -9,6 +9,7 @@ import { ConstraintOptions, Message } from '../types';
  * @param options The type constraint options or an issue message.
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
+ * @group DSL
  */
 export function map<KeyShape extends AnyShape, ValueShape extends AnyShape>(
   keyShape: KeyShape,

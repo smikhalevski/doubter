@@ -9,6 +9,7 @@ import { Result, Shape } from './Shape';
  * The shape of the class instance.
  *
  * @template Ctor The class constructor.
+ * @group Shapes
  */
 export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape<InstanceType<Ctor>> {
   /**

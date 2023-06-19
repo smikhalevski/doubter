@@ -10,6 +10,7 @@ import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, 
  * The shape of a `Promise` value.
  *
  * @template ValueShape The shape of the resolved value.
+ * @group Shapes
  */
 export class PromiseShape<ValueShape extends AnyShape>
   extends CoercibleShape<Promise<ValueShape[INPUT]>, Promise<ValueShape[OUTPUT]>>

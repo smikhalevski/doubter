@@ -66,6 +66,12 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
   RestShape extends null | undefined ? null : RestShape extends AnyShape ? OptionalDeepPartialShape<RestShape> : null
 >;
 
+/**
+ * Defines how object keys are handled.
+ *
+ * @see {@linkcode ObjectShape#keysMode ObjectShape.keysMode}
+ * @group Other
+ */
 export type KeysMode = 'preserved' | 'stripped' | 'exact';
 
 /**
@@ -75,6 +81,7 @@ export type KeysMode = 'preserved' | 'stripped' | 'exact';
  * @template RestShape The shape that constrains values of
  * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures), or `null`
  * if there's no index signature.
+ * @group Shapes
  */
 export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null>
   extends Shape<InferObject<PropShapes, RestShape, INPUT>, InferObject<PropShapes, RestShape, OUTPUT>>

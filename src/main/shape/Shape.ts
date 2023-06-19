@@ -48,6 +48,8 @@ import { ValidationError } from '../ValidationError';
 /**
  * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from `_coerce`
  * method, that is present on various shapes, when coercion is not possible.
+ *
+ * @group Other
  */
 export const NEVER = Object.freeze({}) as never;
 
@@ -68,6 +70,8 @@ export type ExcludeLiteral<T, U> =
 
 /**
  * An arbitrary shape.
+ *
+ * @group Shapes
  */
 export type AnyShape = Shape | Shape<never>;
 
@@ -76,6 +80,7 @@ export type AnyShape = Shape | Shape<never>;
  *
  * @template BaseShape The shape that parses the input without the replaced value.
  * @template AllowedValue The value that is allowed as an input and output.
+ * @group Shapes
  */
 // prettier-ignore
 export type AllowLiteralShape<BaseShape extends AnyShape, AllowedValue> =
@@ -86,6 +91,7 @@ export type AllowLiteralShape<BaseShape extends AnyShape, AllowedValue> =
  *
  * @template BaseShape The base shape.
  * @template ExcludedShape The shape to which the output must not conform.
+ * @group Shapes
  */
 export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
   extends Shape<BaseShape[INPUT], BaseShape[OUTPUT]>,
@@ -113,6 +119,7 @@ declare const BRAND: unique symbol;
  *
  * @template Value The value to brand.
  * @template Brand The brand value.
+ * @group Other
  */
 export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
 
@@ -122,6 +129,7 @@ export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
  *
  * @template BaseShape The shape which output must be branded.
  * @template Brand The brand value.
+ * @group Shapes
  */
 // prettier-ignore
 export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, Brand> =
@@ -132,6 +140,7 @@ export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<
  * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
  *
  * @template S The deep partial alternative of the shape.
+ * @group Other
  */
 export interface DeepPartialProtocol<S extends AnyShape> {
   /**
@@ -147,6 +156,7 @@ export interface DeepPartialProtocol<S extends AnyShape> {
  * as is if it doesn't.
  *
  * @template S The shape to convert to a deep partial alternative.
+ * @group Shapes
  */
 export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer T> ? T : S;
 
@@ -154,6 +164,7 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
  * Shape that is both optional and deep partial.
  *
  * @template S The shape to convert to an optional deep partial alternative.
+ * @group Shapes
  */
 export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<DeepPartialShape<S>, undefined>;
 
@@ -162,6 +173,7 @@ export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<Dee
  * for creating custom shapes.
  *
  * @template Value The output value.
+ * @group Other
  */
 export type Result<Value = any> = Ok<Value> | Issue[] | null;
 
@@ -180,6 +192,7 @@ declare const OUTPUT: OUTPUT;
  * Extracts the shape input type.
  *
  * @template S The shape from which the input type must be inferred.
+ * @group Type Inference
  */
 export type Input<S extends AnyShape> = S[INPUT];
 
@@ -187,6 +200,7 @@ export type Input<S extends AnyShape> = S[INPUT];
  * Extracts the shape output type.
  *
  * @template S The shape from which the output type must be inferred.
+ * @group Type Inference
  */
 export type Output<S extends AnyShape> = S[OUTPUT];
 
@@ -195,6 +209,7 @@ export type Output<S extends AnyShape> = S[OUTPUT];
  *
  * @template InputValue The input value.
  * @template OutputValue The output value.
+ * @group Shapes
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
@@ -954,6 +969,7 @@ Object.defineProperties(Shape.prototype, {
  * The shape that applies a transformer callback to the input.
  *
  * @template TransformedValue The output value of the callback that transforms the input value.
+ * @group Shapes
  */
 export class TransformShape<TransformedValue> extends Shape<any, TransformedValue> {
   /**
@@ -1028,6 +1044,7 @@ export class TransformShape<TransformedValue> extends Shape<any, TransformedValu
  *
  * @template InputShape The input shape.
  * @template OutputShape The output shape.
+ * @group Shapes
  */
 export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape>
   extends Shape<InputShape[INPUT], OutputShape[OUTPUT]>
@@ -1139,6 +1156,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
  * @template BaseShape The shape that parses the input without the replaced value.
  * @template InputValue The input value to replace.
  * @template OutputValue The output value that is used as the replacement for an input value.
+ * @group Shapes
  */
 export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputValue>
   extends Shape<BaseShape[INPUT] | InputValue, ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue>
@@ -1240,6 +1258,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
  *
  * @template BaseShape The shape that parses the input without the denied value.
  * @template DeniedValue The denied value.
+ * @group Shapes
  */
 export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
   extends Shape<ExcludeLiteral<BaseShape[INPUT], DeniedValue>, ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>>
@@ -1351,6 +1370,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
  *
  * @template BaseShape The shape that parses the input.
  * @template FallbackValue The fallback value.
+ * @group Shapes
  */
 export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   extends Shape<BaseShape[INPUT], BaseShape[OUTPUT] | FallbackValue>
@@ -1445,6 +1465,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
  *
  * @template BaseShape The base shape.
  * @template ExcludedShape The shape to which the output must not conform.
+ * @group Shapes
  */
 export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
   extends Shape<BaseShape[INPUT], Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>>

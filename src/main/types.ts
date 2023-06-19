@@ -2,6 +2,7 @@
  * Carries the result of successful input parsing.
  *
  * @template Value The output value.
+ * @group Other
  */
 export interface Ok<Value> {
   ok: true;
@@ -14,6 +15,8 @@ export interface Ok<Value> {
 
 /**
  * Carries the result of failed input parsing.
+ *
+ * @group Other
  */
 export interface Err {
   ok: false;
@@ -33,6 +36,7 @@ export interface Err {
  * @template Value The value that must be checked.
  * @template Param The check param.
  * @throws {@linkcode ValidationError} to notify that the check cannot be completed.
+ * @group Other
  */
 export type CheckCallback<Value = any, Param = any> = (
   value: Value,
@@ -42,6 +46,8 @@ export type CheckCallback<Value = any, Param = any> = (
 
 /**
  * The shape output value check.
+ *
+ * @group Other
  */
 export interface Check {
   /**
@@ -68,6 +74,8 @@ export interface Check {
 
 /**
  * Options that are applicable for the custom checks added via {@linkcode Shape.check}.
+ *
+ * @group Other
  */
 export interface CheckOptions {
   /**
@@ -89,6 +97,8 @@ export interface CheckOptions {
 
 /**
  * A validation issue raised during input parsing.
+ *
+ * @group Errors
  */
 export interface Issue {
   /**
@@ -129,17 +139,22 @@ export interface Issue {
  * @param issue The issue for which the message should be produced.
  * @param options The parsing options.
  * @returns Any value that should be used as an issue message.
+ * @group Other
  */
 export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) => any;
 
 /**
  * A callback that returns an issue message or a message string. In message `%s` placeholder is replaced with the
  * {@link CheckOptions.param issue param}.
+ *
+ * @group Other
  */
 export type Message = MessageCallback | string;
 
 /**
  * Options that are applicable for the built-in type-specific constraints.
+ *
+ * @group Other
  */
 export interface ConstraintOptions {
   /**
@@ -153,6 +168,11 @@ export interface ConstraintOptions {
   meta?: any;
 }
 
+/**
+ * Options of the {@linkcode Shape#refine} method.
+ *
+ * @group Other
+ */
 export interface RefineOptions extends ConstraintOptions {
   /**
    * The unique key of the check in scope of the shape.
@@ -173,6 +193,8 @@ export interface RefineOptions extends ConstraintOptions {
 
 /**
  * Options used during parsing.
+ *
+ * @group Other
  */
 export interface ApplyOptions {
   /**
@@ -198,6 +220,8 @@ export interface ApplyOptions {
 
 /**
  * Options used during parsing.
+ *
+ * @group Other
  */
 export interface ParseOptions extends ApplyOptions {
   /**
@@ -208,5 +232,7 @@ export interface ParseOptions extends ApplyOptions {
 
 /**
  * The literal value of any type.
+ *
+ * @group Other
  */
 export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;

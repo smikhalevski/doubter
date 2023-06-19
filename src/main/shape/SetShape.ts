@@ -20,6 +20,7 @@ import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, 
  * The shape of a `Set` instance.
  *
  * @template ValueShape The value shape.
+ * @group Shapes
  */
 export class SetShape<ValueShape extends AnyShape>
   extends CoercibleShape<Set<ValueShape[INPUT]>, Set<ValueShape[OUTPUT]>, unknown[]>

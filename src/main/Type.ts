@@ -2,6 +2,8 @@ import { isArray } from './internal/lang';
 
 /**
  * The name of the value type.
+ *
+ * @group Type Inference
  */
 export type TypeName =
   | 'array'
@@ -24,6 +26,8 @@ export type TypeName =
  * The enum-like class that describes a value type.
  *
  * @template T The name of the value type.
+ * @see {@linkcode Shape#inputs Shape.inputs}
+ * @group Type Inference
  */
 export class Type<T extends TypeName = TypeName> {
   static readonly ARRAY = new Type('array');

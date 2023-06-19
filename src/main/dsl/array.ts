@@ -5,6 +5,7 @@ import { ConstraintOptions, Message } from '../types';
  * Creates the unconstrained array shape.
  *
  * @param options The constraint options or an issue message.
+ * @group DSL
  */
 export function array(options?: ConstraintOptions | Message): ArrayShape<[], Shape>;
 
@@ -14,6 +15,7 @@ export function array(options?: ConstraintOptions | Message): ArrayShape<[], Sha
  * @param shape The shape of array elements.
  * @param options The constraint options or an issue message.
  * @template ValueShape The shape of array elements.
+ * @group DSL
  */
 export function array<ValueShape extends AnyShape>(
   shape: ValueShape,

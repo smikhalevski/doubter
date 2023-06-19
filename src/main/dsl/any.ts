@@ -7,6 +7,7 @@ import { ApplyOptions, Message, RefineOptions } from '../types';
  * You can specify compile-time type to enhance type inference. This provides _no runtime type-safety_!
  *
  * @template Value The input and the output value.
+ * @group DSL
  */
 export function any<Value = any>(): Shape<Value>;
 
@@ -18,6 +19,7 @@ export function any<Value = any>(): Shape<Value>;
  * @param options The constraint options or an issue message.
  * @returns The shape that has the narrowed output.
  * @template Value The input and the output value.
+ * @group DSL
  */
 export function any<Value>(
   /**
@@ -35,6 +37,7 @@ export function any<Value>(
  * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
  * @param options The constraint options or an issue message.
  * @template Value The input and the output value.
+ * @group DSL
  */
 export function any<Value = any>(
   /**

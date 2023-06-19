@@ -8,6 +8,7 @@ import { NEVER, Result } from './Shape';
 
 /**
  * The shape of the `Date` object.
+ * @group Shapes
  */
 export class DateShape extends CoercibleShape<Date> {
   /**

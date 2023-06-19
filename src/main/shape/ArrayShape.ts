@@ -44,6 +44,7 @@ type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape ext
  *
  * @template HeadShapes The array of positioned element shapes.
  * @template RestShape The shape of rest elements, or `null` if there are no rest elements.
+ * @group Shapes
  */
 export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null>
   extends CoercibleShape<InferArray<HeadShapes, RestShape, INPUT>, InferArray<HeadShapes, RestShape, OUTPUT>, unknown[]>

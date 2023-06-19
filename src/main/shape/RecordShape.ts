@@ -30,6 +30,7 @@ type InferRecord<
  *
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
+ * @group Shapes
  */
 export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, ValueShape extends AnyShape>
   extends Shape<InferRecord<KeyShape, ValueShape, INPUT>, InferRecord<KeyShape, ValueShape, OUTPUT>>

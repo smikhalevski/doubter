@@ -15,6 +15,8 @@ import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
 
 /**
  * The shape of a number value.
+ *
+ * @group Shapes
  */
 export class NumberShape extends CoercibleShape<number> {
   /**

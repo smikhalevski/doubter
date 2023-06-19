@@ -7,6 +7,7 @@ import { Result, Shape } from './Shape';
  * The shape of a constant value.
  *
  * @template Value The expected constant value.
+ * @group Shapes
  */
 export class ConstShape<Value> extends Shape<Value> {
   /**

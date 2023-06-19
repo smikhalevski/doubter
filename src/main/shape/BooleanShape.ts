@@ -8,6 +8,8 @@ import { NEVER, Result } from './Shape';
 
 /**
  * The shape of a boolean value.
+ *
+ * @group Shapes
  */
 export class BooleanShape extends CoercibleShape<boolean> {
   /**

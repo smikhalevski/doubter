@@ -8,6 +8,7 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result,
  *
  * @template ProvidedShape The lazy-loaded shape.
  * @template Pointer The value returned when a cyclic reference is detected.
+ * @group Shapes
  */
 export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   extends Shape<ProvidedShape[INPUT], ProvidedShape[OUTPUT] | Pointer>

@@ -8,6 +8,8 @@ import { NEVER, Result } from './Shape';
 
 /**
  * The shape of a string value.
+ *
+ * @group Shapes
  */
 export class StringShape extends CoercibleShape<string> {
   /**

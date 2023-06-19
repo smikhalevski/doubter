@@ -32,6 +32,7 @@ import {
  *
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
+ * @group Shapes
  */
 export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   extends CoercibleShape<
