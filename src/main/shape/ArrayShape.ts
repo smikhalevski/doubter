@@ -46,7 +46,7 @@ type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape ext
  * @template RestShape The shape of rest elements, or `null` if there are no rest elements.
  */
 export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null>
-  extends CoercibleShape<InferArray<HeadShapes, RestShape, INPUT>, InferArray<HeadShapes, RestShape, OUTPUT>>
+  extends CoercibleShape<InferArray<HeadShapes, RestShape, INPUT>, InferArray<HeadShapes, RestShape, OUTPUT>, unknown[]>
   implements DeepPartialProtocol<DeepPartialArrayShape<HeadShapes, RestShape>>
 {
   /**
@@ -273,9 +273,10 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   }
 
   /**
-   * Coerces a value to an array or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to an array.
    *
    * @param value The non-array value to coerce.
+   * @returns An array, or {@linkcode NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): unknown[] {
     value = getCanonicalValueOf(value);

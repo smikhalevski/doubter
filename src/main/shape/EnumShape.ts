@@ -75,11 +75,12 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   }
 
   /**
-   * Coerces a value to an enum value or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to an enum value.
    *
    * @param value The non-enum value to coerce.
+   * @returns An enum value, or {@linkcode NEVER} if coercion isn't possible.
    */
-  protected _coerce(value: any): unknown {
+  protected _coerce(value: any): Value {
     const { source } = this;
 
     if (isArray(value) && value.length === 1 && this.values.includes((value = value[0]))) {

@@ -4,7 +4,7 @@ import { TYPE_PROMISE } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
 /**
  * The shape of a `Promise` value.
@@ -64,15 +64,19 @@ export class PromiseShape<ValueShape extends AnyShape>
     options: ApplyOptions,
     nonce: number
   ): Promise<Result<Promise<ValueShape[OUTPUT]>>> {
-    if (!(input instanceof Promise) && !(options.coerced || this.isCoerced)) {
+    let output = input;
+
+    if (
+      !(input instanceof Promise) &&
+      (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
+    ) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }
 
-    const handleValue = (value: unknown) =>
+    return output.then((value: unknown) =>
       applyShape(this.shape, value, options, nonce, result => {
         const { _applyChecks } = this;
 
-        let output = input;
         let issues = null;
 
         if (result !== null) {
@@ -82,21 +86,19 @@ export class PromiseShape<ValueShape extends AnyShape>
             }
             issues = result;
           } else {
-            output = result.value;
+            output = Promise.resolve(result.value);
           }
         }
-
-        output = Promise.resolve(output);
 
         if ((_applyChecks === null || (issues = _applyChecks(output, issues, options)) === null) && output !== input) {
           return ok(output);
         }
         return issues;
-      });
+      })
+    );
+  }
 
-    if (input instanceof Promise) {
-      return input.then(handleValue);
-    }
-    return Promise.resolve(handleValue(input));
+  protected _coerce(value: unknown): Promise<ValueShape[INPUT]> {
+    return Promise.resolve(value);
   }
 }

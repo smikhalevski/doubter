@@ -54,9 +54,10 @@ export class BooleanShape extends CoercibleShape<boolean> {
   }
 
   /**
-   * Coerces a value to a boolean or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to a boolean.
    *
    * @param value The non-boolean value to coerce.
+   * @returns A boolean value, or {@linkcode NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): boolean {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'boolean') {

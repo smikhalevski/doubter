@@ -54,9 +54,10 @@ export class BigIntShape extends CoercibleShape<bigint> {
   }
 
   /**
-   * Coerces a value to a bigint or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to a bigint.
    *
    * @param value The non-bigint value to coerce.
+   * @returns A bigint value, or {@linkcode NEVER} if coercion isn't possible.
    */
   protected _coerce(value: any): bigint {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {

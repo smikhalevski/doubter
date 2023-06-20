@@ -5,8 +5,13 @@ import { Shape } from './Shape';
  *
  * @template InputValue The input value.
  * @template OutputValue The output value.
+ * @template CoercedValue The value to which an input is coerced.
  */
-export class CoercibleShape<InputValue = any, OutputValue = InputValue> extends Shape<InputValue, OutputValue> {
+export abstract class CoercibleShape<
+  InputValue = any,
+  OutputValue = InputValue,
+  CoercedValue = InputValue
+> extends Shape<InputValue, OutputValue> {
   /**
    * `true` if input value is coerced to the required type during parsing, or `false` otherwise.
    */
@@ -15,11 +20,31 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue> extends 
   /**
    * Enables an input value coercion.
    *
+   * @param cb The callback that overrides the built-in coercion.
    * @returns The clone of the shape.
    */
-  coerce(): this {
+  coerce(
+    /**
+     * @param value The value to coerce.
+     * @returns The coerced value, or {@linkcode NEVER} if coercion isn't possible.
+     */
+    cb?: (value: unknown) => CoercedValue
+  ): this {
     const shape = this._clone();
+
     shape.isCoerced = true;
+
+    if (cb !== undefined) {
+      shape._coerce = cb;
+    }
     return shape;
   }
+
+  /**
+   * Coerces an input value to another type.
+   *
+   * @param value The value to coerce.
+   * @returns The coerced value, or {@linkcode NEVER} if coercion isn't possible.
+   */
+  protected abstract _coerce(value: unknown): CoercedValue;
 }

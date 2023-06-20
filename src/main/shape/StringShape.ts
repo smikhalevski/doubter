@@ -54,9 +54,10 @@ export class StringShape extends CoercibleShape<string> {
   }
 
   /**
-   * Coerces a value to a string or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to a string.
    *
    * @param value The non-string value to coerce.
+   * @returns A string value, or {@linkcode NEVER} if coercion isn't possible.
    */
   protected _coerce(value: any): string {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'string') {
