@@ -22,7 +22,7 @@ import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, 
  * @template ValueShape The value shape.
  */
 export class SetShape<ValueShape extends AnyShape>
-  extends CoercibleShape<Set<ValueShape[INPUT]>, Set<ValueShape[OUTPUT]>>
+  extends CoercibleShape<Set<ValueShape[INPUT]>, Set<ValueShape[OUTPUT]>, unknown[]>
   implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<ValueShape>>>
 {
   /**
@@ -84,7 +84,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== NEVER))
+      (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerce(input)) !== NEVER))
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -132,7 +132,7 @@ export class SetShape<ValueShape extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerceValues(input)) !== NEVER))
+        (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerce(input)) !== NEVER))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;
@@ -184,11 +184,12 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   /**
-   * Coerces a value to an array of `Set` values, or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to an array of `Set` values.
    *
    * @param value The non-`Set` value to coerce.
+   * @returns An array, or {@linkcode NEVER} if coercion isn't possible.
    */
-  protected _coerceValues(value: unknown): unknown[] {
+  protected _coerce(value: unknown): unknown[] {
     value = getCanonicalValueOf(value);
 
     if (isArray(value)) {

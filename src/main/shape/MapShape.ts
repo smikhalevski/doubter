@@ -34,7 +34,11 @@ import {
  * @template ValueShape The value shape.
  */
 export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
-  extends CoercibleShape<Map<KeyShape[INPUT], ValueShape[INPUT]>, Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>>
+  extends CoercibleShape<
+    Map<KeyShape[INPUT], ValueShape[INPUT]>,
+    Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>,
+    [unknown, unknown][]
+  >
   implements DeepPartialProtocol<MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>>>
 {
   /**
@@ -108,7 +112,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== NEVER))
+      (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerce(input)) !== NEVER))
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -186,7 +190,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerceEntries(input)) !== NEVER))
+        (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerce(input)) !== NEVER))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;
@@ -272,11 +276,12 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   }
 
   /**
-   * Coerces a value to an array of `Map` entries, or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to an array of `Map` entries.
    *
    * @param value A non-`Map` value to coerce.
+   * @returns An array of entries, or {@linkcode NEVER} if coercion isn't possible.
    */
-  protected _coerceEntries(value: any): [unknown, unknown][] {
+  protected _coerce(value: any): [unknown, unknown][] {
     if (isArray(value)) {
       return value.every(isMapEntry) ? value : NEVER;
     }

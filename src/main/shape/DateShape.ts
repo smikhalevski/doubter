@@ -54,9 +54,10 @@ export class DateShape extends CoercibleShape<Date> {
   }
 
   /**
-   * Coerces a value to a `Date` or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to a `Date`.
    *
    * @param value The non-`Date` value to coerce.
+   * @returns A `Date` value, or {@linkcode NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): Date {
     if (isArray(value) && value.length === 1 && isValidDate((value = value[0]))) {

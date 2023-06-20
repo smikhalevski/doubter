@@ -118,6 +118,21 @@ describe('JSON shape', () => {
   });
 });
 
+test('Overriding type coercion', () => {
+  const yesNoShape = d.boolean().coerce(value => {
+    if (value === 'yes') {
+      return true;
+    }
+    if (value === 'no') {
+      return false;
+    }
+    // Coercion is not possible
+    return d.NEVER;
+  });
+
+  expect(d.array(yesNoShape).parse(['yes', 'no'])).toEqual([true, false]);
+});
+
 test('Circular object references', () => {
   interface User {
     friends: User[];
@@ -180,22 +195,5 @@ describe('Advanced shapes', () => {
       ok: false,
       issues: [{ code: 'kaputs', message: 'Must be a number-like', input: 'seventeen', path: [0] }],
     });
-  });
-
-  test('YesNoShape', () => {
-    class YesNoShape extends d.BooleanShape {
-      protected _coerce(value: unknown): boolean {
-        if (value === 'yes') {
-          return true;
-        }
-        if (value === 'no') {
-          return false;
-        }
-        // 🟡 Return NEVER if coercion isn't possible
-        return d.NEVER;
-      }
-    }
-
-    expect(d.array(new YesNoShape().coerce()).parse(['yes', 'no'])).toEqual([true, false]);
   });
 });

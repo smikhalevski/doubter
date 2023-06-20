@@ -112,9 +112,10 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   /**
-   * Coerces a value to a number (not `NaN`) or returns {@linkcode NEVER} if coercion isn't possible.
+   * Coerces a value to a number (not `NaN`).
    *
    * @param value The non-number value to coerce.
+   * @returns A number value, or {@linkcode NEVER} if coercion isn't possible.
    */
   protected _coerce(value: any): number {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number') {
