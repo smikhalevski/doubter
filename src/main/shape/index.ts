@@ -12,7 +12,7 @@ export { LazyShape } from './LazyShape';
 export { MapShape } from './MapShape';
 export { NeverShape } from './NeverShape';
 export { NumberShape } from './NumberShape';
-export { ObjectShape, KeysMode } from './ObjectShape';
+export { ObjectShape, ObjectKeysMode } from './ObjectShape';
 export { PromiseShape } from './PromiseShape';
 export { RecordShape } from './RecordShape';
 export { SetShape } from './SetShape';

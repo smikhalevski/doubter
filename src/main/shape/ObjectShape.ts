@@ -1,4 +1,4 @@
-import { CODE_OBJECT_UNKNOWN_KEYS, CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_UNKNOWN_KEYS } from '../constants';
+import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_EXACT } from '../constants';
 import {
   applyShape,
   Bitmask,
@@ -72,7 +72,7 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
  * @see {@linkcode ObjectShape#keysMode ObjectShape.keysMode}
  * @group Other
  */
-export type KeysMode = 'preserved' | 'stripped' | 'exact';
+export type ObjectKeysMode = 'preserved' | 'stripped' | 'exact';
 
 /**
  * The shape of an object.
@@ -91,11 +91,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * The array of known object keys.
    */
   readonly keys: readonly StringKeyof<PropShapes>[];
-
-  /**
-   * The mode of keys handling.
-   */
-  readonly keysMode: KeysMode;
 
   /**
    * The type constraint options or an issue message.
@@ -146,12 +141,14 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
      */
     readonly restShape: RestShape,
     options?: ConstraintOptions | Message,
-    keysMode: KeysMode = 'preserved'
+    /**
+     * The mode of keys handling.
+     */
+    readonly keysMode: ObjectKeysMode = 'preserved'
   ) {
     super();
 
     this.keys = Object.keys(shapes) as StringKeyof<PropShapes>[];
-    this.keysMode = keysMode;
 
     this._options = options;
     this._valueShapes = Object.values(shapes);
@@ -314,7 +311,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   exact(options?: ConstraintOptions | Message): ObjectShape<PropShapes, null> {
     const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
 
-    shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_UNKNOWN_KEYS, MESSAGE_OBJECT_UNKNOWN_KEYS, options);
+    shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_EXACT, MESSAGE_OBJECT_EXACT, options);
 
     return copyUnsafeChecks(this, shape);
   }
