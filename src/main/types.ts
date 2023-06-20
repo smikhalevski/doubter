@@ -189,7 +189,7 @@ export interface ApplyOptions {
    *
    * @default false
    */
-  coerced?: boolean;
+  coerce?: boolean;
 
   /**
    * The custom context.

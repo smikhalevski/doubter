@@ -33,7 +33,7 @@ describe('BooleanShape', () => {
       expect(new BooleanShape().coerce().parse(new Boolean(true))).toBe(true);
       expect(new BooleanShape().coerce().parse([new Boolean(true)])).toBe(true);
       expect(new BooleanShape().coerce().parse('true')).toBe(true);
-      expect(new BooleanShape().parse('true', { coerced: true })).toBe(true);
+      expect(new BooleanShape().parse('true', { coerce: true })).toBe(true);
     });
 
     test('raises an issue if coercion fails', () => {

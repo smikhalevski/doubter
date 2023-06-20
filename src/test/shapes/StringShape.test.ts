@@ -95,7 +95,7 @@ describe('StringShape', () => {
     expect(new StringShape().coerce().parse(111)).toBe('111');
     expect(new StringShape().coerce().parse(true)).toBe('true');
     expect(new StringShape().coerce().parse(['aaa'])).toBe('aaa');
-    expect(new StringShape().parse(['aaa'], { coerced: true })).toBe('aaa');
+    expect(new StringShape().parse(['aaa'], { coerce: true })).toBe('aaa');
   });
 
   test('raises an issue if coercion fails', () => {

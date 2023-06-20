@@ -192,7 +192,7 @@ parseOrDefault(42);
 Parsing methods accept options argument.
 
 ```ts
-d.number().parse('42', { coerced: true });
+d.number().parse('42', { coerce: true });
 // ⮕ 42
 ```
 
@@ -206,7 +206,7 @@ If `true` then Doubter collects all issues during parsing, otherwise parsing is 
 encountered. Refer to [Verbose mode](#verbose-mode) section for more details.
 
 </dd>
-<dt><code>coerced</code></dt>
+<dt><code>coerce</code></dt>
 <dd>
 
 If `true` then all shapes that support type coercion would try to coerce an input to a required type. Refer to
@@ -1449,7 +1449,7 @@ For example, you can coerce input values to string type:
 ```ts
 const shape1 = d.string().coerce();
 
-shape1.isCoerced // ⮕ true
+shape1.isCoercing // ⮕ true
 
 shape1.parse([8080]);
 // ⮕ '8080'
@@ -1459,7 +1459,7 @@ shape1.parse(null);
 ```
 
 Coercion can be enabled on shape-by-shape basis (as shown in the example above), or it can be enabled for all shapes
-when [`coerced` option](#parsing-and-trying) is passed to `parse*` or `try*` methods:
+when [`coerce` option](#parsing-and-trying) is passed to `parse*` or `try*` methods:
 
 ```ts
 const shape2 = d.object({
@@ -1472,7 +1472,7 @@ shape2.parse(
     name: ['Jake'],
     birthday: '1949-01-24'
   },
-  { coerced: true }
+  { coerce: true }
 );
 // ⮕ { name: 'Jake', birthday: new Date(-660700800000) }
 ```
@@ -3733,7 +3733,7 @@ raise a validation issue. You can mark individual params as optional and
 
 2. Query params are strings. So `name` doesn't require additional attention since it's constrained by
 [`d.string`](#string). On the other hand, `age` is an integer, so [type coercion](#type-coercion) must be enabled to
-coerce `age` to a number. To do this we're going to pass the [`coerced` option](#parsing-and-trying) to the `parse`
+coerce `age` to a number. To do this we're going to pass the [`coerce` option](#parsing-and-trying) to the `parse`
 method.
 
 3. We also added [`catch`](#fallback-value), so when `age` cannot be parsed as a positive integer, Doubter returns
@@ -3746,7 +3746,7 @@ import qs from 'qs';
 
 const query = queryShape.parse(
   qs.parse('name=Frodo&age=50'),
-  { coerced: true }
+  { coerce: true }
 );
 // ⮕ { name: 'Frodo', age: 50 }
 ```
@@ -3756,7 +3756,7 @@ const query = queryShape.parse(
 ```ts
 queryShape.parse(
   qs.parse('age=-33'),
-  { coerced: true }
+  { coerce: true }
 );
 // ⮕ { age: undefined }
 ```
@@ -3787,7 +3787,7 @@ accidental usage of an unvalidated env variable.
 ```ts
 const env = envShape.parse(
   process.env,
-  { coerced: true }
+  { coerce: true }
 );
 // ⮕ { NODE_ENV: 'test' | 'production', DAYS_IN_YEAR: number }
 ```

@@ -48,7 +48,7 @@ export class PromiseShape<ValueShape extends AnyShape>
   }
 
   protected _getInputs(): unknown[] {
-    if (this.isCoerced) {
+    if (this.isCoercing) {
       return this.shape.inputs.concat(TYPE_PROMISE);
     } else {
       return [TYPE_PROMISE];
@@ -68,7 +68,7 @@ export class PromiseShape<ValueShape extends AnyShape>
 
     if (
       !(input instanceof Promise) &&
-      (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return Promise.resolve(this._typeIssueFactory(input, options));
     }

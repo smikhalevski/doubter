@@ -43,7 +43,7 @@ describe('LazyShape', () => {
     expect(lazyShape.isAsync).toBe(false);
     expect(lazyShape.parse('aaa')).toBe('aaa');
     expect(applySpy).toHaveBeenCalledTimes(1);
-    expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+    expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
   });
 
   test('applies checks to transformed value', () => {
@@ -57,7 +57,7 @@ describe('LazyShape', () => {
       issues: [{ code: 'xxx' }],
     });
     expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
+    expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerce: false });
   });
 
   test('does not apply checks if an underlying shape raises an issue', () => {
@@ -252,8 +252,8 @@ describe('LazyShape', () => {
 
       expect(nextNonce()).toBe(2);
       expect(checkMock).toHaveBeenCalledTimes(2);
-      expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { coerced: false, verbose: false });
-      expect(checkMock).toHaveBeenNthCalledWith(2, 111, undefined, { coerced: false, verbose: false });
+      expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { coerce: false, verbose: false });
+      expect(checkMock).toHaveBeenNthCalledWith(2, 111, undefined, { coerce: false, verbose: false });
     });
   });
 
@@ -266,7 +266,7 @@ describe('LazyShape', () => {
       expect(lazyShape.isAsync).toBe(true);
       await expect(lazyShape.parseAsync('aaa')).resolves.toBe('aaa');
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
     });
 
     test('clears stack if an error is thrown', async () => {
@@ -309,10 +309,10 @@ describe('LazyShape', () => {
       await Promise.all([lazyShape.parseAsync(obj1), lazyShape.parseAsync(obj2)]);
 
       expect(applySpy).toHaveBeenCalledTimes(4);
-      expect(applySpy).toHaveBeenNthCalledWith(1, obj1, { coerced: false, verbose: false }, 0);
-      expect(applySpy).toHaveBeenNthCalledWith(2, obj2, { coerced: false, verbose: false }, 1);
-      expect(applySpy).toHaveBeenNthCalledWith(3, obj1, { coerced: false, verbose: false }, 0);
-      expect(applySpy).toHaveBeenNthCalledWith(4, obj2, { coerced: false, verbose: false }, 1);
+      expect(applySpy).toHaveBeenNthCalledWith(1, obj1, { coerce: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(2, obj2, { coerce: false, verbose: false }, 1);
+      expect(applySpy).toHaveBeenNthCalledWith(3, obj1, { coerce: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(4, obj2, { coerce: false, verbose: false }, 1);
     });
   });
 });

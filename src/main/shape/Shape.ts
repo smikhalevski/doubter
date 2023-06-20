@@ -51,7 +51,7 @@ import { ValidationError } from '../ValidationError';
  */
 export const NEVER = Object.freeze({}) as never;
 
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerced: false });
+export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerce: false });
 
 /**
  * Excludes `U` from `T` only if `U` is a literal type.

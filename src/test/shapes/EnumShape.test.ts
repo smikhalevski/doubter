@@ -122,7 +122,7 @@ describe('EnumShape', () => {
       expect(shape.coerce().inputs).toEqual([0, 1, '0', '1', 'AAA', 'BBB', TYPE_ARRAY, TYPE_OBJECT]);
 
       expect(shape.coerce().parse('AAA')).toEqual(NumberMockEnum.AAA);
-      expect(shape.parse('AAA', { coerced: true })).toEqual(NumberMockEnum.AAA);
+      expect(shape.parse('AAA', { coerce: true })).toEqual(NumberMockEnum.AAA);
     });
 
     test('coerces the key of a const object', () => {
@@ -134,7 +134,7 @@ describe('EnumShape', () => {
       expect(shape.coerce().inputs).toEqual(['aaa', 'bbb', 'AAA', 'BBB', TYPE_ARRAY, TYPE_OBJECT]);
 
       expect(shape.coerce().parse('AAA')).toEqual('aaa');
-      expect(shape.parse('AAA', { coerced: true })).toEqual('aaa');
+      expect(shape.parse('AAA', { coerce: true })).toEqual('aaa');
     });
 
     test('coerces from an array', () => {
@@ -143,7 +143,7 @@ describe('EnumShape', () => {
       expect(shape.coerce().inputs).toEqual([111, 222, TYPE_ARRAY, TYPE_OBJECT]);
 
       expect(shape.coerce().parse([111])).toBe(111);
-      expect(shape.parse(111, { coerced: true })).toBe(111);
+      expect(shape.parse(111, { coerce: true })).toBe(111);
     });
   });
 });

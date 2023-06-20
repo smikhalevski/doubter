@@ -93,7 +93,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   }
 
   protected _getInputs(): unknown[] {
-    if (this.isCoerced) {
+    if (this.isCoercing) {
       return [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
     } else {
       return [TYPE_MAP];
@@ -112,7 +112,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerce(input)) !== NEVER))
+      (!(options.coerce || this.isCoercing) || !(changed = (entries = this._coerce(input)) !== NEVER))
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -190,7 +190,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerced || this.isCoerced) || !(changed = (entries = this._coerce(input)) !== NEVER))
+        (!(options.coerce || this.isCoercing) || !(changed = (entries = this._coerce(input)) !== NEVER))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;

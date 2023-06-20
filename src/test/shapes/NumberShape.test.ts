@@ -123,7 +123,7 @@ describe('NumberShape', () => {
       expect(new NumberShape().coerce().parse('111')).toBe(111);
       expect(new NumberShape().coerce().parse(true)).toBe(1);
       expect(new NumberShape().coerce().parse([111])).toBe(111);
-      expect(new NumberShape().parse([111], { coerced: true })).toBe(111);
+      expect(new NumberShape().parse([111], { coerce: true })).toBe(111);
     });
 
     test('raises an issue if coercion fails', () => {

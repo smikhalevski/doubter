@@ -13,9 +13,9 @@ export abstract class CoercibleShape<
   CoercedValue = InputValue
 > extends Shape<InputValue, OutputValue> {
   /**
-   * `true` if input value is coerced to the required type during parsing, or `false` otherwise.
+   * `true` if this shapes coerces input values to the required type during parsing, or `false` otherwise.
    */
-  isCoerced = false;
+  isCoercing = false;
 
   /**
    * Enables an input value coercion.
@@ -32,7 +32,7 @@ export abstract class CoercibleShape<
   ): this {
     const shape = this._clone();
 
-    shape.isCoerced = true;
+    shape.isCoercing = true;
 
     if (cb !== undefined) {
       shape._coerce = cb;

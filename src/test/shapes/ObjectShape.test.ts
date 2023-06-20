@@ -333,7 +333,7 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: obj });
       expect(result.value).toBe(obj);
       expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
     });
 
     test('raises the first issue only', () => {
@@ -426,11 +426,11 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: obj });
       expect(result.value).toBe(obj);
       expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
       expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy2).toHaveBeenNthCalledWith(1, undefined, { verbose: false, coerced: false }, 0);
+      expect(applySpy2).toHaveBeenNthCalledWith(1, undefined, { verbose: false, coerce: false }, 0);
       expect(restApplySpy).toHaveBeenCalledTimes(1);
-      expect(restApplySpy).toHaveBeenNthCalledWith(1, 'bbb', { verbose: false, coerced: false }, 0);
+      expect(restApplySpy).toHaveBeenNthCalledWith(1, 'bbb', { verbose: false, coerce: false }, 0);
     });
 
     test('raises multiple issues in verbose mode', () => {
@@ -576,11 +576,11 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: obj });
       expect(result.value).toBe(obj);
       expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
       expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy2).toHaveBeenNthCalledWith(1, undefined, { verbose: false, coerced: false }, 0);
+      expect(applySpy2).toHaveBeenNthCalledWith(1, undefined, { verbose: false, coerce: false }, 0);
       expect(restApplySpy).toHaveBeenCalledTimes(1);
-      expect(restApplySpy).toHaveBeenNthCalledWith(1, 'bbb', { verbose: false, coerced: false }, 0);
+      expect(restApplySpy).toHaveBeenNthCalledWith(1, 'bbb', { verbose: false, coerce: false }, 0);
     });
 
     test('raises multiple issues in verbose mode', async () => {

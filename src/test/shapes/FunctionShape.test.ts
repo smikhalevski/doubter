@@ -109,11 +109,11 @@ describe('FunctionShape', () => {
       const cbMock = jest.fn();
 
       new FunctionShape(arrayShape.check(cbMock), null, null)
-        .strict({ coerced: true })
+        .strict({ coerce: true })
         .ensureSignature(() => undefined)();
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, [], undefined, { coerced: true });
+      expect(cbMock).toHaveBeenNthCalledWith(1, [], undefined, { coerce: true });
     });
 
     test('wraps a function', () => {
@@ -161,7 +161,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
     });
 
     test('raises an issue if this is invalid', () => {
@@ -235,7 +235,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
     });
 
     test('raises an issue if this is invalid', async () => {

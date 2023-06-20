@@ -128,7 +128,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   protected _getInputs(): unknown[] {
     const { headShapes, restShape } = this;
 
-    if (!this.isCoerced) {
+    if (!this.isCoercing) {
       return [TYPE_ARRAY];
     }
     if (headShapes.length > 1) {
@@ -157,7 +157,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     if (
       // Not an array or not coercible
-      (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)) ||
+      (!isArray(output) && (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)) ||
       // Invalid tuple length
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
@@ -215,7 +215,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
       if (
         // Not an array or not coercible
-        (!isArray(output) && (!(options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)) ||
+        (!isArray(output) && (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)) ||
         // Invalid tuple length
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)

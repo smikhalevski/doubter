@@ -85,7 +85,7 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   protected _getInputs(): unknown[] {
-    if (this.isCoerced) {
+    if (this.isCoercing) {
       return [TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, null, undefined];
     } else {
       return [TYPE_NUMBER];
@@ -101,7 +101,7 @@ export class NumberShape extends CoercibleShape<number> {
 
     if (
       !this._typePredicate(output) &&
-      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
+      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return this._typeIssueFactory(input, options);
     }
