@@ -6,6 +6,7 @@ import { ConstraintOptions, Message } from '../types';
  * Creates a shape of a function that has no arguments.
  *
  * @param options The constraint options or an issue message.
+ * @group DSL
  */
 function function_(options?: ConstraintOptions | Message): FunctionShape<ArrayShape<[], null>, null, null>;
 
@@ -15,6 +16,7 @@ function function_(options?: ConstraintOptions | Message): FunctionShape<ArraySh
  * @param argShapes The array of argument shapes.
  * @param options The constraint options or an issue message.
  * @template ArgShapes The array of argument shapes.
+ * @group DSL
  */
 function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
   argShapes: ArgShapes,
@@ -29,6 +31,7 @@ function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
  * @template InputArgs The array of input arguments.
  * @template OutputArgs The array of input arguments.
  * @template ArgsShape The shape of the array of arguments.
+ * @group DSL
  */
 function function_<
   InputArgs extends readonly any[],
@@ -50,5 +53,8 @@ function function_(
   return new FunctionShape(argShapes as Shape, null, null, options);
 }
 
+/**
+ * @group DSL
+ */
 // noinspection ReservedWordAsName
 export { function_ as function, function_ as fn };

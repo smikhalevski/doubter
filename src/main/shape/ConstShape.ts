@@ -7,6 +7,7 @@ import { Result, Shape } from './Shape';
  * The shape of a constant value.
  *
  * @template Value The expected constant value.
+ * @group Shapes
  */
 export class ConstShape<Value> extends Shape<Value> {
   /**
@@ -47,7 +48,7 @@ export class ConstShape<Value> extends Shape<Value> {
     const { _applyChecks } = this;
 
     if (!this._typePredicate(input)) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

@@ -8,6 +8,8 @@ import { NEVER, Result } from './Shape';
 
 /**
  * The shape of a bigint value.
+ *
+ * @group Shapes
  */
 export class BigIntShape extends CoercibleShape<bigint> {
   /**
@@ -45,7 +47,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
       typeof output !== 'bigint' &&
       (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);

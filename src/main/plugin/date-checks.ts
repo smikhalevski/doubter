@@ -35,48 +35,48 @@ declare module '../core' {
     /**
      * Constrains the input date to be greater than or equal to another date.
      *
-     * @param date The inclusive minimum date.
+     * @param value The inclusive minimum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    min(date: Date | number | string, options?: ConstraintOptions | Message): this;
+    min(value: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the input date to be less than or equal to another date.
      *
-     * @param date The inclusive maximum date.
+     * @param value The inclusive maximum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    max(date: Date | number | string, options?: ConstraintOptions | Message): this;
+    max(value: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the input date to be greater than or equal to another date.
      *
-     * @param date The inclusive minimum date.
+     * @param value The inclusive minimum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode min}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    after(date: Date | number | string, options?: ConstraintOptions | Message): this;
+    after(value: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
      * Constrains the input date to be less than or equal to another date.
      *
-     * @param date The inclusive maximum date.
+     * @param value The inclusive maximum date.
      * @param options The constraint options or an issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode max}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    before(date: Date | number | string, options?: ConstraintOptions | Message): this;
+    before(value: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
      * Transforms date to an ISO string.
@@ -126,10 +126,10 @@ export default function () {
   prototype.timestamp = timestamp;
 }
 
-function min(this: DateShape, date: Date | number | string, options?: ConstraintOptions | Message): DateShape {
-  date = new Date(date);
+function min(this: DateShape, value: Date | number | string, options?: ConstraintOptions | Message): DateShape {
+  value = new Date(value);
 
-  const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, date);
+  const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, value);
 
   return this.check(
     (input, param, options) => {
@@ -137,14 +137,14 @@ function min(this: DateShape, date: Date | number | string, options?: Constraint
         return issueFactory(input, options);
       }
     },
-    { key: CODE_DATE_MIN, param: date, unsafe: true }
+    { key: CODE_DATE_MIN, param: value, unsafe: true }
   );
 }
 
-function max(this: DateShape, date: Date | number | string, options?: ConstraintOptions | Message): DateShape {
-  date = new Date(date);
+function max(this: DateShape, value: Date | number | string, options?: ConstraintOptions | Message): DateShape {
+  value = new Date(value);
 
-  const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, date);
+  const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, value);
 
   return this.check(
     (input, param, options) => {
@@ -152,7 +152,7 @@ function max(this: DateShape, date: Date | number | string, options?: Constraint
         return issueFactory(input, options);
       }
     },
-    { key: CODE_DATE_MAX, param: date, unsafe: true }
+    { key: CODE_DATE_MAX, param: value, unsafe: true }
   );
 }
 

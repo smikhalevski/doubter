@@ -9,6 +9,7 @@ import { Result, Shape } from './Shape';
  * The shape of the class instance.
  *
  * @template Ctor The class constructor.
+ * @group Shapes
  */
 export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape<InstanceType<Ctor>> {
   /**
@@ -54,7 +55,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
     const { _applyChecks } = this;
 
     if (!(input instanceof this.ctor)) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

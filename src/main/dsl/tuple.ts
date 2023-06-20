@@ -7,6 +7,7 @@ import { ConstraintOptions, Message } from '../types';
  * @param shapes The array of tuple element shapes.
  * @param options The constraint options or an issue message.
  * @template HeadShapes The head tuple elements.
+ * @group DSL
  */
 export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]]>(
   shapes: HeadShapes,
@@ -21,6 +22,7 @@ export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]]>(
  * @param options The constraint options or an issue message.
  * @template HeadShapes The head tuple elements.
  * @template RestShape The rest tuple elements.
+ * @group DSL
  */
 export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]], RestShape extends AnyShape | null>(
   shapes: HeadShapes,

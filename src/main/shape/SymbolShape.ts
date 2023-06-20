@@ -6,6 +6,8 @@ import { Result, Shape } from './Shape';
 
 /**
  * The shape of an arbitrary symbol value.
+ *
+ * @group Shapes
  */
 export class SymbolShape extends Shape<symbol> {
   /**
@@ -32,7 +34,7 @@ export class SymbolShape extends Shape<symbol> {
     const { _applyChecks } = this;
 
     if (typeof input !== 'symbol') {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null) {
       return _applyChecks(input, null, options);

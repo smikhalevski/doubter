@@ -30,6 +30,7 @@ type InferRecord<
  *
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
+ * @group Shapes
  */
 export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, ValueShape extends AnyShape>
   extends Shape<InferRecord<KeyShape, ValueShape, INPUT>, InferRecord<KeyShape, ValueShape, OUTPUT>>
@@ -95,7 +96,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     nonce: number
   ): Result<InferRecord<KeyShape, ValueShape, OUTPUT>> {
     if (!isObject(input)) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
 
     const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
@@ -168,7 +169,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   ): Promise<Result<InferRecord<KeyShape, ValueShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
-        resolve(this._typeIssueFactory(input, options));
+        resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 

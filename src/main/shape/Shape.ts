@@ -48,6 +48,8 @@ import { ValidationError } from '../ValidationError';
 /**
  * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from `_coerce`
  * method, that is present on various shapes, when coercion is not possible.
+ *
+ * @group Other
  */
 export const NEVER = Object.freeze({}) as never;
 
@@ -68,6 +70,8 @@ export type ExcludeLiteral<T, U> =
 
 /**
  * An arbitrary shape.
+ *
+ * @group Shapes
  */
 export type AnyShape = Shape | Shape<never>;
 
@@ -76,6 +80,7 @@ export type AnyShape = Shape | Shape<never>;
  *
  * @template BaseShape The shape that parses the input without the replaced value.
  * @template AllowedValue The value that is allowed as an input and output.
+ * @group Shapes
  */
 // prettier-ignore
 export type AllowLiteralShape<BaseShape extends AnyShape, AllowedValue> =
@@ -86,6 +91,7 @@ export type AllowLiteralShape<BaseShape extends AnyShape, AllowedValue> =
  *
  * @template BaseShape The base shape.
  * @template ExcludedShape The shape to which the output must not conform.
+ * @group Shapes
  */
 export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
   extends Shape<BaseShape[INPUT], BaseShape[OUTPUT]>,
@@ -113,6 +119,7 @@ declare const BRAND: unique symbol;
  *
  * @template Value The value to brand.
  * @template Brand The brand value.
+ * @group Other
  */
 export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
 
@@ -122,6 +129,7 @@ export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
  *
  * @template BaseShape The shape which output must be branded.
  * @template Brand The brand value.
+ * @group Shapes
  */
 // prettier-ignore
 export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, Brand> =
@@ -132,6 +140,7 @@ export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<
  * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
  *
  * @template S The deep partial alternative of the shape.
+ * @group Other
  */
 export interface DeepPartialProtocol<S extends AnyShape> {
   /**
@@ -147,6 +156,7 @@ export interface DeepPartialProtocol<S extends AnyShape> {
  * as is if it doesn't.
  *
  * @template S The shape to convert to a deep partial alternative.
+ * @group Shapes
  */
 export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol<infer T> ? T : S;
 
@@ -154,6 +164,7 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
  * Shape that is both optional and deep partial.
  *
  * @template S The shape to convert to an optional deep partial alternative.
+ * @group Shapes
  */
 export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<DeepPartialShape<S>, undefined>;
 
@@ -162,6 +173,7 @@ export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<Dee
  * for creating custom shapes.
  *
  * @template Value The output value.
+ * @group Other
  */
 export type Result<Value = any> = Ok<Value> | Issue[] | null;
 
@@ -180,6 +192,7 @@ declare const OUTPUT: OUTPUT;
  * Extracts the shape input type.
  *
  * @template S The shape from which the input type must be inferred.
+ * @group Type Inference
  */
 export type Input<S extends AnyShape> = S[INPUT];
 
@@ -187,6 +200,7 @@ export type Input<S extends AnyShape> = S[INPUT];
  * Extracts the shape output type.
  *
  * @template S The shape from which the output type must be inferred.
+ * @group Type Inference
  */
 export type Output<S extends AnyShape> = S[OUTPUT];
 
@@ -195,6 +209,7 @@ export type Output<S extends AnyShape> = S[OUTPUT];
  *
  * @template InputValue The input value.
  * @template OutputValue The output value.
+ * @group Shapes
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
@@ -212,7 +227,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   declare readonly [OUTPUT]: OutputValue;
 
   /**
-   * The dictionary of shape annotations. Use {@linkcode annotate} to add new annotations via DSL.
+   * The dictionary of shape annotations. Use {@linkcode Shape#annotate} to add new annotations via DSL.
    */
   annotations: Dict = {};
 
@@ -393,7 +408,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Pipes the output of this shape to the input of another shape.
    *
    * @param shape The shape that validates the output if this shape.
-   * @returns The {@linkcode PipeShape} instance.
    * @template OutputShape The output value.
    */
   to<OutputShape extends AnyShape>(shape: OutputShape): PipeShape<this, OutputShape> {
@@ -453,7 +467,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param inputValue The input value to replace.
    * @param outputValue The output value that is returned if an `inputValue` is received.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    * @template InputValue The input value to replace.
    * @template OutputValue The output value that is used as the replacement for an input value.
    */
@@ -468,7 +481,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Allows a literal input value, so it is passed directly to the output without any checks.
    *
    * @param value The allowed value.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    * @template AllowedValue The allowed value.
    */
   allow<AllowedValue extends Literal>(value: AllowedValue): AllowLiteralShape<this, AllowedValue> {
@@ -480,7 +492,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param value The excluded value.
    * @param options The constraint options or an issue message.
-   * @returns The {@linkcode DenyLiteralShape} instance.
    * @template DeniedValue The denied value.
    */
   deny<DeniedValue extends InputValue | OutputValue>(
@@ -492,8 +503,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Replaces `undefined` input value with an `undefined` output value.
-   *
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   optional(): AllowLiteralShape<this, undefined>;
 
@@ -502,7 +511,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param defaultValue The value that should be used if an input value is `undefined`.
    * @template DefaultValue The value that is used as the replacement for `undefined`.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   optional<DefaultValue extends Literal>(
     defaultValue: DefaultValue
@@ -514,8 +522,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Replaces `null` input value with an `null` output value.
-   *
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   nullable(): AllowLiteralShape<this, null>;
 
@@ -524,7 +530,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param defaultValue The value that should be used if an input value is `null`.
    * @template DefaultValue The value that is used as the replacement for `null`.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   nullable<DefaultValue extends Literal>(defaultValue: DefaultValue): ReplaceLiteralShape<this, null, DefaultValue>;
 
@@ -534,8 +539,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Passes `null` and `undefined` input values directly to the output without parsing.
-   *
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   nullish(): AllowLiteralShape<AllowLiteralShape<this, null>, undefined>;
 
@@ -544,7 +547,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
    * @template DefaultValue The value that is used as the replacement for `undefined` and `null`.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   nullish<DefaultValue extends Literal>(
     defaultValue?: DefaultValue
@@ -558,7 +560,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Prevents an input and output from being `undefined`.
    *
    * @param options The constraint options or an issue message.
-   * @returns The {@linkcode DenyLiteralShape} instance.
    */
   nonOptional(options?: ConstraintOptions | Message): DenyLiteralShape<this, undefined> {
     return new DenyLiteralShape(this, undefined, options);
@@ -566,8 +567,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Returns `undefined` if parsing fails.
-   *
-   * @returns The {@linkcode CatchShape} instance.
    */
   catch(): CatchShape<this, undefined>;
 
@@ -577,7 +576,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed. A callback
    * receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
    * @template FallbackValue The fallback value.
-   * @returns The {@linkcode CatchShape} instance.
    */
   catch<FallbackValue extends Literal>(
     fallback: FallbackValue | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => FallbackValue)
@@ -593,7 +591,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param shape The shape to which the output must not conform.
    * @param options The constraint options or an issue message.
    * @template ExcludedShape The shape to which the output must not conform.
-   * @returns The {@linkcode ExcludeShape} instance.
    */
   exclude<ExcludedShape extends AnyShape>(
     shape: ExcludedShape,
@@ -605,13 +602,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Checks that the input doesn't match the shape.
    *
-   * This method works exactly as {@linkcode exclude} at runtime, but it doesn't perform the exclusion on the type
+   * This method works exactly as {@linkcode Shape#exclude} at runtime, but it doesn't perform the exclusion on the type
    * level.
    *
    * @param shape The shape to which the output must not conform.
    * @param options The constraint options or an issue message.
    * @template ExcludedShape The shape to which the output must not conform.
-   * @returns The {@linkcode ExcludeShape} instance.
    */
   not<ExcludedShape extends AnyShape>(
     shape: ExcludedShape,
@@ -681,8 +677,8 @@ export interface Shape<InputValue, OutputValue> {
   readonly inputs: readonly unknown[];
 
   /**
-   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called.
-   * `false` if the shape can be used in both sync and async contexts.
+   * `true` if the shape allows only {@linkcode Shape#parseAsync} and throws an error if {@linkcode Shape#parse} is
+   * called, or `false` if the shape can be used in both sync and async contexts.
    */
   readonly isAsync: boolean;
 
@@ -692,7 +688,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
    */
   try(input: unknown, options?: ApplyOptions): Ok<OutputValue> | Err;
 
@@ -711,7 +707,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parse(input: unknown, options?: ParseOptions): OutputValue;
@@ -731,7 +727,7 @@ export interface Shape<InputValue, OutputValue> {
    *
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
    */
   parseOrDefault(input: unknown): OutputValue | undefined;
 
@@ -743,7 +739,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param options Parsing options.
    * @template DefaultValue The default value that is returned if parsing fails.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
    */
   parseOrDefault<DefaultValue>(
     input: unknown,
@@ -954,6 +950,7 @@ Object.defineProperties(Shape.prototype, {
  * The shape that applies a transformer callback to the input.
  *
  * @template TransformedValue The output value of the callback that transforms the input value.
+ * @group Shapes
  */
 export class TransformShape<TransformedValue> extends Shape<any, TransformedValue> {
   /**
@@ -1028,6 +1025,7 @@ export class TransformShape<TransformedValue> extends Shape<any, TransformedValu
  *
  * @template InputShape The input shape.
  * @template OutputShape The output shape.
+ * @group Shapes
  */
 export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape>
   extends Shape<InputShape[INPUT], OutputShape[OUTPUT]>
@@ -1139,6 +1137,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
  * @template BaseShape The shape that parses the input without the replaced value.
  * @template InputValue The input value to replace.
  * @template OutputValue The output value that is used as the replacement for an input value.
+ * @group Shapes
  */
 export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputValue>
   extends Shape<BaseShape[INPUT] | InputValue, ExcludeLiteral<BaseShape[OUTPUT], InputValue> | OutputValue>
@@ -1166,7 +1165,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
      */
     readonly inputValue: InputValue,
     /**
-     * The output value that is returned if an {@linkcode inputValue} is received.
+     * The output value that is returned if an {@linkcode ReplaceLiteralShape#inputValue} is received.
      */
     readonly outputValue: OutputValue
   ) {
@@ -1240,6 +1239,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
  *
  * @template BaseShape The shape that parses the input without the denied value.
  * @template DeniedValue The denied value.
+ * @group Shapes
  */
 export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
   extends Shape<ExcludeLiteral<BaseShape[INPUT], DeniedValue>, ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>>
@@ -1302,7 +1302,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     nonce: number
   ): Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>> {
     if (isEqual(input, this.deniedValue)) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
   }
@@ -1313,7 +1313,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     nonce: number
   ): Promise<Result<ExcludeLiteral<BaseShape[OUTPUT], DeniedValue>>> {
     if (isEqual(input, this.deniedValue)) {
-      return Promise.resolve(this._typeIssueFactory(input, options));
+      return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
     return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
   }
@@ -1335,7 +1335,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
       output = result.value;
 
       if (isEqual(output, this.deniedValue)) {
-        return this._typeIssueFactory(input, options);
+        return [this._typeIssueFactory(input, options)];
       }
     }
 
@@ -1351,6 +1351,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
  *
  * @template BaseShape The shape that parses the input.
  * @template FallbackValue The fallback value.
+ * @group Shapes
  */
 export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   extends Shape<BaseShape[INPUT], BaseShape[OUTPUT] | FallbackValue>
@@ -1445,6 +1446,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
  *
  * @template BaseShape The base shape.
  * @template ExcludedShape The shape to which the output must not conform.
+ * @group Shapes
  */
 export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
   extends Shape<BaseShape[INPUT], Exclude<BaseShape[OUTPUT], ExcludedShape[INPUT]>>
@@ -1518,7 +1520,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     }
 
     if (!isArray(excludedShape['_apply'](output, options, nonce))) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
 
     if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
@@ -1548,7 +1550,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
         let issues;
 
         if (!isArray(outputResult)) {
-          return this._typeIssueFactory(input, options);
+          return [this._typeIssueFactory(input, options)];
         }
 
         if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {

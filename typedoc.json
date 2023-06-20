@@ -7,7 +7,12 @@
   "disableSources": true,
   "hideGenerator": true,
   "readme": "none",
+  "tsconfig": "./tsconfig.build.json",
   "groupOrder": [
+    "DSL",
+    "Shapes",
+    "Type Inference",
+    "Errors",
     "Functions",
     "References",
     "Constructors",

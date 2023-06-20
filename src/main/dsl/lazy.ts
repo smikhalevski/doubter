@@ -7,6 +7,7 @@ import { INPUT } from '../shape/Shape';
  *
  * @param shapeProvider The provider that returns the resolved shape.
  * @template ProvidedShape The provided shape.
+ * @group DSL
  */
 export function lazy<ProvidedShape extends AnyShape>(
   shapeProvider: () => ProvidedShape

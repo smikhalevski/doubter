@@ -9,6 +9,7 @@ import { ConstraintOptions, Literal, Message } from '../types';
  * @param options The constraint options or an issue message.
  * @template Value The union of allowed enum values.
  * @template ValuesArray The array of allowed values.
+ * @group DSL
  */
 function enum_<Value extends Literal, ValuesArray extends readonly [Value, ...Value[]]>(
   values: ValuesArray,
@@ -23,6 +24,7 @@ function enum_<Value extends Literal, ValuesArray extends readonly [Value, ...Va
  * @param options The constraint options or an issue message.
  * @template Value The union of allowed enum values.
  * @template ValuesDict The object that maps from the key to an enum value.
+ * @group DSL
  */
 function enum_<Value extends Literal, ValuesDict extends ReadonlyDict<Value>>(
   values: ValuesDict,

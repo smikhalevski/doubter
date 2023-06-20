@@ -44,6 +44,7 @@ type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape ext
  *
  * @template HeadShapes The array of positioned element shapes.
  * @template RestShape The shape of rest elements, or `null` if there are no rest elements.
+ * @group Shapes
  */
 export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null>
   extends CoercibleShape<InferArray<HeadShapes, RestShape, INPUT>, InferArray<HeadShapes, RestShape, OUTPUT>, unknown[]>
@@ -162,7 +163,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
     ) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
 
     if (headShapesLength !== 0 || restShape !== null) {
@@ -220,7 +221,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)
       ) {
-        resolve(this._typeIssueFactory(input, options));
+        resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 

@@ -7,6 +7,7 @@ import { ConstraintOptions, Message } from '../types';
  * @param shape The shape of the resolved value.
  * @param options The constraint options or an issue message.
  * @template ValueShape The shape of the resolved value.
+ * @group DSL
  */
 export function promise<ValueShape extends AnyShape>(
   shape: ValueShape,

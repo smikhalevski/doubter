@@ -274,6 +274,7 @@ describe('or([object({ type: const("foo") }), object({ type: const("bar") })])',
         valita.object({ type: valita.literal('foo') }),
         valita.object({ type: valita.literal('bar') })
       );
+
       const options = { mode: 'passthrough' };
 
       measure(() => {

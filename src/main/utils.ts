@@ -1,85 +1,92 @@
-import { ApplyOptions, ConstraintOptions, Issue, Message } from './core';
+import { ApplyOptions, ConstraintOptions, Issue, Message, MessageCallback } from './core';
 import { isObjectLike } from './internal';
 
 /**
- * Returns a function that creates a new array with a single issue.
+ * Extracts options from the given source.
+ *
+ * @param source Options or message to extract from.
+ */
+export function extractOptions<T extends ConstraintOptions>(source: T | Message | undefined): Partial<T> {
+  if (typeof source === 'function' || typeof source === 'string') {
+    return { message: source } as T;
+  }
+  if (isObjectLike(source)) {
+    return source;
+  }
+  return {};
+}
+
+/**
+ * Returns a function that creates an issue.
  *
  * @param code The code of the issue.
  * @param defaultMessage The default message that is used if message isn't provided through options.
  * @param options Options provided by the user.
  * @param param The param that is added to the issue.
- * @returns The callback that takes an input and options, and returns an array with a single issue.
+ * @returns The callback that takes an input and options, and returns an issue.
  */
 export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: ConstraintOptions | Message | undefined,
   param: unknown
-): (input: unknown, options: Readonly<ApplyOptions>) => Issue[];
+): (input: unknown, options: Readonly<ApplyOptions>) => Issue;
 
 /**
- * Returns a function that creates a new array with a single issue.
+ * Returns a function that creates an issue.
  *
  * @param code The code of the issue.
  * @param defaultMessage The default message that is used if message isn't provided through options.
  * @param options Options provided by the user.
- * @returns The callback that takes an input, options, and a param, and returns an array with a single issue.
+ * @returns The callback that takes an input, options, and a param, and returns an issue.
  */
 export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: ConstraintOptions | Message | undefined
-): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[];
+): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue;
 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: any,
   options: ConstraintOptions | Message | undefined,
   param?: unknown
-): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[] {
-  const paramRequired = arguments.length <= 3;
+): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue {
+  const parameterized = arguments.length <= 3;
 
-  let meta: unknown;
-  let message = defaultMessage;
-
-  if (isObjectLike<ConstraintOptions>(options)) {
-    if (options.message !== undefined) {
-      message = options.message;
-    }
-    meta = options.meta;
-  } else if (typeof options === 'function') {
-    message = options;
-  } else if (options !== undefined) {
-    message = options;
-  }
+  let { message = defaultMessage, meta } = extractOptions(options);
 
   if (typeof message === 'function') {
-    if (paramRequired) {
-      return (input, options, param) => [
-        { code, path: undefined, input, message: message(param, code, input, meta, options), param, meta },
-      ];
-    }
+    return (input, options, param0) => {
+      const issue = { code, path: undefined, input, message: undefined, param: parameterized ? param0 : param, meta };
+      const value = (message as MessageCallback)(issue, options);
 
-    return (input, options) => [
-      { code, path: undefined, input, message: message(param, code, input, meta, options), param, meta },
-    ];
+      if (issue.message === undefined) {
+        issue.message = value;
+      }
+      return issue;
+    };
   }
 
   if (typeof message === 'string') {
-    if (paramRequired) {
+    if (parameterized) {
       if (message.indexOf('%s') !== -1) {
-        return (input, options, param) => [
-          { code, path: undefined, input, message: message.replace('%s', String(param)), param, meta },
-        ];
+        return (input, options, param0) => {
+          return { code, path: undefined, input, message: message.replace('%s', String(param0)), param: param0, meta };
+        };
       }
     } else {
       message = message.replace('%s', String(param));
     }
   }
 
-  if (paramRequired) {
-    return (input, options, param) => [{ code, path: undefined, input, message, param, meta }];
+  if (parameterized) {
+    return (input, options, param0) => {
+      return { code, path: undefined, input, message, param: param0, meta };
+    };
   }
 
-  return input => [{ code, path: undefined, input, message, param, meta }];
+  return (input, options) => {
+    return { code, path: undefined, input, message, param, meta };
+  };
 }

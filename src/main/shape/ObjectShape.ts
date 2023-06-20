@@ -1,4 +1,4 @@
-import { CODE_OBJECT_UNKNOWN_KEYS, CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_UNKNOWN_KEYS } from '../constants';
+import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_EXACT } from '../constants';
 import {
   applyShape,
   Bitmask,
@@ -66,7 +66,13 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
   RestShape extends null | undefined ? null : RestShape extends AnyShape ? OptionalDeepPartialShape<RestShape> : null
 >;
 
-export type KeysMode = 'preserved' | 'stripped' | 'exact';
+/**
+ * Defines how object keys are handled.
+ *
+ * @see {@linkcode ObjectShape#keysMode ObjectShape.keysMode}
+ * @group Other
+ */
+export type ObjectKeysMode = 'preserved' | 'stripped' | 'exact';
 
 /**
  * The shape of an object.
@@ -75,6 +81,7 @@ export type KeysMode = 'preserved' | 'stripped' | 'exact';
  * @template RestShape The shape that constrains values of
  * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures), or `null`
  * if there's no index signature.
+ * @group Shapes
  */
 export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null>
   extends Shape<InferObject<PropShapes, RestShape, INPUT>, InferObject<PropShapes, RestShape, OUTPUT>>
@@ -84,11 +91,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * The array of known object keys.
    */
   readonly keys: readonly StringKeyof<PropShapes>[];
-
-  /**
-   * The mode of keys handling.
-   */
-  readonly keysMode: KeysMode;
 
   /**
    * The type constraint options or an issue message.
@@ -113,7 +115,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns issues which describe that an object has unknown properties.
    */
-  protected _exactIssueFactory?: (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue[];
+  protected _exactIssueFactory?: (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue;
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.
@@ -139,12 +141,14 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
      */
     readonly restShape: RestShape,
     options?: ConstraintOptions | Message,
-    keysMode: KeysMode = 'preserved'
+    /**
+     * The mode of keys handling.
+     */
+    readonly keysMode: ObjectKeysMode = 'preserved'
   ) {
     super();
 
     this.keys = Object.keys(shapes) as StringKeyof<PropShapes>[];
-    this.keysMode = keysMode;
 
     this._options = options;
     this._valueShapes = Object.values(shapes);
@@ -307,7 +311,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   exact(options?: ConstraintOptions | Message): ObjectShape<PropShapes, null> {
     const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
 
-    shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_UNKNOWN_KEYS, MESSAGE_OBJECT_UNKNOWN_KEYS, options);
+    shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_EXACT, MESSAGE_OBJECT_EXACT, options);
 
     return copyUnsafeChecks(this, shape);
   }
@@ -373,7 +377,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     nonce: number
   ): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
     if (!this._typePredicate(input)) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
       return this._applyRestUnchecked(input, options, nonce);
@@ -389,7 +393,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): Promise<Result<InferObject<PropShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!this._typePredicate(input)) {
-        resolve(this._typeIssueFactory(input, options));
+        resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 
@@ -445,13 +449,12 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
 
       if (unknownKeys !== null) {
-        const issue = this._exactIssueFactory!(input, options, unknownKeys);
+        issues = [this._exactIssueFactory!(input, options, unknownKeys)];
 
         if (!options.verbose) {
-          resolve(issue);
+          resolve(issues);
           return;
         }
-        issues = concatIssues(issues, issue);
       }
 
       if (seenCount !== keysLength) {
@@ -635,9 +638,9 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       const issue = this._exactIssueFactory!(input, options, unknownKeys);
 
       if (!options.verbose) {
-        return issue;
+        return [issue];
       }
-      issues = concatIssues(issues, issue);
+      issues = concatIssues(issues, [issue]);
     }
 
     // Parse absent known keys

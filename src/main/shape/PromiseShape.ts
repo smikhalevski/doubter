@@ -10,6 +10,7 @@ import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, 
  * The shape of a `Promise` value.
  *
  * @template ValueShape The shape of the resolved value.
+ * @group Shapes
  */
 export class PromiseShape<ValueShape extends AnyShape>
   extends CoercibleShape<Promise<ValueShape[INPUT]>, Promise<ValueShape[OUTPUT]>>
@@ -70,7 +71,7 @@ export class PromiseShape<ValueShape extends AnyShape>
       !(input instanceof Promise) &&
       (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
-      return Promise.resolve(this._typeIssueFactory(input, options));
+      return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
 
     return output.then((value: unknown) =>

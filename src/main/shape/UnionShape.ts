@@ -30,6 +30,7 @@ type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
  * The shape that requires an input to conform at least one of shapes.
  *
  * @template Shapes The array of shapes that comprise a union.
+ * @group Shapes
  */
 export class UnionShape<Shapes extends readonly AnyShape[]>
   extends Shape<Shapes[number][INPUT], Shapes[number][OUTPUT]>
@@ -141,7 +142,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
       if (shapesLength === 1) {
         return issues;
       }
-      return this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups });
+      return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
     }
 
     if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
@@ -195,7 +196,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
         if (shapesLength === 1) {
           return issues;
         }
-        return this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups });
+        return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
       };
 
       resolve(next());

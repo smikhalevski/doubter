@@ -5,6 +5,8 @@ import { Result, Shape } from './Shape';
 
 /**
  * The shape that doesn't match any input.
+ *
+ * @group Shapes
  */
 export class NeverShape extends Shape<never> {
   /**
@@ -28,6 +30,6 @@ export class NeverShape extends Shape<never> {
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<never> {
-    return this._typeIssueFactory(input, options);
+    return [this._typeIssueFactory(input, options)];
   }
 }

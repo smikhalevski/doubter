@@ -29,6 +29,7 @@ type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = Intersec
  * The shape that requires an input to conform all given shapes.
  *
  * @template Shapes The array of shapes that comprise an intersection.
+ * @group Shapes
  */
 export class IntersectionShape<Shapes extends readonly AnyShape[]>
   extends Shape<ToIntersection<Shapes[number]>[INPUT], ToIntersection<Shapes[number]>[OUTPUT]>
@@ -208,7 +209,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         output = mergeValues(output, outputs[i]);
       }
       if (output === NEVER) {
-        return this._typeIssueFactory(input, options);
+        return [this._typeIssueFactory(input, options)];
       }
     }
 

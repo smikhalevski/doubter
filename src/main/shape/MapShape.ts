@@ -32,6 +32,7 @@ import {
  *
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
+ * @group Shapes
  */
 export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   extends CoercibleShape<
@@ -114,7 +115,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // No coercion or not coercible
       (!(options.coerce || this.isCoercing) || !(changed = (entries = this._coerce(input)) !== NEVER))
     ) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
 
     const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
@@ -192,7 +193,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // No coercion or not coercible
         (!(options.coerce || this.isCoercing) || !(changed = (entries = this._coerce(input)) !== NEVER))
       ) {
-        resolve(this._typeIssueFactory(input, options));
+        resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 

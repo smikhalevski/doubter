@@ -2,7 +2,7 @@ import { ApplyOptions, ObjectShape, Ok, Result, Shape, StringShape } from '../..
 import {
   CODE_DENIED,
   CODE_ENUM,
-  CODE_OBJECT_UNKNOWN_KEYS,
+  CODE_OBJECT_EXACT,
   CODE_TYPE,
   MESSAGE_OBJECT_TYPE,
   MESSAGE_STRING_TYPE,
@@ -505,7 +505,7 @@ describe('ObjectShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_OBJECT_UNKNOWN_KEYS,
+            code: CODE_OBJECT_EXACT,
             input: obj,
             message: 'Must not have unknown keys: yay',
             param: ['yay'],
@@ -526,7 +526,7 @@ describe('ObjectShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_OBJECT_UNKNOWN_KEYS,
+            code: CODE_OBJECT_EXACT,
             input: obj,
             message: 'Must not have unknown keys: yay,wow',
             param: ['yay', 'wow'],
@@ -645,7 +645,7 @@ describe('ObjectShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_OBJECT_UNKNOWN_KEYS,
+            code: CODE_OBJECT_EXACT,
             input: obj,
             message: 'Must not have unknown keys: yay',
             param: ['yay'],
@@ -664,7 +664,7 @@ describe('ObjectShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_OBJECT_UNKNOWN_KEYS,
+            code: CODE_OBJECT_EXACT,
             input: obj,
             message: 'Must not have unknown keys: yay,wow',
             param: ['yay', 'wow'],

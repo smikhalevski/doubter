@@ -8,6 +8,8 @@ import { NEVER, Result } from './Shape';
 
 /**
  * The shape of a boolean value.
+ *
+ * @group Shapes
  */
 export class BooleanShape extends CoercibleShape<boolean> {
   /**
@@ -45,7 +47,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
       typeof output !== 'boolean' &&
       (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
       return ok(output);

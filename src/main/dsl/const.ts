@@ -7,6 +7,7 @@ import { ConstraintOptions, Literal, Message } from '../types';
  * @param value The value to which the input must be strictly equal.
  * @param options The constraint options or an issue message.
  * @template Value The expected value.
+ * @group DSL
  */
 function const_<Value extends Literal>(value: Value, options?: ConstraintOptions | Message): ConstShape<Value> {
   return new ConstShape(value, options);

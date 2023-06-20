@@ -7,6 +7,7 @@ import { ConstraintOptions, Message } from '../types';
  * @param shapes The array of shapes to try.
  * @param options The constraint options or an issue message.
  * @template Shapes The tuple of united shapes.
+ * @group DSL
  */
 export function union<Shapes extends [AnyShape, ...AnyShape[]]>(
   shapes: Shapes,
@@ -15,4 +16,7 @@ export function union<Shapes extends [AnyShape, ...AnyShape[]]>(
   return new UnionShape<Shapes>(shapes, options);
 }
 
+/**
+ * @group DSL
+ */
 export { union as or };

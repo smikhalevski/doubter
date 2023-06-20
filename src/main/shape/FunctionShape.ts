@@ -31,6 +31,7 @@ type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
  * @template ArgsShape The shape of the array of arguments.
  * @template ReturnShape The return value shape, or `null` if unconstrained.
  * @template ThisShape The shape of `this` argument, or `null` if unconstrained.
+ * @group Shapes
  */
 export class FunctionShape<
   ArgsShape extends Shape<readonly any[], readonly any[]>,
@@ -118,7 +119,7 @@ export class FunctionShape<
   /**
    * Enables input function wrapping during parsing to ensure runtime signature type-safety. Wrapper ensures that input
    * function receives arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape}
-   * respectively, and returns the value that conforms {@link returnShape}.
+   * respectively, and returns the value that conforms {@linkcode returnShape}.
    *
    * @param options Options that are used by the wrapper. If omitted then default options are applied: not verbose, no
    * type coercion.
@@ -246,7 +247,7 @@ export class FunctionShape<
     let issues = null;
 
     if (typeof input !== 'function') {
-      return this._typeIssueFactory(input, options);
+      return [this._typeIssueFactory(input, options)];
     }
     if (_applyChecks !== null && (issues = _applyChecks(input, null, options)) !== null) {
       return issues;

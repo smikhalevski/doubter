@@ -6,6 +6,7 @@ import { Shape } from './Shape';
  * @template InputValue The input value.
  * @template OutputValue The output value.
  * @template CoercedValue The value to which an input is coerced.
+ * @group Shapes
  */
 export abstract class CoercibleShape<
   InputValue = any,

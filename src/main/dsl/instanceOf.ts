@@ -7,6 +7,7 @@ import { ConstraintOptions, Message } from '../types';
  * @param ctor The instance constructor.
  * @param options The constraint options or an issue message.
  * @template Ctor The instance constructor.
+ * @group DSL
  */
 export function instanceOf<Ctor extends new (...args: any[]) => any>(
   ctor: Ctor,

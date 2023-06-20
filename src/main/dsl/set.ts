@@ -7,6 +7,7 @@ import { ConstraintOptions, Message } from '../types';
  * @param shape The value shape
  * @param options The constraint options or an issue message.
  * @template ValueShape The value shape.
+ * @group DSL
  */
 export function set<ValueShape extends AnyShape>(
   shape: ValueShape,

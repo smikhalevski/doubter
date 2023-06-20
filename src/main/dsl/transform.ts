@@ -6,6 +6,7 @@ import { ApplyOptions } from '../types';
  *
  * @param cb The callback that transforms the input value.
  * @template TransformedValue The output value.
+ * @group DSL
  */
 export function transform<TransformedValue>(
   /**
@@ -26,6 +27,7 @@ export function transform<TransformedValue>(
  *
  * @param cb The callback that transforms the input value.
  * @template TransformedValue The output value.
+ * @group DSL
  */
 export function transformAsync<TransformedValue>(
   /**

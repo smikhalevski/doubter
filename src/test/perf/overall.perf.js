@@ -133,6 +133,7 @@ describe('Overall', () => {
           a42: valita.number(),
         }),
       });
+
       const options = { mode: 'passthrough' };
 
       measure(() => {
@@ -155,12 +156,14 @@ describe('Overall', () => {
         }),
       });
 
+      const options = { verbose: true };
+
       measure(() => {
         shape.parse(validValue);
       });
 
       measure(() => {
-        shape.try(invalidValue, { verbose: true });
+        shape.try(invalidValue, options);
       });
     });
   });
@@ -290,12 +293,14 @@ describe('Overall', () => {
         })
         .exact();
 
+      const options = { verbose: true };
+
       measure(() => {
         shape.parse(validValue);
       });
 
       measure(() => {
-        shape.try(invalidValue, { verbose: true });
+        shape.try(invalidValue, options);
       });
     });
   });
@@ -433,6 +438,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
           a73: valita.boolean(),
         }),
       });
+
       const options = { mode: 'passthrough' };
 
       measure(() => {
