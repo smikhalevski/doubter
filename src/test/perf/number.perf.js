@@ -51,14 +51,14 @@ describe('number()', () => {
   });
 });
 
-describe('number().multipleOf(0.1)', () => {
-  const value = 49.9;
+describe('number().multipleOf(1)', () => {
+  const value = 49;
 
   test('Ajv', measure => {
     const validate = new Ajv().compile({
       $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'number',
-      multipleOf: 0.1,
+      multipleOf: 1,
     });
 
     measure(() => {
@@ -67,7 +67,7 @@ describe('number().multipleOf(0.1)', () => {
   });
 
   test('zod', measure => {
-    const type = zod.number().multipleOf(0.1);
+    const type = zod.number().multipleOf(1);
 
     measure(() => {
       type.parse(value);
@@ -75,7 +75,7 @@ describe('number().multipleOf(0.1)', () => {
   });
 
   test('doubter', measure => {
-    const shape = doubter.number().multipleOf(0.1);
+    const shape = doubter.number().multipleOf(1);
 
     measure(() => {
       shape.parse(value);
