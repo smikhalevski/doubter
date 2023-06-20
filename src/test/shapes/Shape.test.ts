@@ -98,7 +98,7 @@ describe('Shape', () => {
       shape.parse('aaa');
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerced: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerce: false });
     });
 
     test('added parameterized check is applied', () => {
@@ -108,7 +108,7 @@ describe('Shape', () => {
       shape.parse('aaa');
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', 111, { verbose: false, coerced: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', 111, { verbose: false, coerce: false });
     });
 
     test('applies checks in the same order they were added', () => {
@@ -221,7 +221,7 @@ describe('Shape', () => {
       expect(new Shape().refine(cbMock).try('aaa')).toEqual({ ok: true, value: 'aaa' });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false });
     });
 
     test('does not apply a safe predicate if the preceding check failed', () => {
@@ -647,13 +647,13 @@ describe('Shape', () => {
       shape.try('aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
       const shape = new Shape();
       const applySpy = jest.spyOn<Shape, any>(shape, '_apply');
-      const options = { coerced: true };
+      const options = { coerce: true };
 
       shape.try('aaa', options);
 
@@ -755,13 +755,13 @@ describe('Shape', () => {
       shape.parse('aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
       const shape = new Shape();
       const applySpy = jest.spyOn<Shape, any>(shape, '_apply');
-      const options = { coerced: true };
+      const options = { coerce: true };
 
       shape.parse('aaa', options);
 
@@ -805,13 +805,13 @@ describe('Shape', () => {
       shape.parseOrDefault('aaa');
 
       expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
+      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
       const shape = new Shape();
       const applySpy = jest.spyOn<Shape, any>(shape, '_apply');
-      const options = { coerced: true };
+      const options = { coerce: true };
 
       shape.parseOrDefault('aaa', 'bbb', options);
 
@@ -843,12 +843,12 @@ describe('Shape', () => {
         await asyncShape.tryAsync('aaa');
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
         const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
-        const options = { coerced: true };
+        const options = { coerce: true };
 
         await asyncShape.tryAsync('aaa', options);
 
@@ -868,12 +868,12 @@ describe('Shape', () => {
         await asyncShape.parseAsync('aaa');
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
         const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
-        const options = { coerced: true };
+        const options = { coerce: true };
 
         await asyncShape.parseAsync('aaa', options);
 
@@ -893,12 +893,12 @@ describe('Shape', () => {
         await asyncShape.parseOrDefaultAsync('aaa');
 
         expect(applySpy).toHaveBeenCalledTimes(1);
-        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerced: false, verbose: false }, 0);
+        expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
         const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
-        const options = { coerced: true };
+        const options = { coerce: true };
 
         await asyncShape.parseOrDefaultAsync('aaa', 'bbb', options);
 
@@ -924,7 +924,7 @@ describe('TransformShape', () => {
     expect(shape.parse('aaa')).toBe(111);
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false });
   });
 
   test('callback can throw a ValidationError', () => {
@@ -952,7 +952,7 @@ describe('TransformShape', () => {
     new TransformShape(() => 111).check(cbMock).parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerced: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerce: false });
   });
 
   describe('async', () => {
@@ -964,7 +964,7 @@ describe('TransformShape', () => {
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false });
     });
 
     test('transform callback can reject with ValidationError instances', async () => {
@@ -997,10 +997,10 @@ describe('PipeShape', () => {
     expect(pipeShape.parse('aaa')).toBe('aaa');
 
     expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+    expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
 
     expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+    expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
   });
 
   test('does not apply the output shape if the input shape parsing failed', () => {
@@ -1031,7 +1031,7 @@ describe('PipeShape', () => {
     new PipeShape(new Shape(), new Shape()).check(cbMock).parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerced: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerce: false });
   });
 
   describe('deepPartial', () => {
@@ -1066,10 +1066,10 @@ describe('PipeShape', () => {
       await expect(pipeShape.parseAsync('aaa')).resolves.toBe('aaa');
 
       expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+      expect(applySpy1).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
 
       expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerced: false }, 0);
+      expect(applySpy2).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
     });
 
     test('does not apply the output shape if the input shape parsing failed', async () => {
@@ -1100,7 +1100,7 @@ describe('PipeShape', () => {
       await new PipeShape(asyncShape, new Shape()).check(cbMock).parseAsync('aaa');
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerced: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerce: false });
     });
   });
 });
@@ -1146,7 +1146,7 @@ describe('ReplaceLiteralShape', () => {
     new ReplaceLiteralShape(new Shape(), 111, 222).check(cbMock).try(111);
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { coerced: false, verbose: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { coerce: false, verbose: false });
   });
 
   describe('inputs', () => {
@@ -1200,7 +1200,7 @@ describe('ReplaceLiteralShape', () => {
       await new ReplaceLiteralShape(asyncShape, 111, 222).check(cbMock).tryAsync(111);
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { coerced: false, verbose: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { coerce: false, verbose: false });
     });
   });
 });
@@ -1248,7 +1248,7 @@ describe('DenyLiteralShape', () => {
     new DenyLiteralShape(new Shape(), 111).check(cbMock).parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerced: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: false, coerce: false });
   });
 
   test('does not apply checks if shape raises an issue', () => {
@@ -1339,7 +1339,7 @@ describe('CatchShape', () => {
       1,
       111,
       [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
-      { coerced: false, verbose: false }
+      { coerce: false, verbose: false }
     );
   });
 

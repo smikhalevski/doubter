@@ -39,7 +39,7 @@ describe('PromiseShape', () => {
     });
 
     expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerced: false });
+    expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerce: false });
   });
 
   test('applies unsafe checks if value shape raised issues', async () => {

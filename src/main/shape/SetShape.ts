@@ -68,7 +68,7 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   protected _getInputs(): unknown[] {
-    if (this.isCoerced) {
+    if (this.isCoercing) {
       return this.shape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
     } else {
       return [TYPE_SET];
@@ -84,7 +84,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerce(input)) !== NEVER))
+      (!(options.coerce || this.isCoercing) || !(changed = (values = this._coerce(input)) !== NEVER))
     ) {
       return this._typeIssueFactory(input, options);
     }
@@ -132,7 +132,7 @@ export class SetShape<ValueShape extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerced || this.isCoerced) || !(changed = (values = this._coerce(input)) !== NEVER))
+        (!(options.coerce || this.isCoercing) || !(changed = (values = this._coerce(input)) !== NEVER))
       ) {
         resolve(this._typeIssueFactory(input, options));
         return;

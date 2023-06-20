@@ -27,7 +27,7 @@ export class StringShape extends CoercibleShape<string> {
   }
 
   protected _getInputs(): unknown[] {
-    if (this.isCoerced) {
+    if (this.isCoercing) {
       return [TYPE_STRING, TYPE_OBJECT, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_ARRAY, null, undefined];
     } else {
       return [TYPE_STRING];
@@ -43,7 +43,7 @@ export class StringShape extends CoercibleShape<string> {
 
     if (
       typeof output !== 'string' &&
-      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
+      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return this._typeIssueFactory(input, options);
     }

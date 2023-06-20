@@ -51,7 +51,7 @@ describe('BigIntShape', () => {
       expect(new BigIntShape().coerce().parse(new Number(111))).toBe(BigInt(111));
       expect(new BigIntShape().coerce().parse([new Number(111)])).toBe(BigInt(111));
       expect(new BigIntShape().coerce().parse(true)).toBe(BigInt(1));
-      expect(new BigIntShape().parse(true, { coerced: true })).toBe(BigInt(1));
+      expect(new BigIntShape().parse(true, { coerce: true })).toBe(BigInt(1));
     });
 
     test('raises an issue if coercion fails', () => {

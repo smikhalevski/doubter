@@ -27,7 +27,7 @@ export class DateShape extends CoercibleShape<Date> {
   }
 
   protected _getInputs(): unknown[] {
-    if (this.isCoerced) {
+    if (this.isCoercing) {
       return [TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
     } else {
       return [TYPE_DATE];
@@ -43,7 +43,7 @@ export class DateShape extends CoercibleShape<Date> {
 
     if (
       !isValidDate(input) &&
-      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
+      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return this._typeIssueFactory(input, options);
     }

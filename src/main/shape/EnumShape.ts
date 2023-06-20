@@ -46,7 +46,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   protected _getInputs(): unknown[] {
     const inputs: unknown[] = this.values.slice(0);
 
-    if (!this.isCoerced || inputs.length === 0) {
+    if (!this.isCoercing || inputs.length === 0) {
       return inputs;
     }
     if (!isArray(this.source)) {
@@ -64,7 +64,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
 
     if (
       !values.includes(output) &&
-      (!(changed = options.coerced || this.isCoerced) || (output = this._coerce(input)) === NEVER)
+      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return this._typeIssueFactory(input, options);
     }

@@ -20,9 +20,9 @@ describe('Cookbook', () => {
       })
       .partial();
 
-    expect(queryShape.parse(qs.parse('name=Frodo&age=50'), { coerced: true })).toEqual({ name: 'Frodo', age: 50 });
+    expect(queryShape.parse(qs.parse('name=Frodo&age=50'), { coerce: true })).toEqual({ name: 'Frodo', age: 50 });
 
-    expect(queryShape.parse(qs.parse('age=-33'), { coerced: true })).toStrictEqual({ age: undefined });
+    expect(queryShape.parse(qs.parse('age=-33'), { coerce: true })).toStrictEqual({ age: undefined });
   });
 
   test('Type-safe env variables', () => {
@@ -33,7 +33,7 @@ describe('Cookbook', () => {
       })
       .strip();
 
-    expect(envShape.parse(process.env, { coerced: true })).toEqual({
+    expect(envShape.parse(process.env, { coerce: true })).toEqual({
       NODE_ENV: 'test',
       TS_JEST: 1,
     });
