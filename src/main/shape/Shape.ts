@@ -408,7 +408,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Pipes the output of this shape to the input of another shape.
    *
    * @param shape The shape that validates the output if this shape.
-   * @returns The {@linkcode PipeShape} instance.
    * @template OutputShape The output value.
    */
   to<OutputShape extends AnyShape>(shape: OutputShape): PipeShape<this, OutputShape> {
@@ -468,7 +467,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param inputValue The input value to replace.
    * @param outputValue The output value that is returned if an `inputValue` is received.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    * @template InputValue The input value to replace.
    * @template OutputValue The output value that is used as the replacement for an input value.
    */
@@ -483,7 +481,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Allows a literal input value, so it is passed directly to the output without any checks.
    *
    * @param value The allowed value.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    * @template AllowedValue The allowed value.
    */
   allow<AllowedValue extends Literal>(value: AllowedValue): AllowLiteralShape<this, AllowedValue> {
@@ -495,7 +492,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param value The excluded value.
    * @param options The constraint options or an issue message.
-   * @returns The {@linkcode DenyLiteralShape} instance.
    * @template DeniedValue The denied value.
    */
   deny<DeniedValue extends InputValue | OutputValue>(
@@ -507,8 +503,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Replaces `undefined` input value with an `undefined` output value.
-   *
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   optional(): AllowLiteralShape<this, undefined>;
 
@@ -517,7 +511,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param defaultValue The value that should be used if an input value is `undefined`.
    * @template DefaultValue The value that is used as the replacement for `undefined`.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   optional<DefaultValue extends Literal>(
     defaultValue: DefaultValue
@@ -529,8 +522,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Replaces `null` input value with an `null` output value.
-   *
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   nullable(): AllowLiteralShape<this, null>;
 
@@ -539,7 +530,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param defaultValue The value that should be used if an input value is `null`.
    * @template DefaultValue The value that is used as the replacement for `null`.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   nullable<DefaultValue extends Literal>(defaultValue: DefaultValue): ReplaceLiteralShape<this, null, DefaultValue>;
 
@@ -549,8 +539,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Passes `null` and `undefined` input values directly to the output without parsing.
-   *
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   nullish(): AllowLiteralShape<AllowLiteralShape<this, null>, undefined>;
 
@@ -559,7 +547,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
    * @template DefaultValue The value that is used as the replacement for `undefined` and `null`.
-   * @returns The {@linkcode ReplaceLiteralShape} instance.
    */
   nullish<DefaultValue extends Literal>(
     defaultValue?: DefaultValue
@@ -573,7 +560,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Prevents an input and output from being `undefined`.
    *
    * @param options The constraint options or an issue message.
-   * @returns The {@linkcode DenyLiteralShape} instance.
    */
   nonOptional(options?: ConstraintOptions | Message): DenyLiteralShape<this, undefined> {
     return new DenyLiteralShape(this, undefined, options);
@@ -581,8 +567,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Returns `undefined` if parsing fails.
-   *
-   * @returns The {@linkcode CatchShape} instance.
    */
   catch(): CatchShape<this, undefined>;
 
@@ -592,7 +576,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed. A callback
    * receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
    * @template FallbackValue The fallback value.
-   * @returns The {@linkcode CatchShape} instance.
    */
   catch<FallbackValue extends Literal>(
     fallback: FallbackValue | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => FallbackValue)
@@ -608,7 +591,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param shape The shape to which the output must not conform.
    * @param options The constraint options or an issue message.
    * @template ExcludedShape The shape to which the output must not conform.
-   * @returns The {@linkcode ExcludeShape} instance.
    */
   exclude<ExcludedShape extends AnyShape>(
     shape: ExcludedShape,
@@ -626,7 +608,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param shape The shape to which the output must not conform.
    * @param options The constraint options or an issue message.
    * @template ExcludedShape The shape to which the output must not conform.
-   * @returns The {@linkcode ExcludeShape} instance.
    */
   not<ExcludedShape extends AnyShape>(
     shape: ExcludedShape,
