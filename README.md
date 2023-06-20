@@ -1792,13 +1792,13 @@ or return a message.
 For example, when using with React you may return a JSX element:
 
 ```tsx
-const minimumMessage: d.Message = issue => (
+const message: d.Message = (issue, options) => (
   <span style={{ color: 'red' }}>
     Minimum length is {issue.param}
   </span>
 );
 
-d.number().min(5, minimumMessage);
+d.number().min(5, message);
 ```
 
 Semantics described above are applied to the

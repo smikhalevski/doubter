@@ -1,4 +1,20 @@
-import { ApplyOptions, ConstraintOptions, Issue, Message } from './core';
+import { ApplyOptions, ConstraintOptions, Issue, Message, MessageCallback } from './core';
+import { isObjectLike } from './internal';
+
+/**
+ * Extracts options from the given source.
+ *
+ * @param source Options or message to extract from.
+ */
+export function extractOptions<T extends ConstraintOptions>(source: T | Message | undefined): Partial<T> {
+  if (typeof source === 'function' || typeof source === 'string') {
+    return { message: source } as T;
+  }
+  if (isObjectLike(source)) {
+    return source;
+  }
+  return {};
+}
 
 /**
  * Returns a function that creates an issue.
@@ -32,33 +48,18 @@ export function createIssueFactory(
 
 export function createIssueFactory(
   code: unknown,
-  defaultMessage: unknown,
+  defaultMessage: any,
   options: ConstraintOptions | Message | undefined,
   param?: unknown
 ): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue {
   const parameterized = arguments.length <= 3;
 
-  let message: any;
-  let meta: any;
-
-  if (options !== null) {
-    if (typeof options === 'function' || typeof options === 'string') {
-      message = options;
-    }
-    if (typeof options === 'object') {
-      message = options.message;
-      meta = options.meta;
-    }
-  }
-
-  if (message === undefined) {
-    message = defaultMessage;
-  }
+  let { message = defaultMessage, meta } = extractOptions(options);
 
   if (typeof message === 'function') {
     return (input, options, param0) => {
       const issue = { code, path: undefined, input, message: undefined, param: parameterized ? param0 : param, meta };
-      const value = message(issue, options);
+      const value = (message as MessageCallback)(issue, options);
 
       if (issue.message === undefined) {
         issue.message = value;
@@ -70,8 +71,8 @@ export function createIssueFactory(
   if (typeof message === 'string') {
     if (parameterized) {
       if (message.indexOf('%s') !== -1) {
-        return (input, options, param) => {
-          return { code, path: undefined, input, message: message.replace('%s', String(param)), param, meta };
+        return (input, options, param0) => {
+          return { code, path: undefined, input, message: message.replace('%s', String(param0)), param: param0, meta };
         };
       }
     } else {
@@ -79,7 +80,13 @@ export function createIssueFactory(
     }
   }
 
-  return (input, options, param0) => {
-    return { code, path: undefined, input, message, param: parameterized ? param0 : param, meta };
+  if (parameterized) {
+    return (input, options, param0) => {
+      return { code, path: undefined, input, message, param: param0, meta };
+    };
+  }
+
+  return (input, options) => {
+    return { code, path: undefined, input, message, param, meta };
   };
 }
