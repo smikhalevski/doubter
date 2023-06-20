@@ -51,7 +51,6 @@ npm install --save-prod doubter
 - [Type coercion](#type-coercion)
 - [Introspection](#introspection)
 - [Localization](#localization)
-- [Integrations](#integrations)
 - [Plugins](#plugins)
 - [Advanced shapes](#advanced-shapes)
 
@@ -1809,38 +1808,9 @@ well:
 d.string().length(3, { message: 'Expected length is %s' })
 ```
 
-# Integrations
-
-How to validate an email or UUID? Combine Doubter with your favourite predicate library!
-
-For example, create a shape that validates that input is an email:
-
-```ts
-import * as d from 'doubter';
-import isEmail from 'validator/lib/isEmail';
-
-const emailShape = d.string().refine(isEmail, 'Must be an email');
-// ⮕ Shape<string>
-
-emailShape.parse('Not an email');
-// ❌ ValidationError: predicate at /: Must be an email
-
-emailShape.parse('foo@bar.com');
-// ⮕ 'foo@bar.com'
-```
-
-You can check that the shape describes an email using `hasCheck`:
-
-```ts
-emailShape.hasCheck(isEmail);
-// ⮕ true
-```
-
-Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).
-
 # Plugins
 
-By default, when you import Doubter, you get the most full set of available features:
+By default, when you import Doubter, you also get all [built-in plugins](#built-in-plugins) as well:
 
 ```ts
 import * as d from 'doubter';
@@ -1873,7 +1843,7 @@ d.string().min(2); // ✅ min is defined
 d.number().gte(3); // ❌ gte is undefined
 ```
 
-## Available plugins
+## Built-in plugins
 
 | Import from                    | Description                                                                                                     |
 |--------------------------------|-----------------------------------------------------------------------------------------------------------------|
@@ -1884,6 +1854,35 @@ d.number().gte(3); // ❌ gte is undefined
 | `doubter/plugin/set-checks`    | [Common `Set` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_set_checks.html)            |
 | `doubter/plugin/shape-helpers` | [Shape introspection helpers](https://smikhalevski.github.io/doubter/modules/doubter_plugin_shape_helpers.html) |
 | `doubter/plugin/string-checks` | [Common string checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_string_checks.html)        |
+
+## Integrations
+
+You can combine Doubter with your favourite predicate library using [refinements.](#refinements)
+
+For example, create a shape that validates that input is an email:
+
+```ts
+import * as d from 'doubter';
+import isEmail from 'validator/lib/isEmail';
+
+const emailShape = d.string().refine(isEmail, 'Must be an email');
+// ⮕ Shape<string>
+
+emailShape.parse('Not an email');
+// ❌ ValidationError: predicate at /: Must be an email
+
+emailShape.parse('foo@bar.com');
+// ⮕ 'foo@bar.com'
+```
+
+You can check that the shape describes an email using `hasCheck`:
+
+```ts
+emailShape.hasCheck(isEmail);
+// ⮕ true
+```
+
+Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).
 
 # Advanced shapes
 

@@ -187,18 +187,18 @@ declare module '../core' {
      * Constrains the number to be a multiple of the divisor.
      *
      * This constraint uses the
-     * [modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which may
-     * produce unexpected results when used with floating point numbers. Unexpected results happen because of
+     * [modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
+     * may produce unexpected results when used with floating point numbers. Unexpected results happen because of
      * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
      *
      * Use a custom check to constrain input to be a multiple of a real number:
      *
      * ```ts
-     * const precision = 100;
+     * const precision = 0.001;
      *
      * d.number().refine(
-     *   (value, param) => Math.trunc(value * precision) % Math.trunc(param * precision) === 0,
-     *   { param: 0.05 }
+     *   (value, param) => Math.abs(Math.round(value / param) - value / param) < precision,
+     *   { param: 0.25 }
      * );
      * ```
      *

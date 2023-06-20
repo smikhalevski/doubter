@@ -7,6 +7,7 @@
   "disableSources": true,
   "hideGenerator": true,
   "readme": "none",
+  "tsconfig": "./tsconfig.build.json",
   "groupOrder": [
     "DSL",
     "Shapes",
