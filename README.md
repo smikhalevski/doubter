@@ -1491,6 +1491,32 @@ input to the following types:
 - [`Map`](#coerce-to-a-map)
 - [`Set`](#coerce-to-a-set)
 
+## Overriding type coercion
+
+You can override the build-in type coercion with a custom callback:
+
+```ts
+const yesNoShape = d.boolean().coerce(value => {
+  if (value === 'yes') {
+    return true;
+  }
+  if (value === 'no') {
+    return false;
+  }
+  // Coercion is not possible
+  return d.NEVER;
+});
+
+d.array(yesNoShape).parse(['yes', 'no'])
+// ⮕ [true, false]
+
+yesNoShape.parse('true')
+// ❌ ValidationError: type at /: Must be a boolean
+```
+
+The callback passed to `corce` method is called only if the input value doesn't conform the requested type. If coercion
+isn't possible, return `d.NEVER`.
+
 # Introspection
 
 Doubter provides various features to introspect your shapes at runtime. Let's start by accessing a shape input types
@@ -1957,38 +1983,6 @@ shape.parse(['42', '33']);
 
 shape.parse(['seventeen']);
 // ❌ ValidationError: kaputs at /0: Must be a number-like
-```
-
-## Overriding type coercion
-
-You can extend existing shapes and override type coercion that they implement.
-
-```ts
-class YesNoShape extends d.BooleanShape {
-
-  protected _coerce(value: unknown): boolean {
-    if (value === 'yes') {
-      return true;
-    }
-    if (value === 'no') {
-      return false;
-    }
-    // Coercion is not possible
-    return d.NEVER;
-  }
-}
-```
-
-This shape can be used alongside built-in shapes:
-
-```ts
-const yesNoShape = new YesNoShape().coerce();
-
-d.array(yesNoShape).parse(['yes', 'no'])
-// ⮕ [true, false]
-
-yesNoShape.parse('true')
-// ❌ ValidationError: type at /: Must be a boolean
 ```
 
 ## Implementing deep partial support
