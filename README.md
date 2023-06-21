@@ -333,7 +333,7 @@ shape.inputs;
 What can make a shape asynchronous:
 
 - [Async transformations;](#async-transformations)
-- Usage of [`d.promise`](#promise);
+- Usage of [`d.promise`](#promise) that constrains the resolved value;
 - Usage of [custom async shapes.](#advanced-shapes)
 
 Here's a shape of a promise that is expected to be fulfilled with a number:
@@ -927,7 +927,8 @@ const asyncShape2 = d.object({
 asyncShape2.isAsync // ⮕ true
 ```
 
-> **Note**&ensp;Composite shapes are async if they rely on a [`promise`](#promise) shape:
+> **Note**&ensp;Composite shapes are async if they rely on a [`promise`](#promise) shape that constrains a resolved
+> value:
 >
 > ```ts
 > const shape = d.object({
@@ -1598,8 +1599,8 @@ Types returned from `Type.of` are a superset of types returned from the `typeof`
 
 ## Unknown value type
 
-`Type.UNKNOWN` type emerges when [`d.any`](#any), [`d.unknown`](#unknown), or
-[`d.transform`](#transform-transformasync) are used:
+`Type.UNKNOWN` type emerges when accepted inputs cannot be statically inferred. For example, if [`d.any`](#any),
+[`d.unknown`](#unknown), or [`d.transform`](#transform-transformasync) are used:
 
 ```ts
 const shape1 = d.transfrorm(parseFloat);
@@ -2853,7 +2854,7 @@ shape.parse({
 [`d.nan`](https://smikhalevski.github.io/doubter/functions/doubter_core.nan.html) returns a
 [`ConstShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.ConstShape.html) instance.
 
-A shape that requires an input to be `NaN`:
+The shape that requires an input to be `NaN`:
 
 ```ts
 d.nan();
@@ -2872,7 +2873,7 @@ d.number().nan();
 [`d.never`](https://smikhalevski.github.io/doubter/functions/doubter_core.never.html) returns a
 [`NeverShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.NeverShape.html) instance.
 
-A shape that always raises a validation issue regardless of an input value:
+The shape that always raises a validation issue regardless of an input value:
 
 ```ts
 d.never();
@@ -2884,7 +2885,7 @@ d.never();
 [`d.not`](https://smikhalevski.github.io/doubter/functions/doubter_core.not.html) returns an
 [`ExcludeShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.ExcludeShape.html) instance.
 
-A shape that allows any value that doesn't conform the negated shape:
+The shape that allows any value that doesn't conform the negated shape:
 
 ```ts
 const shape = d.not(d.string())
@@ -2904,7 +2905,7 @@ More about exclusions in the [Exclude a shape](#exclude-a-shape) section.
 [`d.null`](https://smikhalevski.github.io/doubter/functions/doubter_core.null.html) returns a
 [`ConstShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.ConstShape.html) instance.
 
-A shape that requires an input to be `null`:
+The shape that requires an input to be `null`:
 
 ```ts
 d.null();
@@ -2916,7 +2917,7 @@ d.null();
 [`d.number`](https://smikhalevski.github.io/doubter/functions/doubter_core.number.html) returns a
 [`NumberShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html) instance.
 
-A shape that requires an input to be a number.
+The shape that requires an input to be a number.
 
 ```ts
 d.number();
@@ -3225,7 +3226,14 @@ const keyShape = shape.keyof();
 [`d.promise`](https://smikhalevski.github.io/doubter/functions/doubter_core.promise.html) returns a
 [`PromiseShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.PromiseShape.html) instance.
 
-A shape that constrains to the resolved value of a `Promise`.
+The shape that checks that an input is an instance of `Promise`.
+
+```ts
+d.promise();
+// ⮕ Shape<Promise<any>>
+```
+
+Constrain a resolved value of a promise:
 
 ```ts
 d.promise(d.string());
@@ -3402,7 +3410,7 @@ shape.parse(['Jill', 'Sarah']);
 [`d.symbol`](https://smikhalevski.github.io/doubter/functions/doubter_core.symbol.html) returns a
 [`SymbolShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.SymbolShape.html) instance.
 
-A shape that constrains a value to be an arbitrary symbol.
+The shape that constrains a value to be an arbitrary symbol.
 
 ```ts
 d.symbol();
@@ -3486,7 +3494,7 @@ Tuples follow [array type coercion rules](#coerce-to-an-array).
 [`d.undefined`](https://smikhalevski.github.io/doubter/functions/doubter_core.undefined.html) returns a
 [`ConstShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.ConstShape.html) instance.
 
-A shape that requires an input to be `undefined`:
+The shape that requires an input to be `undefined`:
 
 ```ts
 d.undefined();
@@ -3681,7 +3689,7 @@ d.unknown();
 [`d.void`](https://smikhalevski.github.io/doubter/functions/doubter_core.void.html) returns a
 [`ConstShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.ConstShape.html) instance.
 
-A shape that requires an input to be `undefined` that is typed as `void`:
+The shape that requires an input to be `undefined` that is typed as `void`:
 
 ```ts
 d.void();

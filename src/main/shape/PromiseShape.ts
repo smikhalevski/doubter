@@ -1,20 +1,28 @@
-import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE } from '../constants';
-import { applyShape, copyUnsafeChecks, isArray, ok, toDeepPartialShape } from '../internal';
-import { TYPE_PROMISE } from '../Type';
+import { CODE_TYPE, MESSAGE_PROMISE_TYPE } from '../constants';
+import { applyShape, copyUnsafeChecks, isArray, ok, Promisify, toDeepPartialShape } from '../internal';
+import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
+type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
+  ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any
+>;
+
+type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
+  ValueShape extends null | undefined ? null : ValueShape extends AnyShape ? OptionalDeepPartialShape<ValueShape> : null
+>;
+
 /**
  * The shape of a `Promise` value.
  *
- * @template ValueShape The shape of the resolved value.
+ * @template ValueShape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
  * @group Shapes
  */
-export class PromiseShape<ValueShape extends AnyShape>
-  extends CoercibleShape<Promise<ValueShape[INPUT]>, Promise<ValueShape[OUTPUT]>>
-  implements DeepPartialProtocol<PromiseShape<OptionalDeepPartialShape<ValueShape>>>
+export class PromiseShape<ValueShape extends AnyShape | null>
+  extends CoercibleShape<InferPromise<ValueShape, INPUT>, InferPromise<ValueShape, OUTPUT>, Promise<any>>
+  implements DeepPartialProtocol<DeepPartialPromiseShape<ValueShape>>
 {
   /**
    * The type constraint options or the type issue message.
@@ -29,7 +37,7 @@ export class PromiseShape<ValueShape extends AnyShape>
   /**
    * Creates a new {@linkcode PromiseShape} instance.
    *
-   * @param shape The shape of the resolved value.
+   * @param shape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
    * @param options The type constraint options or the type issue message.
    * @template ValueShape The shape of the resolved value.
    */
@@ -40,31 +48,50 @@ export class PromiseShape<ValueShape extends AnyShape>
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
   }
 
-  deepPartial(): PromiseShape<OptionalDeepPartialShape<ValueShape>> {
-    return copyUnsafeChecks(this, new PromiseShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
+  deepPartial(): DeepPartialPromiseShape<ValueShape> {
+    const shape = this.shape !== null ? toDeepPartialShape(this.shape).optional() : null;
+
+    return copyUnsafeChecks(this, new PromiseShape<any>(shape, this._options));
   }
 
   protected _isAsync(): boolean {
-    return true;
+    return this.shape !== null;
   }
 
   protected _getInputs(): unknown[] {
-    if (this.isCoercing) {
-      return this.shape.inputs.concat(TYPE_PROMISE);
-    } else {
+    if (!this.isCoercing) {
       return [TYPE_PROMISE];
     }
+    if (this.shape === null) {
+      return [TYPE_UNKNOWN];
+    }
+    return this.shape.inputs.concat(TYPE_PROMISE);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Promise<ValueShape[OUTPUT]>> {
-    throw new Error(ERROR_REQUIRES_ASYNC);
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
+    const { _applyChecks } = this;
+
+    let output = input;
+    let issues = null;
+    let changed = false;
+
+    if (
+      !(input instanceof Promise) &&
+      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+    ) {
+      return [this._typeIssueFactory(input, options)];
+    }
+    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
+      return ok(output);
+    }
+    return issues;
   }
 
   protected _applyAsync(
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Promise<Result<Promise<ValueShape[OUTPUT]>>> {
+  ): Promise<Result<InferPromise<ValueShape, OUTPUT>>> {
     let output = input;
 
     if (
@@ -75,7 +102,7 @@ export class PromiseShape<ValueShape extends AnyShape>
     }
 
     return output.then((value: unknown) =>
-      applyShape(this.shape, value, options, nonce, result => {
+      applyShape(this.shape!, value, options, nonce, result => {
         const { _applyChecks } = this;
 
         let issues = null;
@@ -99,7 +126,7 @@ export class PromiseShape<ValueShape extends AnyShape>
     );
   }
 
-  protected _coerce(value: unknown): Promise<ValueShape[INPUT]> {
+  protected _coerce(value: unknown): Promise<any> {
     return Promise.resolve(value);
   }
 }

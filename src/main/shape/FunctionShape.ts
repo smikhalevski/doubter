@@ -1,5 +1,15 @@
 import { CODE_TYPE, ERROR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../constants';
-import { applyShape, copyChecks, getErrorMessage, isArray, nextNonce, ok, unshiftIssuesPath } from '../internal';
+import {
+  applyShape,
+  Awaitable,
+  copyChecks,
+  getErrorMessage,
+  isArray,
+  nextNonce,
+  ok,
+  Promisify,
+  unshiftIssuesPath,
+} from '../internal';
 import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
 import { createIssueFactory } from '../utils';
@@ -13,17 +23,6 @@ type ShapeValue<
 > = Shape extends null | undefined ? DefaultValue : Shape extends AnyShape ? Shape[Leg] : DefaultValue;
 
 type ThisType<F> = F extends (this: infer T, ...args: any[]) => any ? T : any;
-
-// prettier-ignore
-type Awaited<T> =
-  T extends null | undefined ? T :
-  T extends object & { then(fn: infer F, ...args: any): any } ?
-    F extends (value: infer V, ...args: any) => any ? Awaited<V> : never :
-  T;
-
-type ToPromise<T> = Promise<Awaited<T>>;
-
-type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
 /**
  * The shape of a function.
@@ -197,7 +196,7 @@ export class FunctionShape<
   ): (
     this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
     ...args: ArgsShape[INPUT]
-  ) => ToPromise<ShapeValue<ReturnShape, OUTPUT, ReturnType<F>>>;
+  ) => Promisify<ShapeValue<ReturnShape, OUTPUT, ReturnType<F>>>;
 
   ensureAsyncSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
     const { argsShape, returnShape, thisShape } = this;
