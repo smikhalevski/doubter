@@ -14,7 +14,7 @@ import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output, Result } from './Shape';
 
 /**
  * The shape of a `Set` instance.
@@ -23,7 +23,7 @@ import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, 
  * @group Shapes
  */
 export class SetShape<ValueShape extends AnyShape>
-  extends CoercibleShape<Set<ValueShape[INPUT]>, Set<ValueShape[OUTPUT]>, unknown[]>
+  extends CoercibleShape<Set<Input<ValueShape>>, Set<Output<ValueShape>>, unknown[]>
   implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<ValueShape>>>
 {
   /**
@@ -76,7 +76,7 @@ export class SetShape<ValueShape extends AnyShape>
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Set<ValueShape[OUTPUT]>> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Set<Output<ValueShape>>> {
     let changed = false;
     let values;
     let issues = null;
@@ -124,7 +124,7 @@ export class SetShape<ValueShape extends AnyShape>
     return issues;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Set<ValueShape[OUTPUT]>>> {
+  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Set<Output<ValueShape>>>> {
     return new Promise(resolve => {
       let changed = false;
       let values: unknown[];

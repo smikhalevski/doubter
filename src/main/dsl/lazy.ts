@@ -1,6 +1,5 @@
 import { identity } from '../internal';
-import { AnyShape, LazyShape } from '../shape';
-import { INPUT } from '../shape/Shape';
+import { AnyShape, Input, LazyShape } from '../shape';
 
 /**
  * Creates the shape that resolves the underlying shape on-demand.
@@ -11,6 +10,6 @@ import { INPUT } from '../shape/Shape';
  */
 export function lazy<ProvidedShape extends AnyShape>(
   shapeProvider: () => ProvidedShape
-): LazyShape<ProvidedShape, ProvidedShape[INPUT]> {
+): LazyShape<ProvidedShape, Input<ProvidedShape>> {
   return new LazyShape(shapeProvider, identity);
 }

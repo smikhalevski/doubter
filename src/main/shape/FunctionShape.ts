@@ -14,7 +14,7 @@ import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, INPUT, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, defaultApplyOptions, Input, INPUT, Output, OUTPUT, Result, Shape } from './Shape';
 
 type ShapeValue<
   Shape extends AnyShape | null | undefined,
@@ -37,8 +37,8 @@ export class FunctionShape<
   ReturnShape extends AnyShape | null,
   ThisShape extends AnyShape | null
 > extends Shape<
-  (this: ShapeValue<ThisShape, OUTPUT>, ...args: ArgsShape[OUTPUT]) => ShapeValue<ReturnShape, INPUT>,
-  (this: ShapeValue<ThisShape, INPUT>, ...args: ArgsShape[INPUT]) => ShapeValue<ReturnShape, OUTPUT>
+  (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>,
+  (this: ShapeValue<ThisShape, INPUT>, ...args: Input<ArgsShape>) => ShapeValue<ReturnShape, OUTPUT>
 > {
   /**
    * `true` if input functions are wrapped during parsing to ensure runtime signature type-safety, or `false` otherwise.
@@ -142,13 +142,13 @@ export class FunctionShape<
    * @template F The function to wrap.
    */
   ensureSignature<
-    F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: ArgsShape[OUTPUT]) => ShapeValue<ReturnShape, INPUT>
+    F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>
   >(
     fn: F,
     options?: Readonly<ParseOptions>
   ): (
     this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
-    ...args: ArgsShape[INPUT]
+    ...args: Input<ArgsShape>
   ) => ShapeValue<ReturnShape, OUTPUT, ReturnType<F>>;
 
   ensureSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
@@ -188,14 +188,14 @@ export class FunctionShape<
   ensureAsyncSignature<
     F extends (
       this: ShapeValue<ThisShape, OUTPUT>,
-      ...args: ArgsShape[OUTPUT]
+      ...args: Output<ArgsShape>
     ) => Awaitable<ShapeValue<ReturnShape, INPUT>>
   >(
     fn: F,
     options?: Readonly<ParseOptions>
   ): (
     this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
-    ...args: ArgsShape[INPUT]
+    ...args: Input<ArgsShape>
   ) => Promisify<ShapeValue<ReturnShape, OUTPUT, ReturnType<F>>>;
 
   ensureAsyncSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
@@ -240,7 +240,7 @@ export class FunctionShape<
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Result<(this: ShapeValue<ThisShape, INPUT>, ...args: ArgsShape[INPUT]) => ShapeValue<ReturnShape, OUTPUT>> {
+  ): Result<(this: ShapeValue<ThisShape, INPUT>, ...args: Input<ArgsShape>) => ShapeValue<ReturnShape, OUTPUT>> {
     const { _applyChecks } = this;
 
     let issues = null;

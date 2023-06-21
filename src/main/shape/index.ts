@@ -35,6 +35,8 @@ export {
   Result,
   Shape,
   TransformShape,
+  INPUT,
+  OUTPUT,
 } from './Shape';
 export { StringShape } from './StringShape';
 export { SymbolShape } from './SymbolShape';

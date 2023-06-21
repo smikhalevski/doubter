@@ -15,7 +15,7 @@ import {
 import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import { createIssueFactory } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, NEVER, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Result, Shape } from './Shape';
 
 // prettier-ignore
 /**
@@ -35,7 +35,7 @@ type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = Intersec
  * @group Shapes
  */
 export class IntersectionShape<Shapes extends readonly AnyShape[]>
-  extends Shape<Intersect<Shapes[number]>[INPUT], Intersect<Shapes[number]>[OUTPUT]>
+  extends Shape<Input<Intersect<Shapes[number]>>, Output<Intersect<Shapes[number]>>>
   implements DeepPartialProtocol<DeepPartialIntersectionShape<Shapes>>
 {
   /**
@@ -99,7 +99,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return distributeTypes(this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Intersect<Shapes[number]>[OUTPUT]> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Output<Intersect<Shapes[number]>>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -141,7 +141,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Promise<Result<Intersect<Shapes[number]>[OUTPUT]>> {
+  ): Promise<Result<Output<Intersect<Shapes[number]>>>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -193,7 +193,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     input: any,
     outputs: any[] | null,
     options: ApplyOptions
-  ): Result<Intersect<Shapes[number]>[OUTPUT]> {
+  ): Result<Output<Intersect<Shapes[number]>>> {
     const { shapes, _applyChecks } = this;
 
     let output = input;
