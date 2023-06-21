@@ -11,7 +11,7 @@ describe('fn([number(), number()])', () => {
   });
 
   test('doubter', measure => {
-    const fn = doubter.fn([doubter.number(), doubter.number()]).wrap((a, b) => a + b);
+    const fn = doubter.fn([doubter.number(), doubter.number()]).ensureSignature((a, b) => a + b);
 
     measure(() => {
       fn(1, 2);
