@@ -20,10 +20,10 @@ import {
   AnyShape,
   DeepPartialProtocol,
   DeepPartialShape,
-  INPUT,
+  Input,
   NEVER,
   OptionalDeepPartialShape,
-  OUTPUT,
+  Output,
   Result,
 } from './Shape';
 
@@ -36,8 +36,8 @@ import {
  */
 export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   extends CoercibleShape<
-    Map<KeyShape[INPUT], ValueShape[INPUT]>,
-    Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>,
+    Map<Input<KeyShape>, Input<ValueShape>>,
+    Map<Output<KeyShape>, Output<ValueShape>>,
     [unknown, unknown][]
   >
   implements DeepPartialProtocol<MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>>>
@@ -105,7 +105,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>> {
+  ): Result<Map<Output<KeyShape>, Output<ValueShape>>> {
     let changed = false;
     let entries;
 
@@ -182,7 +182,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Promise<Result<Map<KeyShape[OUTPUT], ValueShape[OUTPUT]>>> {
+  ): Promise<Result<Map<Output<KeyShape>, Output<ValueShape>>>> {
     return new Promise(resolve => {
       let changed = false;
       let entries: [unknown, unknown][];

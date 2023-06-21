@@ -15,7 +15,7 @@ import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
 import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Result, Shape } from './Shape';
 
 /**
  * Returns the array of shapes that are applicable to the input.
@@ -33,7 +33,7 @@ type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
  * @group Shapes
  */
 export class UnionShape<Shapes extends readonly AnyShape[]>
-  extends Shape<Shapes[number][INPUT], Shapes[number][OUTPUT]>
+  extends Shape<Input<Shapes[number]>, Output<Shapes[number]>>
   implements DeepPartialProtocol<DeepPartialUnionShape<Shapes>>
 {
   /**
@@ -107,7 +107,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return Array.prototype.concat.apply([], this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Shapes[number][OUTPUT]> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<Shapes[number]>> {
     const { _applyChecks } = this;
 
     let result = null;
@@ -151,7 +151,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Shapes[number][OUTPUT]>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {
     return new Promise(resolve => {
       const { _applyChecks } = this;
 

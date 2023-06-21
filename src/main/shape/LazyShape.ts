@@ -1,7 +1,7 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 import { captureIssues, copyUnsafeChecks, identity, isArray, ok, toDeepPartialShape } from '../internal';
 import { ApplyOptions, Literal } from '../types';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Result, Shape } from './Shape';
 
 /**
  * Lazily loads a shape using the provider callback.
@@ -11,7 +11,7 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, OUTPUT, Result,
  * @group Shapes
  */
 export class LazyShape<ProvidedShape extends AnyShape, Pointer>
-  extends Shape<ProvidedShape[INPUT], ProvidedShape[OUTPUT] | Pointer>
+  extends Shape<Input<ProvidedShape>, Output<ProvidedShape> | Pointer>
   implements DeepPartialProtocol<LazyShape<DeepPartialShape<ProvidedShape>, Pointer>>
 {
   /**
@@ -42,7 +42,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     /**
      * The provider callback that returns the value that is used instead of a circular reference.
      */
-    readonly pointerProvider: (value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => Pointer
+    readonly pointerProvider: (value: Input<ProvidedShape>, options: Readonly<ApplyOptions>) => Pointer
   ) {
     super();
 
@@ -76,7 +76,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     return this.shape.at(key);
   }
 
-  deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, DeepPartialShape<ProvidedShape>[INPUT]> {
+  deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, Input<DeepPartialShape<ProvidedShape>>> {
     const { _cachingShapeProvider } = this;
 
     return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_cachingShapeProvider()), identity));
@@ -91,7 +91,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * @returns The clone of the shape.
    */
   circular<Pointer extends Literal>(
-    pointer: Pointer | ((value: ProvidedShape[INPUT], options: Readonly<ApplyOptions>) => Pointer)
+    pointer: Pointer | ((value: Input<ProvidedShape>, options: Readonly<ApplyOptions>) => Pointer)
   ): LazyShape<ProvidedShape, Pointer> {
     return copyUnsafeChecks(
       this,
@@ -113,7 +113,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     return shape;
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ProvidedShape[OUTPUT] | Pointer> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<ProvidedShape> | Pointer> {
     const { _stackMap } = this;
 
     let stack = _stackMap.get(nonce);
@@ -148,7 +148,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     input: unknown,
     options: ApplyOptions,
     nonce: number
-  ): Promise<Result<ProvidedShape[OUTPUT] | Pointer>> {
+  ): Promise<Result<Output<ProvidedShape> | Pointer>> {
     const { _stackMap } = this;
 
     let stack = _stackMap.get(nonce);
@@ -193,7 +193,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     result: Result,
     input: unknown,
     options: ApplyOptions
-  ): Result<ProvidedShape[OUTPUT] | Pointer> {
+  ): Result<Output<ProvidedShape> | Pointer> {
     const { _applyChecks } = this;
 
     let output = input;
