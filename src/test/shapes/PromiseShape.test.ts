@@ -1,9 +1,9 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE, ERROR_REQUIRES_ASYNC, MESSAGE_PROMISE_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { TYPE_PROMISE, TYPE_STRING } from '../../main/Type';
+import { CODE_TYPE, MESSAGE_PROMISE_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { TYPE_PROMISE, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 
 describe('PromiseShape', () => {
-  test('create a PromiseShape', () => {
+  test('creates a PromiseShape', () => {
     const shape = new Shape();
     const promiseShape = new PromiseShape(shape);
 
@@ -12,28 +12,28 @@ describe('PromiseShape', () => {
     expect(promiseShape.inputs).toEqual([TYPE_PROMISE]);
   });
 
-  test('parses a promise', async () => {
-    await expect(new PromiseShape(new Shape()).parseAsync(Promise.resolve('aaa'))).resolves.toBe('aaa');
+  test('creates a non-async PromiseShape', () => {
+    const promiseShape = new PromiseShape(null);
+
+    expect(promiseShape.isAsync).toBe(false);
+    expect(promiseShape.shape).toBe(null);
+    expect(promiseShape.inputs).toEqual([TYPE_PROMISE]);
   });
 
-  test('does not support sync parsing', () => {
-    expect(() => new PromiseShape(new Shape()).try('aaa')).toThrow(new Error(ERROR_REQUIRES_ASYNC));
-  });
-
-  test('raises an issue if value is not a Promise', async () => {
-    await expect(new PromiseShape(new Shape()).tryAsync('aaa')).resolves.toEqual({
+  test('raises an issue if value is not a Promise', () => {
+    expect(new PromiseShape(null).try('aaa')).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: TYPE_PROMISE }],
     });
   });
 
-  test('applies checks', async () => {
+  test('applies checks', () => {
     const checkMock = jest.fn(() => [{ code: 'xxx' }]);
 
     const input = Promise.resolve('aaa');
-    const promiseShape = new PromiseShape(new Shape()).check(checkMock);
+    const promiseShape = new PromiseShape(null).check(checkMock);
 
-    await expect(promiseShape.tryAsync(input)).resolves.toEqual({
+    expect(promiseShape.try(input)).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -42,42 +42,29 @@ describe('PromiseShape', () => {
     expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerce: false });
   });
 
-  test('applies unsafe checks if value shape raised issues', async () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]);
+  test('returns the same promise if the resolved value did not change', () => {
+    const value = Promise.resolve('aaa');
 
-    const promiseShape = new PromiseShape(shape).check(() => [{ code: 'yyy' }], { unsafe: true });
+    const result = new PromiseShape(null).try(value) as Ok<unknown>;
 
-    await expect(promiseShape.tryAsync(Promise.resolve(111), { verbose: true })).resolves.toEqual({
-      ok: false,
-      issues: [{ code: 'xxx' }, { code: 'yyy' }],
+    expect(result.value).toBe(value);
+  });
+
+  describe('inputs', () => {
+    test('infers the promise type', () => {
+      expect(new PromiseShape(null).inputs).toEqual([TYPE_PROMISE]);
+      expect(new PromiseShape(new Shape()).inputs).toEqual([TYPE_PROMISE]);
     });
-  });
 
-  test('returns the same promise if the resolved value did not change', async () => {
-    const promise = Promise.resolve('aaa');
-
-    const result = (await new PromiseShape(new Shape()).tryAsync(promise)) as Ok<unknown>;
-
-    expect(result.value).toBe(promise);
-  });
-
-  test('returns the new promise if the resolved value was transformed', async () => {
-    const promise = Promise.resolve('aaa');
-
-    const result = (await new PromiseShape(new Shape().transform(() => 111)).tryAsync(promise)) as Ok<unknown>;
-
-    expect(result.value).not.toBe(promise);
-
-    await expect(result.value).resolves.toBe(111);
+    test('infers the coerced promise type', () => {
+      expect(new PromiseShape(null).coerce().inputs).toEqual([TYPE_UNKNOWN]);
+      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
+    });
   });
 
   describe('coerce', () => {
-    test('updates inputs when coerced', () => {
-      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
-    });
-
     test('wraps an input value in a promise', async () => {
-      const result = (await new PromiseShape(new Shape()).coerce().tryAsync('aaa')) as Ok<unknown>;
+      const result = new PromiseShape(null).coerce().try('aaa') as Ok<unknown>;
 
       expect(result.value).toBeInstanceOf(Promise);
       await expect(result.value).resolves.toBe('aaa');
@@ -108,6 +95,72 @@ describe('PromiseShape', () => {
       await expect(promiseShape.tryAsync(Promise.resolve({ key1: 111 }))).resolves.toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1'] }],
+      });
+    });
+  });
+
+  describe('async', () => {
+    test('parses a promise', async () => {
+      await expect(new PromiseShape(new Shape()).parseAsync(Promise.resolve('aaa'))).resolves.toBe('aaa');
+    });
+
+    test('raises an issue if value is not a Promise', async () => {
+      await expect(new PromiseShape(new Shape()).tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: TYPE_PROMISE }],
+      });
+    });
+
+    test('applies checks', async () => {
+      const checkMock = jest.fn(() => [{ code: 'xxx' }]);
+
+      const input = Promise.resolve('aaa');
+      const promiseShape = new PromiseShape(new Shape()).check(checkMock);
+
+      await expect(promiseShape.tryAsync(input)).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+
+      expect(checkMock).toHaveBeenCalledTimes(1);
+      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerce: false });
+    });
+
+    test('applies unsafe checks if value shape raised issues', async () => {
+      const shape = new Shape().check(() => [{ code: 'xxx' }]);
+
+      const promiseShape = new PromiseShape(shape).check(() => [{ code: 'yyy' }], { unsafe: true });
+
+      await expect(promiseShape.tryAsync(Promise.resolve(111), { verbose: true })).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }, { code: 'yyy' }],
+      });
+    });
+
+    test('returns the same promise if the resolved value did not change', async () => {
+      const promise = Promise.resolve('aaa');
+
+      const result = (await new PromiseShape(new Shape()).tryAsync(promise)) as Ok<unknown>;
+
+      expect(result.value).toBe(promise);
+    });
+
+    test('returns the new promise if the resolved value was transformed', async () => {
+      const promise = Promise.resolve('aaa');
+
+      const result = (await new PromiseShape(new Shape().transform(() => 111)).tryAsync(promise)) as Ok<unknown>;
+
+      expect(result.value).not.toBe(promise);
+
+      await expect(result.value).resolves.toBe(111);
+    });
+
+    describe('coerce', () => {
+      test('wraps an input value in a promise', async () => {
+        const result = (await new PromiseShape(new Shape()).coerce().tryAsync('aaa')) as Ok<unknown>;
+
+        expect(result.value).toBeInstanceOf(Promise);
+        await expect(result.value).resolves.toBe('aaa');
       });
     });
   });
