@@ -25,6 +25,7 @@ import {
   replaceChecks,
   returnTrue,
   toDeepPartialShape,
+  Promisify,
   unionTypes,
 } from '../internal';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
@@ -720,7 +721,7 @@ export interface Shape<InputValue, OutputValue> {
    * @returns The value that conforms the output type of the shape.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
-  parseAsync(input: unknown, options?: ParseOptions): Promise<OutputValue>;
+  parseAsync(input: unknown, options?: ParseOptions): Promisify<OutputValue>;
 
   /**
    * Synchronously parses the value and returns `undefined` if parsing fails.
@@ -753,7 +754,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
    */
-  parseOrDefaultAsync(input: unknown): Promise<OutputValue | undefined>;
+  parseOrDefaultAsync(input: unknown): Promisify<OutputValue | undefined>;
 
   /**
    * Asynchronously parses the value and returns the default value if parsing fails.
@@ -768,7 +769,7 @@ export interface Shape<InputValue, OutputValue> {
     input: unknown,
     defaultValue: DefaultValue,
     options?: ApplyOptions
-  ): Promise<OutputValue | DefaultValue>;
+  ): Promisify<OutputValue | DefaultValue>;
 }
 
 Object.defineProperties(Shape.prototype, {

@@ -1,13 +1,13 @@
 import { CODE_TYPE, MESSAGE_PROMISE_TYPE } from '../constants';
-import { applyShape, copyUnsafeChecks, isArray, ok, toDeepPartialShape } from '../internal';
+import { applyShape, copyUnsafeChecks, isArray, ok, Promisify, toDeepPartialShape } from '../internal';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
-type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promise<
-  ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape : any
+type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
+  ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any
 >;
 
 type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
@@ -21,7 +21,7 @@ type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
  * @group Shapes
  */
 export class PromiseShape<ValueShape extends AnyShape | null>
-  extends CoercibleShape<InferPromise<ValueShape, INPUT>, Promise<InferPromise<ValueShape, OUTPUT>>, Promise<any>>
+  extends CoercibleShape<InferPromise<ValueShape, INPUT>, InferPromise<ValueShape, OUTPUT>, Promise<any>>
   implements DeepPartialProtocol<DeepPartialPromiseShape<ValueShape>>
 {
   /**

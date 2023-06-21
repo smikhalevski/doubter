@@ -18,7 +18,10 @@ import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, INPUT, NEVER, OUTPUT, Result, Shape } from './Shape';
 
 // prettier-ignore
-type ToIntersection<U extends AnyShape> =
+/**
+ * Converts union to intersection.
+ */
+type Intersect<U extends AnyShape> =
   (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
 
 type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = IntersectionShape<{
@@ -32,7 +35,7 @@ type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = Intersec
  * @group Shapes
  */
 export class IntersectionShape<Shapes extends readonly AnyShape[]>
-  extends Shape<ToIntersection<Shapes[number]>[INPUT], ToIntersection<Shapes[number]>[OUTPUT]>
+  extends Shape<Intersect<Shapes[number]>[INPUT], Intersect<Shapes[number]>[OUTPUT]>
   implements DeepPartialProtocol<DeepPartialIntersectionShape<Shapes>>
 {
   /**
@@ -96,7 +99,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return distributeTypes(this.shapes.map(getShapeInputs));
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<ToIntersection<Shapes[number]>[OUTPUT]> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Intersect<Shapes[number]>[OUTPUT]> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -138,7 +141,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Promise<Result<ToIntersection<Shapes[number]>[OUTPUT]>> {
+  ): Promise<Result<Intersect<Shapes[number]>[OUTPUT]>> {
     return new Promise(resolve => {
       const { shapes } = this;
       const shapesLength = shapes.length;
@@ -190,7 +193,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     input: any,
     outputs: any[] | null,
     options: ApplyOptions
-  ): Result<ToIntersection<Shapes[number]>[OUTPUT]> {
+  ): Result<Intersect<Shapes[number]>[OUTPUT]> {
     const { shapes, _applyChecks } = this;
 
     let output = input;
