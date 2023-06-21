@@ -487,7 +487,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 
 ## Global error message formatter
 
-Be default, `ValidationError` uses `JSON.stringify` to produce an error message. While you can provide a custom error
+By default, `ValidationError` uses `JSON.stringify` to produce an error message. While you can provide a custom error
 message by passing [`errorMessage` option](#parse) to `parse` and `parseAsync`, you also can configure the global
 formatter.
 
@@ -3782,19 +3782,20 @@ If you're developing an app that consumes environment variables you most likely 
 const envShape = d
   .object({
     NODE_ENV: d.enum(['test', 'production']),
-    DAYS_IN_YEAR: d.int().optional(365),
+    HELLO_DATE: d.date().optional(),
   })
   .strip();
 ```
 
 Key takeaways:
 
-1. Env variables are strings, so [type coercion](#type-coercion) must be enabled to coerce `DAYS_IN_YEAR` to an integer.
+1. Since env variables are strings, we should enable [type coercion](#type-coercion) to convert the value of
+`HELLO_DATE` to a `Date` instance.
 
-2. `NODE_ENV` is the required env variable, while `DAYS_IN_YEAR` is optional and would be set to 365 if it isn't
-available. Note that if `DAYS_IN_YEAR` is provided and isn't a valid integer, a validation error would be raised.
+2. `NODE_ENV` is the required env variable, while `HELLO_DATE` is optional. If `HELLO_DATE` is provided and cannot be
+coerced as a date, a validation error would be raised.
 
-3. Unknown env variables are [stripped](#unknown-keys), so they won't be visible inside the app. This prevents
+3. Unknown env variables are [stripped](#unknown-keys), so they won't be visible inside the app. This prevents an
 accidental usage of an unvalidated env variable.
 
 ```ts
@@ -3802,7 +3803,7 @@ const env = envShape.parse(
   process.env,
   { coerce: true }
 );
-// ⮕ { NODE_ENV: 'test' | 'production', DAYS_IN_YEAR: number }
+// ⮕ { NODE_ENV: 'test' | 'production', HELLO_DATE?: Date }
 ```
 
 ## Conditionally applied shapes
