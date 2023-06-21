@@ -145,10 +145,10 @@ describe('PromiseShape', () => {
       expect(result.value).toBe(promise);
     });
 
-    test('returns the new promise if the resolved value was transformed', async () => {
+    test('returns the new promise if the resolved value was converted', async () => {
       const promise = Promise.resolve('aaa');
 
-      const result = (await new PromiseShape(new Shape().transform(() => 111)).tryAsync(promise)) as Ok<unknown>;
+      const result = (await new PromiseShape(new Shape().convert(() => 111)).tryAsync(promise)) as Ok<unknown>;
 
       expect(result.value).not.toBe(promise);
 

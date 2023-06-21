@@ -72,8 +72,8 @@ describe('RecordShape', () => {
     });
   });
 
-  test('transforms keys', () => {
-    const keyShape = new Shape().transform(value => value.toUpperCase());
+  test('converts keys', () => {
+    const keyShape = new Shape().convert(value => value.toUpperCase());
     const valueShape = new Shape();
 
     const objShape = new RecordShape(keyShape, valueShape);
@@ -86,9 +86,9 @@ describe('RecordShape', () => {
     expect(result.value).not.toBe(obj);
   });
 
-  test('transforms values', () => {
+  test('converts values', () => {
     const keyShape = new Shape();
-    const valueShape = new Shape().transform(value => value.toUpperCase());
+    const valueShape = new Shape().convert(value => value.toUpperCase());
 
     const objShape = new RecordShape(keyShape, valueShape);
 
@@ -230,8 +230,8 @@ describe('RecordShape', () => {
       });
     });
 
-    test('transforms keys', async () => {
-      const keyShape = new Shape().transformAsync(value => Promise.resolve(value.toUpperCase()));
+    test('converts keys', async () => {
+      const keyShape = new Shape().convertAsync(value => Promise.resolve(value.toUpperCase()));
       const valueShape = new Shape();
 
       const objShape = new RecordShape(keyShape, valueShape);
@@ -244,9 +244,9 @@ describe('RecordShape', () => {
       expect(result.value).not.toBe(obj);
     });
 
-    test('transforms values', async () => {
+    test('converts values', async () => {
       const keyShape = new Shape();
-      const valueShape = new Shape().transformAsync(value => Promise.resolve(value.toUpperCase()));
+      const valueShape = new Shape().convertAsync(value => Promise.resolve(value.toUpperCase()));
 
       const objShape = new RecordShape(keyShape, valueShape);
 

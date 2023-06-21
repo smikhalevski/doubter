@@ -106,14 +106,14 @@ export default function () {
     minValue: {
       configurable: true,
       get(this: BigIntShape) {
-        return this.getCheck(CODE_BIGINT_MIN)?.param;
+        return this.getOperation(CODE_BIGINT_MIN)?.param;
       },
     },
 
     maxValue: {
       configurable: true,
       get(this: BigIntShape) {
-        return this.getCheck(CODE_BIGINT_MAX)?.param;
+        return this.getOperation(CODE_BIGINT_MAX)?.param;
       },
     },
   });

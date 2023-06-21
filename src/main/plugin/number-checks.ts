@@ -246,28 +246,28 @@ export default function () {
     minValue: {
       configurable: true,
       get(this: NumberShape) {
-        return this.getCheck(CODE_NUMBER_GTE)?.param;
+        return this.getOperation(CODE_NUMBER_GTE)?.param;
       },
     },
 
     maxValue: {
       configurable: true,
       get(this: NumberShape) {
-        return this.getCheck(CODE_NUMBER_LTE)?.param;
+        return this.getOperation(CODE_NUMBER_LTE)?.param;
       },
     },
 
     exclusiveMinValue: {
       configurable: true,
       get(this: NumberShape) {
-        return this.getCheck(CODE_NUMBER_GT)?.param;
+        return this.getOperation(CODE_NUMBER_GT)?.param;
       },
     },
 
     exclusiveMaxValue: {
       configurable: true,
       get(this: NumberShape) {
-        return this.getCheck(CODE_NUMBER_LT)?.param;
+        return this.getOperation(CODE_NUMBER_LT)?.param;
       },
     },
   });

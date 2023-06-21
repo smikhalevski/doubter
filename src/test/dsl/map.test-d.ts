@@ -6,7 +6,7 @@ expectType<Map<string, number>>(d.map(d.string(), d.number())[OUTPUT]);
 
 expectType<Map<'bbb', number>>(
   d.map(
-    d.string().transform((): 'bbb' => 'bbb'),
+    d.string().convert((): 'bbb' => 'bbb'),
     d.number()
   )[OUTPUT]
 );

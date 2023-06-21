@@ -142,21 +142,21 @@ export default function () {
     minLength: {
       configurable: true,
       get(this: StringShape) {
-        return this.getCheck(CODE_STRING_MIN)?.param;
+        return this.getOperation(CODE_STRING_MIN)?.param;
       },
     },
 
     maxLength: {
       configurable: true,
       get(this: StringShape) {
-        return this.getCheck(CODE_STRING_MAX)?.param;
+        return this.getOperation(CODE_STRING_MAX)?.param;
       },
     },
 
     pattern: {
       configurable: true,
       get(this: StringShape) {
-        return this.getCheck(CODE_STRING_REGEX)?.param;
+        return this.getOperation(CODE_STRING_REGEX)?.param;
       },
     },
   });

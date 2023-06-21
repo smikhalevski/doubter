@@ -19,8 +19,8 @@ describe('copyUnsafeChecks', () => {
     const shape = copyUnsafeChecks(sourceShape, targetShape);
 
     expect(shape).not.toBe(targetShape);
-    expect(shape['_checks'].length).toBe(1);
-    expect(shape['_checks'][0].callback).toBe(unsafeCheck);
+    expect(shape['_operations'].length).toBe(1);
+    expect(shape['_operations'][0].callback).toBe(unsafeCheck);
   });
 });
 

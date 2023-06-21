@@ -1,11 +1,11 @@
 import * as d from '../../main';
 
-describe('transform', () => {
+describe('convert', () => {
   test('returns a shape', () => {
-    expect(d.transform(() => 111)).toBeInstanceOf(d.TransformShape);
+    expect(d.convert(() => 111)).toBeInstanceOf(d.ConvertShape);
   });
 
-  test('transforms an input value', () => {
-    expect(d.transform(input => input + 111).parse(222)).toBe(333);
+  test('converts an input value', () => {
+    expect(d.convert(input => input + 111).parse(222)).toBe(333);
   });
 });

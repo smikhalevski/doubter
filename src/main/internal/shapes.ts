@@ -2,6 +2,7 @@ import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, R
 import { ApplyOptions, Check, Issue, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
+import { createProcessor, Operation } from './processors';
 
 export function nextNonce(): number {
   return nextNonce.nonce++;
@@ -33,31 +34,31 @@ export function isUnsafeCheck(check: Check): boolean {
   return check.isUnsafe;
 }
 
-/**
- * Returns the index of the check with the given key, or -1 if there's no such check.
- */
-export function getCheckIndex(checks: readonly Check[], key: unknown): number {
-  for (let i = 0; i < checks.length; ++i) {
-    if (checks[i].key === key) {
+// /**
+//  * Returns the index of the check with the given key, or -1 if there's no such check.
+//  */
+export function getOperationIndex(operations: readonly Operation[], key: unknown): number {
+  for (let i = 0; i < operations.length; ++i) {
+    if (operations[i].key === key) {
       return i;
     }
   }
   return -1;
 }
 
-/**
- * Mutates the shape!
- *
- * Updates the shape checks and related properties.
- *
- * @param shape The shape to update.
- * @param checks The array of new checks.
- * @returns The clone of the shape.
- */
-export function replaceChecks<S extends Shape>(shape: S, checks: readonly Check[]): S {
-  shape['_checks'] = checks;
-  shape['_applyChecks'] = createApplyChecksCallback(checks);
-  shape['_isUnsafe'] = checks.some(isUnsafeCheck);
+// /**
+//  * Mutates the shape!
+//  *
+//  * Updates the shape checks and related properties.
+//  *
+//  * @param shape The shape to update.
+//  * @param operations The array of new checks.
+//  * @returns The clone of the shape.
+//  */
+export function replaceOperation<S extends Shape>(shape: S, operations: readonly Operation[]): S {
+  shape['_operations'] = operations;
+  shape['_processor'] = createProcessor(operations);
+  // shape['_isUnsafe'] = operations.some(isUnsafeCheck);
 
   return shape;
 }
@@ -73,11 +74,12 @@ export function copyUnsafeChecks<S extends Shape>(sourceShape: Shape, targetShap
  * Replaces checks of `shape` with checks from the `baseShape` that match a predicate.
  */
 export function copyChecks<S extends Shape>(baseShape: Shape, shape: S, predicate?: (check: Check) => boolean): S {
-  const checks = baseShape['_checks'];
+  // const checks = baseShape['_operations'];
 
-  return replaceChecks(
+  return replaceOperation(
     shape['_clone'](),
-    checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
+    []
+    // checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
   );
 }
 

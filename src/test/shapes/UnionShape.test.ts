@@ -237,7 +237,7 @@ describe('UnionShape', () => {
   describe('async', () => {
     test('distributes buckets by inputs', async () => {
       const shape1 = new NumberShape();
-      const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
+      const shape2 = new StringShape().convertAsync(value => Promise.resolve(value));
       const shape3 = new BooleanShape();
 
       const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
@@ -256,7 +256,7 @@ describe('UnionShape', () => {
 
     test('parses nested unions', async () => {
       const shape1 = new NumberShape();
-      const shape2 = new StringShape().transformAsync(value => Promise.resolve(value));
+      const shape2 = new StringShape().convertAsync(value => Promise.resolve(value));
       const shape3 = new BooleanShape();
       const orShape1 = new UnionShape([shape2, shape3]).refine(() => true);
 

@@ -23,7 +23,7 @@ export * from './record';
 export * from './set';
 export * from './string';
 export * from './symbol';
-export * from './transform';
+export * from './convert';
 export * from './tuple';
 export * from './undefined';
 export * from './union';

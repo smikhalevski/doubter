@@ -1,7 +1,7 @@
 import { Issue } from './types';
 
 /**
- * An error thrown if parsing failed. Custom check callbacks, refinement predicates, transformers, and fallback
+ * An error thrown if parsing failed. Custom check callbacks, refinement predicates, converters, and fallback
  * functions can throw this error to notify that the operation has failed.
  *
  * @group Errors

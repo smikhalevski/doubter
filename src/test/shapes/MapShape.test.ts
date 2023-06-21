@@ -87,8 +87,8 @@ describe('MapShape', () => {
     });
   });
 
-  test('transforms keys', () => {
-    const keyShape = new Shape().transform(value => value.toUpperCase());
+  test('converts keys', () => {
+    const keyShape = new Shape().convert(value => value.toUpperCase());
     const valueShape = new Shape();
 
     const mapShape = new MapShape(keyShape, valueShape);
@@ -111,9 +111,9 @@ describe('MapShape', () => {
     expect(result.value).not.toBe(map);
   });
 
-  test('transforms values', () => {
+  test('converts values', () => {
     const keyShape = new Shape();
-    const valueShape = new Shape().transform(value => value.toUpperCase());
+    const valueShape = new Shape().convert(value => value.toUpperCase());
 
     const mapShape = new MapShape(keyShape, valueShape);
 
@@ -359,10 +359,10 @@ describe('MapShape', () => {
       });
     });
 
-    test('transforms keys', async () => {
+    test('converts keys', async () => {
       const keyShape = new Shape<string>()
-        .transformAsync(value => Promise.resolve(value))
-        .transform(value => value.toUpperCase());
+        .convertAsync(value => Promise.resolve(value))
+        .convert(value => value.toUpperCase());
 
       const valueShape = new Shape();
 
@@ -386,10 +386,10 @@ describe('MapShape', () => {
       expect((await result).value).not.toBe(map);
     });
 
-    test('transforms values', async () => {
+    test('converts values', async () => {
       const valueShape = new Shape<string>()
-        .transformAsync(value => Promise.resolve(value))
-        .transform(value => value.toUpperCase());
+        .convertAsync(value => Promise.resolve(value))
+        .convert(value => value.toUpperCase());
 
       const mapShape = new MapShape(asyncShape, valueShape);
 

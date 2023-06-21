@@ -745,7 +745,7 @@ Retrieve a check:
 ```ts
 shape.check(emailCheck);
 
-shape.getCheck(emailCheck);
+shape.getOperation(emailCheck);
 // ⮕ { key: emailCheck, callback: emailCheck, isUnsafe: false, param: undefined }
 ```
 
@@ -768,7 +768,7 @@ shape.check(emailCheck, { key: 'email' });
 Now you should use the key to get or delete the check:
 
 ```ts
-shape.getCheck('email');
+shape.getOperation('email');
 // ⮕ { key: 'email', callback: emailCheck, isUnsafe: false, param: undefined }
 
 shape.deleteCheck('email');

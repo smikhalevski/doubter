@@ -44,19 +44,19 @@ describe('IntersectionShape', () => {
     expect(andShape.parse(obj)).toBe(obj);
   });
 
-  test('returns the intersection of transformed shapes', () => {
+  test('returns the intersection of converted shapes', () => {
     const obj = { key1: 'aaa', key2: 111 };
 
     const andShape = new IntersectionShape([
       new ObjectShape(
         {
-          key1: new StringShape().transform(() => 'xxx'),
+          key1: new StringShape().convert(() => 'xxx'),
         },
         null
       ).strip(),
       new ObjectShape(
         {
-          key2: new NumberShape().transform(() => 'yyy'),
+          key2: new NumberShape().convert(() => 'yyy'),
         },
         null
       ).strip(),
@@ -99,7 +99,7 @@ describe('IntersectionShape', () => {
   });
 
   test('raises an issue if outputs cannot be intersected', () => {
-    const andShape = new IntersectionShape([new StringShape(), new StringShape().transform(parseFloat)]);
+    const andShape = new IntersectionShape([new StringShape(), new StringShape().convert(parseFloat)]);
 
     expect(andShape.try('111.222')).toEqual({
       ok: false,
@@ -110,7 +110,7 @@ describe('IntersectionShape', () => {
   test('raises an issue if child outputs cannot be intersected', () => {
     const andShape = new IntersectionShape([
       new ArrayShape([], new StringShape()),
-      new ArrayShape([], new StringShape().transform(parseFloat)),
+      new ArrayShape([], new StringShape().convert(parseFloat)),
     ]);
 
     expect(andShape.try(['111.222'])).toEqual({
@@ -243,10 +243,10 @@ describe('IntersectionShape', () => {
             key1: new StringShape(),
           },
           null
-        ).transformAsync(value => Promise.resolve(value)),
+        ).convertAsync(value => Promise.resolve(value)),
         new ObjectShape(
           {
-            key2: new NumberShape().transformAsync(value => Promise.resolve(value)),
+            key2: new NumberShape().convertAsync(value => Promise.resolve(value)),
           },
           null
         ),
@@ -258,7 +258,7 @@ describe('IntersectionShape', () => {
     test('raises an issue if child outputs cannot be intersected', async () => {
       const andShape = new IntersectionShape([
         new ArrayShape([], new StringShape()),
-        new ArrayShape([], new StringShape().transformAsync(value => Promise.resolve(value)).transform(parseFloat)),
+        new ArrayShape([], new StringShape().convertAsync(value => Promise.resolve(value)).convert(parseFloat)),
       ]);
 
       await expect(andShape.tryAsync(['111.222'])).resolves.toEqual({

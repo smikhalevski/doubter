@@ -34,7 +34,7 @@ export {
   ReplaceLiteralShape,
   Result,
   Shape,
-  TransformShape,
+  ConvertShape,
   INPUT,
   OUTPUT,
 } from './Shape';

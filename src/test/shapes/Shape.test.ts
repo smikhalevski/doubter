@@ -12,7 +12,7 @@ import {
   ReplaceLiteralShape,
   Shape,
   StringShape,
-  TransformShape,
+  ConvertShape,
   ValidationError,
 } from '../../main';
 import {
@@ -77,18 +77,18 @@ describe('Shape', () => {
       const shape2 = shape1.check(cb);
 
       expect(shape1).not.toBe(shape2);
-      expect(shape1.getCheck(cb)).toBeUndefined();
-      expect(shape2.getCheck(cb)).toBeDefined();
+      expect(shape1.getOperation(cb)).toBeUndefined();
+      expect(shape2.getOperation(cb)).toBeDefined();
     });
 
     test('adds a safe check by default', () => {
       const cb = () => null;
-      expect(new Shape().check(cb).getCheck(cb)?.isUnsafe).toBe(false);
+      expect(new Shape().check(cb).getOperation(cb)?.isUnsafe).toBe(false);
     });
 
     test('adds an unsafe check', () => {
       const cb = () => null;
-      expect(new Shape().check(cb, { unsafe: true }).getCheck(cb)?.isUnsafe).toBe(true);
+      expect(new Shape().check(cb, { unsafe: true }).getOperation(cb)?.isUnsafe).toBe(true);
     });
 
     test('added check is applied', () => {
@@ -163,21 +163,21 @@ describe('Shape', () => {
 
   describe('getCheck', () => {
     test('returns undefined if check not found', () => {
-      expect(new Shape().getCheck(() => null)).toBeUndefined();
+      expect(new Shape().getOperation(() => null)).toBeUndefined();
     });
 
     test('returns the check', () => {
       const cb = () => null;
       const shape = new Shape().check(cb);
 
-      expect(shape.getCheck(cb)).toEqual({ key: cb, callback: cb, isUnsafe: false });
+      expect(shape.getOperation(cb)).toEqual({ key: cb, callback: cb, isUnsafe: false });
     });
 
     test('returns the check with custom key', () => {
       const cb = () => null;
       const shape = new Shape().check(cb, { key: 'aaa' });
 
-      expect(shape.getCheck('aaa')).toEqual({ key: 'aaa', callback: cb, isUnsafe: false });
+      expect(shape.getOperation('aaa')).toEqual({ key: 'aaa', callback: cb, isUnsafe: false });
     });
   });
 
@@ -202,7 +202,7 @@ describe('Shape', () => {
       const cb = () => null;
       const shape = new Shape().check(cb);
 
-      expect(shape.deleteCheck(cb).getCheck(cb)).toBeUndefined();
+      expect(shape.deleteCheck(cb).getOperation(cb)).toBeUndefined();
     });
 
     test('does not apply a deleted check', () => {
@@ -315,23 +315,23 @@ describe('Shape', () => {
     });
   });
 
-  describe('transform', () => {
-    test('pipes the output to a sync TransformShape', () => {
+  describe('convert', () => {
+    test('pipes the output to a sync ConvertShape', () => {
       const shape = new Shape();
       const cb = () => 111;
-      const pipeShape = shape.transform(cb);
+      const pipeShape = shape.convert(cb);
 
       expect(pipeShape).toBeInstanceOf(PipeShape);
       expect((pipeShape as PipeShape<any, any>).inputShape).toBe(shape);
-      expect((pipeShape as PipeShape<any, any>).outputShape).toBeInstanceOf(TransformShape);
-      expect(((pipeShape as PipeShape<any, any>).outputShape as TransformShape<any>).callback).toBe(cb);
-      expect(((pipeShape as PipeShape<any, any>).outputShape as TransformShape<any>).isAsync).toBe(false);
+      expect((pipeShape as PipeShape<any, any>).outputShape).toBeInstanceOf(ConvertShape);
+      expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).callback).toBe(cb);
+      expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).isAsync).toBe(false);
     });
 
-    test('pipes from an async shape to TransformShape that synchronously returns a promise', async () => {
+    test('pipes from an async shape to ConvertShape that synchronously returns a promise', async () => {
       const cbMock = jest.fn();
 
-      const shape = asyncShape.transform(value => Promise.resolve('__' + value)).check(cbMock);
+      const shape = asyncShape.convert(value => Promise.resolve('__' + value)).check(cbMock);
 
       const output = shape.parseAsync('aaa');
 
@@ -342,17 +342,17 @@ describe('Shape', () => {
     });
   });
 
-  describe('transformAsync', () => {
-    test('pipes the output to an async TransformShape', () => {
+  describe('convertAsync', () => {
+    test('pipes the output to an async ConvertShape', () => {
       const shape = new Shape();
       const cb = () => Promise.resolve(111);
-      const pipeShape = shape.transformAsync(cb);
+      const pipeShape = shape.convertAsync(cb);
 
       expect(pipeShape).toBeInstanceOf(PipeShape);
       expect((pipeShape as PipeShape<any, any>).inputShape).toBe(shape);
-      expect((pipeShape as PipeShape<any, any>).outputShape).toBeInstanceOf(TransformShape);
-      expect(((pipeShape as PipeShape<any, any>).outputShape as TransformShape<any>).callback).toBe(cb);
-      expect(((pipeShape as PipeShape<any, any>).outputShape as TransformShape<any>).isAsync).toBe(true);
+      expect((pipeShape as PipeShape<any, any>).outputShape).toBeInstanceOf(ConvertShape);
+      expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).callback).toBe(cb);
+      expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).isAsync).toBe(true);
     });
   });
 
@@ -907,7 +907,7 @@ describe('Shape', () => {
       });
 
       test('resolves with a default if parsing failed', async () => {
-        const shape = new Shape().transformAsync(() => Promise.resolve()).check(() => [{ code: 'xxx' }]);
+        const shape = new Shape().convertAsync(() => Promise.resolve()).check(() => [{ code: 'xxx' }]);
 
         await expect(shape.parseOrDefaultAsync(111, 222)).resolves.toBe(222);
       });
@@ -915,11 +915,11 @@ describe('Shape', () => {
   });
 });
 
-describe('TransformShape', () => {
-  test('transforms a value', () => {
+describe('ConvertShape', () => {
+  test('converts a value', () => {
     const cbMock = jest.fn(() => 111);
 
-    const shape = new TransformShape(cbMock);
+    const shape = new ConvertShape(cbMock);
 
     expect(shape.parse('aaa')).toBe(111);
 
@@ -928,7 +928,7 @@ describe('TransformShape', () => {
   });
 
   test('callback can throw a ValidationError', () => {
-    const shape = new TransformShape(() => {
+    const shape = new ConvertShape(() => {
       throw new ValidationError([{ code: 'xxx' }]);
     });
 
@@ -939,7 +939,7 @@ describe('TransformShape', () => {
   });
 
   test('does not swallow unrecognized errors', () => {
-    const shape = new TransformShape(() => {
+    const shape = new ConvertShape(() => {
       throw new Error('expected');
     });
 
@@ -949,17 +949,17 @@ describe('TransformShape', () => {
   test('applies checks', () => {
     const cbMock = jest.fn(() => null);
 
-    new TransformShape(() => 111).check(cbMock).parse('aaa');
+    new ConvertShape(() => 111).check(cbMock).parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
     expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerce: false });
   });
 
   describe('async', () => {
-    test('transforms using an async callback', async () => {
+    test('converts using an async callback', async () => {
       const cbMock = jest.fn(() => Promise.resolve(111));
 
-      const shape = new TransformShape(cbMock, true);
+      const shape = new ConvertShape(cbMock, true);
 
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
@@ -967,8 +967,8 @@ describe('TransformShape', () => {
       expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false });
     });
 
-    test('transform callback can reject with ValidationError instances', async () => {
-      const shape = new TransformShape(() => Promise.reject(new ValidationError([{ code: 'xxx' }])), true);
+    test('convert callback can reject with ValidationError instances', async () => {
+      const shape = new ConvertShape(() => Promise.reject(new ValidationError([{ code: 'xxx' }])), true);
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
@@ -977,7 +977,7 @@ describe('TransformShape', () => {
     });
 
     test('does not swallow unrecognized errors', async () => {
-      const shape = new TransformShape(() => Promise.reject('expected'), true);
+      const shape = new ConvertShape(() => Promise.reject('expected'), true);
 
       await expect(shape.tryAsync('aaa')).rejects.toBe('expected');
     });
@@ -1036,7 +1036,7 @@ describe('PipeShape', () => {
 
   describe('deepPartial', () => {
     test('pipes deep partial objects', () => {
-      const shape1 = new ObjectShape({ key1: new StringShape().transform(parseFloat) }, null);
+      const shape1 = new ObjectShape({ key1: new StringShape().convert(parseFloat) }, null);
       const shape2 = new ObjectShape({ key1: new NumberShape() }, null);
 
       const pipeShape = new PipeShape(shape1, shape2).deepPartial();
@@ -1214,7 +1214,7 @@ describe('DenyLiteralShape', () => {
 
   test('returns output as is', () => {
     const shape = new DenyLiteralShape(
-      new Shape().transform(() => 222),
+      new Shape().convert(() => 222),
       'aaa'
     );
 
@@ -1232,7 +1232,7 @@ describe('DenyLiteralShape', () => {
 
   test('raises an issue if an output is denied', () => {
     const shape = new DenyLiteralShape(
-      new Shape().transform(() => 111),
+      new Shape().convert(() => 111),
       111
     );
 
@@ -1286,7 +1286,7 @@ describe('DenyLiteralShape', () => {
 
     test('returns output as is', async () => {
       const shape = new DenyLiteralShape(
-        new Shape().transformAsync(() => Promise.resolve(222)),
+        new Shape().convertAsync(() => Promise.resolve(222)),
         'aaa'
       );
 
@@ -1304,7 +1304,7 @@ describe('DenyLiteralShape', () => {
 
     test('raises an issue if an output is denied', async () => {
       const shape = new DenyLiteralShape(
-        new Shape().transformAsync(() => Promise.resolve(111)),
+        new Shape().convertAsync(() => Promise.resolve(111)),
         111
       );
 
@@ -1408,7 +1408,7 @@ describe('ExcludeShape', () => {
     const shape = new StringShape();
 
     const excludeShape = new ExcludeShape(
-      new Shape().transform(() => 'aaa'),
+      new Shape().convert(() => 'aaa'),
       shape
     );
 

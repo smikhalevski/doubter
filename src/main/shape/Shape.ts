@@ -13,8 +13,8 @@ import {
   copyUnsafeChecks,
   deleteAt,
   Dict,
-  getCheckIndex,
   getErrorMessage,
+  getOperationIndex,
   isArray,
   isEqual,
   isObjectLike,
@@ -23,15 +23,15 @@ import {
   ok,
   Promisify,
   ReadonlyDict,
-  replaceChecks,
+  replaceOperation,
   returnTrue,
   toDeepPartialShape,
   unionTypes,
 } from '../internal';
+import { AlterCallback, Operation, Processor } from '../internal/processors';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   ApplyOptions,
-  Check,
   CheckCallback,
   CheckOptions,
   ConstraintOptions,
@@ -239,18 +239,20 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   annotations: Dict = {};
 
-  /**
-   * The array of checks that were used to produce {@linkcode _applyChecks}.
-   */
-  protected _checks: readonly Check[] = [];
+  // /**
+  //  * The array of checks that were used to produce {@linkcode _applyChecks}.
+  //  */
+  protected _operations: readonly Operation[] = [];
 
-  /**
-   * A callback that applies checks to the given value.
-   */
+  // /**
+  //  * A callback that applies checks to the given value.
+  //  */
   protected _applyChecks: ApplyChecksCallback | null = null;
 
+  protected _processor: Processor | null = null;
+
   /**
-   * `true` if some checks from {@linkcode _checks} were marked as unsafe, `false` otherwise.
+   * `true` if some checks from {@linkcode _operations} were marked as unsafe, `false` otherwise.
    */
   protected _isUnsafe = false;
 
@@ -320,22 +322,42 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback, options: CheckOptions = {}): this {
     const { key = cb, param, unsafe = false } = options;
 
-    const index = getCheckIndex(this._checks, key);
-    const checks = this._checks.concat({ key, callback: cb, param, isUnsafe: unsafe });
+    const index = getOperationIndex(this._operations, key);
+    const checks = this._operations.concat({
+      type: 'check',
+      key,
+      apply: cb,
+      param,
+      isLax: unsafe,
+    });
 
-    return replaceChecks(this._clone(), deleteAt(checks, index));
+    return replaceOperation(this._clone(), deleteAt(checks, index));
   }
 
-  /**
-   * Returns the {@linkcode Check} by its key.
-   *
-   * @param key The check key.
-   * @returns The check or `undefined` if there's no check associated with the key.
-   */
-  getCheck(key: unknown): Check | undefined {
-    const index = getCheckIndex(this._checks, key);
+  alter(cb: AlterCallback) {
+    const key = cb;
 
-    return index !== -1 ? this._checks[index] : undefined;
+    const index = getOperationIndex(this._operations, key);
+    const checks = this._operations.concat({
+      type: 'alter',
+      key,
+      apply: cb,
+      param: undefined,
+    });
+
+    return replaceOperation(this._clone(), deleteAt(checks, index));
+  }
+
+  // /**
+  //  * Returns the {@linkcode Check} by its key.
+  //  *
+  //  * @param key The check key.
+  //  * @returns The check or `undefined` if there's no check associated with the key.
+  //  */
+  getOperation(key: unknown): Operation | undefined {
+    const index = getOperationIndex(this._operations, key);
+
+    return index !== -1 ? this._operations[index] : undefined;
   }
 
   /**
@@ -344,7 +366,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param key The check key.
    */
   hasCheck(key: unknown): boolean {
-    return getCheckIndex(this._checks, key) !== -1;
+    return getOperationIndex(this._operations, key) !== -1;
   }
 
   /**
@@ -354,9 +376,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape if the matching check was deleted, or this shape if there is no matching check.
    */
   deleteCheck(key: unknown): this {
-    const index = getCheckIndex(this._checks, key);
+    const index = getOperationIndex(this._operations, key);
 
-    return index !== -1 ? replaceChecks(this._clone(), deleteAt(this._checks.slice(0), index)) : this;
+    return index !== -1 ? replaceOperation(this._clone(), deleteAt(this._operations.slice(0), index)) : this;
   }
 
   /**
@@ -423,41 +445,41 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Synchronously transforms the output value of the shape with a transformer callback.
+   * Synchronously converts the output value of the shape with a converter callback.
    *
-   * @param cb The callback that transforms the shape output value.
-   * @returns The {@linkcode TransformShape} instance.
-   * @template TransformedValue The value returned from the callback that transforms the output value of this shape.
+   * @param cb The callback that converts the shape output value.
+   * @returns The {@linkcode ConvertShape} instance.
+   * @template ConvertedValue The value returned from the callback that converts the output value of this shape.
    */
-  transform<TransformedValue>(
+  convert<ConvertedValue>(
     /**
      * @param output The shape output value.
      * @param options Parsing options.
-     * @return The transformed value.
-     * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
+     * @return The converted value.
+     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
-    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => TransformedValue
-  ): Shape<InputValue, TransformedValue> {
-    return this.to(new TransformShape(cb));
+    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => ConvertedValue
+  ): Shape<InputValue, ConvertedValue> {
+    return this.to(new ConvertShape(cb));
   }
 
   /**
-   * Asynchronously transforms the output value of the shape with a transformer callback.
+   * Asynchronously converts the output value of the shape with a converter callback.
    *
-   * @param cb The callback that transforms the shape output value.
-   * @returns The {@linkcode TransformShape} instance.
-   * @template TransformedValue The value returned from the callback that transforms the output value of this shape.
+   * @param cb The callback that converts the shape output value.
+   * @returns The {@linkcode ConvertShape} instance.
+   * @template ConvertedValue The value returned from the callback that converts the output value of this shape.
    */
-  transformAsync<TransformedValue>(
+  convertAsync<ConvertedValue>(
     /**
      * @param output The shape output value.
      * @param options Parsing options.
-     * @return The transformed value.
-     * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
+     * @return The converted value.
+     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
-    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => Promise<TransformedValue>
-  ): Shape<InputValue, TransformedValue> {
-    return this.to(new TransformShape(cb, true));
+    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => Promise<ConvertedValue>
+  ): Shape<InputValue, ConvertedValue> {
+    return this.to(new ConvertShape(cb, true));
   }
 
   /**
@@ -955,33 +977,30 @@ Object.defineProperties(Shape.prototype, {
 });
 
 /**
- * The shape that applies a transformer callback to the input.
+ * The shape that applies a converter callback to the input.
  *
- * @template TransformedValue The output value of the callback that transforms the input value.
+ * @template ConvertedValue The output value of the callback that converts the input value.
  * @group Shapes
  */
-export class TransformShape<TransformedValue> extends Shape<any, TransformedValue> {
+export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
   /**
-   * Creates the new {@linkcode TransformShape} instance.
+   * Creates the new {@linkcode ConvertShape} instance.
    *
-   * @param callback The callback that transforms the input value.
-   * @param async If `true` then the transform shape waits for the promise returned from the callback to be
+   * @param callback The callback that converts the input value.
+   * @param async If `true` then the convert shape waits for the promise returned from the callback to be
    * fulfilled. Otherwise, the value that is synchronously returned from the callback is used as an output.
-   * @template TransformedValue The output value of the callback that transforms the input value.
+   * @template ConvertedValue The output value of the callback that converts the input value.
    */
   constructor(
     /**
-     * The callback that transforms the input value.
+     * The callback that converts the input value.
      *
      * @param value The input value.
      * @param options Parsing options.
-     * @return The transformation result.
-     * @throws {@linkcode ValidationError} to notify that the transformation cannot be successfully completed.
+     * @return The conversion result.
+     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
-    readonly callback: (
-      value: any,
-      options: Readonly<ApplyOptions>
-    ) => PromiseLike<TransformedValue> | TransformedValue,
+    readonly callback: (value: any, options: Readonly<ApplyOptions>) => PromiseLike<ConvertedValue> | ConvertedValue,
     async?: boolean
   ) {
     super();
@@ -991,14 +1010,14 @@ export class TransformShape<TransformedValue> extends Shape<any, TransformedValu
     }
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<TransformedValue> {
+  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ConvertedValue> {
     const { callback, _applyChecks } = this;
 
     let issues = null;
     let output;
 
     try {
-      output = callback(input, options) as TransformedValue;
+      output = callback(input, options) as ConvertedValue;
     } catch (error) {
       return captureIssues(error);
     }
@@ -1009,10 +1028,10 @@ export class TransformShape<TransformedValue> extends Shape<any, TransformedValu
     return issues;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<TransformedValue>> {
+  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ConvertedValue>> {
     const { _applyChecks } = this;
 
-    return new Promise<TransformedValue>(resolve => {
+    return new Promise<ConvertedValue>(resolve => {
       resolve(this.callback(input, options));
     }).then(output => {
       let issues = null;

@@ -79,7 +79,7 @@ declare module '../core' {
     before(value: Date | number | string, options?: ConstraintOptions | Message): this;
 
     /**
-     * Transforms date to an ISO string.
+     * Converts date to an ISO string.
      *
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
@@ -87,7 +87,7 @@ declare module '../core' {
     iso(): Shape<Date, string>;
 
     /**
-     * Transforms date to a timestamp integer number.
+     * Converts date to a timestamp integer number.
      *
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
@@ -106,14 +106,14 @@ export default function () {
     minValue: {
       configurable: true,
       get(this: DateShape) {
-        return this.getCheck(CODE_DATE_MIN)?.param;
+        return this.getOperation(CODE_DATE_MIN)?.param;
       },
     },
 
     maxValue: {
       configurable: true,
       get(this: DateShape) {
-        return this.getCheck(CODE_DATE_MAX)?.param;
+        return this.getOperation(CODE_DATE_MAX)?.param;
       },
     },
   });
@@ -157,9 +157,9 @@ function max(this: DateShape, value: Date | number | string, options?: Constrain
 }
 
 function iso(this: DateShape): Shape<Date, string> {
-  return this.transform(date => date.toISOString());
+  return this.convert(date => date.toISOString());
 }
 
 function timestamp(this: DateShape): Shape<Date, number> {
-  return this.transform(date => date.getTime());
+  return this.convert(date => date.getTime());
 }

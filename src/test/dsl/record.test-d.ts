@@ -6,7 +6,7 @@ expectType<Record<string, number>>(d.record(d.number())[OUTPUT]);
 
 expectType<{ bbb: number }>(
   d.record(
-    d.string().transform((): 'bbb' => 'bbb'),
+    d.string().convert((): 'bbb' => 'bbb'),
     d.number()
   )[OUTPUT]
 );

@@ -50,21 +50,21 @@ expectType<number | 'aaa'>(d.number().catch(() => 'aaa')[OUTPUT]);
 
 // deepPartial()
 
-// TransformShape is opaque for deepPartial
+// ConvertShape is opaque for deepPartial
 expectType<{ aaa?: { bbb: number } }>(
-  d.object({ aaa: d.object({ bbb: d.number() }).transform(value => value) }).deepPartial()[OUTPUT]
+  d.object({ aaa: d.object({ bbb: d.number() }).convert(value => value) }).deepPartial()[OUTPUT]
 );
 
 expectType<{ aaa?: string }>(
   d
-    .object({ aaa: d.string().transform(parseFloat) })
+    .object({ aaa: d.string().convert(parseFloat) })
     .to(d.object({ aaa: d.number() }))
     .deepPartial()[INPUT]
 );
 
 expectType<{ aaa?: number }>(
   d
-    .object({ aaa: d.string().transform(parseFloat) })
+    .object({ aaa: d.string().convert(parseFloat) })
     .to(d.object({ aaa: d.number() }))
     .deepPartial()[OUTPUT]
 );

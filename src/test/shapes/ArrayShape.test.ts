@@ -200,9 +200,9 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('clones an array if a tuple element was transformed', () => {
+  test('clones an array if a tuple element was converted', () => {
     const shape1 = new Shape();
-    const shape2 = new Shape().transform(() => 'aaa');
+    const shape2 = new Shape().convert(() => 'aaa');
 
     const arrShape = new ArrayShape([shape1, shape2], null);
 
@@ -541,9 +541,9 @@ describe('ArrayShape', () => {
       expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
     });
 
-    test('clones an array if a tuple element was transformed', async () => {
+    test('clones an array if a tuple element was converted', async () => {
       const shape1 = new Shape();
-      const shape2 = new Shape().transformAsync(() => Promise.resolve('aaa'));
+      const shape2 = new Shape().convertAsync(() => Promise.resolve('aaa'));
 
       const arrShape = new ArrayShape([shape1, shape2], null);
 

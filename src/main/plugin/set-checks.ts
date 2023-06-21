@@ -76,14 +76,14 @@ export default function () {
     minSize: {
       configurable: true,
       get(this: SetShape<any>) {
-        return this.getCheck(CODE_SET_MIN)?.param;
+        return this.getOperation(CODE_SET_MIN)?.param;
       },
     },
 
     maxSize: {
       configurable: true,
       get(this: SetShape<any>) {
-        return this.getCheck(CODE_SET_MAX)?.param;
+        return this.getOperation(CODE_SET_MAX)?.param;
       },
     },
   });

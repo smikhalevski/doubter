@@ -86,12 +86,12 @@ describe('SetShape', () => {
     });
   });
 
-  test('returns a new set if some values were transformed', () => {
+  test('returns a new set if some values were converted', () => {
     const cbMock = jest.fn();
     cbMock.mockReturnValueOnce('aaa');
     cbMock.mockReturnValueOnce('bbb');
 
-    const shape = new Shape().transform(cbMock);
+    const shape = new Shape().convert(cbMock);
 
     const setShape = new SetShape(shape);
 
@@ -241,12 +241,12 @@ describe('SetShape', () => {
       expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
     });
 
-    test('returns a new set if some values were transformed', async () => {
+    test('returns a new set if some values were converted', async () => {
       const cbMock = jest.fn();
       cbMock.mockReturnValueOnce(Promise.resolve('aaa'));
       cbMock.mockReturnValueOnce(Promise.resolve('bbb'));
 
-      const shape = new Shape().transformAsync(cbMock);
+      const shape = new Shape().convertAsync(cbMock);
 
       const setShape = new SetShape(shape);
 

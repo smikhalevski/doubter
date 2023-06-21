@@ -46,10 +46,10 @@ describe('LazyShape', () => {
     expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
   });
 
-  test('applies checks to transformed value', () => {
+  test('applies checks to converted value', () => {
     const checkMock = jest.fn(() => [{ code: 'xxx' }]);
 
-    const shape = new StringShape().transform(parseFloat);
+    const shape = new StringShape().convert(parseFloat);
     const lazyShape = new LazyShape(() => shape, identity).check(checkMock);
 
     expect(lazyShape.try('111')).toEqual({
@@ -97,7 +97,7 @@ describe('LazyShape', () => {
 
     test('returns true if async', () => {
       const lazyShape: LazyShape<any, any> = new LazyShape(
-        () => new ObjectShape({ key1: lazyShape.transformAsync(() => Promise.resolve(111)) }, null),
+        () => new ObjectShape({ key1: lazyShape.convertAsync(() => Promise.resolve(111)) }, null),
         identity
       );
 
@@ -241,7 +241,7 @@ describe('LazyShape', () => {
       const lazyShape: LazyShape<any, any> = new LazyShape(
         () =>
           lazyShape
-            .transform(value => {
+            .convert(value => {
               return value !== 111 ? lazyShape.parse(111) : value;
             })
             .check(checkMock),

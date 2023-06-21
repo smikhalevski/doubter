@@ -62,11 +62,11 @@ describe('ObjectShape', () => {
       const objShape1 = new ObjectShape({}, null).refine(cb);
       const objShape2 = objShape1.rest(restShape);
 
-      expect(objShape1.getCheck(cb)).not.toBeUndefined();
+      expect(objShape1.getOperation(cb)).not.toBeUndefined();
       expect(objShape1.restShape).toBeNull();
       expect(objShape1.keysMode).toBe('preserved');
       expect(objShape2).not.toBe(objShape1);
-      expect(objShape2.getCheck(cb)).toBeUndefined();
+      expect(objShape2.getOperation(cb)).toBeUndefined();
       expect(objShape2.restShape).toBe(restShape);
       expect(objShape2.keysMode).toBe('preserved');
     });
@@ -79,7 +79,7 @@ describe('ObjectShape', () => {
       const objShape2 = objShape1.exact();
 
       expect(objShape2).not.toBe(objShape1);
-      expect(objShape2.getCheck(cb)).toBeUndefined();
+      expect(objShape2.getOperation(cb)).toBeUndefined();
       expect(objShape2.keysMode).toBe('exact');
     });
   });
@@ -91,7 +91,7 @@ describe('ObjectShape', () => {
       const objShape2 = objShape1.strip();
 
       expect(objShape2).not.toBe(objShape1);
-      expect(objShape2.getCheck(cb)).toBeUndefined();
+      expect(objShape2.getOperation(cb)).toBeUndefined();
       expect(objShape2.keysMode).toBe('stripped');
     });
   });
@@ -102,11 +102,11 @@ describe('ObjectShape', () => {
       const objShape1 = new ObjectShape({}, null).strip().refine(cb);
       const objShape2 = objShape1.preserve();
 
-      expect(objShape1.getCheck(cb)).not.toBeUndefined();
+      expect(objShape1.getOperation(cb)).not.toBeUndefined();
       expect(objShape1.restShape).toBeNull();
       expect(objShape1.keysMode).toBe('stripped');
       expect(objShape2).not.toBe(objShape1);
-      expect(objShape2.getCheck(cb)).toBeUndefined();
+      expect(objShape2.getOperation(cb)).toBeUndefined();
       expect(objShape2.keysMode).toBe('preserved');
     });
   });
@@ -369,7 +369,7 @@ describe('ObjectShape', () => {
 
     test('clones the object if a property value is changed', () => {
       const shape1 = new Shape();
-      const shape2 = new Shape().transform(() => 111);
+      const shape2 = new Shape().convert(() => 111);
 
       const objShape = new ObjectShape({ key1: shape1, key2: shape2 }, null);
 
@@ -381,7 +381,7 @@ describe('ObjectShape', () => {
     });
 
     test('safely assigns __proto__', () => {
-      const shape1 = new Shape().transform(() => 111);
+      const shape1 = new Shape().convert(() => 111);
 
       const shapes = Object.defineProperty({}, '__proto__', { value: shape1, enumerable: true });
 
@@ -452,7 +452,7 @@ describe('ObjectShape', () => {
 
     test('clones the object if an indexed property value is changed', () => {
       const shape1 = new Shape();
-      const restShape = new Shape().transform(() => 111);
+      const restShape = new Shape().convert(() => 111);
 
       const objShape = new ObjectShape({ key1: shape1 }, restShape);
 
@@ -482,7 +482,7 @@ describe('ObjectShape', () => {
     });
 
     test('strips unknown properties if property value has changed', () => {
-      const shape1 = new Shape().transform(() => 111);
+      const shape1 = new Shape().convert(() => 111);
 
       const objShape = new ObjectShape({ key1: shape1 }, null).strip();
 
@@ -602,7 +602,7 @@ describe('ObjectShape', () => {
 
     test('clones the object if an indexed property value is changed', async () => {
       const shape1 = new Shape();
-      const restShape = new Shape().transformAsync(() => Promise.resolve(111));
+      const restShape = new Shape().convertAsync(() => Promise.resolve(111));
 
       const objShape = new ObjectShape({ key1: shape1 }, restShape);
 
@@ -624,7 +624,7 @@ describe('ObjectShape', () => {
     });
 
     test('strips unknown properties if property value has changed', async () => {
-      const shape1 = new Shape().transformAsync(() => Promise.resolve(111));
+      const shape1 = new Shape().convertAsync(() => Promise.resolve(111));
 
       const objShape = new ObjectShape({ key1: shape1 }, null).strip();
 

@@ -5,7 +5,7 @@ import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from 
 
 describe('Cookbook', () => {
   test('Rename object keys', () => {
-    const keyShape = d.enum(['foo', 'bar']).transform(value => value.toUpperCase() as 'FOO' | 'BAR');
+    const keyShape = d.enum(['foo', 'bar']).convert(value => value.toUpperCase() as 'FOO' | 'BAR');
 
     const shape = d.record(keyShape, d.number());
 
