@@ -7,11 +7,11 @@ import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
 
 type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promise<
-  ValueShape extends AnyShape ? ValueShape : any
+  ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape : any
 >;
 
 type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
-  ValueShape extends AnyShape ? OptionalDeepPartialShape<ValueShape> : null
+  ValueShape extends null | undefined ? null : ValueShape extends AnyShape ? OptionalDeepPartialShape<ValueShape> : null
 >;
 
 /**
