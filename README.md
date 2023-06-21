@@ -29,7 +29,7 @@ npm install --save-prod doubter
 > canary release `doubter@next`. Navigate to the [`latest`](https://github.com/smikhalevski/doubter/tree/latest#readme)
 > branch for docs that describe the latest stable release.
 
-**Features**
+🚀&ensp;**Features**
 
 - [Basics](#basics)
 - [Parsing and trying](#parsing-and-trying)
@@ -54,9 +54,9 @@ npm install --save-prod doubter
 - [Plugins](#plugins)
 - [Advanced shapes](#advanced-shapes)
 
-[**Performance**](#performance)
+⏱&ensp;[**Performance**](#performance)
 
-**Data types**
+🎯&ensp;**Data types**
 
 - Strings<br>
   [`string`](#string)
@@ -120,7 +120,7 @@ npm install --save-prod doubter
   [`lazy`](#lazy)
   [`never`](#never)
 
-**Cookbook**
+🍪&ensp;**Cookbook**
 
 - [Rename object keys](#rename-object-keys)
 - [Type-safe URL query params](#type-safe-url-query-params)
