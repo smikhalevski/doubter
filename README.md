@@ -475,7 +475,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `number_gte`         | [`d.number().gt(x)`](#number)            | The exclusive minimum value `x`                       |
 | `number_lte`         | [`d.number().lt(x)`](#number)            | The exclusive maximum value `x`                       |
 | `number_multiple_of` | [`d.number().multipleOf(x)`](#number)    | The divisor `x`                                       |
-| `objectUnknownKeys`  | [`d.object().exact()`](#unknown-keys)    | The array of unknown keys                             |
+| `object_exact`       | [`d.object().exact()`](#unknown-keys)    | The array of unknown keys                             |
 | `set_min`            | [`d.set().min(n)`](#set)                 | The minimum `Set` size `n`                            |
 | `set_max`            | [`d.set().max(n)`](#set)                 | The maximum `Set` size `n`                            |
 | `string_min`         | [`d.string().min(n)`](#string)           | The minimum string length `n`                         |
