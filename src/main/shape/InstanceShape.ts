@@ -1,6 +1,6 @@
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
 import { isEqualOrSubclass } from '../internal';
-import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_SET } from '../Type';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
 import { Result, Shape } from './Shape';
@@ -35,6 +35,9 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
 
     if (isEqualOrSubclass(ctor, Function)) {
       return [TYPE_FUNCTION];
+    }
+    if (isEqualOrSubclass(ctor, Promise)) {
+      return [TYPE_PROMISE];
     }
     if (isEqualOrSubclass(ctor, Array)) {
       return [TYPE_ARRAY];
