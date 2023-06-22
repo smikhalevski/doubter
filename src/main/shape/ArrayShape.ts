@@ -157,7 +157,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     options: ApplyOptions,
     nonce: number
   ): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
-    const { headShapes, restShape, _applyChecks, _isForced } = this;
+    const { headShapes, restShape, _applyOperations, _isForced } = this;
 
     let output = input;
     let outputLength;
@@ -201,8 +201,8 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       }
     }
 
-    if (_applyChecks !== null && (_isForced || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (_applyOperations !== null && (_isForced || issues === null)) {
+      return _applyOperations(output, issues, options, input !== output, null);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -216,7 +216,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     nonce: number
   ): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
-      const { headShapes, restShape, _applyChecks, _isForced } = this;
+      const { headShapes, restShape, _applyOperations, _isForced } = this;
 
       let output = input;
       let outputLength: number;
@@ -268,8 +268,8 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           );
         }
 
-        if (_applyChecks !== null && (_isForced || issues === null)) {
-          issues = _applyChecks(output, issues, options);
+        if (_applyOperations !== null && (_isForced || issues === null)) {
+          return _applyOperations(output, issues, options, input !== output, null);
         }
         if (issues === null && input !== output) {
           return ok(output);

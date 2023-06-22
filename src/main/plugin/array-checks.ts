@@ -101,21 +101,21 @@ declare module '../core' {
 export default function () {
   const prototype = ArrayShape.prototype;
 
-  Object.defineProperties(prototype, {
-    minLength: {
-      configurable: true,
-      get(this: ArrayShape<any, any>) {
-        return this.getOperationsByKey(CODE_ARRAY_MIN)?.param;
-      },
-    },
-
-    maxLength: {
-      configurable: true,
-      get(this: ArrayShape<any, any>) {
-        return this.getOperationsByKey(CODE_ARRAY_MAX)?.param;
-      },
-    },
-  });
+  // Object.defineProperties(prototype, {
+  //   minLength: {
+  //     configurable: true,
+  //     get(this: ArrayShape<any, any>) {
+  //       return this.getOperationsByKey(CODE_ARRAY_MIN)?.param;
+  //     },
+  //   },
+  //
+  //   maxLength: {
+  //     configurable: true,
+  //     get(this: ArrayShape<any, any>) {
+  //       return this.getOperationsByKey(CODE_ARRAY_MAX)?.param;
+  //     },
+  //   },
+  // });
 
   prototype.length = length;
   prototype.min = min;
@@ -141,7 +141,7 @@ function min(this: ArrayShape<any, any>, length: number, options?: ConstraintOpt
         return issueFactory(input, options);
       }
     },
-    { key: CODE_ARRAY_MIN, param: length, force: true }
+    { key: CODE_ARRAY_MIN, payload: length, force: true }
   );
 }
 
@@ -154,7 +154,7 @@ function max(this: ArrayShape<any, any>, length: number, options?: ConstraintOpt
         return issueFactory(input, options);
       }
     },
-    { key: CODE_ARRAY_MAX, param: length, force: true }
+    { key: CODE_ARRAY_MAX, payload: length, force: true }
   );
 }
 
@@ -178,6 +178,6 @@ function includes(
       }
       return issueFactory(input, options);
     },
-    { key: CODE_ARRAY_INCLUDES, param: length, force: true }
+    { key: CODE_ARRAY_INCLUDES, payload: length, force: true }
   );
 }

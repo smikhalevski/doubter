@@ -397,7 +397,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         return;
       }
 
-      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isForced } = this;
+      const { keys, keysMode, restShape, _valueShapes, _applyOperations, _isForced } = this;
 
       const keysLength = keys.length;
 
@@ -499,8 +499,8 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           return applyShape(entry[2], entry[1], options, nonce, handleValueResult);
         }
 
-        if (_applyChecks !== null && (_isForced || issues === null)) {
-          issues = _applyChecks(output, issues, options);
+        if (_applyOperations !== null && (_isForced || issues === null)) {
+          return _applyOperations(output, issues, options, input !== output, null);
         }
         if (issues === null && input !== output) {
           return ok(output);
@@ -516,7 +516,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are preserved as is and aren't checked.
    */
   private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, _valueShapes, _applyChecks, _isForced } = this;
+    const { keys, _valueShapes, _applyOperations, _isForced } = this;
 
     const keysLength = keys.length;
 
@@ -548,8 +548,8 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
     }
 
-    if (_applyChecks !== null && (_isForced || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (_applyOperations !== null && (_isForced || issues === null)) {
+      return _applyOperations(output, issues, options, input !== output, null);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -561,7 +561,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isForced } = this;
+    const { keys, keysMode, restShape, _valueShapes, _applyOperations, _isForced } = this;
 
     const keysLength = keys.length;
 
@@ -675,8 +675,8 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
     }
 
-    if (_applyChecks !== null && (_isForced || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (_applyOperations !== null && (_isForced || issues === null)) {
+      return _applyOperations(output, issues, options, input !== output, null);
     }
     if (issues === null && input !== output) {
       return ok(output);

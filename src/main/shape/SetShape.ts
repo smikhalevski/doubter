@@ -90,7 +90,7 @@ export class SetShape<ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { shape, _applyChecks, _isForced } = this;
+    const { shape, _applyOperations, _isForced } = this;
     const valuesLength = values.length;
 
     for (let i = 0; i < valuesLength; ++i) {
@@ -115,8 +115,8 @@ export class SetShape<ValueShape extends AnyShape>
 
     const output = changed ? new Set(values) : input;
 
-    if (_applyChecks !== null && (_isForced || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (_applyOperations !== null && (_isForced || issues === null)) {
+      return _applyOperations(output, issues, options, changed, null);
     }
     if (changed && issues === null) {
       return ok(output);
@@ -139,7 +139,7 @@ export class SetShape<ValueShape extends AnyShape>
         return;
       }
 
-      const { shape, _applyChecks, _isForced } = this;
+      const { shape, _applyOperations, _isForced } = this;
       const valuesLength = values.length;
 
       let issues: Issue[] | null = null;
@@ -171,8 +171,8 @@ export class SetShape<ValueShape extends AnyShape>
 
         const output = changed ? new Set(values) : input;
 
-        if (_applyChecks !== null && (_isForced || issues === null)) {
-          issues = _applyChecks(output, issues, options);
+        if (_applyOperations !== null && (_isForced || issues === null)) {
+          return _applyOperations(output, issues, options, changed, null);
         }
         if (changed && issues === null) {
           return ok(output);

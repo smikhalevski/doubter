@@ -118,7 +118,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _applyChecks, _isForced } = this;
+    const { keyShape, valueShape, _applyOperations, _isForced } = this;
     const entriesLength = entries.length;
 
     let issues = null;
@@ -169,8 +169,8 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
     const output = changed ? new Map(entries) : input;
 
-    if (_applyChecks !== null && (_isForced || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (_applyOperations !== null && (_isForced || issues === null)) {
+      return _applyOperations(output, null, options, changed, null);
     }
     if (changed && issues === null) {
       return ok(output);
@@ -197,7 +197,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         return;
       }
 
-      const { keyShape, valueShape, _applyChecks, _isForced } = this;
+      const { keyShape, valueShape, _applyOperations, _isForced } = this;
       const entriesLength = entries.length;
 
       let issues: Issue[] | null = null;
@@ -263,8 +263,8 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
         const output = changed ? new Map(entries) : input;
 
-        if (_applyChecks !== null && (_isForced || issues === null)) {
-          issues = _applyChecks(output, issues, options);
+        if (_applyOperations !== null && (_isForced || issues === null)) {
+          return _applyOperations(output, null, options, changed, null);
         }
         if (changed && issues === null) {
           return ok(output);

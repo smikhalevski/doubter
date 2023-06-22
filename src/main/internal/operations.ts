@@ -1,9 +1,21 @@
 import { Result } from '../shape';
-import { ApplyOptions, Issue, Operation } from '../types';
+import { ApplyOptions, Issue, Ok, Operation } from '../types';
 import { isArray, isEqual, isObjectLike } from './lang';
 import { captureIssues, concatIssues, ok } from './shapes';
 
-export type ApplyOperations = (input: any, issues: Issue[] | null, options: ApplyOptions, changed: boolean) => Result;
+// input
+// options
+// issues
+// changed: boolean | null
+// ok: OK | null
+
+export type ApplyOperations = (
+  input: any,
+  issues: Issue[] | null,
+  options: ApplyOptions,
+  changed: boolean,
+  result: Ok<any> | null
+) => Result;
 
 /**
  * Composes a processor that applies operations sequentially.
@@ -18,7 +30,7 @@ export function createApplyOperations(operations: readonly Operation[]): ApplyOp
     const { apply, payload } = operation;
 
     if (operation.type === 'alter') {
-      cb = (input, issues, options, changed) => {
+      cb = (input, issues, options, changed, result) => {
         if (issues !== null) {
           return issues;
         }
@@ -30,25 +42,30 @@ export function createApplyOperations(operations: readonly Operation[]): ApplyOp
           return concatIssues(issues, captureIssues(error));
         }
 
-        changed = changed || !isEqual(input, output);
-
+        if (!changed) {
+          changed = !isEqual(input, output);
+        }
         if (next !== null) {
-          return next(output, null, options, changed);
+          return next(output, null, options, changed, result);
         }
-        if (changed) {
-          return ok(output);
+        if (!changed) {
+          return result;
         }
-        return null;
+        if (result !== null) {
+          result.value = output;
+          return result;
+        }
+        return ok(output);
       };
     }
 
     if (operation.type === 'check') {
       const { isForced } = operation;
 
-      cb = (value, issues, options, changed) => {
+      cb = (input, issues, options, changed, result) => {
         if (isForced || issues === null) {
           try {
-            const result = apply(value, payload, options);
+            const result = apply(input, payload, options);
 
             if (isObjectLike(result)) {
               if (issues !== null) {
@@ -73,12 +90,19 @@ export function createApplyOperations(operations: readonly Operation[]): ApplyOp
           }
         }
         if (next !== null) {
-          return next(value, issues, options, changed);
+          return next(input, issues, options, changed, result);
         }
-        if (changed && issues === null) {
-          return ok(value);
+        if (issues !== null) {
+          return issues;
         }
-        return issues;
+        if (!changed) {
+          return result;
+        }
+        if (result !== null) {
+          result.value = input;
+          return result;
+        }
+        return ok(input);
       };
     }
   }

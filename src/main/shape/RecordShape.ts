@@ -99,7 +99,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _applyChecks, _isForced } = this;
+    const { keyShape, valueShape, _applyOperations, _isForced } = this;
 
     let output = input;
     let issues = null;
@@ -153,8 +153,8 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
       }
     }
 
-    if (_applyChecks !== null && (_isForced || issues === null)) {
-      issues = _applyChecks(output, issues, options);
+    if (_applyOperations !== null && (_isForced || issues === null)) {
+      return _applyOperations(output, issues, options, input !== output, null);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -173,7 +173,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         return;
       }
 
-      const { keyShape, valueShape, _applyChecks, _isForced } = this;
+      const { keyShape, valueShape, _applyOperations, _isForced } = this;
 
       const keys = Object.keys(input);
       const keysLength = keys.length;
@@ -244,8 +244,8 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           }
         }
 
-        if (_applyChecks !== null && (_isForced || issues === null)) {
-          issues = _applyChecks(output, issues, options);
+        if (_applyOperations !== null && (_isForced || issues === null)) {
+          return _applyOperations(output, issues, options, input !== output, null);
         }
         if (issues === null && input !== output) {
           return ok(output);

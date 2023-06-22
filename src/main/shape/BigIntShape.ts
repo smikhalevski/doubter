@@ -37,10 +37,9 @@ export class BigIntShape extends CoercibleShape<bigint> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<bigint> {
-    const { _applyChecks } = this;
+    const { _applyOperations } = this;
 
     let output = input;
-    let issues = null;
     let changed = false;
 
     if (
@@ -49,10 +48,13 @@ export class BigIntShape extends CoercibleShape<bigint> {
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, changed, null);
+    }
+    if (changed) {
       return ok(output);
     }
-    return issues;
+    return null;
   }
 
   /**

@@ -194,10 +194,9 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     input: unknown,
     options: ApplyOptions
   ): Result<Output<ProvidedShape> | Pointer> {
-    const { _applyChecks } = this;
+    const { _applyOperations } = this;
 
     let output = input;
-    let issues;
 
     if (result !== null) {
       if (isArray(result)) {
@@ -205,9 +204,9 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
       }
       output = result.value;
     }
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, result !== null, result);
     }
-    return issues;
+    return result;
   }
 }

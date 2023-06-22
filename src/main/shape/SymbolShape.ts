@@ -31,13 +31,13 @@ export class SymbolShape extends Shape<symbol> {
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {
-    const { _applyChecks } = this;
+    const { _applyOperations } = this;
 
     if (typeof input !== 'symbol') {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
+    if (_applyOperations !== null) {
+      return _applyOperations(input, null, options, false, null);
     }
     return null;
   }

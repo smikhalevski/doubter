@@ -194,10 +194,9 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     outputs: any[] | null,
     options: ApplyOptions
   ): Result<Output<Intersect<Shapes[number]>>> {
-    const { shapes, _applyChecks } = this;
+    const { shapes, _applyOperations } = this;
 
     let output = input;
-    let issues = null;
 
     if (outputs !== null) {
       let outputsLength = outputs.length;
@@ -216,14 +215,15 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
       }
     }
 
-    if (
-      (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
-      outputs !== null &&
-      !isEqual(output, input)
-    ) {
+    const changed = !isEqual(output, input);
+
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, changed, null);
+    }
+    if (changed) {
       return ok(output);
     }
-    return issues;
+    return null;
   }
 }
 

@@ -12,6 +12,7 @@ import {
   applyShape,
   captureIssues,
   copyUnsafeChecks,
+  createApplyOperations,
   Dict,
   getErrorMessage,
   isArray,
@@ -625,6 +626,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
     // isForced should be computed up to the fist alter operation.
     shape._isForced ||= operation.type === 'check' && operation.isForced;
+    shape._applyOperations = createApplyOperations(shape._operations);
 
     return shape;
   }
@@ -663,7 +665,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     const { _applyOperations } = this;
 
     if (_applyOperations !== null) {
-      return _applyOperations(input, null, options, false);
+      return _applyOperations(input, null, options, false, null);
     }
     return null;
   }
@@ -1004,8 +1006,13 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
       return captureIssues(error);
     }
 
+    const changed = !isEqual(input, output);
+
     if (_applyOperations !== null) {
-      return _applyOperations(input, null, options, !isEqual(input, output));
+      return _applyOperations(output, null, options, changed, null);
+    }
+    if (changed) {
+      return ok(output);
     }
     return null;
   }
@@ -1016,15 +1023,15 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
     return new Promise<ConvertedValue>(resolve => {
       resolve(this.converter(input, options));
     }).then(output => {
-      let issues = null;
+      const changed = !isEqual(input, output);
 
-      if (
-        (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
-        !isEqual(input, output)
-      ) {
+      if (_applyOperations !== null) {
+        return _applyOperations(output, null, options, changed, null);
+      }
+      if (changed) {
         return ok(output);
       }
-      return issues;
+      return null;
     }, captureIssues);
   }
 }
@@ -1077,10 +1084,10 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<OutputShape>> {
-    const { inputShape, outputShape, _applyChecks } = this;
+    const { inputShape, outputShape, _applyOperations } = this;
 
-    let issues;
     let output = input;
+    let changed = false;
 
     let result = inputShape['_apply'](input, options, nonce);
 
@@ -1089,6 +1096,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
         return result;
       }
       output = result.value;
+      changed = true;
     }
 
     const outputResult = outputShape['_apply'](output, options, nonce);
@@ -1099,42 +1107,44 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
       }
       result = outputResult;
       output = outputResult.value;
+      changed = true;
     }
 
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, changed, result);
     }
-    return issues;
+    return result;
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<OutputShape>>> {
-    const { inputShape, outputShape, _applyChecks } = this;
+    const { inputShape, outputShape, _applyOperations } = this;
 
     return inputShape['_applyAsync'](input, options, nonce).then(result => {
       let output = input;
+      let changed = false;
 
       if (result !== null) {
         if (isArray(result)) {
           return result;
         }
         output = result.value;
+        changed = true;
       }
 
       return applyShape(outputShape, output, options, nonce, outputResult => {
-        let issues;
-
         if (outputResult !== null) {
           if (isArray(outputResult)) {
             return outputResult;
           }
           result = outputResult;
           output = outputResult.value;
+          changed = true;
         }
 
-        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-          return result;
+        if (_applyOperations !== null) {
+          return _applyOperations(output, null, options, changed, result as Ok<Output<OutputShape>>);
         }
-        return issues;
+        return result;
       });
     });
   }
@@ -1224,9 +1234,8 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     input: unknown,
     options: ApplyOptions
   ): Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue> {
-    const { _applyChecks } = this;
+    const { _applyOperations } = this;
 
-    let issues;
     let output = input;
 
     if (result !== null) {
@@ -1236,10 +1245,10 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
       output = result.value;
     }
 
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, result !== null, result);
     }
-    return issues;
+    return result;
   }
 }
 
@@ -1332,9 +1341,8 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     input: unknown,
     options: ApplyOptions
   ): Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>> {
-    const { _applyChecks } = this;
+    const { _applyOperations } = this;
 
-    let issues;
     let output = input;
 
     if (result !== null) {
@@ -1348,10 +1356,10 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
       }
     }
 
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, result !== null, result);
     }
-    return issues;
+    return result;
   }
 }
 
@@ -1427,9 +1435,8 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     input: unknown,
     options: ApplyOptions
   ): Result<Output<BaseShape> | FallbackValue> {
-    const { _applyChecks } = this;
+    const { _applyOperations } = this;
 
-    let issues;
     let output = input;
 
     if (result !== null) {
@@ -1443,10 +1450,10 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
       output = result.value;
     }
 
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, result !== null, result);
     }
-    return issues;
+    return result;
   }
 }
 
@@ -1514,9 +1521,8 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     options: ApplyOptions,
     nonce: number
   ): Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>> {
-    const { shape, excludedShape, _applyChecks } = this;
+    const { shape, excludedShape, _applyOperations } = this;
 
-    let issues;
     let output = input;
 
     let result = shape['_apply'](input, options, nonce);
@@ -1532,10 +1538,10 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
       return [this._typeIssueFactory(input, options)];
     }
 
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, result !== null, result);
     }
-    return issues;
+    return result;
   }
 
   protected _applyAsync(
@@ -1543,7 +1549,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     options: ApplyOptions,
     nonce: number
   ): Promise<Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>>> {
-    const { shape, excludedShape, _applyChecks } = this;
+    const { shape, excludedShape, _applyOperations } = this;
 
     return shape['_applyAsync'](input, options, nonce).then(result => {
       let output = input;
@@ -1556,16 +1562,14 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
       }
 
       return applyShape(excludedShape, output, options, nonce, outputResult => {
-        let issues;
-
         if (!isArray(outputResult)) {
           return [this._typeIssueFactory(input, options)];
         }
 
-        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-          return result;
+        if (_applyOperations !== null) {
+          return _applyOperations(output, null, options, result !== null, result);
         }
-        return issues;
+        return result;
       });
     });
   }

@@ -69,10 +69,9 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
-    const { _applyChecks } = this;
+    const { _applyOperations } = this;
 
     let output = input;
-    let issues = null;
     let changed = false;
 
     if (
@@ -81,10 +80,14 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
+
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, changed, null);
+    }
+    if (changed) {
       return ok(output);
     }
-    return issues;
+    return null;
   }
 
   protected _applyAsync(
@@ -103,7 +106,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
 
     return output.then((value: unknown) =>
       applyShape(this.shape!, value, options, nonce, result => {
-        const { _applyChecks } = this;
+        const { _applyOperations } = this;
 
         let issues = null;
 
@@ -118,10 +121,13 @@ export class PromiseShape<ValueShape extends AnyShape | null>
           }
         }
 
-        if ((_applyChecks === null || (issues = _applyChecks(output, issues, options)) === null) && output !== input) {
+        if (_applyOperations !== null) {
+          return _applyOperations(output, issues, options, output !== input, null);
+        }
+        if (output !== input) {
           return ok(output);
         }
-        return issues;
+        return null;
       })
     );
   }

@@ -72,21 +72,21 @@ declare module '../core' {
 export default function () {
   const prototype = SetShape.prototype;
 
-  Object.defineProperties(prototype, {
-    minSize: {
-      configurable: true,
-      get(this: SetShape<any>) {
-        return this.getOperationsByKey(CODE_SET_MIN)?.param;
-      },
-    },
-
-    maxSize: {
-      configurable: true,
-      get(this: SetShape<any>) {
-        return this.getOperationsByKey(CODE_SET_MAX)?.param;
-      },
-    },
-  });
+  // Object.defineProperties(prototype, {
+  //   minSize: {
+  //     configurable: true,
+  //     get(this: SetShape<any>) {
+  //       return this.getOperationsByKey(CODE_SET_MIN)?.param;
+  //     },
+  //   },
+  //
+  //   maxSize: {
+  //     configurable: true,
+  //     get(this: SetShape<any>) {
+  //       return this.getOperationsByKey(CODE_SET_MAX)?.param;
+  //     },
+  //   },
+  // });
 
   prototype.size = size;
   prototype.min = min;
@@ -106,7 +106,7 @@ function min(this: SetShape<any>, size: number, options?: ConstraintOptions | Me
         return issueFactory(input, options);
       }
     },
-    { key: CODE_SET_MIN, param: size, force: true }
+    { key: CODE_SET_MIN, payload: size, force: true }
   );
 }
 
@@ -119,6 +119,6 @@ function max(this: SetShape<any>, size: number, options?: ConstraintOptions | Me
         return issueFactory(input, options);
       }
     },
-    { key: CODE_SET_MAX, param: size, force: true }
+    { key: CODE_SET_MAX, payload: size, force: true }
   );
 }

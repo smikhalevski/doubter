@@ -102,22 +102,22 @@ declare module '../core' {
 export default function () {
   const prototype = DateShape.prototype;
 
-  Object.defineProperties(prototype, {
-    minValue: {
-      configurable: true,
-      get(this: DateShape) {
-        return this.getOperationsByKey(CODE_DATE_MIN)?.param;
-      },
-    },
-
-    maxValue: {
-      configurable: true,
-      get(this: DateShape) {
-        this['_operations'].find(op => op.key === CODE_DATE_MAX).
-        return this.getOperationsByKey(CODE_DATE_MAX)?.param;
-      },
-    },
-  });
+  // Object.defineProperties(prototype, {
+  //   minValue: {
+  //     configurable: true,
+  //     get(this: DateShape) {
+  //       return this.getOperationsByKey(CODE_DATE_MIN)?.param;
+  //     },
+  //   },
+  //
+  //   maxValue: {
+  //     configurable: true,
+  //     get(this: DateShape) {
+  //       this['_operations'].find(op => op.key === CODE_DATE_MAX).
+  //       return this.getOperationsByKey(CODE_DATE_MAX)?.param;
+  //     },
+  //   },
+  // });
 
   prototype.min = min;
   prototype.max = max;
@@ -138,7 +138,7 @@ function min(this: DateShape, value: Date | number | string, options?: Constrain
         return issueFactory(input, options);
       }
     },
-    { key: CODE_DATE_MIN, param: value, force: true }
+    { key: CODE_DATE_MIN, payload: value, force: true }
   );
 }
 
@@ -153,7 +153,7 @@ function max(this: DateShape, value: Date | number | string, options?: Constrain
         return issueFactory(input, options);
       }
     },
-    { key: CODE_DATE_MAX, param: value, force: true }
+    { key: CODE_DATE_MAX, payload: value, force: true }
   );
 }
 

@@ -6,13 +6,14 @@ import {
   getShapeInputs,
   isArray,
   isAsyncShape,
+  isEqual,
   isObject,
   isType,
   toDeepPartialShape,
   unique,
 } from '../internal';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Issue, Message, Ok } from '../types';
 import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Result, Shape } from './Shape';
@@ -108,7 +109,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<Shapes[number]>> {
-    const { _applyChecks } = this;
+    const { _applyOperations } = this;
 
     let result = null;
     let output = input;
@@ -145,15 +146,20 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
       return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
     }
 
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
+    // REVIEW THIS
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, !isEqual(input, output), result as Ok<any>);
     }
-    return issues;
+    return result;
+    // if (_applyOperations === null || (issues = _applyOperations(output, null, options)) === null) {
+    //   return result;
+    // }
+    // return issues;
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {
     return new Promise(resolve => {
-      const { _applyChecks } = this;
+      const { _applyOperations } = this;
 
       const shapes = this._lookup(input);
       const shapesLength = shapes.length;
@@ -181,10 +187,15 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
           }
         }
 
-        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-          return result;
+        // REVIEW THIS
+        if (_applyOperations !== null) {
+          return _applyOperations(output, null, options, !isEqual(input, output), result as Ok<any>);
         }
-        return issues;
+        return result;
+        // if (_applyOperations === null || (issues = _applyOperations(output, null, options)) === null) {
+        //   return result;
+        // }
+        // return issues;
       };
 
       const next = (): Result | Promise<Result> => {

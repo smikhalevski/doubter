@@ -1963,8 +1963,8 @@ class NumberLikeShape extends d.Shape<string, number> {
     const output = parseFloat(input);
 
     // 3️⃣ Apply checks to the output value
-    if (this._applyChecks !== null) {
-      const issues = this._applyChecks(output, null, options);
+    if (this._applyOperations !== null) {
+      const issues = this._applyOperations(output, null, options);
       
       if (issues !== null) {
         // 4️⃣ Return issues if the output value is invalid

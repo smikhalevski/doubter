@@ -1,5 +1,5 @@
 import { CODE_TYPE, MESSAGE_STRING_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray, isValidDate } from '../internal';
+import { getCanonicalValueOf, isArray, isValidDate, ok } from '../internal';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import {
   AlterCallback,
@@ -49,7 +49,6 @@ export class StringShape<Value extends string = string> extends CoercibleShape<V
     const { _applyOperations } = this;
 
     let output = input;
-    let issues = null;
     let changed = false;
 
     if (
@@ -58,10 +57,13 @@ export class StringShape<Value extends string = string> extends CoercibleShape<V
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_processor !== null) {
-      return _processor(output, issues, options, changed);
+    if (_applyOperations !== null) {
+      return _applyOperations(output, null, options, changed, null);
     }
-    return issues;
+    if (changed) {
+      return ok(output);
+    }
+    return null;
   }
 
   /**

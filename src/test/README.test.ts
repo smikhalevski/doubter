@@ -174,8 +174,8 @@ describe('Advanced shapes', () => {
         const output = parseFloat(input);
 
         // 3️⃣ Apply checks to the output value
-        if (this._applyChecks) {
-          const issues = this._applyChecks(output, null, options);
+        if (this._applyOperations) {
+          const issues = this._applyOperations(output, null, options);
 
           if (issues !== null) {
             // 4️⃣ Return issues if the output value is invalid

@@ -1,8 +1,7 @@
-import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shape/Shape';
-import { ApplyOptions, CheckOperation, Issue, Ok, Operation, ParseOptions } from '../types';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shape/Shape';
+import { ApplyOptions, CheckOperation, Issue, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
-import { createApplyOperations } from './operations';
 
 export function nextNonce(): number {
   return nextNonce.nonce++;
@@ -34,35 +33,6 @@ export function isForcedCheck(check: CheckOperation): boolean {
   return check.isForced;
 }
 
-// /**
-//  * Returns the index of the check with the given key, or -1 if there's no such check.
-//  */
-export function getOperationIndex(operations: readonly Operation[], key: unknown): number {
-  for (let i = 0; i < operations.length; ++i) {
-    if (operations[i].key === key) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-// /**
-//  * Mutates the shape!
-//  *
-//  * Updates the shape checks and related properties.
-//  *
-//  * @param shape The shape to update.
-//  * @param operations The array of new checks.
-//  * @returns The clone of the shape.
-//  */
-export function replaceOperation<S extends Shape>(shape: S, operations: readonly Operation[]): S {
-  shape['_operations'] = operations;
-  shape['_applyOperations'] = createApplyOperations(operations);
-  // shape['_isForced'] = operations.some(isForcedCheck);
-
-  return shape;
-}
-
 /**
  * Replaces checks of the target shape with forced checks from the source shape.
  */
@@ -78,13 +48,7 @@ export function copyChecks<S extends Shape>(
   shape: S,
   predicate?: (check: CheckOperation) => boolean
 ): S {
-  // const checks = baseShape['_operations'];
-
-  return replaceOperation(
-    shape['_clone'](),
-    []
-    // checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
-  );
+  return shape;
 }
 
 /**
@@ -131,131 +95,6 @@ export function captureIssues(error: unknown): Issue[] {
     return error.issues;
   }
   throw error;
-}
-
-/**
- * Creates the callback that applies given checks to a value.
- */
-export function createApplyChecksCallback(checks: readonly CheckOperation[]): ApplyChecksCallback | null {
-  const checksLength = checks.length;
-
-  if (checksLength === 0) {
-    return null;
-  }
-
-  if (checksLength === 1) {
-    const [{ apply: cb0, param: param0, isForced: isForced0 }] = checks;
-
-    return (output, issues, options) => {
-      if (issues === null || isForced0) {
-        let result;
-
-        try {
-          result = cb0(output, param0, options);
-        } catch (error) {
-          return concatIssues(issues, captureIssues(error));
-        }
-        if (result !== null && result !== undefined) {
-          return appendIssue(issues, result);
-        }
-      }
-      return issues;
-    };
-  }
-
-  if (checksLength === 2) {
-    const [{ apply: cb0, param: param0, isForced: isForced0 }, { apply: cb1, param: param1, isForced: isForced1 }] =
-      checks;
-
-    return (output, issues, options) => {
-      if (issues === null || isForced0) {
-        let result;
-
-        try {
-          result = cb0(output, param0, options);
-        } catch (error) {
-          issues = concatIssues(issues, captureIssues(error));
-
-          if (!options.verbose) {
-            return issues;
-          }
-        }
-        if (result !== null && result !== undefined) {
-          issues = appendIssue(issues, result);
-
-          if (issues !== null && !options.verbose) {
-            return issues;
-          }
-        }
-      }
-
-      if (issues === null || isForced1) {
-        let result;
-
-        try {
-          result = cb1(output, param1, options);
-        } catch (error) {
-          issues = concatIssues(issues, captureIssues(error));
-        }
-        if (result !== null && result !== undefined) {
-          issues = appendIssue(issues, result);
-        }
-      }
-
-      return issues;
-    };
-  }
-
-  return (output, issues, options) => {
-    for (let i = 0; i < checksLength; ++i) {
-      const { apply, param, isForced } = checks[i];
-
-      let result;
-
-      if (issues !== null && !isForced) {
-        continue;
-      }
-
-      try {
-        result = apply(output, param, options);
-      } catch (error) {
-        issues = concatIssues(issues, captureIssues(error));
-
-        if (!options.verbose) {
-          return issues;
-        }
-      }
-
-      if (result !== null && result !== undefined) {
-        issues = appendIssue(issues, result);
-
-        if (issues !== null && !options.verbose) {
-          return issues;
-        }
-      }
-    }
-
-    return issues;
-  };
-}
-
-function appendIssue(issues: Issue[] | null, result: Issue[] | Issue): Issue[] | null {
-  if (isArray(result)) {
-    if (result.length !== 0) {
-      if (issues === null) {
-        issues = result;
-      } else {
-        issues.push(...result);
-      }
-    }
-  } else if (isObjectLike(result)) {
-    if (issues === null) {
-      issues = [result];
-    } else {
-      issues.push(result);
-    }
-  }
-  return issues;
 }
 
 /**
