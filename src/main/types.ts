@@ -271,7 +271,7 @@ export interface AlterOptions {
 }
 
 /**
- * An operation that shape applies after the input value type is ensured.
+ * An operation that a shape applies after an input value type is ensured.
  */
 export type Operation = CheckOperation | AlterOperation;
 

@@ -238,7 +238,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * The array of operations that this shape applies after the input type is ensured.
    */
-  protected _operations: readonly Operation[] = [];
+  protected _operations: readonly Operation[] | null = null;
 
   /**
    * Applies {@linkcode _operations operations} to the given value.
@@ -318,9 +318,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback, options: CheckOptions = {}): this {
     const { key = cb, payload, force = false } = options;
 
-    const shape = this._clone();
-    shape._operations = this._operations.concat({ type: 'check', key, apply: cb, payload, isForced: force });
-    return shape;
+    return this._registerOperation({ type: 'check', key, apply: cb, payload, isForced: force });
   }
 
   /**
@@ -356,9 +354,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter(cb: AlterCallback, options: AlterOptions = {}): Shape {
     const { key = cb, payload } = options;
 
-    const shape = this._clone();
-    shape._operations = this._operations.concat({ type: 'alter', key, apply: cb, payload });
-    return shape;
+    return this._registerOperation({ type: 'alter', key, apply: cb, payload });
   }
 
   /**
@@ -614,6 +610,23 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     options?: ConstraintOptions | Message
   ): NotShape<this, ExcludedShape> {
     return this.exclude(shape, options);
+  }
+
+  /**
+   * Registers an operation with the shape, so it can be applied during parsing.
+   *
+   * @param operation The operation to register.
+   * @returns The clone of the shape.
+   */
+  protected _registerOperation(operation: Operation): this {
+    const shape = this._clone();
+
+    shape._operations = this._operations !== null ? this._operations.concat(operation) : [operation];
+
+    // isForced should be computed up to the fist alter operation.
+    shape._isForced ||= operation.type === 'check' && operation.isForced;
+
+    return shape;
   }
 
   /**
