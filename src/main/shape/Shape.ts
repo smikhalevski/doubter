@@ -8,6 +8,8 @@ import {
   MESSAGE_PREDICATE,
 } from '../constants';
 import {
+  AlterCallback,
+  AlterOptions,
   applyShape,
   captureIssues,
   copyUnsafeChecks,
@@ -21,14 +23,17 @@ import {
   isType,
   nextNonce,
   ok,
+  Operation,
+  Processor,
   Promisify,
   ReadonlyDict,
+  RefineCallback,
+  RefinePredicate,
   replaceOperation,
   returnTrue,
   toDeepPartialShape,
   unionTypes,
 } from '../internal';
-import { AlterCallback, Operation, Processor } from '../internal/processors';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   ApplyOptions,
@@ -328,13 +333,20 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
       key,
       apply: cb,
       param,
-      isLax: unsafe,
+      isUnsafe: unsafe,
     });
 
     return replaceOperation(this._clone(), deleteAt(checks, index));
   }
 
-  alter(cb: AlterCallback) {
+  alter<Param>(
+    cb: AlterCallback<OutputValue, OutputValue, Param>,
+    options: AlterOptions & { param: Param }
+  ): Shape<InputValue, OutputValue>;
+
+  alter(cb: AlterCallback<OutputValue>, options?: AlterOptions): Shape<InputValue, OutputValue>;
+
+  alter(cb: AlterCallback, options?: AlterOptions): Shape {
     const key = cb;
 
     const index = getOperationIndex(this._operations, key);
@@ -391,13 +403,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template RefinedOutputValue The narrowed output value.
    */
   refine<RefinedOutputValue extends OutputValue>(
-    /**
-     * @param output The shape output value.
-     * @param options Parsing options.
-     * @return `true` if value matches the predicate, or `false` otherwise.
-     * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
-     */
-    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => output is RefinedOutputValue,
+    cb: RefinePredicate<OutputValue, RefinedOutputValue>,
     options?: RefineOptions | Message
   ): Shape<InputValue, RefinedOutputValue>;
 
@@ -408,16 +414,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
    */
-  refine(
-    /**
-     * @param output The shape output value.
-     * @param options Parsing options.
-     * @return `true` if value matches the predicate, or `false` otherwise.
-     * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
-     */
-    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => boolean,
-    options?: RefineOptions | Message
-  ): this;
+  refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): Shape<InputValue, OutputValue>;
 
   refine(cb: (output: OutputValue, options: Readonly<ApplyOptions>) => unknown, options?: RefineOptions | Message) {
     const { key = cb, code = CODE_PREDICATE, unsafe = false } = isObjectLike<RefineOptions>(options) ? options : {};

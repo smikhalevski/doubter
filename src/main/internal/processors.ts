@@ -1,13 +1,7 @@
 import { Result } from '../shape';
-import { ApplyOptions, Issue } from '../types';
+import { ApplyOptions, CheckCallback, Issue } from '../types';
 import { isArray, isEqual, isObjectLike } from './lang';
 import { captureIssues, concatIssues, ok } from './shapes';
-
-export type CheckCallback<Value = any, Param = any> = (
-  value: Value,
-  param: Param,
-  options: Readonly<ApplyOptions>
-) => Issue[] | Issue | null | undefined | void;
 
 export type AlterCallback<InputValue = any, OutputValue extends InputValue = InputValue, Param = any> = (
   value: InputValue,
@@ -15,29 +9,58 @@ export type AlterCallback<InputValue = any, OutputValue extends InputValue = Inp
   options: Readonly<ApplyOptions>
 ) => OutputValue;
 
-export interface Check {
+/**
+ * @param output The shape output value.
+ * @param options Parsing options.
+ * @return `true` if value matches the predicate, or `false` otherwise.
+ * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
+ */
+export type RefineCallback<Value> = (value: Value, options: Readonly<ApplyOptions>) => boolean;
+
+/**
+ * @param output The shape output value.
+ * @param options Parsing options.
+ * @return `true` if value matches the predicate, or `false` otherwise.
+ * @throws {@linkcode ValidationError} to notify that the refinement cannot be completed.
+ */
+export type RefinePredicate<InputValue, OutputValue extends InputValue> = (
+  value: InputValue,
+  options: Readonly<ApplyOptions>
+) => value is OutputValue;
+
+export interface AlterOptions {
+  key?: unknown;
+  param?: any;
+}
+
+export interface CheckOperation {
   readonly type: 'check';
   readonly key: any;
   readonly apply: CheckCallback;
   readonly param: any;
-  readonly isLax: boolean;
+  readonly isUnsafe: boolean;
 }
 
-export interface Alter {
+export interface AlterOperation {
   readonly type: 'alter';
   readonly key: any;
   readonly apply: AlterCallback;
   readonly param: any;
 }
 
-export type Operation = Check | Alter;
+export type Operation = CheckOperation | AlterOperation;
 
 export type Processor = (input: any, issues: Issue[] | null, options: ApplyOptions, changed: boolean) => Result;
 
+/**
+ * Composes a processor that applies operations sequentially.
+ *
+ * @param operations The array of operation the processor should apply.
+ */
 export function createProcessor(operations: readonly Operation[]): Processor | null {
   let processor: Processor | null = null;
 
-  for (let i = operations.length - 1, nextProcessor: Processor | null = null; i >= 0; --i, nextProcessor = processor) {
+  for (let i = operations.length - 1, next: Processor | null = null; i >= 0; --i, next = processor) {
     const operation = operations[i];
     const { apply, param } = operation;
 
@@ -54,26 +77,42 @@ export function createProcessor(operations: readonly Operation[]): Processor | n
           return concatIssues(issues, captureIssues(error));
         }
 
-        changed ||= isEqual(input, options);
+        changed = changed || !isEqual(input, output);
 
-        if (nextProcessor !== null) {
-          return nextProcessor(output, null, options, changed);
+        if (next !== null) {
+          return next(output, null, options, changed);
         }
         if (changed) {
           return ok(output);
         }
         return null;
       };
-    } else {
-      const { isLax } = operation;
+    }
+
+    if (operation.type === 'check') {
+      const { isUnsafe } = operation;
 
       processor = (input, issues, options, changed) => {
         let output = input;
-        let result;
 
-        if (issues === null || isLax) {
+        if (isUnsafe || issues === null) {
           try {
-            result = apply(output, param, options);
+            const result = apply(output, param, options);
+
+            if (isObjectLike(result)) {
+              if (issues !== null) {
+                if (isArray(result)) {
+                  issues.push(...result);
+                } else {
+                  issues.push(result);
+                }
+              } else {
+                issues = isArray(result) ? result.slice(0) : [result];
+              }
+              if (!options.verbose) {
+                return issues;
+              }
+            }
           } catch (error) {
             issues = concatIssues(issues, captureIssues(error));
 
@@ -81,32 +120,11 @@ export function createProcessor(operations: readonly Operation[]): Processor | n
               return issues;
             }
           }
-
-          if (result !== null && result !== undefined) {
-            if (isArray(result)) {
-              if (issues !== null) {
-                issues.push(...result);
-              } else {
-                issues = result.slice(0);
-              }
-            } else if (isObjectLike(result)) {
-              if (issues !== null) {
-                issues.push(result);
-              } else {
-                issues = [result];
-              }
-            }
-
-            if (issues !== null && !options.verbose) {
-              return issues;
-            }
-          }
         }
-
-        if (nextProcessor !== null) {
-          return nextProcessor(output, issues, options, changed);
+        if (next !== null) {
+          return next(output, issues, options, changed);
         }
-        if (issues === null && changed) {
+        if (changed && issues === null) {
           return ok(output);
         }
         return issues;
