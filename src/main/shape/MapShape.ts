@@ -118,7 +118,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
+    const { keyShape, valueShape, _applyChecks, _isForced } = this;
     const entriesLength = entries.length;
 
     let issues = null;
@@ -160,7 +160,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         }
       }
 
-      if ((_isUnsafe || issues === null) && (keyResult !== null || valueResult !== null)) {
+      if ((_isForced || issues === null) && (keyResult !== null || valueResult !== null)) {
         changed = true;
         entry[0] = key;
         entry[1] = value;
@@ -169,7 +169,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
     const output = changed ? new Map(entries) : input;
 
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+    if (_applyChecks !== null && (_isForced || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (changed && issues === null) {
@@ -197,7 +197,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         return;
       }
 
-      const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
+      const { keyShape, valueShape, _applyChecks, _isForced } = this;
       const entriesLength = entries.length;
 
       let issues: Issue[] | null = null;
@@ -242,7 +242,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           }
         }
 
-        if ((_isUnsafe || issues === null) && (keyChanged || valueResult !== null)) {
+        if ((_isForced || issues === null) && (keyChanged || valueResult !== null)) {
           changed = true;
           entry[0] = key;
           entry[1] = value;
@@ -263,7 +263,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
         const output = changed ? new Map(entries) : input;
 
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+        if (_applyChecks !== null && (_isForced || issues === null)) {
           issues = _applyChecks(output, issues, options);
         }
         if (changed && issues === null) {

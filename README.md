@@ -631,7 +631,7 @@ issues:
 }
 ```
 
-## Safe and unsafe checks
+## Forced checks
 
 Checks that you add using a
 [`check`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#check) method are "safe" by default,
@@ -664,15 +664,15 @@ shape.parse('Adiós, R2D2', { verbose: true });
 ```
 
 To force `noDigitsCheck` to be applied even if `helloCheck` has raised issues, pass the
-[`unsafe`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.CheckOptions.html#unsafe) option:
+[`force`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.CheckOptions.html#force) option:
 
 ```ts
 const shape = d.string()
   .check(helloCheck)
-  .check(noDigitsCheck, { unsafe: true });
+  .check(noDigitsCheck, { force: true });
 ```
 
-Safe and unsafe checks are applied only if the type of the input is valid.
+Both forced and non-forced checks are applied only if the type of the input is valid.
 
 ```ts
 shape.parse(42);
@@ -680,9 +680,9 @@ shape.parse(42);
 ```
 
 In the example above both `helloCheck` and `noDigitsCheck` _are not_ applied, despite that `noDigitsCheck` is marked as
-unsafe. This happens because the input value 42 is of the invalid type.
+forced. This happens because the input value 42 is of the invalid type.
 
-For composite shapes, unsafe checks may become truly unsafe. Let's consider an object with a custom safe check:
+For composite shapes, forced checks may become non-type-safe. Let's consider an object with a custom check:
 
 ```ts
 const userShape = d
@@ -707,13 +707,13 @@ nameShape.parse({ age: 18 }, { verbose: true });
 // ❌ ValidationError: type at /yearsOfExperience: Must be a number
 ```
 
-Adding the `unsafe` option in this case would cause the check to be applied even if _object properties are invalid_.
+Adding the `force` option in this case would cause the check to be applied even if _object properties are invalid_.
 
 Some shapes cannot guarantee that the input value is of the required type. For example, if any of the underlying shapes
 in an intersection have raised issues, an intersection itself cannot guarantee that its checks would receive the value
-of the expected type, so it won't apply its unsafe checks.
+of the expected type, so it won't apply its forced checks.
 
-These shapes won't apply unsafe checks if an underlying shape has raised an issue:
+These shapes won't apply forced checks if an underlying shape has raised an issue:
 
 - [`DenyLiteralShape`](#deny-a-literal-value)
 - [`IntersectionShape`](#intersection-and)
@@ -745,8 +745,8 @@ Retrieve a check:
 ```ts
 shape.check(emailCheck);
 
-shape.getOperation(emailCheck);
-// ⮕ { key: emailCheck, callback: emailCheck, isUnsafe: false, param: undefined }
+shape.getOperationsByKey(emailCheck);
+// ⮕ { key: emailCheck, callback: emailCheck, isForced: false, param: undefined }
 ```
 
 Delete a check:
@@ -768,8 +768,8 @@ shape.check(emailCheck, { key: 'email' });
 Now you should use the key to get or delete the check:
 
 ```ts
-shape.getOperation('email');
-// ⮕ { key: 'email', callback: emailCheck, isUnsafe: false, param: undefined }
+shape.getOperationsByKey('email');
+// ⮕ { key: 'email', callback: emailCheck, isForced: false, param: undefined }
 
 shape.deleteCheck('email');
 // ⮕ Shape<string>

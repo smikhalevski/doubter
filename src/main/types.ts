@@ -1,101 +1,4 @@
 /**
- * Carries the result of successful input parsing.
- *
- * @template Value The output value.
- * @group Other
- */
-export interface Ok<Value> {
-  ok: true;
-
-  /**
-   * The output value.
-   */
-  value: Value;
-}
-
-/**
- * Carries the result of failed input parsing.
- *
- * @group Other
- */
-export interface Err {
-  ok: false;
-
-  /**
-   * The array of issues encountered during parsing.
-   */
-  issues: Issue[];
-}
-
-/**
- * A callback that takes a value and returns `undefined` if it satisfies the requirements. If a value doesn't satisfy
- * the check requirements then issues can be returned or a {@linkcode ValidationError} can be thrown.
- *
- * @param value The value that must be checked.
- * @param param The check param.
- * @template Value The value that must be checked.
- * @template Param The check param.
- * @throws {@linkcode ValidationError} to notify that the check cannot be completed.
- * @group Other
- */
-export type CheckCallback<Value = any, Param = any> = (
-  value: Value,
-  param: Param,
-  options: Readonly<ApplyOptions>
-) => Issue[] | Issue | null | undefined | void;
-
-/**
- * The shape output value check.
- *
- * @group Other
- */
-export interface Check {
-  /**
-   * The check key, unique in the scope of the shape.
-   */
-  readonly key: any;
-
-  /**
-   * The callback that validates the shape output and returns the array of issues or throws a
-   * {@linkcode ValidationError}.
-   */
-  readonly callback: CheckCallback;
-
-  /**
-   * The optional parameter used by the {@linkcode callback}.
-   */
-  readonly param: any;
-
-  /**
-   * `true` if the {@linkcode callback} is invoked even if previous processors failed, or `false` otherwise.
-   */
-  readonly isUnsafe: boolean;
-}
-
-/**
- * Options that are applicable for the custom checks added via {@linkcode Shape.check}.
- *
- * @group Other
- */
-export interface CheckOptions {
-  /**
-   * The unique key of the check in scope of the shape.
-   */
-  key?: unknown;
-
-  /**
-   * The param passed to the {@linkcode CheckCallback} and stored in {@linkcode Check.param}.
-   */
-  param?: any;
-
-  /**
-   * If `true` then the check would be executed even if the preceding check failed, otherwise check is
-   * ignored.
-   */
-  unsafe?: boolean;
-}
-
-/**
  * A validation issue raised during input parsing.
  *
  * @group Errors
@@ -122,19 +25,259 @@ export interface Issue {
   message?: any;
 
   /**
-   * An additional param.
+   * An additional payload.
    */
-  param?: any;
+  payload?: any;
 
   /**
    * An arbitrary metadata associated with this issue.
+   *
+   * @see {@linkcode ConstraintOptions#meta}
    */
   meta?: any;
 }
 
 /**
- * The callback that returns a message for an issue. You can assign the {@linkcode Issue.message issue.message} property
- * directly or return the message, so it would be assigned by Doubter.
+ * Carries the result of a successful input parsing.
+ *
+ * @template Value The output value.
+ * @group Other
+ */
+export interface Ok<Value> {
+  ok: true;
+
+  /**
+   * The output value.
+   */
+  value: Value;
+}
+
+/**
+ * Carries the result of a failed input parsing.
+ *
+ * @group Other
+ */
+export interface Err {
+  ok: false;
+
+  /**
+   * The array of issues encountered during parsing.
+   */
+  issues: Issue[];
+}
+
+/**
+ * Checks that a value satisfies requirements.
+ *
+ * If a {@linkcode ValidationError} is thrown, its issues are treated as if they were returned from a check callback.
+ *
+ * @param value The value to check.
+ * @param payload The additional payload that was associated with the check operation.
+ * @param options Parsing options.
+ * @returns `null` or `undefined` if the value satisfies requirements; an issue or an array of issues if a value doesn't
+ * satisfy  requirements.
+ * @template Value The value to check.
+ * @template Payload The additional payload that was associated with the check operation.
+ * @see {@linkcode Shape#check}
+ * @group Shape Operations
+ */
+export type CheckCallback<Value = any, Payload = any> = (
+  value: Value,
+  payload: Payload,
+  options: Readonly<ApplyOptions>
+) => Issue[] | Issue | null | undefined | void;
+
+/**
+ * The operation that describes a value check.
+ *
+ * @see {@linkcode Shape#check}
+ * @group Shape Operations
+ */
+export interface CheckOperation {
+  type: 'check';
+
+  /**
+   * The check operation key.
+   */
+  key: any;
+
+  /**
+   * The callback that applies check to a value.
+   */
+  apply: CheckCallback;
+
+  /**
+   * The additional payload passed to the {@linkcode apply} callback.
+   */
+  payload: any;
+
+  /**
+   * `true` if the check is applied even if some of the preceding checks have failed, or `false` otherwise.
+   */
+  isForced: boolean;
+}
+
+/**
+ * Options of the {@linkcode Shape#check} method.
+ *
+ * @group Shape Operations
+ */
+export interface CheckOptions {
+  /**
+   * The check operation key.
+   */
+  key?: any;
+
+  /**
+   * The additional payload that would be passed to the {@linkcode CheckCallback} when a check operation is applied.
+   *
+   * @default undefined
+   */
+  payload?: any;
+
+  /**
+   * If `true` then the check is applied even if some of the preceding checks have failed, or `false` otherwise.
+   *
+   * @default false
+   */
+  force?: boolean;
+}
+
+/**
+ * Checks that a value matches a predicate.
+ *
+ * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
+ * refinement cannot be performed, and you want to abort the operation.
+ *
+ * @param value The value to check.
+ * @param options Parsing options.
+ * @return `true` if value matches the predicate, or `false` otherwise.
+ * @template Value The value to check.
+ * @see {@linkcode Shape#refine}
+ * @group Shape Operations
+ */
+export type RefineCallback<Value = any> = (value: Value, options: Readonly<ApplyOptions>) => any;
+
+/**
+ * A [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) that refines the value type.
+ *
+ * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
+ * refinement cannot be performed, and you want to abort the operation.
+ *
+ * @param value The value to refine.
+ * @param options Parsing options.
+ * @return `true` if value matches the predicate, or `false` otherwise.
+ * @template Value The value to refine.
+ * @template RefinedValue The refined value.
+ * @see {@linkcode Shape#refine}
+ * @group Shape Operations
+ */
+export type RefinePredicate<Value = any, RefinedValue extends Value = Value> = (
+  value: Value,
+  options: Readonly<ApplyOptions>
+) => value is RefinedValue;
+
+/**
+ * Options of the {@linkcode Shape#refine} method.
+ *
+ * @group Shape Operations
+ */
+export interface RefineOptions extends ConstraintOptions {
+  /**
+   * The operation key, unique in the scope of the shape.
+   */
+  key?: unknown;
+
+  /**
+   * The custom issue code.
+   *
+   * @default
+   * "predicate"
+   */
+  code?: any;
+
+  /**
+   * If `true` then the refinement is applied even if some of the preceding checks have failed, or `false` otherwise.
+   */
+  force?: boolean;
+}
+
+/**
+ * Alters the value without changing its base type.
+ *
+ * If you want to change the base type, consider using {@linkcode Shape#convert}.
+ *
+ * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
+ * alteration cannot be performed, and you want to abort the operation.
+ *
+ * @param value The value to alter.
+ * @param payload The additional payload that was associated with the alter operation.
+ * @param options Parsing options.
+ * @returns The altered value.
+ * @template Value The value to alter.
+ * @template AlteredValue The altered value.
+ * @template Payload The additional payload that was associated with the alter operation.
+ * @see {@linkcode Shape#alter}
+ * @see {@linkcode Shape#convert}
+ * @group Shape Operations
+ */
+export type AlterCallback<Value = any, AlteredValue extends Value = Value, Payload = any> = (
+  value: Value,
+  payload: Payload,
+  options: Readonly<ApplyOptions>
+) => AlteredValue;
+
+/**
+ * The operation that describes a value alteration.
+ *
+ * @see {@linkcode Shape#alter}
+ * @group Shape Operations
+ */
+export interface AlterOperation {
+  type: 'alter';
+
+  /**
+   * The alteration operation key.
+   */
+  key: any;
+
+  /**
+   * The callback that alters a value.
+   */
+  apply: AlterCallback;
+
+  /**
+   * The additional payload passed to the {@linkcode apply} callback.
+   */
+  payload: any;
+}
+
+/**
+ * Options of the {@linkcode Shape#alter} method.
+ *
+ * @group Shape Operations
+ */
+export interface AlterOptions {
+  /**
+   * The alteration operation key.
+   */
+  key?: any;
+
+  /**
+   * The additional payload that would be passed to the {@linkcode AlterCallback} when an alteration operation is
+   * applied.
+   */
+  payload?: any;
+}
+
+/**
+ * An operation that shape applies after the input value type is ensured.
+ */
+export type Operation = CheckOperation | AlterOperation;
+
+/**
+ * The callback that returns a message for an issue. You can assign the {@linkcode Issue#message issue.message} property
+ * directly inside this callback or return the message.
  *
  * @param issue The issue for which the message should be produced.
  * @param options The parsing options.
@@ -144,8 +287,8 @@ export interface Issue {
 export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) => any;
 
 /**
- * A callback that returns an issue message or a message string. In message `%s` placeholder is replaced with the
- * {@link CheckOptions.param issue param}.
+ * A callback that returns an issue message or a message string. `%s` placeholder in string messages is replaced with
+ * the {@link CheckOptions#payload issue payload}.
  *
  * @group Other
  */
@@ -169,29 +312,6 @@ export interface ConstraintOptions {
 }
 
 /**
- * Options of the {@linkcode Shape#refine} method.
- *
- * @group Other
- */
-export interface RefineOptions extends ConstraintOptions {
-  /**
-   * The unique key of the check in scope of the shape.
-   */
-  key?: unknown;
-
-  /**
-   * The custom issue code. By default, an issue is raised with a "predicate" code.
-   */
-  code?: any;
-
-  /**
-   * If `true` then the predicate would be executed even if the preceding check failed, otherwise the predicate is
-   * ignored.
-   */
-  unsafe?: boolean;
-}
-
-/**
  * Options used during parsing.
  *
  * @group Other
@@ -206,7 +326,7 @@ export interface ApplyOptions {
   verbose?: boolean;
 
   /**
-   * If `true` then all shapes would try to coerce input to a required type.
+   * If `true` then shapes that support input value type coercion, would try to coerce an input to a required type.
    *
    * @default false
    */
@@ -225,7 +345,7 @@ export interface ApplyOptions {
  */
 export interface ParseOptions extends ApplyOptions {
   /**
-   * A message that is passed to {@linkcode ValidationError} if it is thrown.
+   * A message that is passed to {@linkcode ValidationError} if issues are raised during parsing.
    */
   errorMessage?: ((issues: Issue[], input: any) => string) | string;
 }

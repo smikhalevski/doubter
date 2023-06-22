@@ -99,7 +99,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
+    const { keyShape, valueShape, _applyChecks, _isForced } = this;
 
     let output = input;
     let issues = null;
@@ -145,7 +145,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         }
       }
 
-      if ((_isUnsafe || issues === null) && (keyResult !== null || valueResult !== null)) {
+      if ((_isForced || issues === null) && (keyResult !== null || valueResult !== null)) {
         if (input === output) {
           output = cloneDictHead(input, index);
         }
@@ -153,7 +153,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
       }
     }
 
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+    if (_applyChecks !== null && (_isForced || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
@@ -173,7 +173,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         return;
       }
 
-      const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
+      const { keyShape, valueShape, _applyChecks, _isForced } = this;
 
       const keys = Object.keys(input);
       const keysLength = keys.length;
@@ -220,7 +220,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           }
         }
 
-        if ((_isUnsafe || issues === null) && (keyChanged || valueResult !== null)) {
+        if ((_isForced || issues === null) && (keyChanged || valueResult !== null)) {
           if (input === output) {
             output = cloneDictHead(input, index);
           }
@@ -244,7 +244,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           }
         }
 
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+        if (_applyChecks !== null && (_isForced || issues === null)) {
           issues = _applyChecks(output, issues, options);
         }
         if (issues === null && input !== output) {

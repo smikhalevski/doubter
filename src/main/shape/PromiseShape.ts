@@ -109,7 +109,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
 
         if (result !== null) {
           if (isArray(result)) {
-            if (!options.verbose || !this._isUnsafe) {
+            if (!options.verbose || !this._isForced) {
               return result;
             }
             issues = result;

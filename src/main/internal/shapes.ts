@@ -1,8 +1,8 @@
 import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shape/Shape';
-import { ApplyOptions, Check, Issue, Ok, ParseOptions } from '../types';
+import { ApplyOptions, CheckOperation, Issue, Ok, Operation, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
-import { createProcessor, Operation } from './processors';
+import { createApplyOperations } from './operations';
 
 export function nextNonce(): number {
   return nextNonce.nonce++;
@@ -30,8 +30,8 @@ export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialSha
   return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
-export function isUnsafeCheck(check: Check): boolean {
-  return check.isUnsafe;
+export function isForcedCheck(check: CheckOperation): boolean {
+  return check.isForced;
 }
 
 // /**
@@ -57,23 +57,27 @@ export function getOperationIndex(operations: readonly Operation[], key: unknown
 //  */
 export function replaceOperation<S extends Shape>(shape: S, operations: readonly Operation[]): S {
   shape['_operations'] = operations;
-  shape['_processor'] = createProcessor(operations);
-  // shape['_isUnsafe'] = operations.some(isUnsafeCheck);
+  shape['_applyOperations'] = createApplyOperations(operations);
+  // shape['_isForced'] = operations.some(isForcedCheck);
 
   return shape;
 }
 
 /**
- * Replaces checks of the target shape with unsafe checks from the source shape.
+ * Replaces checks of the target shape with forced checks from the source shape.
  */
 export function copyUnsafeChecks<S extends Shape>(sourceShape: Shape, targetShape: S): S {
-  return copyChecks(sourceShape, targetShape, isUnsafeCheck);
+  return copyChecks(sourceShape, targetShape, isForcedCheck);
 }
 
 /**
  * Replaces checks of `shape` with checks from the `baseShape` that match a predicate.
  */
-export function copyChecks<S extends Shape>(baseShape: Shape, shape: S, predicate?: (check: Check) => boolean): S {
+export function copyChecks<S extends Shape>(
+  baseShape: Shape,
+  shape: S,
+  predicate?: (check: CheckOperation) => boolean
+): S {
   // const checks = baseShape['_operations'];
 
   return replaceOperation(
@@ -132,7 +136,7 @@ export function captureIssues(error: unknown): Issue[] {
 /**
  * Creates the callback that applies given checks to a value.
  */
-export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecksCallback | null {
+export function createApplyChecksCallback(checks: readonly CheckOperation[]): ApplyChecksCallback | null {
   const checksLength = checks.length;
 
   if (checksLength === 0) {
@@ -140,10 +144,10 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
   }
 
   if (checksLength === 1) {
-    const [{ callback: cb0, param: param0, isUnsafe: isUnsafe0 }] = checks;
+    const [{ apply: cb0, param: param0, isForced: isForced0 }] = checks;
 
     return (output, issues, options) => {
-      if (issues === null || isUnsafe0) {
+      if (issues === null || isForced0) {
         let result;
 
         try {
@@ -160,13 +164,11 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
   }
 
   if (checksLength === 2) {
-    const [
-      { callback: cb0, param: param0, isUnsafe: isUnsafe0 },
-      { callback: cb1, param: param1, isUnsafe: isUnsafe1 },
-    ] = checks;
+    const [{ apply: cb0, param: param0, isForced: isForced0 }, { apply: cb1, param: param1, isForced: isForced1 }] =
+      checks;
 
     return (output, issues, options) => {
-      if (issues === null || isUnsafe0) {
+      if (issues === null || isForced0) {
         let result;
 
         try {
@@ -187,7 +189,7 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
         }
       }
 
-      if (issues === null || isUnsafe1) {
+      if (issues === null || isForced1) {
         let result;
 
         try {
@@ -206,16 +208,16 @@ export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecks
 
   return (output, issues, options) => {
     for (let i = 0; i < checksLength; ++i) {
-      const { callback, param, isUnsafe } = checks[i];
+      const { apply, param, isForced } = checks[i];
 
       let result;
 
-      if (issues !== null && !isUnsafe) {
+      if (issues !== null && !isForced) {
         continue;
       }
 
       try {
-        result = callback(output, param, options);
+        result = apply(output, param, options);
       } catch (error) {
         issues = concatIssues(issues, captureIssues(error));
 

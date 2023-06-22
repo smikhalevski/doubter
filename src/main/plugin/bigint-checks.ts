@@ -106,14 +106,14 @@ export default function () {
     minValue: {
       configurable: true,
       get(this: BigIntShape) {
-        return this.getOperation(CODE_BIGINT_MIN)?.param;
+        return this.getOperationsByKey(CODE_BIGINT_MIN)?.param;
       },
     },
 
     maxValue: {
       configurable: true,
       get(this: BigIntShape) {
-        return this.getOperation(CODE_BIGINT_MAX)?.param;
+        return this.getOperationsByKey(CODE_BIGINT_MAX)?.param;
       },
     },
   });
@@ -153,7 +153,7 @@ function min(this: BigIntShape, value: bigint, options?: ConstraintOptions | Mes
         return issueFactory(input, options);
       }
     },
-    { key: CODE_BIGINT_MIN, param: value, unsafe: true }
+    { key: CODE_BIGINT_MIN, param: value, force: true }
   );
 }
 
@@ -168,6 +168,6 @@ function max(this: BigIntShape, value: bigint, options?: ConstraintOptions | Mes
         return issueFactory(input, options);
       }
     },
-    { key: CODE_BIGINT_MAX, param: value, unsafe: true }
+    { key: CODE_BIGINT_MAX, param: value, force: true }
   );
 }

@@ -106,14 +106,15 @@ export default function () {
     minValue: {
       configurable: true,
       get(this: DateShape) {
-        return this.getOperation(CODE_DATE_MIN)?.param;
+        return this.getOperationsByKey(CODE_DATE_MIN)?.param;
       },
     },
 
     maxValue: {
       configurable: true,
       get(this: DateShape) {
-        return this.getOperation(CODE_DATE_MAX)?.param;
+        this['_operations'].find(op => op.key === CODE_DATE_MAX).
+        return this.getOperationsByKey(CODE_DATE_MAX)?.param;
       },
     },
   });
@@ -137,7 +138,7 @@ function min(this: DateShape, value: Date | number | string, options?: Constrain
         return issueFactory(input, options);
       }
     },
-    { key: CODE_DATE_MIN, param: value, unsafe: true }
+    { key: CODE_DATE_MIN, param: value, force: true }
   );
 }
 
@@ -152,7 +153,7 @@ function max(this: DateShape, value: Date | number | string, options?: Constrain
         return issueFactory(input, options);
       }
     },
-    { key: CODE_DATE_MAX, param: value, unsafe: true }
+    { key: CODE_DATE_MAX, param: value, force: true }
   );
 }
 

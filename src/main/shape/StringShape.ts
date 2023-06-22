@@ -1,34 +1,19 @@
 import { CODE_TYPE, MESSAGE_STRING_TYPE } from '../constants';
+import { getCanonicalValueOf, isArray, isValidDate } from '../internal';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import {
   AlterCallback,
   AlterOptions,
-  getCanonicalValueOf,
-  isArray,
-  isValidDate,
+  ApplyOptions,
+  ConstraintOptions,
+  Message,
   RefineCallback,
+  RefineOptions,
   RefinePredicate,
-} from '../internal';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message, RefineOptions } from '../types';
+} from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER, Result } from './Shape';
-
-export interface StringShape<Value> {
-  alter<Param, RefinedValue extends Value>(
-    cb: AlterCallback<Value, RefinedValue, Param>,
-    options: AlterOptions & { param: Param }
-  ): StringShape<RefinedValue>;
-
-  alter<RefinedValue extends Value>(cb: AlterCallback<Value, RefinedValue>): StringShape<RefinedValue>;
-
-  refine<RefinedValue extends Value>(
-    cb: RefinePredicate<Value, RefinedValue>,
-    options?: RefineOptions | Message
-  ): StringShape<RefinedValue>;
-
-  refine(cb: RefineCallback<Value>, options?: RefineOptions | Message): this;
-}
 
 /**
  * The shape of a string value.
@@ -61,7 +46,7 @@ export class StringShape<Value extends string = string> extends CoercibleShape<V
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
-    const { _processor } = this;
+    const { _applyOperations } = this;
 
     let output = input;
     let issues = null;
@@ -106,4 +91,20 @@ export class StringShape<Value extends string = string> extends CoercibleShape<V
     }
     return NEVER;
   }
+}
+
+export interface StringShape<Value> {
+  alter<Param, RefinedValue extends Value>(
+    cb: AlterCallback<Value, RefinedValue, Param>,
+    options: AlterOptions & { param: Param }
+  ): StringShape<RefinedValue>;
+
+  alter<RefinedValue extends Value>(cb: AlterCallback<Value, RefinedValue>): StringShape<RefinedValue>;
+
+  refine<RefinedValue extends Value>(
+    cb: RefinePredicate<Value, RefinedValue>,
+    options?: RefineOptions | Message
+  ): StringShape<RefinedValue>;
+
+  refine(cb: RefineCallback<Value>, options?: RefineOptions | Message): this;
 }

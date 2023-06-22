@@ -13,10 +13,18 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import {
+  AlterCallback,
+  ApplyOptions,
+  ConstraintOptions,
+  Issue,
+  Message,
+  RefineCallback,
+  RefineOptions,
+} from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, Output, OUTPUT, Result } from './Shape';
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],
@@ -149,7 +157,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     options: ApplyOptions,
     nonce: number
   ): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
-    const { headShapes, restShape, _applyChecks, _isUnsafe } = this;
+    const { headShapes, restShape, _applyChecks, _isForced } = this;
 
     let output = input;
     let outputLength;
@@ -184,7 +192,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_isUnsafe || issues === null) {
+        if (_isForced || issues === null) {
           if (input === output) {
             output = input.slice(0);
           }
@@ -193,7 +201,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       }
     }
 
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+    if (_applyChecks !== null && (_isForced || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
@@ -208,7 +216,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     nonce: number
   ): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
-      const { headShapes, restShape, _applyChecks, _isUnsafe } = this;
+      const { headShapes, restShape, _applyChecks, _isForced } = this;
 
       let output = input;
       let outputLength: number;
@@ -237,7 +245,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_isUnsafe || issues === null) {
+          } else if (_isForced || issues === null) {
             if (input === output) {
               output = input.slice(0);
             }
@@ -260,7 +268,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           );
         }
 
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+        if (_applyChecks !== null && (_isForced || issues === null)) {
           issues = _applyChecks(output, issues, options);
         }
         if (issues === null && input !== output) {
@@ -287,4 +295,10 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     }
     return [value];
   }
+}
+
+export interface ArrayShape<HeadShapes, RestShape> {
+  alter(cb: AlterCallback<Output<this>>): this;
+
+  refine(cb: RefineCallback<Output<this>>, options?: RefineOptions | Message): this;
 }

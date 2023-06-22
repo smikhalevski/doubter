@@ -232,8 +232,8 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('applies unsafe checks if a tuple element raises an issue', () => {
-    const arrShape = new ArrayShape([new StringShape()], null).check(() => [{ code: 'xxx' }], { unsafe: true });
+  test('applies forced checks if a tuple element raises an issue', () => {
+    const arrShape = new ArrayShape([new StringShape()], null).check(() => [{ code: 'xxx' }], { force: true });
 
     expect(arrShape.try([111], { verbose: true })).toEqual({
       ok: false,
@@ -294,11 +294,11 @@ describe('ArrayShape', () => {
       expect(new ArrayShape([], null).rest(restShape).restShape).toBe(restShape);
     });
 
-    test('copies unsafe checks', () => {
+    test('copies forced checks', () => {
       const cbMock1 = jest.fn();
       const cbMock2 = jest.fn();
 
-      const arrShape = new ArrayShape([], null).check(cbMock1, { unsafe: true }).check(cbMock2);
+      const arrShape = new ArrayShape([], null).check(cbMock1, { force: true }).check(cbMock2);
 
       arrShape.rest(new Shape()).parse([]);
 

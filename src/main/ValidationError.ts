@@ -12,7 +12,7 @@ export class ValidationError extends Error {
    *
    * @param issues The array of issues that caused the validation error.
    * @param message The error message. If omitted then `issues` are converted to a string using
-   * {@linkcode ValidationError.formatIssues} and used as a message.
+   * {@linkcode ValidationError#formatIssues} and used as a message.
    */
   constructor(
     /**

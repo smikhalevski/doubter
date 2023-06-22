@@ -397,7 +397,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         return;
       }
 
-      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
+      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isForced } = this;
 
       const keysLength = keys.length;
 
@@ -480,7 +480,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_isUnsafe || issues === null) {
+          } else if (_isForced || issues === null) {
             if (input === output) {
               output = cloneDict(input);
             }
@@ -499,7 +499,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           return applyShape(entry[2], entry[1], options, nonce, handleValueResult);
         }
 
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+        if (_applyChecks !== null && (_isForced || issues === null)) {
           issues = _applyChecks(output, issues, options);
         }
         if (issues === null && input !== output) {
@@ -516,7 +516,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are preserved as is and aren't checked.
    */
   private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, _valueShapes, _applyChecks, _isUnsafe } = this;
+    const { keys, _valueShapes, _applyChecks, _isForced } = this;
 
     const keysLength = keys.length;
 
@@ -540,7 +540,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         issues = concatIssues(issues, result);
         continue;
       }
-      if (_isUnsafe || issues === null) {
+      if (_isForced || issues === null) {
         if (input === output) {
           output = cloneDict(input);
         }
@@ -548,7 +548,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
     }
 
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+    if (_applyChecks !== null && (_isForced || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {
@@ -561,7 +561,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
+    const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isForced } = this;
 
     const keysLength = keys.length;
 
@@ -603,7 +603,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_isUnsafe || issues === null) {
+        if (_isForced || issues === null) {
           if (input === output) {
             output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
@@ -628,7 +628,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
 
       // Unknown keys are stripped
-      if (input === output && (_isUnsafe || issues === null)) {
+      if (input === output && (_isForced || issues === null)) {
         output = cloneDictKeys(input, keys);
       }
     }
@@ -666,7 +666,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_isUnsafe || issues === null) {
+        if (_isForced || issues === null) {
           if (input === output) {
             output = cloneDict(input);
           }
@@ -675,7 +675,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
     }
 
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
+    if (_applyChecks !== null && (_isForced || issues === null)) {
       issues = _applyChecks(output, issues, options);
     }
     if (issues === null && input !== output) {

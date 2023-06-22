@@ -77,18 +77,18 @@ describe('Shape', () => {
       const shape2 = shape1.check(cb);
 
       expect(shape1).not.toBe(shape2);
-      expect(shape1.getOperation(cb)).toBeUndefined();
-      expect(shape2.getOperation(cb)).toBeDefined();
+      expect(shape1.getOperationsByKey(cb)).toBeUndefined();
+      expect(shape2.getOperationsByKey(cb)).toBeDefined();
     });
 
     test('adds a safe check by default', () => {
       const cb = () => null;
-      expect(new Shape().check(cb).getOperation(cb)?.isUnsafe).toBe(false);
+      expect(new Shape().check(cb).getOperationsByKey(cb)?.isForced).toBe(false);
     });
 
-    test('adds an unsafe check', () => {
+    test('adds an forced check', () => {
       const cb = () => null;
-      expect(new Shape().check(cb, { unsafe: true }).getOperation(cb)?.isUnsafe).toBe(true);
+      expect(new Shape().check(cb, { force: true }).getOperationsByKey(cb)?.isForced).toBe(true);
     });
 
     test('added check is applied', () => {
@@ -163,21 +163,21 @@ describe('Shape', () => {
 
   describe('getCheck', () => {
     test('returns undefined if check not found', () => {
-      expect(new Shape().getOperation(() => null)).toBeUndefined();
+      expect(new Shape().getOperationsByKey(() => null)).toBeUndefined();
     });
 
     test('returns the check', () => {
       const cb = () => null;
       const shape = new Shape().check(cb);
 
-      expect(shape.getOperation(cb)).toEqual({ key: cb, callback: cb, isUnsafe: false });
+      expect(shape.getOperationsByKey(cb)).toEqual({ key: cb, callback: cb, isForced: false });
     });
 
     test('returns the check with custom key', () => {
       const cb = () => null;
       const shape = new Shape().check(cb, { key: 'aaa' });
 
-      expect(shape.getOperation('aaa')).toEqual({ key: 'aaa', callback: cb, isUnsafe: false });
+      expect(shape.getOperationsByKey('aaa')).toEqual({ key: 'aaa', callback: cb, isForced: false });
     });
   });
 
@@ -202,7 +202,7 @@ describe('Shape', () => {
       const cb = () => null;
       const shape = new Shape().check(cb);
 
-      expect(shape.deleteCheck(cb).getOperation(cb)).toBeUndefined();
+      expect(shape.deleteCheck(cb).getOperationsByKey(cb)).toBeUndefined();
     });
 
     test('does not apply a deleted check', () => {
@@ -237,10 +237,10 @@ describe('Shape', () => {
       expect(cbMock).toHaveBeenCalledTimes(0);
     });
 
-    test('applies an unsafe predicate', () => {
+    test('applies an forced predicate', () => {
       const cbMock = jest.fn().mockReturnValue(false);
 
-      const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock, { unsafe: true });
+      const shape = new Shape().check(() => [{ code: 'xxx' }]).refine(cbMock, { force: true });
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
@@ -324,7 +324,7 @@ describe('Shape', () => {
       expect(pipeShape).toBeInstanceOf(PipeShape);
       expect((pipeShape as PipeShape<any, any>).inputShape).toBe(shape);
       expect((pipeShape as PipeShape<any, any>).outputShape).toBeInstanceOf(ConvertShape);
-      expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).callback).toBe(cb);
+      expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).converter).toBe(cb);
       expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).isAsync).toBe(false);
     });
 
@@ -351,7 +351,7 @@ describe('Shape', () => {
       expect(pipeShape).toBeInstanceOf(PipeShape);
       expect((pipeShape as PipeShape<any, any>).inputShape).toBe(shape);
       expect((pipeShape as PipeShape<any, any>).outputShape).toBeInstanceOf(ConvertShape);
-      expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).callback).toBe(cb);
+      expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).converter).toBe(cb);
       expect(((pipeShape as PipeShape<any, any>).outputShape as ConvertShape<any>).isAsync).toBe(true);
     });
   });
@@ -714,11 +714,11 @@ describe('Shape', () => {
       expect(cbMock2).toHaveBeenCalledTimes(0);
     });
 
-    test('unsafe checks are called in verbose mode even if preceding check failed', () => {
+    test('forced checks are called in verbose mode even if preceding check failed', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn();
 
-      const shape = new Shape().check(cbMock1).check(cbMock2, { unsafe: true });
+      const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
@@ -734,7 +734,7 @@ describe('Shape', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn(() => [{ code: 'yyy' }]);
 
-      const shape = new Shape().check(cbMock1).check(cbMock2, { unsafe: true });
+      const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
 
       expect(shape.try('aaa', { verbose: true })).toEqual({
         ok: false,
@@ -1132,7 +1132,7 @@ describe('ReplaceLiteralShape', () => {
       new Shape().check(() => [{ code: 'xxx' }]),
       111,
       222
-    ).check(() => [{ code: 'yyy' }], { unsafe: true });
+    ).check(() => [{ code: 'yyy' }], { force: true });
 
     expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
@@ -1186,7 +1186,7 @@ describe('ReplaceLiteralShape', () => {
         asyncShape.check(() => [{ code: 'xxx' }]),
         111,
         222
-      ).check(() => [{ code: 'yyy' }], { unsafe: true });
+      ).check(() => [{ code: 'yyy' }], { force: true });
 
       await expect(shape.tryAsync('aaa', { verbose: true })).resolves.toEqual({
         ok: false,
@@ -1255,7 +1255,7 @@ describe('DenyLiteralShape', () => {
     const shape = new DenyLiteralShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       undefined
-    ).check(() => [{ code: 'yyy' }], { unsafe: true });
+    ).check(() => [{ code: 'yyy' }], { force: true });
 
     expect(shape.try(111, { verbose: true })).toEqual({
       ok: false,

@@ -105,14 +105,14 @@ export default function () {
     minLength: {
       configurable: true,
       get(this: ArrayShape<any, any>) {
-        return this.getOperation(CODE_ARRAY_MIN)?.param;
+        return this.getOperationsByKey(CODE_ARRAY_MIN)?.param;
       },
     },
 
     maxLength: {
       configurable: true,
       get(this: ArrayShape<any, any>) {
-        return this.getOperation(CODE_ARRAY_MAX)?.param;
+        return this.getOperationsByKey(CODE_ARRAY_MAX)?.param;
       },
     },
   });
@@ -141,7 +141,7 @@ function min(this: ArrayShape<any, any>, length: number, options?: ConstraintOpt
         return issueFactory(input, options);
       }
     },
-    { key: CODE_ARRAY_MIN, param: length, unsafe: true }
+    { key: CODE_ARRAY_MIN, param: length, force: true }
   );
 }
 
@@ -154,7 +154,7 @@ function max(this: ArrayShape<any, any>, length: number, options?: ConstraintOpt
         return issueFactory(input, options);
       }
     },
-    { key: CODE_ARRAY_MAX, param: length, unsafe: true }
+    { key: CODE_ARRAY_MAX, param: length, force: true }
   );
 }
 
@@ -178,6 +178,6 @@ function includes(
       }
       return issueFactory(input, options);
     },
-    { key: CODE_ARRAY_INCLUDES, param: length, unsafe: true }
+    { key: CODE_ARRAY_INCLUDES, param: length, force: true }
   );
 }
