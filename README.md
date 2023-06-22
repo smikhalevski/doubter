@@ -1,6 +1,6 @@
 <p align="center">
   <a href="#readme">
-    <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/images/logo.png" alt="Doubter" width="400"/>
+    <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/static/logo.png" alt="Doubter" width="400"/>
   </a>
 </p>
 
@@ -29,7 +29,7 @@ npm install --save-prod doubter
 > canary release `doubter@next`. Navigate to the [`latest`](https://github.com/smikhalevski/doubter/tree/latest#readme)
 > branch for docs that describe the latest stable release.
 
-**Features**
+🚀&ensp;**Features**
 
 - [Basics](#basics)
 - [Parsing and trying](#parsing-and-trying)
@@ -54,9 +54,9 @@ npm install --save-prod doubter
 - [Plugins](#plugins)
 - [Advanced shapes](#advanced-shapes)
 
-[**Performance**](#performance)
+⏱&ensp;[**Performance**](#performance)
 
-**Data types**
+🎯&ensp;**Data types**
 
 - Strings<br>
   [`string`](#string)
@@ -120,7 +120,7 @@ npm install --save-prod doubter
   [`lazy`](#lazy)
   [`never`](#never)
 
-**Cookbook**
+🍪&ensp;**Cookbook**
 
 - [Rename object keys](#rename-object-keys)
 - [Type-safe URL query params](#type-safe-url-query-params)
@@ -475,7 +475,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `number_gte`         | [`d.number().gt(x)`](#number)            | The exclusive minimum value `x`                       |
 | `number_lte`         | [`d.number().lt(x)`](#number)            | The exclusive maximum value `x`                       |
 | `number_multiple_of` | [`d.number().multipleOf(x)`](#number)    | The divisor `x`                                       |
-| `objectUnknownKeys`  | [`d.object().exact()`](#unknown-keys)    | The array of unknown keys                             |
+| `object_exact`       | [`d.object().exact()`](#unknown-keys)    | The array of unknown keys                             |
 | `set_min`            | [`d.set().min(n)`](#set)                 | The minimum `Set` size `n`                            |
 | `set_max`            | [`d.set().max(n)`](#set)                 | The maximum `Set` size `n`                            |
 | `string_min`         | [`d.string().min(n)`](#string)           | The minimum string length `n`                         |
@@ -487,7 +487,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 
 ## Global error message formatter
 
-Be default, `ValidationError` uses `JSON.stringify` to produce an error message. While you can provide a custom error
+By default, `ValidationError` uses `JSON.stringify` to produce an error message. While you can provide a custom error
 message by passing [`errorMessage` option](#parse) to `parse` and `parseAsync`, you also can configure the global
 formatter.
 
@@ -2014,7 +2014,7 @@ This is sufficient to enable type inference and runtime support for `deepPartial
 The chart below showcases the performance comparison in terms of millions of operations per second (greater is better).
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/images/perf.svg" alt="Performance comparison chart"/>
+  <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/static/perf.svg" alt="Performance comparison chart"/>
 </p>
 
 Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast).
@@ -3782,19 +3782,20 @@ If you're developing an app that consumes environment variables you most likely 
 const envShape = d
   .object({
     NODE_ENV: d.enum(['test', 'production']),
-    DAYS_IN_YEAR: d.int().optional(365),
+    HELLO_DATE: d.date().optional(),
   })
   .strip();
 ```
 
 Key takeaways:
 
-1. Env variables are strings, so [type coercion](#type-coercion) must be enabled to coerce `DAYS_IN_YEAR` to an integer.
+1. Since env variables are strings, we should enable [type coercion](#type-coercion) to convert the value of
+`HELLO_DATE` to a `Date` instance.
 
-2. `NODE_ENV` is the required env variable, while `DAYS_IN_YEAR` is optional and would be set to 365 if it isn't
-available. Note that if `DAYS_IN_YEAR` is provided and isn't a valid integer, a validation error would be raised.
+2. `NODE_ENV` is the required env variable, while `HELLO_DATE` is optional. If `HELLO_DATE` is provided and cannot be
+coerced as a date, a validation error would be raised.
 
-3. Unknown env variables are [stripped](#unknown-keys), so they won't be visible inside the app. This prevents
+3. Unknown env variables are [stripped](#unknown-keys), so they won't be visible inside the app. This prevents an
 accidental usage of an unvalidated env variable.
 
 ```ts
@@ -3802,7 +3803,7 @@ const env = envShape.parse(
   process.env,
   { coerce: true }
 );
-// ⮕ { NODE_ENV: 'test' | 'production', DAYS_IN_YEAR: number }
+// ⮕ { NODE_ENV: 'test' | 'production', HELLO_DATE?: Date }
 ```
 
 ## Conditionally applied shapes
