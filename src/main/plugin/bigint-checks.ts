@@ -153,7 +153,7 @@ function min(this: BigIntShape, value: bigint, options?: ConstraintOptions | Mes
         return issueFactory(input, options);
       }
     },
-    { key: CODE_BIGINT_MIN, payload: value, force: true }
+    { kind: CODE_BIGINT_MIN, param: value, force: true }
   );
 }
 
@@ -168,6 +168,6 @@ function max(this: BigIntShape, value: bigint, options?: ConstraintOptions | Mes
         return issueFactory(input, options);
       }
     },
-    { key: CODE_BIGINT_MAX, payload: value, force: true }
+    { kind: CODE_BIGINT_MAX, param: value, force: true }
   );
 }

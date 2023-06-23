@@ -171,7 +171,7 @@ describe('UnionShape', () => {
   });
 
   describe('at', () => {
-    test('returns a union of child shapes at key', () => {
+    test('returns a union of child shapes at kind', () => {
       const shape1 = new Shape();
       const shape2 = new Shape();
       const shape3 = new Shape();
@@ -188,7 +188,7 @@ describe('UnionShape', () => {
       expect(shape.shapes[1]).toBe(shape3);
     });
 
-    test('returns non-null child shapes at key', () => {
+    test('returns non-null child shapes at kind', () => {
       const shape1 = new Shape();
       const shape2 = new Shape();
       const shape3 = new Shape();
@@ -349,7 +349,7 @@ describe('UnionShape', () => {
 });
 
 describe('getDiscriminator', () => {
-  test('returns the discriminator key and corresponding values for each shape in the union', () => {
+  test('returns the discriminator kind and corresponding values for each shape in the union', () => {
     expect(
       getDiscriminator([
         new ObjectShape({ type: new ConstShape('aaa') }, null),
@@ -361,7 +361,7 @@ describe('getDiscriminator', () => {
     });
   });
 
-  test('returns the discriminator key if there are multiple keys', () => {
+  test('returns the discriminator kind if there are multiple keys', () => {
     expect(
       getDiscriminator([
         new ObjectShape(

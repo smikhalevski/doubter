@@ -6,13 +6,16 @@ import {
   MESSAGE_DENIED,
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
+  OPERATION_ALTER,
+  OPERATION_CHECK,
 } from '../constants';
 import {
-  ApplyOperations,
+  alterOperationCallbackFactory,
   applyShape,
   captureIssues,
+  checkOperationCallbackFactory,
   copyUnsafeChecks,
-  createApplyOperations,
+  createOperationCallback,
   Dict,
   getErrorMessage,
   isArray,
@@ -40,6 +43,8 @@ import {
   Message,
   Ok,
   Operation,
+  OperationCallback,
+  OperationCallbackFactory,
   ParseOptions,
   RefineCallback,
   RefineOptions,
@@ -218,6 +223,13 @@ export type Output<S extends AnyShape> = S[OUTPUT];
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
+   * The map from an operation type to a factory that produces {@link OperationCallback operation callback}.
+   */
+  static operationCallbackFactories = new Map<any, OperationCallbackFactory>()
+    .set(OPERATION_CHECK, checkOperationCallbackFactory)
+    .set(OPERATION_ALTER, alterOperationCallbackFactory);
+
+  /**
    * The shape input type.
    *
    * @internal
@@ -239,15 +251,19 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * The array of operations that this shape applies after the input type is ensured.
    */
-  protected _operations: readonly Operation[] | null = null;
+  protected _operations: readonly Operation[] = [];
 
   /**
-   * Applies {@linkcode _operations operations} to the given value.
+   * The callback that applies {@linkcode _operations operations} to the shape output value, or `null` if there are no
+   * operations to apply.
    */
-  protected _applyOperations: ApplyOperations | null = null;
+  protected _applyOperations: OperationCallback | null = null;
 
   /**
-   * `true` if some checks from {@linkcode _operations} were marked as forced, `false` otherwise.
+   * `true` if some operations from {@linkcode _operations} were marked as {@link Operation#isForced forced}, or `false`
+   * otherwise. This field is an optimization flag that prevents composite shapes, such as {@linkcode ArrayShape} and
+   * {@linkcode ObjectShape}, from assembling a transformed output value if an issue was raised by shapes that constrain
+   * any of its properties.
    */
   protected _isForced = false;
 
@@ -255,8 +271,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
    * sub-shape.
    *
-   * @param key The key for which the sub-shape must be retrieved.
-   * @returns The sub-shape or `null` if there's no such key in the shape.
+   * @param key The kind for which the sub-shape must be retrieved.
+   * @returns The sub-shape or `null` if there's no such kind in the shape.
    */
   at(key: unknown): AnyShape | null {
     return null;
@@ -288,24 +304,24 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If the {@linkcode CheckOptions#key} is defined and there's already a check with the same key then the existing
-   * check is deleted and the new one is appended. If the key is `undefined` then the `cb` identity is used as a key.
+   * If the {@linkcode CheckOptions#kind} is defined and there's already a check with the same kind then the existing
+   * check is deleted and the new one is appended. If the kind is `undefined` then the `cb` identity is used as a kind.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
-   * @template Payload The additional payload that would be passed to the {@linkcode CheckCallback} when a check
-   * operation is applied.
+   * @template Param The additional param that would be passed to the {@linkcode CheckCallback} when a check operation
+   * is applied.
    * @see {@linkcode Shape#refine}
    */
-  check<Payload>(cb: CheckCallback<OutputValue, Payload>, options: CheckOptions & { payload: Payload }): this;
+  check<Param>(cb: CheckCallback<OutputValue, Param>, options: CheckOptions & { param: Param }): this;
 
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If the key is `undefined` then the `cb` identity is used as a key.
+   * If the kind is `undefined` then the `cb` identity is used as a kind.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
@@ -317,9 +333,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback<OutputValue>, options?: CheckOptions): this;
 
   check(cb: CheckCallback, options: CheckOptions = {}): this {
-    const { key = cb, payload, force = false } = options;
+    const { kind = cb, param, force = false } = options;
 
-    return this._registerOperation({ type: 'check', key, apply: cb, payload, isForced: force });
+    return this._addOperation({ type: OPERATION_CHECK, kind, payload: { cb, param }, isForced: force });
   }
 
   /**
@@ -329,13 +345,13 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options The check options.
    * @returns The clone of the shape.
    * @template AlteredOutputValue The narrowed output value.
-   * @template Payload The additional payload that would be passed to the {@linkcode AlterCallback} when an alteration
+   * @template Param The additional param that would be passed to the {@linkcode AlterCallback} when an alteration
    * operation is applied.
    * @see {@linkcode Shape#convert}
    */
-  alter<AlteredOutputValue extends OutputValue, Payload = any>(
-    cb: AlterCallback<OutputValue, AlteredOutputValue, Payload>,
-    options: AlterOptions & { payload: Payload }
+  alter<AlteredOutputValue extends OutputValue, Param = any>(
+    cb: AlterCallback<OutputValue, AlteredOutputValue, Param>,
+    options: AlterOptions & { param: Param }
   ): Shape<InputValue, AlteredOutputValue>;
 
   /**
@@ -353,9 +369,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   ): Shape<InputValue, AlteredOutputValue>;
 
   alter(cb: AlterCallback, options: AlterOptions = {}): Shape {
-    const { key = cb, payload } = options;
+    const { kind = cb, param } = options;
 
-    return this._registerOperation({ type: 'alter', key, apply: cb, payload });
+    return this._addOperation({ type: OPERATION_ALTER, kind, payload: { cb, param }, isForced: false });
   }
 
   /**
@@ -384,18 +400,17 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): Shape<InputValue, OutputValue>;
 
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
-    const { key = cb, code = CODE_PREDICATE, force = false } = extractOptions(options);
+    const { kind = cb, code = CODE_PREDICATE, force = false } = extractOptions(options);
 
-    const payload = { originalCallback: cb };
-    const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, payload);
+    const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
     return this.check(
-      (value, payload, options) => {
+      (value, param, options) => {
         if (!cb(value, options)) {
           return issueFactory(value, options);
         }
       },
-      { key, payload, force }
+      { kind, force, param: cb }
     );
   }
 
@@ -409,12 +424,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   convert<ConvertedValue>(
     /**
-     * @param output The shape output value.
+     * @param value The shape output value.
      * @param options Parsing options.
      * @return The converted value.
      * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
-    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => ConvertedValue
+    cb: (value: OutputValue, options: Readonly<ApplyOptions>) => ConvertedValue
   ): Shape<InputValue, ConvertedValue> {
     return this.to(new ConvertShape(cb));
   }
@@ -429,12 +444,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   convertAsync<ConvertedValue>(
     /**
-     * @param output The shape output value.
+     * @param value The shape output value.
      * @param options Parsing options.
      * @return The converted value.
      * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
-    cb: (output: OutputValue, options: Readonly<ApplyOptions>) => Promise<ConvertedValue>
+    cb: (value: OutputValue, options: Readonly<ApplyOptions>) => Promise<ConvertedValue>
   ): Shape<InputValue, ConvertedValue> {
     return this.to(new ConvertShape(cb, true));
   }
@@ -614,19 +629,17 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Registers an operation with the shape, so it can be applied during parsing.
+   * Adds an operation to the shape, so it can be applied as the last step of parsing.
    *
-   * @param operation The operation to register.
+   * @param operation The operation to add.
    * @returns The clone of the shape.
    */
-  protected _registerOperation(operation: Operation): this {
+  protected _addOperation(operation: Operation): this {
     const shape = this._clone();
 
-    shape._operations = this._operations !== null ? this._operations.concat(operation) : [operation];
-
-    // isForced should be computed up to the fist alter operation.
-    shape._isForced ||= operation.type === 'check' && operation.isForced;
-    shape._applyOperations = createApplyOperations(shape._operations);
+    shape._operations = this._operations.concat(operation);
+    shape._applyOperations = createOperationCallback(Shape.operationCallbackFactories, shape._operations);
+    shape._isForced ||= operation.isForced;
 
     return shape;
   }
@@ -665,7 +678,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     const { _applyOperations } = this;
 
     if (_applyOperations !== null) {
-      return _applyOperations(input, null, options, false, null);
+      return _applyOperations(input, options, false, null, null);
     }
     return null;
   }
@@ -1009,7 +1022,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
     const changed = !isEqual(input, output);
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, changed, null);
+      return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);
@@ -1026,7 +1039,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
       const changed = !isEqual(input, output);
 
       if (_applyOperations !== null) {
-        return _applyOperations(output, null, options, changed, null);
+        return _applyOperations(output, options, changed, null, null);
       }
       if (changed) {
         return ok(output);
@@ -1111,7 +1124,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, changed, result);
+      return _applyOperations(output, options, changed, null, result);
     }
     return result;
   }
@@ -1142,7 +1155,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
         }
 
         if (_applyOperations !== null) {
-          return _applyOperations(output, null, options, changed, result as Ok<Output<OutputShape>>);
+          return _applyOperations(output, options, changed, null, result as Ok<Output<OutputShape>>);
         }
         return result;
       });
@@ -1246,7 +1259,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, result !== null, result);
+      return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }
@@ -1357,7 +1370,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, result !== null, result);
+      return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }
@@ -1451,7 +1464,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, result !== null, result);
+      return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }
@@ -1539,7 +1552,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, result !== null, result);
+      return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }
@@ -1567,7 +1580,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
         }
 
         if (_applyOperations !== null) {
-          return _applyOperations(output, null, options, result !== null, result);
+          return _applyOperations(output, options, result !== null, null, result);
         }
         return result;
       });

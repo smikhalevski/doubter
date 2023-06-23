@@ -1,111 +1,105 @@
-import { Result } from '../shape';
-import { ApplyOptions, Issue, Ok, Operation } from '../types';
+import { ERROR_UNKNOWN_OPERATION } from '../constants';
+import { AlterCallback, CheckCallback, Operation, OperationCallback, OperationCallbackFactory } from '../types';
 import { isArray, isEqual, isObjectLike } from './lang';
 import { captureIssues, concatIssues, ok } from './shapes';
 
-// input
-// options
-// issues
-// changed: boolean | null
-// ok: OK | null
-
-export type ApplyOperations = (
-  input: any,
-  issues: Issue[] | null,
-  options: ApplyOptions,
-  changed: boolean,
-  result: Ok<any> | null
-) => Result;
-
 /**
- * Composes a processor that applies operations sequentially.
- *
- * @param operations The array of operation the processor should apply.
+ * Composes multiple operations into a single operation callback.
  */
-export function createApplyOperations(operations: readonly Operation[]): ApplyOperations | null {
-  let cb: ApplyOperations | null = null;
+export function createOperationCallback(
+  factories: Map<any, OperationCallbackFactory>,
+  operations: readonly Operation[]
+): OperationCallback | null {
+  let cb: OperationCallback | null = null;
 
-  for (let i = operations.length - 1, next: ApplyOperations | null = null; i >= 0; --i, next = cb) {
+  for (let i = operations.length - 1; i >= 0; --i) {
     const operation = operations[i];
-    const { apply, payload } = operation;
+    const factory = factories.get(operation.type);
 
-    if (operation.type === 'alter') {
-      cb = (input, issues, options, changed, result) => {
-        if (issues !== null) {
-          return issues;
-        }
-
-        let output;
-        try {
-          output = apply(input, payload, options);
-        } catch (error) {
-          return concatIssues(issues, captureIssues(error));
-        }
-
-        if (!changed) {
-          changed = !isEqual(input, output);
-        }
-        if (next !== null) {
-          return next(output, null, options, changed, result);
-        }
-        if (!changed) {
-          return result;
-        }
-        if (result !== null) {
-          result.value = output;
-          return result;
-        }
-        return ok(output);
-      };
+    if (factory === undefined) {
+      throw new Error(ERROR_UNKNOWN_OPERATION + operation.type);
     }
-
-    if (operation.type === 'check') {
-      const { isForced } = operation;
-
-      cb = (input, issues, options, changed, result) => {
-        if (isForced || issues === null) {
-          try {
-            const result = apply(input, payload, options);
-
-            if (isObjectLike(result)) {
-              if (issues !== null) {
-                if (isArray(result)) {
-                  issues.push(...result);
-                } else {
-                  issues.push(result);
-                }
-              } else {
-                issues = isArray(result) ? result.slice(0) : [result];
-              }
-              if (!options.verbose) {
-                return issues;
-              }
-            }
-          } catch (error) {
-            issues = concatIssues(issues, captureIssues(error));
-
-            if (!options.verbose) {
-              return issues;
-            }
-          }
-        }
-        if (next !== null) {
-          return next(input, issues, options, changed, result);
-        }
-        if (issues !== null) {
-          return issues;
-        }
-        if (!changed) {
-          return result;
-        }
-        if (result !== null) {
-          result.value = input;
-          return result;
-        }
-        return ok(input);
-      };
-    }
+    cb = factory(operation, cb);
   }
-
   return cb;
 }
+
+export const checkOperationCallbackFactory: OperationCallbackFactory = (operation, next) => {
+  const { cb, param } = operation.payload;
+  const { isForced } = operation;
+
+  return (input, options, changed, issues, result) => {
+    if (isForced || issues === null) {
+      try {
+        const result = (cb as CheckCallback)(input, param, options);
+
+        if (isObjectLike(result)) {
+          if (issues !== null) {
+            if (isArray(result)) {
+              issues.push(...result);
+            } else {
+              issues.push(result);
+            }
+          } else {
+            issues = isArray(result) ? result.slice(0) : [result];
+          }
+          if (!options.verbose) {
+            return issues;
+          }
+        }
+      } catch (error) {
+        issues = concatIssues(issues, captureIssues(error));
+
+        if (!options.verbose) {
+          return issues;
+        }
+      }
+    }
+    if (next !== null) {
+      return next(input, options, changed, issues, result);
+    }
+    if (issues !== null) {
+      return issues;
+    }
+    if (!changed) {
+      return result;
+    }
+    if (result !== null) {
+      result.value = input;
+      return result;
+    }
+    return ok(input);
+  };
+};
+
+export const alterOperationCallbackFactory: OperationCallbackFactory = (operation, next) => {
+  const { cb, param } = operation.payload;
+
+  return (input, options, changed, issues, result) => {
+    let output = input;
+
+    if (issues === null) {
+      try {
+        output = (cb as AlterCallback)(input, param, options);
+      } catch (error) {
+        return concatIssues(issues, captureIssues(error));
+      }
+
+      if (!changed) {
+        changed = !isEqual(input, output);
+      }
+    }
+
+    if (next !== null) {
+      return next(output, options, changed, issues, result);
+    }
+    if (!changed) {
+      return result;
+    }
+    if (result !== null) {
+      result.value = output;
+      return result;
+    }
+    return ok(output);
+  };
+};

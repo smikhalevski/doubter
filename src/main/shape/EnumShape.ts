@@ -26,13 +26,13 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   /**
    * Creates a new {@linkcode EnumShape} instance.
    *
-   * @param source The array of allowed values, a const key-value mapping, or an enum object.
+   * @param source The array of allowed values, a const kind-value mapping, or an enum object.
    * @param options The type constraint options or an issue message.
    * @template Value The union of allowed enum values.
    */
   constructor(
     /**
-     * The array of allowed values, a const key-value mapping, or an TypeScript enum object.
+     * The array of allowed values, a const kind-value mapping, or an TypeScript enum object.
      */
     readonly source: readonly Value[] | ReadonlyDict<Value>,
     options?: ConstraintOptions | Message
@@ -69,7 +69,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
       return [this._typeIssueFactory(input, options)];
     }
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, changed, null);
+      return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);
@@ -97,7 +97,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
 }
 
 /**
- * Returns unique values of the enum. Source must contain key-value and value-key mapping to be considered a native
+ * Returns unique values of the enum. Source must contain kind-value and value-kind mapping to be considered a native
  * enum.
  */
 export function getEnumValues(source: ReadonlyDict): any[] {

@@ -148,7 +148,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 
     // REVIEW THIS
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, !isEqual(input, output), result as Ok<any>);
+      return _applyOperations(output, options, !isEqual(input, output), null, result as Ok<any>);
     }
     return result;
     // if (_applyOperations === null || (issues = _applyOperations(output, null, options)) === null) {
@@ -189,7 +189,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 
         // REVIEW THIS
         if (_applyOperations !== null) {
-          return _applyOperations(output, null, options, !isEqual(input, output), result as Ok<any>);
+          return _applyOperations(output, options, !isEqual(input, output), null, result as Ok<any>);
         }
         return result;
         // if (_applyOperations === null || (issues = _applyOperations(output, null, options)) === null) {
@@ -309,7 +309,7 @@ export function createLookupByDiscriminator(shapes: readonly AnyShape[]): Lookup
 
 export interface Discriminator {
   /**
-   * The discriminator property key.
+   * The discriminator property kind.
    */
   key: string;
 
@@ -322,7 +322,7 @@ export interface Discriminator {
 /**
  * Returns a discriminator property description. Discriminator conforms the following rules:
  *
- * - has a key that is common for all provided object shapes;
+ * - has a kind that is common for all provided object shapes;
  * - its values are discrete;
  * - its values uniquely identify each shape.
  */

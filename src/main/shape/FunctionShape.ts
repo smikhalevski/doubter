@@ -250,7 +250,7 @@ export class FunctionShape<
     }
 
     if (_applyOperations !== null) {
-      result = _applyOperations(input, null, options, false, null);
+      result = _applyOperations(input, options, false, null, null);
     }
     if (isArray(result)) {
       return result;

@@ -746,7 +746,7 @@ Retrieve a check:
 shape.check(emailCheck);
 
 shape.getOperationsByKey(emailCheck);
-// ⮕ { key: emailCheck, callback: emailCheck, isForced: false, param: undefined }
+// ⮕ { kind: emailCheck, callback: emailCheck, isForced: false, param: undefined }
 ```
 
 Delete a check:
@@ -756,26 +756,26 @@ shape.deleteCheck(emailCheck);
 // ⮕ Shape<string>
 ```
 
-Using a check callback identity as a key isn't always convenient. Pass the
-[`key`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.CheckOptions.html#key) option to define a custom
-key:
+Using a check callback identity as a kind isn't always convenient. Pass the
+[`kind`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.CheckOptions.html#key) option to define a custom
+kind:
 
 ```ts
-shape.check(emailCheck, { key: 'email' });
+shape.check(emailCheck, { kind: 'email' });
 // ⮕ Shape<string>
 ```
 
-Now you should use the key to get or delete the check:
+Now you should use the kind to get or delete the check:
 
 ```ts
 shape.getOperationsByKey('email');
-// ⮕ { key: 'email', callback: emailCheck, isForced: false, param: undefined }
+// ⮕ { kind: 'email', callback: emailCheck, isForced: false, param: undefined }
 
 shape.deleteCheck('email');
 // ⮕ Shape<string>
 ```
 
-Doubter considers checks to be identical if they have the same key.
+Doubter considers checks to be identical if they have the same kind.
 
 # Refinements
 
@@ -1741,7 +1741,7 @@ userOrNameShape.shapes[0];
 ```
 
 [`at`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#at) method derives a sub-shape at the
-given key, and if there's no such key then `null` is returned:
+given kind, and if there's no such kind then `null` is returned:
 
 ```ts
 userShape.at('age');
@@ -2640,7 +2640,7 @@ When working with objects, [extend objects](#extending-objects) instead of inter
 object shapes are more performant than object intersection shapes.
 
 There's a logical difference between extended and intersected objects. Let's consider two shapes that both contain the
-same key:
+same kind:
 
 ```ts
 const shape1 = d.object({
@@ -2685,7 +2685,7 @@ type JSON =
   | boolean
   | null
   | JSON[]
-  | { [key: string]: JSON };
+  | { [kind: string]: JSON };
 
 const jsonShape: d.Shape<JSON> = d.lazy(() =>
   d.or([
@@ -3068,7 +3068,7 @@ const restShape = d.or([
 // ⮕ Shape<string | number>
 
 shape.rest(restShape);
-// ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
+// ⮕ Shape<{ foo: string, bar: number, [kind: string]: string | number }>
 ```
 
 Unlike an index signature in TypeScript, a rest shape is applied only to keys that aren't explicitly specified among
@@ -3083,7 +3083,7 @@ Keys that aren't defined explicitly can be handled in several ways:
 - preserved as is, this is the default behavior;
 - prohibited.
 
-Force an object to have only known keys. If an unknown key is met, a validation issue is raised.
+Force an object to have only known keys. If an unknown kind is met, a validation issue is raised.
 
 ```ts
 d.object({
@@ -3092,7 +3092,7 @@ d.object({
 }).exact();
 ```
 
-Strip unknown keys, so the object is cloned if an unknown key is met, and only known keys are preserved.
+Strip unknown keys, so the object is cloned if an unknown kind is met, and only known keys are preserved.
 
 ```ts
 d.object({
@@ -3163,7 +3163,7 @@ const barShape = d.object({
 });
 
 fooShape.extend(barShape);
-// ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
+// ⮕ Shape<{ foo: string, bar: number, [kind: string]: string | number }>
 ```
 
 ## Making objects partial and required
@@ -3279,7 +3279,7 @@ d.record(d.string(), d.number())
 // ⮕ Shape<Record<string, number>>
 ```
 
-Pass any shape that extends `Shape<string>` as a key constraint:
+Pass any shape that extends `Shape<string>` as a kind constraint:
 
 ```ts
 const keyShape = d.enum(['foo', 'bar']);
@@ -3521,7 +3521,7 @@ d.or([d.string(), d.number()]);
 
 ## Discriminated unions
 
-A discriminated union is a union of object shapes that all share a particular key.
+A discriminated union is a union of object shapes that all share a particular kind.
 
 Doubter automatically applies various performance optimizations to union shapes and
 [discriminated union](https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html#discriminating-unions)
@@ -3700,7 +3700,7 @@ d.void();
 
 ## Rename object keys
 
-First, create a shape that describes the key transformation. In this example we are going to
+First, create a shape that describes the kind transformation. In this example we are going to
 [transform](#transformations) the [enumeration](#enum) of keys to uppercase alternatives:
 
 ```ts

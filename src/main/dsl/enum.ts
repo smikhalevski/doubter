@@ -23,7 +23,7 @@ function enum_<Value extends Literal, ValuesArray extends readonly [Value, ...Va
  * @param values The native enum or a mapping object.
  * @param options The constraint options or an issue message.
  * @template Value The union of allowed enum values.
- * @template ValuesDict The object that maps from the key to an enum value.
+ * @template ValuesDict The object that maps from the kind to an enum value.
  * @group DSL
  */
 function enum_<Value extends Literal, ValuesDict extends ReadonlyDict<Value>>(

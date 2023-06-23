@@ -61,7 +61,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
       return [this._typeIssueFactory(input, options)];
     }
     if (_applyOperations !== null) {
-      return _applyOperations(input, null, options, false, null);
+      return _applyOperations(input, options, false, null, null);
     }
     return null;
   }

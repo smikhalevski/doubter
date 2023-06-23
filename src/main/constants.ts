@@ -1,6 +1,10 @@
 export const ERROR_REQUIRES_ASYNC = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
 export const ERROR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';
 export const ERROR_ASYNC_FUNCTION = 'The function signature is constrained by async shapes, use ensureAsyncSignature.';
+export const ERROR_UNKNOWN_OPERATION = 'Unknown operation: ';
+
+export const OPERATION_CHECK = 'check';
+export const OPERATION_ALTER = 'alter';
 
 export const CODE_ARRAY_INCLUDES = 'array_includes';
 export const CODE_ARRAY_MIN = 'array_min';

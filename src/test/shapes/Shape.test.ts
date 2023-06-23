@@ -133,7 +133,7 @@ describe('Shape', () => {
 
     test('does not add the same check callback twice if keys are equal', () => {
       const cbMock = jest.fn();
-      const shape = new Shape().check(cbMock, { key: 'aaa' }).check(cbMock, { key: 'aaa' });
+      const shape = new Shape().check(cbMock, { kind: 'aaa' }).check(cbMock, { kind: 'aaa' });
 
       shape.parse(111);
 
@@ -142,17 +142,17 @@ describe('Shape', () => {
 
     test('adds the same check callback twice if keys are different', () => {
       const cbMock = jest.fn();
-      const shape = new Shape().check(cbMock, { key: 'aaa' }).check(cbMock);
+      const shape = new Shape().check(cbMock, { kind: 'aaa' }).check(cbMock);
 
       shape.parse(111);
 
       expect(cbMock).toHaveBeenCalledTimes(2);
     });
 
-    test('replaces check callback with the same key', () => {
+    test('replaces check callback with the same kind', () => {
       const cbMock1 = jest.fn();
       const cbMock2 = jest.fn();
-      const shape = new Shape().check(cbMock1, { key: 'aaa' }).check(cbMock2, { key: 'aaa' });
+      const shape = new Shape().check(cbMock1, { kind: 'aaa' }).check(cbMock2, { kind: 'aaa' });
 
       shape.parse(111);
 
@@ -173,9 +173,9 @@ describe('Shape', () => {
       expect(shape.getOperationsByKey(cb)).toEqual({ key: cb, callback: cb, isForced: false });
     });
 
-    test('returns the check with custom key', () => {
+    test('returns the check with custom kind', () => {
       const cb = () => null;
-      const shape = new Shape().check(cb, { key: 'aaa' });
+      const shape = new Shape().check(cb, { kind: 'aaa' });
 
       expect(shape.getOperationsByKey('aaa')).toEqual({ key: 'aaa', callback: cb, isForced: false });
     });

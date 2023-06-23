@@ -183,7 +183,7 @@ function min(this: StringShape, length: number, options?: ConstraintOptions | Me
         return issueFactory(input, options);
       }
     },
-    { key: CODE_STRING_MIN, payload: length, force: true }
+    { kind: CODE_STRING_MIN, param: length, force: true }
   );
 }
 
@@ -196,7 +196,7 @@ function max(this: StringShape, length: number, options?: ConstraintOptions | Me
         return issueFactory(input, options);
       }
     },
-    { key: CODE_STRING_MAX, payload: length, force: true }
+    { kind: CODE_STRING_MAX, param: length, force: true }
   );
 }
 
@@ -211,7 +211,7 @@ function regex(this: StringShape, re: RegExp, options?: ConstraintOptions | Mess
         return issueFactory(input, options);
       }
     },
-    { key: CODE_STRING_REGEX, payload: re, force: true }
+    { kind: CODE_STRING_REGEX, param: re, force: true }
   );
 }
 
@@ -224,7 +224,7 @@ function includes(this: StringShape, value: string, options?: ConstraintOptions 
         return issueFactory(input, options);
       }
     },
-    { key: CODE_STRING_INCLUDES, payload: value, force: true }
+    { kind: CODE_STRING_INCLUDES, param: value, force: true }
   );
 }
 
@@ -237,7 +237,7 @@ function startsWith(this: StringShape, value: string, options?: ConstraintOption
         return issueFactory(input, options);
       }
     },
-    { key: CODE_STRING_STARTS_WITH, payload: value, force: true }
+    { kind: CODE_STRING_STARTS_WITH, param: value, force: true }
   );
 }
 
@@ -250,6 +250,6 @@ function endsWith(this: StringShape, value: string, options?: ConstraintOptions 
         return issueFactory(input, options);
       }
     },
-    { key: CODE_STRING_ENDS_WITH, payload: value, force: true }
+    { kind: CODE_STRING_ENDS_WITH, param: value, force: true }
   );
 }

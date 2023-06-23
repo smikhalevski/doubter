@@ -73,7 +73,7 @@ describe('ObjectShape', () => {
   });
 
   describe('exact', () => {
-    test('sets exact key mode', () => {
+    test('sets exact kind mode', () => {
       const cb = () => true;
       const objShape1 = new ObjectShape({}, null).refine(cb);
       const objShape2 = objShape1.exact();
@@ -85,7 +85,7 @@ describe('ObjectShape', () => {
   });
 
   describe('strip', () => {
-    test('sets stripped key mode', () => {
+    test('sets stripped kind mode', () => {
       const cb = () => true;
       const objShape1 = new ObjectShape({}, null).refine(cb);
       const objShape2 = objShape1.strip();
@@ -97,7 +97,7 @@ describe('ObjectShape', () => {
   });
 
   describe('preserve', () => {
-    test('sets preserved key mode', () => {
+    test('sets preserved kind mode', () => {
       const cb = () => true;
       const objShape1 = new ObjectShape({}, null).strip().refine(cb);
       const objShape2 = objShape1.preserve();
@@ -269,7 +269,7 @@ describe('ObjectShape', () => {
   });
 
   describe('at', () => {
-    test('returns property shape at key', () => {
+    test('returns property shape at kind', () => {
       const shape1 = new Shape();
       const shape2 = new Shape();
 

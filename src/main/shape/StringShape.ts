@@ -58,7 +58,7 @@ export class StringShape<Value extends string = string> extends CoercibleShape<V
       return [this._typeIssueFactory(input, options)];
     }
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, changed, null);
+      return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);

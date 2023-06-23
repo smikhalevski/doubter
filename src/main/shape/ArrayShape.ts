@@ -202,7 +202,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     }
 
     if (_applyOperations !== null && (_isForced || issues === null)) {
-      return _applyOperations(output, issues, options, input !== output, null);
+      return _applyOperations(output, options, input !== output, issues, null);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -269,7 +269,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         }
 
         if (_applyOperations !== null && (_isForced || issues === null)) {
-          return _applyOperations(output, issues, options, input !== output, null);
+          return _applyOperations(output, options, input !== output, issues, null);
         }
         if (issues === null && input !== output) {
           return ok(output);

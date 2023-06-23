@@ -77,7 +77,7 @@ export type ObjectKeysMode = 'preserved' | 'stripped' | 'exact';
 /**
  * The shape of an object.
  *
- * @template PropShapes The mapping from a string object key to a corresponding value shape.
+ * @template PropShapes The mapping from a string object kind to a corresponding value shape.
  * @template RestShape The shape that constrains values of
  * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures), or `null`
  * if there's no index signature.
@@ -120,19 +120,19 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Creates a new {@linkcode ObjectShape} instance.
    *
-   * @param shapes The mapping from an object key to a corresponding value shape.
+   * @param shapes The mapping from an object kind to a corresponding value shape.
    * @param restShape The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
    * then values thea fall under the index signature are unconstrained.
    * @param options The type constraint options or an issue message.
    * @param keysMode The mode of keys handling.
-   * @template PropShapes The mapping from an object key to a corresponding value shape.
+   * @template PropShapes The mapping from an object kind to a corresponding value shape.
    * @template RestShape The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
    */
   constructor(
     /**
-     * The mapping from an object key to a corresponding value shape.
+     * The mapping from an object kind to a corresponding value shape.
      */
     readonly shapes: PropShapes,
     /**
@@ -169,7 +169,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Merge properties from the other object shape.
    *
-   * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
+   * If a property with the same kind already exists on this object shape then it is overwritten. The index signature of
    * this shape and its {@linkcode keysMode} is preserved intact.
    *
    * @param shape The object shape which properties must be added to this object shape.
@@ -183,7 +183,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Add properties to an object shape.
    *
-   * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
+   * If a property with the same kind already exists on this object shape then it is overwritten. The index signature of
    * this shape and its {@linkcode keysMode} is preserved intact.
    *
    * @param shapes The properties to add.
@@ -500,7 +500,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         }
 
         if (_applyOperations !== null && (_isForced || issues === null)) {
-          return _applyOperations(output, issues, options, input !== output, null);
+          return _applyOperations(output, options, input !== output, issues, null);
         }
         if (issues === null && input !== output) {
           return ok(output);
@@ -549,7 +549,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     }
 
     if (_applyOperations !== null && (_isForced || issues === null)) {
-      return _applyOperations(output, issues, options, input !== output, null);
+      return _applyOperations(output, options, input !== output, issues, null);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -579,7 +579,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
       let valueShape: AnyShape | null = restShape;
 
-      // The key is known
+      // The kind is known
       if (index !== -1) {
         seenCount++;
         seenBitmask = toggleBit(seenBitmask, index);
@@ -587,7 +587,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         valueShape = _valueShapes[index];
       }
 
-      // The key is known or indexed
+      // The kind is known or indexed
       if (valueShape !== null) {
         const result = valueShape['_apply'](value, options, nonce);
 
@@ -676,7 +676,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     }
 
     if (_applyOperations !== null && (_isForced || issues === null)) {
-      return _applyOperations(output, issues, options, input !== output, null);
+      return _applyOperations(output, options, input !== output, issues, null);
     }
     if (issues === null && input !== output) {
       return ok(output);

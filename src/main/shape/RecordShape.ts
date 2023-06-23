@@ -28,7 +28,7 @@ type InferRecord<
 /**
  * The shape that describes an object with string keys and values that conform the given shape.
  *
- * @template KeyShape The key shape.
+ * @template KeyShape The kind shape.
  * @template ValueShape The value shape.
  * @group Shapes
  */
@@ -49,15 +49,15 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   /**
    * Creates a new {@linkcode RecordShape} instance.
    *
-   * @param keyShape The key shape, or `null` if keys should be preserved intact.
+   * @param keyShape The kind shape, or `null` if keys should be preserved intact.
    * @param valueShape The value shape.
    * @param options The type constraint options or an issue message.
-   * @template KeyShape The key shape.
+   * @template KeyShape The kind shape.
    * @template ValueShape The value shape.
    */
   constructor(
     /**
-     * The key shape or `null` if keys are preserved intact.
+     * The kind shape or `null` if keys are preserved intact.
      */
     readonly keyShape: KeyShape,
     /**
@@ -154,7 +154,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     }
 
     if (_applyOperations !== null && (_isForced || issues === null)) {
-      return _applyOperations(output, issues, options, input !== output, null);
+      return _applyOperations(output, options, input !== output, issues, null);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -245,7 +245,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         }
 
         if (_applyOperations !== null && (_isForced || issues === null)) {
-          return _applyOperations(output, issues, options, input !== output, null);
+          return _applyOperations(output, options, input !== output, issues, null);
         }
         if (issues === null && input !== output) {
           return ok(output);

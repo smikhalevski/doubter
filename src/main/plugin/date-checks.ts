@@ -113,7 +113,7 @@ export default function () {
   //   maxValue: {
   //     configurable: true,
   //     get(this: DateShape) {
-  //       this['_operations'].find(op => op.key === CODE_DATE_MAX).
+  //       this['_operations'].find(op => op.kind === CODE_DATE_MAX).
   //       return this.getOperationsByKey(CODE_DATE_MAX)?.param;
   //     },
   //   },
@@ -138,7 +138,7 @@ function min(this: DateShape, value: Date | number | string, options?: Constrain
         return issueFactory(input, options);
       }
     },
-    { key: CODE_DATE_MIN, payload: value, force: true }
+    { kind: CODE_DATE_MIN, param: value, force: true }
   );
 }
 
@@ -153,7 +153,7 @@ function max(this: DateShape, value: Date | number | string, options?: Constrain
         return issueFactory(input, options);
       }
     },
-    { key: CODE_DATE_MAX, payload: value, force: true }
+    { kind: CODE_DATE_MAX, param: value, force: true }
   );
 }
 

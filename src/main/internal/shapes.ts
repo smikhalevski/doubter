@@ -1,5 +1,5 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shape/Shape';
-import { ApplyOptions, CheckOperation, Issue, Ok, ParseOptions } from '../types';
+import { ApplyOptions, Issue, Ok, ParseOptions } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
 
@@ -29,25 +29,17 @@ export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialSha
   return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
-export function isForcedCheck(check: CheckOperation): boolean {
-  return check.isForced;
-}
-
 /**
  * Replaces checks of the target shape with forced checks from the source shape.
  */
 export function copyUnsafeChecks<S extends Shape>(sourceShape: Shape, targetShape: S): S {
-  return copyChecks(sourceShape, targetShape, isForcedCheck);
+  return targetShape;
 }
 
 /**
  * Replaces checks of `shape` with checks from the `baseShape` that match a predicate.
  */
-export function copyChecks<S extends Shape>(
-  baseShape: Shape,
-  shape: S,
-  predicate?: (check: CheckOperation) => boolean
-): S {
+export function copyChecks<S extends Shape>(baseShape: Shape, shape: S): S {
   return shape;
 }
 
@@ -70,7 +62,7 @@ export function applyShape<T>(
 }
 
 /**
- * Prepends a key to a path of each issue.
+ * Prepends a kind to a path of each issue.
  */
 export function unshiftIssuesPath(issues: Issue[], key: unknown): void {
   for (const issue of issues) {

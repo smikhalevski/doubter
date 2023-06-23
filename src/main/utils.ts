@@ -29,7 +29,7 @@ export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: ConstraintOptions | Message | undefined,
-  payload: unknown
+  param: unknown
 ): (input: unknown, options: Readonly<ApplyOptions>) => Issue;
 
 /**
@@ -44,21 +44,21 @@ export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: ConstraintOptions | Message | undefined
-): (input: unknown, options: Readonly<ApplyOptions>, payload: unknown) => Issue;
+): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue;
 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: any,
   options: ConstraintOptions | Message | undefined,
   param?: unknown
-): (input: unknown, options: Readonly<ApplyOptions>, payload: unknown) => Issue {
+): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue {
   const parameterized = arguments.length <= 3;
 
   let { message = defaultMessage, meta } = extractOptions(options);
 
   if (typeof message === 'function') {
     return (input, options, param0) => {
-      const issue = { code, path: undefined, input, message: undefined, payload: parameterized ? param0 : param, meta };
+      const issue = { code, path: undefined, input, message: undefined, param: parameterized ? param0 : param, meta };
       const value = (message as MessageCallback)(issue, options);
 
       if (issue.message === undefined) {
@@ -77,7 +77,7 @@ export function createIssueFactory(
             path: undefined,
             input,
             message: message.replace('%s', String(param0)),
-            payload: param0,
+            param: param0,
             meta,
           };
         };
@@ -89,7 +89,7 @@ export function createIssueFactory(
 
   if (parameterized) {
     return (input, options, param0) => {
-      return { code, path: undefined, input, message, payload: param0, meta };
+      return { code, path: undefined, input, message, param: param0, meta };
     };
   }
 

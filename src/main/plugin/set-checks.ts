@@ -106,7 +106,7 @@ function min(this: SetShape<any>, size: number, options?: ConstraintOptions | Me
         return issueFactory(input, options);
       }
     },
-    { key: CODE_SET_MIN, payload: size, force: true }
+    { kind: CODE_SET_MIN, param: size, force: true }
   );
 }
 
@@ -119,6 +119,6 @@ function max(this: SetShape<any>, size: number, options?: ConstraintOptions | Me
         return issueFactory(input, options);
       }
     },
-    { key: CODE_SET_MAX, payload: size, force: true }
+    { kind: CODE_SET_MAX, param: size, force: true }
   );
 }

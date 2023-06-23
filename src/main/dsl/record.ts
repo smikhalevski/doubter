@@ -20,7 +20,7 @@ export function record<ValueShape extends AnyShape>(
  * @param keyShape The shape of record keys.
  * @param valueShape The shape of the record values.
  * @param options The constraint options or an issue message.
- * @template KeyShape The key shape.
+ * @template KeyShape The kind shape.
  * @template ValueShape The value shape.
  * @group DSL
  */

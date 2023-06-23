@@ -116,7 +116,7 @@ export class SetShape<ValueShape extends AnyShape>
     const output = changed ? new Set(values) : input;
 
     if (_applyOperations !== null && (_isForced || issues === null)) {
-      return _applyOperations(output, issues, options, changed, null);
+      return _applyOperations(output, options, changed, issues, null);
     }
     if (changed && issues === null) {
       return ok(output);
@@ -172,7 +172,7 @@ export class SetShape<ValueShape extends AnyShape>
         const output = changed ? new Set(values) : input;
 
         if (_applyOperations !== null && (_isForced || issues === null)) {
-          return _applyOperations(output, issues, options, changed, null);
+          return _applyOperations(output, options, changed, issues, null);
         }
         if (changed && issues === null) {
           return ok(output);

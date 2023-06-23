@@ -150,7 +150,7 @@ describe('IntersectionShape', () => {
   });
 
   describe('at', () => {
-    test('returns an intersection of child shapes at key', () => {
+    test('returns an intersection of child shapes at kind', () => {
       const shape1 = new Shape();
       const shape2 = new Shape();
       const shape3 = new Shape();
@@ -167,7 +167,7 @@ describe('IntersectionShape', () => {
       expect(shape.shapes[1]).toBe(shape3);
     });
 
-    test('returns null if key does not exist in any of children', () => {
+    test('returns null if kind does not exist in any of children', () => {
       expect(new IntersectionShape([new Shape(), new Shape()]).at('aaa')).toBeNull();
     });
   });
@@ -299,7 +299,7 @@ describe('mergeValues', () => {
       expect(mergeValues({ aaa: 111 }, { bbb: 222, ccc: 333 })).toEqual({ aaa: 111, bbb: 222, ccc: 333 });
     });
 
-    test('returns NEVER if objects have different values for the same key', () => {
+    test('returns NEVER if objects have different values for the same kind', () => {
       expect(mergeValues({ aaa: 111 }, { aaa: 222 })).toEqual(NEVER);
     });
   });

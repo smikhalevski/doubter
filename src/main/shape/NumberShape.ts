@@ -108,7 +108,7 @@ export class NumberShape extends CoercibleShape<number> {
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, changed, null);
+      return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);

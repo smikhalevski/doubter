@@ -198,7 +198,7 @@ declare module '../core' {
      *
      * d.number().refine(
      *   (value, param) => Math.abs(Math.round(value / param) - value / param) < precision,
-     *   { payload: 0.25 }
+     *   { param: 0.25 }
      * );
      * ```
      *
@@ -311,7 +311,7 @@ function gt(this: NumberShape, value: number, options?: ConstraintOptions | Mess
         return issueFactory(input, options);
       }
     },
-    { key: CODE_NUMBER_GT, payload: value, force: true }
+    { kind: CODE_NUMBER_GT, param: value, force: true }
   );
 }
 
@@ -324,7 +324,7 @@ function lt(this: NumberShape, value: number, options?: ConstraintOptions | Mess
         return issueFactory(input, options);
       }
     },
-    { key: CODE_NUMBER_LT, payload: value, force: true }
+    { kind: CODE_NUMBER_LT, param: value, force: true }
   );
 }
 
@@ -337,7 +337,7 @@ function gte(this: NumberShape, value: number, options?: ConstraintOptions | Mes
         return issueFactory(input, options);
       }
     },
-    { key: CODE_NUMBER_GTE, payload: value, force: true }
+    { kind: CODE_NUMBER_GTE, param: value, force: true }
   );
 }
 
@@ -350,7 +350,7 @@ function lte(this: NumberShape, value: number, options?: ConstraintOptions | Mes
         return issueFactory(input, options);
       }
     },
-    { key: CODE_NUMBER_LTE, payload: value, force: true }
+    { kind: CODE_NUMBER_LTE, param: value, force: true }
   );
 }
 
@@ -363,7 +363,7 @@ function multipleOf(this: NumberShape, value: number, options?: ConstraintOption
         return issueFactory(input, options);
       }
     },
-    { key: CODE_NUMBER_MULTIPLE_OF, payload: value, force: true }
+    { kind: CODE_NUMBER_MULTIPLE_OF, param: value, force: true }
   );
 }
 

@@ -49,7 +49,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
       return [this._typeIssueFactory(input, options)];
     }
     if (_applyOperations !== null) {
-      return _applyOperations(output, null, options, changed, null);
+      return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);

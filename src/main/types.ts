@@ -1,3 +1,5 @@
+import { Result } from './shape';
+
 /**
  * A validation issue raised during input parsing.
  *
@@ -5,17 +7,17 @@
  */
 export interface Issue {
   /**
-   * The code of the validation issue.
+   * A code of the validation issue.
    */
   code?: any;
 
   /**
-   * The object path where an issue has occurred, or `undefined` if the issue is caused by the {@linkcode input}.
+   * An object path where an issue has occurred, or `undefined` if the issue is caused by the {@linkcode input}.
    */
   path?: any[];
 
   /**
-   * The value that caused an issue to occur.
+   * A value that caused an issue to occur.
    */
   input?: any;
 
@@ -25,9 +27,9 @@ export interface Issue {
   message?: any;
 
   /**
-   * An additional payload.
+   * An additional param.
    */
-  payload?: any;
+  param?: any;
 
   /**
    * An arbitrary metadata associated with this issue.
@@ -67,55 +69,81 @@ export interface Err {
 }
 
 /**
- * Checks that a value satisfies requirements.
- *
- * If a {@linkcode ValidationError} is thrown, its issues are treated as if they were returned from a check callback.
- *
- * @param value The value to check.
- * @param payload The additional payload that was associated with the check operation.
- * @param options Parsing options.
- * @returns `null` or `undefined` if the value satisfies requirements; an issue or an array of issues if a value doesn't
- * satisfy  requirements.
- * @template Value The value to check.
- * @template Payload The additional payload that was associated with the check operation.
- * @see {@linkcode Shape#check}
- * @group Shape Operations
+ * An operation that a shape applies to its output.
  */
-export type CheckCallback<Value = any, Payload = any> = (
-  value: Value,
-  payload: Payload,
-  options: Readonly<ApplyOptions>
-) => Issue[] | Issue | null | undefined | void;
-
-/**
- * The operation that describes a value check.
- *
- * @see {@linkcode Shape#check}
- * @group Shape Operations
- */
-export interface CheckOperation {
-  type: 'check';
-
+export interface Operation {
   /**
-   * The check operation key.
+   * The type of the operation: `check`, `alter`, etc.
    */
-  key: any;
+  type: any;
 
   /**
-   * The callback that applies check to a value.
+   * The kind of the operation in scope of its {@linkcode type}: `string_min`, `object_exact`, `array_includes`, etc.
    */
-  apply: CheckCallback;
+  kind: any;
 
   /**
-   * The additional payload passed to the {@linkcode apply} callback.
+   * The additional payload associated with the operation.
    */
   payload: any;
 
   /**
-   * `true` if the check is applied even if some of the preceding checks have failed, or `false` otherwise.
+   * `true` if the operation is applied even if some of the preceding operations have failed, or `false` otherwise.
    */
   isForced: boolean;
 }
+
+/**
+ * A callback that applies an operation to the shape output.
+ *
+ * @param output The shape output value.
+ * @param options Parsing options.
+ * @param changed `true` if the shape output value differs from the input value, or `false` otherwise.
+ * @param issues The array of issues captured by a shape, or `null` if there were no issues raised.
+ * @param result The container object to return the changed result, or `null` if such object wasn't created. If
+ * `changed` is `true` or `output` is altered, then `result` is created if this argument is `null`.
+ * @see {@linkcode OperationCallbackFactory}
+ * @group Shape Operations
+ */
+export type OperationCallback = (
+  output: any,
+  options: ApplyOptions,
+  changed: boolean,
+  issues: Issue[] | null,
+  result: Ok<any> | null
+) => Result;
+
+/**
+ * Creates an {@linkcode OperationCallback} that applies an operation and then delegates further processing to the next
+ * callback in the queue.
+ *
+ * @param operation The operation for which the callback is created.
+ * @param next The next callback in the queue.
+ * @template O The operation for which the callback is created.
+ * @group Shape Operations
+ */
+export type OperationCallbackFactory = (operation: Operation, next: OperationCallback | null) => OperationCallback;
+
+/**
+ * Checks that a value satisfies a requirement.
+ *
+ * If a {@linkcode ValidationError} is thrown, its issues are treated as if they were returned from a check callback.
+ *
+ * @param value The value to check.
+ * @param param The additional param that was associated with the check operation.
+ * @param options Parsing options.
+ * @returns `null` or `undefined` if the value satisfies a requirement; an issue or an array of issues if a value
+ * doesn't satisfy a requirement.
+ * @template Value The value to check.
+ * @template Param The additional param that was associated with the check operation.
+ * @see {@linkcode Shape#check}
+ * @group Shape Operations
+ */
+export type CheckCallback<Value = any, Param = any> = (
+  value: Value,
+  param: Param,
+  options: Readonly<ApplyOptions>
+) => Issue[] | Issue | null | undefined | void;
 
 /**
  * Options of the {@linkcode Shape#check} method.
@@ -124,19 +152,19 @@ export interface CheckOperation {
  */
 export interface CheckOptions {
   /**
-   * The check operation key.
+   * The kind of the check operation: `string_min`, `object_exact`, `array_includes`, etc.
    */
-  key?: any;
+  kind?: any;
 
   /**
-   * The additional payload that would be passed to the {@linkcode CheckCallback} when a check operation is applied.
+   * The additional param that would be passed to the callback when a check operation is applied.
    *
    * @default undefined
    */
-  payload?: any;
+  param?: any;
 
   /**
-   * If `true` then the check is applied even if some of the preceding checks have failed, or `false` otherwise.
+   * If `true` then the check is applied even if some of the preceding operations have failed, or `false` otherwise.
    *
    * @default false
    */
@@ -151,7 +179,7 @@ export interface CheckOptions {
  *
  * @param value The value to check.
  * @param options Parsing options.
- * @return `true` if value matches the predicate, or `false` otherwise.
+ * @return Truthy if value matches the predicate, or falsy otherwise.
  * @template Value The value to check.
  * @see {@linkcode Shape#refine}
  * @group Shape Operations
@@ -184,20 +212,21 @@ export type RefinePredicate<Value = any, RefinedValue extends Value = Value> = (
  */
 export interface RefineOptions extends ConstraintOptions {
   /**
-   * The operation key, unique in the scope of the shape.
+   * The kind of the check operation: `string_min`, `object_exact`, `array_includes`, etc.
    */
-  key?: unknown;
+  kind?: any;
 
   /**
-   * The custom issue code.
+   * The code of an issue that would be raised if the check fails.
    *
-   * @default
-   * "predicate"
+   * @default "predicate"
    */
   code?: any;
 
   /**
-   * If `true` then the refinement is applied even if some of the preceding checks have failed, or `false` otherwise.
+   * If `true` then the check is applied even if some of the preceding operations have failed, or `false` otherwise.
+   *
+   * @default false
    */
   force?: boolean;
 }
@@ -211,46 +240,21 @@ export interface RefineOptions extends ConstraintOptions {
  * alteration cannot be performed, and you want to abort the operation.
  *
  * @param value The value to alter.
- * @param payload The additional payload that was associated with the alter operation.
+ * @param param The additional param that was associated with the alter operation.
  * @param options Parsing options.
  * @returns The altered value.
  * @template Value The value to alter.
  * @template AlteredValue The altered value.
- * @template Payload The additional payload that was associated with the alter operation.
+ * @template Param The additional param that was associated with the alter operation.
  * @see {@linkcode Shape#alter}
  * @see {@linkcode Shape#convert}
  * @group Shape Operations
  */
-export type AlterCallback<Value = any, AlteredValue extends Value = Value, Payload = any> = (
+export type AlterCallback<Value = any, AlteredValue extends Value = Value, Param = any> = (
   value: Value,
-  payload: Payload,
+  param: Param,
   options: Readonly<ApplyOptions>
 ) => AlteredValue;
-
-/**
- * The operation that describes a value alteration.
- *
- * @see {@linkcode Shape#alter}
- * @group Shape Operations
- */
-export interface AlterOperation {
-  type: 'alter';
-
-  /**
-   * The alteration operation key.
-   */
-  key: any;
-
-  /**
-   * The callback that alters a value.
-   */
-  apply: AlterCallback;
-
-  /**
-   * The additional payload passed to the {@linkcode apply} callback.
-   */
-  payload: any;
-}
 
 /**
  * Options of the {@linkcode Shape#alter} method.
@@ -259,24 +263,19 @@ export interface AlterOperation {
  */
 export interface AlterOptions {
   /**
-   * The alteration operation key.
+   * The kind of the check operation: `string_trim`, `date_set_timezone`, `array_truncate`, etc.
    */
-  key?: any;
+  kind?: any;
 
   /**
-   * The additional payload that would be passed to the {@linkcode AlterCallback} when an alteration operation is
+   * The additional param that would be passed to the {@linkcode AlterCallback} when an alteration operation is
    * applied.
    */
-  payload?: any;
+  param?: any;
 }
 
 /**
- * An operation that a shape applies after an input value type is ensured.
- */
-export type Operation = CheckOperation | AlterOperation;
-
-/**
- * The callback that returns a message for an issue. You can assign the {@linkcode Issue#message issue.message} property
+ * A callback that returns a message for an issue. You can assign the {@linkcode Issue#message issue.message} property
  * directly inside this callback or return the message.
  *
  * @param issue The issue for which the message should be produced.
@@ -288,7 +287,7 @@ export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) =>
 
 /**
  * A callback that returns an issue message or a message string. `%s` placeholder in string messages is replaced with
- * the {@link CheckOptions#payload issue payload}.
+ * the {@link CheckOptions#param issue param}.
  *
  * @group Other
  */
@@ -351,7 +350,7 @@ export interface ParseOptions extends ApplyOptions {
 }
 
 /**
- * The literal value of any type.
+ * A literal value of any type.
  *
  * @group Other
  */

@@ -30,7 +30,7 @@ import {
 /**
  * The shape of a `Map` instance.
  *
- * @template KeyShape The key shape.
+ * @template KeyShape The kind shape.
  * @template ValueShape The value shape.
  * @group Shapes
  */
@@ -55,15 +55,15 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   /**
    * Creates a new {@linkcode MapShape} instance.
    *
-   * @param keyShape The key shape.
+   * @param keyShape The kind shape.
    * @param valueShape The value shape.
    * @param options The type constraint options or an issue message.
-   * @template KeyShape The key shape.
+   * @template KeyShape The kind shape.
    * @template ValueShape The value shape.
    */
   constructor(
     /**
-     * The key shape.
+     * The kind shape.
      */
     readonly keyShape: KeyShape,
     /**
@@ -170,7 +170,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     const output = changed ? new Map(entries) : input;
 
     if (_applyOperations !== null && (_isForced || issues === null)) {
-      return _applyOperations(output, null, options, changed, null);
+      return _applyOperations(output, options, changed, null, null);
     }
     if (changed && issues === null) {
       return ok(output);
@@ -264,7 +264,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         const output = changed ? new Map(entries) : input;
 
         if (_applyOperations !== null && (_isForced || issues === null)) {
-          return _applyOperations(output, null, options, changed, null);
+          return _applyOperations(output, options, changed, null, null);
         }
         if (changed && issues === null) {
           return ok(output);
