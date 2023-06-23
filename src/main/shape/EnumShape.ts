@@ -1,10 +1,10 @@
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
 import { getCanonicalValueOf, isArray, ok, ReadonlyDict, unique } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result } from './Shape';
+import { NEVER } from './Shape';
 
 /**
  * The shape of a value enumeration.

@@ -32,7 +32,6 @@ export {
   Output,
   PipeShape,
   ReplaceLiteralShape,
-  Result,
   Shape,
   ConvertShape,
   INPUT,

@@ -1,40 +1,54 @@
-import { Result } from './shape';
-
 /**
  * A validation issue raised during input parsing.
  *
- * @group Errors
+ * @group Validation Errors
  */
 export interface Issue {
   /**
-   * A code of the validation issue.
+   * A code of the validation issue, which uniquely identifies the reason of an issue. For all built-in checks, a code
+   * can be used to infer the type of the {@linkcode param}.
+   *
+   * @see [Validation errors](https://github.com/smikhalevski/doubter#validation-errors)
    */
   code?: any;
 
   /**
-   * An object path where an issue has occurred, or `undefined` if the issue is caused by the {@linkcode input}.
+   * An object path to {@linkcode input} value starting from the parsed object. Both an empty array and `undefined` mean
+   * that an issue is caused by the {@linkcode input} value itself.
+   *
+   * @example ```ts
+   * ['users', 0, 'age']
+   * ```
+   *
+   * @see {@linkcode Shape#at Shape.at}
    */
   path?: any[];
 
   /**
-   * A value that caused an issue to occur.
+   * The input value that caused a validation issue. Note that if coercion is enabled this contains a coerced value.
+   *
+   * @see [Type coercion](https://github.com/smikhalevski/doubter#type-coercion)
    */
   input?: any;
 
   /**
-   * A message associated with an issue. Built-in messages are strings but custom messages can have an arbitrary type.
+   * The human-readable issue message. Built-in messages are strings but custom messages can have an arbitrary type.
+   *
+   * @see [Localization](https://github.com/smikhalevski/doubter#localization)
    */
   message?: any;
 
   /**
-   * An additional param.
+   * The parameter value associated with the issue.
+   *
+   * @see [Validation errors](https://github.com/smikhalevski/doubter#validation-errors)
    */
   param?: any;
 
   /**
-   * An arbitrary metadata associated with this issue.
+   * The optional metadata associated with the issue.
    *
-   * @see {@linkcode ConstraintOptions#meta}
+   * @see [Metadata](https://github.com/smikhalevski/doubter#metadata)
    */
   meta?: any;
 }
@@ -43,6 +57,7 @@ export interface Issue {
  * Carries the result of a successful input parsing.
  *
  * @template Value The output value.
+ * @see {@link Result}
  * @group Other
  */
 export interface Ok<Value> {
@@ -57,6 +72,7 @@ export interface Ok<Value> {
 /**
  * Carries the result of a failed input parsing.
  *
+ * @see {@link Result}
  * @group Other
  */
 export interface Err {
@@ -69,21 +85,43 @@ export interface Err {
 }
 
 /**
+ * The result that shape returns after being applied to an input value.
+ *
+ * This is the part of the internal API required for creating custom shapes.
+ *
+ * - {@linkcode Ok} means the value was transformed during parsing.
+ * - An array of {@link Issue issues} means that parsing has failed.
+ * - `null` means that parsed value is valid and wasn't transformed.
+ *
+ * @template Value The output value.
+ * @group Other
+ */
+export type Result<Value = any> = Ok<Value> | Issue[] | null;
+
+/**
  * An operation that a shape applies to its output.
+ *
+ * This is the part of the internal API that can be used to add custom operations to shapes. For most cases,
+ * {@linkcode Shape#check Shape.check}, {@linkcode Shape#alter Shape.alter}, and {@linkcode Shape#refine Shape.refine}
+ * are a sufficient set of operations.
  */
 export interface Operation {
   /**
-   * The type of the operation: `check`, `alter`, etc.
+   * The type of the operation, such as `check`, `alter`, etc.
    */
   type: any;
 
   /**
-   * The kind of the operation in scope of its {@linkcode type}: `string_min`, `object_exact`, `array_includes`, etc.
+   * The kind of the operation in scope of its {@linkcode type}.
+   *
+   * For example, `string_min` and `array_includes` are checks, so they have type `check`; `string_trim` and
+   * `array_truncate` are alterations, so they have type `alter`.
    */
   kind: any;
 
   /**
-   * The additional payload associated with the operation.
+   * The additional payload associated with the operation. This payload contains a {@link type type-specific} data that
+   * is required to create an {@linkcode ApplyOperation} callback.
    */
   payload: any;
 
@@ -96,16 +134,16 @@ export interface Operation {
 /**
  * A callback that applies an operation to the shape output.
  *
- * @param output The shape output value.
+ * @param output The shape output value to which the operation must be applied.
  * @param options Parsing options.
  * @param changed `true` if the shape output value differs from the input value, or `false` otherwise.
- * @param issues The array of issues captured by a shape, or `null` if there were no issues raised.
- * @param result The container object to return the changed result, or `null` if such object wasn't created. If
- * `changed` is `true` or `output` is altered, then `result` is created if this argument is `null`.
- * @see {@linkcode OperationCallbackFactory}
+ * @param issues The array of issues captured by a shape, or `null` if there were no issues raised yet.
+ * @param result The container object to return the changed result, or `null` if such object wasn't created yet, or not
+ * needed.
+ * @see {@linkcode ApplyOperationFactory}
  * @group Shape Operations
  */
-export type OperationCallback = (
+export type ApplyOperation = (
   output: any,
   options: ApplyOptions,
   changed: boolean,
@@ -114,15 +152,14 @@ export type OperationCallback = (
 ) => Result;
 
 /**
- * Creates an {@linkcode OperationCallback} that applies an operation and then delegates further processing to the next
- * callback in the queue.
+ * Creates a callback that applies an operation and then delegates further processing to the next operation in the
+ * queue.
  *
  * @param operation The operation for which the callback is created.
- * @param next The next callback in the queue.
- * @template O The operation for which the callback is created.
+ * @param next The callback that applies the next operation in the queue, or `null` if there are no more operations.
  * @group Shape Operations
  */
-export type OperationCallbackFactory = (operation: Operation, next: OperationCallback | null) => OperationCallback;
+export type ApplyOperationFactory = (operation: Operation, next: ApplyOperation | null) => ApplyOperation;
 
 /**
  * Checks that a value satisfies a requirement.
@@ -246,8 +283,7 @@ export interface RefineOptions extends ConstraintOptions {
  * @template Value The value to alter.
  * @template AlteredValue The altered value.
  * @template Param The additional param that was associated with the alter operation.
- * @see {@linkcode Shape#alter}
- * @see {@linkcode Shape#convert}
+ * @see {@linkcode Shape#alter} {@linkcode Shape#convert}
  * @group Shape Operations
  */
 export type AlterCallback<Value = any, AlteredValue extends Value = Value, Param = any> = (

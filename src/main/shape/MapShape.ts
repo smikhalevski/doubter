@@ -13,7 +13,7 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import {
@@ -24,7 +24,6 @@ import {
   NEVER,
   OptionalDeepPartialShape,
   Output,
-  Result,
 } from './Shape';
 
 /**

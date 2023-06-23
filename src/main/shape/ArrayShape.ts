@@ -21,10 +21,11 @@ import {
   Message,
   RefineCallback,
   RefineOptions,
+  Result,
 } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, Output, OUTPUT, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, Output, OUTPUT } from './Shape';
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],

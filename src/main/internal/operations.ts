@@ -1,5 +1,5 @@
 import { ERROR_UNKNOWN_OPERATION } from '../constants';
-import { AlterCallback, CheckCallback, Operation, OperationCallback, OperationCallbackFactory } from '../types';
+import { AlterCallback, ApplyOperation, ApplyOperationFactory, CheckCallback, Operation } from '../types';
 import { isArray, isEqual, isObjectLike } from './lang';
 import { captureIssues, concatIssues, ok } from './shapes';
 
@@ -7,10 +7,10 @@ import { captureIssues, concatIssues, ok } from './shapes';
  * Composes multiple operations into a single operation callback.
  */
 export function createOperationCallback(
-  factories: Map<any, OperationCallbackFactory>,
+  factories: Map<any, ApplyOperationFactory>,
   operations: readonly Operation[]
-): OperationCallback | null {
-  let cb: OperationCallback | null = null;
+): ApplyOperation | null {
+  let cb: ApplyOperation | null = null;
 
   for (let i = operations.length - 1; i >= 0; --i) {
     const operation = operations[i];
@@ -24,7 +24,7 @@ export function createOperationCallback(
   return cb;
 }
 
-export const checkOperationCallbackFactory: OperationCallbackFactory = (operation, next) => {
+export const checkOperationCallbackFactory: ApplyOperationFactory = (operation, next) => {
   const { cb, param } = operation.payload;
   const { isForced } = operation;
 
@@ -72,7 +72,7 @@ export const checkOperationCallbackFactory: OperationCallbackFactory = (operatio
   };
 };
 
-export const alterOperationCallbackFactory: OperationCallbackFactory = (operation, next) => {
+export const alterOperationCallbackFactory: ApplyOperationFactory = (operation, next) => {
   const { cb, param } = operation.payload;
 
   return (input, options, changed, issues, result) => {

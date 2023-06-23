@@ -1,4 +1,4 @@
-import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_EXACT } from '../constants';
+import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_EXACT, MESSAGE_OBJECT_TYPE } from '../constants';
 import {
   applyShape,
   Bitmask,
@@ -20,7 +20,7 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
 import {
@@ -31,7 +31,6 @@ import {
   INPUT,
   OptionalDeepPartialShape,
   OUTPUT,
-  Result,
   Shape,
 } from './Shape';
 

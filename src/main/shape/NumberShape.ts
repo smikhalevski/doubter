@@ -8,10 +8,10 @@ import {
 } from '../constants';
 import { getCanonicalValueOf, isArray, isNumber, ok } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, ConstraintOptions, Literal, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Literal, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AllowLiteralShape, NEVER, ReplaceLiteralShape, Result } from './Shape';
+import { AllowLiteralShape, NEVER, ReplaceLiteralShape } from './Shape';
 
 /**
  * The shape of a number value.

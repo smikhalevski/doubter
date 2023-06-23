@@ -1,10 +1,10 @@
 import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../constants';
 import { getCanonicalValueOf, isArray, isValidDate, ok } from '../internal';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result } from './Shape';
+import { NEVER } from './Shape';
 
 /**
  * The shape of the `Date` object.

@@ -1,7 +1,7 @@
 import { CODE_NEVER, MESSAGE_NEVER } from '../constants';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { Result, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape that doesn't match any input.

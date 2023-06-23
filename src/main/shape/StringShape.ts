@@ -10,17 +10,23 @@ import {
   RefineCallback,
   RefineOptions,
   RefinePredicate,
+  Result,
 } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result } from './Shape';
+import { NEVER } from './Shape';
 
 /**
  * The shape of a string value.
  *
+ * @template InputValue
+ * @template OutputValue
  * @group Shapes
  */
-export class StringShape<Value extends string = string> extends CoercibleShape<Value, Value, string> {
+export class StringShape<
+  InputValue extends string = string,
+  OutputValue extends InputValue = InputValue
+> extends CoercibleShape<InputValue, OutputValue, string> {
   /**
    * Returns issues associated with an invalid input value type.
    */
@@ -45,7 +51,7 @@ export class StringShape<Value extends string = string> extends CoercibleShape<V
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<OutputValue> {
     const { _applyOperations } = this;
 
     let output = input;
@@ -72,7 +78,7 @@ export class StringShape<Value extends string = string> extends CoercibleShape<V
    * @param value The non-string value to coerce.
    * @returns A string value, or {@linkcode NEVER} if coercion isn't possible.
    */
-  protected _coerce(value: any): string {
+  protected _coerce(value: unknown): string {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'string') {
       return value;
     }
@@ -95,18 +101,21 @@ export class StringShape<Value extends string = string> extends CoercibleShape<V
   }
 }
 
-export interface StringShape<Value> {
-  alter<Param, RefinedValue extends Value>(
-    cb: AlterCallback<Value, RefinedValue, Param>,
+export interface StringShape<InputValue, OutputValue> {
+  alter<AlteredOutputValue extends OutputValue, Param>(
+    cb: AlterCallback<OutputValue, AlteredOutputValue, Param>,
     options: AlterOptions & { param: Param }
-  ): StringShape<RefinedValue>;
+  ): StringShape<InputValue, AlteredOutputValue>;
 
-  alter<RefinedValue extends Value>(cb: AlterCallback<Value, RefinedValue>): StringShape<RefinedValue>;
+  alter<AlteredOutputValue extends OutputValue>(
+    cb: AlterCallback<OutputValue, AlteredOutputValue>,
+    options?: AlterOptions
+  ): StringShape<InputValue, AlteredOutputValue>;
 
-  refine<RefinedValue extends Value>(
-    cb: RefinePredicate<Value, RefinedValue>,
+  refine<RefinedOutputValue extends OutputValue>(
+    cb: RefinePredicate<OutputValue, RefinedOutputValue>,
     options?: RefineOptions | Message
-  ): StringShape<RefinedValue>;
+  ): StringShape<InputValue, RefinedOutputValue>;
 
-  refine(cb: RefineCallback<Value>, options?: RefineOptions | Message): this;
+  refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): this;
 }

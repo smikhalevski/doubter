@@ -1,7 +1,7 @@
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { Result, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a constant value.

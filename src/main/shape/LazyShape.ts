@@ -1,7 +1,7 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 import { captureIssues, copyUnsafeChecks, identity, isArray, ok, toDeepPartialShape } from '../internal';
-import { ApplyOptions, Literal } from '../types';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Result, Shape } from './Shape';
+import { ApplyOptions, Literal, Result } from '../types';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
  * Lazily loads a shape using the provider callback.

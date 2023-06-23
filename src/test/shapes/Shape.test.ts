@@ -2,6 +2,7 @@ import {
   ApplyOptions,
   CatchShape,
   ConstShape,
+  ConvertShape,
   DenyLiteralShape,
   EnumShape,
   ExcludeShape,
@@ -10,9 +11,9 @@ import {
   ObjectShape,
   PipeShape,
   ReplaceLiteralShape,
+  Result,
   Shape,
   StringShape,
-  ConvertShape,
   ValidationError,
 } from '../../main';
 import {
@@ -26,7 +27,6 @@ import {
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
 import { nextNonce } from '../../main/internal';
-import { Result } from '../../main/shape/Shape';
 import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 
 class AsyncShape extends Shape {

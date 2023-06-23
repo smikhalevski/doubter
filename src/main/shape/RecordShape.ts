@@ -12,9 +12,9 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Shape } from './Shape';
 
 type InferRecord<
   KeyShape extends Shape<string, PropertyKey> | null,

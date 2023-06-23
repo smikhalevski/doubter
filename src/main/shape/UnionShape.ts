@@ -13,10 +13,10 @@ import {
   unique,
 } from '../internal';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message, Ok } from '../types';
+import { ApplyOptions, ConstraintOptions, Issue, Message, Ok, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
  * Returns the array of shapes that are applicable to the input.

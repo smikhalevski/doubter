@@ -11,10 +11,10 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output } from './Shape';
 
 /**
  * The shape of a `Set` instance.

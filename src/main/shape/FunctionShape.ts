@@ -11,10 +11,10 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_FUNCTION } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
+import { ApplyOptions, ConstraintOptions, Message, ParseOptions, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, Input, INPUT, Output, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, defaultApplyOptions, Input, INPUT, Output, OUTPUT, Shape } from './Shape';
 
 type ShapeValue<
   Shape extends AnyShape | null | undefined,

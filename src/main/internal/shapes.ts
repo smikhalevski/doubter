@@ -1,5 +1,5 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shape/Shape';
-import { ApplyOptions, Issue, Ok, ParseOptions } from '../types';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
+import { ApplyOptions, Issue, Ok, ParseOptions, Result } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isObjectLike } from './lang';
 

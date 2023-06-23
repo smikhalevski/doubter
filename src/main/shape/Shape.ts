@@ -33,6 +33,8 @@ import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   AlterCallback,
   AlterOptions,
+  ApplyOperation,
+  ApplyOperationFactory,
   ApplyOptions,
   CheckCallback,
   CheckOptions,
@@ -43,12 +45,11 @@ import {
   Message,
   Ok,
   Operation,
-  OperationCallback,
-  OperationCallbackFactory,
   ParseOptions,
   RefineCallback,
   RefineOptions,
   RefinePredicate,
+  Result,
 } from '../types';
 import { createIssueFactory, extractOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
@@ -176,15 +177,6 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
  */
 export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<DeepPartialShape<S>, undefined>;
 
-/**
- * The result that shape returns after being applied to an input value. This is the part of the internal API required
- * for creating custom shapes.
- *
- * @template Value The output value.
- * @group Other
- */
-export type Result<Value = any> = Ok<Value> | Issue[] | null;
-
 declare const INPUT: unique symbol;
 declare const OUTPUT: unique symbol;
 
@@ -223,9 +215,9 @@ export type Output<S extends AnyShape> = S[OUTPUT];
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
-   * The map from an operation type to a factory that produces {@link OperationCallback operation callback}.
+   * The map from an operation type to a factory that produces {@link ApplyOperation operation callback}.
    */
-  static operationCallbackFactories = new Map<any, OperationCallbackFactory>()
+  static operationCallbackFactories = new Map<any, ApplyOperationFactory>()
     .set(OPERATION_CHECK, checkOperationCallbackFactory)
     .set(OPERATION_ALTER, alterOperationCallbackFactory);
 
@@ -257,7 +249,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * The callback that applies {@linkcode _operations operations} to the shape output value, or `null` if there are no
    * operations to apply.
    */
-  protected _applyOperations: OperationCallback | null = null;
+  protected _applyOperations: ApplyOperation | null = null;
 
   /**
    * `true` if some operations from {@linkcode _operations} were marked as {@link Operation#isForced forced}, or `false`
@@ -341,7 +333,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Alters the shape output value without changing its base type.
    *
-   * @param cb The callback that checks the shape output.
+   * @param cb The callback that alters the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
    * @template AlteredOutputValue The narrowed output value.
@@ -357,7 +349,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Alters the shape output value without changing its base type.
    *
-   * @param cb The callback that checks the shape output.
+   * @param cb The callback that alters the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
    * @template AlteredOutputValue The narrowed output value.

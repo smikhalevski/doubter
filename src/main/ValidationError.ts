@@ -4,7 +4,7 @@ import { Issue } from './types';
  * An error thrown if parsing failed. Custom check callbacks, refinement predicates, converters, and fallback
  * functions can throw this error to notify that the operation has failed.
  *
- * @group Errors
+ * @group Validation Errors
  */
 export class ValidationError extends Error {
   /**

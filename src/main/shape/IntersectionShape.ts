@@ -13,9 +13,9 @@ import {
   toDeepPartialShape,
 } from '../internal';
 import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Shape } from './Shape';
 
 // prettier-ignore
 /**

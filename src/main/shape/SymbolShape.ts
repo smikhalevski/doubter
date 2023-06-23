@@ -1,8 +1,8 @@
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE } from '../constants';
 import { TYPE_SYMBOL } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { Result, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of an arbitrary symbol value.
