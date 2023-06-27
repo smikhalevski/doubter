@@ -282,7 +282,7 @@ describe('string().to(string())', () => {
   });
 });
 
-describe('string().transform(() => 111)', () => {
+describe('string().convert(() => 111)', () => {
   const value = 'aaa';
 
   test('zod', measure => {
@@ -310,7 +310,7 @@ describe('string().transform(() => 111)', () => {
   });
 
   test('doubter', measure => {
-    const shape = doubter.string().transform(() => 111);
+    const shape = doubter.string().convert(() => 111);
 
     measure(() => {
       shape.parse(value);
