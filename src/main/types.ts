@@ -16,10 +16,7 @@ export interface Issue {
    * An object path to {@linkcode input} value starting from the parsed object. Both an empty array and `undefined` mean
    * that an issue is caused by the {@linkcode input} value itself.
    *
-   * @example ```ts
-   * ['users', 0, 'age']
-   * ```
-   *
+   * @example ['users', 0, 'age']
    * @see {@linkcode Shape#at Shape.at}
    */
   path?: any[];
@@ -99,67 +96,45 @@ export interface Err {
 export type Result<Value = any> = Ok<Value> | Issue[] | null;
 
 /**
+ * A callback that applies an operation to the shape output.
+ *
+ * @param input The input to which the shape was applied.
+ * @param output The shape output to which the operation must be applied.
+ * @param options Parsing options.
+ * @param issues The array of issues captured by a shape, or `null` if there were no issues raised yet.
+ * @returns The operation application result.
+ * @group Shape Operations
+ */
+export type OperationCallback = (input: any, output: any, options: ApplyOptions, issues: Issue[] | null) => Result;
+
+/**
  * An operation that a shape applies to its output.
  *
- * This is the part of the internal API that can be used to add custom operations to shapes. For most cases,
- * {@linkcode Shape#check Shape.check}, {@linkcode Shape#alter Shape.alter}, and {@linkcode Shape#refine Shape.refine}
- * are a sufficient set of operations.
+ * @see
+ * {@linkcode Shape#check Shape.check}
+ * {@linkcode Shape#alter Shape.alter}
+ * {@linkcode Shape#refine Shape.refine}
  */
 export interface Operation {
   /**
-   * The type of the operation, such as `check`, `alter`, etc.
+   * The type of the operation.
    */
   type: any;
 
   /**
-   * The kind of the operation in scope of its {@linkcode type}.
+   * The additional param associated with the operation. This param contains a {@link type type-specific} data that is
+   * required to create an {@linkcode OperationCallback}.
+   */
+  param: any;
+
+  /**
+   * Creates an {@link OperationCallback} that applies its logic to the shape output and passes control to the next
+   * operation.
    *
-   * For example, `string_min` and `array_includes` are checks, so they have type `check`; `string_trim` and
-   * `array_truncate` are alterations, so they have type `alter`.
+   * @param next The next operation.
    */
-  kind: any;
-
-  /**
-   * The additional payload associated with the operation. This payload contains a {@link type type-specific} data that
-   * is required to create an {@linkcode ApplyOperation} callback.
-   */
-  payload: any;
-
-  /**
-   * `true` if the operation is applied even if some of the preceding operations have failed, or `false` otherwise.
-   */
-  isForced: boolean;
+  compose(this: Operation, next: OperationCallback): OperationCallback;
 }
-
-/**
- * A callback that applies an operation to the shape output.
- *
- * @param output The shape output value to which the operation must be applied.
- * @param options Parsing options.
- * @param changed `true` if the shape output value differs from the input value, or `false` otherwise.
- * @param issues The array of issues captured by a shape, or `null` if there were no issues raised yet.
- * @param result The container object to return the changed result, or `null` if such object wasn't created yet, or not
- * needed.
- * @see {@linkcode ApplyOperationFactory}
- * @group Shape Operations
- */
-export type ApplyOperation = (
-  output: any,
-  options: ApplyOptions,
-  changed: boolean,
-  issues: Issue[] | null,
-  result: Ok<any> | null
-) => Result;
-
-/**
- * Creates a callback that applies an operation and then delegates further processing to the next operation in the
- * queue.
- *
- * @param operation The operation for which the callback is created.
- * @param next The callback that applies the next operation in the queue, or `null` if there are no more operations.
- * @group Shape Operations
- */
-export type ApplyOperationFactory = (operation: Operation, next: ApplyOperation | null) => ApplyOperation;
 
 /**
  * Checks that a value satisfies a requirement.
@@ -283,7 +258,9 @@ export interface RefineOptions extends ConstraintOptions {
  * @template Value The value to alter.
  * @template AlteredValue The altered value.
  * @template Param The additional param that was associated with the alter operation.
- * @see {@linkcode Shape#alter} {@linkcode Shape#convert}
+ * @see
+ * {@linkcode Shape#alter}
+ * {@linkcode Shape#convert}
  * @group Shape Operations
  */
 export type AlterCallback<Value = any, AlteredValue extends Value = Value, Param = any> = (

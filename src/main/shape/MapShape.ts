@@ -169,7 +169,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     const output = changed ? new Map(entries) : input;
 
     if (_applyOperations !== null && (_isForced || issues === null)) {
-      return _applyOperations(output, options, changed, null, null);
+      // return _applyOperations(output, options, changed, null, null);
     }
     if (changed && issues === null) {
       return ok(output);
@@ -263,7 +263,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         const output = changed ? new Map(entries) : input;
 
         if (_applyOperations !== null && (_isForced || issues === null)) {
-          return _applyOperations(output, options, changed, null, null);
+          // return _applyOperations(output, options, changed, null, null);
         }
         if (changed && issues === null) {
           return ok(output);

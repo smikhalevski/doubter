@@ -69,7 +69,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
       return [this._typeIssueFactory(input, options)];
     }
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, changed, null, null);
+      // return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);

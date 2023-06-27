@@ -148,7 +148,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 
     // REVIEW THIS
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, !isEqual(input, output), null, result as Ok<any>);
+      // return _applyOperations(output, options, !isEqual(input, output), null, result as Ok<any>);
     }
     return result;
     // if (_applyOperations === null || (issues = _applyOperations(output, null, options)) === null) {
@@ -189,7 +189,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 
         // REVIEW THIS
         if (_applyOperations !== null) {
-          return _applyOperations(output, options, !isEqual(input, output), null, result as Ok<any>);
+          // return _applyOperations(output, options, !isEqual(input, output), null, result as Ok<any>);
         }
         return result;
         // if (_applyOperations === null || (issues = _applyOperations(output, null, options)) === null) {

@@ -95,25 +95,15 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<number> {
-    const { _applyOperations } = this;
-
     let output = input;
-    let changed = false;
 
     if (
       !this._typePredicate(output) &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-
-    if (_applyOperations !== null) {
-      return _applyOperations(output, options, changed, null, null);
-    }
-    if (changed) {
-      return ok(output);
-    }
-    return null;
+    return this._applyOperations(input, output, options, null);
   }
 
   /**

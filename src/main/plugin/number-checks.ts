@@ -16,13 +16,16 @@ import {
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
+  CODE_STRING_MIN,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
+  MESSAGE_STRING_MIN,
 } from '../constants';
-import { ConstraintOptions, Message, NumberShape } from '../core';
+import { ConstraintOptions, Message, NumberShape, StringShape } from '../core';
+import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -302,30 +305,68 @@ function nonNegative(this: NumberShape, options?: ConstraintOptions | Message): 
   return this.gte(0, options);
 }
 
+// function gt(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
+//   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
+//
+//   return this.check(
+//     (input, param, options) => {
+//       if (input <= param) {
+//         return issueFactory(input, options);
+//       }
+//     },
+//     { kind: CODE_NUMBER_GT, param: value, force: true }
+//   );
+// }
+
 function gt(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input <= param) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_NUMBER_GT,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (input <= value) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_NUMBER_GT, param: value, force: true }
-  );
+  });
 }
+
+// function lt(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
+//   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
+//
+//   return this.check(
+//     (input, param, options) => {
+//       if (input >= param) {
+//         return issueFactory(input, options);
+//       }
+//     },
+//     { kind: CODE_NUMBER_LT, param: value, force: true }
+//   );
+// }
 
 function lt(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input >= param) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_NUMBER_LT,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (input >= value) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_NUMBER_LT, param: value, force: true }
-  );
+  });
 }
 
 function gte(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
@@ -354,17 +395,36 @@ function lte(this: NumberShape, value: number, options?: ConstraintOptions | Mes
   );
 }
 
+// function multipleOf(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
+//   const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
+//
+//   return this.check(
+//     (input, param, options) => {
+//       if (input % param !== 0) {
+//         return issueFactory(input, options);
+//       }
+//     },
+//     { kind: CODE_NUMBER_MULTIPLE_OF, param: value, force: true }
+//   );
+// }
+
 function multipleOf(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input % param !== 0) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_NUMBER_LT,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (input % value !== 0) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_NUMBER_MULTIPLE_OF, param: value, force: true }
-  );
+  });
 }
 
 function safe(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {

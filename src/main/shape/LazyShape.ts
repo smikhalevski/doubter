@@ -205,7 +205,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
       output = result.value;
     }
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, result !== null, null, result);
+      // return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }

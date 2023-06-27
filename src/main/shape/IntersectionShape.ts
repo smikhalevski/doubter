@@ -218,7 +218,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     const changed = !isEqual(output, input);
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, changed, null, null);
+      // return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);

@@ -6,16 +6,11 @@ import {
   MESSAGE_DENIED,
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
-  OPERATION_ALTER,
-  OPERATION_CHECK,
 } from '../constants';
 import {
-  alterOperationCallbackFactory,
   applyShape,
   captureIssues,
-  checkOperationCallbackFactory,
   copyUnsafeChecks,
-  createOperationCallback,
   Dict,
   getErrorMessage,
   isArray,
@@ -26,6 +21,7 @@ import {
   Promisify,
   ReadonlyDict,
   returnTrue,
+  terminalOpCb,
   toDeepPartialShape,
   unionTypes,
 } from '../internal';
@@ -33,8 +29,6 @@ import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   AlterCallback,
   AlterOptions,
-  ApplyOperation,
-  ApplyOperationFactory,
   ApplyOptions,
   CheckCallback,
   CheckOptions,
@@ -45,6 +39,7 @@ import {
   Message,
   Ok,
   Operation,
+  OperationCallback,
   ParseOptions,
   RefineCallback,
   RefineOptions,
@@ -215,13 +210,6 @@ export type Output<S extends AnyShape> = S[OUTPUT];
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
-   * The map from an operation type to a factory that produces {@link ApplyOperation operation callback}.
-   */
-  static operationCallbackFactories = new Map<any, ApplyOperationFactory>()
-    .set(OPERATION_CHECK, checkOperationCallbackFactory)
-    .set(OPERATION_ALTER, alterOperationCallbackFactory);
-
-  /**
    * The shape input type.
    *
    * @internal
@@ -249,7 +237,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * The callback that applies {@linkcode _operations operations} to the shape output value, or `null` if there are no
    * operations to apply.
    */
-  protected _applyOperations: ApplyOperation | null = null;
+  protected _applyOperations: OperationCallback = terminalOpCb;
 
   /**
    * `true` if some operations from {@linkcode _operations} were marked as {@link Operation#isForced forced}, or `false`
@@ -257,7 +245,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * {@linkcode ObjectShape}, from assembling a transformed output value if an issue was raised by shapes that constrain
    * any of its properties.
    */
-  protected _isForced = false;
+  protected _isForced = true;
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -325,9 +313,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback<OutputValue>, options?: CheckOptions): this;
 
   check(cb: CheckCallback, options: CheckOptions = {}): this {
-    const { kind = cb, param, force = false } = options;
+    // const { kind = cb, param, force = false } = options;
 
-    return this._addOperation({ type: OPERATION_CHECK, kind, payload: { cb, param }, isForced: force });
+    return this; //._addOperation({ type: OPERATION_CHECK, kind, payload: { cb, param }, isForced: force });
   }
 
   /**
@@ -361,9 +349,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   ): Shape<InputValue, AlteredOutputValue>;
 
   alter(cb: AlterCallback, options: AlterOptions = {}): Shape {
-    const { kind = cb, param } = options;
+    // const { kind = cb, param } = options;
 
-    return this._addOperation({ type: OPERATION_ALTER, kind, payload: { cb, param }, isForced: false });
+    return this; //._addOperation({ type: OPERATION_ALTER, kind, payload: { cb, param }, isForced: false });
   }
 
   /**
@@ -629,9 +617,16 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   protected _addOperation(operation: Operation): this {
     const shape = this._clone();
 
-    shape._operations = this._operations.concat(operation);
-    shape._applyOperations = createOperationCallback(Shape.operationCallbackFactories, shape._operations);
-    shape._isForced ||= operation.isForced;
+    const operations = this._operations.concat(operation);
+
+    let cb = terminalOpCb;
+
+    for (let i = operations.length - 1; i >= 0; --i) {
+      cb = operations[i].compose(cb);
+    }
+
+    shape._operations = operations;
+    shape._applyOperations = cb;
 
     return shape;
   }
@@ -670,7 +665,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     const { _applyOperations } = this;
 
     if (_applyOperations !== null) {
-      return _applyOperations(input, options, false, null, null);
+      // return _applyOperations(input, options, false, null, null);
     }
     return null;
   }
@@ -863,7 +858,7 @@ Object.defineProperties(Shape.prototype, {
           if (isArray(result)) {
             return { ok: false, issues: result };
           }
-          return result;
+          return ok(result.value);
         });
       };
 
@@ -1014,7 +1009,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
     const changed = !isEqual(input, output);
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, changed, null, null);
+      // return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);
@@ -1031,7 +1026,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
       const changed = !isEqual(input, output);
 
       if (_applyOperations !== null) {
-        return _applyOperations(output, options, changed, null, null);
+        // return _applyOperations(output, options, changed, null, null);
       }
       if (changed) {
         return ok(output);
@@ -1116,7 +1111,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, changed, null, result);
+      // return _applyOperations(output, options, changed, null, result);
     }
     return result;
   }
@@ -1147,7 +1142,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
         }
 
         if (_applyOperations !== null) {
-          return _applyOperations(output, options, changed, null, result as Ok<Output<OutputShape>>);
+          // return _applyOperations(output, options, changed, null, result as Ok<Output<OutputShape>>);
         }
         return result;
       });
@@ -1251,7 +1246,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, result !== null, null, result);
+      // return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }
@@ -1362,7 +1357,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, result !== null, null, result);
+      // return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }
@@ -1456,7 +1451,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, result !== null, null, result);
+      // return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }
@@ -1544,7 +1539,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, result !== null, null, result);
+      // return _applyOperations(output, options, result !== null, null, result);
     }
     return result;
   }
@@ -1572,7 +1567,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
         }
 
         if (_applyOperations !== null) {
-          return _applyOperations(output, options, result !== null, null, result);
+          // return _applyOperations(output, options, result !== null, null, result);
         }
         return result;
       });

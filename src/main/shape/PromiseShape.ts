@@ -82,7 +82,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     }
 
     if (_applyOperations !== null) {
-      return _applyOperations(output, options, changed, null, null);
+      // return _applyOperations(output, options, changed, null, null);
     }
     if (changed) {
       return ok(output);
@@ -122,7 +122,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
         }
 
         if (_applyOperations !== null) {
-          return _applyOperations(output, options, output !== input, issues, null);
+          // return _applyOperations(output, options, output !== input, issues, null);
         }
         if (output !== input) {
           return ok(output);

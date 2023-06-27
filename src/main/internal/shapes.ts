@@ -82,6 +82,14 @@ export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
   return issues;
 }
 
+export function pushIssue(issues: Issue[] | null, result: Issue): Issue[] {
+  if (issues === null) {
+    return [result];
+  }
+  issues.push(result);
+  return issues;
+}
+
 export function captureIssues(error: unknown): Issue[] {
   if (error instanceof ValidationError) {
     return error.issues;

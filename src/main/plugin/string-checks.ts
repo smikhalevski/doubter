@@ -25,6 +25,7 @@ import {
   MESSAGE_STRING_STARTS_WITH,
 } from '../constants';
 import { ConstraintOptions, Message, StringShape } from '../core';
+import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -177,27 +178,39 @@ function length(this: StringShape, length: number, options?: ConstraintOptions |
 function min(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.length < param) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_STRING_MIN,
+    param: length,
+    compose: next => (input, output, options, issues) => {
+      if (input.length < length) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_STRING_MIN, param: length, force: true }
-  );
+  });
 }
 
 function max(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.length > param) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_STRING_MAX,
+    param: length,
+    compose: next => (input, output, options, issues) => {
+      if (input.length > length) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_STRING_MAX, param: length, force: true }
-  );
+  });
 }
 
 function regex(this: StringShape, re: RegExp, options?: ConstraintOptions | Message): StringShape {

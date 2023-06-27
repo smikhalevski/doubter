@@ -249,22 +249,22 @@ export class FunctionShape<
       return [this._typeIssueFactory(input, options)];
     }
 
-    if (_applyOperations !== null) {
-      result = _applyOperations(input, options, false, null, null);
-    }
-    if (isArray(result)) {
-      return result;
-    }
-    if (this.isStrict) {
-      if (result === null) {
-        return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(input) : this.ensureSignature(input));
-      } else {
-        result.value = this.isAsyncSignature
-          ? this.ensureAsyncSignature(result.value)
-          : this.ensureSignature(result.value);
-        return result;
-      }
-    }
+    // if (_applyOperations !== null) {
+    //   result = _applyOperations(input, options, false, null, null);
+    // }
+    // if (isArray(result)) {
+    //   return result;
+    // }
+    // if (this.isStrict) {
+    //   if (result === null) {
+    //     return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(input) : this.ensureSignature(input));
+    //   } else {
+    //     result.value = this.isAsyncSignature
+    //       ? this.ensureAsyncSignature(result.value)
+    //       : this.ensureSignature(result.value);
+    //     return result;
+    //   }
+    // }
     return result;
   }
 }

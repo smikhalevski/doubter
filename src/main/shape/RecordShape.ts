@@ -154,7 +154,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     }
 
     if (_applyOperations !== null && (_isForced || issues === null)) {
-      return _applyOperations(output, options, input !== output, issues, null);
+      // return _applyOperations(output, options, input !== output, issues, null);
     }
     if (issues === null && input !== output) {
       return ok(output);
@@ -245,7 +245,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         }
 
         if (_applyOperations !== null && (_isForced || issues === null)) {
-          return _applyOperations(output, options, input !== output, issues, null);
+          // return _applyOperations(output, options, input !== output, issues, null);
         }
         if (issues === null && input !== output) {
           return ok(output);
