@@ -42,7 +42,6 @@ import {
   Message,
   Ok,
   Operation,
-  OperationCallback,
   ParseOptions,
   RefineCallback,
   RefineOptions,
@@ -240,7 +239,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * The callback that applies {@linkcode _operations operations} to the shape output value, or `null` if there are no
    * operations to apply.
    */
-  protected _applyOperations: OperationCallback = terminalOperationCallback;
+  protected _applyOperations = terminalOperationCallback;
 
   /**
    * `true` if there are {@linkcode _operations}, or `false` otherwise.
