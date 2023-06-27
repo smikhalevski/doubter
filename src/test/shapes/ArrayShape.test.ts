@@ -294,7 +294,7 @@ describe('ArrayShape', () => {
       expect(new ArrayShape([], null).rest(restShape).restShape).toBe(restShape);
     });
 
-    test('copies forced checks', () => {
+    test('does not copy checks', () => {
       const cbMock1 = jest.fn();
       const cbMock2 = jest.fn();
 
@@ -302,7 +302,7 @@ describe('ArrayShape', () => {
 
       arrShape.rest(new Shape()).parse([]);
 
-      expect(cbMock1).toHaveBeenCalledTimes(1);
+      expect(cbMock1).not.toHaveBeenCalled();
       expect(cbMock2).not.toHaveBeenCalled();
     });
   });

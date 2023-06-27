@@ -6,7 +6,6 @@ import {
   copyUnsafeChecks,
   isArray,
   isObject,
-  ok,
   setObjectProperty,
   toDeepPartialShape,
   unshiftIssuesPath,
@@ -99,7 +98,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _applyOperations, _isForced } = this;
+    const { keyShape, valueShape, _isForced } = this;
 
     let output = input;
     let issues = null;
@@ -152,14 +151,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         setObjectProperty(output, key, value);
       }
     }
-
-    if (_applyOperations !== null && (_isForced || issues === null)) {
-      // return _applyOperations(output, options, input !== output, issues, null);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, issues);
   }
 
   protected _applyAsync(
@@ -173,7 +165,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         return;
       }
 
-      const { keyShape, valueShape, _applyOperations, _isForced } = this;
+      const { keyShape, valueShape, _isForced } = this;
 
       const keys = Object.keys(input);
       const keysLength = keys.length;
@@ -243,14 +235,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
             return valueShape['_applyAsync'](value, options, nonce).then(handleValueResult);
           }
         }
-
-        if (_applyOperations !== null && (_isForced || issues === null)) {
-          // return _applyOperations(output, options, input !== output, issues, null);
-        }
-        if (issues === null && input !== output) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, output, options, issues);
       };
 
       resolve(next());

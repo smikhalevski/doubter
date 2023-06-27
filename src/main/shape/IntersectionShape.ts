@@ -8,7 +8,6 @@ import {
   isArray,
   isAsyncShape,
   isEqual,
-  ok,
   setObjectProperty,
   toDeepPartialShape,
 } from '../internal';
@@ -194,14 +193,12 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     outputs: any[] | null,
     options: ApplyOptions
   ): Result<Output<Intersect<Shapes[number]>>> {
-    const { shapes, _applyOperations } = this;
-
     let output = input;
 
     if (outputs !== null) {
       let outputsLength = outputs.length;
 
-      if (outputsLength !== shapes.length) {
+      if (outputsLength !== this.shapes.length) {
         outputsLength = outputs.push(input);
       }
 
@@ -214,16 +211,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         return [this._typeIssueFactory(input, options)];
       }
     }
-
-    const changed = !isEqual(output, input);
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, changed, null, null);
-    }
-    if (changed) {
-      return ok(output);
-    }
-    return null;
+    return this._applyOperations(input, output, options, null);
   }
 }
 

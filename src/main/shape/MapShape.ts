@@ -8,7 +8,6 @@ import {
   isIterableObject,
   isMapEntry,
   isObjectLike,
-  ok,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal';
@@ -117,7 +116,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _applyOperations, _isForced } = this;
+    const { keyShape, valueShape, _isForced } = this;
     const entriesLength = entries.length;
 
     let issues = null;
@@ -166,15 +165,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       }
     }
 
-    const output = changed ? new Map(entries) : input;
-
-    if (_applyOperations !== null && (_isForced || issues === null)) {
-      // return _applyOperations(output, options, changed, null, null);
-    }
-    if (changed && issues === null) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, changed ? new Map(entries) : input, options, issues);
   }
 
   protected _applyAsync(
@@ -196,7 +187,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         return;
       }
 
-      const { keyShape, valueShape, _applyOperations, _isForced } = this;
+      const { keyShape, valueShape, _isForced } = this;
       const entriesLength = entries.length;
 
       let issues: Issue[] | null = null;
@@ -260,15 +251,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           return applyShape(keyShape, key, options, nonce, handleKeyResult);
         }
 
-        const output = changed ? new Map(entries) : input;
-
-        if (_applyOperations !== null && (_isForced || issues === null)) {
-          // return _applyOperations(output, options, changed, null, null);
-        }
-        if (changed && issues === null) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, changed ? new Map(entries) : input, options, issues);
       };
 
       resolve(next());

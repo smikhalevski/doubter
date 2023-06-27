@@ -1,5 +1,5 @@
 import { CODE_TYPE, MESSAGE_PROMISE_TYPE } from '../constants';
-import { applyShape, copyUnsafeChecks, isArray, ok, Promisify, toDeepPartialShape } from '../internal';
+import { applyShape, copyUnsafeChecks, isArray, Promisify, toDeepPartialShape } from '../internal';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -69,25 +69,15 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
-    const { _applyOperations } = this;
-
     let output = input;
-    let changed = false;
 
     if (
       !(input instanceof Promise) &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, changed, null, null);
-    }
-    if (changed) {
-      return ok(output);
-    }
-    return null;
+    return this._applyOperations(input, output, options, null);
   }
 
   protected _applyAsync(
@@ -106,8 +96,6 @@ export class PromiseShape<ValueShape extends AnyShape | null>
 
     return output.then((value: unknown) =>
       applyShape(this.shape!, value, options, nonce, result => {
-        const { _applyOperations } = this;
-
         let issues = null;
 
         if (result !== null) {
@@ -120,14 +108,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
             output = Promise.resolve(result.value);
           }
         }
-
-        if (_applyOperations !== null) {
-          // return _applyOperations(output, options, output !== input, issues, null);
-        }
-        if (output !== input) {
-          return ok(output);
-        }
-        return null;
+        return this._applyOperations(input, output, options, issues);
       })
     );
   }

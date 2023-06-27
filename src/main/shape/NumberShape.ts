@@ -6,7 +6,7 @@ import {
   MESSAGE_NUMBER_INTEGER,
   MESSAGE_NUMBER_TYPE,
 } from '../constants';
-import { getCanonicalValueOf, isArray, isNumber, ok } from '../internal';
+import { getCanonicalValueOf, isArray, isNumber } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Literal, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';

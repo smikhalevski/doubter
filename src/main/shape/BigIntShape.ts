@@ -1,5 +1,5 @@
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray, ok } from '../internal';
+import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -37,24 +37,15 @@ export class BigIntShape extends CoercibleShape<bigint> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<bigint> {
-    const { _applyOperations } = this;
-
     let output = input;
-    let changed = false;
 
     if (
       typeof output !== 'bigint' &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, changed, null, null);
-    }
-    if (changed) {
-      return ok(output);
-    }
-    return null;
+    return this._applyOperations(input, output, options, null);
   }
 
   /**

@@ -45,14 +45,9 @@ export class ConstShape<Value> extends Shape<Value> {
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
-    const { _applyOperations } = this;
-
     if (!this._typePredicate(input)) {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyOperations !== null) {
-      // return _applyOperations(input, options, false, null, null);
-    }
-    return null;
+    return this._applyOperations(input, input, options, null);
   }
 }

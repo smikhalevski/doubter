@@ -9,8 +9,11 @@ export function nextNonce(): number {
 
 nextNonce.nonce = 0;
 
+export const okResult: Ok<any> = { ok: true, value: null };
+
 export function ok<T>(value: T): Ok<T> {
-  return { ok: true, value };
+  okResult.value = value;
+  return okResult;
 }
 
 export function isAsyncShape(shape: AnyShape): boolean {

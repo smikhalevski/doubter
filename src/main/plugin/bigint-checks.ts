@@ -12,6 +12,7 @@
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
 import { BigIntShape, ConstraintOptions, Message } from '../core';
+import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -147,14 +148,20 @@ function min(this: BigIntShape, value: bigint, options?: ConstraintOptions | Mes
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input < param) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_BIGINT_MIN,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (input < value) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_BIGINT_MIN, param: value, force: true }
-  );
+  });
 }
 
 function max(this: BigIntShape, value: bigint, options?: ConstraintOptions | Message): BigIntShape {
@@ -162,12 +169,18 @@ function max(this: BigIntShape, value: bigint, options?: ConstraintOptions | Mes
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input > param) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_BIGINT_MAX,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (input > value) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_BIGINT_MAX, param: value, force: true }
-  );
+  });
 }

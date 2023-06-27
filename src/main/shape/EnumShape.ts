@@ -1,5 +1,5 @@
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
-import { getCanonicalValueOf, isArray, ok, ReadonlyDict, unique } from '../internal';
+import { getCanonicalValueOf, isArray, ReadonlyDict, unique } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -57,24 +57,15 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
-    const { values, _applyOperations } = this;
-
     let output = input;
-    let changed = false;
 
     if (
-      !values.includes(output) &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+      !this.values.includes(output) &&
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, changed, null, null);
-    }
-    if (changed) {
-      return ok(output);
-    }
-    return null;
+    return this._applyOperations(input, output, options, null);
   }
 
   /**

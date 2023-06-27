@@ -1,5 +1,5 @@
 import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray, isValidDate, ok } from '../internal';
+import { getCanonicalValueOf, isArray, isValidDate } from '../internal';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -36,24 +36,12 @@ export class DateShape extends CoercibleShape<Date> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Date> {
-    const { _applyOperations } = this;
-
     let output = input;
-    let changed = false;
 
-    if (
-      !isValidDate(input) &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (!isValidDate(input) && (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)) {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, changed, null, null);
-    }
-    if (changed) {
-      return ok(output);
-    }
-    return null;
+    return this._applyOperations(input, output, options, null);
   }
 
   /**

@@ -55,14 +55,9 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<InstanceType<Ctor>> {
-    const { _applyOperations } = this;
-
     if (!(input instanceof this.ctor)) {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyOperations !== null) {
-      // return _applyOperations(input, options, false, null, null);
-    }
-    return null;
+    return this._applyOperations(input, input, options, null);
   }
 }

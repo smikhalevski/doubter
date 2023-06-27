@@ -12,6 +12,7 @@
 
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
 import { ConstraintOptions, DateShape, Message, Shape } from '../core';
+import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -130,31 +131,47 @@ export default function () {
 function min(this: DateShape, value: Date | number | string, options?: ConstraintOptions | Message): DateShape {
   value = new Date(value);
 
+  const timestamp = value.getTime();
+
   const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.getTime() < param.getTime()) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_DATE_MIN,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (input.getTime() < timestamp) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_DATE_MIN, param: value, force: true }
-  );
+  });
 }
 
 function max(this: DateShape, value: Date | number | string, options?: ConstraintOptions | Message): DateShape {
   value = new Date(value);
 
+  const timestamp = value.getTime();
+
   const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.getTime() > param.getTime()) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_DATE_MAX,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (input.getTime() > timestamp) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_DATE_MAX, param: value, force: true }
-  );
+  });
 }
 
 function iso(this: DateShape): Shape<Date, string> {

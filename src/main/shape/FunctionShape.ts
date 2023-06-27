@@ -241,31 +241,18 @@ export class FunctionShape<
     options: ApplyOptions,
     nonce: number
   ): Result<(this: ShapeValue<ThisShape, INPUT>, ...args: Input<ArgsShape>) => ShapeValue<ReturnShape, OUTPUT>> {
-    const { _applyOperations } = this;
-
-    let result: Result | null = null;
-
     if (typeof input !== 'function') {
       return [this._typeIssueFactory(input, options)];
     }
 
-    // if (_applyOperations !== null) {
-    //   result = _applyOperations(input, options, false, null, null);
-    // }
-    // if (isArray(result)) {
-    //   return result;
-    // }
-    // if (this.isStrict) {
-    //   if (result === null) {
-    //     return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(input) : this.ensureSignature(input));
-    //   } else {
-    //     result.value = this.isAsyncSignature
-    //       ? this.ensureAsyncSignature(result.value)
-    //       : this.ensureSignature(result.value);
-    //     return result;
-    //   }
-    // }
-    return result;
+    const result = this._applyOperations(input, input, options, null);
+
+    if (isArray(result) || !this.isStrict) {
+      return result;
+    }
+
+    const output = result === null ? input : result.value;
+    return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(output) : this.ensureSignature(output));
   }
 }
 

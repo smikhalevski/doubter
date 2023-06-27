@@ -5,7 +5,6 @@ import {
   getCanonicalValueOf,
   isArray,
   isIterableObject,
-  ok,
   toArrayIndex,
   toDeepPartialShape,
   unshiftIssuesPath,
@@ -90,7 +89,7 @@ export class SetShape<ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { shape, _applyOperations, _isForced } = this;
+    const { shape } = this;
     const valuesLength = values.length;
 
     for (let i = 0; i < valuesLength; ++i) {
@@ -113,15 +112,7 @@ export class SetShape<ValueShape extends AnyShape>
       values[i] = result.value;
     }
 
-    const output = changed ? new Set(values) : input;
-
-    if (_applyOperations !== null && (_isForced || issues === null)) {
-      // return _applyOperations(output, options, changed, issues, null);
-    }
-    if (changed && issues === null) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, changed ? new Set(values) : input, options, issues);
   }
 
   protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Set<Output<ValueShape>>>> {
@@ -139,7 +130,7 @@ export class SetShape<ValueShape extends AnyShape>
         return;
       }
 
-      const { shape, _applyOperations, _isForced } = this;
+      const { shape } = this;
       const valuesLength = values.length;
 
       let issues: Issue[] | null = null;
@@ -168,16 +159,7 @@ export class SetShape<ValueShape extends AnyShape>
         if (index !== valuesLength) {
           return shape['_applyAsync'](values[index], options, nonce).then(handleResult);
         }
-
-        const output = changed ? new Set(values) : input;
-
-        if (_applyOperations !== null && (_isForced || issues === null)) {
-          // return _applyOperations(output, options, changed, issues, null);
-        }
-        if (changed && issues === null) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, changed ? new Set(values) : input, options, issues);
       };
 
       resolve(next());

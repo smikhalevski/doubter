@@ -10,18 +10,21 @@ import {
 import {
   applyShape,
   captureIssues,
+  concatIssues,
   copyUnsafeChecks,
   Dict,
   getErrorMessage,
   isArray,
   isEqual,
+  isObjectLike,
   isType,
   nextNonce,
   ok,
   Promisify,
+  pushIssue,
   ReadonlyDict,
   returnTrue,
-  terminalOpCb,
+  terminalOperationCallback,
   toDeepPartialShape,
   unionTypes,
 } from '../internal';
@@ -237,7 +240,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * The callback that applies {@linkcode _operations operations} to the shape output value, or `null` if there are no
    * operations to apply.
    */
-  protected _applyOperations: OperationCallback = terminalOpCb;
+  protected _applyOperations: OperationCallback = terminalOperationCallback;
 
   /**
    * `true` if some operations from {@linkcode _operations} were marked as {@link Operation#isForced forced}, or `false`
@@ -313,9 +316,41 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback<OutputValue>, options?: CheckOptions): this;
 
   check(cb: CheckCallback, options: CheckOptions = {}): this {
-    // const { kind = cb, param, force = false } = options;
+    const { type = cb, param, force } = options;
 
-    return this; //._addOperation({ type: OPERATION_CHECK, kind, payload: { cb, param }, isForced: force });
+    return this._addOperation({
+      type,
+      param,
+      compose: next => (input, output, options, issues) => {
+        if (force || issues === null) {
+          try {
+            const result = cb(output, param, options);
+
+            if (isObjectLike(result)) {
+              if (issues !== null) {
+                if (isArray(result)) {
+                  issues.push(...result);
+                } else {
+                  issues.push(result);
+                }
+              } else {
+                issues = isArray(result) ? result.slice(0) : [result];
+              }
+              if (!options.verbose) {
+                return issues;
+              }
+            }
+          } catch (error) {
+            issues = concatIssues(issues, captureIssues(error));
+
+            if (!options.verbose) {
+              return issues;
+            }
+          }
+        }
+        return next(input, output, options, issues);
+      },
+    });
   }
 
   /**
@@ -349,9 +384,26 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   ): Shape<InputValue, AlteredOutputValue>;
 
   alter(cb: AlterCallback, options: AlterOptions = {}): Shape {
-    // const { kind = cb, param } = options;
+    const { type = cb, param, force } = options;
 
-    return this; //._addOperation({ type: OPERATION_ALTER, kind, payload: { cb, param }, isForced: false });
+    return this._addOperation({
+      type,
+      param,
+      compose: next => (input, output, options, issues) => {
+        if (force || issues === null) {
+          try {
+            output = (cb as AlterCallback)(input, param, options);
+          } catch (error) {
+            issues = concatIssues(issues, captureIssues(error));
+
+            if (!options.verbose) {
+              return issues;
+            }
+          }
+        }
+        return next(input, output, options, issues);
+      },
+    });
   }
 
   /**
@@ -380,18 +432,36 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): Shape<InputValue, OutputValue>;
 
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
-    const { kind = cb, code = CODE_PREDICATE, force = false } = extractOptions(options);
+    const { type = cb, code = CODE_PREDICATE, param, force } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
-    return this.check(
-      (value, param, options) => {
-        if (!cb(value, options)) {
-          return issueFactory(value, options);
+    return this._addOperation({
+      type,
+      param,
+      compose: next => (input, output, options, issues) => {
+        if (force || issues === null) {
+          let result = true;
+          try {
+            result = cb(output, options);
+          } catch (error) {
+            issues = concatIssues(issues, captureIssues(error));
+
+            if (!options.verbose) {
+              return issues;
+            }
+          }
+          if (!result) {
+            issues = pushIssue(issues, issueFactory(output, options));
+
+            if (!options.verbose) {
+              return issues;
+            }
+          }
         }
+        return next(input, output, options, issues);
       },
-      { kind, force, param: cb }
-    );
+    });
   }
 
   /**
@@ -619,7 +689,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
     const operations = this._operations.concat(operation);
 
-    let cb = terminalOpCb;
+    let cb = terminalOperationCallback;
 
     for (let i = operations.length - 1; i >= 0; --i) {
       cb = operations[i].compose(cb);
@@ -662,12 +732,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
    */
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<OutputValue> {
-    const { _applyOperations } = this;
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(input, options, false, null, null);
-    }
-    return null;
+    return this._applyOperations(input, input, options, null);
   }
 
   /**
@@ -831,12 +896,12 @@ Object.defineProperties(Shape.prototype, {
         const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
-          return ok(input);
+          return { ok: true, value: input };
         }
         if (isArray(result)) {
           return { ok: false, issues: result };
         }
-        return ok(result.value);
+        return { ok: true, value: result.value };
       };
 
       Object.defineProperty(this, 'try', { writable: true, value: cb });
@@ -853,12 +918,12 @@ Object.defineProperties(Shape.prototype, {
       const cb: Shape['tryAsync'] = (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
-            return ok(input);
+            return { ok: true, value: input };
           }
           if (isArray(result)) {
             return { ok: false, issues: result };
           }
-          return ok(result.value);
+          return { ok: true, value: result.value };
         });
       };
 
@@ -996,43 +1061,20 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ConvertedValue> {
-    const { converter, _applyOperations } = this;
-
     let output;
 
     try {
-      output = converter(input, options) as ConvertedValue;
+      output = this.converter(input, options) as ConvertedValue;
     } catch (error) {
       return captureIssues(error);
     }
-
-    const changed = !isEqual(input, output);
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, changed, null, null);
-    }
-    if (changed) {
-      return ok(output);
-    }
-    return null;
+    return this._applyOperations(input, output, options, null);
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ConvertedValue>> {
-    const { _applyOperations } = this;
-
     return new Promise<ConvertedValue>(resolve => {
       resolve(this.converter(input, options));
-    }).then(output => {
-      const changed = !isEqual(input, output);
-
-      if (_applyOperations !== null) {
-        // return _applyOperations(output, options, changed, null, null);
-      }
-      if (changed) {
-        return ok(output);
-      }
-      return null;
-    }, captureIssues);
+    }).then(output => this._applyOperations(input, output, options, null), captureIssues);
   }
 }
 
@@ -1084,19 +1126,17 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<OutputShape>> {
-    const { inputShape, outputShape, _applyOperations } = this;
+    const { inputShape, outputShape } = this;
 
     let output = input;
-    let changed = false;
 
-    let result = inputShape['_apply'](input, options, nonce);
+    const inputResult = inputShape['_apply'](input, options, nonce);
 
-    if (result !== null) {
-      if (isArray(result)) {
-        return result;
+    if (inputResult !== null) {
+      if (isArray(inputResult)) {
+        return inputResult;
       }
-      output = result.value;
-      changed = true;
+      output = inputResult.value;
     }
 
     const outputResult = outputShape['_apply'](output, options, nonce);
@@ -1105,46 +1145,30 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
       if (isArray(outputResult)) {
         return outputResult;
       }
-      result = outputResult;
       output = outputResult.value;
-      changed = true;
     }
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, changed, null, result);
-    }
-    return result;
+    return this._applyOperations(input, output, options, null);
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<OutputShape>>> {
-    const { inputShape, outputShape, _applyOperations } = this;
-
-    return inputShape['_applyAsync'](input, options, nonce).then(result => {
+    return this.inputShape['_applyAsync'](input, options, nonce).then(inputResult => {
       let output = input;
-      let changed = false;
 
-      if (result !== null) {
-        if (isArray(result)) {
-          return result;
+      if (inputResult !== null) {
+        if (isArray(inputResult)) {
+          return inputResult;
         }
-        output = result.value;
-        changed = true;
+        output = inputResult.value;
       }
 
-      return applyShape(outputShape, output, options, nonce, outputResult => {
+      return applyShape(this.outputShape, output, options, nonce, outputResult => {
         if (outputResult !== null) {
           if (isArray(outputResult)) {
             return outputResult;
           }
-          result = outputResult;
           output = outputResult.value;
-          changed = true;
         }
-
-        if (_applyOperations !== null) {
-          // return _applyOperations(output, options, changed, null, result as Ok<Output<OutputShape>>);
-        }
-        return result;
+        return this._applyOperations(input, output, options, null);
       });
     });
   }
@@ -1234,8 +1258,6 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     input: unknown,
     options: ApplyOptions
   ): Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue> {
-    const { _applyOperations } = this;
-
     let output = input;
 
     if (result !== null) {
@@ -1244,11 +1266,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
       }
       output = result.value;
     }
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, result !== null, null, result);
-    }
-    return result;
+    return this._applyOperations(input, output, options, null);
   }
 }
 
@@ -1341,8 +1359,6 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     input: unknown,
     options: ApplyOptions
   ): Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>> {
-    const { _applyOperations } = this;
-
     let output = input;
 
     if (result !== null) {
@@ -1355,11 +1371,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
         return [this._typeIssueFactory(input, options)];
       }
     }
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, result !== null, null, result);
-    }
-    return result;
+    return this._applyOperations(input, output, options, null);
   }
 }
 
@@ -1435,8 +1447,6 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     input: unknown,
     options: ApplyOptions
   ): Result<Output<BaseShape> | FallbackValue> {
-    const { _applyOperations } = this;
-
     let output = input;
 
     if (result !== null) {
@@ -1449,11 +1459,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
       }
       output = result.value;
     }
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, result !== null, null, result);
-    }
-    return result;
+    return this._applyOperations(input, output, options, null);
   }
 }
 
@@ -1521,7 +1527,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     options: ApplyOptions,
     nonce: number
   ): Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>> {
-    const { shape, excludedShape, _applyOperations } = this;
+    const { shape, excludedShape } = this;
 
     let output = input;
 
@@ -1537,11 +1543,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     if (!isArray(excludedShape['_apply'](output, options, nonce))) {
       return [this._typeIssueFactory(input, options)];
     }
-
-    if (_applyOperations !== null) {
-      // return _applyOperations(output, options, result !== null, null, result);
-    }
-    return result;
+    return this._applyOperations(input, output, options, null);
   }
 
   protected _applyAsync(
@@ -1549,7 +1551,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     options: ApplyOptions,
     nonce: number
   ): Promise<Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>>> {
-    const { shape, excludedShape, _applyOperations } = this;
+    const { shape, excludedShape } = this;
 
     return shape['_applyAsync'](input, options, nonce).then(result => {
       let output = input;
@@ -1565,11 +1567,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
         if (!isArray(outputResult)) {
           return [this._typeIssueFactory(input, options)];
         }
-
-        if (_applyOperations !== null) {
-          // return _applyOperations(output, options, result !== null, null, result);
-        }
-        return result;
+        return this._applyOperations(input, output, options, null);
       });
     });
   }

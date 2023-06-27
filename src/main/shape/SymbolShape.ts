@@ -31,14 +31,9 @@ export class SymbolShape extends Shape<symbol> {
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {
-    const { _applyOperations } = this;
-
     if (typeof input !== 'symbol') {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyOperations !== null) {
-      // return _applyOperations(input, options, false, null, null);
-    }
-    return null;
+    return this._applyOperations(input, input, options, null);
   }
 }

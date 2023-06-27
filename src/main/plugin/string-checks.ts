@@ -216,53 +216,75 @@ function max(this: StringShape, length: number, options?: ConstraintOptions | Me
 function regex(this: StringShape, re: RegExp, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-  return this.check(
-    (input, param, options) => {
-      param.lastIndex = 0;
+  return this._addOperation({
+    type: CODE_STRING_REGEX,
+    param: re,
+    compose: next => (input, output, options, issues) => {
+      if (!re.test(input)) {
+        issues = pushIssue(issues, issueFactory(input, options));
 
-      if (!param.test(input)) {
-        return issueFactory(input, options);
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_STRING_REGEX, param: re, force: true }
-  );
+  });
 }
 
 function includes(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.includes(param)) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_STRING_INCLUDES,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (!input.includes(value)) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_STRING_INCLUDES, param: value, force: true }
-  );
+  });
 }
 
 function startsWith(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.startsWith(param)) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_STRING_STARTS_WITH,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (!input.startsWith(value)) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_STRING_STARTS_WITH, param: value, force: true }
-  );
+  });
 }
 
 function endsWith(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.endsWith(param)) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_STRING_ENDS_WITH,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (!input.endsWith(value)) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_STRING_ENDS_WITH, param: value, force: true }
-  );
+  });
 }

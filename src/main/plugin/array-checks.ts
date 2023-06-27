@@ -19,6 +19,7 @@ import {
   MESSAGE_ARRAY_MIN,
 } from '../constants';
 import { AnyShape, ArrayShape, ConstraintOptions, Message } from '../core';
+import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -135,27 +136,39 @@ function length(
 function min(this: ArrayShape<any, any>, length: number, options?: ConstraintOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.length < param) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_ARRAY_MIN,
+    param: length,
+    compose: next => (input, output, options, issues) => {
+      if (input.length < length) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_ARRAY_MIN, param: length, force: true }
-  );
+  });
 }
 
 function max(this: ArrayShape<any, any>, length: number, options?: ConstraintOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.length > param) {
-        return issueFactory(input, options);
+  return this._addOperation({
+    type: CODE_ARRAY_MAX,
+    param: length,
+    compose: next => (input, output, options, issues) => {
+      if (input.length > length) {
+        issues = pushIssue(issues, issueFactory(input, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_ARRAY_MAX, param: length, force: true }
-  );
+  });
 }
 
 function nonEmpty(this: ArrayShape<any, any>, options?: ConstraintOptions | Message): ArrayShape<any, any> {
@@ -169,15 +182,22 @@ function includes(
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, MESSAGE_ARRAY_INCLUDES, options, undefined);
 
-  return this.check(
-    (input, param, options) => {
+  return this._addOperation({
+    type: CODE_ARRAY_INCLUDES,
+    param: shape,
+    compose: next => (input, output, options, issues) => {
       for (const value of input) {
         if (shape.try(value, options).ok) {
-          return;
+          return next(input, output, options, issues);
         }
       }
-      return issueFactory(input, options);
+
+      issues = pushIssue(issues, issueFactory(input, options));
+
+      if (!options.verbose) {
+        return issues;
+      }
+      return next(input, output, options, issues);
     },
-    { kind: CODE_ARRAY_INCLUDES, param: length, force: true }
-  );
+  });
 }

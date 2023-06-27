@@ -164,14 +164,13 @@ export type CheckCallback<Value = any, Param = any> = (
  */
 export interface CheckOptions {
   /**
-   * The kind of the check operation: `string_min`, `object_exact`, `array_includes`, etc.
+   * The type of the check operation: `string_min`, `object_exact`, `array_includes`, etc.
    */
-  kind?: any;
+  type?: any;
 
   /**
-   * The additional param that would be passed to the callback when a check operation is applied.
-   *
-   * @default undefined
+   * The additional param that would be passed to the {@linkcode CheckCallback} when an alteration operation is
+   * applied.
    */
   param?: any;
 
@@ -224,9 +223,9 @@ export type RefinePredicate<Value = any, RefinedValue extends Value = Value> = (
  */
 export interface RefineOptions extends ConstraintOptions {
   /**
-   * The kind of the check operation: `string_min`, `object_exact`, `array_includes`, etc.
+   * The type of the check operation: `string_min`, `object_exact`, `array_includes`, etc.
    */
-  kind?: any;
+  type?: any;
 
   /**
    * The code of an issue that would be raised if the check fails.
@@ -234,6 +233,12 @@ export interface RefineOptions extends ConstraintOptions {
    * @default "predicate"
    */
   code?: any;
+
+  /**
+   * The additional param that would be passed to the {@linkcode CheckCallback} when an alteration operation is
+   * applied.
+   */
+  param?: any;
 
   /**
    * If `true` then the check is applied even if some of the preceding operations have failed, or `false` otherwise.
@@ -276,15 +281,23 @@ export type AlterCallback<Value = any, AlteredValue extends Value = Value, Param
  */
 export interface AlterOptions {
   /**
-   * The kind of the check operation: `string_trim`, `date_set_timezone`, `array_truncate`, etc.
+   * The type of the check operation: `string_trim`, `date_set_timezone`, `array_truncate`, etc.
    */
-  kind?: any;
+  type?: any;
 
   /**
    * The additional param that would be passed to the {@linkcode AlterCallback} when an alteration operation is
    * applied.
    */
   param?: any;
+
+  /**
+   * If `true` then the alteration is applied even if some of the preceding operations have failed, or `false`
+   * otherwise.
+   *
+   * @default false
+   */
+  force?: boolean;
 }
 
 /**
