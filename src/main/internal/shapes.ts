@@ -1,7 +1,7 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
-import { ApplyOptions, Issue, Ok, ParseOptions, Result } from '../types';
+import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from '../types';
 import { ValidationError } from '../ValidationError';
-import { isArray, isObjectLike } from './lang';
+import { isArray, isEqual, isObjectLike } from './lang';
 
 export function nextNonce(): number {
   return nextNonce.nonce++;
@@ -15,6 +15,16 @@ export function ok<T>(value: T): Ok<T> {
   okResult.value = value;
   return okResult;
 }
+
+export const terminalOperationCallback: OperationCallback = (input, output, options, issues) => {
+  if (issues !== null) {
+    return issues;
+  }
+  if (isEqual(input, output)) {
+    return null;
+  }
+  return ok(output);
+};
 
 export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
