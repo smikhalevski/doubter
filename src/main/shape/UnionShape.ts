@@ -286,7 +286,7 @@ export function createLookupByDiscriminator(shapes: readonly AnyShape[]): Lookup
 
 export interface Discriminator {
   /**
-   * The discriminator property kind.
+   * The discriminator property key.
    */
   key: string;
 

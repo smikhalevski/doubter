@@ -103,21 +103,21 @@ declare module '../core' {
 export default function () {
   const prototype = BigIntShape.prototype;
 
-  // Object.defineProperties(prototype, {
-  //   minValue: {
-  //     configurable: true,
-  //     get(this: BigIntShape) {
-  //       return this.getOperationsByKey(CODE_BIGINT_MIN)?.param;
-  //     },
-  //   },
-  //
-  //   maxValue: {
-  //     configurable: true,
-  //     get(this: BigIntShape) {
-  //       return this.getOperationsByKey(CODE_BIGINT_MAX)?.param;
-  //     },
-  //   },
-  // });
+  Object.defineProperties(prototype, {
+    minValue: {
+      configurable: true,
+      get(this: BigIntShape) {
+        return this._getOperation(CODE_BIGINT_MIN)?.param;
+      },
+    },
+
+    maxValue: {
+      configurable: true,
+      get(this: BigIntShape) {
+        return this._getOperation(CODE_BIGINT_MAX)?.param;
+      },
+    },
+  });
 
   prototype.positive = positive;
   prototype.negative = negative;

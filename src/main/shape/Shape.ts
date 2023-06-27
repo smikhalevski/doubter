@@ -243,12 +243,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   protected _applyOperations: OperationCallback = terminalOperationCallback;
 
   /**
-   * `true` if some operations from {@linkcode _operations} were marked as {@link Operation#isForced forced}, or `false`
-   * otherwise. This field is an optimization flag that prevents composite shapes, such as {@linkcode ArrayShape} and
-   * {@linkcode ObjectShape}, from assembling a transformed output value if an issue was raised by shapes that constrain
-   * any of its properties.
+   * `true` if there are {@linkcode _operations}, or `false` otherwise.
    */
-  protected _isForced = true;
+  protected _hasOperations = false;
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -288,7 +285,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Adds the check that is applied to the shape output.
    *
    * If the {@linkcode CheckOptions#kind} is defined and there's already a check with the same kind then the existing
-   * check is deleted and the new one is appended. If the kind is `undefined` then the `cb` identity is used as a kind.
+   * check is deleted and the new one is appended. If the type is `undefined` then the `cb` identity is used as a type.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
@@ -334,7 +331,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
                   issues.push(result);
                 }
               } else {
-                issues = isArray(result) ? result.slice(0) : [result];
+                issues = isArray(result) ? (result.length === 0 ? issues : result.slice(0)) : [result];
               }
               if (!options.verbose) {
                 return issues;
@@ -678,6 +675,15 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     return this.exclude(shape, options);
   }
 
+  protected _getOperation(type: unknown): Operation | null {
+    for (const operation of this._operations) {
+      if (operation.type === type) {
+        return operation;
+      }
+    }
+    return null;
+  }
+
   /**
    * Adds an operation to the shape, so it can be applied as the last step of parsing.
    *
@@ -697,6 +703,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
     shape._operations = operations;
     shape._applyOperations = cb;
+    shape._hasOperations = true;
 
     return shape;
   }
@@ -1413,8 +1420,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     if (typeof fallback === 'function') {
       this._resultProvider = (input, issues, options) => ok((fallback as Function)(input, issues, options));
     } else {
-      const result = ok(fallback);
-      this._resultProvider = () => result;
+      this._resultProvider = () => ok(fallback);
     }
   }
 

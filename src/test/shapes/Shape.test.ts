@@ -77,19 +77,19 @@ describe('Shape', () => {
       const shape2 = shape1.check(cb);
 
       expect(shape1).not.toBe(shape2);
-      expect(shape1.getOperationsByKey(cb)).toBeUndefined();
-      expect(shape2.getOperationsByKey(cb)).toBeDefined();
+      expect(shape1['_getOperation'](cb)).toBeNull();
+      expect(shape2['_getOperation'](cb)).toBeDefined();
     });
 
-    test('adds a safe check by default', () => {
-      const cb = () => null;
-      expect(new Shape().check(cb).getOperationsByKey(cb)?.isForced).toBe(false);
-    });
-
-    test('adds an forced check', () => {
-      const cb = () => null;
-      expect(new Shape().check(cb, { force: true }).getOperationsByKey(cb)?.isForced).toBe(true);
-    });
+    // test('adds a safe check by default', () => {
+    //   const cb = () => null;
+    //   expect(new Shape().check(cb)['_getOperation'](cb)?.isForced).toBe(false);
+    // });
+    //
+    // test('adds an forced check', () => {
+    //   const cb = () => null;
+    //   expect(new Shape().check(cb, { force: true })['_getOperation'](cb)?.isForced).toBe(true);
+    // });
 
     test('added check is applied', () => {
       const cbMock = jest.fn(() => null);
@@ -122,97 +122,44 @@ describe('Shape', () => {
       expect(cbMock).toHaveBeenNthCalledWith(2, 222);
     });
 
-    test('does not add the same check callback twice', () => {
+    test('adds the same check callback twice', () => {
       const cbMock = jest.fn();
-      const shape = new Shape().check(cbMock).check(cbMock);
-
-      shape.parse(111);
-
-      expect(cbMock).toHaveBeenCalledTimes(1);
-    });
-
-    test('does not add the same check callback twice if keys are equal', () => {
-      const cbMock = jest.fn();
-      const shape = new Shape().check(cbMock, { kind: 'aaa' }).check(cbMock, { kind: 'aaa' });
-
-      shape.parse(111);
-
-      expect(cbMock).toHaveBeenCalledTimes(1);
-    });
-
-    test('adds the same check callback twice if keys are different', () => {
-      const cbMock = jest.fn();
-      const shape = new Shape().check(cbMock, { kind: 'aaa' }).check(cbMock);
+      const shape = new Shape().check(cbMock, { type: 'aaa' }).check(cbMock);
 
       shape.parse(111);
 
       expect(cbMock).toHaveBeenCalledTimes(2);
     });
-
-    test('replaces check callback with the same kind', () => {
-      const cbMock1 = jest.fn();
-      const cbMock2 = jest.fn();
-      const shape = new Shape().check(cbMock1, { kind: 'aaa' }).check(cbMock2, { kind: 'aaa' });
-
-      shape.parse(111);
-
-      expect(cbMock1).not.toHaveBeenCalled();
-      expect(cbMock2).toHaveBeenCalledTimes(1);
-    });
   });
 
-  describe('getCheck', () => {
+  describe('_getOperation', () => {
     test('returns undefined if check not found', () => {
-      expect(new Shape().getOperationsByKey(() => null)).toBeUndefined();
+      expect(new Shape()['_getOperation'](() => null)).toBeNull();
     });
 
     test('returns the check', () => {
       const cb = () => null;
       const shape = new Shape().check(cb);
 
-      expect(shape.getOperationsByKey(cb)).toEqual({ key: cb, callback: cb, isForced: false });
+      expect(shape['_getOperation'](cb)).toEqual({ type: cb, param: undefined, compose: expect.any(Function) });
     });
 
-    test('returns the check with custom kind', () => {
+    test('returns the check with custom type', () => {
       const cb = () => null;
-      const shape = new Shape().check(cb, { kind: 'aaa' });
+      const shape = new Shape().check(cb, { type: 'aaa' });
 
-      expect(shape.getOperationsByKey('aaa')).toEqual({ key: 'aaa', callback: cb, isForced: false });
+      expect(shape['_getOperation']('aaa')).toEqual({ type: 'aaa', param: undefined, compose: expect.any(Function) });
     });
   });
 
-  describe('hasCheck', () => {
-    test('returns true if check was added', () => {
-      const cb = () => null;
-
-      expect(new Shape().hasCheck(cb)).toBe(false);
-      expect(new Shape().check(cb).hasCheck(cb)).toBe(true);
-    });
-  });
-
-  describe('deleteCheck', () => {
-    test('clones the shape when check is deleted', () => {
-      const cb = () => null;
-      const shape = new Shape().check(cb);
-
-      expect(shape.deleteCheck(cb)).not.toBe(shape);
-    });
-
-    test('deletes a check', () => {
-      const cb = () => null;
-      const shape = new Shape().check(cb);
-
-      expect(shape.deleteCheck(cb).getOperationsByKey(cb)).toBeUndefined();
-    });
-
-    test('does not apply a deleted check', () => {
-      const cbMock = jest.fn();
-
-      new Shape().check(cbMock).deleteCheck(cbMock).parse(111);
-
-      expect(cbMock).not.toHaveBeenCalled();
-    });
-  });
+  // describe('hasCheck', () => {
+  //   test('returns true if check was added', () => {
+  //     const cb = () => null;
+  //
+  //     expect(new Shape().hasCheck(cb)).toBe(false);
+  //     expect(new Shape().check(cb).hasCheck(cb)).toBe(true);
+  //   });
+  // });
 
   describe('refine', () => {
     test('applies a predicate', () => {

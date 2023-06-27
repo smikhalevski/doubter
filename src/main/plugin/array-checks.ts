@@ -102,21 +102,21 @@ declare module '../core' {
 export default function () {
   const prototype = ArrayShape.prototype;
 
-  // Object.defineProperties(prototype, {
-  //   minLength: {
-  //     configurable: true,
-  //     get(this: ArrayShape<any, any>) {
-  //       return this.getOperationsByKey(CODE_ARRAY_MIN)?.param;
-  //     },
-  //   },
-  //
-  //   maxLength: {
-  //     configurable: true,
-  //     get(this: ArrayShape<any, any>) {
-  //       return this.getOperationsByKey(CODE_ARRAY_MAX)?.param;
-  //     },
-  //   },
-  // });
+  Object.defineProperties(prototype, {
+    minLength: {
+      configurable: true,
+      get(this: ArrayShape<any, any>) {
+        return this._getOperation(CODE_ARRAY_MIN)?.param;
+      },
+    },
+
+    maxLength: {
+      configurable: true,
+      get(this: ArrayShape<any, any>) {
+        return this._getOperation(CODE_ARRAY_MAX)?.param;
+      },
+    },
+  });
 
   prototype.length = length;
   prototype.min = min;

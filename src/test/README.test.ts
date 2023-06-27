@@ -170,21 +170,8 @@ describe('Advanced shapes', () => {
           ];
         }
 
-        // 2️⃣ Prepare the output value
-        const output = parseFloat(input);
-
-        // 3️⃣ Apply checks to the output value
-        if (this._applyOperations) {
-          const issues = this._applyOperations(output, null, options);
-
-          if (issues !== null) {
-            // 4️⃣ Return issues if the output value is invalid
-            return issues;
-          }
-        }
-
-        // 5️⃣ Return the parsing result
-        return { ok: true, value: output };
+        // 3️⃣ Apply operations to the output value
+        return this._applyOperations(input, parseFloat(input), options, null);
       }
     }
 

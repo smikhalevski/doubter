@@ -139,28 +139,28 @@ declare module '../core' {
 export default function () {
   const prototype = StringShape.prototype;
 
-  // Object.defineProperties(prototype, {
-  //   minLength: {
-  //     configurable: true,
-  //     get(this: StringShape) {
-  //       return this.getOperationsByKey(CODE_STRING_MIN)?.param;
-  //     },
-  //   },
-  //
-  //   maxLength: {
-  //     configurable: true,
-  //     get(this: StringShape) {
-  //       return this.getOperationsByKey(CODE_STRING_MAX)?.param;
-  //     },
-  //   },
-  //
-  //   pattern: {
-  //     configurable: true,
-  //     get(this: StringShape) {
-  //       return this.getOperationsByKey(CODE_STRING_REGEX)?.param;
-  //     },
-  //   },
-  // });
+  Object.defineProperties(prototype, {
+    minLength: {
+      configurable: true,
+      get(this: StringShape) {
+        return this._getOperation(CODE_STRING_MIN)?.param;
+      },
+    },
+
+    maxLength: {
+      configurable: true,
+      get(this: StringShape) {
+        return this._getOperation(CODE_STRING_MAX)?.param;
+      },
+    },
+
+    pattern: {
+      configurable: true,
+      get(this: StringShape) {
+        return this._getOperation(CODE_STRING_REGEX)?.param;
+      },
+    },
+  });
 
   prototype.length = length;
   prototype.min = min;

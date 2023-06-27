@@ -73,21 +73,21 @@ declare module '../core' {
 export default function () {
   const prototype = SetShape.prototype;
 
-  // Object.defineProperties(prototype, {
-  //   minSize: {
-  //     configurable: true,
-  //     get(this: SetShape<any>) {
-  //       return this.getOperationsByKey(CODE_SET_MIN)?.param;
-  //     },
-  //   },
-  //
-  //   maxSize: {
-  //     configurable: true,
-  //     get(this: SetShape<any>) {
-  //       return this.getOperationsByKey(CODE_SET_MAX)?.param;
-  //     },
-  //   },
-  // });
+  Object.defineProperties(prototype, {
+    minSize: {
+      configurable: true,
+      get(this: SetShape<any>) {
+        return this._getOperation(CODE_SET_MIN)?.param;
+      },
+    },
+
+    maxSize: {
+      configurable: true,
+      get(this: SetShape<any>) {
+        return this._getOperation(CODE_SET_MAX)?.param;
+      },
+    },
+  });
 
   prototype.size = size;
   prototype.min = min;

@@ -103,22 +103,21 @@ declare module '../core' {
 export default function () {
   const prototype = DateShape.prototype;
 
-  // Object.defineProperties(prototype, {
-  //   minValue: {
-  //     configurable: true,
-  //     get(this: DateShape) {
-  //       return this.getOperationsByKey(CODE_DATE_MIN)?.param;
-  //     },
-  //   },
-  //
-  //   maxValue: {
-  //     configurable: true,
-  //     get(this: DateShape) {
-  //       this['_operations'].find(op => op.kind === CODE_DATE_MAX).
-  //       return this.getOperationsByKey(CODE_DATE_MAX)?.param;
-  //     },
-  //   },
-  // });
+  Object.defineProperties(prototype, {
+    minValue: {
+      configurable: true,
+      get(this: DateShape) {
+        return this._getOperation(CODE_DATE_MIN)?.param;
+      },
+    },
+
+    maxValue: {
+      configurable: true,
+      get(this: DateShape) {
+        return this._getOperation(CODE_DATE_MAX)?.param;
+      },
+    },
+  });
 
   prototype.min = min;
   prototype.max = max;

@@ -19,7 +19,18 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
+import {
+  AlterCallback,
+  AlterOptions,
+  ApplyOptions,
+  ConstraintOptions,
+  Issue,
+  Message,
+  RefineCallback,
+  RefineOptions,
+  RefinePredicate,
+  Result,
+} from '../types';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
 import {
@@ -395,7 +406,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         return;
       }
 
-      const { keys, keysMode, restShape, _valueShapes, _isForced } = this;
+      const { keys, keysMode, restShape, _valueShapes, _hasOperations } = this;
 
       const keysLength = keys.length;
 
@@ -478,7 +489,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_isForced || issues === null) {
+          } else if (_hasOperations || issues === null) {
             if (input === output) {
               output = cloneDict(input);
             }
@@ -507,7 +518,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are preserved as is and aren't checked.
    */
   private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, _valueShapes, _isForced } = this;
+    const { keys, _valueShapes, _hasOperations } = this;
 
     const keysLength = keys.length;
 
@@ -531,7 +542,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         issues = concatIssues(issues, result);
         continue;
       }
-      if (_isForced || issues === null) {
+      if (_hasOperations || issues === null) {
         if (input === output) {
           output = cloneDict(input);
         }
@@ -545,7 +556,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, keysMode, restShape, _valueShapes, _isForced } = this;
+    const { keys, keysMode, restShape, _valueShapes, _hasOperations } = this;
 
     const keysLength = keys.length;
 
@@ -587,7 +598,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_isForced || issues === null) {
+        if (_hasOperations || issues === null) {
           if (input === output) {
             output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
@@ -612,7 +623,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
 
       // Unknown keys are stripped
-      if (input === output && (_isForced || issues === null)) {
+      if (input === output && (_hasOperations || issues === null)) {
         output = cloneDictKeys(input, keys);
       }
     }
@@ -650,7 +661,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_isForced || issues === null) {
+        if (_hasOperations || issues === null) {
           if (input === output) {
             output = cloneDict(input);
           }
@@ -660,4 +671,28 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     }
     return this._applyOperations(input, output, options, issues);
   }
+}
+
+export interface ObjectShape<PropShapes, RestShape> {
+  alter(
+    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, InferObject<PropShapes, RestShape, OUTPUT>>,
+    options?: AlterOptions
+  ): this;
+
+  alter<AlteredOutputValue extends InferObject<PropShapes, RestShape, OUTPUT>, Param>(
+    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredOutputValue, Param>,
+    options: AlterOptions & { param: Param }
+  ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredOutputValue>;
+
+  alter<AlteredOutputValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
+    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredOutputValue>,
+    options: AlterOptions
+  ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredOutputValue>;
+
+  refine<RefinedOutputValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
+    cb: RefinePredicate<InferObject<PropShapes, RestShape, OUTPUT>, RefinedOutputValue>,
+    options?: RefineOptions | Message
+  ): Shape<InferObject<PropShapes, RestShape, INPUT>, RefinedOutputValue>;
+
+  refine(cb: RefineCallback<InferObject<PropShapes, RestShape, OUTPUT>>, options?: RefineOptions | Message): this;
 }

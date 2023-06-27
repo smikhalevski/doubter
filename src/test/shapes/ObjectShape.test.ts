@@ -62,51 +62,51 @@ describe('ObjectShape', () => {
       const objShape1 = new ObjectShape({}, null).refine(cb);
       const objShape2 = objShape1.rest(restShape);
 
-      expect(objShape1.getOperationsByKey(cb)).not.toBeUndefined();
+      expect(objShape1['_getOperation'](cb)).not.toBeNull();
       expect(objShape1.restShape).toBeNull();
       expect(objShape1.keysMode).toBe('preserved');
       expect(objShape2).not.toBe(objShape1);
-      expect(objShape2.getOperationsByKey(cb)).toBeUndefined();
+      expect(objShape2['_getOperation'](cb)).toBeNull();
       expect(objShape2.restShape).toBe(restShape);
       expect(objShape2.keysMode).toBe('preserved');
     });
   });
 
   describe('exact', () => {
-    test('sets exact kind mode', () => {
+    test('sets exact keys mode', () => {
       const cb = () => true;
       const objShape1 = new ObjectShape({}, null).refine(cb);
       const objShape2 = objShape1.exact();
 
       expect(objShape2).not.toBe(objShape1);
-      expect(objShape2.getOperationsByKey(cb)).toBeUndefined();
+      expect(objShape2['_getOperation'](cb)).toBeNull();
       expect(objShape2.keysMode).toBe('exact');
     });
   });
 
   describe('strip', () => {
-    test('sets stripped kind mode', () => {
+    test('sets stripped keys mode', () => {
       const cb = () => true;
       const objShape1 = new ObjectShape({}, null).refine(cb);
       const objShape2 = objShape1.strip();
 
       expect(objShape2).not.toBe(objShape1);
-      expect(objShape2.getOperationsByKey(cb)).toBeUndefined();
+      expect(objShape2['_getOperation'](cb)).toBeNull();
       expect(objShape2.keysMode).toBe('stripped');
     });
   });
 
   describe('preserve', () => {
-    test('sets preserved kind mode', () => {
+    test('sets preserved keys mode', () => {
       const cb = () => true;
       const objShape1 = new ObjectShape({}, null).strip().refine(cb);
       const objShape2 = objShape1.preserve();
 
-      expect(objShape1.getOperationsByKey(cb)).not.toBeUndefined();
+      expect(objShape1['_getOperation'](cb)).not.toBeNull();
       expect(objShape1.restShape).toBeNull();
       expect(objShape1.keysMode).toBe('stripped');
       expect(objShape2).not.toBe(objShape1);
-      expect(objShape2.getOperationsByKey(cb)).toBeUndefined();
+      expect(objShape2['_getOperation'](cb)).toBeNull();
       expect(objShape2.keysMode).toBe('preserved');
     });
   });
@@ -269,7 +269,7 @@ describe('ObjectShape', () => {
   });
 
   describe('at', () => {
-    test('returns property shape at kind', () => {
+    test('returns property shape at key', () => {
       const shape1 = new Shape();
       const shape2 = new Shape();
 
