@@ -2,7 +2,6 @@ import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE } from '../con
 import {
   applyShape,
   concatIssues,
-  copyUnsafeChecks,
   getCanonicalValueOf,
   isArray,
   isAsyncShape,
@@ -114,12 +113,14 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   /**
    * Returns an array shape that has rest elements constrained by the given shape.
    *
+   * **Note** This returns a shape without any operations.
+   *
    * @param restShape The shape of rest elements, or `null` if there are no rest elements.
    * @returns The new array shape.
    * @template S The shape of rest elements.
    */
   rest<S extends AnyShape | null>(restShape: S): ArrayShape<HeadShapes, S> {
-    return copyUnsafeChecks(this, new ArrayShape(this.headShapes, restShape, this._options));
+    return new ArrayShape(this.headShapes, restShape, this._options);
   }
 
   deepPartial(): DeepPartialArrayShape<HeadShapes, RestShape> {
@@ -127,7 +128,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
-    return copyUnsafeChecks(this, new ArrayShape<any, any>(headShapes, restShape, this._options));
+    return new ArrayShape<any, any>(headShapes, restShape, this._options);
   }
 
   protected _isAsync(): boolean {

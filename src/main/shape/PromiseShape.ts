@@ -1,5 +1,5 @@
 import { CODE_TYPE, MESSAGE_PROMISE_TYPE } from '../constants';
-import { applyShape, copyUnsafeChecks, isArray, Promisify, toDeepPartialShape } from '../internal';
+import { applyShape, isArray, Promisify, toDeepPartialShape } from '../internal';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -51,7 +51,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   deepPartial(): DeepPartialPromiseShape<ValueShape> {
     const shape = this.shape !== null ? toDeepPartialShape(this.shape).optional() : null;
 
-    return copyUnsafeChecks(this, new PromiseShape<any>(shape, this._options));
+    return new PromiseShape<any>(shape, this._options);
   }
 
   protected _isAsync(): boolean {

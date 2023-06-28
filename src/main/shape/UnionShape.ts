@@ -1,7 +1,6 @@
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
 import {
   applyShape,
-  copyUnsafeChecks,
   Dict,
   getShapeInputs,
   isArray,
@@ -95,7 +94,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 
   deepPartial(): DeepPartialUnionShape<Shapes> {
-    return copyUnsafeChecks(this, new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
+    return new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
   }
 
   protected _isAsync(): boolean {

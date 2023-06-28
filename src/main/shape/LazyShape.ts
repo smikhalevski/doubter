@@ -1,5 +1,5 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
-import { captureIssues, copyUnsafeChecks, identity, isArray, ok, toDeepPartialShape } from '../internal';
+import { captureIssues, copyOperations, identity, isArray, ok, toDeepPartialShape } from '../internal';
 import { ApplyOptions, Literal, Result } from '../types';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
@@ -79,7 +79,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, Input<DeepPartialShape<ProvidedShape>>> {
     const { _cachingShapeProvider } = this;
 
-    return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_cachingShapeProvider()), identity));
+    return new LazyShape(() => toDeepPartialShape(_cachingShapeProvider()), identity);
   }
 
   /**
@@ -93,7 +93,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   circular<Pointer extends Literal>(
     pointer: Pointer | ((value: Input<ProvidedShape>, options: Readonly<ApplyOptions>) => Pointer)
   ): LazyShape<ProvidedShape, Pointer> {
-    return copyUnsafeChecks(
+    return copyOperations(
       this,
       new LazyShape(this.shapeProvider, typeof pointer === 'function' ? (pointer as () => Pointer) : () => pointer)
     );

@@ -2,7 +2,6 @@ import { CODE_TYPE, MESSAGE_MAP_TYPE } from '../constants';
 import {
   applyShape,
   concatIssues,
-  copyUnsafeChecks,
   getCanonicalValueOf,
   isArray,
   isIterableObject,
@@ -82,9 +81,10 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
   deepPartial(): MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>> {
     const keyShape = toDeepPartialShape(this.keyShape);
+
     const valueShape = toDeepPartialShape(this.valueShape).optional();
 
-    return copyUnsafeChecks(this, new MapShape<any, any>(keyShape, valueShape, this._options));
+    return new MapShape<any, any>(keyShape, valueShape, this._options);
   }
 
   protected _isAsync(): boolean {

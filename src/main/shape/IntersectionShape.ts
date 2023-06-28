@@ -2,7 +2,6 @@ import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 import {
   applyShape,
   concatIssues,
-  copyUnsafeChecks,
   distributeTypes,
   getShapeInputs,
   isArray,
@@ -87,7 +86,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   }
 
   deepPartial(): DeepPartialIntersectionShape<Shapes> {
-    return copyUnsafeChecks(this, new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
+    return new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
   }
 
   protected _isAsync(): boolean {

@@ -2,7 +2,7 @@ import { CODE_TYPE, ERROR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../const
 import {
   applyShape,
   Awaitable,
-  copyChecks,
+  copyOperations,
   getErrorMessage,
   isArray,
   nextNonce,
@@ -101,7 +101,7 @@ export class FunctionShape<
    * @template S The return value shape.
    */
   return<S extends AnyShape | null>(shape: S): FunctionShape<ArgsShape, S, ThisShape> {
-    return copyChecks(this, new FunctionShape(this.argsShape, shape, this.thisShape));
+    return copyOperations(this, new FunctionShape(this.argsShape, shape, this.thisShape));
   }
 
   /**
@@ -112,7 +112,7 @@ export class FunctionShape<
    * @template S The shape of `this` argument.
    */
   this<S extends AnyShape | null>(shape: S): FunctionShape<ArgsShape, ReturnShape, S> {
-    return copyChecks(this, new FunctionShape(this.argsShape, this.returnShape, shape));
+    return copyOperations(this, new FunctionShape(this.argsShape, this.returnShape, shape));
   }
 
   /**

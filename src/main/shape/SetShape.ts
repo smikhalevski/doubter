@@ -1,7 +1,6 @@
 import { CODE_TYPE, MESSAGE_SET_TYPE } from '../constants';
 import {
   concatIssues,
-  copyUnsafeChecks,
   getCanonicalValueOf,
   isArray,
   isIterableObject,
@@ -60,7 +59,7 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   deepPartial(): SetShape<OptionalDeepPartialShape<ValueShape>> {
-    return copyUnsafeChecks(this, new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
+    return new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options);
   }
 
   protected _isAsync(): boolean {

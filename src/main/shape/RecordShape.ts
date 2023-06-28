@@ -3,7 +3,6 @@ import {
   applyShape,
   cloneDictHead,
   concatIssues,
-  copyUnsafeChecks,
   isArray,
   isObject,
   setObjectProperty,
@@ -76,9 +75,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   }
 
   deepPartial(): RecordShape<KeyShape, OptionalDeepPartialShape<ValueShape>> {
-    const valueShape = toDeepPartialShape(this.valueShape).optional();
-
-    return copyUnsafeChecks(this, new RecordShape<any, any>(this.keyShape, valueShape, this._options));
+    return new RecordShape<any, any>(this.keyShape, toDeepPartialShape(this.valueShape).optional(), this._options);
   }
 
   protected _isAsync(): boolean {

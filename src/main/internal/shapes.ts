@@ -43,16 +43,11 @@ export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialSha
 }
 
 /**
- * Replaces checks of the target shape with forced checks from the source shape.
+ * Copies checks from `baseShape` to `shape`.
  */
-export function copyUnsafeChecks<S extends Shape>(sourceShape: Shape, targetShape: S): S {
-  return targetShape;
-}
-
-/**
- * Replaces checks of `shape` with checks from the `baseShape` that match a predicate.
- */
-export function copyChecks<S extends Shape>(baseShape: Shape, shape: S): S {
+export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
+  shape['_operations'] = baseShape['_operations'];
+  shape['_applyOperations'] = baseShape['_applyOperations'];
   return shape;
 }
 

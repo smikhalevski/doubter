@@ -11,7 +11,6 @@ import {
   applyShape,
   captureIssues,
   concatIssues,
-  copyUnsafeChecks,
   Dict,
   getErrorMessage,
   isArray,
@@ -151,6 +150,8 @@ export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<
 export interface DeepPartialProtocol<S extends AnyShape> {
   /**
    * Converts the shape and its child shapes to deep partial alternatives.
+   *
+   * **Note** This returns a shape without any operations.
    *
    * @returns The deep partial clone of the shape.
    */
@@ -1117,10 +1118,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
   }
 
   deepPartial(): PipeShape<DeepPartialShape<InputShape>, DeepPartialShape<OutputShape>> {
-    return copyUnsafeChecks(
-      this,
-      new PipeShape(toDeepPartialShape(this.inputShape), toDeepPartialShape(this.outputShape))
-    );
+    return new PipeShape(toDeepPartialShape(this.inputShape), toDeepPartialShape(this.outputShape));
   }
 
   protected _isAsync(): boolean {
@@ -1224,10 +1222,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
   }
 
   deepPartial(): ReplaceLiteralShape<DeepPartialShape<BaseShape>, InputValue, OutputValue> {
-    return copyUnsafeChecks(
-      this,
-      new ReplaceLiteralShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue)
-    );
+    return new ReplaceLiteralShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue);
   }
 
   protected _isAsync(): boolean {
@@ -1324,10 +1319,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
   }
 
   deepPartial(): DenyLiteralShape<DeepPartialShape<BaseShape>, DeniedValue> {
-    return copyUnsafeChecks(
-      this,
-      new DenyLiteralShape(toDeepPartialShape(this.shape), this.deniedValue, this._options)
-    );
+    return new DenyLiteralShape(toDeepPartialShape(this.shape), this.deniedValue, this._options);
   }
 
   protected _isAsync(): boolean {
@@ -1424,7 +1416,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   }
 
   deepPartial(): CatchShape<DeepPartialShape<BaseShape>, FallbackValue> {
-    return copyUnsafeChecks(this, new CatchShape(toDeepPartialShape(this.shape), this.fallback));
+    return new CatchShape(toDeepPartialShape(this.shape), this.fallback);
   }
 
   protected _isAsync(): boolean {
@@ -1516,7 +1508,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
   }
 
   deepPartial(): ExcludeShape<DeepPartialShape<BaseShape>, ExcludedShape> {
-    return copyUnsafeChecks(this, new ExcludeShape(toDeepPartialShape(this.shape), this.excludedShape, this._options));
+    return new ExcludeShape(toDeepPartialShape(this.shape), this.excludedShape, this._options);
   }
 
   protected _isAsync(): boolean {
