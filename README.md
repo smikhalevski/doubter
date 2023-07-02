@@ -86,7 +86,7 @@ npm install --save-prod doubter
 - Objects<br>
   [`object`](#object)
   [`record`](#record)
-  [`instanceOf`](#instanceof)
+  [`instance`](#instanceof)
 
 - Collections<br>
   [`array`](#array)
@@ -464,7 +464,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `date_max`        | [`d.date().max(x)`](#date)               | The maximum value `x`                                 |
 | `enum`            | [`d.enum([x, y, z])`](#enum)             | The array of unique values`[x, y, z]`                 |
 | `excluded`        | [`shape.exclude(…)`](#exclude-a-shape)   | The excluded shape                                    |
-| `instance`        | [`d.instanceOf(Class)`](#instanceof)     | The class constructor `Class`                         |
+| `instance`        | [`d.instance(Class)`](#instanceof)     | The class constructor `Class`                         |
 | `intersection`    | [`d.and(…)`](#intersection-and)          | —                                                     |
 | `predicate`       | [`shape.refine(…)`](#refinements)        | The predicate callback                                |
 | `never`           | [`d.never()`](#never)                    | —                                                     |
@@ -1022,7 +1022,7 @@ class Planet {
   constructor(public name: string) {}
 }
 
-const shape = d.instanceOf(Planet).to(
+const shape = d.instance(Planet).to(
   d.object({
     name: d.string().min(4)
   })
@@ -2562,9 +2562,9 @@ function outputFunction(...inputArguments) {
 }
 ```
 
-# `instanceOf`
+# `instance`
 
-[`d.instanceOf`](https://smikhalevski.github.io/doubter/functions/doubter_core.instanceOf.html) returns an
+[`d.instance`](https://smikhalevski.github.io/doubter/functions/doubter_core.instance.html) returns an
 [`InstanceShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.InstanceShape.html) instance.
 
 Constrains a value to be an object that is an instance of a class:
@@ -2574,7 +2574,7 @@ class User {
   name?: string;
 }
 
-d.instanceOf(User);
+d.instance(User);
 // ⮕ Shape<User>
 ```
 

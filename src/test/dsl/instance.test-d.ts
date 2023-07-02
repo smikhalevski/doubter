@@ -5,4 +5,4 @@ class TestClass {
   aaa = 111;
 }
 
-expectType<TestClass>(d.instanceOf(TestClass)[d.OUTPUT]);
+expectType<TestClass>(d.instance(TestClass)[d.OUTPUT]);
