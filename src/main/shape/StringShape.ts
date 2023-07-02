@@ -7,6 +7,8 @@ import {
   ApplyOptions,
   ConstraintOptions,
   Message,
+  ParameterizedAlterOptions,
+  ParameterizedRefineOptions,
   RefineCallback,
   RefineOptions,
   RefinePredicate,
@@ -19,14 +21,10 @@ import { NEVER } from './Shape';
 /**
  * The shape of a string value.
  *
- * @template InputValue
- * @template OutputValue
+ * @template Value The output value.
  * @group Shapes
  */
-export class StringShape<
-  InputValue extends string = string,
-  OutputValue extends InputValue = InputValue
-> extends CoercibleShape<InputValue, OutputValue, string> {
+export class StringShape<Value extends string = string> extends CoercibleShape<string, Value, string> {
   /**
    * Returns issues associated with an invalid input value type.
    */
@@ -51,7 +49,7 @@ export class StringShape<
     }
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<OutputValue> {
+  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
     let output = input;
 
     if (
@@ -92,21 +90,28 @@ export class StringShape<
   }
 }
 
-export interface StringShape<InputValue, OutputValue> {
-  alter<AlteredOutputValue extends OutputValue, Param>(
-    cb: AlterCallback<OutputValue, AlteredOutputValue, Param>,
-    options: AlterOptions & { param: Param }
-  ): StringShape<InputValue, AlteredOutputValue>;
+export interface StringShape<Value> {
+  refine<RefinedValue extends Value, Param>(
+    cb: RefinePredicate<Value, RefinedValue, Param>,
+    options: ParameterizedRefineOptions<Param> | Message
+  ): StringShape<RefinedValue>;
 
-  alter<AlteredOutputValue extends OutputValue>(
-    cb: AlterCallback<OutputValue, AlteredOutputValue>,
-    options?: AlterOptions
-  ): StringShape<InputValue, AlteredOutputValue>;
-
-  refine<RefinedOutputValue extends OutputValue>(
-    cb: RefinePredicate<OutputValue, RefinedOutputValue>,
+  refine<RefinedValue extends Value>(
+    cb: RefinePredicate<Value, RefinedValue>,
     options?: RefineOptions | Message
-  ): StringShape<InputValue, RefinedOutputValue>;
+  ): StringShape<RefinedValue>;
 
-  refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): this;
+  refine<Param>(cb: RefineCallback<Value, Param>, options?: ParameterizedRefineOptions<Param> | Message): this;
+
+  refine(cb: RefineCallback<Value>, options?: RefineOptions | Message): this;
+
+  alter<AlteredValue extends Value, Param>(
+    cb: AlterCallback<Value, AlteredValue, Param>,
+    options: ParameterizedAlterOptions<Param>
+  ): StringShape<AlteredValue>;
+
+  alter<AlteredValue extends Value>(
+    cb: AlterCallback<Value, AlteredValue>,
+    options?: AlterOptions
+  ): StringShape<AlteredValue>;
 }

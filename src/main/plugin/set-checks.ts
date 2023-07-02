@@ -17,22 +17,6 @@ import { createIssueFactory } from '../utils';
 declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {
     /**
-     * The minimum set size, or `undefined` if there's no minimum size.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/set-checks!}
-     */
-    readonly minSize: number | undefined;
-
-    /**
-     * The maximum set size, or `undefined` if there's no maximum size.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/set-checks!}
-     */
-    readonly maxSize: number | undefined;
-
-    /**
      * Constrains the set size.
      *
      * @param size The minimum set size.
@@ -71,27 +55,9 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!SetShape} with additional checks.
  */
 export default function () {
-  const prototype = SetShape.prototype;
-
-  Object.defineProperties(prototype, {
-    minSize: {
-      configurable: true,
-      get(this: SetShape<any>) {
-        return this._getOperation(CODE_SET_MIN)?.param;
-      },
-    },
-
-    maxSize: {
-      configurable: true,
-      get(this: SetShape<any>) {
-        return this._getOperation(CODE_SET_MAX)?.param;
-      },
-    },
-  });
-
-  prototype.size = size;
-  prototype.min = min;
-  prototype.max = max;
+  SetShape.prototype.size = size;
+  SetShape.prototype.min = min;
+  SetShape.prototype.max = max;
 }
 
 function size(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
@@ -101,12 +67,12 @@ function size(this: SetShape<any>, size: number, options?: ConstraintOptions | M
 function min(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_SET_MIN,
     param: size,
-    compose: next => (input, output, options, issues) => {
-      if (input.size < size) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (output.size < size) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;
@@ -120,12 +86,12 @@ function min(this: SetShape<any>, size: number, options?: ConstraintOptions | Me
 function max(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_SET_MAX,
     param: size,
-    compose: next => (input, output, options, issues) => {
-      if (input.size > size) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (output.size > size) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;

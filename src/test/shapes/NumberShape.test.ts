@@ -2,7 +2,7 @@ import { NEVER, NumberShape } from '../../main';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
-  CODE_NUMBER_MULTIPLE_OF,
+  CODE_NUMBER_MULTIPLE,
   CODE_TYPE,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_TYPE,
@@ -58,7 +58,7 @@ describe('NumberShape', () => {
       ok: false,
       issues: [
         { code: CODE_NUMBER_GT, input: 1, param: 2, message: 'Must be greater than 2' },
-        { code: CODE_NUMBER_MULTIPLE_OF, input: 1, param: 3, message: 'Must be a multiple of 3' },
+        { code: CODE_NUMBER_MULTIPLE, input: 1, param: 3, message: 'Must be a multiple of 3' },
       ],
     });
   });

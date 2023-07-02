@@ -12,6 +12,7 @@ import {
   isAsyncShape,
   isObject,
   isPlainObject,
+  pushIssue,
   ReadonlyDict,
   setObjectProperty,
   toDeepPartialShape,
@@ -178,7 +179,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Merge properties from the other object shape.
    *
-   * **Note** This returns a shape without any operations.
+   * **Note** This method returns a shape without any operations.
    *
    * If a property with the same kind already exists on this object shape then it is overwritten. The index signature of
    * this shape and its {@linkcode keysMode} is preserved intact.
@@ -194,7 +195,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Add properties to an object shape.
    *
-   * **Note** This returns a shape without any operations.
+   * **Note** This method returns a shape without any operations.
    *
    * If a property with the same kind already exists on this object shape then it is overwritten. The index signature of
    * this shape and its {@linkcode keysMode} is preserved intact.
@@ -216,7 +217,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape that only has properties with listed keys.
    *
-   * **Note** This returns a shape without any operations.
+   * **Note** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to pick.
    * @returns The new object shape.
@@ -236,7 +237,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape that doesn't have the listed keys.
    *
-   * **Note** This returns a shape without any operations.
+   * **Note** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to omit.
    * @returns The new object shape.
@@ -256,7 +257,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape with all properties marked as optional.
    *
-   * **Note** This returns a shape without any operations.
+   * **Note** This method returns a shape without any operations.
    *
    * @returns The new object shape.
    */
@@ -265,7 +266,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape with keys marked as optional.
    *
-   * **Note** This returns a shape without any operations.
+   * **Note** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to make optional.
    * @returns The new object shape.
@@ -418,7 +419,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         return;
       }
 
-      const { keys, keysMode, restShape, _valueShapes, _hasOperations } = this;
+      const { keys, keysMode, restShape, _valueShapes, _operations } = this;
 
       const keysLength = keys.length;
 
@@ -501,7 +502,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_hasOperations || issues === null) {
+          } else if (_operations !== null || issues === null) {
             if (input === output) {
               output = cloneDict(input);
             }
@@ -530,7 +531,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are preserved as is and aren't checked.
    */
   private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, _valueShapes, _hasOperations } = this;
+    const { keys, _valueShapes, _operations } = this;
 
     const keysLength = keys.length;
 
@@ -554,7 +555,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         issues = concatIssues(issues, result);
         continue;
       }
-      if (_hasOperations || issues === null) {
+      if (_operations !== null || issues === null) {
         if (input === output) {
           output = cloneDict(input);
         }
@@ -568,7 +569,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, keysMode, restShape, _valueShapes, _hasOperations } = this;
+    const { keys, keysMode, restShape, _valueShapes, _operations } = this;
 
     const keysLength = keys.length;
 
@@ -610,7 +611,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_hasOperations || issues === null) {
+        if (_operations !== null || issues === null) {
           if (input === output) {
             output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
@@ -635,7 +636,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
 
       // Unknown keys are stripped
-      if (input === output && (_hasOperations || issues === null)) {
+      if (input === output && (_operations !== null || issues === null)) {
         output = cloneDictKeys(input, keys);
       }
     }
@@ -647,7 +648,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       if (!options.verbose) {
         return [issue];
       }
-      issues = concatIssues(issues, [issue]);
+      issues = pushIssue(issues, issue);
     }
 
     // Parse absent known keys
@@ -673,7 +674,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_hasOperations || issues === null) {
+        if (_operations !== null || issues === null) {
           if (input === output) {
             output = cloneDict(input);
           }
@@ -691,20 +692,20 @@ export interface ObjectShape<PropShapes, RestShape> {
     options?: AlterOptions
   ): this;
 
-  alter<AlteredOutputValue extends InferObject<PropShapes, RestShape, OUTPUT>, Param>(
-    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredOutputValue, Param>,
+  alter<AlteredValue extends InferObject<PropShapes, RestShape, OUTPUT>, Param>(
+    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredValue, Param>,
     options: AlterOptions & { param: Param }
-  ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredOutputValue>;
+  ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredValue>;
 
-  alter<AlteredOutputValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
-    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredOutputValue>,
+  alter<AlteredValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
+    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredValue>,
     options: AlterOptions
-  ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredOutputValue>;
+  ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredValue>;
 
-  refine<RefinedOutputValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
-    cb: RefinePredicate<InferObject<PropShapes, RestShape, OUTPUT>, RefinedOutputValue>,
+  refine<RefinedValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
+    cb: RefinePredicate<InferObject<PropShapes, RestShape, OUTPUT>, RefinedValue>,
     options?: RefineOptions | Message
-  ): Shape<InferObject<PropShapes, RestShape, INPUT>, RefinedOutputValue>;
+  ): Shape<InferObject<PropShapes, RestShape, INPUT>, RefinedValue>;
 
   refine(cb: RefineCallback<InferObject<PropShapes, RestShape, OUTPUT>>, options?: RefineOptions | Message): this;
 }

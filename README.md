@@ -363,7 +363,7 @@ shape.parseAsync(Promise.resolve(42));
 // ⮕ Promise<42>
 ```
 
-Any shape that relies on an async shape becomes async as well:
+A shape that relies on an async shape becomes async as well:
 
 ```ts
 const userShape = d.object({
@@ -452,38 +452,38 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 
 <br/>
 
-| Code                 | Caused by                                | Param                                                 |
-|:---------------------|:-----------------------------------------|:------------------------------------------------------|
-| `array_min`          | [`d.array().min(n)`](#array)             | The minimum array length `n`                          |
-| `array_max`          | [`d.array().max(n)`](#array)             | The maximum array length `n`                          |
-| `bigint_min`         | [`d.bigint().min(x)`](#bigint)           | The minimum value `x`                                 |
-| `bigint_max`         | [`d.bigint().max(x)`](#bigint)           | The maximum value `x`                                 |
-| `const`              | [`d.const(x)`](#const)                   | The expected constant value `x`                       |
-| `denied`             | [`shape.deny(x)`](#deny-a-literal-value) | The denied value `x`                                  |
-| `date_min`           | [`d.date().min(x)`](#date)               | The minimum value `x`                                 |
-| `date_max`           | [`d.date().max(x)`](#date)               | The maximum value `x`                                 |
-| `enum`               | [`d.enum([x, y, z])`](#enum)             | The array of unique values`[x, y, z]`                 |
-| `excluded`           | [`shape.exclude(…)`](#exclude-a-shape)   | The excluded shape                                    |
-| `instance`           | [`d.instanceOf(Class)`](#instanceof)     | The class constructor `Class`                         |
-| `intersection`       | [`d.and(…)`](#intersection-and)          | —                                                     |
-| `predicate`          | [`shape.refine(…)`](#refinements)        | The predicate callback                                |
-| `never`              | [`d.never()`](#never)                    | —                                                     |
-| `number_integer`     | [`d.integer()`](#integer-int)            | —                                                     |
-| `number_finite`      | [`d.finite()`](#finite)                  | —                                                     |
-| `number_gt`          | [`d.number().gte(x)`](#number)           | The minimum value `x`                                 |
-| `number_lt`          | [`d.number().lte(x)`](#number)           | The maximum value `x`                                 |
-| `number_gte`         | [`d.number().gt(x)`](#number)            | The exclusive minimum value `x`                       |
-| `number_lte`         | [`d.number().lt(x)`](#number)            | The exclusive maximum value `x`                       |
-| `number_multiple_of` | [`d.number().multipleOf(x)`](#number)    | The divisor `x`                                       |
-| `object_exact`       | [`d.object().exact()`](#unknown-keys)    | The array of unknown keys                             |
-| `set_min`            | [`d.set().min(n)`](#set)                 | The minimum `Set` size `n`                            |
-| `set_max`            | [`d.set().max(n)`](#set)                 | The maximum `Set` size `n`                            |
-| `string_min`         | [`d.string().min(n)`](#string)           | The minimum string length `n`                         |
-| `string_max`         | [`d.string().max(n)`](#string)           | The maximum string length `n`                         |
-| `string_regex`       | [`d.string().regex(re)`](#string)        | The regular expression `re`                           |
-| `type`               | All shapes                               | The expected [input value type](#introspection)       |
-| `tuple`              | [`d.tuple([…])`](#tuple)                 | The expected tuple length                             |
-| `union`              | [`d.or(…)`](#union-or)                   | [Issues raised by a union](#issues-raised-by-a-union) |
+| Code              | Caused by                                | Param                                                 |
+|:------------------|:-----------------------------------------|:------------------------------------------------------|
+| `array_min`       | [`d.array().min(n)`](#array)             | The minimum array length `n`                          |
+| `array_max`       | [`d.array().max(n)`](#array)             | The maximum array length `n`                          |
+| `bigint_min`      | [`d.bigint().min(x)`](#bigint)           | The minimum value `x`                                 |
+| `bigint_max`      | [`d.bigint().max(x)`](#bigint)           | The maximum value `x`                                 |
+| `const`           | [`d.const(x)`](#const)                   | The expected constant value `x`                       |
+| `denied`          | [`shape.deny(x)`](#deny-a-literal-value) | The denied value `x`                                  |
+| `date_min`        | [`d.date().min(x)`](#date)               | The minimum value `x`                                 |
+| `date_max`        | [`d.date().max(x)`](#date)               | The maximum value `x`                                 |
+| `enum`            | [`d.enum([x, y, z])`](#enum)             | The array of unique values`[x, y, z]`                 |
+| `excluded`        | [`shape.exclude(…)`](#exclude-a-shape)   | The excluded shape                                    |
+| `instance`        | [`d.instanceOf(Class)`](#instanceof)     | The class constructor `Class`                         |
+| `intersection`    | [`d.and(…)`](#intersection-and)          | —                                                     |
+| `predicate`       | [`shape.refine(…)`](#refinements)        | The predicate callback                                |
+| `never`           | [`d.never()`](#never)                    | —                                                     |
+| `number_integer`  | [`d.integer()`](#integer-int)            | —                                                     |
+| `number_finite`   | [`d.finite()`](#finite)                  | —                                                     |
+| `number_gt`       | [`d.number().gte(x)`](#number)           | The minimum value `x`                                 |
+| `number_lt`       | [`d.number().lte(x)`](#number)           | The maximum value `x`                                 |
+| `number_gte`      | [`d.number().gt(x)`](#number)            | The exclusive minimum value `x`                       |
+| `number_lte`      | [`d.number().lt(x)`](#number)            | The exclusive maximum value `x`                       |
+| `number_multiple` | [`d.number().multiple(x)`](#number)      | The divisor `x`                                       |
+| `object_exact`    | [`d.object().exact()`](#unknown-keys)    | The array of unknown keys                             |
+| `set_min`         | [`d.set().min(n)`](#set)                 | The minimum `Set` size `n`                            |
+| `set_max`         | [`d.set().max(n)`](#set)                 | The maximum `Set` size `n`                            |
+| `string_min`      | [`d.string().min(n)`](#string)           | The minimum string length `n`                         |
+| `string_max`      | [`d.string().max(n)`](#string)           | The maximum string length `n`                         |
+| `string_regex`    | [`d.string().regex(re)`](#string)        | The regular expression `re`                           |
+| `type`            | All shapes                               | The expected [input value type](#introspection)       |
+| `tuple`           | [`d.tuple([…])`](#tuple)                 | The expected tuple length                             |
+| `union`           | [`d.or(…)`](#union-or)                   | [Issues raised by a union](#issues-raised-by-a-union) |
 
 ## Global error message formatter
 
@@ -2373,7 +2373,7 @@ d.fn(d.array(d.string()));
 // ⮕ Shape<(...args: string[]) => any>
 ```
 
-Any shape that constrains an array type would do, you can even use a union:
+A shape that constrains an array type would do, you can even use a union:
 
 ```ts
 d.fn(
@@ -2947,7 +2947,7 @@ Constrain a number to be a multiple of a divisor:
 
 ```ts
 // Number must be divisible by 5 without a remainder
-d.number().multipleOf(5);
+d.number().multiple(5);
 ```
 
 Constrain the number to be an integer:

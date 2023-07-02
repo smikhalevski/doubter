@@ -11,19 +11,10 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
-import {
-  AlterCallback,
-  ApplyOptions,
-  ConstraintOptions,
-  Issue,
-  Message,
-  RefineCallback,
-  RefineOptions,
-  Result,
-} from '../types';
+import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, Output, OUTPUT } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT } from './Shape';
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],
@@ -113,7 +104,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   /**
    * Returns an array shape that has rest elements constrained by the given shape.
    *
-   * **Note** This returns a shape without any operations.
+   * **Note** This method returns a shape without any operations.
    *
    * @param restShape The shape of rest elements, or `null` if there are no rest elements.
    * @returns The new array shape.
@@ -158,7 +149,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     options: ApplyOptions,
     nonce: number
   ): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
-    const { headShapes, restShape, _hasOperations } = this;
+    const { headShapes, restShape, _operations } = this;
 
     let output = input;
     let outputLength;
@@ -193,7 +184,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_hasOperations || issues === null) {
+        if (_operations !== null || issues === null) {
           if (input === output) {
             output = input.slice(0);
           }
@@ -210,7 +201,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     nonce: number
   ): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
-      const { headShapes, restShape, _hasOperations } = this;
+      const { headShapes, restShape, _operations } = this;
 
       let output = input;
       let outputLength: number;
@@ -239,7 +230,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_hasOperations || issues === null) {
+          } else if (_operations !== null || issues === null) {
             if (input === output) {
               output = input.slice(0);
             }
@@ -283,10 +274,4 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     }
     return [value];
   }
-}
-
-export interface ArrayShape<HeadShapes, RestShape> {
-  alter(cb: AlterCallback<Output<this>>): this;
-
-  refine(cb: RefineCallback<Output<this>>, options?: RefineOptions | Message): this;
 }

@@ -38,7 +38,7 @@ export function convertAsync<ConvertedValue>(
    * @return The conversion result.
    * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => Promise<ConvertedValue>
+  cb: (value: any, options: Readonly<ApplyOptions>) => PromiseLike<ConvertedValue>
 ): ConvertShape<ConvertedValue> {
   return new ConvertShape(cb, true);
 }

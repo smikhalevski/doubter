@@ -1,10 +1,6 @@
 export const ERROR_REQUIRES_ASYNC = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
 export const ERROR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';
 export const ERROR_ASYNC_FUNCTION = 'The function signature is constrained by async shapes, use ensureAsyncSignature.';
-export const ERROR_UNKNOWN_OPERATION = 'Unknown operation: ';
-
-export const OPERATION_CHECK = 'check';
-export const OPERATION_ALTER = 'alter';
 
 export const CODE_ARRAY_INCLUDES = 'array_includes';
 export const CODE_ARRAY_MIN = 'array_min';
@@ -27,7 +23,7 @@ export const CODE_NUMBER_GT = 'number_gt';
 export const CODE_NUMBER_LT = 'number_lt';
 export const CODE_NUMBER_GTE = 'number_gte';
 export const CODE_NUMBER_LTE = 'number_lte';
-export const CODE_NUMBER_MULTIPLE_OF = 'number_multiple_of';
+export const CODE_NUMBER_MULTIPLE = 'number_multiple';
 export const CODE_OBJECT_EXACT = 'object_exact';
 export const CODE_SET_MIN = 'set_min';
 export const CODE_SET_MAX = 'set_max';
@@ -68,7 +64,7 @@ export const MESSAGE_NUMBER_GT = 'Must be greater than %s';
 export const MESSAGE_NUMBER_GTE = 'Must be greater than or equal to %s';
 export const MESSAGE_NUMBER_LT = 'Must be less than %s';
 export const MESSAGE_NUMBER_LTE = 'Must be less than or equal to %s';
-export const MESSAGE_NUMBER_MULTIPLE_OF = 'Must be a multiple of %s';
+export const MESSAGE_NUMBER_MULTIPLE = 'Must be a multiple of %s';
 export const MESSAGE_OBJECT_TYPE = 'Must be an object';
 export const MESSAGE_OBJECT_EXACT = 'Must not have unknown keys: %s';
 export const MESSAGE_PREDICATE = 'Must conform the predicate';

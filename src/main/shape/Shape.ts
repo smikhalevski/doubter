@@ -23,9 +23,9 @@ import {
   pushIssue,
   ReadonlyDict,
   returnTrue,
-  terminalOperationCallback,
   toDeepPartialShape,
   unionTypes,
+  universalApplyOperations,
 } from '../internal';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
@@ -41,6 +41,10 @@ import {
   Message,
   Ok,
   Operation,
+  OperationCallback,
+  ParameterizedAlterOptions,
+  ParameterizedCheckOptions,
+  ParameterizedRefineOptions,
   ParseOptions,
   RefineCallback,
   RefineOptions,
@@ -52,7 +56,8 @@ import { ValidationError } from '../ValidationError';
 
 /**
  * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from
- * {@linkcode CoercibleShape#_coerce} method, that is present on various shapes, when coercion is not possible.
+ * {@linkcode CoercibleShape#_coerce CoercibleShape._coerce} method, that is present on various shapes, when coercion is
+ * not possible.
  *
  * @group Other
  */
@@ -64,7 +69,7 @@ export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false,
  * Excludes `U` from `T` only if `U` is a literal type.
  */
 // prettier-ignore
-export type ExcludeLiteral<T, U> =
+type ExcludeLiteral<T, U> =
   number extends U ? T :
   string extends U ? T :
   symbol extends U ? T :
@@ -132,14 +137,14 @@ export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
  * The shape that adds a brand to the output type. This shape doesn't affect the runtime and is used for emulation of
  * nominal typing.
  *
- * @template BaseShape The shape which output must be branded.
+ * @template S The shape which output must be branded.
  * @template Brand The brand value.
  * @group Shapes
  */
 // prettier-ignore
-export type BrandShape<BaseShape extends AnyShape & Partial<DeepPartialProtocol<AnyShape>>, Brand> =
-  & Shape<Input<BaseShape>, Branded<Output<BaseShape>, Brand>>
-  & Pick<BaseShape, keyof DeepPartialProtocol<AnyShape>>;
+export type BrandShape<S extends AnyShape, Brand> =
+  & Shape<Input<S>, Branded<Output<S>, Brand>>
+  & Pick<S, Exclude<keyof S, keyof Shape>>;
 
 /**
  * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
@@ -151,7 +156,7 @@ export interface DeepPartialProtocol<S extends AnyShape> {
   /**
    * Converts the shape and its child shapes to deep partial alternatives.
    *
-   * **Note** This returns a shape without any operations.
+   * **Note** This method returns a shape without any operations.
    *
    * @returns The deep partial clone of the shape.
    */
@@ -227,32 +232,28 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   declare readonly [OUTPUT]: OutputValue;
 
   /**
-   * The dictionary of shape annotations. Use {@linkcode Shape#annotate} to add new annotations via DSL.
+   * The dictionary of shape annotations.
+   *
+   * @see {@linkcode annotate}
    */
   annotations: Dict = {};
 
   /**
-   * The array of operations that this shape applies after the input type is ensured.
+   * The array of operations that the shape applies after the input value type is ensured.
    */
-  protected _operations: readonly Operation[] = [];
+  protected _operations: readonly Operation[] | null = null;
 
   /**
-   * The callback that applies {@linkcode _operations operations} to the shape output value, or `null` if there are no
-   * operations to apply.
+   * The callback that applies {@linkcode _operations operations} to the shape output value.
    */
-  protected _applyOperations = terminalOperationCallback;
-
-  /**
-   * `true` if there are {@linkcode _operations}, or `false` otherwise.
-   */
-  protected _hasOperations = false;
+  protected declare _applyOperations: OperationCallback;
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
    * sub-shape.
    *
-   * @param key The kind for which the sub-shape must be retrieved.
-   * @returns The sub-shape or `null` if there's no such kind in the shape.
+   * @param key The key for which the sub-shape must be retrieved.
+   * @returns The sub-shape or `null` if there's no such key in the shape.
    */
   at(key: unknown): AnyShape | null {
     return null;
@@ -274,6 +275,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param annotations Annotations to add.
    * @returns The clone of the shape with the updated annotations.
+   * @see {@linkcode annotations}
    */
   annotate(annotations: ReadonlyDict): this {
     const shape = this._clone();
@@ -284,120 +286,68 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If the {@linkcode CheckOptions#kind} is defined and there's already a check with the same kind then the existing
-   * check is deleted and the new one is appended. If the type is `undefined` then the `cb` identity is used as a type.
+   * If the {@linkcode ParameterizedCheckOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
-   * @template Param The additional param that would be passed to the {@linkcode CheckCallback} when a check operation
-   * is applied.
-   * @see {@linkcode Shape#refine}
+   * @template Param The param that is passed to the {@linkcode CheckCallback} when a check operation is applied.
+   * @see {@linkcode refine}
    */
-  check<Param>(cb: CheckCallback<OutputValue, Param>, options: CheckOptions & { param: Param }): this;
+  check<Param>(cb: CheckCallback<OutputValue, Param>, options: ParameterizedCheckOptions<Param>): this;
 
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If the kind is `undefined` then the `cb` identity is used as a kind.
+   * If the {@linkcode CheckOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
-   * @see {@linkcode Shape#refine}
+   * @see {@linkcode refine}
    */
   check(cb: CheckCallback<OutputValue>, options?: CheckOptions): this;
 
   check(cb: CheckCallback, options: CheckOptions = {}): this {
     const { type = cb, param, force } = options;
 
-    return this._addOperation({
+    return this._appendOperation({
       type,
       param,
-      compose: next => (input, output, options, issues) => {
-        if (force || issues === null) {
-          try {
-            const result = cb(output, param, options);
+      compile: next => (input, output, options, issues) => {
+        if (issues !== null && !force) {
+          return next(input, output, options, issues);
+        }
 
-            if (isObjectLike(result)) {
-              if (issues !== null) {
-                if (isArray(result)) {
-                  issues.push(...result);
-                } else {
-                  issues.push(result);
-                }
-              } else {
-                issues = isArray(result) ? (result.length === 0 ? issues : result.slice(0)) : [result];
-              }
-              if (!options.verbose) {
-                return issues;
-              }
-            }
-          } catch (error) {
-            issues = concatIssues(issues, captureIssues(error));
+        let result;
+        try {
+          result = cb(output, param, options);
+        } catch (error) {
+          issues = concatIssues(issues, captureIssues(error));
 
-            if (!options.verbose) {
-              return issues;
-            }
+          if (!options.verbose) {
+            return issues;
           }
         }
-        return next(input, output, options, issues);
-      },
-    });
-  }
 
-  /**
-   * Alters the shape output value without changing its base type.
-   *
-   * @param cb The callback that alters the shape output.
-   * @param options The check options.
-   * @returns The clone of the shape.
-   * @template AlteredOutputValue The narrowed output value.
-   * @template Param The additional param that would be passed to the {@linkcode AlterCallback} when an alteration
-   * operation is applied.
-   * @see {@linkcode Shape#convert}
-   */
-  alter<AlteredOutputValue extends OutputValue, Param = any>(
-    cb: AlterCallback<OutputValue, AlteredOutputValue, Param>,
-    options: AlterOptions & { param: Param }
-  ): Shape<InputValue, AlteredOutputValue>;
-
-  /**
-   * Alters the shape output value without changing its base type.
-   *
-   * @param cb The callback that alters the shape output.
-   * @param options The check options.
-   * @returns The clone of the shape.
-   * @template AlteredOutputValue The narrowed output value.
-   * @see {@linkcode Shape#convert}
-   */
-  alter<AlteredOutputValue extends OutputValue>(
-    cb: AlterCallback<OutputValue, AlteredOutputValue>,
-    options?: AlterOptions
-  ): Shape<InputValue, AlteredOutputValue>;
-
-  alter(cb: AlterCallback, options: AlterOptions = {}): Shape {
-    const { type = cb, param, force } = options;
-
-    return this._addOperation({
-      type,
-      param,
-      compose: next => (input, output, options, issues) => {
-        if (force || issues === null) {
-          try {
-            output = (cb as AlterCallback)(input, param, options);
-          } catch (error) {
-            issues = concatIssues(issues, captureIssues(error));
-
-            if (!options.verbose) {
-              return issues;
-            }
-          }
+        if (!isObjectLike(result)) {
+          return next(input, output, options, issues);
         }
+
+        if (!isArray(result)) {
+          issues = pushIssue(issues, result);
+        } else if (result.length !== 0) {
+          issues = concatIssues(issues, result);
+        }
+
+        if (issues !== null && !options.verbose) {
+          return issues;
+        }
+
         return next(input, output, options, issues);
       },
     });
@@ -407,55 +357,152 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Refines the shape output type with the
    * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
    *
+   * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The constraint options or an issue message.
    * @returns The shape with the narrowed output.
-   * @template RefinedOutputValue The narrowed output value.
-   * @see {@linkcode Shape#check}
+   * @template RefinedValue The narrowed output value.
+   * @template Param The param that is passed to the {@linkcode RefinePredicate} when a refinement operation is applied.
+   * @see {@linkcode check}
    */
-  refine<RefinedOutputValue extends OutputValue>(
-    cb: RefinePredicate<OutputValue, RefinedOutputValue>,
+  refine<RefinedValue extends OutputValue, Param>(
+    cb: RefinePredicate<OutputValue, RefinedValue, Param>,
+    options: ParameterizedRefineOptions<Param> | Message
+  ): Shape<InputValue, RefinedValue>;
+
+  /**
+   * Refines the shape output type with the
+   * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
+   *
+   * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   *
+   * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
+   * @param options The constraint options or an issue message.
+   * @returns The shape with the narrowed output.
+   * @template RefinedValue The narrowed output value.
+   * @see {@linkcode check}
+   */
+  refine<RefinedValue extends OutputValue>(
+    cb: RefinePredicate<OutputValue, RefinedValue>,
     options?: RefineOptions | Message
-  ): Shape<InputValue, RefinedOutputValue>;
+  ): Shape<InputValue, RefinedValue>;
 
   /**
    * Checks that the output value conforms the predicate.
    *
+   * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The constraint options or an issue message.
    * @returns The clone of the shape.
-   * @see {@linkcode Shape#check}
+   * @template Param The param that is passed to the {@linkcode RefineCallback} when a refinement operation is applied.
+   * @see {@linkcode check}
+   */
+  refine<Param>(
+    cb: RefineCallback<OutputValue, Param>,
+    options?: ParameterizedRefineOptions<Param> | Message
+  ): Shape<InputValue, OutputValue>;
+
+  /**
+   * Checks that the output value conforms the predicate.
+   *
+   * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   *
+   * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
+   * @param options The constraint options or an issue message.
+   * @returns The clone of the shape.
+   * @see {@linkcode check}
    */
   refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): Shape<InputValue, OutputValue>;
 
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
-    const { type = cb, code = CODE_PREDICATE, param, force } = extractOptions(options);
+    const { type = cb, code = CODE_PREDICATE, param, force = false } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
-    return this._addOperation({
+    return this._appendOperation({
       type,
       param,
-      compose: next => (input, output, options, issues) => {
-        if (force || issues === null) {
-          let result = true;
-          try {
-            result = cb(output, options);
-          } catch (error) {
-            issues = concatIssues(issues, captureIssues(error));
+      compile: next => (input, output, options, issues) => {
+        if (issues !== null && !force) {
+          return next(input, output, options, issues);
+        }
 
-            if (!options.verbose) {
-              return issues;
-            }
-          }
-          if (!result) {
-            issues = pushIssue(issues, issueFactory(output, options));
+        let result;
+        try {
+          result = cb(output, param, options);
+        } catch (error) {
+          issues = concatIssues(issues, captureIssues(error));
 
-            if (!options.verbose) {
-              return issues;
-            }
+          if (!options.verbose) {
+            return issues;
           }
         }
+
+        if (!result) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (!options.verbose) {
+            return issues;
+          }
+        }
+
+        return next(input, output, options, issues);
+      },
+    });
+  }
+
+  /**
+   * Alters the shape output value without changing its base type.
+   *
+   * @param cb The callback that alters the shape output.
+   * @param options The check options.
+   * @returns The clone of the shape.
+   * @template AlteredValue The narrowed output value.
+   * @template Param The param that is passed to the {@linkcode AlterCallback} when an alteration operation is applied.
+   * @see {@linkcode convert}
+   */
+  alter<AlteredValue extends OutputValue, Param>(
+    cb: AlterCallback<OutputValue, AlteredValue, Param>,
+    options: ParameterizedAlterOptions<Param>
+  ): Shape<InputValue, AlteredValue>;
+
+  /**
+   * Alters the shape output value without changing its base type.
+   *
+   * @param cb The callback that alters the shape output.
+   * @param options The check options.
+   * @returns The clone of the shape.
+   * @template AlteredValue The narrowed output value.
+   * @see {@linkcode convert}
+   */
+  alter<AlteredValue extends OutputValue>(
+    cb: AlterCallback<OutputValue, AlteredValue>,
+    options?: AlterOptions
+  ): Shape<InputValue, AlteredValue>;
+
+  alter(cb: AlterCallback, options: AlterOptions = {}): Shape {
+    const { type = cb, param, force = false } = options;
+
+    return this._appendOperation({
+      type,
+      param,
+      compile: next => (input, output, options, issues) => {
+        if (issues !== null && !force) {
+          return next(input, output, options, issues);
+        }
+
+        try {
+          output = cb(output, param, options);
+        } catch (error) {
+          issues = concatIssues(issues, captureIssues(error));
+
+          if (!options.verbose) {
+            return issues;
+          }
+        }
+
         return next(input, output, options, issues);
       },
     });
@@ -467,7 +514,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that converts the shape output value.
    * @returns The {@linkcode ConvertShape} instance.
    * @template ConvertedValue The value returned from the callback that converts the output value of this shape.
-   * @see {@linkcode Shape#alter}
+   * @see {@linkcode alter}
    */
   convert<ConvertedValue>(
     /**
@@ -487,7 +534,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that converts the shape output value.
    * @returns The {@linkcode ConvertShape} instance.
    * @template ConvertedValue The value returned from the callback that converts the output value of this shape.
-   * @see {@linkcode Shape#alter}
+   * @see {@linkcode alter}
    */
   convertAsync<ConvertedValue>(
     /**
@@ -496,7 +543,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
      * @return The converted value.
      * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
-    cb: (value: OutputValue, options: Readonly<ApplyOptions>) => Promise<ConvertedValue>
+    cb: (value: OutputValue, options: Readonly<ApplyOptions>) => PromiseLike<ConvertedValue>
   ): Shape<InputValue, ConvertedValue> {
     return this.to(new ConvertShape(cb, true));
   }
@@ -661,7 +708,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Checks that the input doesn't match the shape.
    *
-   * This method works exactly as {@linkcode Shape#exclude} at runtime, but it doesn't perform the exclusion on the type
+   * This method works exactly as {@linkcode exclude} at runtime, but it doesn't perform the exclusion on the type
    * level.
    *
    * @param shape The shape to which the output must not conform.
@@ -675,36 +722,15 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     return this.exclude(shape, options);
   }
 
-  protected _getOperation(type: unknown): Operation | null {
-    for (const operation of this._operations) {
-      if (operation.type === type) {
-        return operation;
-      }
-    }
-    return null;
-  }
-
   /**
-   * Adds an operation to the shape, so it can be applied as the last step of parsing.
+   * Appends an operation to the shape, so it can be applied as the last step of parsing.
    *
-   * @param operation The operation to add.
+   * @param op The operation to add.
    * @returns The clone of the shape.
    */
-  protected _addOperation(operation: Operation): this {
+  protected _appendOperation(op: Operation<InputValue, OutputValue>): this {
     const shape = this._clone();
-
-    const operations = this._operations.concat(operation);
-
-    let cb = terminalOperationCallback;
-
-    for (let i = operations.length - 1; i >= 0; --i) {
-      cb = operations[i].compose(cb);
-    }
-
-    shape._operations = operations;
-    shape._applyOperations = cb;
-    shape._hasOperations = true;
-
+    shape._operations = this._operations !== null ? this._operations.concat(op) : [op];
     return shape;
   }
 
@@ -733,6 +759,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Synchronously parses the input.
    *
+   * **Note** Don't store returned instances of {@link Ok} since they can be reused.
+   *
    * @param input The shape input to parse.
    * @param options Parsing options.
    * @param nonce The globally unique number that identifies the parsing process.
@@ -744,6 +772,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Asynchronously parses the input.
+   *
+   * **Note** Don't store returned instances of {@link Ok} since they can be reused.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -764,8 +794,8 @@ export interface Shape<InputValue, OutputValue> {
   readonly inputs: readonly unknown[];
 
   /**
-   * `true` if the shape allows only {@linkcode Shape#parseAsync} and throws an error if {@linkcode Shape#parse} is
-   * called, or `false` if the shape can be used in both sync and async contexts.
+   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called, or
+   * `false` if the shape can be used in both sync and async contexts.
    */
   readonly isAsync: boolean;
 
@@ -775,7 +805,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
   try(input: unknown, options?: ApplyOptions): Ok<OutputValue> | Err;
 
@@ -794,7 +824,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    * @throws {@linkcode ValidationError} if any issues occur during parsing.
    */
   parse(input: unknown, options?: ParseOptions): OutputValue;
@@ -814,7 +844,7 @@ export interface Shape<InputValue, OutputValue> {
    *
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
   parseOrDefault(input: unknown): OutputValue | undefined;
 
@@ -826,7 +856,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param options Parsing options.
    * @template DefaultValue The default value that is returned if parsing fails.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode Shape#isAsync}.
+   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
    */
   parseOrDefault<DefaultValue>(
     input: unknown,
@@ -878,14 +908,14 @@ Object.defineProperties(Shape.prototype, {
       Object.defineProperty(this, 'isAsync', { configurable: true, value: false });
 
       const async = this._isAsync();
-      const _defaultApplyAsync = Shape.prototype._applyAsync;
+      const universalApplyAsync = Shape.prototype._applyAsync;
 
       if (async) {
         this._apply = () => {
           throw new Error(ERROR_REQUIRES_ASYNC);
         };
-      } else if (this._applyAsync !== _defaultApplyAsync) {
-        this._applyAsync = _defaultApplyAsync;
+      } else if (this._applyAsync !== universalApplyAsync) {
+        this._applyAsync = universalApplyAsync;
       }
 
       Object.defineProperty(this, 'isAsync', { configurable: true, value: async });
@@ -899,8 +929,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['try'] = (input, options) => {
-        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+      const cb: Shape['try'] = (input, options = defaultApplyOptions) => {
+        const result = this._apply(input, options, nextNonce());
 
         if (result === null) {
           return { ok: true, value: input };
@@ -922,8 +952,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['tryAsync'] = (input, options) => {
-        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
+      const cb: Shape['tryAsync'] = (input, options = defaultApplyOptions) => {
+        return this._applyAsync(input, options, nextNonce()).then(result => {
           if (result === null) {
             return { ok: true, value: input };
           }
@@ -945,8 +975,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parse'] = (input, options) => {
-        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+      const cb: Shape['parse'] = (input, options = defaultApplyOptions) => {
+        const result = this._apply(input, options, nextNonce());
 
         if (result === null) {
           return input;
@@ -968,8 +998,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseAsync'] = (input, options) => {
-        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
+      const cb: Shape['parseAsync'] = (input, options = defaultApplyOptions) => {
+        return this._applyAsync(input, options, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
@@ -991,8 +1021,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ApplyOptions) => {
-        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options = defaultApplyOptions) => {
+        const result = this._apply(input, options, nextNonce());
 
         if (result === null) {
           return input;
@@ -1014,8 +1044,12 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ApplyOptions) => {
-        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
+      const cb: Shape['parseOrDefaultAsync'] = (
+        input: unknown,
+        defaultValue?: unknown,
+        options = defaultApplyOptions
+      ) => {
+        return this._applyAsync(input, options, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
@@ -1027,6 +1061,25 @@ Object.defineProperties(Shape.prototype, {
       };
 
       Object.defineProperty(this, 'parseOrDefaultAsync', { writable: true, value: cb });
+
+      return cb;
+    },
+  },
+
+  _applyOperations: {
+    configurable: true,
+    get(this: Shape) {
+      const { _operations } = this;
+
+      let cb = universalApplyOperations;
+
+      if (_operations !== null) {
+        for (let i = _operations.length - 1; i >= 0; --i) {
+          cb = _operations[i].compile(cb);
+        }
+      }
+
+      Object.defineProperty(this, '_applyOperations', { writable: true, value: cb });
 
       return cb;
     },
@@ -1044,8 +1097,8 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
    * Creates the new {@linkcode ConvertShape} instance.
    *
    * @param converter The callback that converts the input value.
-   * @param async If `true` then the convert shape waits for the promise returned from the callback to be
-   * fulfilled. Otherwise, the value that is synchronously returned from the callback is used as an output.
+   * @param async If `true` then the convert shape waits for the promise returned from the callback to be fulfilled.
+   * Otherwise, the value that is synchronously returned from the callback is used as an output.
    * @template ConvertedValue The output value of the callback that converts the input value.
    */
   constructor(
@@ -1079,7 +1132,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ConvertedValue>> {
-    return new Promise<ConvertedValue>(resolve => {
+    return new Promise(resolve => {
       resolve(this.converter(input, options));
     }).then(output => this._applyOperations(input, output, options, null), captureIssues);
   }
@@ -1218,7 +1271,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
   ) {
     super();
 
-    this._result = isEqual(inputValue, outputValue) ? null : ok(outputValue);
+    this._result = isEqual(inputValue, outputValue) ? null : { ok: true, value: outputValue };
   }
 
   deepPartial(): ReplaceLiteralShape<DeepPartialShape<BaseShape>, InputValue, OutputValue> {

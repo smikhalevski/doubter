@@ -9,21 +9,22 @@ export function nextNonce(): number {
 
 nextNonce.nonce = 0;
 
-export const okResult: Ok<any> = { ok: true, value: null };
+export const okInstance: Ok = { ok: true, value: null };
 
 export function ok<T>(value: T): Ok<T> {
-  okResult.value = value;
-  return okResult;
+  okInstance.value = value;
+  return okInstance;
 }
 
-export const terminalOperationCallback: OperationCallback = (input, output, options, issues) => {
+export const universalApplyOperations: OperationCallback = (input, output, options, issues) => {
   if (issues !== null) {
     return issues;
   }
   if (isEqual(input, output)) {
     return null;
   }
-  return ok(output);
+  okInstance.value = output;
+  return okInstance;
 };
 
 export function isAsyncShape(shape: AnyShape): boolean {
@@ -47,7 +48,6 @@ export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialSha
  */
 export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
   shape['_operations'] = baseShape['_operations'];
-  shape['_applyOperations'] = baseShape['_applyOperations'];
   return shape;
 }
 

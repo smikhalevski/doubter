@@ -18,22 +18,6 @@ import { createIssueFactory } from '../utils';
 declare module '../core' {
   export interface DateShape {
     /**
-     * The inclusive minimum date, or `undefined` if there's no minimum date.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/date-checks!}
-     */
-    readonly minValue: Date | undefined;
-
-    /**
-     * The inclusive maximum date, or `undefined` if there's no maximum date.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/date-checks!}
-     */
-    readonly maxValue: Date | undefined;
-
-    /**
      * Constrains the input date to be greater than or equal to another date.
      *
      * @param value The inclusive minimum date.
@@ -101,45 +85,31 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!DateShape} with additional checks.
  */
 export default function () {
-  const prototype = DateShape.prototype;
-
-  Object.defineProperties(prototype, {
-    minValue: {
-      configurable: true,
-      get(this: DateShape) {
-        return this._getOperation(CODE_DATE_MIN)?.param;
-      },
-    },
-
-    maxValue: {
-      configurable: true,
-      get(this: DateShape) {
-        return this._getOperation(CODE_DATE_MAX)?.param;
-      },
-    },
-  });
-
-  prototype.min = min;
-  prototype.max = max;
-  prototype.after = min;
-  prototype.before = max;
-  prototype.iso = iso;
-  prototype.timestamp = timestamp;
+  DateShape.prototype.min = appendMinCheck;
+  DateShape.prototype.max = appendMaxCheck;
+  DateShape.prototype.after = appendMinCheck;
+  DateShape.prototype.before = appendMaxCheck;
+  DateShape.prototype.iso = convertToIsoString;
+  DateShape.prototype.timestamp = convertToTimestamp;
 }
 
-function min(this: DateShape, value: Date | number | string, options?: ConstraintOptions | Message): DateShape {
+function appendMinCheck(
+  this: DateShape,
+  value: Date | number | string,
+  options?: ConstraintOptions | Message
+): DateShape {
   value = new Date(value);
 
   const timestamp = value.getTime();
 
   const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, value);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_DATE_MIN,
     param: value,
-    compose: next => (input, output, options, issues) => {
-      if (input.getTime() < timestamp) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (output.getTime() < timestamp) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;
@@ -150,19 +120,23 @@ function min(this: DateShape, value: Date | number | string, options?: Constrain
   });
 }
 
-function max(this: DateShape, value: Date | number | string, options?: ConstraintOptions | Message): DateShape {
+function appendMaxCheck(
+  this: DateShape,
+  value: Date | number | string,
+  options?: ConstraintOptions | Message
+): DateShape {
   value = new Date(value);
 
   const timestamp = value.getTime();
 
   const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, value);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_DATE_MAX,
     param: value,
-    compose: next => (input, output, options, issues) => {
-      if (input.getTime() > timestamp) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (output.getTime() > timestamp) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;
@@ -173,10 +147,18 @@ function max(this: DateShape, value: Date | number | string, options?: Constrain
   });
 }
 
-function iso(this: DateShape): Shape<Date, string> {
-  return this.convert(date => date.toISOString());
+function convertToIsoString(this: DateShape): Shape<Date, string> {
+  return this.convert(toISOString);
 }
 
-function timestamp(this: DateShape): Shape<Date, number> {
-  return this.convert(date => date.getTime());
+function convertToTimestamp(this: DateShape): Shape<Date, number> {
+  return this.convert(toTimestamp);
+}
+
+function toISOString(date: Date): string {
+  return date.toISOString();
+}
+
+function toTimestamp(date: Date): number {
+  return date.getTime();
 }

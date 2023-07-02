@@ -137,53 +137,28 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!StringShape} with additional checks.
  */
 export default function () {
-  const prototype = StringShape.prototype;
-
-  Object.defineProperties(prototype, {
-    minLength: {
-      configurable: true,
-      get(this: StringShape) {
-        return this._getOperation(CODE_STRING_MIN)?.param;
-      },
-    },
-
-    maxLength: {
-      configurable: true,
-      get(this: StringShape) {
-        return this._getOperation(CODE_STRING_MAX)?.param;
-      },
-    },
-
-    pattern: {
-      configurable: true,
-      get(this: StringShape) {
-        return this._getOperation(CODE_STRING_REGEX)?.param;
-      },
-    },
-  });
-
-  prototype.length = length;
-  prototype.min = min;
-  prototype.max = max;
-  prototype.regex = regex;
-  prototype.includes = includes;
-  prototype.startsWith = startsWith;
-  prototype.endsWith = endsWith;
+  StringShape.prototype.length = appendLengthCheck;
+  StringShape.prototype.min = appendMinCheck;
+  StringShape.prototype.max = appendMaxCheck;
+  StringShape.prototype.regex = appendRegexCheck;
+  StringShape.prototype.includes = appendIncludesCheck;
+  StringShape.prototype.startsWith = appendStartsWithCheck;
+  StringShape.prototype.endsWith = appendEndsWithCheck;
 }
 
-function length(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
+function appendLengthCheck(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
   return this.min(length, options).max(length, options);
 }
 
-function min(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
+function appendMinCheck(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_STRING_MIN,
     param: length,
-    compose: next => (input, output, options, issues) => {
-      if (input.length < length) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (output.length < length) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;
@@ -194,15 +169,15 @@ function min(this: StringShape, length: number, options?: ConstraintOptions | Me
   });
 }
 
-function max(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
+function appendMaxCheck(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_STRING_MAX,
     param: length,
-    compose: next => (input, output, options, issues) => {
-      if (input.length > length) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (output.length > length) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;
@@ -213,15 +188,15 @@ function max(this: StringShape, length: number, options?: ConstraintOptions | Me
   });
 }
 
-function regex(this: StringShape, re: RegExp, options?: ConstraintOptions | Message): StringShape {
+function appendRegexCheck(this: StringShape, re: RegExp, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_STRING_REGEX,
     param: re,
-    compose: next => (input, output, options, issues) => {
-      if (!re.test(input)) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (!re.test(output)) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;
@@ -232,15 +207,15 @@ function regex(this: StringShape, re: RegExp, options?: ConstraintOptions | Mess
   });
 }
 
-function includes(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+function appendIncludesCheck(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_STRING_INCLUDES,
     param: value,
-    compose: next => (input, output, options, issues) => {
-      if (!input.includes(value)) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (output.indexOf(value) === -1) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;
@@ -251,15 +226,15 @@ function includes(this: StringShape, value: string, options?: ConstraintOptions 
   });
 }
 
-function startsWith(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+function appendStartsWithCheck(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_STRING_STARTS_WITH,
     param: value,
-    compose: next => (input, output, options, issues) => {
-      if (!input.startsWith(value)) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (!output.startsWith(value)) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;
@@ -270,15 +245,15 @@ function startsWith(this: StringShape, value: string, options?: ConstraintOption
   });
 }
 
-function endsWith(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+function appendEndsWithCheck(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
-  return this._addOperation({
+  return this._appendOperation({
     type: CODE_STRING_ENDS_WITH,
     param: value,
-    compose: next => (input, output, options, issues) => {
-      if (!input.endsWith(value)) {
-        issues = pushIssue(issues, issueFactory(input, options));
+    compile: next => (input, output, options, issues) => {
+      if (!output.endsWith(value)) {
+        issues = pushIssue(issues, issueFactory(output, options));
 
         if (!options.verbose) {
           return issues;

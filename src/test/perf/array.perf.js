@@ -153,6 +153,21 @@ describe('array(number().gte(0).lte(10)).length(3)', () => {
     });
   });
 
+  test('valita', measure => {
+    const type = valita
+      .array(
+        valita
+          .number()
+          .assert(v => v >= 0)
+          .assert(v => v <= 10)
+      )
+      .assert(v => v.length === 3);
+
+    measure(() => {
+      type.parse(value);
+    });
+  });
+
   test('doubter', measure => {
     const shape = doubter.array(doubter.number().gte(0).lte(10)).length(3);
 

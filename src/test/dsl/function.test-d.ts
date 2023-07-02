@@ -1,60 +1,59 @@
 import * as d from 'doubter';
-import { INPUT, OUTPUT } from 'doubter';
 import { expectNotType, expectType } from 'tsd';
 
 // Alias
 
-expectType<() => any>(d.function()[OUTPUT]);
+expectType<() => any>(d.function()[d.OUTPUT]);
 
 // Arguments
 
-expectType<() => any>(d.fn()[OUTPUT]);
+expectType<() => any>(d.fn()[d.OUTPUT]);
 
-expectType<(arg: string) => any>(d.fn([d.string()])[OUTPUT]);
+expectType<(arg: string) => any>(d.fn([d.string()])[d.OUTPUT]);
 
-expectType<(arg1: string, arg2: number) => any>(d.fn([d.string(), d.number()])[OUTPUT]);
+expectType<(arg1: string, arg2: number) => any>(d.fn([d.string(), d.number()])[d.OUTPUT]);
 
-expectType<(arg: string) => any>(d.fn(d.tuple([d.string()]))[OUTPUT]);
+expectType<(arg: string) => any>(d.fn(d.tuple([d.string()]))[d.OUTPUT]);
 
-expectType<(arg1: string, arg2: number) => any>(d.fn(d.tuple([d.string(), d.number()]))[OUTPUT]);
+expectType<(arg1: string, arg2: number) => any>(d.fn(d.tuple([d.string(), d.number()]))[d.OUTPUT]);
 
 expectType<(arg1: string, arg2: number, ...args: boolean[]) => any>(
-  d.fn(d.tuple([d.string(), d.number()]).rest(d.boolean()))[OUTPUT]
+  d.fn(d.tuple([d.string(), d.number()]).rest(d.boolean()))[d.OUTPUT]
 );
 
-expectType<(...args: any[]) => any>(d.fn(d.array())[OUTPUT]);
+expectType<(...args: any[]) => any>(d.fn(d.array())[d.OUTPUT]);
 
-expectType<(...args: string[]) => any>(d.fn(d.array(d.string()))[OUTPUT]);
+expectType<(...args: string[]) => any>(d.fn(d.array(d.string()))[d.OUTPUT]);
 
 expectType<(...args: string[] | [string, number]) => any>(
-  d.fn(d.or([d.array(d.string()), d.tuple([d.string(), d.number()])]))[OUTPUT]
+  d.fn(d.or([d.array(d.string()), d.tuple([d.string(), d.number()])]))[d.OUTPUT]
 );
 
-expectType<(arg: string) => any>(d.fn([d.string().convert(parseFloat)])[OUTPUT]);
+expectType<(arg: string) => any>(d.fn([d.string().convert(parseFloat)])[d.OUTPUT]);
 
-expectType<(arg: number) => any>(d.fn([d.string().convert(parseFloat)])[INPUT]);
+expectType<(arg: number) => any>(d.fn([d.string().convert(parseFloat)])[d.INPUT]);
 
-expectType<(arg: number) => any>(d.fn([d.string().convert(parseFloat)])[INPUT]);
+expectType<(arg: number) => any>(d.fn([d.string().convert(parseFloat)])[d.INPUT]);
 
-expectType<(arg: string) => any>(d.fn([d.string().convert(parseFloat)])[OUTPUT]);
+expectType<(arg: string) => any>(d.fn([d.string().convert(parseFloat)])[d.OUTPUT]);
 
 // Return
 
-expectType<() => string>(d.fn().return(d.string())[OUTPUT]);
+expectType<() => string>(d.fn().return(d.string())[d.OUTPUT]);
 
-expectType<() => Promise<string>>(d.fn().return(d.promise(d.string()))[OUTPUT]);
+expectType<() => Promise<string>>(d.fn().return(d.promise(d.string()))[d.OUTPUT]);
 
-expectType<() => string>(d.fn().return(d.string().convert(parseFloat))[INPUT]);
+expectType<() => string>(d.fn().return(d.string().convert(parseFloat))[d.INPUT]);
 
-expectType<() => number>(d.fn().return(d.string().convert(parseFloat))[OUTPUT]);
+expectType<() => number>(d.fn().return(d.string().convert(parseFloat))[d.OUTPUT]);
 
 // This
 
-expectType<(this: string) => any>(d.fn().this(d.string())[OUTPUT]);
+expectType<(this: string) => any>(d.fn().this(d.string())[d.OUTPUT]);
 
-expectType<(this: number) => any>(d.fn().this(d.string().convert(parseFloat))[INPUT]);
+expectType<(this: number) => any>(d.fn().this(d.string().convert(parseFloat))[d.INPUT]);
 
-expectType<(this: string) => any>(d.fn().this(d.string().convert(parseFloat))[OUTPUT]);
+expectType<(this: string) => any>(d.fn().this(d.string().convert(parseFloat))[d.OUTPUT]);
 
 // ensureSignature
 
