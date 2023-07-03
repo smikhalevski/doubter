@@ -1,4 +1,4 @@
-import { ApplyOptions, ConstraintOptions, Issue, Message, MessageCallback } from './core';
+import { ApplyOptions, Issue, IssueOptions, Message, MessageCallback } from './core';
 import { isObjectLike } from './internal';
 
 /**
@@ -6,7 +6,7 @@ import { isObjectLike } from './internal';
  *
  * @param source Options or message to extract from.
  */
-export function extractOptions<T extends ConstraintOptions>(source: T | Message | undefined): Partial<T> {
+export function extractOptions<T extends IssueOptions>(source: T | Message | undefined): Partial<T> {
   if (typeof source === 'function' || typeof source === 'string') {
     return { message: source } as T;
   }
@@ -28,7 +28,7 @@ export function extractOptions<T extends ConstraintOptions>(source: T | Message 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
-  options: ConstraintOptions | Message | undefined,
+  options: IssueOptions | Message | undefined,
   param: unknown
 ): (input: unknown, options: Readonly<ApplyOptions>) => Issue;
 
@@ -43,13 +43,13 @@ export function createIssueFactory(
 export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
-  options: ConstraintOptions | Message | undefined
+  options: IssueOptions | Message | undefined
 ): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue;
 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: any,
-  options: ConstraintOptions | Message | undefined,
+  options: IssueOptions | Message | undefined,
   param?: unknown
 ): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue {
   const parameterized = arguments.length <= 3;
@@ -72,14 +72,7 @@ export function createIssueFactory(
     if (parameterized) {
       if (message.indexOf('%s') !== -1) {
         return (input, options, param0) => {
-          return {
-            code,
-            path: undefined,
-            input,
-            message: message.replace('%s', String(param0)),
-            param: param0,
-            meta,
-          };
+          return { code, path: undefined, input, message: message.replace('%s', String(param0)), param: param0, meta };
         };
       }
     } else {

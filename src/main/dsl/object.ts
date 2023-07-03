@@ -1,18 +1,18 @@
 import { ReadonlyDict } from '../internal';
 import { AnyShape, ObjectShape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the object shape.
  *
  * @param shapes The mapping from an object kind to a corresponding shape.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template PropShapes The mapping from a string object kind to a corresponding value shape.
  * @group DSL
  */
 export function object<PropShapes extends ReadonlyDict<AnyShape>>(
   shapes: PropShapes,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): ObjectShape<PropShapes, null> {
   return new ObjectShape(shapes, null, options);
 }

@@ -8,7 +8,7 @@ import {
 } from '../constants';
 import { getCanonicalValueOf, isArray, isNumber } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, ConstraintOptions, Literal, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Literal, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowLiteralShape, NEVER, ReplaceLiteralShape } from './Shape';
@@ -32,9 +32,9 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Creates a new {@linkcode NumberShape} instance.
    *
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    */
-  constructor(options?: ConstraintOptions | Message) {
+  constructor(options?: IssueOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
@@ -43,10 +43,10 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Constrains the number to be a finite number.
    *
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @returns The clone of the shape.
    */
-  finite(options?: ConstraintOptions | Message): this {
+  finite(options?: IssueOptions | Message): this {
     const shape = this._clone();
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
@@ -58,10 +58,10 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Constrains the number to be an integer.
    *
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @returns The clone of the shape.
    */
-  integer(options?: ConstraintOptions | Message): this {
+  integer(options?: IssueOptions | Message): this {
     const shape = this._clone();
 
     shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);

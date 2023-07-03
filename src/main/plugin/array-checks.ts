@@ -18,7 +18,7 @@ import {
   MESSAGE_ARRAY_MAX,
   MESSAGE_ARRAY_MIN,
 } from '../constants';
-import { AnyShape, ArrayShape, ConstraintOptions, Message } from '../core';
+import { AnyShape, ArrayShape, IssueOptions, Message } from '../core';
 import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
@@ -28,55 +28,55 @@ declare module '../core' {
      * Constrains the array length.
      *
      * @param length The minimum array length.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/array-checks!}
      */
-    length(length: number, options?: ConstraintOptions | Message): this;
+    length(length: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the minimum array length.
      *
      * @param length The minimum array length.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/array-checks!}
      */
-    min(length: number, options?: ConstraintOptions | Message): this;
+    min(length: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the maximum array length.
      *
      * @param length The maximum array length.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/array-checks!}
      */
-    max(length: number, options?: ConstraintOptions | Message): this;
+    max(length: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the array length to be at least one element.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/array-checks!}
      */
-    nonEmpty(options?: ConstraintOptions | Message): this;
+    nonEmpty(options?: IssueOptions | Message): this;
 
     /**
      * Requires an array to contain at least one element that conforms the given shape.
      *
      * @param shape The shape of the required element.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/array-checks!}
      */
-    includes(shape: AnyShape, options?: ConstraintOptions | Message): this;
+    includes(shape: AnyShape, options?: IssueOptions | Message): this;
   }
 }
 
@@ -94,7 +94,7 @@ export default function () {
 function appendLengthCheck(
   this: ArrayShape<any, any>,
   length: number,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): ArrayShape<any, any> {
   return this.min(length, options).max(length, options);
 }
@@ -102,7 +102,7 @@ function appendLengthCheck(
 function appendMinCheck(
   this: ArrayShape<any, any>,
   length: number,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
@@ -125,7 +125,7 @@ function appendMinCheck(
 function appendMaxCheck(
   this: ArrayShape<any, any>,
   length: number,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
@@ -145,14 +145,14 @@ function appendMaxCheck(
   });
 }
 
-function appendNonEmptyCheck(this: ArrayShape<any, any>, options?: ConstraintOptions | Message): ArrayShape<any, any> {
+function appendNonEmptyCheck(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
   return this.min(1, options);
 }
 
 function appendIncludesCheck(
   this: ArrayShape<any, any>,
   shape: AnyShape,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, MESSAGE_ARRAY_INCLUDES, options, undefined);
 

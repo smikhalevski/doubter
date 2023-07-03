@@ -11,7 +11,7 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT } from './Shape';
@@ -63,7 +63,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
    *
    * @param headShapes The array of positioned element shapes.
    * @param restShape The shape of rest elements or `null` if there are no rest elements.
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    * @template HeadShapes The array of positioned element shapes.
    * @template RestShape The shape of rest elements, or `null` if there are no rest elements.
    */
@@ -76,7 +76,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
      * The shape of rest elements or `null` if there are no rest elements.
      */
     readonly restShape: RestShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 

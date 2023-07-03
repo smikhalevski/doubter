@@ -30,20 +30,18 @@ import {
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   AlterCallback,
-  AlterOptions,
   ApplyOptions,
   CheckCallback,
-  CheckOptions,
-  ConstraintOptions,
   Err,
   Issue,
+  IssueOptions,
   Literal,
   Message,
   Ok,
   Operation,
   OperationCallback,
-  ParameterizedAlterOptions,
-  ParameterizedCheckOptions,
+  OperationOptions,
+  ParameterizedOperationOptions,
   ParameterizedRefineOptions,
   ParseOptions,
   RefineCallback,
@@ -276,7 +274,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If the {@linkcode ParameterizedCheckOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   * If the {@linkcode ParameterizedOperationOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
@@ -286,12 +284,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the {@linkcode CheckCallback} when a check operation is applied.
    * @see {@linkcode refine}
    */
-  check<Param>(cb: CheckCallback<OutputValue, Param>, options: ParameterizedCheckOptions<Param>): this;
+  check<Param>(cb: CheckCallback<OutputValue, Param>, options: ParameterizedOperationOptions<Param>): this;
 
   /**
    * Adds the check that is applied to the shape output.
    *
-   * If the {@linkcode CheckOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   * If the {@linkcode OperationOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
@@ -300,9 +298,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@linkcode refine}
    */
-  check(cb: CheckCallback<OutputValue>, options?: CheckOptions): this;
+  check(cb: CheckCallback<OutputValue>, options?: OperationOptions): this;
 
-  check(cb: CheckCallback, options: CheckOptions = {}): this {
+  check(cb: CheckCallback, options: OperationOptions = {}): this {
     const { type = cb, param, force } = options;
 
     return this._appendOperation({
@@ -350,7 +348,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @returns The shape with the narrowed output.
    * @template RefinedValue The narrowed output value.
    * @template Param The param that is passed to the {@linkcode RefinePredicate} when a refinement operation is applied.
@@ -368,7 +366,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @returns The shape with the narrowed output.
    * @template RefinedValue The narrowed output value.
    * @see {@linkcode check}
@@ -384,7 +382,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @returns The clone of the shape.
    * @template Param The param that is passed to the {@linkcode RefineCallback} when a refinement operation is applied.
    * @see {@linkcode check}
@@ -397,7 +395,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @returns The clone of the shape.
    * @see {@linkcode check}
    */
@@ -441,6 +439,20 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
+   * AAA
+   * @param cb
+   * @param options
+   */
+  alter<Param>(cb: AlterCallback<OutputValue, OutputValue, Param>, options: ParameterizedOperationOptions<Param>): this;
+
+  /**
+   * BBB
+   * @param cb
+   * @param options
+   */
+  alter(cb: AlterCallback<OutputValue>, options?: OperationOptions): this;
+
+  /**
    * Alters the shape output value without changing its base type.
    *
    * @param cb The callback that alters the shape output.
@@ -452,7 +464,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   alter<AlteredValue extends OutputValue, Param>(
     cb: AlterCallback<OutputValue, AlteredValue, Param>,
-    options: ParameterizedAlterOptions<Param>
+    options: ParameterizedOperationOptions<Param>
   ): OpaqueShape<this, InputValue, AlteredValue>;
 
   /**
@@ -466,14 +478,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   alter<AlteredValue extends OutputValue>(
     cb: AlterCallback<OutputValue, AlteredValue>,
-    options?: AlterOptions
+    options?: OperationOptions
   ): OpaqueShape<this, InputValue, AlteredValue>;
 
-  alter<Param>(cb: AlterCallback<OutputValue, OutputValue, Param>, options: ParameterizedAlterOptions<Param>): this;
-
-  alter(cb: AlterCallback<OutputValue>, options?: AlterOptions): this;
-
-  alter(cb: AlterCallback, options: AlterOptions = {}): Shape {
+  alter(cb: AlterCallback, options: OperationOptions = {}): Shape {
     const { type = cb, param, force = false } = options;
 
     return this._appendOperation({
@@ -588,12 +596,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Excludes value from both input and output.
    *
    * @param value The excluded value.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template DeniedValue The denied value.
    */
   deny<DeniedValue extends InputValue | OutputValue>(
     value: DeniedValue,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ): DenyLiteralShape<this, DeniedValue> {
     return new DenyLiteralShape(this, value, options);
   }
@@ -656,9 +664,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Prevents an input and output from being `undefined`.
    *
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    */
-  nonOptional(options?: ConstraintOptions | Message): DenyLiteralShape<this, undefined> {
+  nonOptional(options?: IssueOptions | Message): DenyLiteralShape<this, undefined> {
     return new DenyLiteralShape(this, undefined, options);
   }
 
@@ -686,12 +694,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Checks that the input doesn't match the shape.
    *
    * @param shape The shape to which the output must not conform.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template ExcludedShape The shape to which the output must not conform.
    */
   exclude<ExcludedShape extends AnyShape>(
     shape: ExcludedShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ): ExcludeShape<this, ExcludedShape> {
     return new ExcludeShape(this, shape, options);
   }
@@ -703,12 +711,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * level.
    *
    * @param shape The shape to which the output must not conform.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template ExcludedShape The shape to which the output must not conform.
    */
   not<ExcludedShape extends AnyShape>(
     shape: ExcludedShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ): NotShape<this, ExcludedShape> {
     return this.exclude(shape, options);
   }
@@ -1341,7 +1349,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
    *
    * @param shape The shape that parses the input without the denied value.
    * @param deniedValue The dined value.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template BaseShape The shape that parses the input without the denied value.
    * @template DeniedValue The denied value.
    */
@@ -1354,7 +1362,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
      * The dined value.
      */
     readonly deniedValue: DeniedValue,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -1530,7 +1538,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
    *
    * @param shape The shape that parses the input.
    * @param excludedShape The shape to which the output must not conform.
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template BaseShape The base shape.
    * @template ExcludedShape The shape to which the output must not conform.
    */
@@ -1543,7 +1551,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
      * The shape to which the output must not conform.
      */
     readonly excludedShape: ExcludedShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 

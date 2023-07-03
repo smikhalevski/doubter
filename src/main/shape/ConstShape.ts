@@ -1,5 +1,5 @@
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
-import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
 
@@ -32,7 +32,7 @@ export class ConstShape<Value> extends Shape<Value> {
      * The expected constant value.
      */
     readonly value: Value,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 

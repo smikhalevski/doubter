@@ -9,7 +9,7 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output } from './Shape';
@@ -38,7 +38,7 @@ export class SetShape<ValueShape extends AnyShape>
    * Creates a new {@linkcode SetShape} instance.
    *
    * @param shape The value shape.
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    * @template ValueShape The value shape.
    */
   constructor(
@@ -46,7 +46,7 @@ export class SetShape<ValueShape extends AnyShape>
      * The value shape.
      */
     readonly shape: ValueShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 

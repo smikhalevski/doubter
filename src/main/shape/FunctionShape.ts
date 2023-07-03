@@ -11,7 +11,7 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_FUNCTION } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message, ParseOptions, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, defaultApplyOptions, Input, INPUT, Output, OUTPUT, Shape } from './Shape';
@@ -61,7 +61,7 @@ export class FunctionShape<
    * @param argsShape The shape of the array of arguments.
    * @param returnShape The return value shape, or `null` if unconstrained.
    * @param thisShape The shape of `this` argument, or `null` if unconstrained.
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    * @template ArgsShape The shape of the array of arguments.
    * @template ReturnShape The return value shape, or `null` if unconstrained.
    * @template ThisShape The shape of `this` argument, or `null` if unconstrained.
@@ -79,7 +79,7 @@ export class FunctionShape<
      * The shape of `this` value, or `null` if unconstrained.
      */
     readonly thisShape: ThisShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 

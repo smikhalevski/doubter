@@ -11,7 +11,7 @@ import {
   toDeepPartialShape,
 } from '../internal';
 import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Shape } from './Shape';
 
@@ -58,7 +58,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
      * The array of shapes that comprise an intersection.
      */
     readonly shapes: Shapes,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 

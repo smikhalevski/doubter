@@ -22,11 +22,11 @@ import {
 import { TYPE_OBJECT } from '../Type';
 import {
   AlterCallback,
-  AlterOptions,
   ApplyOptions,
-  ConstraintOptions,
   Issue,
+  IssueOptions,
   Message,
+  OperationOptions,
   RefineCallback,
   RefineOptions,
   RefinePredicate,
@@ -149,7 +149,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
      */
     readonly restShape: RestShape,
-    options?: ConstraintOptions | Message,
+    options?: IssueOptions | Message,
     /**
      * The mode of keys handling.
      */
@@ -326,10 +326,10 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape that allows only known keys and has no index signature.
    *
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @returns The new object shape.
    */
-  exact(options?: ConstraintOptions | Message): ObjectShape<PropShapes, null> {
+  exact(options?: IssueOptions | Message): ObjectShape<PropShapes, null> {
     const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
 
     shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_EXACT, MESSAGE_OBJECT_EXACT, options);
@@ -688,17 +688,17 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 export interface ObjectShape<PropShapes, RestShape> {
   alter(
     cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, InferObject<PropShapes, RestShape, OUTPUT>>,
-    options?: AlterOptions
+    options?: OperationOptions
   ): this;
 
   alter<AlteredValue extends InferObject<PropShapes, RestShape, OUTPUT>, Param>(
     cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredValue, Param>,
-    options: AlterOptions & { param: Param }
+    options: OperationOptions & { param: Param }
   ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredValue>;
 
   alter<AlteredValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
     cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredValue>,
-    options: AlterOptions
+    options: OperationOptions
   ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredValue>;
 
   refine<RefinedValue extends InferObject<PropShapes, RestShape, OUTPUT>>(

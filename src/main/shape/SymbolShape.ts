@@ -1,6 +1,6 @@
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE } from '../constants';
 import { TYPE_SYMBOL } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
 
@@ -18,9 +18,9 @@ export class SymbolShape extends Shape<symbol> {
   /**
    * Creates a new {@linkcode SymbolShape} instance.
    *
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    */
-  constructor(options?: ConstraintOptions | Message) {
+  constructor(options?: IssueOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SYMBOL_TYPE, options, TYPE_SYMBOL);

@@ -24,7 +24,7 @@ import {
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_STARTS_WITH,
 } from '../constants';
-import { ConstraintOptions, Message, StringShape } from '../core';
+import { IssueOptions, Message, StringShape } from '../core';
 import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
@@ -58,78 +58,87 @@ declare module '../core' {
      * The shortcut to apply both {@linkcode min} and {@linkcode max} constraints.
      *
      * @param length The exact length a string must have.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-checks!}
      */
-    length(length: number, options?: ConstraintOptions | Message): this;
+    length(length: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the string length to be greater than or equal to the length.
      *
      * @param length The minimum string length.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-checks!}
      */
-    min(length: number, options?: ConstraintOptions | Message): this;
+    min(length: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the string length to be less than or equal to the length.
      *
      * @param length The maximum string length.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-checks!}
      */
-    max(length: number, options?: ConstraintOptions | Message): this;
+    max(length: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the string to match a regexp.
      *
      * @param re The regular expression that the sting must conform.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-checks!}
      */
-    regex(re: RegExp, options?: ConstraintOptions | Message): this;
+    regex(re: RegExp, options?: IssueOptions | Message): this;
 
     /**
      * Checks that the string includes a substring.
      *
      * @param value The substring to look for.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-checks!}
      */
-    includes(value: string, options?: ConstraintOptions | Message): this;
+    includes(value: string, options?: IssueOptions | Message): this;
 
     /**
      * Checks that the string starts with a substring.
      *
      * @param value The substring to look for.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-checks!}
      */
-    startsWith(value: string, options?: ConstraintOptions | Message): this;
+    startsWith(value: string, options?: IssueOptions | Message): this;
 
     /**
      * Checks that the string ends with a substring.
      *
      * @param value The substring to look for.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-checks!}
      */
-    endsWith(value: string, options?: ConstraintOptions | Message): this;
+    endsWith(value: string, options?: IssueOptions | Message): this;
+
+    /**
+     * Trims the output string.
+     *
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/string-checks!}
+     */
+    trim(): this;
   }
 }
 
@@ -144,13 +153,14 @@ export default function () {
   StringShape.prototype.includes = appendIncludesCheck;
   StringShape.prototype.startsWith = appendStartsWithCheck;
   StringShape.prototype.endsWith = appendEndsWithCheck;
+  StringShape.prototype.trim = appendTrimAlter;
 }
 
-function appendLengthCheck(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
+function appendLengthCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   return this.min(length, options).max(length, options);
 }
 
-function appendMinCheck(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
+function appendMinCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
   return this._appendOperation({
@@ -169,7 +179,7 @@ function appendMinCheck(this: StringShape, length: number, options?: ConstraintO
   });
 }
 
-function appendMaxCheck(this: StringShape, length: number, options?: ConstraintOptions | Message): StringShape {
+function appendMaxCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
   return this._appendOperation({
@@ -188,7 +198,7 @@ function appendMaxCheck(this: StringShape, length: number, options?: ConstraintO
   });
 }
 
-function appendRegexCheck(this: StringShape, re: RegExp, options?: ConstraintOptions | Message): StringShape {
+function appendRegexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
   return this._appendOperation({
@@ -207,7 +217,7 @@ function appendRegexCheck(this: StringShape, re: RegExp, options?: ConstraintOpt
   });
 }
 
-function appendIncludesCheck(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+function appendIncludesCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
   return this._appendOperation({
@@ -226,7 +236,7 @@ function appendIncludesCheck(this: StringShape, value: string, options?: Constra
   });
 }
 
-function appendStartsWithCheck(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+function appendStartsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
   return this._appendOperation({
@@ -245,7 +255,7 @@ function appendStartsWithCheck(this: StringShape, value: string, options?: Const
   });
 }
 
-function appendEndsWithCheck(this: StringShape, value: string, options?: ConstraintOptions | Message): StringShape {
+function appendEndsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
   return this._appendOperation({
@@ -261,5 +271,13 @@ function appendEndsWithCheck(this: StringShape, value: string, options?: Constra
       }
       return next(input, output, options, issues);
     },
+  });
+}
+
+function appendTrimAlter(this: StringShape): StringShape {
+  return this._appendOperation({
+    type: 'trim',
+    param: undefined,
+    compile: next => (input, output, options, issues) => next(input, output.trim(), options, issues),
   });
 }

@@ -1,7 +1,7 @@
 /**
  * A validation issue raised during input parsing.
  *
- * @group Validation Errors
+ * @group Issues
  */
 export interface Issue {
   /**
@@ -50,6 +50,44 @@ export interface Issue {
    * The optional metadata associated with the issue.
    *
    * @see [Metadata](https://github.com/smikhalevski/doubter#metadata)
+   */
+  meta?: any;
+}
+
+/**
+ * Returns a human-readable message that describes an issue.
+ *
+ * You can assign the {@linkcode Issue#message issue.message} property directly inside this callback or return the
+ * message.
+ *
+ * @param issue The issue for which the message should be produced.
+ * @param options The parsing options.
+ * @returns The value that should be used as an issue message.
+ * @group Issues
+ */
+export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) => any;
+
+/**
+ * A callback that returns an issue message or a message string. `%s` placeholder in string messages is replaced with
+ * the {@link OperationOptions#param issue param}.
+ *
+ * @group Issues
+ */
+export type Message = MessageCallback | string;
+
+/**
+ * Options of an issue.
+ *
+ * @group Issues
+ */
+export interface IssueOptions {
+  /**
+   * The custom issue message.
+   */
+  message?: Message | any;
+
+  /**
+   * An arbitrary metadata that is added to an issue.
    */
   meta?: any;
 }
@@ -109,7 +147,7 @@ export type Result<Value = any> = Ok<Value> | Issue[] | null;
  * @returns The result of the operation.
  * @template InputValue The input value to which the shape was applied.
  * @template OutputValue The shape output value to which the operation must be applied.
- * @group Shape Operations
+ * @group Operations
  */
 export type OperationCallback<InputValue = any, OutputValue = any> = (
   input: InputValue,
@@ -152,6 +190,37 @@ export interface Operation<InputValue = any, OutputValue = any> {
 }
 
 /**
+ * Options of a custom {@link Operation operation}.
+ *
+ * @see {@linkcode Shape#check Shape.check}
+ * @see {@linkcode Shape#alter Shape.alter}
+ * @see {@linkcode Shape#refine Shape.refine}
+ * @group Operations
+ */
+export interface OperationOptions {
+  /**
+   * The type of the operation.
+   *
+   * @see {@link Operation#type Operation.type}
+   */
+  type?: any;
+
+  /**
+   * The additional param associated with the operation.
+   *
+   * @see {@link Operation#param Operation.param}
+   */
+  param?: any;
+
+  /**
+   * If `true` then the operation is applied even if some of the preceding operations have failed.
+   *
+   * @default false
+   */
+  force?: boolean;
+}
+
+/**
  * Checks that a value satisfies a requirement.
  *
  * If a {@linkcode ValidationError} is thrown, its issues are treated as if they were returned from a check callback.
@@ -164,7 +233,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
  * @template Value The value to check.
  * @template Param The additional param that was associated with the check operation.
  * @see {@linkcode Shape#check}
- * @group Shape Operations
+ * @group Operations
  */
 export type CheckCallback<Value = any, Param = any> = (
   value: Value,
@@ -173,37 +242,17 @@ export type CheckCallback<Value = any, Param = any> = (
 ) => Issue[] | Issue | null | undefined | void;
 
 /**
- * Options of {@link Shape#check a check operation}.
+ * Options of {@link Shape#refine a refinement operation}.
  *
- * @group Shape Operations
+ * @group Operations
  */
-export interface CheckOptions {
+export interface RefineOptions extends OperationOptions, IssueOptions {
   /**
-   * {@link Operation#type The type of the check operation.}
-   */
-  type?: any;
-
-  /**
-   * The additional param that would be passed to the {@linkcode CheckCallback} when a check operation is applied.
+   * The code of an issue that would be raised if the refinement fails.
    *
-   * The param can be later accessed via {@linkcode Operation#param Operation.param} for introspection.
+   * @default "predicate"
    */
-  param?: any;
-
-  /**
-   * If `true` then the check is applied even if some of the preceding operations have failed.
-   *
-   * @default false
-   */
-  force?: boolean;
-}
-
-/**
- * @inheritDoc
- * @template Param The param that is passed to the {@linkcode CheckCallback} when a check operation is applied.
- */
-export interface ParameterizedCheckOptions<Param> extends CheckOptions {
-  param: Param;
+  code?: any;
 }
 
 /**
@@ -219,7 +268,7 @@ export interface ParameterizedCheckOptions<Param> extends CheckOptions {
  * @template Value The value to check.
  * @template Param The additional param that was associated with the refinement operation.
  * @see {@linkcode Shape#refine}
- * @group Shape Operations
+ * @group Operations
  */
 export type RefineCallback<Value = any, Param = any> = (
   value: Value,
@@ -241,54 +290,13 @@ export type RefineCallback<Value = any, Param = any> = (
  * @template RefinedValue The refined value.
  * @template Param The additional param that was associated with the refinement operation.
  * @see {@linkcode Shape#refine}
- * @group Shape Operations
+ * @group Operations
  */
 export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Param = any> = (
   value: Value,
   param: Param,
   options: Readonly<ApplyOptions>
 ) => value is RefinedValue;
-
-/**
- * Options of {@link Shape#refine a refinement operation}.
- *
- * @group Shape Operations
- */
-export interface RefineOptions extends ConstraintOptions {
-  /**
-   * {@link Operation#type The type of the refinement operation.}
-   */
-  type?: any;
-
-  /**
-   * The code of an issue that would be raised if the refinement fails.
-   *
-   * @default "predicate"
-   */
-  code?: any;
-
-  /**
-   * The additional param that would be passed to the {@linkcode RefineCallback} when a refinement operation is applied.
-   *
-   * The param can be later accessed via {@linkcode Operation#param Operation.param} for introspection.
-   */
-  param?: any;
-
-  /**
-   * If `true` then the refinement is applied even if some of the preceding operations have failed.
-   *
-   * @default false
-   */
-  force?: boolean;
-}
-
-/**
- * @inheritDoc
- * @template Param The param that is passed to the {@linkcode RefineCallback} when a refinement operation is applied.
- */
-export interface ParameterizedRefineOptions<Param> extends RefineOptions {
-  param: Param;
-}
 
 /**
  * Alters the value without changing its base type.
@@ -307,7 +315,7 @@ export interface ParameterizedRefineOptions<Param> extends RefineOptions {
  * @template Param The additional param that was associated with the alteration operation.
  * @see {@linkcode Shape#alter}
  * @see {@linkcode Shape#convert}
- * @group Shape Operations
+ * @group Operations
  */
 export type AlterCallback<Value = any, AlteredValue extends Value = Value, Param = any> = (
   value: Value,
@@ -316,76 +324,19 @@ export type AlterCallback<Value = any, AlteredValue extends Value = Value, Param
 ) => AlteredValue;
 
 /**
- * Options of {@link Shape#alter an alteration operation}.
- *
- * @group Shape Operations
- */
-export interface AlterOptions {
-  /**
-   * {@link Operation#type The type of the alteration operation.}
-   */
-  type?: any;
-
-  /**
-   * The additional param that would be passed to the {@linkcode AlterCallback} when an alteration operation is
-   * applied.
-   *
-   * The param can be later accessed via {@linkcode Operation#param Operation.param} for introspection.
-   */
-  param?: any;
-
-  /**
-   * If `true` then the alteration is applied even if some of the preceding operations have failed.
-   *
-   * @default false
-   */
-  force?: boolean;
-}
-
-/**
  * @inheritDoc
- * @template Param The param that is passed to the {@linkcode AlterCallback} when an alteration operation is applied.
+ * @template Param The param that is passed to the {@linkcode CheckCallback} when a check operation is applied.
  */
-export interface ParameterizedAlterOptions<Param> extends AlterOptions {
+export interface ParameterizedOperationOptions<Param> extends OperationOptions {
   param: Param;
 }
 
 /**
- * Returns a human-readable message that describes an issue.
- *
- * You can assign the {@linkcode Issue#message issue.message} property directly inside this callback or return the
- * message.
- *
- * @param issue The issue for which the message should be produced.
- * @param options The parsing options.
- * @returns The value that should be used as an issue message.
- * @group Other
+ * @inheritDoc
+ * @template Param The param that is passed to the {@linkcode RefineCallback} when a refinement operation is applied.
  */
-export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) => any;
-
-/**
- * A callback that returns an issue message or a message string. `%s` placeholder in string messages is replaced with
- * the {@link CheckOptions#param issue param}.
- *
- * @group Other
- */
-export type Message = MessageCallback | string;
-
-/**
- * Options that are applicable for the built-in type-related constraints.
- *
- * @group Other
- */
-export interface ConstraintOptions {
-  /**
-   * The custom issue message.
-   */
-  message?: Message | Literal;
-
-  /**
-   * An arbitrary metadata that is added to an issue.
-   */
-  meta?: any;
+export interface ParameterizedRefineOptions<Param> extends RefineOptions {
+  param: Param;
 }
 
 /**

@@ -10,7 +10,7 @@
  * @module doubter/plugin/set-checks
  */
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
-import { AnyShape, ConstraintOptions, Message, SetShape } from '../core';
+import { AnyShape, IssueOptions, Message, SetShape } from '../core';
 import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
@@ -20,34 +20,34 @@ declare module '../core' {
      * Constrains the set size.
      *
      * @param size The minimum set size.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/set-checks!}
      */
-    size(size: number, options?: ConstraintOptions | Message): this;
+    size(size: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the minimum set size.
      *
      * @param size The minimum set size.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/set-checks!}
      */
-    min(size: number, options?: ConstraintOptions | Message): this;
+    min(size: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the maximum set size.
      *
      * @param size The maximum set size.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/set-checks!}
      */
-    max(size: number, options?: ConstraintOptions | Message): this;
+    max(size: number, options?: IssueOptions | Message): this;
   }
 }
 
@@ -60,11 +60,11 @@ export default function () {
   SetShape.prototype.max = max;
 }
 
-function size(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
+function size(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   return this.min(size, options).max(size, options);
 }
 
-function min(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
+function min(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
   return this._appendOperation({
@@ -83,7 +83,7 @@ function min(this: SetShape<any>, size: number, options?: ConstraintOptions | Me
   });
 }
 
-function max(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
+function max(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
   return this._appendOperation({

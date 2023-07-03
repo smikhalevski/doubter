@@ -1,7 +1,7 @@
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
 import { getCanonicalValueOf, isArray, ReadonlyDict, unique } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { NEVER } from './Shape';
@@ -35,7 +35,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
      * The array of allowed values, a const kind-value mapping, or an TypeScript enum object.
      */
     readonly source: readonly Value[] | ReadonlyDict<Value>,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 

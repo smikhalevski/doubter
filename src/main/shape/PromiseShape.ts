@@ -1,7 +1,7 @@
 import { CODE_TYPE, MESSAGE_PROMISE_TYPE } from '../constants';
 import { applyShape, isArray, Promisify, toDeepPartialShape } from '../internal';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT } from './Shape';
@@ -38,10 +38,10 @@ export class PromiseShape<ValueShape extends AnyShape | null>
    * Creates a new {@linkcode PromiseShape} instance.
    *
    * @param shape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    * @template ValueShape The shape of the resolved value.
    */
-  constructor(readonly shape: ValueShape, options?: ConstraintOptions | Message) {
+  constructor(readonly shape: ValueShape, options?: IssueOptions | Message) {
     super();
 
     this._options = options;

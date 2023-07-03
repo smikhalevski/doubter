@@ -11,7 +11,7 @@ import {
   unique,
 } from '../internal';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
@@ -57,7 +57,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
      * The array of shapes that comprise a union.
      */
     readonly shapes: Shapes,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 

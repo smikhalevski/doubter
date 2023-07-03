@@ -1,12 +1,12 @@
 import { SymbolShape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the symbol shape.
  *
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @group DSL
  */
-export function symbol(options?: ConstraintOptions | Message): SymbolShape {
+export function symbol(options?: IssueOptions | Message): SymbolShape {
   return new SymbolShape(options);
 }

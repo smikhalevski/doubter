@@ -1,13 +1,13 @@
 import { NumberShape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the integer shape.
  *
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @group DSL
  */
-export function integer(options?: ConstraintOptions | Message): NumberShape {
+export function integer(options?: IssueOptions | Message): NumberShape {
   return new NumberShape(options).integer(options);
 }
 

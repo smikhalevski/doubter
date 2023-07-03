@@ -16,7 +16,7 @@ export function any<Value = any>(): Shape<Value>;
  * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
  *
  * @param cb The type predicate that returns `true` if value conforms the required type, or `false` otherwise.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @returns The shape that has the narrowed output.
  * @template Value The input and the output value.
  * @group DSL
@@ -35,7 +35,7 @@ export function any<Value>(
  * Creates a shape that is constrained with a predicate.
  *
  * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template Value The input and the output value.
  * @group DSL
  */

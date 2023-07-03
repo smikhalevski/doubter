@@ -1,5 +1,5 @@
 import { AnyShape, MapShape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the `Map` instance shape.
@@ -14,7 +14,7 @@ import { ConstraintOptions, Message } from '../types';
 export function map<KeyShape extends AnyShape, ValueShape extends AnyShape>(
   keyShape: KeyShape,
   valueShape: ValueShape,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): MapShape<KeyShape, ValueShape> {
   return new MapShape(keyShape, valueShape, options);
 }
