@@ -45,14 +45,13 @@ import {
   Shape,
 } from './Shape';
 
-// prettier-ignore
 type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,
   RestShape extends AnyShape | null,
   Leg extends INPUT | OUTPUT
 > = Squash<
-  & UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][Leg] }>
-  & (RestShape extends null | undefined ? {} : RestShape extends AnyShape ? { [key: string]: RestShape[Leg] } : {})
+  UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][Leg] }> &
+    (RestShape extends null | undefined ? {} : RestShape extends AnyShape ? { [key: string]: RestShape[Leg] } : {})
 >;
 
 type UndefinedToOptional<T> = Omit<T, OptionalKeys<T>> & { [K in OptionalKeys<T>]?: T[K] };

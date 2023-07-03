@@ -20,7 +20,6 @@ export {
   AllowLiteralShape,
   AnyShape,
   Branded,
-  BrandShape,
   CatchShape,
   DeepPartialProtocol,
   DeepPartialShape,

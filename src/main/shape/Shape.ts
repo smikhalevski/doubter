@@ -118,11 +118,9 @@ export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
 }
 
 /**
- * This symbol doesn't exist at runtime!
- *
  * The ephemeral unique symbol that is used for type branding by {@linkcode Branded}.
  */
-declare const BRAND: unique symbol;
+const BRAND = Symbol();
 
 /**
  * The branded type.
@@ -133,18 +131,9 @@ declare const BRAND: unique symbol;
  */
 export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
 
-/**
- * The shape that adds a brand to the output type. This shape doesn't affect the runtime and is used for emulation of
- * nominal typing.
- *
- * @template S The shape which output must be branded.
- * @template Brand The brand value.
- * @group Shapes
- */
 // prettier-ignore
-export type BrandShape<S extends AnyShape, Brand> =
-  & Shape<Input<S>, Branded<Output<S>, Brand>>
-  & Pick<S, Exclude<keyof S, keyof Shape>>;
+export type OpaqueShape<S extends AnyShape, InputValue = Input<S>, OutputValue = Output<S>> =
+  Shape<InputValue, OutputValue> & Pick<S, keyof S & 'deepPartial'>;
 
 /**
  * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
@@ -180,18 +169,19 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
  */
 export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<DeepPartialShape<S>, undefined>;
 
-declare const INPUT: unique symbol;
-declare const OUTPUT: unique symbol;
+// _INPUT and _OUTPUT are exported for type tests only
+export const _INPUT = Symbol();
+export const _OUTPUT = Symbol();
 
 /**
  * @internal
  */
-export type INPUT = typeof INPUT;
+export type INPUT = typeof _INPUT;
 
 /**
  * @internal
  */
-export type OUTPUT = typeof OUTPUT;
+export type OUTPUT = typeof _OUTPUT;
 
 /**
  * Extracts the shape input type.
@@ -222,14 +212,14 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @internal
    */
-  declare readonly [INPUT]: InputValue;
+  declare readonly [_INPUT]: InputValue;
 
   /**
    * The shape output type.
    *
    * @internal
    */
-  declare readonly [OUTPUT]: OutputValue;
+  declare readonly [_OUTPUT]: OutputValue;
 
   /**
    * The dictionary of shape annotations.
@@ -369,7 +359,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine<RefinedValue extends OutputValue, Param>(
     cb: RefinePredicate<OutputValue, RefinedValue, Param>,
     options: ParameterizedRefineOptions<Param> | Message
-  ): Shape<InputValue, RefinedValue>;
+  ): OpaqueShape<this, InputValue, RefinedValue>;
 
   /**
    * Refines the shape output type with the
@@ -386,7 +376,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine<RefinedValue extends OutputValue>(
     cb: RefinePredicate<OutputValue, RefinedValue>,
     options?: RefineOptions | Message
-  ): Shape<InputValue, RefinedValue>;
+  ): OpaqueShape<this, InputValue, RefinedValue>;
 
   /**
    * Checks that the output value conforms the predicate.
@@ -399,10 +389,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the {@linkcode RefineCallback} when a refinement operation is applied.
    * @see {@linkcode check}
    */
-  refine<Param>(
-    cb: RefineCallback<OutputValue, Param>,
-    options?: ParameterizedRefineOptions<Param> | Message
-  ): Shape<InputValue, OutputValue>;
+  refine<Param>(cb: RefineCallback<OutputValue, Param>, options?: ParameterizedRefineOptions<Param> | Message): this;
 
   /**
    * Checks that the output value conforms the predicate.
@@ -414,7 +401,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@linkcode check}
    */
-  refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): Shape<InputValue, OutputValue>;
+  refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): this;
 
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
     const { type = cb, code = CODE_PREDICATE, param, force = false } = extractOptions(options);
@@ -466,7 +453,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter<AlteredValue extends OutputValue, Param>(
     cb: AlterCallback<OutputValue, AlteredValue, Param>,
     options: ParameterizedAlterOptions<Param>
-  ): Shape<InputValue, AlteredValue>;
+  ): OpaqueShape<this, InputValue, AlteredValue>;
 
   /**
    * Alters the shape output value without changing its base type.
@@ -480,7 +467,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter<AlteredValue extends OutputValue>(
     cb: AlterCallback<OutputValue, AlteredValue>,
     options?: AlterOptions
-  ): Shape<InputValue, AlteredValue>;
+  ): OpaqueShape<this, InputValue, AlteredValue>;
+
+  alter<Param>(cb: AlterCallback<OutputValue, OutputValue, Param>, options: ParameterizedAlterOptions<Param>): this;
+
+  alter(cb: AlterCallback<OutputValue>, options?: AlterOptions): this;
 
   alter(cb: AlterCallback, options: AlterOptions = {}): Shape {
     const { type = cb, param, force = false } = options;
@@ -564,8 +555,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns A shape with the branded output type.
    * @template Brand The brand value.
    */
-  brand<Brand = this>(): BrandShape<this, Brand> {
-    return this as BrandShape<this, Brand>;
+  brand<Brand>(): OpaqueShape<this, InputValue, Branded<OutputValue, Brand>> {
+    return this as OpaqueShape<this, InputValue, Branded<OutputValue, Brand>>;
   }
 
   /**

@@ -16,7 +16,7 @@ import {
 } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER } from './Shape';
+import { NEVER, Shape } from './Shape';
 
 /**
  * The shape of a string value.
@@ -90,7 +90,7 @@ export class StringShape<Value extends string = string> extends CoercibleShape<s
   }
 }
 
-export interface StringShape<Value> {
+export interface StringShape<Value> extends Shape<string, Value> {
   refine<RefinedValue extends Value, Param>(
     cb: RefinePredicate<Value, RefinedValue, Param>,
     options: ParameterizedRefineOptions<Param> | Message
@@ -114,4 +114,8 @@ export interface StringShape<Value> {
     cb: AlterCallback<Value, AlteredValue>,
     options?: AlterOptions
   ): StringShape<AlteredValue>;
+
+  alter<Param>(cb: AlterCallback<Value, Value, Param>, options: ParameterizedAlterOptions<Param>): this;
+
+  alter(cb: AlterCallback<Value>, options?: AlterOptions): this;
 }
