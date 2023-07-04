@@ -270,7 +270,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
-   * @param options The check options.
+   * @param options The operation options.
    * @returns The clone of the shape.
    * @template Param The param that is passed to the {@linkcode CheckCallback} when a check operation is applied.
    * @see {@linkcode refine}
@@ -285,7 +285,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks the shape output.
-   * @param options The check options.
+   * @param options The operation options.
    * @returns The clone of the shape.
    * @see {@linkcode refine}
    */
@@ -339,7 +339,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
-   * @param options The issue options or the issue message.
+   * @param options The operation options or the issue message.
    * @returns The shape with the narrowed output.
    * @template RefinedValue The narrowed output value.
    * @template Param The param that is passed to the {@linkcode RefinePredicate} when a refinement operation is applied.
@@ -357,7 +357,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
-   * @param options The issue options or the issue message.
+   * @param options The operation options or the issue message.
    * @returns The shape with the narrowed output.
    * @template RefinedValue The narrowed output value.
    * @see {@linkcode check}
@@ -373,7 +373,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
-   * @param options The issue options or the issue message.
+   * @param options The operation options or the issue message.
    * @returns The clone of the shape.
    * @template Param The param that is passed to the {@linkcode RefineCallback} when a refinement operation is applied.
    * @see {@linkcode check}
@@ -386,7 +386,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
-   * @param options The issue options or the issue message.
+   * @param options The operation options or the issue message.
    * @returns The clone of the shape.
    * @see {@linkcode check}
    */
@@ -433,7 +433,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Alters the shape output value without changing its type.
    *
    * @param cb The callback that alters the shape output.
-   * @param options The check options.
+   * @param options The operation options.
    * @returns The clone of the shape.
    * @template Param The param that is passed to the {@linkcode AlterCallback} when an alteration operation is applied.
    * @see {@linkcode convert}
@@ -444,7 +444,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Alters the shape output value without changing its type.
    *
    * @param cb The callback that alters the shape output.
-   * @param options The check options.
+   * @param options The operation options.
    * @returns The clone of the shape.
    * @see {@linkcode convert}
    */
@@ -477,7 +477,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Synchronously converts the output value of the shape with a converter callback.
+   * Synchronously converts the output value of the shape.
    *
    * @param cb The callback that converts the shape output value.
    * @returns The {@linkcode ConvertShape} instance.
@@ -486,10 +486,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   convert<ConvertedValue>(
     /**
+     * Throw a {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
+     *
      * @param value The shape output value.
      * @param options Parsing options.
      * @return The converted value.
-     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
     cb: (value: OutputValue, options: Readonly<ApplyOptions>) => ConvertedValue
   ): Shape<InputValue, ConvertedValue> {
@@ -497,7 +498,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Asynchronously converts the output value of the shape with a converter callback.
+   * Asynchronously converts the output value of the shape.
    *
    * @param cb The callback that converts the shape output value.
    * @returns The {@linkcode ConvertShape} instance.
@@ -506,10 +507,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   convertAsync<ConvertedValue>(
     /**
+     * Reject with a {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
+     *
      * @param value The shape output value.
      * @param options Parsing options.
      * @return The converted value.
-     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
     cb: (value: OutputValue, options: Readonly<ApplyOptions>) => PromiseLike<ConvertedValue>
   ): Shape<InputValue, ConvertedValue> {
@@ -527,7 +529,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Returns an opaque shape that adds a brand to the output type.
+   * Returns a shape that adds a brand to the output type.
    *
    * @returns A shape with the branded output type.
    * @template Brand The brand value.

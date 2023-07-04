@@ -12,10 +12,11 @@ export function convert<ConvertedValue>(
   /**
    * The callback that converts the input value.
    *
+   * Throw a {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
+   *
    * @param value The input value.
    * @param options Parsing options.
    * @return The conversion result.
-   * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
    */
   cb: (value: any, options: Readonly<ApplyOptions>) => ConvertedValue
 ): ConvertShape<ConvertedValue> {
@@ -33,10 +34,11 @@ export function convertAsync<ConvertedValue>(
   /**
    * The callback that converts the input value.
    *
+   * Reject with a {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
+   *
    * @param value The input value.
    * @param options Parsing options.
    * @return The conversion result.
-   * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
    */
   cb: (value: any, options: Readonly<ApplyOptions>) => PromiseLike<ConvertedValue>
 ): ConvertShape<ConvertedValue> {
