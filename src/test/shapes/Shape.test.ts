@@ -77,18 +77,18 @@ describe('Shape', () => {
       const shape2 = shape1.check(cb);
 
       expect(shape1).not.toBe(shape2);
-      expect(shape1['_getOperation'](cb)).toBeNull();
-      expect(shape2['_getOperation'](cb)).toBeDefined();
+      expect(shape1['_operations']).toBeNull();
+      expect(shape2['_operations']![0].type).toBe(cb);
     });
 
     // test('adds a safe check by default', () => {
     //   const cb = () => null;
-    //   expect(new Shape().check(cb)['_getOperation'](cb)?.isForced).toBe(false);
+    //   expect(new Shape().check(cb)['_operations'](cb)?.isForced).toBe(false);
     // });
     //
     // test('adds an forced check', () => {
     //   const cb = () => null;
-    //   expect(new Shape().check(cb, { force: true })['_getOperation'](cb)?.isForced).toBe(true);
+    //   expect(new Shape().check(cb, { force: true })['_operations'](cb)?.isForced).toBe(true);
     // });
 
     test('added check is applied', () => {
@@ -132,34 +132,25 @@ describe('Shape', () => {
     });
   });
 
-  describe('_getOperation', () => {
+  describe('_operations', () => {
     test('returns undefined if check not found', () => {
-      expect(new Shape()['_getOperation'](() => null)).toBeNull();
+      expect(new Shape()['_operations']).toBeNull();
     });
 
     test('returns the check', () => {
       const cb = () => null;
       const shape = new Shape().check(cb);
 
-      expect(shape['_getOperation'](cb)).toEqual({ type: cb, param: undefined, compose: expect.any(Function) });
+      expect(shape['_operations']![0]).toEqual({ type: cb, param: undefined, compose: expect.any(Function) });
     });
 
     test('returns the check with custom type', () => {
       const cb = () => null;
       const shape = new Shape().check(cb, { type: 'aaa' });
 
-      expect(shape['_getOperation']('aaa')).toEqual({ type: 'aaa', param: undefined, compose: expect.any(Function) });
+      expect(shape['_operations']![0]).toEqual({ type: 'aaa', param: undefined, compose: expect.any(Function) });
     });
   });
-
-  // describe('hasCheck', () => {
-  //   test('returns true if check was added', () => {
-  //     const cb = () => null;
-  //
-  //     expect(new Shape().hasCheck(cb)).toBe(false);
-  //     expect(new Shape().check(cb).hasCheck(cb)).toBe(true);
-  //   });
-  // });
 
   describe('refine', () => {
     test('applies a predicate', () => {
@@ -168,7 +159,7 @@ describe('Shape', () => {
       expect(new Shape().refine(cbMock).try('aaa')).toEqual({ ok: true, value: 'aaa' });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { coerce: false, verbose: false });
     });
 
     test('does not apply a safe predicate if the preceding check failed', () => {
@@ -195,7 +186,7 @@ describe('Shape', () => {
       });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { verbose: true });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
     });
 
     test('returns issues if a predicate fails', () => {

@@ -5,28 +5,6 @@ const currDate = new Date();
 const prevDate = new Date(currDate.getTime() - 1);
 const nextDate = new Date(currDate.getTime() + 1);
 
-describe('minimum', () => {
-  test('undefined is no minimum date', () => {
-    expect(new DateShape().minValue).toBeUndefined();
-  });
-
-  test('clones the date', () => {
-    expect(new DateShape().min(currDate).minValue).not.toBe(currDate);
-    expect(new DateShape().min(currDate).minValue).toEqual(currDate);
-  });
-});
-
-describe('maximum', () => {
-  test('undefined is no maximum date', () => {
-    expect(new DateShape().maxValue).toBeUndefined();
-  });
-
-  test('clones the date', () => {
-    expect(new DateShape().max(currDate).maxValue).not.toBe(currDate);
-    expect(new DateShape().max(currDate).maxValue).toEqual(currDate);
-  });
-});
-
 describe('min', () => {
   test('raises if value is not greater than or equal', () => {
     expect(new DateShape().min(currDate).try(prevDate)).toEqual({
