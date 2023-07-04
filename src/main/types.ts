@@ -1,4 +1,49 @@
 /**
+ * A result returned from a shape after it was applied to an input value.
+ *
+ * This is the part of the internal API required for creating custom shapes.
+ *
+ * - If `null` then the input value is valid and wasn't transformed.
+ * - If an {@linkcode Ok} instance then the input value is valid and was transformed.
+ * - If an array of {@link Issue issues} then the input value is invalid.
+ *
+ * @template Value The output value.
+ * @see {@linkcode Shape#_apply Shape._apply}
+ * @see {@linkcode Shape#_applyAsync Shape._applyAsync}
+ * @group Other
+ */
+export type Result<Value = any> = Ok<Value> | Issue[] | null;
+
+/**
+ * Carries the result of a successful input parsing.
+ *
+ * @template Value The output value.
+ * @group Other
+ */
+export interface Ok<Value = any> {
+  ok: true;
+
+  /**
+   * The output value.
+   */
+  value: Value;
+}
+
+/**
+ * Carries the result of a failed input parsing.
+ *
+ * @group Other
+ */
+export interface Err {
+  ok: false;
+
+  /**
+   * The array of issues encountered during parsing.
+   */
+  issues: Issue[];
+}
+
+/**
  * A validation issue raised during input parsing.
  *
  * @group Issues
@@ -55,6 +100,38 @@ export interface Issue {
 }
 
 /**
+ * Options used by shapes and built-in operations to create an issue.
+ *
+ * @see {@linkcode Issue}
+ * @group Issues
+ */
+export interface IssueOptions {
+  /**
+   * The custom issue message.
+   *
+   * @see {@linkcode Message}
+   * @see {@linkcode Issue#message Issue.message}
+   */
+  message?: Message | any;
+
+  /**
+   * An arbitrary metadata that is added to an issue.
+   *
+   * @see {@linkcode Issue#meta Issue.meta}
+   */
+  meta?: any;
+}
+
+/**
+ * A callback that returns an issue message, or an issue message string.
+ *
+ * `%s` placeholder in string messages is replaced with the {@link Issue#param issue param}.
+ *
+ * @group Issues
+ */
+export type Message = MessageCallback | string;
+
+/**
  * Returns a human-readable message that describes an issue.
  *
  * You can assign the {@linkcode Issue#message issue.message} property directly inside this callback or return the
@@ -62,99 +139,11 @@ export interface Issue {
  *
  * @param issue The issue for which the message should be produced.
  * @param options The parsing options.
- * @returns The value that should be used as an issue message.
+ * @returns The value that should be used as an issue message. The returned value is ignored if `issue.message` was
+ * assigned a non-`undefined` value inside the callback.
  * @group Issues
  */
 export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) => any;
-
-/**
- * A callback that returns an issue message or a message string. `%s` placeholder in string messages is replaced with
- * the {@link OperationOptions#param issue param}.
- *
- * @group Issues
- */
-export type Message = MessageCallback | string;
-
-/**
- * Options of an issue.
- *
- * @group Issues
- */
-export interface IssueOptions {
-  /**
-   * The custom issue message.
-   */
-  message?: Message | any;
-
-  /**
-   * An arbitrary metadata that is added to an issue.
-   */
-  meta?: any;
-}
-
-/**
- * Carries the result of a successful input parsing.
- *
- * @template Value The output value.
- * @group Other
- */
-export interface Ok<Value = any> {
-  ok: true;
-
-  /**
-   * The output value.
-   */
-  value: Value;
-}
-
-/**
- * Carries the result of a failed input parsing.
- *
- * @group Other
- */
-export interface Err {
-  ok: false;
-
-  /**
-   * The array of issues encountered during parsing.
-   */
-  issues: Issue[];
-}
-
-/**
- * The result that shape returns after being applied to an input value.
- *
- * This is the part of the internal API required for creating custom shapes.
- *
- * - If `null` then the input value is valid and wasn't transformed.
- * - If an {@linkcode Ok} instance then the input value is valid and was transformed.
- * - If an array of {@link Issue issues} then the input value is invalid.
- *
- * @template Value The output value.
- * @see {@linkcode Shape#_apply Shape._apply}
- * @see {@linkcode Shape#_applyAsync Shape._applyAsync}
- * @group Other
- */
-export type Result<Value = any> = Ok<Value> | Issue[] | null;
-
-/**
- * A callback that applies an operation to the shape output.
- *
- * @param input The input value to which the shape was applied.
- * @param output The shape output value to which the operation must be applied.
- * @param options Parsing options.
- * @param issues The mutable array of issues captured by a shape, or `null` if there were no issues raised yet.
- * @returns The result of the operation.
- * @template InputValue The input value to which the shape was applied.
- * @template OutputValue The shape output value to which the operation must be applied.
- * @group Operations
- */
-export type OperationCallback<InputValue = any, OutputValue = any> = (
-  input: InputValue,
-  output: OutputValue,
-  options: Readonly<ApplyOptions>,
-  issues: Issue[] | null
-) => Result;
 
 /**
  * An operation that a shape applies to its output.
@@ -164,6 +153,7 @@ export type OperationCallback<InputValue = any, OutputValue = any> = (
  * @see {@linkcode Shape#check Shape.check}
  * @see {@linkcode Shape#alter Shape.alter}
  * @see {@linkcode Shape#refine Shape.refine}
+ * @see {@linkcode Shape#_addOperation Shape._addOperation}
  */
 export interface Operation<InputValue = any, OutputValue = any> {
   /**
@@ -176,7 +166,11 @@ export interface Operation<InputValue = any, OutputValue = any> {
    * The additional param associated with the operation.
    *
    * This param usually contains a {@link type type-specific} data is used in the {@link OperationCallback callback}
-   * returned by {@linkcode compile} method.
+   * returned by the {@linkcode compose} method.
+   *
+   * Built-in operations use the same param for an operation and an issue that is raised if an operation fails.
+   *
+   * @see {@linkcode Issue#param Issue.param}
    */
   param: any;
 
@@ -185,9 +179,30 @@ export interface Operation<InputValue = any, OutputValue = any> {
    * control to the next operation.
    *
    * @param next The callback that applies the next operation.
+   * @returns The callback that applies an operation to the shape output.
    */
-  compile(this: Operation, next: OperationCallback): OperationCallback<InputValue, OutputValue>;
+  compose(this: Operation, next: OperationCallback): OperationCallback<InputValue, OutputValue>;
 }
+
+/**
+ * A callback that applies an operation to the shape output.
+ *
+ * @param input The input value to which the shape was applied.
+ * @param output The shape output value to which the operation must be applied.
+ * @param options Parsing options.
+ * @param issues The mutable array of issues captured by a shape, or `null` if there were no issues raised yet.
+ * @returns The result of the operation.
+ * @template InputValue The input value to which the shape was applied.
+ * @template OutputValue The shape output value to which the operation must be applied.
+ * @see {@linkcode Operation#compose Operation.compose}
+ * @group Operations
+ */
+export type OperationCallback<InputValue = any, OutputValue = any> = (
+  input: InputValue,
+  output: OutputValue,
+  options: Readonly<ApplyOptions>,
+  issues: Issue[] | null
+) => Result;
 
 /**
  * Options of a custom {@link Operation operation}.
@@ -201,14 +216,14 @@ export interface OperationOptions {
   /**
    * The type of the operation.
    *
-   * @see {@link Operation#type Operation.type}
+   * @see {@linkcode Operation#type Operation.type}
    */
   type?: any;
 
   /**
    * The additional param associated with the operation.
    *
-   * @see {@link Operation#param Operation.param}
+   * @see {@linkcode Operation#param Operation.param}
    */
   param?: any;
 
@@ -221,12 +236,12 @@ export interface OperationOptions {
 }
 
 /**
- * Checks that a value satisfies a requirement.
+ * Checks that a value satisfies a requirement and returns issues if it doesn't.
  *
- * If a {@linkcode ValidationError} is thrown, its issues are treated as if they were returned from a check callback.
+ * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result.
  *
  * @param value The value to check.
- * @param param The additional param that was associated with the check operation.
+ * @param param The additional param that was associated with the operation.
  * @param options Parsing options.
  * @returns `null` or `undefined` if the value satisfies a requirement; an issue or an array of issues if a value
  * doesn't satisfy a requirement.
@@ -242,31 +257,17 @@ export type CheckCallback<Value = any, Param = any> = (
 ) => Issue[] | Issue | null | undefined | void;
 
 /**
- * Options of {@link Shape#refine a refinement operation}.
- *
- * @group Operations
- */
-export interface RefineOptions extends OperationOptions, IssueOptions {
-  /**
-   * The code of an issue that would be raised if the refinement fails.
-   *
-   * @default "predicate"
-   */
-  code?: any;
-}
-
-/**
  * Checks that a value matches a predicate.
  *
  * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
  * refinement cannot be performed, and you want to abort the operation.
  *
  * @param value The value to refine.
- * @param param The additional param that was associated with the refinement operation.
+ * @param param The additional param that was associated with the operation.
  * @param options Parsing options.
- * @return Truthy if value matches the predicate, or falsy otherwise.
- * @template Value The value to check.
- * @template Param The additional param that was associated with the refinement operation.
+ * @return Truthy if value matches the predicate, or falsy if it doesn't.
+ * @template Value The value to refine.
+ * @template Param The additional param that was associated with the operation.
  * @see {@linkcode Shape#refine}
  * @group Operations
  */
@@ -283,12 +284,12 @@ export type RefineCallback<Value = any, Param = any> = (
  * refinement cannot be performed, and you want to abort the operation.
  *
  * @param value The value to refine.
- * @param param The additional param that was associated with the refinement operation.
+ * @param param The additional param that was associated with the operation.
  * @param options Parsing options.
  * @return `true` if value matches the predicate, or `false` otherwise.
  * @template Value The value to refine.
  * @template RefinedValue The refined value.
- * @template Param The additional param that was associated with the refinement operation.
+ * @template Param The additional param that was associated with the operation.
  * @see {@linkcode Shape#refine}
  * @group Operations
  */
@@ -299,6 +300,21 @@ export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Par
 ) => value is RefinedValue;
 
 /**
+ * Options of {@link Shape#refine a refinement operation}.
+ *
+ * @group Operations
+ */
+export interface RefineOptions extends OperationOptions, IssueOptions {
+  /**
+   * The code of an issue that would be raised if the refinement fails.
+   *
+   * @default "predicate"
+   * @see {@linkcode Issue#code Issue.code}
+   */
+  code?: any;
+}
+
+/**
  * Alters the value without changing its base type.
  *
  * If you want to change the base type, consider using {@linkcode Shape#convert Shape.convert}.
@@ -307,12 +323,12 @@ export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Par
  * alteration cannot be performed, and you want to abort the operation.
  *
  * @param value The value to alter.
- * @param param The additional param that was associated with the alteration operation.
+ * @param param The additional param that was associated with the operation.
  * @param options Parsing options.
  * @returns The altered value.
  * @template Value The value to alter.
  * @template AlteredValue The altered value.
- * @template Param The additional param that was associated with the alteration operation.
+ * @template Param The additional param that was associated with the operation.
  * @see {@linkcode Shape#alter}
  * @see {@linkcode Shape#convert}
  * @group Operations
@@ -325,7 +341,7 @@ export type AlterCallback<Value = any, AlteredValue extends Value = Value, Param
 
 /**
  * @inheritDoc
- * @template Param The param that is passed to the {@linkcode CheckCallback} when a check operation is applied.
+ * @template Param The param that is passed to a callback when an operation is applied.
  */
 export interface ParameterizedOperationOptions<Param> extends OperationOptions {
   param: Param;
@@ -333,15 +349,17 @@ export interface ParameterizedOperationOptions<Param> extends OperationOptions {
 
 /**
  * @inheritDoc
- * @template Param The param that is passed to the {@linkcode RefineCallback} when a refinement operation is applied.
+ * @template Param The param that is passed to a callback when an operation is applied.
  */
 export interface ParameterizedRefineOptions<Param> extends RefineOptions {
   param: Param;
 }
 
 /**
- * Options used during parsing.
+ * Options used when a shape is applied to an input value.
  *
+ * @see {@linkcode Shape#_apply Shape._apply}
+ * @see {@linkcode Shape#_applyAsync Shape._applyAsync}
  * @group Other
  */
 export interface ApplyOptions {

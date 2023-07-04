@@ -67,10 +67,10 @@ function size(this: SetShape<any>, size: number, options?: IssueOptions | Messag
 function min(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_SET_MIN,
     param: size,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output.size < size) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -86,10 +86,10 @@ function min(this: SetShape<any>, size: number, options?: IssueOptions | Message
 function max(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_SET_MAX,
     param: size,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output.size > size) {
         issues = pushIssue(issues, issueFactory(output, options));
 

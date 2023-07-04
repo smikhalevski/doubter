@@ -100,10 +100,10 @@ function appendMinCheck(this: DateShape, value: Date | number | string, options?
 
   const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, value);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_DATE_MIN,
     param: value,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output.getTime() < timestamp) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -123,10 +123,10 @@ function appendMaxCheck(this: DateShape, value: Date | number | string, options?
 
   const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, value);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_DATE_MAX,
     param: value,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output.getTime() > timestamp) {
         issues = pushIssue(issues, issueFactory(output, options));
 

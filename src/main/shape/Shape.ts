@@ -303,10 +303,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback, options: OperationOptions = {}): this {
     const { type = cb, param, force } = options;
 
-    return this._appendOperation({
+    return this._addOperation({
       type,
       param,
-      compile: next => (input, output, options, issues) => {
+      compose: next => (input, output, options, issues) => {
         if (issues !== null && !force) {
           return next(input, output, options, issues);
         }
@@ -406,10 +406,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
-    return this._appendOperation({
+    return this._addOperation({
       type,
       param,
-      compile: next => (input, output, options, issues) => {
+      compose: next => (input, output, options, issues) => {
         if (issues !== null && !force) {
           return next(input, output, options, issues);
         }
@@ -484,10 +484,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter(cb: AlterCallback, options: OperationOptions = {}): Shape {
     const { type = cb, param, force = false } = options;
 
-    return this._appendOperation({
+    return this._addOperation({
       type,
       param,
-      compile: next => (input, output, options, issues) => {
+      compose: next => (input, output, options, issues) => {
         if (issues !== null && !force) {
           return next(input, output, options, issues);
         }
@@ -722,12 +722,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Appends an operation to the shape, so it can be applied as the last step of parsing.
+   * Adds an operation to the shape.
    *
    * @param op The operation to add.
    * @returns The clone of the shape.
    */
-  protected _appendOperation(op: Operation<InputValue, OutputValue>): this {
+  protected _addOperation(op: Operation<InputValue, OutputValue>): this {
     const shape = this._clone();
     shape._operations = this._operations !== null ? this._operations.concat(op) : [op];
     return shape;
@@ -1074,7 +1074,7 @@ Object.defineProperties(Shape.prototype, {
 
       if (_operations !== null) {
         for (let i = _operations.length - 1; i >= 0; --i) {
-          cb = _operations[i].compile(cb);
+          cb = _operations[i].compose(cb);
         }
       }
 

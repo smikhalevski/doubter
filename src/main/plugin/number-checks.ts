@@ -248,10 +248,10 @@ function appendNonNegativeCheck(this: NumberShape, options?: IssueOptions | Mess
 function appendGtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_NUMBER_GT,
     param: value,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output <= value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -267,10 +267,10 @@ function appendGtCheck(this: NumberShape, value: number, options?: IssueOptions 
 function appendLtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_NUMBER_LT,
     param: value,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output >= value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -286,10 +286,10 @@ function appendLtCheck(this: NumberShape, value: number, options?: IssueOptions 
 function appendGteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_NUMBER_GTE,
     param: value,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output < value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -305,10 +305,10 @@ function appendGteCheck(this: NumberShape, value: number, options?: IssueOptions
 function appendLteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_NUMBER_LTE,
     param: value,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output > value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -328,10 +328,10 @@ function appendMultipleCheck(this: NumberShape, divisor: number, options?: Multi
 
   const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE, MESSAGE_NUMBER_MULTIPLE, options, divisor);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_NUMBER_MULTIPLE,
     param: divisor,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) < epsilon : output % divisor !== 0) {
         issues = pushIssue(issues, issueFactory(output, options));
 

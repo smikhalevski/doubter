@@ -106,10 +106,10 @@ function appendMinCheck(
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_ARRAY_MIN,
     param: length,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output.length < length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -129,10 +129,10 @@ function appendMaxCheck(
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_ARRAY_MAX,
     param: length,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       if (output.length > length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -156,10 +156,10 @@ function appendIncludesCheck(
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, MESSAGE_ARRAY_INCLUDES, options, undefined);
 
-  return this._appendOperation({
+  return this._addOperation({
     type: CODE_ARRAY_INCLUDES,
     param: shape,
-    compile: next => (input, output, options, issues) => {
+    compose: next => (input, output, options, issues) => {
       for (const value of output) {
         if (shape.try(value, options).ok) {
           return next(input, output, options, issues);
