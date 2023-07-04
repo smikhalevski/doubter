@@ -215,37 +215,37 @@ export default function () {
     },
   });
 
-  NumberShape.prototype.positive = appendPositiveCheck;
-  NumberShape.prototype.negative = appendNegativeCheck;
-  NumberShape.prototype.nonPositive = appendNonPositiveCheck;
-  NumberShape.prototype.nonNegative = appendNonNegativeCheck;
-  NumberShape.prototype.gt = appendGtCheck;
-  NumberShape.prototype.lt = appendLtCheck;
-  NumberShape.prototype.gte = appendGteCheck;
-  NumberShape.prototype.lte = appendLteCheck;
-  NumberShape.prototype.min = appendGteCheck;
-  NumberShape.prototype.max = appendLteCheck;
-  NumberShape.prototype.multiple = appendMultipleCheck;
-  NumberShape.prototype.safe = appendSafeCheck;
+  NumberShape.prototype.positive = addPositiveCheck;
+  NumberShape.prototype.negative = addNegativeCheck;
+  NumberShape.prototype.nonPositive = addNonPositiveCheck;
+  NumberShape.prototype.nonNegative = addNonNegativeCheck;
+  NumberShape.prototype.gt = addGtCheck;
+  NumberShape.prototype.lt = addLtCheck;
+  NumberShape.prototype.gte = addGteCheck;
+  NumberShape.prototype.lte = addLteCheck;
+  NumberShape.prototype.min = addGteCheck;
+  NumberShape.prototype.max = addLteCheck;
+  NumberShape.prototype.multiple = addMultipleCheck;
+  NumberShape.prototype.safe = addSafeCheck;
 }
 
-function appendPositiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function addPositiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.gt(0, options);
 }
 
-function appendNegativeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function addNegativeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.lt(0, options);
 }
 
-function appendNonPositiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function addNonPositiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.lte(0, options);
 }
 
-function appendNonNegativeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function addNonNegativeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.gte(0, options);
 }
 
-function appendGtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
+function addGtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
   return this._addOperation({
@@ -264,7 +264,7 @@ function appendGtCheck(this: NumberShape, value: number, options?: IssueOptions 
   });
 }
 
-function appendLtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
+function addLtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
   return this._addOperation({
@@ -283,7 +283,7 @@ function appendLtCheck(this: NumberShape, value: number, options?: IssueOptions 
   });
 }
 
-function appendGteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
+function addGteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
   return this._addOperation({
@@ -302,7 +302,7 @@ function appendGteCheck(this: NumberShape, value: number, options?: IssueOptions
   });
 }
 
-function appendLteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
+function addLteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
   return this._addOperation({
@@ -321,7 +321,7 @@ function appendLteCheck(this: NumberShape, value: number, options?: IssueOptions
   });
 }
 
-function appendMultipleCheck(this: NumberShape, divisor: number, options?: MultipleOptions | Message): NumberShape {
+function addMultipleCheck(this: NumberShape, divisor: number, options?: MultipleOptions | Message): NumberShape {
   const { precision } = extractOptions(options);
 
   const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
@@ -344,6 +344,6 @@ function appendMultipleCheck(this: NumberShape, divisor: number, options?: Multi
   });
 }
 
-function appendSafeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function addSafeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.min(Number.MIN_SAFE_INTEGER, options).max(Number.MAX_SAFE_INTEGER, options);
 }

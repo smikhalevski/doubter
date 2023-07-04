@@ -84,14 +84,14 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!ArrayShape} with additional checks.
  */
 export default function () {
-  ArrayShape.prototype.length = appendLengthCheck;
-  ArrayShape.prototype.min = appendMinCheck;
-  ArrayShape.prototype.max = appendMaxCheck;
-  ArrayShape.prototype.nonEmpty = appendNonEmptyCheck;
-  ArrayShape.prototype.includes = appendIncludesCheck;
+  ArrayShape.prototype.length = addLengthCheck;
+  ArrayShape.prototype.min = addMinCheck;
+  ArrayShape.prototype.max = addMaxCheck;
+  ArrayShape.prototype.nonEmpty = addNonEmptyCheck;
+  ArrayShape.prototype.includes = addIncludesCheck;
 }
 
-function appendLengthCheck(
+function addLengthCheck(
   this: ArrayShape<any, any>,
   length: number,
   options?: IssueOptions | Message
@@ -99,7 +99,7 @@ function appendLengthCheck(
   return this.min(length, options).max(length, options);
 }
 
-function appendMinCheck(
+function addMinCheck(
   this: ArrayShape<any, any>,
   length: number,
   options?: IssueOptions | Message
@@ -122,7 +122,7 @@ function appendMinCheck(
   });
 }
 
-function appendMaxCheck(
+function addMaxCheck(
   this: ArrayShape<any, any>,
   length: number,
   options?: IssueOptions | Message
@@ -145,11 +145,11 @@ function appendMaxCheck(
   });
 }
 
-function appendNonEmptyCheck(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
+function addNonEmptyCheck(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
   return this.min(1, options);
 }
 
-function appendIncludesCheck(
+function addIncludesCheck(
   this: ArrayShape<any, any>,
   shape: AnyShape,
   options?: IssueOptions | Message

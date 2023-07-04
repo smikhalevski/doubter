@@ -31,30 +31,6 @@ import { createIssueFactory } from '../utils';
 declare module '../core' {
   export interface StringShape {
     /**
-     * The minimum length, or `undefined` if there's no minimum length.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/string-checks!}
-     */
-    readonly minLength: number | undefined;
-
-    /**
-     * The maximum length, or `undefined` if there's no maximum length.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/string-checks!}
-     */
-    readonly maxLength: number | undefined;
-
-    /**
-     * The pattern that the string should match set via {@linkcode regex}, or `undefined` if there's no pattern.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/string-checks!}
-     */
-    readonly pattern: RegExp | undefined;
-
-    /**
      * The shortcut to apply both {@linkcode min} and {@linkcode max} constraints.
      *
      * @param length The exact length a string must have.
@@ -146,21 +122,21 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!StringShape} with additional checks.
  */
 export default function () {
-  StringShape.prototype.length = appendLengthCheck;
-  StringShape.prototype.min = appendMinCheck;
-  StringShape.prototype.max = appendMaxCheck;
-  StringShape.prototype.regex = appendRegexCheck;
-  StringShape.prototype.includes = appendIncludesCheck;
-  StringShape.prototype.startsWith = appendStartsWithCheck;
-  StringShape.prototype.endsWith = appendEndsWithCheck;
-  StringShape.prototype.trim = appendTrimAlter;
+  StringShape.prototype.length = addLengthCheck;
+  StringShape.prototype.min = addMinCheck;
+  StringShape.prototype.max = addMaxCheck;
+  StringShape.prototype.regex = addRegexCheck;
+  StringShape.prototype.includes = addIncludesCheck;
+  StringShape.prototype.startsWith = addStartsWithCheck;
+  StringShape.prototype.endsWith = addEndsWithCheck;
+  StringShape.prototype.trim = addTrimAlter;
 }
 
-function appendLengthCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function addLengthCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   return this.min(length, options).max(length, options);
 }
 
-function appendMinCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function addMinCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
   return this._addOperation({
@@ -179,7 +155,7 @@ function appendMinCheck(this: StringShape, length: number, options?: IssueOption
   });
 }
 
-function appendMaxCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function addMaxCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
   return this._addOperation({
@@ -198,7 +174,7 @@ function appendMaxCheck(this: StringShape, length: number, options?: IssueOption
   });
 }
 
-function appendRegexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
+function addRegexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
   return this._addOperation({
@@ -217,7 +193,7 @@ function appendRegexCheck(this: StringShape, re: RegExp, options?: IssueOptions 
   });
 }
 
-function appendIncludesCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function addIncludesCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
   return this._addOperation({
@@ -236,7 +212,7 @@ function appendIncludesCheck(this: StringShape, value: string, options?: IssueOp
   });
 }
 
-function appendStartsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function addStartsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
   return this._addOperation({
@@ -255,7 +231,7 @@ function appendStartsWithCheck(this: StringShape, value: string, options?: Issue
   });
 }
 
-function appendEndsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function addEndsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
   return this._addOperation({
@@ -274,7 +250,7 @@ function appendEndsWithCheck(this: StringShape, value: string, options?: IssueOp
   });
 }
 
-function appendTrimAlter(this: StringShape): StringShape {
+function addTrimAlter(this: StringShape): StringShape {
   return this._addOperation({
     type: 'trim',
     param: undefined,
