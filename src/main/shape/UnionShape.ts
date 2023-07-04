@@ -298,7 +298,7 @@ export interface Discriminator {
 /**
  * Returns a discriminator property description. Discriminator conforms the following rules:
  *
- * - has a kind that is common for all provided object shapes;
+ * - has a key that is common for all provided object shapes;
  * - its values are discrete;
  * - its values uniquely identify each shape.
  */

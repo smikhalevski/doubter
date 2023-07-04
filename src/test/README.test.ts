@@ -170,7 +170,7 @@ describe('Advanced shapes', () => {
           ];
         }
 
-        // 3️⃣ Apply operations to the output value
+        // 2️⃣ Apply operations to the output value
         return this._applyOperations(input, parseFloat(input), options, null);
       }
     }

@@ -78,7 +78,7 @@ export function applyShape<T>(
 }
 
 /**
- * Prepends a kind to a path of each issue.
+ * Prepends a key to a path of each issue.
  */
 export function unshiftIssuesPath(issues: Issue[], key: unknown): void {
   for (const issue of issues) {

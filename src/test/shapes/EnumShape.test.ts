@@ -59,7 +59,7 @@ describe('EnumShape', () => {
     });
   });
 
-  test('raises an issue when an input is the kind of the numeric enum', () => {
+  test('raises an issue when an input is the key of the numeric enum', () => {
     expect(new EnumShape(NumberMockEnum).try('AAA')).toEqual({
       ok: false,
       issues: [
@@ -116,7 +116,7 @@ describe('EnumShape', () => {
   });
 
   describe('coerce', () => {
-    test('coerces the kind of the numeric enum', () => {
+    test('coerces the key of the numeric enum', () => {
       const shape = new EnumShape(NumberMockEnum);
 
       expect(shape.coerce().inputs).toEqual([0, 1, '0', '1', 'AAA', 'BBB', TYPE_ARRAY, TYPE_OBJECT]);
@@ -125,7 +125,7 @@ describe('EnumShape', () => {
       expect(shape.parse('AAA', { coerce: true })).toEqual(NumberMockEnum.AAA);
     });
 
-    test('coerces the kind of a const object', () => {
+    test('coerces the key of a const object', () => {
       const shape = new EnumShape({
         AAA: 'aaa',
         BBB: 'bbb',

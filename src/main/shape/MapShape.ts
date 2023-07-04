@@ -27,7 +27,7 @@ import {
 /**
  * The shape of a `Map` instance.
  *
- * @template KeyShape The kind shape.
+ * @template KeyShape The key shape.
  * @template ValueShape The value shape.
  * @group Shapes
  */
@@ -40,7 +40,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   implements DeepPartialProtocol<MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>>>
 {
   /**
-   * The type constraint options or an issue message.
+   * The issue options or the issue message.
    */
   protected _options;
 
@@ -52,15 +52,15 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   /**
    * Creates a new {@linkcode MapShape} instance.
    *
-   * @param keyShape The kind shape.
+   * @param keyShape The key shape.
    * @param valueShape The value shape.
-   * @param options The type constraint options or an issue message.
-   * @template KeyShape The kind shape.
+   * @param options The issue options or the issue message.
+   * @template KeyShape The key shape.
    * @template ValueShape The value shape.
    */
   constructor(
     /**
-     * The kind shape.
+     * The key shape.
      */
     readonly keyShape: KeyShape,
     /**

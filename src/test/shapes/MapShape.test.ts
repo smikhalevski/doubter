@@ -192,7 +192,7 @@ describe('MapShape', () => {
   });
 
   describe('at', () => {
-    test('returns value shape for any kind', () => {
+    test('returns value shape for any key', () => {
       const valueShape = new Shape();
       const objShape = new MapShape(new StringShape(), valueShape);
 
@@ -298,7 +298,7 @@ describe('MapShape', () => {
       });
     });
 
-    test('does not invoke the value shape if the previous kind shape has raised an issue', async () => {
+    test('does not invoke the value shape if the previous key shape has raised an issue', async () => {
       const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
       const valueShape = asyncShape;
 
@@ -316,7 +316,7 @@ describe('MapShape', () => {
       expect(applyAsyncValueSpy).toHaveBeenCalledTimes(0);
     });
 
-    test('does not invoke the kind shape if the previous value shape has raised an issue', async () => {
+    test('does not invoke the key shape if the previous value shape has raised an issue', async () => {
       const keyShape = asyncShape;
       const valueShape = asyncShape.check(() => [{ code: 'xxx' }]);
 

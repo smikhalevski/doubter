@@ -255,6 +255,7 @@ export class FunctionShape<
     }
 
     const output = result === null ? input : result.value;
+
     return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(output) : this.ensureSignature(output));
   }
 }

@@ -9,7 +9,6 @@ import { NEVER } from './Shape';
 /**
  * The shape of a string value.
  *
- * @template Value The output value.
  * @group Shapes
  */
 export class StringShape extends CoercibleShape<string> {

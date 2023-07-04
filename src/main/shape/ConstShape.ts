@@ -24,7 +24,7 @@ export class ConstShape<Value> extends Shape<Value> {
    * Creates a new {@linkcode ConstShape} instance.
    *
    * @param value The expected value.
-   * @param options The type constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template Value The expected value.
    */
   constructor(

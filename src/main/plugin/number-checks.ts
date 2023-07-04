@@ -176,12 +176,12 @@ declare module '../core' {
      * Constrains the number to be a multiple of the divisor.
      *
      * @param divisor The positive number by which the input should be divisible without a remainder.
-     * @param options The issue options or the issue message.
+     * @param options The check options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    multiple(divisor: number, options?: IssueOptions | Message): this;
+    multiple(divisor: number, options?: MultipleOptions | Message): this;
 
     /**
      * Number must be between `Number.MIN_SAFE_INTEGER` and `Number.MAX_SAFE_INTEGER`.

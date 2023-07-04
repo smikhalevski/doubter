@@ -13,8 +13,3 @@ expectType<111[]>(d.array(d.const(111))[OUTPUT]);
 expectType<Array<number | undefined>>(d.array(d.number()).deepPartial()[OUTPUT]);
 
 expectType<Array<{ aaa?: number } | undefined>>(d.array(d.object({ aaa: d.number() })).deepPartial()[OUTPUT]);
-
-// const a = d
-//   .array(d.string().refine((value): value is 'aaa' | 'bbb' => true))
-//   .refine((value): value is ['aaa'] => true)
-//   .min(3)[OUTPUT];
