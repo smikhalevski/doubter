@@ -1,38 +1,38 @@
 import { expectNotType, expectType } from 'tsd';
 import * as d from '../../main';
-import { _INPUT, _OUTPUT } from '../../main/shape/Shape';
+import { INPUT, OUTPUT } from '../../main/shape/Shape';
 
-expectType<111>(d.any((value): value is 111 => true)[_INPUT]);
+expectType<111>(d.any((value): value is 111 => true)[INPUT]);
 
-expectType<111>(d.any((value): value is 111 => true)[_OUTPUT]);
+expectType<111>(d.any((value): value is 111 => true)[OUTPUT]);
 
-expectType<string>(d.any<string>()[_INPUT]);
+expectType<string>(d.any<string>()[INPUT]);
 
-expectType<string>(d.any<string>()[_OUTPUT]);
+expectType<string>(d.any<string>()[OUTPUT]);
 
-expectType<string>(d.any<string>(() => true)[_INPUT]);
+expectType<string>(d.any<string>(() => true)[INPUT]);
 
-expectType<string>(d.any<string>(() => true)[_OUTPUT]);
+expectType<string>(d.any<string>(() => true)[OUTPUT]);
 
 // refine()
 
-expectType<any>(d.any().refine((value: unknown): value is number => true)[_INPUT]);
+expectType<any>(d.any().refine((value: unknown): value is number => true)[INPUT]);
 
-expectType<number>(d.any().refine((value: unknown): value is number => true)[_OUTPUT]);
+expectType<number>(d.any().refine((value: unknown): value is number => true)[OUTPUT]);
 
 // ReplaceLiteralShape
 
-expectType<string | null>(d.any<string>().nullable()[_OUTPUT]);
+expectType<string | null>(d.any<string>().nullable()[OUTPUT]);
 
-expectType<string | 111>(d.any<string>().nullable(111)[_OUTPUT]);
+expectType<string | 111>(d.any<string>().nullable(111)[OUTPUT]);
 
-expectType<111 | 333>(d.any<111 | 222>().replace(222, 333)[_OUTPUT]);
+expectType<111 | 333>(d.any<111 | 222>().replace(222, 333)[OUTPUT]);
 
-expectType<111 | 222 | 333>(d.any<111 | 222>().replace(222 as number, 333)[_OUTPUT]);
+expectType<111 | 222 | 333>(d.any<111 | 222>().replace(222 as number, 333)[OUTPUT]);
 
-expectType<number>(d.any<111 | 222>().replace(NaN, 333)[_INPUT]);
+expectType<number>(d.any<111 | 222>().replace(NaN, 333)[INPUT]);
 
-expectType<111 | 222 | 333>(d.any<111 | 222>().replace(NaN, 333)[_OUTPUT]);
+expectType<111 | 222 | 333>(d.any<111 | 222>().replace(NaN, 333)[OUTPUT]);
 
 // parse()
 
@@ -42,83 +42,83 @@ expectType<string | true>(d.any<string>().parseOrDefault(111, true));
 
 // CatchShape
 
-expectType<number | undefined>(d.number().catch()[_OUTPUT]);
+expectType<number | undefined>(d.number().catch()[OUTPUT]);
 
-expectType<number | 'aaa'>(d.number().catch('aaa')[_OUTPUT]);
+expectType<number | 'aaa'>(d.number().catch('aaa')[OUTPUT]);
 
-expectType<number | 'aaa'>(d.number().catch(() => 'aaa')[_OUTPUT]);
+expectType<number | 'aaa'>(d.number().catch(() => 'aaa')[OUTPUT]);
 
 // deepPartial()
 
 // ConvertShape is opaque for deepPartial
 expectType<{ aaa?: { bbb: number } }>(
-  d.object({ aaa: d.object({ bbb: d.number() }).convert(value => value) }).deepPartial()[_OUTPUT]
+  d.object({ aaa: d.object({ bbb: d.number() }).convert(value => value) }).deepPartial()[OUTPUT]
 );
 
 expectType<{ aaa?: string }>(
   d
     .object({ aaa: d.string().convert(parseFloat) })
     .to(d.object({ aaa: d.number() }))
-    .deepPartial()[_INPUT]
+    .deepPartial()[INPUT]
 );
 
 expectType<{ aaa?: number }>(
   d
     .object({ aaa: d.string().convert(parseFloat) })
     .to(d.object({ aaa: d.number() }))
-    .deepPartial()[_OUTPUT]
+    .deepPartial()[OUTPUT]
 );
 
 expectType<{ aaa?: string }>(
   d
     .or([d.object({ aaa: d.string() }), d.const(111)])
     .deny(111)
-    .deepPartial()[_OUTPUT]
+    .deepPartial()[OUTPUT]
 );
 
-expectType<{ aaa?: string } | undefined>(d.object({ aaa: d.string() }).catch().deepPartial()[_OUTPUT]);
+expectType<{ aaa?: string } | undefined>(d.object({ aaa: d.string() }).catch().deepPartial()[OUTPUT]);
 
-expectType<{ aaa?: string } | 111>(d.object({ aaa: d.string() }).catch(111).deepPartial()[_OUTPUT]);
+expectType<{ aaa?: string } | 111>(d.object({ aaa: d.string() }).catch(111).deepPartial()[OUTPUT]);
 
 // BrandShape
 
-expectType<d.Branded<string, 'foo'>>(d.string().brand<'foo'>()[_OUTPUT]);
+expectType<d.Branded<string, 'foo'>>(d.string().brand<'foo'>()[OUTPUT]);
 
 const brandShape = d.any<string>().brand();
 
-expectType<d.Output<typeof brandShape>>(brandShape[_OUTPUT]);
+expectType<d.Output<typeof brandShape>>(brandShape[OUTPUT]);
 
 expectType<d.Output<typeof brandShape>>(brandShape.parse('aaa'));
 
 expectNotType<d.Output<typeof brandShape>>('aaa');
 
-expectNotType<d.Output<typeof brandShape>>(d.any<string>().brand<'bbb'>()[_OUTPUT]);
+expectNotType<d.Output<typeof brandShape>>(d.any<string>().brand<'bbb'>()[OUTPUT]);
 
 // deepPartial is visible on branded shapes
-expectType<{ aaa?: string }>(d.object({ aaa: d.string() }).brand().deepPartial()[_OUTPUT]);
+expectType<{ aaa?: string }>(d.object({ aaa: d.string() }).brand().deepPartial()[OUTPUT]);
 
 // Branded shapes are transparent for deepPartial
-expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string() }).brand() }).deepPartial()[_OUTPUT]);
+expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string() }).brand() }).deepPartial()[OUTPUT]);
 
 // not()
 
-expectType<111 | 222>(d.enum([111, 222]).not(d.number())[_INPUT]);
+expectType<111 | 222>(d.enum([111, 222]).not(d.number())[INPUT]);
 
-expectType<111 | 222>(d.enum([111, 222]).not(d.number())[_OUTPUT]);
+expectType<111 | 222>(d.enum([111, 222]).not(d.number())[OUTPUT]);
 
-expectType<111 | 222>(d.enum([111, 222]).not(d.const(222))[_INPUT]);
+expectType<111 | 222>(d.enum([111, 222]).not(d.const(222))[INPUT]);
 
-expectType<111 | 222>(d.enum([111, 222]).not(d.const(222))[_OUTPUT]);
+expectType<111 | 222>(d.enum([111, 222]).not(d.const(222))[OUTPUT]);
 
 // exclude()
 
-expectType<111 | 222>(d.enum([111, 222]).exclude(d.number())[_INPUT]);
+expectType<111 | 222>(d.enum([111, 222]).exclude(d.number())[INPUT]);
 
-expectType<never>(d.enum([111, 222]).exclude(d.number())[_OUTPUT]);
+expectType<never>(d.enum([111, 222]).exclude(d.number())[OUTPUT]);
 
-expectType<111 | 222>(d.enum([111, 222]).exclude(d.const(222))[_INPUT]);
+expectType<111 | 222>(d.enum([111, 222]).exclude(d.const(222))[INPUT]);
 
-expectType<111>(d.enum([111, 222]).exclude(d.const(222))[_OUTPUT]);
+expectType<111>(d.enum([111, 222]).exclude(d.const(222))[OUTPUT]);
 
 // parseOrDefault()
 

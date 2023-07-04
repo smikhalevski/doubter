@@ -15,10 +15,10 @@ import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Shape } from './Shape';
 
-// prettier-ignore
 /**
  * Converts union to intersection.
  */
+// prettier-ignore
 type Intersect<U extends AnyShape> =
   (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
 

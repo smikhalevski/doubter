@@ -20,18 +20,7 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_OBJECT } from '../Type';
-import {
-  AlterCallback,
-  ApplyOptions,
-  Issue,
-  IssueOptions,
-  Message,
-  OperationOptions,
-  RefineCallback,
-  RefineOptions,
-  RefinePredicate,
-  Result,
-} from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
 import {
@@ -683,28 +672,4 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     }
     return this._applyOperations(input, output, options, issues);
   }
-}
-
-export interface ObjectShape<PropShapes, RestShape> {
-  alter(
-    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, InferObject<PropShapes, RestShape, OUTPUT>>,
-    options?: OperationOptions
-  ): this;
-
-  alter<AlteredValue extends InferObject<PropShapes, RestShape, OUTPUT>, Param>(
-    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredValue, Param>,
-    options: OperationOptions & { param: Param }
-  ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredValue>;
-
-  alter<AlteredValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
-    cb: AlterCallback<InferObject<PropShapes, RestShape, OUTPUT>, AlteredValue>,
-    options: OperationOptions
-  ): Shape<InferObject<PropShapes, RestShape, INPUT>, AlteredValue>;
-
-  refine<RefinedValue extends InferObject<PropShapes, RestShape, OUTPUT>>(
-    cb: RefinePredicate<InferObject<PropShapes, RestShape, OUTPUT>, RefinedValue>,
-    options?: RefineOptions | Message
-  ): Shape<InferObject<PropShapes, RestShape, INPUT>, RefinedValue>;
-
-  refine(cb: RefineCallback<InferObject<PropShapes, RestShape, OUTPUT>>, options?: RefineOptions | Message): this;
 }

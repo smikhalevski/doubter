@@ -53,15 +53,39 @@ import { createIssueFactory, extractOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 /**
- * The marker object that is used to denote an impossible value. For example, `NEVER` is returned from
- * {@linkcode CoercibleShape#_coerce CoercibleShape._coerce} method, that is present on various shapes, when coercion is
- * not possible.
+ * The marker object that is used to denote an impossible value.
+ *
+ * For example, `NEVER` is returned from {@linkcode CoercibleShape#_coerce CoercibleShape._coerce} method when coercion
+ * is not possible.
  *
  * @group Other
  */
 export const NEVER = Object.freeze({ never: true }) as never;
 
 export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerce: false });
+
+// INPUT and OUTPUT are exported for type tests only
+export const INPUT = Symbol();
+export const OUTPUT = Symbol();
+
+export type INPUT = typeof INPUT;
+export type OUTPUT = typeof OUTPUT;
+
+/**
+ * Extracts the shape input type.
+ *
+ * @template S The shape from which the input type must be inferred.
+ * @group Type Inference
+ */
+export type Input<S extends AnyShape> = S[INPUT];
+
+/**
+ * Extracts the shape output type.
+ *
+ * @template S The shape from which the output type must be inferred.
+ * @group Type Inference
+ */
+export type Output<S extends AnyShape> = S[OUTPUT];
 
 /**
  * Excludes `U` from `T` only if `U` is a literal type.
@@ -77,48 +101,9 @@ type ExcludeLiteral<T, U> =
   Exclude<T, U>;
 
 /**
- * An arbitrary shape.
- *
- * @group Shapes
- */
-export type AnyShape = Shape | Shape<never>;
-
-/**
- * Shortcut for {@linkcode ReplaceLiteralShape} that allows the same value as both an input and an output.
- *
- * @template BaseShape The shape that parses the input without the replaced value.
- * @template AllowedValue The value that is allowed as an input and output.
- * @group Shapes
- */
-// prettier-ignore
-export type AllowLiteralShape<BaseShape extends AnyShape, AllowedValue> =
-  ReplaceLiteralShape<BaseShape, AllowedValue, AllowedValue>;
-
-/**
- * Shortcut for {@linkcode ExcludeShape} that doesn't impose the exclusion on the type level.
- *
- * @template BaseShape The base shape.
- * @template ExcludedShape The shape to which the output must not conform.
- * @group Shapes
- */
-export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
-  extends Shape<Input<BaseShape>, Output<BaseShape>>,
-    DeepPartialProtocol<NotShape<DeepPartialShape<BaseShape>, ExcludedShape>> {
-  /**
-   * The base shape.
-   */
-  readonly shape: BaseShape;
-
-  /**
-   * The shape to which the output must not conform.
-   */
-  readonly excludedShape: ExcludedShape;
-}
-
-/**
  * The ephemeral unique symbol that is used for type branding by {@linkcode Branded}.
  */
-const BRAND = Symbol();
+declare const BRAND: unique symbol;
 
 /**
  * The branded type.
@@ -128,10 +113,6 @@ const BRAND = Symbol();
  * @group Other
  */
 export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
-
-// prettier-ignore
-export type OpaqueShape<S extends AnyShape, InputValue = Input<S>, OutputValue = Output<S>> =
-  Shape<InputValue, OutputValue> & Pick<S, keyof S & 'deepPartial'>;
 
 /**
  * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
@@ -151,6 +132,22 @@ export interface DeepPartialProtocol<S extends AnyShape> {
 }
 
 /**
+ * An arbitrary shape.
+ *
+ * @group Shapes
+ */
+export type AnyShape = Shape | Shape<never>;
+
+/**
+ * Returns the shape that refines the shape output.
+ *
+ * @template S The base shape.
+ * @template RefinedValue The refined output value.
+ * @group Shapes
+ */
+export type RefineShape<S extends AnyShape, RefinedValue> = Shape<Input<S>, RefinedValue> & Omit<S, keyof Shape>;
+
+/**
  * Returns the deep partial alternative of the shape if it implements {@linkcode DeepPartialProtocol}, or returns shape
  * as is if it doesn't.
  *
@@ -167,35 +164,35 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
  */
 export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<DeepPartialShape<S>, undefined>;
 
-// _INPUT and _OUTPUT are exported for type tests only
-export const _INPUT = Symbol();
-export const _OUTPUT = Symbol();
-
 /**
- * @internal
- */
-export type INPUT = typeof _INPUT;
-
-/**
- * @internal
- */
-export type OUTPUT = typeof _OUTPUT;
-
-/**
- * Extracts the shape input type.
+ * Shortcut for {@linkcode ReplaceLiteralShape} that allows the same value as both an input and an output.
  *
- * @template S The shape from which the input type must be inferred.
- * @group Type Inference
+ * @template S The shape that parses the input without the replaced value.
+ * @template AllowedValue The value that is allowed as an input and output.
+ * @group Shapes
  */
-export type Input<S extends AnyShape> = S[INPUT];
+export type AllowLiteralShape<S extends AnyShape, AllowedValue> = ReplaceLiteralShape<S, AllowedValue, AllowedValue>;
 
 /**
- * Extracts the shape output type.
+ * Shortcut for {@linkcode ExcludeShape} that doesn't impose the exclusion on the type level.
  *
- * @template S The shape from which the output type must be inferred.
- * @group Type Inference
+ * @template BaseShape The base shape.
+ * @template ExcludedShape The shape to which the output must not conform.
+ * @group Shapes
  */
-export type Output<S extends AnyShape> = S[OUTPUT];
+export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
+  extends Shape<Input<BaseShape>, Output<BaseShape>>,
+    DeepPartialProtocol<NotShape<DeepPartialShape<BaseShape>, ExcludedShape>> {
+  /**
+   * The base shape.
+   */
+  readonly baseShape: BaseShape;
+
+  /**
+   * The shape to which the output must not conform.
+   */
+  readonly excludedShape: ExcludedShape;
+}
 
 /**
  * The baseline shape implementation.
@@ -210,14 +207,14 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @internal
    */
-  declare readonly [_INPUT]: InputValue;
+  declare readonly [INPUT]: InputValue;
 
   /**
    * The shape output type.
    *
    * @internal
    */
-  declare readonly [_OUTPUT]: OutputValue;
+  declare readonly [OUTPUT]: OutputValue;
 
   /**
    * The dictionary of shape annotations.
@@ -357,7 +354,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine<RefinedValue extends OutputValue, Param>(
     cb: RefinePredicate<OutputValue, RefinedValue, Param>,
     options: ParameterizedRefineOptions<Param> | Message
-  ): OpaqueShape<this, InputValue, RefinedValue>;
+  ): RefineShape<this, RefinedValue>;
 
   /**
    * Refines the shape output type with the
@@ -374,7 +371,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine<RefinedValue extends OutputValue>(
     cb: RefinePredicate<OutputValue, RefinedValue>,
     options?: RefineOptions | Message
-  ): OpaqueShape<this, InputValue, RefinedValue>;
+  ): RefineShape<this, RefinedValue>;
 
   /**
    * Checks that the output value conforms the predicate.
@@ -439,47 +436,25 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * AAA
-   * @param cb
-   * @param options
-   */
-  alter<Param>(cb: AlterCallback<OutputValue, OutputValue, Param>, options: ParameterizedOperationOptions<Param>): this;
-
-  /**
-   * BBB
-   * @param cb
-   * @param options
-   */
-  alter(cb: AlterCallback<OutputValue>, options?: OperationOptions): this;
-
-  /**
-   * Alters the shape output value without changing its base type.
+   * Alters the shape output value without changing its type.
    *
    * @param cb The callback that alters the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
-   * @template AlteredValue The narrowed output value.
    * @template Param The param that is passed to the {@linkcode AlterCallback} when an alteration operation is applied.
    * @see {@linkcode convert}
    */
-  alter<AlteredValue extends OutputValue, Param>(
-    cb: AlterCallback<OutputValue, AlteredValue, Param>,
-    options: ParameterizedOperationOptions<Param>
-  ): OpaqueShape<this, InputValue, AlteredValue>;
+  alter<Param>(cb: AlterCallback<OutputValue, Param>, options: ParameterizedOperationOptions<Param>): this;
 
   /**
-   * Alters the shape output value without changing its base type.
+   * Alters the shape output value without changing its type.
    *
    * @param cb The callback that alters the shape output.
    * @param options The check options.
    * @returns The clone of the shape.
-   * @template AlteredValue The narrowed output value.
    * @see {@linkcode convert}
    */
-  alter<AlteredValue extends OutputValue>(
-    cb: AlterCallback<OutputValue, AlteredValue>,
-    options?: OperationOptions
-  ): OpaqueShape<this, InputValue, AlteredValue>;
+  alter(cb: AlterCallback<OutputValue>, options?: OperationOptions): this;
 
   alter(cb: AlterCallback, options: OperationOptions = {}): Shape {
     const { type = cb, param, force = false } = options;
@@ -563,8 +538,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns A shape with the branded output type.
    * @template Brand The brand value.
    */
-  brand<Brand>(): OpaqueShape<this, InputValue, Branded<OutputValue, Brand>> {
-    return this as OpaqueShape<this, InputValue, Branded<OutputValue, Brand>>;
+  brand<Brand extends string | number | symbol>(): RefineShape<this, Branded<OutputValue, Brand>> {
+    return this as any;
   }
 
   /**
@@ -1247,7 +1222,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
   /**
    * Creates the new {@linkcode ReplaceLiteralShape} instance.
    *
-   * @param shape The shape that parses the input without the replaced value.
+   * @param baseShape The shape that parses the input without the replaced value.
    * @param inputValue The input value to replace.
    * @param outputValue The output value that is returned if an `inputValue` is received.
    * @template BaseShape The shape that parses the input without the replaced value.
@@ -1258,7 +1233,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     /**
      * The shape that parses the input without the replaced value.
      */
-    readonly shape: BaseShape,
+    readonly baseShape: BaseShape,
     /**
      * The input value to replace.
      */
@@ -1274,15 +1249,15 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
   }
 
   deepPartial(): ReplaceLiteralShape<DeepPartialShape<BaseShape>, InputValue, OutputValue> {
-    return new ReplaceLiteralShape(toDeepPartialShape(this.shape), this.inputValue, this.outputValue);
+    return new ReplaceLiteralShape(toDeepPartialShape(this.baseShape), this.inputValue, this.outputValue);
   }
 
   protected _isAsync(): boolean {
-    return this.shape.isAsync;
+    return this.baseShape.isAsync;
   }
 
   protected _getInputs(): unknown[] {
-    return this.shape.inputs.concat(this.inputValue);
+    return this.baseShape.inputs.concat(this.inputValue);
   }
 
   protected _apply(
@@ -1290,7 +1265,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     options: ApplyOptions,
     nonce: number
   ): Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue> {
-    const result = isEqual(input, this.inputValue) ? this._result : this.shape['_apply'](input, options, nonce);
+    const result = isEqual(input, this.inputValue) ? this._result : this.baseShape['_apply'](input, options, nonce);
 
     return this._handleResult(result, input, options);
   }
@@ -1303,7 +1278,9 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     if (isEqual(input, this.inputValue)) {
       return Promise.resolve(this._handleResult(this._result, input, options));
     }
-    return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
+    return this.baseShape['_applyAsync'](input, options, nonce).then(result =>
+      this._handleResult(result, input, options)
+    );
   }
 
   private _handleResult(
@@ -1347,7 +1324,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
   /**
    * Creates the new {@linkcode DenyLiteralShape} instance.
    *
-   * @param shape The shape that parses the input without the denied value.
+   * @param baseShape The shape that parses the input without the denied value.
    * @param deniedValue The dined value.
    * @param options The issue options or the issue message.
    * @template BaseShape The shape that parses the input without the denied value.
@@ -1357,7 +1334,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     /**
      * The shape that parses the input without the denied value.
      */
-    readonly shape: BaseShape,
+    readonly baseShape: BaseShape,
     /**
      * The dined value.
      */
@@ -1371,15 +1348,15 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
   }
 
   deepPartial(): DenyLiteralShape<DeepPartialShape<BaseShape>, DeniedValue> {
-    return new DenyLiteralShape(toDeepPartialShape(this.shape), this.deniedValue, this._options);
+    return new DenyLiteralShape(toDeepPartialShape(this.baseShape), this.deniedValue, this._options);
   }
 
   protected _isAsync(): boolean {
-    return this.shape.isAsync;
+    return this.baseShape.isAsync;
   }
 
   protected _getInputs(): unknown[] {
-    return this.shape.inputs.filter(input => !isEqual(this.deniedValue, input));
+    return this.baseShape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
   protected _apply(
@@ -1390,7 +1367,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     if (isEqual(input, this.deniedValue)) {
       return [this._typeIssueFactory(input, options)];
     }
-    return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
+    return this._handleResult(this.baseShape['_apply'](input, options, nonce), input, options);
   }
 
   protected _applyAsync(
@@ -1401,7 +1378,9 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     if (isEqual(input, this.deniedValue)) {
       return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
-    return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
+    return this.baseShape['_applyAsync'](input, options, nonce).then(result =>
+      this._handleResult(result, input, options)
+    );
   }
 
   private _handleResult(
@@ -1441,7 +1420,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   /**
    * Creates the new {@linkcode CatchShape} instance.
    *
-   * @param shape The shape that parses the input.
+   * @param baseShape The shape that parses the input.
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
    * @template BaseShape The shape that parses the input.
    * @template FallbackValue The fallback value.
@@ -1450,7 +1429,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     /**
      * The shape that parses the input.
      */
-    readonly shape: BaseShape,
+    readonly baseShape: BaseShape,
     /**
      * The value or a callback that returns a value that is returned if parsing has failed.
      *
@@ -1468,19 +1447,19 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   }
 
   deepPartial(): CatchShape<DeepPartialShape<BaseShape>, FallbackValue> {
-    return new CatchShape(toDeepPartialShape(this.shape), this.fallback);
+    return new CatchShape(toDeepPartialShape(this.baseShape), this.fallback);
   }
 
   protected _isAsync(): boolean {
-    return this.shape.isAsync;
+    return this.baseShape.isAsync;
   }
 
   protected _getInputs(): unknown[] {
-    return this.shape.inputs.slice(0);
+    return this.baseShape.inputs.slice(0);
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<BaseShape> | FallbackValue> {
-    return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
+    return this._handleResult(this.baseShape['_apply'](input, options, nonce), input, options);
   }
 
   protected _applyAsync(
@@ -1488,7 +1467,9 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     options: ApplyOptions,
     nonce: number
   ): Promise<Result<Output<BaseShape> | FallbackValue>> {
-    return this.shape['_applyAsync'](input, options, nonce).then(result => this._handleResult(result, input, options));
+    return this.baseShape['_applyAsync'](input, options, nonce).then(result =>
+      this._handleResult(result, input, options)
+    );
   }
 
   private _handleResult(
@@ -1536,7 +1517,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
   /**
    * Creates the new {@linkcode ExcludeShape} instance.
    *
-   * @param shape The shape that parses the input.
+   * @param baseShape The shape that parses the input.
    * @param excludedShape The shape to which the output must not conform.
    * @param options The issue options or the issue message.
    * @template BaseShape The base shape.
@@ -1546,7 +1527,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     /**
      * The base shape.
      */
-    readonly shape: BaseShape,
+    readonly baseShape: BaseShape,
     /**
      * The shape to which the output must not conform.
      */
@@ -1560,15 +1541,15 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
   }
 
   deepPartial(): ExcludeShape<DeepPartialShape<BaseShape>, ExcludedShape> {
-    return new ExcludeShape(toDeepPartialShape(this.shape), this.excludedShape, this._options);
+    return new ExcludeShape(toDeepPartialShape(this.baseShape), this.excludedShape, this._options);
   }
 
   protected _isAsync(): boolean {
-    return this.shape.isAsync || this.excludedShape.isAsync;
+    return this.baseShape.isAsync || this.excludedShape.isAsync;
   }
 
   protected _getInputs(): unknown[] {
-    return this.shape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
+    return this.baseShape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 
   protected _apply(
@@ -1576,11 +1557,11 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     options: ApplyOptions,
     nonce: number
   ): Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>> {
-    const { shape, excludedShape } = this;
+    const { baseShape, excludedShape } = this;
 
     let output = input;
 
-    let result = shape['_apply'](input, options, nonce);
+    let result = baseShape['_apply'](input, options, nonce);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1600,9 +1581,9 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     options: ApplyOptions,
     nonce: number
   ): Promise<Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>>> {
-    const { shape, excludedShape } = this;
+    const { baseShape, excludedShape } = this;
 
-    return shape['_applyAsync'](input, options, nonce).then(result => {
+    return baseShape['_applyAsync'](input, options, nonce).then(result => {
       let output = input;
 
       if (result !== null) {

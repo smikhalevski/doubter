@@ -317,7 +317,7 @@ describe('Shape', () => {
       const replaceShape = shape.replace('aaa', 'bbb');
 
       expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(replaceShape.shape).toBe(shape);
+      expect(replaceShape.baseShape).toBe(shape);
       expect(replaceShape.inputValue).toBe('aaa');
       expect(replaceShape.outputValue).toBe('bbb');
     });
@@ -329,7 +329,7 @@ describe('Shape', () => {
       const replaceShape = shape.allow('aaa');
 
       expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(replaceShape.shape).toBe(shape);
+      expect(replaceShape.baseShape).toBe(shape);
       expect(replaceShape.inputValue).toBe('aaa');
       expect(replaceShape.outputValue).toBe('aaa');
     });
@@ -341,7 +341,7 @@ describe('Shape', () => {
       const denyShape = shape.deny('aaa');
 
       expect(denyShape).toBeInstanceOf(DenyLiteralShape);
-      expect(denyShape.shape).toBe(shape);
+      expect(denyShape.baseShape).toBe(shape);
       expect(denyShape.deniedValue).toBe('aaa');
     });
   });
@@ -352,7 +352,7 @@ describe('Shape', () => {
       const replaceShape = shape.optional();
 
       expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(replaceShape.shape).toBe(shape);
+      expect(replaceShape.baseShape).toBe(shape);
       expect(replaceShape.inputValue).toBeUndefined();
       expect(replaceShape.outputValue).toBeUndefined();
     });
@@ -362,7 +362,7 @@ describe('Shape', () => {
       const replaceShape = shape.optional('aaa');
 
       expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(replaceShape.shape).toBe(shape);
+      expect(replaceShape.baseShape).toBe(shape);
       expect(replaceShape.inputValue).toBeUndefined();
       expect(replaceShape.outputValue).toBe('aaa');
     });
@@ -380,7 +380,7 @@ describe('Shape', () => {
       const replaceShape = shape.nullable();
 
       expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(replaceShape.shape).toBe(shape);
+      expect(replaceShape.baseShape).toBe(shape);
       expect(replaceShape.inputValue).toBeNull();
       expect(replaceShape.outputValue).toBeNull();
     });
@@ -390,7 +390,7 @@ describe('Shape', () => {
       const replaceShape = shape.nullable('aaa');
 
       expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(replaceShape.shape).toBe(shape);
+      expect(replaceShape.baseShape).toBe(shape);
       expect(replaceShape.inputValue).toBeNull();
       expect(replaceShape.outputValue).toBe('aaa');
     });
@@ -408,13 +408,13 @@ describe('Shape', () => {
       const replaceShape = shape.nullish();
 
       expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(replaceShape.shape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(replaceShape.baseShape).toBeInstanceOf(ReplaceLiteralShape);
       expect(replaceShape.inputValue).toBeUndefined();
       expect(replaceShape.outputValue).toBeUndefined();
 
-      expect(replaceShape.shape.shape).toBe(shape);
-      expect(replaceShape.shape.inputValue).toBeNull();
-      expect(replaceShape.shape.outputValue).toBeNull();
+      expect(replaceShape.baseShape.baseShape).toBe(shape);
+      expect(replaceShape.baseShape.inputValue).toBeNull();
+      expect(replaceShape.baseShape.outputValue).toBeNull();
     });
 
     test('replaces null an undefined with the default value', () => {
@@ -422,13 +422,13 @@ describe('Shape', () => {
       const replaceShape = shape.nullish('aaa');
 
       expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(replaceShape.shape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(replaceShape.baseShape).toBeInstanceOf(ReplaceLiteralShape);
       expect(replaceShape.inputValue).toBeUndefined();
       expect(replaceShape.outputValue).toBe('aaa');
 
-      expect(replaceShape.shape.shape).toBe(shape);
-      expect(replaceShape.shape.inputValue).toBeNull();
-      expect(replaceShape.shape.outputValue).toBe('aaa');
+      expect(replaceShape.baseShape.baseShape).toBe(shape);
+      expect(replaceShape.baseShape.inputValue).toBeNull();
+      expect(replaceShape.baseShape.outputValue).toBe('aaa');
     });
 
     test('returns default value for the null ot undefined input', () => {
@@ -445,7 +445,7 @@ describe('Shape', () => {
       const denyShape = shape.nonOptional();
 
       expect(denyShape).toBeInstanceOf(DenyLiteralShape);
-      expect(denyShape.shape).toBe(shape);
+      expect(denyShape.baseShape).toBe(shape);
       expect(denyShape.deniedValue).toBeUndefined();
     });
   });
@@ -456,7 +456,7 @@ describe('Shape', () => {
       const catchShape = shape.catch();
 
       expect(catchShape).toBeInstanceOf(CatchShape);
-      expect(catchShape.shape).toBe(shape);
+      expect(catchShape.baseShape).toBe(shape);
       expect(catchShape.fallback).toBeUndefined();
     });
 
@@ -465,7 +465,7 @@ describe('Shape', () => {
       const catchShape = shape.catch('aaa');
 
       expect(catchShape).toBeInstanceOf(CatchShape);
-      expect(catchShape.shape).toBe(shape);
+      expect(catchShape.baseShape).toBe(shape);
       expect(catchShape.fallback).toBe('aaa');
     });
 
@@ -475,7 +475,7 @@ describe('Shape', () => {
       const catchShape = shape.catch(cb);
 
       expect(catchShape).toBeInstanceOf(CatchShape);
-      expect(catchShape.shape).toBe(shape);
+      expect(catchShape.baseShape).toBe(shape);
       expect(catchShape.fallback).toBe(cb);
     });
   });
@@ -487,7 +487,7 @@ describe('Shape', () => {
       const excludeShape = shape1.exclude(shape2);
 
       expect(excludeShape).toBeInstanceOf(ExcludeShape);
-      expect(excludeShape.shape).toBe(shape1);
+      expect(excludeShape.baseShape).toBe(shape1);
       expect(excludeShape.excludedShape).toBe(shape2);
     });
   });
@@ -499,7 +499,7 @@ describe('Shape', () => {
       const excludeShape = shape1.not(shape2);
 
       expect(excludeShape).toBeInstanceOf(ExcludeShape);
-      expect(excludeShape.shape).toBe(shape1);
+      expect(excludeShape.baseShape).toBe(shape1);
       expect(excludeShape.excludedShape).toBe(shape2);
     });
   });

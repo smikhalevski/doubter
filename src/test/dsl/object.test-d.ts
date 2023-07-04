@@ -1,24 +1,24 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { _OUTPUT } from '../../main/shape/Shape';
+import { OUTPUT } from '../../main/shape/Shape';
 
 expectType<{ aaa?: string }>(
   d.object({
     aaa: d.string().optional(),
-  })[_OUTPUT]
+  })[OUTPUT]
 );
 
 expectType<{ aaa?: any }>(
   d.object({
     aaa: d.any(),
-  })[_OUTPUT]
+  })[OUTPUT]
 );
 
 expectType<{ aaa: string; bbb: number }>(
   d.object({
     aaa: d.string(),
     bbb: d.number(),
-  })[_OUTPUT]
+  })[OUTPUT]
 );
 
 expectType<{ aaa: string }>(
@@ -27,7 +27,7 @@ expectType<{ aaa: string }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .pick(['aaa'])[_OUTPUT]
+    .pick(['aaa'])[OUTPUT]
 );
 
 expectType<{ bbb: number }>(
@@ -36,12 +36,12 @@ expectType<{ bbb: number }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .omit(['aaa'])[_OUTPUT]
+    .omit(['aaa'])[OUTPUT]
 );
 
-expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend({ bbb: d.number() })[_OUTPUT]);
+expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend({ bbb: d.number() })[OUTPUT]);
 
-expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend(d.object({ bbb: d.number() }))[_OUTPUT]);
+expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string() }).extend(d.object({ bbb: d.number() }))[OUTPUT]);
 
 expectType<{ aaa?: string; bbb?: number }>(
   d
@@ -49,7 +49,7 @@ expectType<{ aaa?: string; bbb?: number }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .partial()[_OUTPUT]
+    .partial()[OUTPUT]
 );
 
 expectType<{ aaa?: string; bbb?: number }>(
@@ -58,7 +58,7 @@ expectType<{ aaa?: string; bbb?: number }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .deepPartial()[_OUTPUT]
+    .deepPartial()[OUTPUT]
 );
 
 expectType<{ aaa?: string; bbb?: { ccc?: number } }>(
@@ -67,7 +67,7 @@ expectType<{ aaa?: string; bbb?: { ccc?: number } }>(
       aaa: d.string(),
       bbb: d.object({ ccc: d.number() }),
     })
-    .deepPartial()[_OUTPUT]
+    .deepPartial()[OUTPUT]
 );
 
 expectType<{ aaa?: string; bbb?: Array<number | undefined> }>(
@@ -76,14 +76,14 @@ expectType<{ aaa?: string; bbb?: Array<number | undefined> }>(
       aaa: d.string(),
       bbb: d.array(d.number()),
     })
-    .deepPartial()[_OUTPUT]
+    .deepPartial()[OUTPUT]
 );
 
 const keys = ['aaa'] as const;
 
-expectType<{ aaa: string }>(d.object({ aaa: d.string(), bbb: d.number() }).pick(keys)[_OUTPUT]);
+expectType<{ aaa: string }>(d.object({ aaa: d.string(), bbb: d.number() }).pick(keys)[OUTPUT]);
 
-expectType<{ bbb: number }>(d.object({ aaa: d.string(), bbb: d.number() }).omit(keys)[_OUTPUT]);
+expectType<{ bbb: number }>(d.object({ aaa: d.string(), bbb: d.number() }).omit(keys)[OUTPUT]);
 
 expectType<{ aaa?: string | undefined; bbb: number }>(
   d
@@ -91,7 +91,7 @@ expectType<{ aaa?: string | undefined; bbb: number }>(
       aaa: d.string(),
       bbb: d.number(),
     })
-    .partial(keys)[_OUTPUT]
+    .partial(keys)[OUTPUT]
 );
 
 expectType<{ aaa: string; bbb: number }>(
@@ -100,5 +100,5 @@ expectType<{ aaa: string; bbb: number }>(
       aaa: d.string().optional(),
       bbb: d.number(),
     })
-    .required(keys)[_OUTPUT]
+    .required(keys)[OUTPUT]
 );

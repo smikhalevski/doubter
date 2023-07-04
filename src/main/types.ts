@@ -236,6 +236,14 @@ export interface OperationOptions {
 }
 
 /**
+ * @inheritDoc
+ * @template Param The param that is passed to a callback when an operation is applied.
+ */
+export interface ParameterizedOperationOptions<Param> extends OperationOptions {
+  param: Param;
+}
+
+/**
  * Checks that a value satisfies a requirement and returns issues if it doesn't.
  *
  * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result.
@@ -315,6 +323,14 @@ export interface RefineOptions extends OperationOptions, IssueOptions {
 }
 
 /**
+ * @inheritDoc
+ * @template Param The param that is passed to a callback when an operation is applied.
+ */
+export interface ParameterizedRefineOptions<Param> extends RefineOptions {
+  param: Param;
+}
+
+/**
  * Alters the value without changing its base type.
  *
  * If you want to change the base type, consider using {@linkcode Shape#convert Shape.convert}.
@@ -327,33 +343,16 @@ export interface RefineOptions extends OperationOptions, IssueOptions {
  * @param options Parsing options.
  * @returns The altered value.
  * @template Value The value to alter.
- * @template AlteredValue The altered value.
  * @template Param The additional param that was associated with the operation.
  * @see {@linkcode Shape#alter}
  * @see {@linkcode Shape#convert}
  * @group Operations
  */
-export type AlterCallback<Value = any, AlteredValue extends Value = Value, Param = any> = (
+export type AlterCallback<Value = any, Param = any> = (
   value: Value,
   param: Param,
   options: Readonly<ApplyOptions>
-) => AlteredValue;
-
-/**
- * @inheritDoc
- * @template Param The param that is passed to a callback when an operation is applied.
- */
-export interface ParameterizedOperationOptions<Param> extends OperationOptions {
-  param: Param;
-}
-
-/**
- * @inheritDoc
- * @template Param The param that is passed to a callback when an operation is applied.
- */
-export interface ParameterizedRefineOptions<Param> extends RefineOptions {
-  param: Param;
-}
+) => Value;
 
 /**
  * Options used when a shape is applied to an input value.

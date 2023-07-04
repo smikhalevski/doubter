@@ -1,11 +1,11 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { _OUTPUT } from '../../main/shape/Shape';
+import { OUTPUT } from '../../main/shape/Shape';
 
-expectType<number | string>(d.or([d.number(), d.string()])[_OUTPUT]);
+expectType<number | string>(d.or([d.number(), d.string()])[OUTPUT]);
 
 expectType<{ key1: string } | { key2: number }>(
-  d.or([d.object({ key1: d.string() }), d.object({ key2: d.number() })])[_OUTPUT]
+  d.or([d.object({ key1: d.string() }), d.object({ key2: d.number() })])[OUTPUT]
 );
 
 expectType<{ aaa?: string } | { bbb?: number }>(
@@ -18,7 +18,7 @@ expectType<{ aaa?: string } | { bbb?: number }>(
         bbb: d.number(),
       }),
     ])
-    .deepPartial()[_OUTPUT]
+    .deepPartial()[OUTPUT]
 );
 
 expectType<{ aaa?: Array<string | undefined> } | { bbb?: number }>(
@@ -31,5 +31,5 @@ expectType<{ aaa?: Array<string | undefined> } | { bbb?: number }>(
         bbb: d.number(),
       }),
     ])
-    .deepPartial()[_OUTPUT]
+    .deepPartial()[OUTPUT]
 );
