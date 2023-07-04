@@ -100,8 +100,62 @@ describe('string()', () => {
   });
 });
 
-describe('string().length(3)', () => {
-  describe('"aaa"', () => {
+describe('string().min(3)', () => {
+  const createTests = () => {
+    const value = 'aaa';
+
+    test('Ajv', measure => {
+      const validate = new Ajv().compile({
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        type: 'string',
+        minLength: 3,
+      });
+
+      measure(() => {
+        validate(value);
+      });
+    });
+
+    test('zod', measure => {
+      const type = zod.string().min(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('myzod', measure => {
+      const type = myzod.string().min(3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('valita', measure => {
+      const type = valita.string().assert(v => v.length >= 3);
+
+      measure(() => {
+        type.parse(value);
+      });
+    });
+
+    test('doubter', measure => {
+      const shape = doubter.string().min(3);
+
+      measure(() => {
+        shape.parse(value);
+      });
+    });
+  };
+
+  describe('"aaa"', () => createTests('aaa'));
+
+  describe('"aaaa"', () => createTests('aaaa'));
+});
+
+describe('string().min(3).max(3)', () => {
+  const createTests = () => {
     const value = 'aaa';
 
     test('Ajv', measure => {
@@ -118,7 +172,7 @@ describe('string().length(3)', () => {
     });
 
     test('zod', measure => {
-      const type = zod.string().length(3);
+      const type = zod.string().min(3).max(3);
 
       measure(() => {
         type.parse(value);
@@ -134,7 +188,10 @@ describe('string().length(3)', () => {
     });
 
     test('valita', measure => {
-      const type = valita.string().assert(v => v.length === 3);
+      const type = valita
+        .string()
+        .assert(v => v.length >= 3)
+        .assert(v => v.length <= 3);
 
       measure(() => {
         type.parse(value);
@@ -142,62 +199,17 @@ describe('string().length(3)', () => {
     });
 
     test('doubter', measure => {
-      const shape = doubter.string().length(3);
+      const shape = doubter.string().min(3).max(3);
 
       measure(() => {
         shape.parse(value);
       });
     });
-  });
+  };
 
-  describe('"aaaa"', () => {
-    const value = 'aaaa';
+  describe('"aaa"', () => createTests('aaa'));
 
-    test('Ajv', measure => {
-      const validate = new Ajv().compile({
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'string',
-        minLength: 3,
-        maxLength: 3,
-      });
-
-      measure(() => {
-        validate(value);
-      });
-    });
-
-    test('zod', measure => {
-      const type = zod.string().length(3);
-
-      measure(() => {
-        type.safeParse(value);
-      });
-    });
-
-    test('myzod', measure => {
-      const type = myzod.string().min(3).max(3);
-
-      measure(() => {
-        type.try(value);
-      });
-    });
-
-    test('valita', measure => {
-      const type = valita.string().assert(v => v.length === 3);
-
-      measure(() => {
-        type.try(value).issues;
-      });
-    });
-
-    test('doubter', measure => {
-      const shape = doubter.string().length(3);
-
-      measure(() => {
-        shape.try(value);
-      });
-    });
-  });
+  describe('"aaaa"', () => createTests('aaaa'));
 });
 
 describe('string().coerce()', () => {
