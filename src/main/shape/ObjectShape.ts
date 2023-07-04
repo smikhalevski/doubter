@@ -8,10 +8,12 @@ import {
   copyOperations,
   Dict,
   getBit,
+  INPUT,
   isArray,
   isAsyncShape,
   isObject,
   isPlainObject,
+  OUTPUT,
   pushIssue,
   ReadonlyDict,
   setObjectProperty,
@@ -28,9 +30,7 @@ import {
   AnyShape,
   DeepPartialProtocol,
   DenyLiteralShape,
-  INPUT,
   OptionalDeepPartialShape,
-  OUTPUT,
   Shape,
 } from './Shape';
 

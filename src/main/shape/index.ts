@@ -30,6 +30,7 @@ export {
   NEVER,
   Output,
   PipeShape,
+  RefineShape,
   ReplaceLiteralShape,
   Shape,
   ConvertShape,

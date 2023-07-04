@@ -11,14 +11,17 @@ import {
   applyShape,
   captureIssues,
   concatIssues,
+  defaultApplyOptions,
   Dict,
   getErrorMessage,
+  INPUT,
   isArray,
   isEqual,
   isObjectLike,
   isType,
   nextNonce,
   ok,
+  OUTPUT,
   Promisify,
   pushIssue,
   ReadonlyDict,
@@ -61,15 +64,6 @@ import { ValidationError } from '../ValidationError';
  * @group Other
  */
 export const NEVER = Object.freeze({ never: true }) as never;
-
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerce: false });
-
-// INPUT and OUTPUT are exported for type tests only
-export const INPUT = Symbol();
-export const OUTPUT = Symbol();
-
-export type INPUT = typeof INPUT;
-export type OUTPUT = typeof OUTPUT;
 
 /**
  * Extracts the shape input type.

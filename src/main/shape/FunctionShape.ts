@@ -3,10 +3,13 @@ import {
   applyShape,
   Awaitable,
   copyOperations,
+  defaultApplyOptions,
   getErrorMessage,
+  INPUT,
   isArray,
   nextNonce,
   ok,
+  OUTPUT,
   Promisify,
   unshiftIssuesPath,
 } from '../internal';
@@ -14,7 +17,7 @@ import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, Input, INPUT, Output, OUTPUT, Shape } from './Shape';
+import { AnyShape, Input, Output, Shape } from './Shape';
 
 type ShapeValue<
   Shape extends AnyShape | null | undefined,

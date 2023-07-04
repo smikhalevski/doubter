@@ -3,8 +3,10 @@ import {
   applyShape,
   cloneDictHead,
   concatIssues,
+  INPUT,
   isArray,
   isObject,
+  OUTPUT,
   setObjectProperty,
   toDeepPartialShape,
   unshiftIssuesPath,
@@ -12,7 +14,7 @@ import {
 import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
 type InferRecord<
   KeyShape extends Shape<string, PropertyKey> | null,

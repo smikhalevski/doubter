@@ -1,6 +1,6 @@
 import { expectNotType, expectType } from 'tsd';
 import * as d from '../../main';
-import { OUTPUT } from '../../main/shape/Shape';
+import { OUTPUT } from '../../main/internal';
 
 expectType<[string, number]>(d.tuple([d.string(), d.number()])[OUTPUT]);
 

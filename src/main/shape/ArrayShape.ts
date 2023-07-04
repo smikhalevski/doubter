@@ -3,9 +3,11 @@ import {
   applyShape,
   concatIssues,
   getCanonicalValueOf,
+  INPUT,
   isArray,
   isAsyncShape,
   isIterableObject,
+  OUTPUT,
   toArrayIndex,
   toDeepPartialShape,
   unshiftIssuesPath,
@@ -14,7 +16,7 @@ import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape } from './Shape';
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],

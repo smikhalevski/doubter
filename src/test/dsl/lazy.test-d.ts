@@ -1,6 +1,6 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { INPUT, OUTPUT } from '../../main/shape/Shape';
+import { INPUT, OUTPUT } from '../../main/internal';
 
 expectType<string>(d.lazy(() => d.string())[OUTPUT]);
 

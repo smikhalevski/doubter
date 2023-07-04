@@ -1,10 +1,10 @@
 import { CODE_TYPE, MESSAGE_PROMISE_TYPE } from '../constants';
-import { applyShape, isArray, Promisify, toDeepPartialShape } from '../internal';
+import { applyShape, INPUT, isArray, OUTPUT, Promisify, toDeepPartialShape } from '../internal';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape } from './Shape';
 
 type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
   ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any
