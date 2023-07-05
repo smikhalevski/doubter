@@ -154,6 +154,7 @@ export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) =>
  * @see {@linkcode Shape#alter Shape.alter}
  * @see {@linkcode Shape#refine Shape.refine}
  * @see {@linkcode Shape#_addOperation Shape._addOperation}
+ * @group Operations
  */
 export interface Operation<InputValue = any, OutputValue = any> {
   /**
@@ -238,6 +239,7 @@ export interface OperationOptions {
 /**
  * @inheritDoc
  * @template Param The param that is passed to a callback when an operation is applied.
+ * @group Operations
  */
 export interface ParameterizedOperationOptions<Param> extends OperationOptions {
   param: Param;
@@ -325,6 +327,7 @@ export interface RefineOptions extends OperationOptions, IssueOptions {
 /**
  * @inheritDoc
  * @template Param The param that is passed to a callback when an operation is applied.
+ * @group Operations
  */
 export interface ParameterizedRefineOptions<Param> extends RefineOptions {
   param: Param;
