@@ -18,16 +18,13 @@ export function nextNonce(): number {
   return nonce;
 }
 
-// Used only in tests
+// For test purposes only
 export function resetNonce(): void {
   nonce = -1;
 }
 
-export const okInstance: Ok = { ok: true, value: null };
-
 export function ok<T>(value: T): Ok<T> {
-  okInstance.value = value;
-  return okInstance;
+  return { ok: true, value };
 }
 
 export const universalApplyOperations: OperationCallback = (input, output, options, issues) => {
@@ -37,8 +34,7 @@ export const universalApplyOperations: OperationCallback = (input, output, optio
   if (isEqual(input, output)) {
     return null;
   }
-  okInstance.value = output;
-  return okInstance;
+  return ok(output);
 };
 
 export function isAsyncShape(shape: AnyShape): boolean {

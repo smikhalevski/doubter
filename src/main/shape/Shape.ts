@@ -729,7 +729,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Synchronously parses the input.
    *
-   * **Note** Don't store returned instances of {@link Ok} since they can be reused.
+   * **Note** Don't store or update returned instances of {@link Ok} since they can be reused.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -743,7 +743,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Asynchronously parses the input.
    *
-   * **Note** Don't store returned instances of {@link Ok} since they can be reused.
+   * **Note** Don't store or update returned instances of {@link Ok} since they can be reused.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -1438,7 +1438,8 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     if (typeof fallback === 'function') {
       this._resultProvider = (input, issues, options) => ok((fallback as Function)(input, issues, options));
     } else {
-      this._resultProvider = () => ok(fallback);
+      const result: Ok<FallbackValue> = { ok: true, value: fallback };
+      this._resultProvider = () => result;
     }
   }
 
