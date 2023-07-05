@@ -2,9 +2,9 @@ import * as d from '../../main';
 
 describe('set', () => {
   test('returns a Set shape', () => {
-    const shape = d.number();
-    const setShape = d.set(shape);
+    const valueShape = d.number();
+    const shape = d.set(valueShape);
 
-    expect(setShape.shape).toBe(shape);
+    expect(shape.valueShape).toBe(valueShape);
   });
 });

@@ -2,30 +2,26 @@ import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_SET_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { resetNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/Type';
-import { AsyncShape } from './mocks';
+import { AsyncMockShape, spyOnShape, MockShape } from './mocks';
 
 describe('SetShape', () => {
-  let asyncShape: AsyncShape;
-
   beforeEach(() => {
     resetNonce();
-
-    asyncShape = new AsyncShape();
   });
 
   test('creates a SetShape', () => {
-    const shape = new Shape();
+    const valueShape = new Shape();
 
-    const setShape = new SetShape(shape);
+    const shape = new SetShape(valueShape);
 
-    expect(setShape.shape).toEqual(shape);
-    expect(setShape.inputs).toEqual([TYPE_SET]);
+    expect(shape.valueShape).toEqual(valueShape);
+    expect(shape.inputs).toEqual([TYPE_SET]);
   });
 
   test('raises an issue if an input is not a Set', () => {
-    const setShape = new SetShape(new Shape());
+    const shape = new SetShape(new Shape());
 
-    const result = setShape.try('aaa');
+    const result = shape.try('aaa');
 
     expect(result).toEqual({
       ok: false,
@@ -34,39 +30,38 @@ describe('SetShape', () => {
   });
 
   test('parses values in a Set', () => {
-    const shape = new Shape();
+    const valueShape = new MockShape();
 
-    const applySpy = jest.spyOn<Shape, any>(shape, '_apply');
+    const shape = new SetShape(valueShape);
 
-    const setShape = new SetShape(shape);
+    const input = new Set([111, 222]);
 
-    const set = new Set([111, 222]);
-    const result = setShape.try(set) as Ok<unknown>;
+    const result = shape.try(input) as Ok;
 
-    expect(result).toEqual({ ok: true, value: set });
-    expect(result.value).toBe(set);
-    expect(applySpy).toHaveBeenCalledTimes(2);
-    expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-    expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+    expect(result).toEqual({ ok: true, value: input });
+    expect(result.value).toBe(input);
+    expect(valueShape._apply).toHaveBeenCalledTimes(2);
+    expect(valueShape._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+    expect(valueShape._apply).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
   });
 
   test('raises a single issue captured by the value shape', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]);
+    const valueShape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const setShape = new SetShape(shape);
+    const shape = new SetShape(valueShape);
 
-    expect(setShape.try(new Set(['aaa', 'bbb']))).toEqual({
+    expect(shape.try(new Set(['aaa', 'bbb']))).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
   });
 
   test('raises multiple issues captured by the value shape in verbose mode', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]);
+    const valueShape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const setShape = new SetShape(shape);
+    const shape = new SetShape(valueShape);
 
-    expect(setShape.try(new Set(['aaa', 'bbb']), { verbose: true })).toEqual({
+    expect(shape.try(new Set(['aaa', 'bbb']), { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -76,26 +71,25 @@ describe('SetShape', () => {
   });
 
   test('returns a new set if some values were converted', () => {
-    const cbMock = jest.fn();
-    cbMock.mockReturnValueOnce('aaa');
-    cbMock.mockReturnValueOnce('bbb');
+    const cbMock = jest.fn().mockReturnValueOnce('aaa').mockReturnValueOnce('bbb');
 
-    const shape = new Shape().convert(cbMock);
+    const valueShape = new Shape().convert(cbMock);
 
-    const setShape = new SetShape(shape);
+    const shape = new SetShape(valueShape);
 
-    const set = new Set([111, 222]);
-    const result = setShape.try(set) as Ok<unknown>;
+    const input = new Set([111, 222]);
 
-    expect(set).toEqual(new Set([111, 222]));
+    const result = shape.try(input) as Ok;
+
+    expect(input).toEqual(new Set([111, 222]));
     expect(result).toEqual({ ok: true, value: new Set(['aaa', 'bbb']) });
-    expect(result.value).not.toBe(set);
+    expect(result.value).not.toBe(input);
   });
 
-  test('applies checks', () => {
-    const setShape = new SetShape(new Shape()).check(() => [{ code: 'xxx' }]);
+  test('applies operations', () => {
+    const shape = new SetShape(new Shape()).check(() => [{ code: 'xxx' }]);
 
-    expect(setShape.try(new Set([111]))).toEqual({
+    expect(shape.try(new Set([111]))).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -103,68 +97,68 @@ describe('SetShape', () => {
 
   describe('at', () => {
     test('returns the value shape', () => {
-      const shape = new Shape();
+      const valueShape = new Shape();
 
-      const setShape = new SetShape(shape);
+      const shape = new SetShape(valueShape);
 
-      expect(setShape.at('0')).toBe(shape);
-      expect(setShape.at(0)).toBe(shape);
+      expect(shape.at('0')).toBe(valueShape);
+      expect(shape.at(0)).toBe(valueShape);
 
-      expect(setShape.at('000')).toBeNull();
-      expect(setShape.at('1e+49')).toBeNull();
-      expect(setShape.at(-111)).toBeNull();
-      expect(setShape.at(111.222)).toBeNull();
-      expect(setShape.at('aaa')).toBeNull();
+      expect(shape.at('000')).toBeNull();
+      expect(shape.at('1e+49')).toBeNull();
+      expect(shape.at(-111)).toBeNull();
+      expect(shape.at(111.222)).toBeNull();
+      expect(shape.at('aaa')).toBeNull();
     });
   });
 
   describe('coerce', () => {
-    test('updates inputs when coerced', () => {
-      const setShape = new SetShape(new StringShape()).coerce();
+    test('extends shape inputs', () => {
+      const shape = new SetShape(new StringShape()).coerce();
 
-      expect(setShape.inputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
+      expect(shape.inputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
     });
 
     test('coerces a string value', () => {
-      const setShape = new SetShape(new Shape()).coerce();
+      const shape = new SetShape(new Shape()).coerce();
 
-      expect(setShape.parse('aaa')).toEqual(new Set(['aaa']));
+      expect(shape.parse('aaa')).toEqual(new Set(['aaa']));
     });
 
-    test('coerces a String wrapper', () => {
-      const setShape = new SetShape(new Shape()).coerce();
+    test('coerces a String object', () => {
+      const shape = new SetShape(new Shape()).coerce();
 
-      expect(setShape.parse(new String('aaa'))).toEqual(new Set(['aaa']));
+      expect(shape.parse(new String('aaa'))).toEqual(new Set(['aaa']));
     });
 
     test('coerces an array value', () => {
-      const setShape = new SetShape(new Shape()).coerce();
+      const shape = new SetShape(new Shape()).coerce();
 
-      expect(setShape.parse(['aaa'])).toEqual(new Set(['aaa']));
+      expect(shape.parse(['aaa'])).toEqual(new Set(['aaa']));
     });
 
     test('coerces an array-like value', () => {
-      const setShape = new SetShape(new Shape()).coerce();
+      const shape = new SetShape(new Shape()).coerce();
 
-      expect(setShape.parse({ 0: 'aaa', length: 1 })).toEqual(new Set(['aaa']));
+      expect(shape.parse({ 0: 'aaa', length: 1 })).toEqual(new Set(['aaa']));
     });
   });
 
   describe('deepPartial', () => {
     test('marks value as optional', () => {
-      const setShape = new SetShape(new StringShape()).deepPartial();
+      const shape = new SetShape(new StringShape()).deepPartial();
 
-      expect(setShape.parse(new Set(['aaa']))).toEqual(new Set(['aaa']));
-      expect(setShape.parse(new Set([undefined]))).toEqual(new Set([undefined]));
+      expect(shape.parse(new Set(['aaa']))).toEqual(new Set(['aaa']));
+      expect(shape.parse(new Set([undefined]))).toEqual(new Set([undefined]));
     });
 
     test('makes value deep partial', () => {
-      const setShape = new SetShape(new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
+      const shape = new SetShape(new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
 
-      expect(setShape.parse(new Set([{}]))).toEqual(new Set([{}]));
-      expect(setShape.parse(new Set([{ key1: undefined }]))).toEqual(new Set([{ key1: undefined }]));
+      expect(shape.parse(new Set([{}]))).toEqual(new Set([{}]));
+      expect(shape.parse(new Set([{ key1: undefined }]))).toEqual(new Set([{ key1: undefined }]));
 
-      expect(setShape.try(new Set([{ key1: 111 }]))).toEqual({
+      expect(shape.try(new Set([{ key1: 111 }]))).toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [0, 'key1'] }],
       });
@@ -173,9 +167,9 @@ describe('SetShape', () => {
 
   describe('async', () => {
     test('raises an issue if an input is not a Set', async () => {
-      const setShape = new SetShape(asyncShape);
+      const shape = new SetShape(new AsyncMockShape());
 
-      const result = await setShape.tryAsync('aaa');
+      const result = await shape.tryAsync('aaa');
 
       expect(result).toEqual({
         ok: false,
@@ -184,50 +178,46 @@ describe('SetShape', () => {
     });
 
     test('downgrades to sync implementation if value shape is sync', async () => {
-      const setShape = new SetShape(new Shape());
+      const shape = spyOnShape(new SetShape(new Shape()));
 
-      const setApplySpy = jest.spyOn<Shape, any>(setShape, '_apply');
-
-      await expect(setShape.tryAsync(new Set())).resolves.toEqual({ ok: true, value: new Set() });
-      expect(setApplySpy).toHaveBeenCalledTimes(1);
-      expect(setApplySpy).toHaveBeenNthCalledWith(1, new Set(), { verbose: false, coerce: false }, 0);
+      await expect(shape.tryAsync(new Set())).resolves.toEqual({ ok: true, value: new Set() });
+      expect(shape._apply).toHaveBeenCalledTimes(1);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, new Set(), { verbose: false, coerce: false }, 0);
     });
 
     test('parses values in a Set', async () => {
-      const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
+      const valueShape = new AsyncMockShape();
 
-      const setShape = new SetShape(asyncShape);
+      const shape = new SetShape(valueShape);
 
-      const set = new Set([111, 222]);
-      const result = (await setShape.tryAsync(set)) as Ok<unknown>;
+      const input = new Set([111, 222]);
 
-      expect(result).toEqual({ ok: true, value: set });
-      expect(result.value).toBe(set);
-      expect(applySpy).toHaveBeenCalledTimes(2);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-      expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+      const result = (await shape.tryAsync(input)) as Ok;
+
+      expect(result).toEqual({ ok: true, value: input });
+      expect(result.value).toBe(input);
+      expect(valueShape._applyAsync).toHaveBeenCalledTimes(2);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
     });
 
     test('does not apply value shape if the previous value raised an issue', async () => {
-      const checkMock = jest
+      const cbMock = jest
         .fn()
         .mockReturnValueOnce(undefined)
         .mockReturnValueOnce([{ code: 'xxx' }]);
 
-      const shape = asyncShape.check(checkMock);
+      const valueShape = new AsyncMockShape().check(cbMock);
 
-      shape.isAsync;
+      const shape = new SetShape(valueShape);
 
-      const applySpy = jest.spyOn<Shape, any>(shape, '_applyAsync');
+      const input = new Set([111, 222, 333]);
 
-      const setShape = new SetShape(shape);
+      await shape.tryAsync(input);
 
-      const set = new Set([111, 222, 333]);
-      await setShape.tryAsync(set);
-
-      expect(applySpy).toHaveBeenCalledTimes(2);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-      expect(applySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenCalledTimes(2);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
     });
 
     test('returns a new set if some values were converted', async () => {
@@ -235,21 +225,22 @@ describe('SetShape', () => {
       cbMock.mockReturnValueOnce(Promise.resolve('aaa'));
       cbMock.mockReturnValueOnce(Promise.resolve('bbb'));
 
-      const shape = new Shape().convertAsync(cbMock);
+      const valueShape = new Shape().convertAsync(cbMock);
 
-      const setShape = new SetShape(shape);
+      const shape = new SetShape(valueShape);
 
-      const set = new Set([111, 222]);
-      const result = (await setShape.tryAsync(set)) as Ok<unknown>;
+      const input = new Set([111, 222]);
+
+      const result = (await shape.tryAsync(input)) as Ok;
 
       expect(result).toEqual({ ok: true, value: new Set(['aaa', 'bbb']) });
-      expect(result.value).not.toBe(set);
+      expect(result.value).not.toBe(input);
     });
 
-    test('applies checks', async () => {
-      const setShape = new SetShape(asyncShape).check(() => [{ code: 'xxx' }]);
+    test('applies operations', async () => {
+      const shape = new SetShape(new AsyncMockShape()).check(() => [{ code: 'xxx' }]);
 
-      await expect(setShape.tryAsync(new Set([111]))).resolves.toEqual({
+      await expect(shape.tryAsync(new Set([111]))).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -257,15 +248,15 @@ describe('SetShape', () => {
 
     describe('coerce', () => {
       test('coerces a non-array value', async () => {
-        const setShape = new SetShape(asyncShape).coerce();
+        const shape = new SetShape(new AsyncMockShape()).coerce();
 
-        await expect(setShape.parseAsync('aaa')).resolves.toEqual(new Set(['aaa']));
+        await expect(shape.parseAsync('aaa')).resolves.toEqual(new Set(['aaa']));
       });
 
       test('coerces an array value', async () => {
-        const setShape = new SetShape(asyncShape).coerce();
+        const shape = new SetShape(new AsyncMockShape()).coerce();
 
-        await expect(setShape.parseAsync(['aaa'])).resolves.toEqual(new Set(['aaa']));
+        await expect(shape.parseAsync(['aaa'])).resolves.toEqual(new Set(['aaa']));
       });
     });
   });

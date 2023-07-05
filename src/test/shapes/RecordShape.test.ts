@@ -1,21 +1,15 @@
 import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
-import { AsyncShape } from './mocks';
+import { AsyncMockShape } from './mocks';
 
 describe('RecordShape', () => {
-  let asyncShape: AsyncShape;
-
-  beforeEach(() => {
-    asyncShape = new AsyncShape();
-  });
-
   test('raises an issue for a non-object input value', () => {
     const valueShape = new Shape();
 
-    const objShape = new RecordShape(null, valueShape);
+    const shape = new RecordShape(null, valueShape);
 
-    expect(objShape.try('')).toEqual({
+    expect(shape.try('')).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
     });
@@ -24,9 +18,9 @@ describe('RecordShape', () => {
   test('checks values', () => {
     const valueShape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const objShape = new RecordShape(null, valueShape);
+    const shape = new RecordShape(null, valueShape);
 
-    expect(objShape.try({ key1: 'aaa', key2: 'bbb' })).toEqual({
+    expect(shape.try({ key1: 'aaa', key2: 'bbb' })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: ['key1'] }],
     });
@@ -36,9 +30,9 @@ describe('RecordShape', () => {
     const keyShape = new Shape().check(() => [{ code: 'xxx' }]);
     const valueShape = new Shape().check(() => [{ code: 'yyy' }]);
 
-    const objShape = new RecordShape(keyShape, valueShape);
+    const shape = new RecordShape(keyShape, valueShape);
 
-    expect(objShape.try({ key1: 'aaa', key2: 'bbb' })).toEqual({
+    expect(shape.try({ key1: 'aaa', key2: 'bbb' })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: ['key1'] }],
     });
@@ -48,9 +42,9 @@ describe('RecordShape', () => {
     const keyShape = new Shape().check(() => [{ code: 'xxx' }]);
     const valueShape = new Shape().check(() => [{ code: 'yyy' }]);
 
-    const objShape = new RecordShape(keyShape, valueShape);
+    const shape = new RecordShape(keyShape, valueShape);
 
-    expect(objShape.try({ key1: 'aaa', key2: 'bbb' }, { verbose: true })).toEqual({
+    expect(shape.try({ key1: 'aaa', key2: 'bbb' }, { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: ['key1'] },
@@ -65,34 +59,34 @@ describe('RecordShape', () => {
     const keyShape = new Shape().convert(value => value.toUpperCase());
     const valueShape = new Shape();
 
-    const objShape = new RecordShape(keyShape, valueShape);
+    const shape = new RecordShape(keyShape, valueShape);
 
-    const obj = { key1: 'aaa', key2: 'bbb' };
+    const input = { key1: 'aaa', key2: 'bbb' };
 
-    const result = objShape.try(obj) as Ok<unknown>;
+    const result = shape.try(input) as Ok;
 
     expect(result).toEqual({ ok: true, value: { KEY1: 'aaa', KEY2: 'bbb' } });
-    expect(result.value).not.toBe(obj);
+    expect(result.value).not.toBe(input);
   });
 
   test('converts values', () => {
     const keyShape = new Shape();
     const valueShape = new Shape().convert(value => value.toUpperCase());
 
-    const objShape = new RecordShape(keyShape, valueShape);
+    const shape = new RecordShape(keyShape, valueShape);
 
-    const obj = { key1: 'aaa', key2: 'bbb' };
+    const input = { key1: 'aaa', key2: 'bbb' };
 
-    const result = objShape.try(obj) as Ok<unknown>;
+    const result = shape.try(input) as Ok;
 
     expect(result).toEqual({ ok: true, value: { key1: 'AAA', key2: 'BBB' } });
-    expect(result.value).not.toBe(obj);
+    expect(result.value).not.toBe(input);
   });
 
-  test('applies checks', () => {
-    const objShape = new RecordShape(null, new Shape()).check(() => [{ code: 'xxx' }]);
+  test('applies operations', () => {
+    const shape = new RecordShape(null, new Shape()).check(() => [{ code: 'xxx' }]);
 
-    expect(objShape.try({})).toEqual({
+    expect(shape.try({})).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -101,40 +95,40 @@ describe('RecordShape', () => {
   describe('at', () => {
     test('returns value shape for string and number keys', () => {
       const valueShape = new Shape();
-      const objShape = new RecordShape(null, valueShape);
+      const shape = new RecordShape(null, valueShape);
 
-      expect(objShape.at('aaa')).toBe(valueShape);
-      expect(objShape.at(111)).toBe(valueShape);
-      expect(objShape.at(111.222)).toBe(valueShape);
-      expect(objShape.at(null)).toBeNull();
-      expect(objShape.at(Symbol())).toBeNull();
+      expect(shape.at('aaa')).toBe(valueShape);
+      expect(shape.at(111)).toBe(valueShape);
+      expect(shape.at(111.222)).toBe(valueShape);
+      expect(shape.at(null)).toBeNull();
+      expect(shape.at(Symbol())).toBeNull();
     });
   });
 
   describe('deepPartial', () => {
     test('marks values as optional', () => {
-      const objShape = new RecordShape(new StringShape(), new StringShape()).deepPartial();
+      const shape = new RecordShape(new StringShape(), new StringShape()).deepPartial();
 
-      expect(objShape.parse({ key1: undefined })).toEqual({ key1: undefined });
-      expect(objShape.parse({ key1: 'aaa' })).toEqual({ key1: 'aaa' });
+      expect(shape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(shape.parse({ key1: 'aaa' })).toEqual({ key1: 'aaa' });
 
-      expect(objShape.try({ key1: 111 })).toEqual({
+      expect(shape.try({ key1: 111 })).toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1'] }],
       });
     });
 
     test('parses deep partial values', () => {
-      const objShape = new RecordShape(
+      const shape = new RecordShape(
         new StringShape(),
         new ObjectShape({ key1: new StringShape() }, null)
       ).deepPartial();
 
-      expect(objShape.parse({ aaa: undefined })).toEqual({ aaa: undefined });
-      expect(objShape.parse({ aaa: { key1: undefined } })).toEqual({ aaa: { key1: undefined } });
-      expect(objShape.parse({ aaa: { key1: 'aaa' } })).toEqual({ aaa: { key1: 'aaa' } });
+      expect(shape.parse({ aaa: undefined })).toEqual({ aaa: undefined });
+      expect(shape.parse({ aaa: { key1: undefined } })).toEqual({ aaa: { key1: undefined } });
+      expect(shape.parse({ aaa: { key1: 'aaa' } })).toEqual({ aaa: { key1: 'aaa' } });
 
-      expect(objShape.try({ aaa: { key1: 111 } })).toEqual({
+      expect(shape.try({ aaa: { key1: 111 } })).toEqual({
         ok: false,
         issues: [
           { code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['aaa', 'key1'] },
@@ -145,70 +139,64 @@ describe('RecordShape', () => {
 
   describe('async', () => {
     test('raises an issue for a non-object input value', async () => {
-      const objShape = new RecordShape(null, asyncShape);
+      const shape = new RecordShape(null, new AsyncMockShape());
 
-      await expect(objShape.tryAsync('')).resolves.toEqual({
+      await expect(shape.tryAsync('')).resolves.toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
       });
     });
 
     test('checks values', async () => {
-      const valueShape = asyncShape.check(() => [{ code: 'xxx' }]);
+      const valueShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
 
-      const objShape = new RecordShape(null, valueShape);
+      const shape = new RecordShape(null, valueShape);
 
-      await expect(objShape.tryAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual({
+      await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx', path: ['key1'] }],
       });
     });
 
     test('checks keys and values', async () => {
-      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
-      const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);
+      const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
+      const valueShape = new AsyncMockShape().check(() => [{ code: 'yyy' }]);
 
-      const objShape = new RecordShape(keyShape, valueShape);
+      const shape = new RecordShape(keyShape, valueShape);
 
-      await expect(objShape.tryAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual({
+      await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx', path: ['key1'] }],
       });
     });
 
     test('does not invoke the value shape if the previous key shape has raised an issue', async () => {
-      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
-      const valueShape = asyncShape;
-
-      const applyAsyncKeySpy = jest.spyOn<Shape, any>(keyShape, '_applyAsync');
-      const applyAsyncValueSpy = jest.spyOn<Shape, any>(valueShape, '_applyAsync');
+      const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
+      const valueShape = new AsyncMockShape();
 
       await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' });
 
-      expect(applyAsyncKeySpy).toHaveBeenCalledTimes(1);
-      expect(applyAsyncValueSpy).toHaveBeenCalledTimes(0);
+      expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
+      expect(valueShape._applyAsync).not.toHaveBeenCalled();
     });
 
     test('does not invoke the key shape if the previous value shape has raised an issue', async () => {
-      const keyShape = asyncShape;
-      const valueShape = asyncShape.check(() => [{ code: 'xxx' }]);
-
-      const applyAsyncKeySpy = jest.spyOn<Shape, any>(keyShape, '_applyAsync');
-      const applyAsyncValueSpy = jest.spyOn<Shape, any>(valueShape, '_applyAsync');
+      const keyShape = new AsyncMockShape();
+      const valueShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
 
       await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' });
 
-      expect(applyAsyncKeySpy).toHaveBeenCalledTimes(1);
-      expect(applyAsyncValueSpy).toHaveBeenCalledTimes(1);
+      expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
+      expect(valueShape._applyAsync).toHaveBeenCalledTimes(1);
     });
 
     test('raises multiple issues in verbose mode', async () => {
-      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
-      const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);
+      const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
+      const valueShape = new AsyncMockShape().check(() => [{ code: 'yyy' }]);
 
-      const objShape = new RecordShape(keyShape, valueShape);
+      const shape = new RecordShape(keyShape, valueShape);
 
-      await expect(objShape.tryAsync({ key1: 'aaa', key2: 'bbb' }, { verbose: true })).resolves.toEqual({
+      await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' }, { verbose: true })).resolves.toEqual({
         ok: false,
         issues: [
           { code: 'xxx', path: ['key1'] },
@@ -223,34 +211,34 @@ describe('RecordShape', () => {
       const keyShape = new Shape().convertAsync(value => Promise.resolve(value.toUpperCase()));
       const valueShape = new Shape();
 
-      const objShape = new RecordShape(keyShape, valueShape);
+      const shape = new RecordShape(keyShape, valueShape);
 
-      const obj = { key1: 'aaa', key2: 'bbb' };
+      const input = { key1: 'aaa', key2: 'bbb' };
 
-      const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
+      const result = (await shape.tryAsync(input)) as Ok;
 
       expect(result).toEqual({ ok: true, value: { KEY1: 'aaa', KEY2: 'bbb' } });
-      expect(result.value).not.toBe(obj);
+      expect(result.value).not.toBe(input);
     });
 
     test('converts values', async () => {
       const keyShape = new Shape();
       const valueShape = new Shape().convertAsync(value => Promise.resolve(value.toUpperCase()));
 
-      const objShape = new RecordShape(keyShape, valueShape);
+      const shape = new RecordShape(keyShape, valueShape);
 
-      const obj = { key1: 'aaa', key2: 'bbb' };
+      const input = { key1: 'aaa', key2: 'bbb' };
 
-      const result = (await objShape.tryAsync(obj)) as Ok<unknown>;
+      const result = (await shape.tryAsync(input)) as Ok;
 
       expect(result).toEqual({ ok: true, value: { key1: 'AAA', key2: 'BBB' } });
-      expect(result.value).not.toBe(obj);
+      expect(result.value).not.toBe(input);
     });
 
-    test('applies checks', async () => {
-      const objShape = new RecordShape(null, asyncShape).check(() => [{ code: 'xxx' }]);
+    test('applies operations', async () => {
+      const shape = new RecordShape(null, new AsyncMockShape()).check(() => [{ code: 'xxx' }]);
 
-      await expect(objShape.tryAsync({})).resolves.toEqual({
+      await expect(shape.tryAsync({})).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });

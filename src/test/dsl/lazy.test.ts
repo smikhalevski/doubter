@@ -1,22 +1,22 @@
 import * as d from '../../main';
-import { AsyncShape } from '../shapes/mocks';
+import { AsyncMockShape } from '../shapes/mocks';
 
 describe('lazy', () => {
   test('returns a lazy shape', () => {
-    const shape = d.string();
-    const lazyShape = d.lazy(() => shape);
+    const providedShape = d.string();
+    const shape = d.lazy(() => providedShape);
 
-    expect(lazyShape).toBeInstanceOf(d.LazyShape);
-    expect(lazyShape.isAsync).toBe(false);
-    expect(lazyShape.shape).toBe(shape);
+    expect(shape).toBeInstanceOf(d.LazyShape);
+    expect(shape.isAsync).toBe(false);
+    expect(shape.providedShape).toBe(providedShape);
   });
 
   test('returns an async shape', () => {
-    const shape = new AsyncShape();
-    const lazyShape = d.lazy(() => shape);
+    const providedShape = new AsyncMockShape();
+    const shape = d.lazy(() => providedShape);
 
-    expect(lazyShape).toBeInstanceOf(d.LazyShape);
-    expect(lazyShape.isAsync).toBe(true);
-    expect(lazyShape.shape).toBe(shape);
+    expect(shape).toBeInstanceOf(d.LazyShape);
+    expect(shape.isAsync).toBe(true);
+    expect(shape.providedShape).toBe(providedShape);
   });
 });

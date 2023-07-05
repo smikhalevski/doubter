@@ -19,7 +19,7 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape }
 /**
  * Returns the array of shapes that are applicable to the input.
  */
-type Lookup = (input: any) => readonly AnyShape[];
+type LookupCallback = (input: any) => readonly AnyShape[];
 
 type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;
@@ -65,7 +65,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
-  protected get _lookup(): Lookup {
+  protected get _lookup(): LookupCallback {
     const shapes = this.shapes.filter(unique);
     const lookup = createLookupByDiscriminator(shapes) || createLookupByType(shapes);
 
@@ -194,7 +194,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 /**
  * Creates a lookup that finds a shape using an input value type.
  */
-export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
+export function createLookupByType(shapes: readonly AnyShape[]): LookupCallback {
   const emptyArray: AnyShape[] = [];
 
   const buckets: Record<string, AnyShape[]> = {
@@ -231,7 +231,7 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
 /**
  * Creates a lookup that uses a discriminator property, or returns `null` if discriminator property cannot be detected.
  */
-export function createLookupByDiscriminator(shapes: readonly AnyShape[]): Lookup | null {
+export function createLookupByDiscriminator(shapes: readonly AnyShape[]): LookupCallback | null {
   const discriminator = shapes.every(isObjectShape) ? getDiscriminator(shapes) : null;
 
   if (discriminator === null) {
@@ -321,7 +321,7 @@ export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, an
         continue nextKey;
       }
 
-      const { inputs } = shape.shapes[key];
+      const { inputs } = shape.propShapes[key];
 
       if (inputs.length === 0 || inputs.some(isType)) {
         // Values aren't discrete

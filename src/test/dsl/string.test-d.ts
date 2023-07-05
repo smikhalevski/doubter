@@ -8,15 +8,15 @@ const x = { param: 111 };
 
 d.string().alter((value, param) => (value === 'aaa' ? 'aaa' : 'bbb'), x);
 
-const alterShape = d.string().alter(value => (value === 'aaa' ? 'aaa' : 'bbb'));
+const stringShape = d.string().alter(value => (value === 'aaa' ? 'aaa' : 'bbb'));
 
-expectType<string>(alterShape[INPUT]);
+expectType<string>(stringShape[INPUT]);
 
-expectType<string>(alterShape[OUTPUT]);
+expectType<string>(stringShape[OUTPUT]);
 
-expectType<'bbb'>(alterShape.refine((value): value is 'bbb' => true)[OUTPUT]);
+expectType<'bbb'>(stringShape.refine((value): value is 'bbb' => true)[OUTPUT]);
 
-expectType<string>(alterShape.refine((value): value is 'bbb' => true).max(2)[OUTPUT]);
+expectType<string>(stringShape.refine((value): value is 'bbb' => true).max(2)[OUTPUT]);
 
 expectType<string>(
   d.string().alter(

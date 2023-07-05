@@ -118,7 +118,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Creates a new {@linkcode ObjectShape} instance.
    *
-   * @param shapes The mapping from an object key to a corresponding value shape.
+   * @param propShapes The mapping from an object key to a corresponding value shape.
    * @param restShape The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
    * then values thea fall under the index signature are unconstrained.
@@ -132,7 +132,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     /**
      * The mapping from an object key to a corresponding value shape.
      */
-    readonly shapes: PropShapes,
+    readonly propShapes: PropShapes,
     /**
      * The shape that constrains values of
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
@@ -146,10 +146,10 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ) {
     super();
 
-    this.keys = Object.keys(shapes) as StringKeyof<PropShapes>[];
+    this.keys = Object.keys(propShapes) as StringKeyof<PropShapes>[];
 
     this._options = options;
-    this._valueShapes = Object.values(shapes);
+    this._valueShapes = Object.values(propShapes);
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
@@ -161,7 +161,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   at(key: any): AnyShape | null {
-    return this.shapes.hasOwnProperty(key) ? this.shapes[key] : this.restShape;
+    return this.propShapes.hasOwnProperty(key) ? this.propShapes[key] : this.restShape;
   }
 
   /**
@@ -197,9 +197,9 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): ObjectShape<Pick<PropShapes, Exclude<keyof PropShapes, keyof T>> & T, RestShape>;
 
   extend(shape: ObjectShape<any, any> | ReadonlyDict) {
-    const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
+    const propsShapes = Object.assign({}, this.propShapes, shape instanceof ObjectShape ? shape.propShapes : shape);
 
-    return new ObjectShape(shapes, this.restShape, this._options, this.keysMode);
+    return new ObjectShape(propsShapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
@@ -212,14 +212,14 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @template K The tuple of keys to pick.
    */
   pick<K extends readonly StringKeyof<PropShapes>[]>(keys: K): ObjectShape<Pick<PropShapes, K[number]>, RestShape> {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
+    for (const key in this.propShapes) {
       if (keys.includes(key)) {
-        shapes[key] = this.shapes[key];
+        propShapes[key] = this.propShapes[key];
       }
     }
-    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
+    return new ObjectShape<any, any>(propShapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
@@ -232,14 +232,14 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @template K The tuple of keys to omit.
    */
   omit<K extends readonly StringKeyof<PropShapes>[]>(keys: K): ObjectShape<Omit<PropShapes, K[number]>, RestShape> {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
+    for (const key in this.propShapes) {
       if (!keys.includes(key)) {
-        shapes[key] = this.shapes[key];
+        propShapes[key] = this.propShapes[key];
       }
     }
-    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
+    return new ObjectShape<any, any>(propShapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
@@ -265,24 +265,25 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): ObjectShape<Omit<PropShapes, K[number]> & OptionalProps<Pick<PropShapes, K[number]>>, RestShape>;
 
   partial(keys?: string[]) {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
-      shapes[key] = keys === undefined || keys.includes(key) ? this.shapes[key].optional() : this.shapes[key];
+    for (const key in this.propShapes) {
+      propShapes[key] =
+        keys === undefined || keys.includes(key) ? this.propShapes[key].optional() : this.propShapes[key];
     }
-    return new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode);
+    return new ObjectShape<any, any>(propShapes, this.restShape, this._options, this.keysMode);
   }
 
   deepPartial(): DeepPartialObjectShape<PropShapes, RestShape> {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
-      shapes[key] = toDeepPartialShape(this.shapes[key]).optional();
+    for (const key in this.propShapes) {
+      propShapes[key] = toDeepPartialShape(this.propShapes[key]).optional();
     }
 
     const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
-    return new ObjectShape<any, any>(shapes, restShape, this._options, this.keysMode);
+    return new ObjectShape<any, any>(propShapes, restShape, this._options, this.keysMode);
   }
 
   /**
@@ -304,12 +305,13 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): ObjectShape<Omit<PropShapes, K[number]> & RequiredProps<Pick<PropShapes, K[number]>>, RestShape>;
 
   required(keys?: string[]) {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
-      shapes[key] = keys === undefined || keys.includes(key) ? this.shapes[key].nonOptional() : this.shapes[key];
+    for (const key in this.propShapes) {
+      propShapes[key] =
+        keys === undefined || keys.includes(key) ? this.propShapes[key].nonOptional() : this.propShapes[key];
     }
-    return copyOperations(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
+    return copyOperations(this, new ObjectShape<any, any>(propShapes, this.restShape, this._options, this.keysMode));
   }
 
   /**
@@ -319,7 +321,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    */
   exact(options?: IssueOptions | Message): ObjectShape<PropShapes, null> {
-    const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
+    const shape = new ObjectShape(this.propShapes, null, this._options, 'exact');
 
     shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_EXACT, MESSAGE_OBJECT_EXACT, options);
 
@@ -332,7 +334,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    */
   strip(): ObjectShape<PropShapes, null> {
-    return copyOperations(this, new ObjectShape(this.shapes, null, this._options, 'stripped'));
+    return copyOperations(this, new ObjectShape(this.propShapes, null, this._options, 'stripped'));
   }
 
   /**
@@ -341,7 +343,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    */
   preserve(): ObjectShape<PropShapes, null> {
-    return copyOperations(this, new ObjectShape(this.shapes, null, this._options));
+    return copyOperations(this, new ObjectShape(this.propShapes, null, this._options));
   }
 
   /**
@@ -354,7 +356,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @template S The index signature shape.
    */
   rest<S extends AnyShape | null>(restShape: S): ObjectShape<PropShapes, S> {
-    return copyOperations(this, new ObjectShape(this.shapes, restShape, this._options));
+    return copyOperations(this, new ObjectShape(this.propShapes, restShape, this._options));
   }
 
   /**

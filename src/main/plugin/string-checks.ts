@@ -129,7 +129,7 @@ export default function () {
   StringShape.prototype.includes = addIncludesCheck;
   StringShape.prototype.startsWith = addStartsWithCheck;
   StringShape.prototype.endsWith = addEndsWithCheck;
-  StringShape.prototype.trim = addTrimAlter;
+  StringShape.prototype.trim = addTrimOperation;
 }
 
 function addLengthCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
@@ -250,7 +250,7 @@ function addEndsWithCheck(this: StringShape, value: string, options?: IssueOptio
   });
 }
 
-function addTrimAlter(this: StringShape): StringShape {
+function addTrimOperation(this: StringShape): StringShape {
   return this._addOperation({
     type: 'trim',
     param: undefined,

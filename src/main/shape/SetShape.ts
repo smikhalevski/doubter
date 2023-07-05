@@ -37,7 +37,7 @@ export class SetShape<ValueShape extends AnyShape>
   /**
    * Creates a new {@linkcode SetShape} instance.
    *
-   * @param shape The value shape.
+   * @param valueShape The value shape.
    * @param options The issue options or the issue message.
    * @template ValueShape The value shape.
    */
@@ -45,7 +45,7 @@ export class SetShape<ValueShape extends AnyShape>
     /**
      * The value shape.
      */
-    readonly shape: ValueShape,
+    readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
     super();
@@ -55,20 +55,20 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   at(key: unknown): AnyShape | null {
-    return toArrayIndex(key) === -1 ? null : this.shape;
+    return toArrayIndex(key) === -1 ? null : this.valueShape;
   }
 
   deepPartial(): SetShape<OptionalDeepPartialShape<ValueShape>> {
-    return new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options);
+    return new SetShape<any>(toDeepPartialShape(this.valueShape).optional(), this._options);
   }
 
   protected _isAsync(): boolean {
-    return this.shape.isAsync;
+    return this.valueShape.isAsync;
   }
 
   protected _getInputs(): unknown[] {
     if (this.isCoercing) {
-      return this.shape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
+      return this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
     } else {
       return [TYPE_SET];
     }
@@ -88,12 +88,12 @@ export class SetShape<ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { shape } = this;
+    const { valueShape } = this;
     const valuesLength = values.length;
 
     for (let i = 0; i < valuesLength; ++i) {
       const value = values[i];
-      const result = shape['_apply'](value, options, nonce);
+      const result = valueShape['_apply'](value, options, nonce);
 
       if (result === null) {
         continue;
@@ -129,7 +129,7 @@ export class SetShape<ValueShape extends AnyShape>
         return;
       }
 
-      const { shape } = this;
+      const { valueShape } = this;
       const valuesLength = values.length;
 
       let issues: Issue[] | null = null;
@@ -156,7 +156,7 @@ export class SetShape<ValueShape extends AnyShape>
         index++;
 
         if (index !== valuesLength) {
-          return shape['_applyAsync'](values[index], options, nonce).then(handleResult);
+          return valueShape['_applyAsync'](values[index], options, nonce).then(handleResult);
         }
         return this._applyOperations(input, changed ? new Set(values) : input, options, issues);
       };

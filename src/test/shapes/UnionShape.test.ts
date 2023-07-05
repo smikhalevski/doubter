@@ -15,51 +15,36 @@ import {
 import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
 import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shape/UnionShape';
 import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
-import { AsyncShape } from './mocks';
+import { AsyncMockShape, spyOnShape, MockShape } from './mocks';
 
 describe('UnionShape', () => {
-  let asyncShape: AsyncShape;
-
-  beforeEach(() => {
-    asyncShape = new AsyncShape();
-  });
-
   test('distributes buckets by inputs', () => {
-    const shape1 = new NumberShape();
-    const shape2 = new StringShape();
-    const shape3 = new BooleanShape();
+    const shape1 = spyOnShape(new NumberShape());
+    const shape2 = spyOnShape(new StringShape());
+    const shape3 = spyOnShape(new BooleanShape());
 
-    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
-    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
-    const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
+    const shape = new UnionShape([shape1, shape2, shape3]);
 
-    const orShape = new UnionShape([shape1, shape2, shape3]);
-
-    expect(orShape.inputs).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN]);
-    expect(orShape.parse('aaa')).toBe('aaa');
-    expect(applySpy1).not.toHaveBeenCalled();
-    expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy3).not.toHaveBeenCalled();
+    expect(shape.inputs).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN]);
+    expect(shape.parse('aaa')).toBe('aaa');
+    expect(shape1._apply).not.toHaveBeenCalled();
+    expect(shape2._apply).toHaveBeenCalledTimes(1);
+    expect(shape3._apply).not.toHaveBeenCalled();
   });
 
   test('parses nested unions', () => {
-    const shape1 = new NumberShape();
-    const shape2 = new StringShape();
-    const shape3 = new BooleanShape();
-    const orShape1 = new UnionShape([shape2, shape3]).refine(() => true);
+    const shape1 = spyOnShape(new NumberShape());
+    const shape2 = spyOnShape(new StringShape());
+    const shape3 = spyOnShape(new BooleanShape());
 
-    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
-    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
-    const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
-    const unionApplySpy = jest.spyOn<Shape, any>(orShape1, '_apply');
+    const unionShape1 = spyOnShape(new UnionShape([shape2, shape3]).check(() => null));
+    const unionShape2 = spyOnShape(new UnionShape([shape1, unionShape1]));
 
-    const orShape2 = new UnionShape([shape1, orShape1]);
-
-    expect(orShape2.parse('aaa')).toBe('aaa');
-    expect(applySpy1).not.toHaveBeenCalled();
-    expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy3).not.toHaveBeenCalled();
-    expect(unionApplySpy).toHaveBeenCalledTimes(1);
+    expect(unionShape2.parse('aaa')).toBe('aaa');
+    expect(shape1._apply).not.toHaveBeenCalled();
+    expect(shape2._apply).toHaveBeenCalledTimes(1);
+    expect(shape3._apply).not.toHaveBeenCalled();
+    expect(unionShape1._apply).toHaveBeenCalledTimes(1);
   });
 
   test('parses a discriminated union', () => {
@@ -72,29 +57,25 @@ describe('UnionShape', () => {
   });
 
   test('returns the result of the first shape that returned ok', () => {
-    const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
-    const shape2 = new Shape();
-    const shape3 = new Shape();
+    const shape1 = new MockShape().check(() => [{ code: 'xxx' }]);
+    const shape2 = new MockShape();
+    const shape3 = new MockShape();
 
-    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
-    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
-    const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
+    const shape = new UnionShape([shape1, shape2, shape3]);
 
-    const orShape = new UnionShape([shape1, shape2, shape3]);
-
-    expect(orShape.parse('aaa')).toBe('aaa');
-    expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy3).not.toHaveBeenCalled();
+    expect(shape.parse('aaa')).toBe('aaa');
+    expect(shape1._apply).toHaveBeenCalledTimes(1);
+    expect(shape2._apply).toHaveBeenCalledTimes(1);
+    expect(shape3._apply).not.toHaveBeenCalled();
   });
 
   test('raises union issue if no shapes returned ok', () => {
     const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
     const shape2 = new Shape().check(() => [{ code: 'yyy' }]);
 
-    const orShape = new UnionShape([shape1, shape2]);
+    const shape = new UnionShape([shape1, shape2]);
 
-    expect(orShape.try('aaa')).toEqual({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
       issues: [
         {
@@ -114,21 +95,21 @@ describe('UnionShape', () => {
     const shape1 = new ObjectShape({ type: new ConstShape('aaa') }, null).check(() => [{ code: 'xxx' }]);
     const shape2 = new ObjectShape({ type: new ConstShape('bbb') }, null).check(() => [{ code: 'yyy' }]);
 
-    const orShape = new UnionShape([shape1, shape2]);
+    const shape = new UnionShape([shape1, shape2]);
 
-    expect(orShape.try({ type: 'bbb' })).toEqual({
+    expect(shape.try({ type: 'bbb' })).toEqual({
       ok: false,
       issues: [{ code: 'yyy' }],
     });
   });
 
-  test('applies checks', () => {
+  test('applies operations', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
-    const orShape = new UnionShape([shape1, shape2]).check(() => [{ code: 'xxx' }]);
+    const shape = new UnionShape([shape1, shape2]).check(() => [{ code: 'xxx' }]);
 
-    expect(orShape.try({})).toEqual({
+    expect(shape.try({})).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -159,53 +140,54 @@ describe('UnionShape', () => {
 
   describe('at', () => {
     test('returns a union of child shapes at key', () => {
-      const shape1 = new Shape();
-      const shape2 = new Shape();
-      const shape3 = new Shape();
-      const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
-      const arrShape = new ArrayShape([], shape3);
+      const valueShape1 = new Shape();
+      const valueShape2 = new Shape();
+      const restShape = new Shape();
 
-      const orShape = new UnionShape([objShape, arrShape]);
+      const shape1 = new ObjectShape({ 1: valueShape1, key1: valueShape2 }, null);
+      const shape2 = new ArrayShape([], restShape);
 
-      const shape = orShape.at(1) as UnionShape<AnyShape[]>;
+      const unionShape1 = new UnionShape([shape1, shape2]);
+      const unionShape2 = unionShape1.at(1) as UnionShape<AnyShape[]>;
 
-      expect(shape instanceof UnionShape).toBe(true);
-      expect(shape.shapes.length).toBe(2);
-      expect(shape.shapes[0]).toBe(shape1);
-      expect(shape.shapes[1]).toBe(shape3);
+      expect(unionShape2 instanceof UnionShape).toBe(true);
+      expect(unionShape2.shapes.length).toBe(2);
+      expect(unionShape2.shapes[0]).toBe(valueShape1);
+      expect(unionShape2.shapes[1]).toBe(restShape);
     });
 
     test('returns non-null child shapes at key', () => {
-      const shape1 = new Shape();
-      const shape2 = new Shape();
-      const shape3 = new Shape();
-      const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
-      const arrShape = new ArrayShape([], shape3);
+      const valueShape1 = new Shape();
+      const valueShape2 = new Shape();
+      const restShape = new Shape();
 
-      const orShape = new UnionShape([objShape, arrShape]);
+      const shape1 = new ObjectShape({ 1: valueShape1, key1: valueShape2 }, null);
+      const shape2 = new ArrayShape([], restShape);
 
-      expect(orShape.at('key1')).toBe(shape2);
+      const shape = new UnionShape([shape1, shape2]);
+
+      expect(shape.at('key1')).toBe(valueShape2);
     });
   });
 
   describe('deepPartial', () => {
     test('parses united deep partial objects', () => {
-      const orShape = new UnionShape([
+      const shape = new UnionShape([
         new ObjectShape({ key1: new StringShape() }, null),
         new ObjectShape({ key2: new StringShape() }, null),
       ]).deepPartial();
 
-      expect(orShape.parse({})).toEqual({});
-      expect(orShape.parse({ key1: undefined })).toEqual({ key1: undefined });
-      expect(orShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
-      expect(orShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+      expect(shape.parse({})).toEqual({});
+      expect(shape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(shape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
+      expect(shape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
     });
 
     test('does not make shapes optional', () => {
-      const orShape = new UnionShape([new NumberShape()]).deepPartial();
+      const shape = new UnionShape([new NumberShape()]).deepPartial();
 
-      expect(orShape.parse(111)).toBe(111);
-      expect(orShape.try(undefined)).toEqual({
+      expect(shape.parse(111)).toBe(111);
+      expect(shape.try(undefined)).toEqual({
         ok: false,
         issues: [
           {
@@ -223,74 +205,57 @@ describe('UnionShape', () => {
 
   describe('async', () => {
     test('distributes buckets by inputs', async () => {
-      const shape1 = new NumberShape();
-      const shape2 = new StringShape().convertAsync(value => Promise.resolve(value));
-      const shape3 = new BooleanShape();
+      const shape1 = spyOnShape(new NumberShape());
+      const shape2 = spyOnShape(new StringShape().convertAsync(value => Promise.resolve(value)));
+      const shape3 = spyOnShape(new BooleanShape());
 
-      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-      const applySpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
+      const shape = new UnionShape([shape1, shape2, shape3]);
 
-      const orShape = new UnionShape([shape1, shape2, shape3]);
+      expect(shape.isAsync).toBe(true);
 
-      expect(orShape.isAsync).toBe(true);
-
-      await expect(orShape.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applySpy1).not.toHaveBeenCalled();
-      expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy3).not.toHaveBeenCalled();
+      await expect(shape.parseAsync('aaa')).resolves.toBe('aaa');
+      expect(shape1._applyAsync).not.toHaveBeenCalled();
+      expect(shape2._applyAsync).toHaveBeenCalledTimes(1);
+      expect(shape3._applyAsync).not.toHaveBeenCalled();
     });
 
     test('parses nested unions', async () => {
-      const shape1 = new NumberShape();
-      const shape2 = new StringShape().convertAsync(value => Promise.resolve(value));
-      const shape3 = new BooleanShape();
-      const orShape1 = new UnionShape([shape2, shape3]).refine(() => true);
+      const shape1 = spyOnShape(new NumberShape());
+      const shape2 = spyOnShape(new StringShape().convertAsync(value => Promise.resolve(value)));
+      const shape3 = spyOnShape(new BooleanShape());
 
-      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-      const applySpy3 = jest.spyOn<Shape, any>(shape3, '_applyAsync');
-      const unionApplySpy = jest.spyOn<Shape, any>(orShape1, '_applyAsync');
+      const unionShape1 = spyOnShape(new UnionShape([shape2, shape3]).check(() => null));
+      const unionShape2 = new UnionShape([shape1, unionShape1]);
 
-      const orShape2 = new UnionShape([shape1, orShape1]);
+      expect(unionShape2.isAsync).toBe(true);
 
-      expect(orShape2.isAsync).toBe(true);
-
-      await expect(orShape2.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applySpy1).not.toHaveBeenCalled();
-      expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy3).not.toHaveBeenCalled();
-      expect(unionApplySpy).toHaveBeenCalledTimes(1);
+      await expect(unionShape2.parseAsync('aaa')).resolves.toBe('aaa');
+      expect(shape1._applyAsync).not.toHaveBeenCalled();
+      expect(shape2._applyAsync).toHaveBeenCalledTimes(1);
+      expect(shape3._applyAsync).not.toHaveBeenCalled();
+      expect(unionShape1._applyAsync).toHaveBeenCalledTimes(1);
     });
 
     test('returns the result of the first shape that returned ok', async () => {
-      const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
-      const shape2 = asyncShape;
-      const shape3 = new Shape();
+      const shape1 = new MockShape().check(() => [{ code: 'xxx' }]);
+      const shape2 = new AsyncMockShape();
+      const shape3 = new MockShape();
 
-      shape1.isAsync;
-      shape2.isAsync;
-      shape3.isAsync;
+      const shape = new UnionShape([shape1, shape2, shape3]);
 
-      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
-      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-      const applySpy3 = jest.spyOn<Shape, any>(shape3, '_apply');
-
-      const orShape = new UnionShape([shape1, shape2, shape3]);
-
-      await expect(orShape.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy3).not.toHaveBeenCalled();
+      await expect(shape.parseAsync('aaa')).resolves.toBe('aaa');
+      expect(shape1._apply).toHaveBeenCalledTimes(1);
+      expect(shape2._applyAsync).toHaveBeenCalledTimes(1);
+      expect(shape3._apply).not.toHaveBeenCalled();
     });
 
     test('raises union issue if no shapes returned ok', async () => {
       const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
-      const shape2 = asyncShape.check(() => [{ code: 'yyy' }]);
+      const shape2 = new AsyncMockShape().check(() => [{ code: 'yyy' }]);
 
-      const orShape = new UnionShape([shape1, shape2]);
+      const shape = new UnionShape([shape1, shape2]);
 
-      await expect(orShape.tryAsync('aaa')).resolves.toEqual({
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
         issues: [
           {
@@ -311,23 +276,23 @@ describe('UnionShape', () => {
       const shape2 = new ObjectShape(
         {
           type: new ConstShape('bbb'),
-          key1: asyncShape.check(() => [{ code: 'zzz' }]),
+          key1: new AsyncMockShape().check(() => [{ code: 'zzz' }]),
         },
         null
       ).check(() => [{ code: 'yyy' }], { force: true });
 
-      const orShape = new UnionShape([shape1, shape2]);
+      const shape = new UnionShape([shape1, shape2]);
 
-      await expect(orShape.tryAsync({ type: 'bbb' }, { verbose: true })).resolves.toEqual({
+      await expect(shape.tryAsync({ type: 'bbb' }, { verbose: true })).resolves.toEqual({
         ok: false,
         issues: [{ code: 'zzz', path: ['key1'] }, { code: 'yyy' }],
       });
     });
 
-    test('applies checks', async () => {
-      const orShape = new UnionShape([new Shape(), asyncShape]).check(() => [{ code: 'xxx' }]);
+    test('applies operations', async () => {
+      const shape = new UnionShape([new Shape(), new AsyncMockShape()]).check(() => [{ code: 'xxx' }]);
 
-      await expect(orShape.tryAsync({})).resolves.toEqual({
+      await expect(shape.tryAsync({})).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });

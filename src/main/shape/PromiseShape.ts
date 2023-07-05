@@ -37,11 +37,11 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   /**
    * Creates a new {@linkcode PromiseShape} instance.
    *
-   * @param shape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
+   * @param valueShape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
    * @param options The issue options or the issue message.
    * @template ValueShape The shape of the resolved value.
    */
-  constructor(readonly shape: ValueShape, options?: IssueOptions | Message) {
+  constructor(readonly valueShape: ValueShape, options?: IssueOptions | Message) {
     super();
 
     this._options = options;
@@ -49,23 +49,23 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   }
 
   deepPartial(): DeepPartialPromiseShape<ValueShape> {
-    const shape = this.shape !== null ? toDeepPartialShape(this.shape).optional() : null;
+    const valueShape = this.valueShape !== null ? toDeepPartialShape(this.valueShape).optional() : null;
 
-    return new PromiseShape<any>(shape, this._options);
+    return new PromiseShape<any>(valueShape, this._options);
   }
 
   protected _isAsync(): boolean {
-    return this.shape !== null;
+    return this.valueShape !== null;
   }
 
   protected _getInputs(): unknown[] {
     if (!this.isCoercing) {
       return [TYPE_PROMISE];
     }
-    if (this.shape === null) {
+    if (this.valueShape === null) {
       return [TYPE_UNKNOWN];
     }
-    return this.shape.inputs.concat(TYPE_PROMISE);
+    return this.valueShape.inputs.concat(TYPE_PROMISE);
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
@@ -95,7 +95,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     }
 
     return output.then((value: unknown) =>
-      applyShape(this.shape!, value, options, nonce, result => {
+      applyShape(this.valueShape!, value, options, nonce, result => {
         let issues = null;
 
         if (result !== null) {

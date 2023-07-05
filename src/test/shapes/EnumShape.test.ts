@@ -37,12 +37,12 @@ describe('EnumShape', () => {
   });
 
   test('creates an enum shape from a mapping object', () => {
-    const obj = {
+    const source = {
       AAA: 'aaa',
       BBB: 'bbb',
     };
 
-    expect(new EnumShape(obj).inputs).toEqual([obj.AAA, obj.BBB]);
+    expect(new EnumShape(source).inputs).toEqual([source.AAA, source.BBB]);
   });
 
   test('raises an issue if an input is not one of the numeric enum values', () => {
@@ -106,7 +106,7 @@ describe('EnumShape', () => {
     expect(new EnumShape([NaN]).parse(NaN)).toBe(NaN);
   });
 
-  test('applies checks', () => {
+  test('applies operations', () => {
     const shape = new EnumShape(['aaa', 'bbb']).check(() => [{ code: 'xxx' }]);
 
     expect(shape.try('aaa')).toEqual({
@@ -154,23 +154,23 @@ describe('getEnumValues', () => {
   });
 
   test('removes aliases from enum-like objects', () => {
-    const obj = {
+    const source = {
       0: 'AAA',
       1: 'BBB',
       AAA: 0,
       BBB: 1,
     };
 
-    expect(getEnumValues(obj)).toEqual([0, 1]);
+    expect(getEnumValues(source)).toEqual([0, 1]);
   });
 
   test('preserves partial aliases', () => {
-    const obj = {
+    const source = {
       0: 'AAA',
       AAA: 0,
       BBB: 1,
     };
 
-    expect(getEnumValues(obj)).toEqual(['AAA', 0, 1]);
+    expect(getEnumValues(source)).toEqual(['AAA', 0, 1]);
   });
 });

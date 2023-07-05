@@ -1,30 +1,24 @@
 import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_MAP_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_MAP, TYPE_STRING } from '../../main/Type';
-import { AsyncShape } from './mocks';
+import { AsyncMockShape } from './mocks';
 
 describe('MapShape', () => {
-  let asyncShape: AsyncShape;
-
-  beforeEach(() => {
-    asyncShape = new AsyncShape();
-  });
-
   test('creates a MapShape', () => {
     const keyShape = new Shape();
     const valueShape = new Shape();
 
-    const setShape = new MapShape(keyShape, valueShape);
+    const shape = new MapShape(keyShape, valueShape);
 
-    expect(setShape.keyShape).toEqual(keyShape);
-    expect(setShape.valueShape).toEqual(valueShape);
-    expect(setShape.inputs).toEqual([TYPE_MAP]);
+    expect(shape.keyShape).toEqual(keyShape);
+    expect(shape.valueShape).toEqual(valueShape);
+    expect(shape.inputs).toEqual([TYPE_MAP]);
   });
 
   test('raises an issue if an input is not a Map', () => {
-    const setShape = new MapShape(new Shape(), new Shape());
+    const shape = new MapShape(new Shape(), new Shape());
 
-    const result = setShape.try('aaa');
+    const result = shape.try('aaa');
 
     expect(result).toEqual({
       ok: false,
@@ -36,10 +30,10 @@ describe('MapShape', () => {
     const keyShape = new Shape().check(() => [{ code: 'xxx' }]);
     const valueShape = new Shape().check(() => [{ code: 'yyy' }]);
 
-    const mapShape = new MapShape(keyShape, valueShape);
+    const shape = new MapShape(keyShape, valueShape);
 
     expect(
-      mapShape.try(
+      shape.try(
         new Map([
           ['key1', 'aaa'],
           ['key2', 'bbb'],
@@ -55,10 +49,10 @@ describe('MapShape', () => {
     const keyShape = new Shape().check(() => [{ code: 'xxx' }]);
     const valueShape = new Shape().check(() => [{ code: 'yyy' }]);
 
-    const mapShape = new MapShape(keyShape, valueShape);
+    const shape = new MapShape(keyShape, valueShape);
 
     expect(
-      mapShape.try(
+      shape.try(
         new Map([
           ['key1', 'aaa'],
           ['key2', 'bbb'],
@@ -80,14 +74,14 @@ describe('MapShape', () => {
     const keyShape = new Shape().convert(value => value.toUpperCase());
     const valueShape = new Shape();
 
-    const mapShape = new MapShape(keyShape, valueShape);
+    const shape = new MapShape(keyShape, valueShape);
 
-    const map = new Map([
+    const input = new Map([
       ['key1', 'aaa'],
       ['key2', 'bbb'],
     ]);
 
-    const result = mapShape.try(map) as Ok<unknown>;
+    const result = shape.try(input) as Ok;
 
     expect(result).toEqual({
       ok: true,
@@ -97,21 +91,21 @@ describe('MapShape', () => {
       ]),
     });
 
-    expect(result.value).not.toBe(map);
+    expect(result.value).not.toBe(input);
   });
 
   test('converts values', () => {
     const keyShape = new Shape();
     const valueShape = new Shape().convert(value => value.toUpperCase());
 
-    const mapShape = new MapShape(keyShape, valueShape);
+    const shape = new MapShape(keyShape, valueShape);
 
-    const map = new Map([
+    const input = new Map([
       ['key1', 'aaa'],
       ['key2', 'bbb'],
     ]);
 
-    const result = mapShape.try(map) as Ok<unknown>;
+    const result = shape.try(input) as Ok;
 
     expect(result).toEqual({
       ok: true,
@@ -120,13 +114,13 @@ describe('MapShape', () => {
         ['key2', 'BBB'],
       ]),
     });
-    expect(result.value).not.toBe(map);
+    expect(result.value).not.toBe(input);
   });
 
-  test('applies checks', () => {
-    const mapShape = new MapShape(new Shape(), new Shape()).check(() => [{ code: 'xxx' }]);
+  test('applies operations', () => {
+    const shape = new MapShape(new Shape(), new Shape()).check(() => [{ code: 'xxx' }]);
 
-    expect(mapShape.try(new Map())).toEqual({
+    expect(shape.try(new Map())).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -134,9 +128,9 @@ describe('MapShape', () => {
 
   describe('coerce', () => {
     test('coerces an object', () => {
-      const mapShape = new MapShape(new Shape(), new Shape()).coerce();
+      const shape = new MapShape(new Shape(), new Shape()).coerce();
 
-      expect(mapShape.parse({ key1: 'aaa', key2: 'bbb' })).toEqual(
+      expect(shape.parse({ key1: 'aaa', key2: 'bbb' })).toEqual(
         new Map([
           ['key1', 'aaa'],
           ['key2', 'bbb'],
@@ -145,10 +139,10 @@ describe('MapShape', () => {
     });
 
     test('coerces an array of entities', () => {
-      const mapShape = new MapShape(new Shape(), new Shape()).coerce();
+      const shape = new MapShape(new Shape(), new Shape()).coerce();
 
       expect(
-        mapShape.parse([
+        shape.parse([
           ['key1', 'aaa'],
           ['key2', 'bbb'],
         ])
@@ -161,21 +155,21 @@ describe('MapShape', () => {
     });
 
     test('does not coerce an array with non-entry-like arrays', () => {
-      const mapShape = new MapShape(new Shape(), new Shape()).coerce();
+      const shape = new MapShape(new Shape(), new Shape()).coerce();
 
-      expect(mapShape.try([['key1', 'aaa'], ['key2']])).toEqual({
+      expect(shape.try([['key1', 'aaa'], ['key2']])).toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, input: [['key1', 'aaa'], ['key2']], message: MESSAGE_MAP_TYPE, param: TYPE_MAP }],
       });
     });
 
-    test('does not coerce a String wrapper', () => {
-      const mapShape = new MapShape(new Shape(), new Shape()).coerce();
-      const strWrapper = new String('aaa');
+    test('does not coerce a String object', () => {
+      const shape = new MapShape(new Shape(), new Shape()).coerce();
+      const input = new String('aaa');
 
-      expect(mapShape.try(strWrapper)).toEqual({
+      expect(shape.try(input)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: strWrapper, message: MESSAGE_MAP_TYPE, param: TYPE_MAP }],
+        issues: [{ code: CODE_TYPE, input, message: MESSAGE_MAP_TYPE, param: TYPE_MAP }],
       });
     });
   });
@@ -183,44 +177,42 @@ describe('MapShape', () => {
   describe('at', () => {
     test('returns value shape for any key', () => {
       const valueShape = new Shape();
-      const objShape = new MapShape(new StringShape(), valueShape);
 
-      expect(objShape.at('aaa')).toBe(valueShape);
-      expect(objShape.at(111)).toBe(valueShape);
-      expect(objShape.at(111.222)).toBe(valueShape);
-      expect(objShape.at(null)).toBe(valueShape);
-      expect(objShape.at(Symbol())).toBe(valueShape);
+      const shape = new MapShape(new StringShape(), valueShape);
+
+      expect(shape.at('aaa')).toBe(valueShape);
+      expect(shape.at(111)).toBe(valueShape);
+      expect(shape.at(111.222)).toBe(valueShape);
+      expect(shape.at(null)).toBe(valueShape);
+      expect(shape.at(Symbol())).toBe(valueShape);
     });
   });
 
   describe('deepPartial', () => {
     test('does not mark keys as optional', () => {
-      const mapShape = new MapShape(new StringShape(), new StringShape()).deepPartial();
+      const shape = new MapShape(new StringShape(), new StringShape()).deepPartial();
 
-      expect(mapShape.try(new Map([[undefined, 'bbb']]))).toEqual({
+      expect(shape.try(new Map([[undefined, 'bbb']]))).toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, path: [undefined], message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
       });
 
-      expect(mapShape.parse(new Map([['aaa', 'bbb']]))).toEqual(new Map([['aaa', 'bbb']]));
+      expect(shape.parse(new Map([['aaa', 'bbb']]))).toEqual(new Map([['aaa', 'bbb']]));
     });
 
     test('marks values as optional', () => {
-      const mapShape = new MapShape(new StringShape(), new StringShape()).deepPartial();
+      const shape = new MapShape(new StringShape(), new StringShape()).deepPartial();
 
-      expect(mapShape.parse(new Map([['aaa', undefined]]))).toEqual(new Map([['aaa', undefined]]));
+      expect(shape.parse(new Map([['aaa', undefined]]))).toEqual(new Map([['aaa', undefined]]));
     });
 
     test('makes keys deep partial', () => {
-      const mapShape = new MapShape(
-        new ObjectShape({ key1: new StringShape() }, null),
-        new StringShape()
-      ).deepPartial();
+      const shape = new MapShape(new ObjectShape({ key1: new StringShape() }, null), new StringShape()).deepPartial();
 
-      expect(mapShape.parse(new Map([[{}, 'aaa']]))).toEqual(new Map([[{}, 'aaa']]));
-      expect(mapShape.parse(new Map([[{ key1: undefined }, 'aaa']]))).toEqual(new Map([[{ key1: undefined }, 'aaa']]));
+      expect(shape.parse(new Map([[{}, 'aaa']]))).toEqual(new Map([[{}, 'aaa']]));
+      expect(shape.parse(new Map([[{ key1: undefined }, 'aaa']]))).toEqual(new Map([[{ key1: undefined }, 'aaa']]));
 
-      expect(mapShape.try(new Map([[{ key1: 111 }, 'aaa']]))).toEqual({
+      expect(shape.try(new Map([[{ key1: 111 }, 'aaa']]))).toEqual({
         ok: false,
         issues: [
           {
@@ -235,15 +227,12 @@ describe('MapShape', () => {
     });
 
     test('makes values deep partial', () => {
-      const mapShape = new MapShape(
-        new StringShape(),
-        new ObjectShape({ key1: new StringShape() }, null)
-      ).deepPartial();
+      const shape = new MapShape(new StringShape(), new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
 
-      expect(mapShape.parse(new Map([['aaa', {}]]))).toEqual(new Map([['aaa', {}]]));
-      expect(mapShape.parse(new Map([['aaa', { key1: undefined }]]))).toEqual(new Map([['aaa', { key1: undefined }]]));
+      expect(shape.parse(new Map([['aaa', {}]]))).toEqual(new Map([['aaa', {}]]));
+      expect(shape.parse(new Map([['aaa', { key1: undefined }]]))).toEqual(new Map([['aaa', { key1: undefined }]]));
 
-      expect(mapShape.try(new Map([['aaa', { key1: 111 }]]))).toEqual({
+      expect(shape.try(new Map([['aaa', { key1: 111 }]]))).toEqual({
         ok: false,
         issues: [
           {
@@ -260,22 +249,22 @@ describe('MapShape', () => {
 
   describe('async', () => {
     test('raises an issue if an input is not a Map', async () => {
-      const setShape = new MapShape(asyncShape, asyncShape);
+      const shape = new MapShape(new AsyncMockShape(), new AsyncMockShape());
 
-      await expect(setShape.tryAsync('aaa')).resolves.toEqual({
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_MAP_TYPE, param: TYPE_MAP }],
       });
     });
 
     test('checks keys and values', async () => {
-      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
-      const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);
+      const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
+      const valueShape = new AsyncMockShape().check(() => [{ code: 'yyy' }]);
 
-      const mapShape = new MapShape(keyShape, valueShape);
+      const shape = new MapShape(keyShape, valueShape);
 
       await expect(
-        mapShape.tryAsync(
+        shape.tryAsync(
           new Map([
             ['key1', 'aaa'],
             ['key2', 'bbb'],
@@ -288,11 +277,8 @@ describe('MapShape', () => {
     });
 
     test('does not invoke the value shape if the previous key shape has raised an issue', async () => {
-      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
-      const valueShape = asyncShape;
-
-      const applyAsyncKeySpy = jest.spyOn<Shape, any>(keyShape, '_applyAsync');
-      const applyAsyncValueSpy = jest.spyOn<Shape, any>(valueShape, '_applyAsync');
+      const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
+      const valueShape = new AsyncMockShape();
 
       await new MapShape(keyShape, valueShape).tryAsync(
         new Map([
@@ -301,16 +287,13 @@ describe('MapShape', () => {
         ])
       );
 
-      expect(applyAsyncKeySpy).toHaveBeenCalledTimes(1);
-      expect(applyAsyncValueSpy).toHaveBeenCalledTimes(0);
+      expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
+      expect(valueShape._applyAsync).not.toHaveBeenCalled();
     });
 
     test('does not invoke the key shape if the previous value shape has raised an issue', async () => {
-      const keyShape = asyncShape;
-      const valueShape = asyncShape.check(() => [{ code: 'xxx' }]);
-
-      const applyAsyncKeySpy = jest.spyOn<Shape, any>(keyShape, '_applyAsync');
-      const applyAsyncValueSpy = jest.spyOn<Shape, any>(valueShape, '_applyAsync');
+      const keyShape = new AsyncMockShape();
+      const valueShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
 
       await new MapShape(keyShape, valueShape).tryAsync(
         new Map([
@@ -319,18 +302,18 @@ describe('MapShape', () => {
         ])
       );
 
-      expect(applyAsyncKeySpy).toHaveBeenCalledTimes(1);
-      expect(applyAsyncValueSpy).toHaveBeenCalledTimes(1);
+      expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
+      expect(valueShape._applyAsync).toHaveBeenCalledTimes(1);
     });
 
     test('raises multiple issues in verbose mode', async () => {
-      const keyShape = asyncShape.check(() => [{ code: 'xxx' }]);
-      const valueShape = asyncShape.check(() => [{ code: 'yyy' }]);
+      const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
+      const valueShape = new AsyncMockShape().check(() => [{ code: 'yyy' }]);
 
-      const mapShape = new MapShape(keyShape, valueShape);
+      const shape = new MapShape(keyShape, valueShape);
 
       await expect(
-        mapShape.tryAsync(
+        shape.tryAsync(
           new Map([
             ['key1', 'aaa'],
             ['key2', 'bbb'],
@@ -355,14 +338,14 @@ describe('MapShape', () => {
 
       const valueShape = new Shape();
 
-      const mapShape = new MapShape(keyShape, valueShape);
+      const shape = new MapShape(keyShape, valueShape);
 
-      const map = new Map([
+      const input = new Map([
         ['key1', 'aaa'],
         ['key2', 'bbb'],
       ]);
 
-      const result = mapShape.tryAsync(map) as Promise<Ok<unknown>>;
+      const result = shape.tryAsync(input) as Promise<Ok>;
 
       await expect(result).resolves.toEqual({
         ok: true,
@@ -372,7 +355,7 @@ describe('MapShape', () => {
         ]),
       });
 
-      expect((await result).value).not.toBe(map);
+      expect((await result).value).not.toBe(input);
     });
 
     test('converts values', async () => {
@@ -380,14 +363,14 @@ describe('MapShape', () => {
         .convertAsync(value => Promise.resolve(value))
         .convert(value => value.toUpperCase());
 
-      const mapShape = new MapShape(asyncShape, valueShape);
+      const shape = new MapShape(new AsyncMockShape(), valueShape);
 
-      const map = new Map([
+      const input = new Map([
         ['key1', 'aaa'],
         ['key2', 'bbb'],
       ]);
 
-      const result = mapShape.tryAsync(map) as Promise<Ok<unknown>>;
+      const result = shape.tryAsync(input) as Promise<Ok>;
 
       await expect(result).resolves.toEqual({
         ok: true,
@@ -396,13 +379,13 @@ describe('MapShape', () => {
           ['key2', 'BBB'],
         ]),
       });
-      expect((await result).value).not.toBe(map);
+      expect((await result).value).not.toBe(input);
     });
 
-    test('applies checks', async () => {
-      const mapShape = new MapShape(asyncShape, asyncShape).check(() => [{ code: 'xxx' }]);
+    test('applies operations', async () => {
+      const shape = new MapShape(new AsyncMockShape(), new AsyncMockShape()).check(() => [{ code: 'xxx' }]);
 
-      await expect(mapShape.tryAsync(new Map())).resolves.toEqual({
+      await expect(shape.tryAsync(new Map())).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -410,9 +393,9 @@ describe('MapShape', () => {
 
     describe('coerce', () => {
       test('coerces an object', async () => {
-        const mapShape = new MapShape(asyncShape, asyncShape).coerce();
+        const shape = new MapShape(new AsyncMockShape(), new AsyncMockShape()).coerce();
 
-        await expect(mapShape.parseAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual(
+        await expect(shape.parseAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual(
           new Map([
             ['key1', 'aaa'],
             ['key2', 'bbb'],
@@ -421,10 +404,10 @@ describe('MapShape', () => {
       });
 
       test('coerces an array of entities', async () => {
-        const mapShape = new MapShape(asyncShape, asyncShape).coerce();
+        const shape = new MapShape(new AsyncMockShape(), new AsyncMockShape()).coerce();
 
         await expect(
-          mapShape.parseAsync([
+          shape.parseAsync([
             ['key1', 'aaa'],
             ['key2', 'bbb'],
           ])
@@ -437,9 +420,9 @@ describe('MapShape', () => {
       });
 
       test('does not coerce an array with non-entry-like arrays', async () => {
-        const mapShape = new MapShape(asyncShape, asyncShape).coerce();
+        const shape = new MapShape(new AsyncMockShape(), new AsyncMockShape()).coerce();
 
-        await expect(mapShape.tryAsync([['key1', 'aaa'], ['key2']])).resolves.toEqual({
+        await expect(shape.tryAsync([['key1', 'aaa'], ['key2']])).resolves.toEqual({
           ok: false,
           issues: [
             {

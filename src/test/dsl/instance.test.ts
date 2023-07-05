@@ -2,8 +2,8 @@ import * as d from '../../main';
 
 describe('instance', () => {
   test('returns an instance shape', () => {
-    class Foo {}
+    class TestClass {}
 
-    expect(d.instance(Foo)).toBeInstanceOf(d.InstanceShape);
+    expect(d.instance(TestClass)).toBeInstanceOf(d.InstanceShape);
   });
 });

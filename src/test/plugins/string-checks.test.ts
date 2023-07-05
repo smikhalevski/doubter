@@ -25,6 +25,13 @@ describe('min', () => {
 
     expect(new StringShape().min(2).parse('aaa')).toBe('aaa');
   });
+
+  test('overrides message', () => {
+    expect(new StringShape().min(2, { message: 'xxx', meta: 'yyy' }).try('a')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_STRING_MIN, input: 'a', param: 2, message: 'xxx', meta: 'yyy' }],
+    });
+  });
 });
 
 describe('max', () => {
@@ -35,6 +42,13 @@ describe('max', () => {
     });
 
     expect(new StringShape().max(3).parse('aaa')).toBe('aaa');
+  });
+
+  test('overrides message', () => {
+    expect(new StringShape().max(2, { message: 'xxx', meta: 'yyy' }).try('aaa')).toEqual({
+      ok: false,
+      issues: [{ code: CODE_STRING_MAX, input: 'aaa', param: 2, message: 'xxx', meta: 'yyy' }],
+    });
   });
 });
 

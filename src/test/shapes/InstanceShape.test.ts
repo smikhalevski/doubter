@@ -1,34 +1,34 @@
 import { InstanceShape } from '../../main';
 import { CODE_INSTANCE } from '../../main/constants';
-import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_SET } from '../../main/Type';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../../main/Type';
 
 describe('InstanceShape', () => {
-  class MockClass {}
+  class TestClass {}
 
   test('creates an InstanceShape', () => {
-    const shape = new InstanceShape(MockClass);
+    const shape = new InstanceShape(TestClass);
 
-    expect(shape.ctor).toBe(MockClass);
+    expect(shape.ctor).toBe(TestClass);
     expect(shape.inputs).toEqual([TYPE_OBJECT]);
   });
 
   test('parses an instance of a class', () => {
-    const value = new MockClass();
+    const input = new TestClass();
 
-    expect(new InstanceShape(MockClass).parse(value)).toBe(value);
+    expect(new InstanceShape(TestClass).parse(input)).toBe(input);
   });
 
   test('raises an issue if an input is not an instance of the class', () => {
-    expect(new InstanceShape(MockClass).try({})).toEqual({
+    expect(new InstanceShape(TestClass).try({})).toEqual({
       ok: false,
-      issues: [{ code: CODE_INSTANCE, input: {}, param: MockClass, message: 'Must be a class instance' }],
+      issues: [{ code: CODE_INSTANCE, input: {}, param: TestClass, message: 'Must be a class instance' }],
     });
   });
 
   test('overrides a message for a type issue', () => {
-    expect(new InstanceShape(MockClass, { message: 'aaa', meta: 'bbb' }).try({})).toEqual({
+    expect(new InstanceShape(TestClass, { message: 'aaa', meta: 'bbb' }).try({})).toEqual({
       ok: false,
-      issues: [{ code: CODE_INSTANCE, input: {}, param: MockClass, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_INSTANCE, input: {}, param: TestClass, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -36,6 +36,10 @@ describe('InstanceShape', () => {
     test('uses function input type for an Function and its subclasses', () => {
       expect(new InstanceShape(Function).inputs).toEqual([TYPE_FUNCTION]);
       expect(new InstanceShape(class extends Function {}).inputs).toEqual([TYPE_FUNCTION]);
+    });
+
+    test('uses Promise input type for an Function and its subclasses', () => {
+      expect(new InstanceShape(Promise).inputs).toEqual([TYPE_PROMISE]);
     });
 
     test('uses array input type for an Array and its subclasses', () => {

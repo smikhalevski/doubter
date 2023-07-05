@@ -3,10 +3,17 @@ import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('DateShape', () => {
-  test('parses date values', () => {
-    const value = new Date();
+  test('creates a DateShape', () => {
+    const shape = new DateShape();
 
-    expect(new DateShape().parse(value)).toBe(value);
+    expect(shape.isAsync).toBe(false);
+    expect(shape.inputs).toEqual([TYPE_DATE]);
+  });
+
+  test('parses date values', () => {
+    const input = new Date();
+
+    expect(new DateShape().parse(input)).toBe(input);
   });
 
   test('raises an issue if an input is not a Date instance', () => {
@@ -24,7 +31,7 @@ describe('DateShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates inputs when coerced', () => {
+    test('extends shape inputs', () => {
       const shape = new DateShape().coerce();
 
       expect(shape.inputs).toEqual([TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY]);
@@ -47,7 +54,7 @@ describe('DateShape', () => {
   });
 
   describe('_coerce', () => {
-    test('coerces a String wrapper', () => {
+    test('coerces a String object', () => {
       expect(new DateShape()['_coerce'](new String('2020-02-02'))).toEqual(new Date('2020-02-02'));
     });
 

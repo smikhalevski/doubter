@@ -10,6 +10,13 @@ import {
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('NumberShape', () => {
+  test('creates a NumberShape', () => {
+    const shape = new NumberShape();
+
+    expect(shape.isAsync).toBe(false);
+    expect(shape.inputs).toEqual([TYPE_NUMBER]);
+  });
+
   test('parses a number', () => {
     expect(new NumberShape().parse(111)).toBe(111);
   });
@@ -63,7 +70,7 @@ describe('NumberShape', () => {
     });
   });
 
-  test('applies checks', () => {
+  test('applies operations', () => {
     expect(new NumberShape().check(() => [{ code: 'xxx' }]).try(111)).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
@@ -104,7 +111,7 @@ describe('NumberShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates inputs when coerced', () => {
+    test('extends shape inputs', () => {
       const shape = new NumberShape().coerce();
 
       expect(shape.inputs).toEqual([
@@ -135,12 +142,12 @@ describe('NumberShape', () => {
   });
 
   describe('_coerce', () => {
-    test('coerces a Number wrapper', () => {
+    test('coerces a Number object', () => {
       expect(new NumberShape()['_coerce'](Number(111))).toBe(111);
       expect(new NumberShape()['_coerce']([Number(111)])).toBe(111);
     });
 
-    test('coerces a String wrapper', () => {
+    test('coerces a String object', () => {
       expect(new NumberShape()['_coerce'](String('111'))).toBe(111);
       expect(new NumberShape()['_coerce']([String('111')])).toBe(111);
     });
@@ -190,7 +197,7 @@ describe('NumberShape', () => {
 
     test('does not coerce objects and functions', () => {
       expect(new NumberShape()['_coerce']({ key1: 111 })).toBe(NEVER);
-      expect(new NumberShape()['_coerce'](() => undefined)).toBe(NEVER);
+      expect(new NumberShape()['_coerce'](() => null)).toBe(NEVER);
     });
 
     test('does not coerce a symbol', () => {
