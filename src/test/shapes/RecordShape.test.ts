@@ -1,20 +1,9 @@
-import { ApplyOptions, ObjectShape, Ok, RecordShape, Result, Shape, StringShape } from '../../main';
+import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import { AsyncShape } from './mocks';
 
 describe('RecordShape', () => {
-  class AsyncShape extends Shape {
-    protected _isAsync(): boolean {
-      return true;
-    }
-
-    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-      return new Promise<Result>(resolve => {
-        resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-      });
-    }
-  }
-
   let asyncShape: AsyncShape;
 
   beforeEach(() => {

@@ -1,20 +1,9 @@
-import { ApplyOptions, MapShape, ObjectShape, Ok, Result, Shape, StringShape } from '../../main';
+import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_MAP_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_MAP, TYPE_STRING } from '../../main/Type';
+import { AsyncShape } from './mocks';
 
 describe('MapShape', () => {
-  class AsyncShape extends Shape {
-    protected _isAsync(): boolean {
-      return true;
-    }
-
-    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-      return new Promise<Result>(resolve => {
-        resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-      });
-    }
-  }
-
   let asyncShape: AsyncShape;
 
   beforeEach(() => {

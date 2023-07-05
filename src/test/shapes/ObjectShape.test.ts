@@ -1,4 +1,4 @@
-import { ApplyOptions, ObjectShape, Ok, Result, Shape, StringShape } from '../../main';
+import { ObjectShape, Ok, Shape, StringShape } from '../../main';
 import {
   CODE_DENIED,
   CODE_ENUM,
@@ -7,26 +7,15 @@ import {
   MESSAGE_OBJECT_TYPE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
-import { nextNonce } from '../../main/internal';
+import { resetNonce } from '../../main/internal';
 import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import { AsyncShape } from './mocks';
 
 describe('ObjectShape', () => {
-  class AsyncShape extends Shape {
-    protected _isAsync(): boolean {
-      return true;
-    }
-
-    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-      return new Promise<Result>(resolve => {
-        resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-      });
-    }
-  }
-
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    nextNonce.nonce = 0;
+    resetNonce();
 
     asyncShape = new AsyncShape();
   });

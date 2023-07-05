@@ -1,37 +1,24 @@
 import {
   AnyShape,
-  ApplyOptions,
   ArrayShape,
   FunctionShape,
   NumberShape,
   ObjectShape,
-  Result,
   Shape,
   StringShape,
   ValidationError,
 } from '../../main';
 import { CODE_TUPLE, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { nextNonce } from '../../main/internal';
+import { resetNonce } from '../../main/internal';
 import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
+import { AsyncShape } from './mocks';
 
 describe('FunctionShape', () => {
-  class AsyncShape extends Shape {
-    protected _isAsync(): boolean {
-      return true;
-    }
-
-    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-      return new Promise<Result>(resolve => {
-        resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-      });
-    }
-  }
-
   let arrayShape: AnyShape;
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    nextNonce.nonce = 0;
+    resetNonce();
 
     arrayShape = new ArrayShape([], null).length(0);
     asyncShape = new AsyncShape();

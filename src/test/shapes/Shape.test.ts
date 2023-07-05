@@ -1,5 +1,4 @@
 import {
-  ApplyOptions,
   CatchShape,
   ConstShape,
   ConvertShape,
@@ -11,7 +10,6 @@ import {
   ObjectShape,
   PipeShape,
   ReplaceLiteralShape,
-  Result,
   Shape,
   StringShape,
   ValidationError,
@@ -26,25 +24,14 @@ import {
   MESSAGE_PREDICATE,
   MESSAGE_STRING_TYPE,
 } from '../../main/constants';
-import { nextNonce } from '../../main/internal';
+import { resetNonce } from '../../main/internal';
 import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
-
-class AsyncShape extends Shape {
-  protected _isAsync(): boolean {
-    return true;
-  }
-
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-    return new Promise<Result>(resolve => {
-      resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-    });
-  }
-}
+import { AsyncShape } from './mocks';
 
 let asyncShape: AsyncShape;
 
 beforeEach(() => {
-  nextNonce.nonce = 0;
+  resetNonce();
 
   asyncShape = new AsyncShape();
 });

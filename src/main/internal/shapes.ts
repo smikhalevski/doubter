@@ -11,11 +11,17 @@ export const OUTPUT = Symbol();
 export type INPUT = typeof INPUT;
 export type OUTPUT = typeof OUTPUT;
 
+let nonce = -1;
+
 export function nextNonce(): number {
-  return nextNonce.nonce++;
+  nonce = (nonce + 1) | 0;
+  return nonce;
 }
 
-nextNonce.nonce = 0;
+// Used only in tests
+export function resetNonce(): void {
+  nonce = -1;
+}
 
 export const okInstance: Ok = { ok: true, value: null };
 

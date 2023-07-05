@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { Shape } from '../../main';
+import { AsyncShape } from '../shapes/mocks';
 
 describe('lazy', () => {
   test('returns a lazy shape', () => {
@@ -12,12 +12,6 @@ describe('lazy', () => {
   });
 
   test('returns an async shape', () => {
-    class AsyncShape extends Shape {
-      protected _isAsync() {
-        return true;
-      }
-    }
-
     const shape = new AsyncShape();
     const lazyShape = d.lazy(() => shape);
 

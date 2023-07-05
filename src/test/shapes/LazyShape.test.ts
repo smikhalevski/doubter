@@ -1,35 +1,22 @@
 import {
-  ApplyOptions,
   DeepPartialProtocol,
   LazyShape,
   NumberShape,
   ObjectShape,
-  Result,
   Shape,
   StringShape,
   ValidationError,
 } from '../../main';
 import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
-import { identity, nextNonce } from '../../main/internal';
+import { identity, nextNonce, resetNonce } from '../../main/internal';
 import { TYPE_OBJECT } from '../../main/Type';
+import { AsyncShape } from './mocks';
 
 describe('LazyShape', () => {
-  class AsyncShape extends Shape {
-    protected _isAsync(): boolean {
-      return true;
-    }
-
-    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-      return new Promise<Result>(resolve => {
-        resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-      });
-    }
-  }
-
   let asyncShape: AsyncShape;
 
   beforeEach(() => {
-    nextNonce.nonce = 0;
+    resetNonce();
 
     asyncShape = new AsyncShape();
   });
