@@ -86,7 +86,7 @@ npm install --save-prod doubter
 - Objects<br>
   [`object`](#object)
   [`record`](#record)
-  [`instance`](#instanceof)
+  [`instance`](#instance)
 
 - Collections<br>
   [`array`](#array)
@@ -464,7 +464,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `date_max`        | [`d.date().max(x)`](#date)               | The maximum value `x`                                 |
 | `enum`            | [`d.enum([x, y, z])`](#enum)             | The array of unique values`[x, y, z]`                 |
 | `excluded`        | [`shape.exclude(…)`](#exclude-a-shape)   | The excluded shape                                    |
-| `instance`        | [`d.instance(Class)`](#instanceof)     | The class constructor `Class`                         |
+| `instance`        | [`d.instance(Class)`](#instance)         | The class constructor `Class`                         |
 | `intersection`    | [`d.and(…)`](#intersection-and)          | —                                                     |
 | `predicate`       | [`shape.refine(…)`](#refinements)        | The predicate callback                                |
 | `never`           | [`d.never()`](#never)                    | —                                                     |
@@ -664,7 +664,7 @@ shape.parse('Adiós, R2D2', { verbose: true });
 ```
 
 To force `noDigitsCheck` to be applied even if `helloCheck` has raised issues, pass the
-[`force`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.CheckOptions.html#force) option:
+[`force`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.OperationOptions.html#force) option:
 
 ```ts
 const shape = d.string()
@@ -757,8 +757,8 @@ shape.deleteCheck(emailCheck);
 ```
 
 Using a check callback identity as a type isn't always convenient. Pass the
-[`type`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.CheckOptions.html#key) option to define a custom
-type:
+[`type`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.OperationOptions.html#key) option to define a
+custom type:
 
 ```ts
 shape.check(emailCheck, { type: 'email' });
@@ -1014,7 +1014,7 @@ d.string()
 // ⮕ Shape<string, number>
 ```
 
-For example, you can validate that an input value is an [instance of a class](#instanceof) and then validate its
+For example, you can validate that an input value is an [instance of a class](#instance) and then validate its
 properties using [`object`](#object):
 
 ```ts
