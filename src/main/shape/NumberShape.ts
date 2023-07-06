@@ -1,12 +1,5 @@
-import {
-  CODE_NUMBER_FINITE,
-  CODE_NUMBER_INTEGER,
-  CODE_TYPE,
-  MESSAGE_NUMBER_FINITE,
-  MESSAGE_NUMBER_INTEGER,
-  MESSAGE_NUMBER_TYPE,
-} from '../constants';
-import { getCanonicalValueOf, isArray, isNumber } from '../internal';
+import { CODE_TYPE, MESSAGE_NUMBER_TYPE } from '../constants';
+import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Literal, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -19,11 +12,6 @@ import { AllowLiteralShape, NEVER, ReplaceLiteralShape } from './Shape';
  * @group Shapes
  */
 export class NumberShape extends CoercibleShape<number> {
-  /**
-   * Returns `true` if an input is equal to the const value, or `false` otherwise.
-   */
-  protected _typePredicate = isNumber;
-
   /**
    * Returns issues associated with an invalid input value type.
    */
@@ -38,36 +26,6 @@ export class NumberShape extends CoercibleShape<number> {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
-  }
-
-  /**
-   * Constrains the number to be a finite number.
-   *
-   * @param options The issue options or the issue message.
-   * @returns The clone of the shape.
-   */
-  finite(options?: IssueOptions | Message): this {
-    const shape = this._clone();
-
-    shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
-    shape._typePredicate = Number.isFinite;
-
-    return shape;
-  }
-
-  /**
-   * Constrains the number to be an integer.
-   *
-   * @param options The issue options or the issue message.
-   * @returns The clone of the shape.
-   */
-  integer(options?: IssueOptions | Message): this {
-    const shape = this._clone();
-
-    shape._typeIssueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
-    shape._typePredicate = Number.isInteger;
-
-    return shape;
   }
 
   /**
@@ -98,7 +56,7 @@ export class NumberShape extends CoercibleShape<number> {
     let output = input;
 
     if (
-      !this._typePredicate(output) &&
+      (typeof output !== 'number' || output !== output) &&
       (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
@@ -114,7 +72,7 @@ export class NumberShape extends CoercibleShape<number> {
    */
   protected _coerce(value: any): number {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number') {
-      return this._typePredicate(value) ? value : NEVER;
+      return value === value ? value : NEVER;
     }
     if (value === null || value === undefined) {
       return 0;
@@ -124,7 +82,7 @@ export class NumberShape extends CoercibleShape<number> {
 
     if (
       (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || value instanceof Date) &&
-      this._typePredicate((value = +value))
+      (value = +value) === value
     ) {
       return value;
     }

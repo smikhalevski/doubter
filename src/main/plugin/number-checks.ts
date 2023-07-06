@@ -11,13 +11,17 @@
  */
 
 import {
+  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
+  CODE_NUMBER_INTEGER,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE,
+  MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
+  MESSAGE_NUMBER_INTEGER,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE,
@@ -25,8 +29,6 @@ import {
 import { IssueOptions, Message, NumberShape } from '../core';
 import { pushIssue } from '../internal';
 import { createIssueFactory, extractOptions } from '../utils';
-
-const { abs, round } = Math;
 
 export interface MultipleOptions extends IssueOptions {
   /**
@@ -49,20 +51,24 @@ export interface MultipleOptions extends IssueOptions {
 declare module '../core' {
   export interface NumberShape {
     /**
-     * `true` if the shape constrains input values to a finite number, or `false` otherwise.
+     * Constrains the number to be a finite number.
      *
-     * @group Plugin Properties
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    readonly isFinite: boolean;
+    finite(options?: IssueOptions | Message): this;
 
     /**
-     * `true` if the shape constrains input values to an integer number, or `false` otherwise.
+     * Constrains the number to be an integer.
      *
-     * @group Plugin Properties
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    readonly isInteger: boolean;
+    integer(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be greater than zero.
@@ -199,22 +205,8 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!NumberShape} with additional checks.
  */
 export default function () {
-  Object.defineProperties(NumberShape.prototype, {
-    isFinite: {
-      configurable: true,
-      get(this: NumberShape) {
-        return this._typePredicate === Number.isFinite || this.isInteger;
-      },
-    },
-
-    isInteger: {
-      configurable: true,
-      get(this: NumberShape) {
-        return this._typePredicate === Number.isInteger;
-      },
-    },
-  });
-
+  NumberShape.prototype.finite = finiteCheck;
+  NumberShape.prototype.integer = integerCheck;
   NumberShape.prototype.positive = positiveCheck;
   NumberShape.prototype.negative = negativeCheck;
   NumberShape.prototype.nonPositive = nonPositiveCheck;
@@ -227,6 +219,48 @@ export default function () {
   NumberShape.prototype.max = lteCheck;
   NumberShape.prototype.multiple = multipleCheck;
   NumberShape.prototype.safe = safeCheck;
+}
+
+function finiteCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+  const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
+
+  const { isFinite } = Number;
+
+  return this.addOperation({
+    type: CODE_NUMBER_FINITE,
+    param: undefined,
+    compose: next => (input, output, options, issues) => {
+      if (!isFinite(output)) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
+      }
+      return next(input, output, options, issues);
+    },
+  });
+}
+
+function integerCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+  const issueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
+
+  const { isInteger } = Number;
+
+  return this.addOperation({
+    type: CODE_NUMBER_INTEGER,
+    param: undefined,
+    compose: next => (input, output, options, issues) => {
+      if (!isInteger(output)) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
+      }
+      return next(input, output, options, issues);
+    },
+  });
 }
 
 function positiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
@@ -327,6 +361,8 @@ function multipleCheck(this: NumberShape, divisor: number, options?: MultipleOpt
   const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
 
   const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE, MESSAGE_NUMBER_MULTIPLE, options, divisor);
+
+  const { abs, round } = Math;
 
   return this.addOperation({
     type: CODE_NUMBER_MULTIPLE,

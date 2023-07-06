@@ -32,10 +32,6 @@ export function isEqualOrSubclass(ctor: Function, superCtor: Function): boolean 
   return ctor === superCtor || superCtor.prototype.isPrototypeOf(ctor.prototype);
 }
 
-export function isNumber(value: unknown): boolean {
-  return typeof value === 'number' && value === value;
-}
-
 export function isValidDate(value: unknown): value is Date {
   return value instanceof Date && (value = value.getTime()) === value;
 }

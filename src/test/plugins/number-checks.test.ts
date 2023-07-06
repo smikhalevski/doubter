@@ -1,11 +1,48 @@
 import { NumberShape } from '../../main';
 import {
+  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
+  CODE_NUMBER_INTEGER,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE,
+  MESSAGE_NUMBER_FINITE,
+  MESSAGE_NUMBER_INTEGER,
 } from '../../main/constants';
+
+describe('finite', () => {
+  test('allows finite numbers', () => {
+    expect(new NumberShape().finite().parse(111.222)).toBe(111.222);
+  });
+
+  test('raises if value is an infinity', () => {
+    expect(new NumberShape().finite().try(Infinity)).toEqual({
+      ok: false,
+      issues: [{ code: CODE_NUMBER_FINITE, input: Infinity, message: MESSAGE_NUMBER_FINITE }],
+    });
+  });
+});
+
+describe('integer', () => {
+  test('allows integer numbers', () => {
+    expect(new NumberShape().integer().parse(111)).toBe(111);
+  });
+
+  test('raises if value is an infinity', () => {
+    expect(new NumberShape().integer().try(Infinity)).toEqual({
+      ok: false,
+      issues: [{ code: CODE_NUMBER_INTEGER, input: Infinity, message: MESSAGE_NUMBER_INTEGER }],
+    });
+  });
+
+  test('raises if value is a real number', () => {
+    expect(new NumberShape().integer().try(111.222)).toEqual({
+      ok: false,
+      issues: [{ code: CODE_NUMBER_INTEGER, input: 111.222, message: MESSAGE_NUMBER_INTEGER }],
+    });
+  });
+});
 
 describe('gt', () => {
   test('raises if value is not greater than', () => {

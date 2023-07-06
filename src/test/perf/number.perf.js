@@ -124,7 +124,7 @@ describe('number().gte(1).lte(5)', () => {
   });
 });
 
-describe('integer()', () => {
+describe('number().integer()', () => {
   const value = 4;
 
   test('Ajv', measure => {
@@ -147,7 +147,7 @@ describe('integer()', () => {
   });
 
   test('doubter', measure => {
-    const shape = doubter.integer();
+    const shape = doubter.number().integer();
 
     measure(() => {
       shape.parse(value);

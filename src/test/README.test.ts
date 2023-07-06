@@ -16,7 +16,7 @@ describe('Cookbook', () => {
     const queryShape = d
       .object({
         name: d.string(),
-        age: d.int().nonNegative().catch(),
+        age: d.number().integer().nonNegative().catch(),
       })
       .partial();
 
@@ -28,14 +28,13 @@ describe('Cookbook', () => {
   test('Type-safe env variables', () => {
     const envShape = d
       .object({
-        TS_JEST: d.int(),
         NODE_ENV: d.enum(['test', 'production']),
+        HELLO_DATE: d.date().optional(),
       })
       .strip();
 
     expect(envShape.parse(process.env, { coerce: true })).toEqual({
       NODE_ENV: 'test',
-      TS_JEST: 1,
     });
   });
 });

@@ -1,12 +1,5 @@
 import { NEVER, NumberShape } from '../../main';
-import {
-  CODE_NUMBER_FINITE,
-  CODE_NUMBER_GT,
-  CODE_NUMBER_MULTIPLE,
-  CODE_TYPE,
-  MESSAGE_NUMBER_FINITE,
-  MESSAGE_NUMBER_TYPE,
-} from '../../main/constants';
+import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE, CODE_TYPE, MESSAGE_NUMBER_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('NumberShape', () => {
@@ -37,13 +30,6 @@ describe('NumberShape', () => {
 
   test('allows infinity', () => {
     expect(new NumberShape().parse(Infinity)).toBe(Infinity);
-  });
-
-  test('raises if value is an infinity', () => {
-    expect(new NumberShape().finite().try(Infinity)).toEqual({
-      ok: false,
-      issues: [{ code: CODE_NUMBER_FINITE, input: Infinity, message: MESSAGE_NUMBER_FINITE }],
-    });
   });
 
   test('overrides message for type issue', () => {
@@ -81,22 +67,6 @@ describe('NumberShape', () => {
     await expect(new NumberShape().gt(3).tryAsync(2)).resolves.toEqual({
       ok: false,
       issues: [{ code: CODE_NUMBER_GT, input: 2, param: 3, message: 'Must be greater than 3' }],
-    });
-  });
-
-  describe('isFinite', () => {
-    test('returns true if the shape constrains finite numbers', () => {
-      expect(new NumberShape().isFinite).toBe(false);
-      expect(new NumberShape().finite().isFinite).toBe(true);
-      expect(new NumberShape().integer().isFinite).toBe(true);
-    });
-  });
-
-  describe('isInteger', () => {
-    test('returns true if the shape constrains integers', () => {
-      expect(new NumberShape().isInteger).toBe(false);
-      expect(new NumberShape().finite().isInteger).toBe(false);
-      expect(new NumberShape().integer().isInteger).toBe(true);
     });
   });
 
@@ -161,17 +131,11 @@ describe('NumberShape', () => {
 
     test('does not coerce NaN', () => {
       expect(new NumberShape()['_coerce'](NaN)).toBe(NEVER);
-      expect(new NumberShape().finite()['_coerce'](NaN)).toBe(NEVER);
-      expect(new NumberShape().integer()['_coerce'](NaN)).toBe(NEVER);
     });
 
     test('coerce Infinity only in an unconstrained number mode', () => {
       expect(new NumberShape()['_coerce'](Infinity)).toBe(Infinity);
       expect(new NumberShape()['_coerce']([-Infinity])).toBe(-Infinity);
-      expect(new NumberShape().finite()['_coerce'](Infinity)).toBe(NEVER);
-      expect(new NumberShape().finite()['_coerce']([-Infinity])).toBe(NEVER);
-      expect(new NumberShape().integer()['_coerce'](Infinity)).toBe(NEVER);
-      expect(new NumberShape().integer()['_coerce']([-Infinity])).toBe(NEVER);
     });
 
     test('coerces a boolean', () => {

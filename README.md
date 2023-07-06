@@ -63,11 +63,8 @@ npm install --save-prod doubter
 
 - Numbers<br>
   [`number`](#number)
-  [`integer`](#integer-int)
-  [`int`](#integer-int)
-  [`finite`](#finite)
-  [`nan`](#nan)
   [`bigint`](#bigint)
+  [`nan`](#nan)
 
 - Booleans<br>
   [`boolean`](#boolean-bool)
@@ -136,7 +133,7 @@ import * as d from 'doubter';
 
 const userShape = d.object({
   name: d.string(),
-  age: d.int().gte(18).lt(100)
+  age: d.number().integer().gte(18).lt(100)
 });
 // ⮕ Shape<{ name: string, age: number }>
 ```
@@ -504,8 +501,8 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `intersection`    | [`d.and(…)`](#intersection-and)          | —                                                     |
 | `predicate`       | [`shape.refine(…)`](#refinements)        | The predicate callback                                |
 | `never`           | [`d.never()`](#never)                    | —                                                     |
-| `number_integer`  | [`d.integer()`](#integer-int)            | —                                                     |
-| `number_finite`   | [`d.finite()`](#finite)                  | —                                                     |
+| `number_integer`  | [`d.number().integer()`](#number)        | —                                                     |
+| `number_finite`   | [`d.number().finite()`](#number)         | —                                                     |
 | `number_gt`       | [`d.number().gte(x)`](#number)           | The minimum value `x`                                 |
 | `number_lt`       | [`d.number().lte(x)`](#number)           | The maximum value `x`                                 |
 | `number_gte`      | [`d.number().gt(x)`](#number)            | The exclusive minimum value `x`                       |
@@ -1127,7 +1124,7 @@ d.const('Mars').allow('Pluto');
 You can allow a value for a non-literal input types:
 
 ```ts
-const shape = d.finite().allow(NaN);
+const shape = d.number().finite().allow(NaN);
 // ⮕ Shape<number>
 
 shape.parse(NaN);
@@ -2359,27 +2356,6 @@ shape.parse([1, 2]);
 // ❌ ValidationError: enum at /: Must be equal to one of 0,1,2
 ```
 
-# `finite`
-
-[`d.finite`](https://smikhalevski.github.io/doubter/functions/doubter_core.finite.html) returns a
-[`NumberShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html) instance.
-
-Constrains a value to be a finite number.
-
-```ts
-d.finite();
-// ⮕ Shape<number>
-```
-
-This is a shortcut for a number shape declaration:
-
-```ts
-d.number().finite();
-// ⮕ Shape<number>
-```
-
-Finite numbers follow [number type coercion rules](#coerce-to-a-number).
-
 # `function`, `fn`
 
 [`d.function`](https://smikhalevski.github.io/doubter/functions/doubter_core.function.html) returns a
@@ -2471,10 +2447,10 @@ respective shapes.
 
 You can wrap an input function to guarantee that the function signature is type-safe at runtime.
 
-Let's declare a function shape that takes two integers arguments and returns an integer as well:
+Let's declare a function shape that takes two number arguments and returns an number as well:
 
 ```ts
-const sumShape = d.fn([d.int(), d.int()]).return(d.int());
+const sumShape = d.fn([d.number(), d.number()]).return(d.number());
 // ⮕ Shape<(arg1: number, arg2: number) => number>
 ```
 
@@ -2496,8 +2472,8 @@ sum(2, 3);
 sum(2, '3');
 // ❌ ValidationError: type at /arguments/1: Must be a number
 
-sum(3.14, 2);
-// ❌ ValidationError: number_integer at /arguments/0: Must be an integer
+sum(NaN, 2);
+// ❌ ValidationError: type at /arguments/0: Must be an number
 
 sum(1, 2, 3);
 // ❌ ValidationError: array_max at /arguments: Must have the maximum length of 2
@@ -2506,16 +2482,15 @@ sum(1, 2, 3);
 Using function shape you can parse `this` and return values.
 
 ```ts
-const atShape = d.fn([d.int()])
+const atShape = d.fn([d.number().integer()])
   .this(d.array(d.string()))
-  .return(d.number());
-// ⮕ Shape<(this: string[]) => number>
+  .return(d.string());
+// ⮕ Shape<(this: string[], arg: number) => string>
 
 const at = atShape.ensureSignature(function (index) {
   // 🟡 May be undefined if index is out of bounds
   return this[index];
 });
-// ⮕ (this: number[]) => number
 ```
 
 When called with a valid index, a string is returned: 
@@ -2544,7 +2519,7 @@ at.call(['Bill', 'Tess'], 3.14);
 Function shapes go well with [type coercion](#type-coercion):
 
 ```ts
-const plus2Shape = d.fn([d.int().coerce()]).return(d.int());
+const plus2Shape = d.fn([d.number().coerce()]).return(d.number());
 // ⮕ Shape<(arg: number) => number>
 
 const plus2 = plus2Shape.ensureSignature(
@@ -2614,30 +2589,6 @@ class User {
 d.instance(User);
 // ⮕ Shape<User>
 ```
-
-# `integer`, `int`
-
-[`d.integer`](https://smikhalevski.github.io/doubter/functions/doubter_core.integer.html) returns a
-[`NumberShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html) instance.
-
-Constrains a value to be an integer.
-
-```ts
-d.integer().min(5);
-// ⮕ Shape<number>
-
-d.int().max(5);
-// ⮕ Shape<number>
-```
-
-This is a shortcut for number shape declaration:
-
-```ts
-d.number().integer();
-// ⮕ Shape<number>
-```
-
-Integers follow [number type coercion rules](#coerce-to-a-number).
 
 # `intersection`, `and`
 
@@ -2991,19 +2942,13 @@ Constrain the number to be an integer:
 
 ```ts
 d.number().integer();
-// or
-d.int();
 ```
 
 Constrain the input to be a finite number (not `NaN`, `Infinity` or `-Infinity`):
 
 ```ts
 d.number().finite();
-// or
-d.finite()
 ```
-
-The finite and integer assertions are always _applied before other checks_.
 
 ## Coerce to a number
 
@@ -3540,7 +3485,7 @@ Sole entrepreneur goes first:
 const entrepreneurShape = d.object({
   bisinessType: d.const('entrepreneur'),
   name: d.string(),
-  age: d.int().gte(18)
+  age: d.number().integer().gte(18)
 });
 // ⮕ Shape<{ type: 'entrepreneur', name: string, age: number }>
 ```
@@ -3553,7 +3498,7 @@ const companyShape = d.object({
     d.const('llc'),
     d.enum(['corporation', 'partnership'])
   ]),
-  headcount: d.int().positive()
+  headcount: d.number().integer().positive()
 });
 // ⮕ Shape<{ type: 'llc' | 'corporation' | 'partneership', headcount: number }>
 ```
@@ -3738,7 +3683,7 @@ Let's define a shape that describes the query with `name` and `age` params:
 const queryShape = d
   .object({
     name: d.string(),
-    age: d.int().nonNegative().catch()
+    age: d.number().integer().nonNegative().catch()
   })
   .partial();
 // ⮕ Shape<{ name?: string | undefined, age?: number | undefined }>
