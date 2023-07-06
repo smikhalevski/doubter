@@ -11,12 +11,14 @@
  */
 
 import {
+  CODE_STRING_BLANK,
   CODE_STRING_ENDS_WITH,
   CODE_STRING_INCLUDES,
   CODE_STRING_MAX,
   CODE_STRING_MIN,
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
+  MESSAGE_STRING_BLANK,
   MESSAGE_STRING_ENDS_WITH,
   MESSAGE_STRING_INCLUDES,
   MESSAGE_STRING_MAX,
@@ -108,6 +110,24 @@ declare module '../core' {
     endsWith(value: string, options?: IssueOptions | Message): this;
 
     /**
+     * Checks that the string doesn't consist of whitespace characters only.
+     *
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/string-checks!}
+     */
+    nonBlank(options?: IssueOptions | Message): this;
+
+    /**
+     * Checks that the string has at least one character.
+     *
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/string-checks!}
+     */
+    nonEmpty(options?: IssueOptions | Message): this;
+
+    /**
      * Trims the output string.
      *
      * @returns The clone of the shape.
@@ -129,6 +149,8 @@ export default function () {
   StringShape.prototype.includes = includesCheck;
   StringShape.prototype.startsWith = startsWithCheck;
   StringShape.prototype.endsWith = endsWithCheck;
+  StringShape.prototype.nonBlank = nonBlankCheck;
+  StringShape.prototype.nonEmpty = nonEmptyCheck;
   StringShape.prototype.trim = trimOperation;
 }
 
@@ -248,6 +270,29 @@ function endsWithCheck(this: StringShape, value: string, options?: IssueOptions 
       return next(input, output, options, issues);
     },
   });
+}
+
+function nonBlankCheck(this: StringShape, options?: IssueOptions | Message): StringShape {
+  const issueFactory = createIssueFactory(CODE_STRING_BLANK, MESSAGE_STRING_BLANK, options, undefined);
+
+  return this.addOperation({
+    type: CODE_STRING_BLANK,
+    param: undefined,
+    compose: next => (input, output, options, issues) => {
+      if (output.trim().length === 0) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
+      }
+      return next(input, output, options, issues);
+    },
+  });
+}
+
+function nonEmptyCheck(this: StringShape, options?: IssueOptions | Message): StringShape {
+  return this.min(1, options);
 }
 
 function trimOperation(this: StringShape): StringShape {

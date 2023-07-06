@@ -515,6 +515,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `string_min`      | [`d.string().min(n)`](#string)           | The minimum string length `n`                         |
 | `string_max`      | [`d.string().max(n)`](#string)           | The maximum string length `n`                         |
 | `string_regex`    | [`d.string().regex(re)`](#string)        | The regular expression `re`                           |
+| `string_blank`    | [`d.string().nonBlank()`](#string)       | —                                                     |
 | `type`            | All shapes                               | The expected [input value type](#introspection)       |
 | `tuple`           | [`d.tuple([…])`](#tuple)                 | The expected tuple length                             |
 | `union`           | [`d.or(…)`](#union-or)                   | [Issues raised by a union](#issues-raised-by-a-union) |
