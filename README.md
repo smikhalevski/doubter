@@ -1868,7 +1868,6 @@ d.number().gte(3); // ❌ gte is undefined
 | `doubter/plugin/number-checks` | [Common number checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_number_checks.html)        |
 | `doubter/plugin/object-checks` | [Common object checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_object_checks.html)        |
 | `doubter/plugin/set-checks`    | [Common `Set` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_set_checks.html)            |
-| `doubter/plugin/shape-helpers` | [Shape introspection helpers](https://smikhalevski.github.io/doubter/modules/doubter_plugin_shape_helpers.html) |
 | `doubter/plugin/string-checks` | [Common string checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_string_checks.html)        |
 
 ## Integrations

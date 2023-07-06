@@ -46,11 +46,6 @@
       "import": "./plugin/set-checks.mjs",
       "require": "./plugin/set-checks.js"
     },
-    "./plugin/shape-helpers": {
-      "types": "./plugin/shape-helpers.d.ts",
-      "import": "./plugin/shape-helpers.mjs",
-      "require": "./plugin/shape-helpers.js"
-    },
     "./plugin/string-checks": {
       "types": "./plugin/string-checks.d.ts",
       "import": "./plugin/string-checks.mjs",
