@@ -509,6 +509,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `number_lte`      | [`d.number().lt(x)`](#number)            | The exclusive maximum value `x`                       |
 | `number_multiple` | [`d.number().multiple(x)`](#number)      | The divisor `x`                                       |
 | `object_exact`    | [`d.object().exact()`](#unknown-keys)    | The array of unknown keys                             |
+| `object_plain`    | [`d.object().plain()`](#object)          | —                                                     |
 | `set_min`         | [`d.set().min(n)`](#set)                 | The minimum `Set` size `n`                            |
 | `set_max`         | [`d.set().max(n)`](#set)                 | The maximum `Set` size `n`                            |
 | `string_min`      | [`d.string().min(n)`](#string)           | The minimum string length `n`                         |
@@ -1864,6 +1865,7 @@ d.number().gte(3); // ❌ gte is undefined
 | `doubter/plugin/bigint-checks` | [Common bigint checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_bigint_checks.html)        |
 | `doubter/plugin/date-checks`   | [Common `Date` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_date_checks.html)          |
 | `doubter/plugin/number-checks` | [Common number checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_number_checks.html)        |
+| `doubter/plugin/object-checks` | [Common object checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_object_checks.html)        |
 | `doubter/plugin/set-checks`    | [Common `Set` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_set_checks.html)            |
 | `doubter/plugin/shape-helpers` | [Shape introspection helpers](https://smikhalevski.github.io/doubter/modules/doubter_plugin_shape_helpers.html) |
 | `doubter/plugin/string-checks` | [Common string checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_string_checks.html)        |

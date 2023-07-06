@@ -12,7 +12,6 @@ import {
   isArray,
   isAsyncShape,
   isObject,
-  isPlainObject,
   OUTPUT,
   pushIssue,
   ReadonlyDict,
@@ -101,11 +100,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   protected _valueShapes: Shape[];
 
   /**
-   * Returns `true` if an input is an object, or `false` otherwise.
-   */
-  protected _typePredicate = isObject;
-
-  /**
    * Returns issues associated with an invalid input value type.
    */
   protected _typeIssueFactory;
@@ -151,13 +145,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     this._options = options;
     this._valueShapes = Object.values(propShapes);
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
-  }
-
-  /**
-   * `true` if the object must have `Object` constructor or `null` prototype; `false` otherwise.
-   */
-  get isPlain(): boolean {
-    return this._typePredicate === isPlainObject;
   }
 
   at(key: any): AnyShape | null {
@@ -366,15 +353,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     return new EnumShape(this.keys);
   }
 
-  /**
-   * Constrains an object to be an `Object` instance or to have a `null` prototype.
-   */
-  plain(): this {
-    const shape = this._clone();
-    shape._typePredicate = isPlainObject;
-    return shape;
-  }
-
   protected _isAsync(): boolean {
     return this.restShape?.isAsync || this._valueShapes.some(isAsyncShape);
   }
@@ -388,7 +366,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     options: ApplyOptions,
     nonce: number
   ): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
-    if (!this._typePredicate(input)) {
+    if (!isObject(input)) {
       return [this._typeIssueFactory(input, options)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
@@ -404,7 +382,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     nonce: number
   ): Promise<Result<InferObject<PropShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
-      if (!this._typePredicate(input)) {
+      if (!isObject(input)) {
         resolve([this._typeIssueFactory(input, options)]);
         return;
       }

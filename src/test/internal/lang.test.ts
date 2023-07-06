@@ -36,11 +36,6 @@ describe('isPlainObject', () => {
   test('returns false for non-Object objects', () => {
     expect(isPlainObject(Error)).toBe(false);
   });
-
-  test('returns false for non-objects', () => {
-    expect(isPlainObject(111)).toBe(false);
-    expect(isPlainObject('aaa')).toBe(false);
-  });
 });
 
 describe('isIterableObject', () => {

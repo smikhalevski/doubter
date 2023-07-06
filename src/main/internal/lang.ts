@@ -19,9 +19,10 @@ export function isObject(value: unknown): boolean {
   return isObjectLike(value) && !isArray(value);
 }
 
-export function isPlainObject(value: any): boolean {
-  let proto;
-  return isObjectLike(value) && ((proto = Object.getPrototypeOf(value)) === null || proto.constructor === Object);
+export function isPlainObject(value: object): boolean {
+  const proto = Object.getPrototypeOf(value);
+
+  return proto === null || proto.constructor === Object;
 }
 
 export function isIterableObject(value: any): value is Iterable<any> {

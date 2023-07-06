@@ -237,20 +237,6 @@ describe('ObjectShape', () => {
     });
   });
 
-  describe('plain', () => {
-    test('raises if object is not plain', () => {
-      const shape = new ObjectShape({}, null).plain();
-
-      expect(shape.isPlain).toBe(true);
-      expect(shape.parse({})).toEqual({});
-
-      expect(shape.try(new (class {})())).toEqual({
-        ok: false,
-        issues: [{ code: CODE_TYPE, input: {}, message: MESSAGE_OBJECT_TYPE, param: TYPE_OBJECT }],
-      });
-    });
-  });
-
   describe('at', () => {
     test('returns property shape at key', () => {
       const valueShape1 = new Shape();
