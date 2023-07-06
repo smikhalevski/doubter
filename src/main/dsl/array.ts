@@ -1,30 +1,30 @@
 import { AnyShape, ArrayShape, Shape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the unconstrained array shape.
  *
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @group DSL
  */
-export function array(options?: ConstraintOptions | Message): ArrayShape<[], Shape>;
+export function array(options?: IssueOptions | Message): ArrayShape<[], Shape>;
 
 /**
  * Creates the array shape with elements that conform the element shape.
  *
  * @param shape The shape of array elements.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template ValueShape The shape of array elements.
  * @group DSL
  */
 export function array<ValueShape extends AnyShape>(
   shape: ValueShape,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): ArrayShape<[], ValueShape>;
 
 export function array(
-  shape?: AnyShape | ConstraintOptions | Message,
-  options?: ConstraintOptions | Message
+  shape?: AnyShape | IssueOptions | Message,
+  options?: IssueOptions | Message
 ): ArrayShape<[], AnyShape> {
   if (shape instanceof Shape) {
     return new ArrayShape([], shape, options);

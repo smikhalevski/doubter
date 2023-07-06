@@ -1,13 +1,13 @@
 import { BooleanShape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the boolean shape.
  *
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @group DSL
  */
-export function boolean(options?: ConstraintOptions | Message): BooleanShape {
+export function boolean(options?: IssueOptions | Message): BooleanShape {
   return new BooleanShape(options);
 }
 

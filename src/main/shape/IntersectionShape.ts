@@ -2,25 +2,23 @@ import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
 import {
   applyShape,
   concatIssues,
-  copyUnsafeChecks,
   distributeTypes,
   getShapeInputs,
   isArray,
   isAsyncShape,
   isEqual,
-  ok,
   setObjectProperty,
   toDeepPartialShape,
 } from '../internal';
 import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Shape } from './Shape';
 
-// prettier-ignore
 /**
  * Converts union to intersection.
  */
+// prettier-ignore
 type Intersect<U extends AnyShape> =
   (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
 
@@ -60,7 +58,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
      * The array of shapes that comprise an intersection.
      */
     readonly shapes: Shapes,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -88,7 +86,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   }
 
   deepPartial(): DeepPartialIntersectionShape<Shapes> {
-    return copyUnsafeChecks(this, new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
+    return new IntersectionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
   }
 
   protected _isAsync(): boolean {
@@ -194,15 +192,12 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     outputs: any[] | null,
     options: ApplyOptions
   ): Result<Output<Intersect<Shapes[number]>>> {
-    const { shapes, _applyChecks } = this;
-
     let output = input;
-    let issues = null;
 
     if (outputs !== null) {
       let outputsLength = outputs.length;
 
-      if (outputsLength !== shapes.length) {
+      if (outputsLength !== this.shapes.length) {
         outputsLength = outputs.push(input);
       }
 
@@ -215,15 +210,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         return [this._typeIssueFactory(input, options)];
       }
     }
-
-    if (
-      (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) &&
-      outputs !== null &&
-      !isEqual(output, input)
-    ) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, null);
   }
 }
 

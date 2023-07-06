@@ -1,20 +1,18 @@
 import { CODE_TYPE, MESSAGE_SET_TYPE } from '../constants';
 import {
   concatIssues,
-  copyUnsafeChecks,
   getCanonicalValueOf,
   isArray,
   isIterableObject,
-  ok,
   toArrayIndex,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output } from './Shape';
 
 /**
  * The shape of a `Set` instance.
@@ -39,16 +37,16 @@ export class SetShape<ValueShape extends AnyShape>
   /**
    * Creates a new {@linkcode SetShape} instance.
    *
-   * @param shape The value shape.
-   * @param options The type constraint options or the type issue message.
+   * @param valueShape The value shape.
+   * @param options The issue options or the issue message.
    * @template ValueShape The value shape.
    */
   constructor(
     /**
      * The value shape.
      */
-    readonly shape: ValueShape,
-    options?: ConstraintOptions | Message
+    readonly valueShape: ValueShape,
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -57,20 +55,20 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   at(key: unknown): AnyShape | null {
-    return toArrayIndex(key) === -1 ? null : this.shape;
+    return toArrayIndex(key) === -1 ? null : this.valueShape;
   }
 
   deepPartial(): SetShape<OptionalDeepPartialShape<ValueShape>> {
-    return copyUnsafeChecks(this, new SetShape<any>(toDeepPartialShape(this.shape).optional(), this._options));
+    return new SetShape<any>(toDeepPartialShape(this.valueShape).optional(), this._options);
   }
 
   protected _isAsync(): boolean {
-    return this.shape.isAsync;
+    return this.valueShape.isAsync;
   }
 
   protected _getInputs(): unknown[] {
     if (this.isCoercing) {
-      return this.shape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
+      return this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
     } else {
       return [TYPE_SET];
     }
@@ -90,12 +88,12 @@ export class SetShape<ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { shape, _applyChecks, _isUnsafe } = this;
+    const { valueShape } = this;
     const valuesLength = values.length;
 
     for (let i = 0; i < valuesLength; ++i) {
       const value = values[i];
-      const result = shape['_apply'](value, options, nonce);
+      const result = valueShape['_apply'](value, options, nonce);
 
       if (result === null) {
         continue;
@@ -113,15 +111,7 @@ export class SetShape<ValueShape extends AnyShape>
       values[i] = result.value;
     }
 
-    const output = changed ? new Set(values) : input;
-
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
-    }
-    if (changed && issues === null) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, changed ? new Set(values) : input, options, issues);
   }
 
   protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Set<Output<ValueShape>>>> {
@@ -139,7 +129,7 @@ export class SetShape<ValueShape extends AnyShape>
         return;
       }
 
-      const { shape, _applyChecks, _isUnsafe } = this;
+      const { valueShape } = this;
       const valuesLength = values.length;
 
       let issues: Issue[] | null = null;
@@ -166,18 +156,9 @@ export class SetShape<ValueShape extends AnyShape>
         index++;
 
         if (index !== valuesLength) {
-          return shape['_applyAsync'](values[index], options, nonce).then(handleResult);
+          return valueShape['_applyAsync'](values[index], options, nonce).then(handleResult);
         }
-
-        const output = changed ? new Set(values) : input;
-
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-          issues = _applyChecks(output, issues, options);
-        }
-        if (changed && issues === null) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, changed ? new Set(values) : input, options, issues);
       };
 
       resolve(next());

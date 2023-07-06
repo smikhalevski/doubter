@@ -1,7 +1,6 @@
 import { CODE_UNION, MESSAGE_UNION } from '../constants';
 import {
   applyShape,
-  copyUnsafeChecks,
   Dict,
   getShapeInputs,
   isArray,
@@ -12,15 +11,15 @@ import {
   unique,
 } from '../internal';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
  * Returns the array of shapes that are applicable to the input.
  */
-type Lookup = (input: any) => readonly AnyShape[];
+type LookupCallback = (input: any) => readonly AnyShape[];
 
 type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;
@@ -58,7 +57,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
      * The array of shapes that comprise a union.
      */
     readonly shapes: Shapes,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -66,7 +65,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
   }
 
-  protected get _lookup(): Lookup {
+  protected get _lookup(): LookupCallback {
     const shapes = this.shapes.filter(unique);
     const lookup = createLookupByDiscriminator(shapes) || createLookupByType(shapes);
 
@@ -95,7 +94,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 
   deepPartial(): DeepPartialUnionShape<Shapes> {
-    return copyUnsafeChecks(this, new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options));
+    return new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
   }
 
   protected _isAsync(): boolean {
@@ -108,8 +107,6 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<Shapes[number]>> {
-    const { _applyChecks } = this;
-
     let result = null;
     let output = input;
     let issues = null;
@@ -144,17 +141,11 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
       }
       return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
     }
-
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
-    }
-    return issues;
+    return this._applyOperations(input, output, options, null);
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {
     return new Promise(resolve => {
-      const { _applyChecks } = this;
-
       const shapes = this._lookup(input);
       const shapesLength = shapes.length;
 
@@ -180,11 +171,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
             output = result.value;
           }
         }
-
-        if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-          return result;
-        }
-        return issues;
+        return this._applyOperations(input, output, options, null);
       };
 
       const next = (): Result | Promise<Result> => {
@@ -207,7 +194,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 /**
  * Creates a lookup that finds a shape using an input value type.
  */
-export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
+export function createLookupByType(shapes: readonly AnyShape[]): LookupCallback {
   const emptyArray: AnyShape[] = [];
 
   const buckets: Record<string, AnyShape[]> = {
@@ -244,7 +231,7 @@ export function createLookupByType(shapes: readonly AnyShape[]): Lookup {
 /**
  * Creates a lookup that uses a discriminator property, or returns `null` if discriminator property cannot be detected.
  */
-export function createLookupByDiscriminator(shapes: readonly AnyShape[]): Lookup | null {
+export function createLookupByDiscriminator(shapes: readonly AnyShape[]): LookupCallback | null {
   const discriminator = shapes.every(isObjectShape) ? getDiscriminator(shapes) : null;
 
   if (discriminator === null) {
@@ -334,7 +321,7 @@ export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, an
         continue nextKey;
       }
 
-      const { inputs } = shape.shapes[key];
+      const { inputs } = shape.propShapes[key];
 
       if (inputs.length === 0 || inputs.some(isType)) {
         // Values aren't discrete

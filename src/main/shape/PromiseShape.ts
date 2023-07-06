@@ -1,10 +1,10 @@
 import { CODE_TYPE, MESSAGE_PROMISE_TYPE } from '../constants';
-import { applyShape, copyUnsafeChecks, isArray, ok, Promisify, toDeepPartialShape } from '../internal';
+import { applyShape, INPUT, isArray, OUTPUT, Promisify, toDeepPartialShape } from '../internal';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape } from './Shape';
 
 type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
   ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any
@@ -37,11 +37,11 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   /**
    * Creates a new {@linkcode PromiseShape} instance.
    *
-   * @param shape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
-   * @param options The type constraint options or the type issue message.
+   * @param valueShape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
+   * @param options The issue options or the issue message.
    * @template ValueShape The shape of the resolved value.
    */
-  constructor(readonly shape: ValueShape, options?: ConstraintOptions | Message) {
+  constructor(readonly valueShape: ValueShape, options?: IssueOptions | Message) {
     super();
 
     this._options = options;
@@ -49,42 +49,35 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   }
 
   deepPartial(): DeepPartialPromiseShape<ValueShape> {
-    const shape = this.shape !== null ? toDeepPartialShape(this.shape).optional() : null;
+    const valueShape = this.valueShape !== null ? toDeepPartialShape(this.valueShape).optional() : null;
 
-    return copyUnsafeChecks(this, new PromiseShape<any>(shape, this._options));
+    return new PromiseShape<any>(valueShape, this._options);
   }
 
   protected _isAsync(): boolean {
-    return this.shape !== null;
+    return this.valueShape !== null;
   }
 
   protected _getInputs(): unknown[] {
     if (!this.isCoercing) {
       return [TYPE_PROMISE];
     }
-    if (this.shape === null) {
+    if (this.valueShape === null) {
       return [TYPE_UNKNOWN];
     }
-    return this.shape.inputs.concat(TYPE_PROMISE);
+    return this.valueShape.inputs.concat(TYPE_PROMISE);
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
-    const { _applyChecks } = this;
-
     let output = input;
-    let issues = null;
-    let changed = false;
 
     if (
       !(input instanceof Promise) &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, null);
   }
 
   protected _applyAsync(
@@ -102,14 +95,12 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     }
 
     return output.then((value: unknown) =>
-      applyShape(this.shape!, value, options, nonce, result => {
-        const { _applyChecks } = this;
-
+      applyShape(this.valueShape!, value, options, nonce, result => {
         let issues = null;
 
         if (result !== null) {
           if (isArray(result)) {
-            if (!options.verbose || !this._isUnsafe) {
+            if (!options.verbose || this.operations.length === 0) {
               return result;
             }
             issues = result;
@@ -117,11 +108,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
             output = Promise.resolve(result.value);
           }
         }
-
-        if ((_applyChecks === null || (issues = _applyChecks(output, issues, options)) === null) && output !== input) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, output, options, issues);
       })
     );
   }

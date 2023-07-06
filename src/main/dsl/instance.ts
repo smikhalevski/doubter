@@ -1,17 +1,17 @@
 import { InstanceShape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the class instance shape.
  *
  * @param ctor The instance constructor.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template Ctor The instance constructor.
  * @group DSL
  */
-export function instanceOf<Ctor extends new (...args: any[]) => any>(
+export function instance<Ctor extends new (...args: any[]) => any>(
   ctor: Ctor,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): InstanceShape<Ctor> {
   return new InstanceShape(ctor, options);
 }

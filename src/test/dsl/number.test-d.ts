@@ -1,6 +1,6 @@
-import * as d from 'doubter';
-import { INPUT, OUTPUT } from 'doubter';
 import { expectType } from 'tsd';
+import * as d from '../../main';
+import { INPUT, OUTPUT } from '../../main/internal';
 
 expectType<number | 'aaa'>(d.number().replace('aaa', true)[INPUT]);
 

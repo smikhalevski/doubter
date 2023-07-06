@@ -1,17 +1,41 @@
-import { AnyShape, ApplyChecksCallback, DeepPartialProtocol, DeepPartialShape, Result, Shape } from '../shape/Shape';
-import { ApplyOptions, Check, Issue, Ok, ParseOptions } from '../types';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
+import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from '../types';
 import { ValidationError } from '../ValidationError';
-import { isArray, isObjectLike } from './lang';
+import { isArray, isEqual, isObjectLike } from './lang';
+
+export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerce: false });
+
+export const INPUT = Symbol();
+export const OUTPUT = Symbol();
+
+export type INPUT = typeof INPUT;
+export type OUTPUT = typeof OUTPUT;
+
+let nonce = -1;
 
 export function nextNonce(): number {
-  return nextNonce.nonce++;
+  nonce = (nonce + 1) | 0;
+  return nonce;
 }
 
-nextNonce.nonce = 0;
+// For test purposes only
+export function resetNonce(): void {
+  nonce = -1;
+}
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
+
+export const universalApplyOperations: OperationCallback = (input, output, options, issues) => {
+  if (issues !== null) {
+    return issues;
+  }
+  if (isEqual(input, output)) {
+    return null;
+  }
+  return ok(output);
+};
 
 export function isAsyncShape(shape: AnyShape): boolean {
   return shape.isAsync;
@@ -29,56 +53,12 @@ export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialSha
   return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
-export function isUnsafeCheck(check: Check): boolean {
-  return check.isUnsafe;
-}
-
 /**
- * Returns the index of the check with the given key, or -1 if there's no such check.
+ * Copies checks from `baseShape` to `shape`.
  */
-export function getCheckIndex(checks: readonly Check[], key: unknown): number {
-  for (let i = 0; i < checks.length; ++i) {
-    if (checks[i].key === key) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-/**
- * Mutates the shape!
- *
- * Updates the shape checks and related properties.
- *
- * @param shape The shape to update.
- * @param checks The array of new checks.
- * @returns The clone of the shape.
- */
-export function replaceChecks<S extends Shape>(shape: S, checks: readonly Check[]): S {
-  shape['_checks'] = checks;
-  shape['_applyChecks'] = createApplyChecksCallback(checks);
-  shape['_isUnsafe'] = checks.some(isUnsafeCheck);
-
+export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
+  shape.operations = baseShape.operations;
   return shape;
-}
-
-/**
- * Replaces checks of the target shape with unsafe checks from the source shape.
- */
-export function copyUnsafeChecks<S extends Shape>(sourceShape: Shape, targetShape: S): S {
-  return copyChecks(sourceShape, targetShape, isUnsafeCheck);
-}
-
-/**
- * Replaces checks of `shape` with checks from the `baseShape` that match a predicate.
- */
-export function copyChecks<S extends Shape>(baseShape: Shape, shape: S, predicate?: (check: Check) => boolean): S {
-  const checks = baseShape['_checks'];
-
-  return replaceChecks(
-    shape['_clone'](),
-    checks.length !== 0 && predicate !== undefined ? checks.filter(predicate) : []
-  );
 }
 
 /**
@@ -120,138 +100,19 @@ export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
   return issues;
 }
 
+export function pushIssue(issues: Issue[] | null, result: Issue): Issue[] {
+  if (issues === null) {
+    return [result];
+  }
+  issues.push(result);
+  return issues;
+}
+
 export function captureIssues(error: unknown): Issue[] {
   if (error instanceof ValidationError) {
     return error.issues;
   }
   throw error;
-}
-
-/**
- * Creates the callback that applies given checks to a value.
- */
-export function createApplyChecksCallback(checks: readonly Check[]): ApplyChecksCallback | null {
-  const checksLength = checks.length;
-
-  if (checksLength === 0) {
-    return null;
-  }
-
-  if (checksLength === 1) {
-    const [{ callback: cb0, param: param0, isUnsafe: isUnsafe0 }] = checks;
-
-    return (output, issues, options) => {
-      if (issues === null || isUnsafe0) {
-        let result;
-
-        try {
-          result = cb0(output, param0, options);
-        } catch (error) {
-          return concatIssues(issues, captureIssues(error));
-        }
-        if (result !== null && result !== undefined) {
-          return appendIssue(issues, result);
-        }
-      }
-      return issues;
-    };
-  }
-
-  if (checksLength === 2) {
-    const [
-      { callback: cb0, param: param0, isUnsafe: isUnsafe0 },
-      { callback: cb1, param: param1, isUnsafe: isUnsafe1 },
-    ] = checks;
-
-    return (output, issues, options) => {
-      if (issues === null || isUnsafe0) {
-        let result;
-
-        try {
-          result = cb0(output, param0, options);
-        } catch (error) {
-          issues = concatIssues(issues, captureIssues(error));
-
-          if (!options.verbose) {
-            return issues;
-          }
-        }
-        if (result !== null && result !== undefined) {
-          issues = appendIssue(issues, result);
-
-          if (issues !== null && !options.verbose) {
-            return issues;
-          }
-        }
-      }
-
-      if (issues === null || isUnsafe1) {
-        let result;
-
-        try {
-          result = cb1(output, param1, options);
-        } catch (error) {
-          issues = concatIssues(issues, captureIssues(error));
-        }
-        if (result !== null && result !== undefined) {
-          issues = appendIssue(issues, result);
-        }
-      }
-
-      return issues;
-    };
-  }
-
-  return (output, issues, options) => {
-    for (let i = 0; i < checksLength; ++i) {
-      const { callback, param, isUnsafe } = checks[i];
-
-      let result;
-
-      if (issues !== null && !isUnsafe) {
-        continue;
-      }
-
-      try {
-        result = callback(output, param, options);
-      } catch (error) {
-        issues = concatIssues(issues, captureIssues(error));
-
-        if (!options.verbose) {
-          return issues;
-        }
-      }
-
-      if (result !== null && result !== undefined) {
-        issues = appendIssue(issues, result);
-
-        if (issues !== null && !options.verbose) {
-          return issues;
-        }
-      }
-    }
-
-    return issues;
-  };
-}
-
-function appendIssue(issues: Issue[] | null, result: Issue[] | Issue): Issue[] | null {
-  if (isArray(result)) {
-    if (result.length !== 0) {
-      if (issues === null) {
-        issues = result;
-      } else {
-        issues.push(...result);
-      }
-    }
-  } else if (isObjectLike(result)) {
-    if (issues === null) {
-      issues = [result];
-    } else {
-      issues.push(result);
-    }
-  }
-  return issues;
 }
 
 /**

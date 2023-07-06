@@ -1,10 +1,10 @@
 import { CODE_TYPE, MESSAGE_BIGINT_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray, ok } from '../internal';
+import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result } from './Shape';
+import { NEVER } from './Shape';
 
 /**
  * The shape of a bigint value.
@@ -20,9 +20,9 @@ export class BigIntShape extends CoercibleShape<bigint> {
   /**
    * Creates a new {@linkcode BigIntShape} instance.
    *
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    */
-  constructor(options?: ConstraintOptions | Message) {
+  constructor(options?: IssueOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BIGINT_TYPE, options, TYPE_BIGINT);
@@ -37,22 +37,15 @@ export class BigIntShape extends CoercibleShape<bigint> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<bigint> {
-    const { _applyChecks } = this;
-
     let output = input;
-    let issues = null;
-    let changed = false;
 
     if (
       typeof output !== 'bigint' &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, null);
   }
 
   /**

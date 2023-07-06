@@ -1,10 +1,10 @@
 import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray, isValidDate, ok } from '../internal';
+import { getCanonicalValueOf, isArray, isValidDate } from '../internal';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result } from './Shape';
+import { NEVER } from './Shape';
 
 /**
  * The shape of the `Date` object.
@@ -19,9 +19,9 @@ export class DateShape extends CoercibleShape<Date> {
   /**
    * Creates a new {@linkcode DateShape} instance.
    *
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    */
-  constructor(options?: ConstraintOptions | Message) {
+  constructor(options?: IssueOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_DATE_TYPE, options, TYPE_DATE);
@@ -36,22 +36,12 @@ export class DateShape extends CoercibleShape<Date> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Date> {
-    const { _applyChecks } = this;
-
     let output = input;
-    let issues = null;
-    let changed = false;
 
-    if (
-      !isValidDate(input) &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (!isValidDate(input) && (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)) {
       return [this._typeIssueFactory(input, options)];
     }
-    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, null);
   }
 
   /**

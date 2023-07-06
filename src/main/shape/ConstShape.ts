@@ -1,7 +1,7 @@
 import { CODE_CONST, MESSAGE_CONST } from '../constants';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { Result, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a constant value.
@@ -24,7 +24,7 @@ export class ConstShape<Value> extends Shape<Value> {
    * Creates a new {@linkcode ConstShape} instance.
    *
    * @param value The expected value.
-   * @param options The type constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template Value The expected value.
    */
   constructor(
@@ -32,7 +32,7 @@ export class ConstShape<Value> extends Shape<Value> {
      * The expected constant value.
      */
     readonly value: Value,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -45,14 +45,9 @@ export class ConstShape<Value> extends Shape<Value> {
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
-    const { _applyChecks } = this;
-
     if (!this._typePredicate(input)) {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
+    return this._applyOperations(input, input, options, null);
   }
 }

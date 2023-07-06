@@ -1,8 +1,8 @@
 import { CODE_TYPE, MESSAGE_SYMBOL_TYPE } from '../constants';
 import { TYPE_SYMBOL } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { Result, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of an arbitrary symbol value.
@@ -18,9 +18,9 @@ export class SymbolShape extends Shape<symbol> {
   /**
    * Creates a new {@linkcode SymbolShape} instance.
    *
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    */
-  constructor(options?: ConstraintOptions | Message) {
+  constructor(options?: IssueOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SYMBOL_TYPE, options, TYPE_SYMBOL);
@@ -31,14 +31,9 @@ export class SymbolShape extends Shape<symbol> {
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {
-    const { _applyChecks } = this;
-
     if (typeof input !== 'symbol') {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
+    return this._applyOperations(input, input, options, null);
   }
 }

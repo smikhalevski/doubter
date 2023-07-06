@@ -11,9 +11,9 @@ describe('BigIntShape', () => {
   });
 
   test('parses bigint values', () => {
-    const value = BigInt(111);
+    const input = BigInt(111);
 
-    expect(new BigIntShape().parse(value)).toBe(value);
+    expect(new BigIntShape().parse(input)).toBe(input);
   });
 
   test('raises an issue if an input is not a bigint', () => {
@@ -31,7 +31,7 @@ describe('BigIntShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates inputs when coerced', () => {
+    test('extends shape inputs', () => {
       const shape = new BigIntShape().coerce();
 
       expect(shape.inputs).toEqual([
@@ -63,7 +63,7 @@ describe('BigIntShape', () => {
   });
 
   describe('_coerce', () => {
-    test('coerces a String wrapper', () => {
+    test('coerces a String object', () => {
       expect(new BigIntShape()['_coerce'](String('111'))).toBe(BigInt(111));
       expect(new BigIntShape()['_coerce']([String('111')])).toBe(BigInt(111));
     });
@@ -105,7 +105,7 @@ describe('BigIntShape', () => {
 
     test('does not coerce objects and functions', () => {
       expect(new BigIntShape()['_coerce']({ key1: 111 })).toBe(NEVER);
-      expect(new BigIntShape()['_coerce'](() => undefined)).toBe(NEVER);
+      expect(new BigIntShape()['_coerce'](() => null)).toBe(NEVER);
     });
   });
 });

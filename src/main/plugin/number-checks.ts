@@ -15,20 +15,41 @@ import {
   CODE_NUMBER_GTE,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
-  CODE_NUMBER_MULTIPLE_OF,
+  CODE_NUMBER_MULTIPLE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
-  MESSAGE_NUMBER_MULTIPLE_OF,
+  MESSAGE_NUMBER_MULTIPLE,
 } from '../constants';
-import { ConstraintOptions, Message, NumberShape } from '../core';
-import { createIssueFactory } from '../utils';
+import { IssueOptions, Message, NumberShape } from '../core';
+import { pushIssue } from '../internal';
+import { createIssueFactory, extractOptions } from '../utils';
+
+const { abs, round } = Math;
+
+export interface MultipleOptions extends IssueOptions {
+  /**
+   * By default, {@linkcode NumberShape#multiple NumberShape.multiple} uses
+   * [the modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
+   * may produce unexpected results when used with floating point numbers. This happens because of
+   * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
+   *
+   * For example, for small dividers such as 0.01 the result of the division is usually not integer (even when it should
+   * be integer). If you need to use fractional dividers set this option to some positive integer to have `multiple`
+   * validated using this formula:
+   *
+   * ```
+   * Math.abs(Math.round(value / divisor) - value / divisor) < Math.pow(10, -precision)
+   * ```
+   */
+  precision?: number;
+}
 
 declare module '../core' {
   export interface NumberShape {
     /**
-     * `true` if the shape constrains a finite number, or `false` otherwise.
+     * `true` if the shape constrains input values to a finite number, or `false` otherwise.
      *
      * @group Plugin Properties
      * @plugin {@link doubter/plugin/number-checks!}
@@ -36,7 +57,7 @@ declare module '../core' {
     readonly isFinite: boolean;
 
     /**
-     * `true` if the shape constrains an integer number, or `false` otherwise.
+     * `true` if the shape constrains input values to an integer number, or `false` otherwise.
      *
      * @group Plugin Properties
      * @plugin {@link doubter/plugin/number-checks!}
@@ -44,181 +65,133 @@ declare module '../core' {
     readonly isInteger: boolean;
 
     /**
-     * The inclusive minimum value set via {@linkcode gte} or {@linkcode min}, or `undefined` if there's no such value.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/number-checks!}
-     */
-    readonly minValue: number | undefined;
-
-    /**
-     * The inclusive maximum value set via {@linkcode lte} or {@linkcode max}, or `undefined` if there's no such value.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/number-checks!}
-     */
-    readonly maxValue: number | undefined;
-
-    /**
-     * The exclusive minimum value set via {@linkcode gt}, or `undefined` if there's no such value.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/number-checks!}
-     */
-    readonly exclusiveMinValue: number | undefined;
-
-    /**
-     * The exclusive maximum value set via {@linkcode lt}, or `undefined` if there's no such value.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/number-checks!}
-     */
-    readonly exclusiveMaxValue: number | undefined;
-
-    /**
      * Constrains the number to be greater than zero.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    positive(options?: ConstraintOptions | Message): this;
+    positive(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be less than zero.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    negative(options?: ConstraintOptions | Message): this;
+    negative(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be less or equal to zero.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    nonPositive(options?: ConstraintOptions | Message): this;
+    nonPositive(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be greater or equal to zero.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    nonNegative(options?: ConstraintOptions | Message): this;
+    nonNegative(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be greater than the value.
      *
      * @param value The exclusive minimum value.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    gt(value: number, options?: ConstraintOptions | Message): this;
+    gt(value: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be less than the value.
      *
      * @param value The exclusive maximum value.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    lt(value: number, options?: ConstraintOptions | Message): this;
+    lt(value: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be greater than or equal to the value.
      *
      * @param value The inclusive minimum value.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    gte(value: number, options?: ConstraintOptions | Message): this;
+    gte(value: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be less than or equal to the value.
      *
      * @param value The inclusive maximum value.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    lte(value: number, options?: ConstraintOptions | Message): this;
+    lte(value: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be greater than or equal to the value.
      *
      * @param value The inclusive minimum value.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode gte}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    min(value: number, options?: ConstraintOptions | Message): this;
+    min(value: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be less than or equal to the value.
      *
      * @param value The inclusive maximum value.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode lte}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    max(value: number, options?: ConstraintOptions | Message): this;
+    max(value: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be a multiple of the divisor.
      *
-     * This constraint uses the
-     * [modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
-     * may produce unexpected results when used with floating point numbers. Unexpected results happen because of
-     * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
-     *
-     * Use a custom check to constrain input to be a multiple of a real number:
-     *
-     * ```ts
-     * const precision = 0.001;
-     *
-     * d.number().refine(
-     *   (value, param) => Math.abs(Math.round(value / param) - value / param) < precision,
-     *   { param: 0.25 }
-     * );
-     * ```
-     *
-     * @param value The positive number by which the input should be divisible without a remainder.
-     * @param options The constraint options or an issue message.
+     * @param divisor The positive number by which the input should be divisible without a remainder.
+     * @param options The check options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    multipleOf(value: number, options?: ConstraintOptions | Message): this;
+    multiple(divisor: number, options?: MultipleOptions | Message): this;
 
     /**
      * Number must be between `Number.MIN_SAFE_INTEGER` and `Number.MAX_SAFE_INTEGER`.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-checks!}
      */
-    safe(options?: ConstraintOptions | Message): this;
+    safe(options?: IssueOptions | Message): this;
   }
 }
 
@@ -226,9 +199,7 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!NumberShape} with additional checks.
  */
 export default function () {
-  const prototype = NumberShape.prototype;
-
-  Object.defineProperties(prototype, {
+  Object.defineProperties(NumberShape.prototype, {
     isFinite: {
       configurable: true,
       get(this: NumberShape) {
@@ -242,131 +213,137 @@ export default function () {
         return this._typePredicate === Number.isInteger;
       },
     },
-
-    minValue: {
-      configurable: true,
-      get(this: NumberShape) {
-        return this.getCheck(CODE_NUMBER_GTE)?.param;
-      },
-    },
-
-    maxValue: {
-      configurable: true,
-      get(this: NumberShape) {
-        return this.getCheck(CODE_NUMBER_LTE)?.param;
-      },
-    },
-
-    exclusiveMinValue: {
-      configurable: true,
-      get(this: NumberShape) {
-        return this.getCheck(CODE_NUMBER_GT)?.param;
-      },
-    },
-
-    exclusiveMaxValue: {
-      configurable: true,
-      get(this: NumberShape) {
-        return this.getCheck(CODE_NUMBER_LT)?.param;
-      },
-    },
   });
 
-  prototype.positive = positive;
-  prototype.negative = negative;
-  prototype.nonPositive = nonPositive;
-  prototype.nonNegative = nonNegative;
-  prototype.gt = gt;
-  prototype.lt = lt;
-  prototype.gte = gte;
-  prototype.lte = lte;
-  prototype.min = gte;
-  prototype.max = lte;
-  prototype.multipleOf = multipleOf;
-  prototype.safe = safe;
+  NumberShape.prototype.positive = positiveCheck;
+  NumberShape.prototype.negative = negativeCheck;
+  NumberShape.prototype.nonPositive = nonPositiveCheck;
+  NumberShape.prototype.nonNegative = nonNegativeCheck;
+  NumberShape.prototype.gt = gtCheck;
+  NumberShape.prototype.lt = ltCheck;
+  NumberShape.prototype.gte = gteCheck;
+  NumberShape.prototype.lte = lteCheck;
+  NumberShape.prototype.min = gteCheck;
+  NumberShape.prototype.max = lteCheck;
+  NumberShape.prototype.multiple = multipleCheck;
+  NumberShape.prototype.safe = safeCheck;
 }
 
-function positive(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {
+function positiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.gt(0, options);
 }
 
-function negative(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {
+function negativeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.lt(0, options);
 }
 
-function nonPositive(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {
+function nonPositiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.lte(0, options);
 }
 
-function nonNegative(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {
+function nonNegativeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.gte(0, options);
 }
 
-function gt(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
+function gtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input <= param) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_NUMBER_GT,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (output <= value) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_NUMBER_GT, param: value, unsafe: true }
-  );
+  });
 }
 
-function lt(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
+function ltCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input >= param) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_NUMBER_LT,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (output >= value) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_NUMBER_LT, param: value, unsafe: true }
-  );
+  });
 }
 
-function gte(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
+function gteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input < param) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_NUMBER_GTE,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (output < value) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_NUMBER_GTE, param: value, unsafe: true }
-  );
+  });
 }
 
-function lte(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
+function lteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input > param) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_NUMBER_LTE,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (output > value) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_NUMBER_LTE, param: value, unsafe: true }
-  );
+  });
 }
 
-function multipleOf(this: NumberShape, value: number, options?: ConstraintOptions | Message): NumberShape {
-  const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, value);
+function multipleCheck(this: NumberShape, divisor: number, options?: MultipleOptions | Message): NumberShape {
+  const { precision } = extractOptions(options);
 
-  return this.check(
-    (input, param, options) => {
-      if (input % param !== 0) {
-        return issueFactory(input, options);
+  const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
+
+  const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE, MESSAGE_NUMBER_MULTIPLE, options, divisor);
+
+  return this.addOperation({
+    type: CODE_NUMBER_MULTIPLE,
+    param: divisor,
+    compose: next => (input, output, options, issues) => {
+      if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) < epsilon : output % divisor !== 0) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_NUMBER_MULTIPLE_OF, param: value, unsafe: true }
-  );
+  });
 }
 
-function safe(this: NumberShape, options?: ConstraintOptions | Message): NumberShape {
+function safeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.min(Number.MIN_SAFE_INTEGER, options).max(Number.MAX_SAFE_INTEGER, options);
 }

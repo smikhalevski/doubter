@@ -1,10 +1,10 @@
 import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray, ok } from '../internal';
+import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result } from './Shape';
+import { NEVER } from './Shape';
 
 /**
  * The shape of a boolean value.
@@ -20,9 +20,9 @@ export class BooleanShape extends CoercibleShape<boolean> {
   /**
    * Creates a new {@linkcode BooleanShape} instance.
    *
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    */
-  constructor(options?: ConstraintOptions | Message) {
+  constructor(options?: IssueOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
@@ -37,22 +37,15 @@ export class BooleanShape extends CoercibleShape<boolean> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<boolean> {
-    const { _applyChecks } = this;
-
     let output = input;
-    let issues = null;
-    let changed = false;
 
     if (
       typeof output !== 'boolean' &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, null);
   }
 
   /**

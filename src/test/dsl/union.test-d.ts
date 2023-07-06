@@ -1,6 +1,6 @@
-import * as d from 'doubter';
-import { OUTPUT } from 'doubter';
 import { expectType } from 'tsd';
+import * as d from '../../main';
+import { OUTPUT } from '../../main/internal';
 
 expectType<string | number | boolean>(d.or([d.string(), d.number(), d.boolean()])[OUTPUT]);
 

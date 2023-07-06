@@ -1,15 +1,15 @@
 import { ConstShape } from '../shape';
-import { ConstraintOptions, Literal, Message } from '../types';
+import { IssueOptions, Literal, Message } from '../types';
 
 /**
  * Creates the constant value shape.
  *
  * @param value The value to which the input must be strictly equal.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template Value The expected value.
  * @group DSL
  */
-function const_<Value extends Literal>(value: Value, options?: ConstraintOptions | Message): ConstShape<Value> {
+function const_<Value extends Literal>(value: Value, options?: IssueOptions | Message): ConstShape<Value> {
   return new ConstShape(value, options);
 }
 

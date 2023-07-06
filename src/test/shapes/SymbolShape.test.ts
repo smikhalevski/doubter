@@ -3,9 +3,17 @@ import { CODE_TYPE, MESSAGE_SYMBOL_TYPE } from '../../main/constants';
 import { TYPE_SYMBOL } from '../../main/Type';
 
 describe('SymbolShape', () => {
+  test('creates a SymbolShape', () => {
+    const shape = new SymbolShape();
+
+    expect(shape.isAsync).toBe(false);
+    expect(shape.inputs).toEqual([TYPE_SYMBOL]);
+  });
+
   test('parses symbol values', () => {
-    const value = Symbol();
-    expect(new SymbolShape().parse(value)).toBe(value);
+    const input = Symbol();
+
+    expect(new SymbolShape().parse(input)).toBe(input);
   });
 
   test('raises an issue if an input is not a symbol', () => {

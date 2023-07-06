@@ -2,21 +2,21 @@ import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE } from '../con
 import {
   applyShape,
   concatIssues,
-  copyUnsafeChecks,
   getCanonicalValueOf,
+  INPUT,
   isArray,
   isAsyncShape,
   isIterableObject,
-  ok,
+  OUTPUT,
   toArrayIndex,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, INPUT, NEVER, OptionalDeepPartialShape, OUTPUT, Result } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape } from './Shape';
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],
@@ -65,7 +65,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
    *
    * @param headShapes The array of positioned element shapes.
    * @param restShape The shape of rest elements or `null` if there are no rest elements.
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    * @template HeadShapes The array of positioned element shapes.
    * @template RestShape The shape of rest elements, or `null` if there are no rest elements.
    */
@@ -78,7 +78,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
      * The shape of rest elements or `null` if there are no rest elements.
      */
     readonly restShape: RestShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -106,12 +106,14 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   /**
    * Returns an array shape that has rest elements constrained by the given shape.
    *
+   * **Note** This method returns a shape without any operations.
+   *
    * @param restShape The shape of rest elements, or `null` if there are no rest elements.
    * @returns The new array shape.
    * @template S The shape of rest elements.
    */
   rest<S extends AnyShape | null>(restShape: S): ArrayShape<HeadShapes, S> {
-    return copyUnsafeChecks(this, new ArrayShape(this.headShapes, restShape, this._options));
+    return new ArrayShape(this.headShapes, restShape, this._options);
   }
 
   deepPartial(): DeepPartialArrayShape<HeadShapes, RestShape> {
@@ -119,7 +121,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
-    return copyUnsafeChecks(this, new ArrayShape<any, any>(headShapes, restShape, this._options));
+    return new ArrayShape<any, any>(headShapes, restShape, this._options);
   }
 
   protected _isAsync(): boolean {
@@ -149,7 +151,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     options: ApplyOptions,
     nonce: number
   ): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
-    const { headShapes, restShape, _applyChecks, _isUnsafe } = this;
+    const { headShapes, restShape, operations } = this;
 
     let output = input;
     let outputLength;
@@ -184,7 +186,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_isUnsafe || issues === null) {
+        if (issues === null || operations.length !== 0) {
           if (input === output) {
             output = input.slice(0);
           }
@@ -192,14 +194,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         }
       }
     }
-
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, issues);
   }
 
   protected _applyAsync(
@@ -208,7 +203,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     nonce: number
   ): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
-      const { headShapes, restShape, _applyChecks, _isUnsafe } = this;
+      const { headShapes, restShape, operations } = this;
 
       let output = input;
       let outputLength: number;
@@ -237,7 +232,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_isUnsafe || issues === null) {
+          } else if (issues === null || operations.length !== 0) {
             if (input === output) {
               output = input.slice(0);
             }
@@ -260,13 +255,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           );
         }
 
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-          issues = _applyChecks(output, issues, options);
-        }
-        if (issues === null && input !== output) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, output, options, issues);
       };
 
       resolve(next());

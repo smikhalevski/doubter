@@ -1,33 +1,33 @@
 import { isArray } from '../internal';
 import { AnyShape, ArrayShape, FunctionShape, Shape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates a shape of a function that has no arguments.
  *
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @group DSL
  */
-function function_(options?: ConstraintOptions | Message): FunctionShape<ArrayShape<[], null>, null, null>;
+function function_(options?: IssueOptions | Message): FunctionShape<ArrayShape<[], null>, null, null>;
 
 /**
  * Creates a shape of a function with arguments parsed by corresponding shapes in the `argShapes` array.
  *
  * @param argShapes The array of argument shapes.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template ArgShapes The array of argument shapes.
  * @group DSL
  */
 function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
   argShapes: ArgShapes,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): FunctionShape<ArrayShape<ArgShapes, null>, null, null>;
 
 /**
  * Creates a shape of a function with arguments parsed by an array shape.
  *
  * @param argsShape The shape of the array of arguments.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template InputArgs The array of input arguments.
  * @template OutputArgs The array of input arguments.
  * @template ArgsShape The shape of the array of arguments.
@@ -37,12 +37,9 @@ function function_<
   InputArgs extends readonly any[],
   OutputArgs extends readonly any[],
   ArgsShape extends Shape<InputArgs, OutputArgs>
->(argsShape: ArgsShape, options?: ConstraintOptions | Message): FunctionShape<ArgsShape, null, null>;
+>(argsShape: ArgsShape, options?: IssueOptions | Message): FunctionShape<ArgsShape, null, null>;
 
-function function_(
-  argShapes?: Shape | AnyShape[] | ConstraintOptions | Message,
-  options?: ConstraintOptions | Message
-) {
+function function_(argShapes?: Shape | AnyShape[] | IssueOptions | Message, options?: IssueOptions | Message) {
   if (isArray(argShapes)) {
     argShapes = new ArrayShape(argShapes, null);
   }

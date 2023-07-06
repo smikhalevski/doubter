@@ -11,88 +11,73 @@
  */
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
-import { BigIntShape, ConstraintOptions, Message } from '../core';
+import { BigIntShape, IssueOptions, Message } from '../core';
+import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface BigIntShape {
     /**
-     * The inclusive minimum value set via {@linkcode min}, or `undefined` if there's no such value.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/bigint-checks!}
-     */
-    readonly minValue: bigint | undefined;
-
-    /**
-     * The inclusive maximum value set via {@linkcode max}, or `undefined` if there's no such value.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/bigint-checks!}
-     */
-    readonly maxValue: bigint | undefined;
-
-    /**
      * Constrains the bigint to be greater than zero.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/bigint-checks!}
      */
-    positive(options?: ConstraintOptions | Message): this;
+    positive(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the bigint to be less than zero.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/bigint-checks!}
      */
-    negative(options?: ConstraintOptions | Message): this;
+    negative(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the bigint to be less or equal to zero.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/bigint-checks!}
      */
-    nonPositive(options?: ConstraintOptions | Message): this;
+    nonPositive(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the bigint to be greater or equal to zero.
      *
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/bigint-checks!}
      */
-    nonNegative(options?: ConstraintOptions | Message): this;
+    nonNegative(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the bigint to be greater than or equal to the value.
      *
      * @param value The inclusive minimum value.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/bigint-checks!}
      */
-    min(value: bigint | number, options?: ConstraintOptions | Message): this;
+    min(value: bigint | number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be less than or equal to the value.
      *
      * @param value The inclusive maximum value.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/bigint-checks!}
      */
-    max(value: bigint | number, options?: ConstraintOptions | Message): this;
+    max(value: bigint | number, options?: IssueOptions | Message): this;
   }
 }
 
@@ -100,74 +85,68 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!BigIntShape} with additional checks.
  */
 export default function () {
-  const prototype = BigIntShape.prototype;
-
-  Object.defineProperties(prototype, {
-    minValue: {
-      configurable: true,
-      get(this: BigIntShape) {
-        return this.getCheck(CODE_BIGINT_MIN)?.param;
-      },
-    },
-
-    maxValue: {
-      configurable: true,
-      get(this: BigIntShape) {
-        return this.getCheck(CODE_BIGINT_MAX)?.param;
-      },
-    },
-  });
-
-  prototype.positive = positive;
-  prototype.negative = negative;
-  prototype.nonPositive = nonPositive;
-  prototype.nonNegative = nonNegative;
-  prototype.min = min;
-  prototype.max = max;
+  BigIntShape.prototype.positive = positiveCheck;
+  BigIntShape.prototype.negative = negativeCheck;
+  BigIntShape.prototype.nonPositive = nonPositiveCheck;
+  BigIntShape.prototype.nonNegative = nonNegativeCheck;
+  BigIntShape.prototype.min = minCheck;
+  BigIntShape.prototype.max = maxCheck;
 }
 
-function positive(this: BigIntShape, options?: ConstraintOptions | Message): BigIntShape {
+function positiveCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.min(BigInt(0), options);
 }
 
-function negative(this: BigIntShape, options?: ConstraintOptions | Message): BigIntShape {
+function negativeCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.max(BigInt(0), options);
 }
 
-function nonPositive(this: BigIntShape, options?: ConstraintOptions | Message): BigIntShape {
+function nonPositiveCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.max(BigInt(1), options);
 }
 
-function nonNegative(this: BigIntShape, options?: ConstraintOptions | Message): BigIntShape {
+function nonNegativeCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.min(BigInt(-1), options);
 }
 
-function min(this: BigIntShape, value: bigint, options?: ConstraintOptions | Message): BigIntShape {
+function minCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
   value = BigInt(value);
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input < param) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_BIGINT_MIN,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (output < value) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_BIGINT_MIN, param: value, unsafe: true }
-  );
+  });
 }
 
-function max(this: BigIntShape, value: bigint, options?: ConstraintOptions | Message): BigIntShape {
+function maxCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
   value = BigInt(value);
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input > param) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_BIGINT_MAX,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (output > value) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_BIGINT_MAX, param: value, unsafe: true }
-  );
+  });
 }

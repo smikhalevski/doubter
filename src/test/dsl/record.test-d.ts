@@ -1,12 +1,12 @@
-import * as d from 'doubter';
-import { OUTPUT } from 'doubter';
 import { expectType } from 'tsd';
+import * as d from '../../main';
+import { OUTPUT } from '../../main/internal';
 
 expectType<Record<string, number>>(d.record(d.number())[OUTPUT]);
 
 expectType<{ bbb: number }>(
   d.record(
-    d.string().transform((): 'bbb' => 'bbb'),
+    d.string().convert((): 'bbb' => 'bbb'),
     d.number()
   )[OUTPUT]
 );

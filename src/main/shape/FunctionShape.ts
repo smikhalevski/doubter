@@ -2,19 +2,22 @@ import { CODE_TYPE, ERROR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../const
 import {
   applyShape,
   Awaitable,
-  copyChecks,
+  copyOperations,
+  defaultApplyOptions,
   getErrorMessage,
+  INPUT,
   isArray,
   nextNonce,
   ok,
+  OUTPUT,
   Promisify,
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_FUNCTION } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message, ParseOptions } from '../types';
+import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, defaultApplyOptions, Input, INPUT, Output, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, Input, Output, Shape } from './Shape';
 
 type ShapeValue<
   Shape extends AnyShape | null | undefined,
@@ -61,7 +64,7 @@ export class FunctionShape<
    * @param argsShape The shape of the array of arguments.
    * @param returnShape The return value shape, or `null` if unconstrained.
    * @param thisShape The shape of `this` argument, or `null` if unconstrained.
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    * @template ArgsShape The shape of the array of arguments.
    * @template ReturnShape The return value shape, or `null` if unconstrained.
    * @template ThisShape The shape of `this` argument, or `null` if unconstrained.
@@ -79,7 +82,7 @@ export class FunctionShape<
      * The shape of `this` value, or `null` if unconstrained.
      */
     readonly thisShape: ThisShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -101,7 +104,7 @@ export class FunctionShape<
    * @template S The return value shape.
    */
   return<S extends AnyShape | null>(shape: S): FunctionShape<ArgsShape, S, ThisShape> {
-    return copyChecks(this, new FunctionShape(this.argsShape, shape, this.thisShape));
+    return copyOperations(this, new FunctionShape(this.argsShape, shape, this.thisShape));
   }
 
   /**
@@ -112,7 +115,7 @@ export class FunctionShape<
    * @template S The shape of `this` argument.
    */
   this<S extends AnyShape | null>(shape: S): FunctionShape<ArgsShape, ReturnShape, S> {
-    return copyChecks(this, new FunctionShape(this.argsShape, this.returnShape, shape));
+    return copyOperations(this, new FunctionShape(this.argsShape, this.returnShape, shape));
   }
 
   /**
@@ -241,20 +244,19 @@ export class FunctionShape<
     options: ApplyOptions,
     nonce: number
   ): Result<(this: ShapeValue<ThisShape, INPUT>, ...args: Input<ArgsShape>) => ShapeValue<ReturnShape, OUTPUT>> {
-    const { _applyChecks } = this;
-
-    let issues = null;
-
     if (typeof input !== 'function') {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyChecks !== null && (issues = _applyChecks(input, null, options)) !== null) {
-      return issues;
+
+    const result = this._applyOperations(input, input, options, null);
+
+    if (isArray(result) || !this.isStrict) {
+      return result;
     }
-    if (this.isStrict) {
-      return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(input) : this.ensureSignature(input));
-    }
-    return null;
+
+    const output = result === null ? input : result.value;
+
+    return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(output) : this.ensureSignature(output));
   }
 }
 

@@ -1,7 +1,7 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
-import { captureIssues, copyUnsafeChecks, identity, isArray, ok, toDeepPartialShape } from '../internal';
-import { ApplyOptions, Literal } from '../types';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Result, Shape } from './Shape';
+import { captureIssues, copyOperations, identity, isArray, ok, toDeepPartialShape } from '../internal';
+import { ApplyOptions, Literal, Result } from '../types';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
  * Lazily loads a shape using the provider callback.
@@ -62,7 +62,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   /**
    * The lazy-loaded shape.
    */
-  get shape(): ProvidedShape {
+  get providedShape(): ProvidedShape {
     Object.defineProperty(this, 'shape', { configurable: true, value: undefined });
 
     const shape = this._cachingShapeProvider();
@@ -73,13 +73,13 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   }
 
   at(key: unknown): AnyShape | null {
-    return this.shape.at(key);
+    return this.providedShape.at(key);
   }
 
   deepPartial(): LazyShape<DeepPartialShape<ProvidedShape>, Input<DeepPartialShape<ProvidedShape>>> {
     const { _cachingShapeProvider } = this;
 
-    return copyUnsafeChecks(this, new LazyShape(() => toDeepPartialShape(_cachingShapeProvider()), identity));
+    return new LazyShape(() => toDeepPartialShape(_cachingShapeProvider()), identity);
   }
 
   /**
@@ -93,18 +93,18 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   circular<Pointer extends Literal>(
     pointer: Pointer | ((value: Input<ProvidedShape>, options: Readonly<ApplyOptions>) => Pointer)
   ): LazyShape<ProvidedShape, Pointer> {
-    return copyUnsafeChecks(
+    return copyOperations(
       this,
       new LazyShape(this.shapeProvider, typeof pointer === 'function' ? (pointer as () => Pointer) : () => pointer)
     );
   }
 
   protected _isAsync(): boolean {
-    return this.shape.isAsync;
+    return this.providedShape.isAsync;
   }
 
   protected _getInputs(): unknown[] {
-    return this.shape.inputs.slice(0);
+    return this.providedShape.inputs.slice(0);
   }
 
   protected _clone(): this {
@@ -136,7 +136,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     }
 
     try {
-      return this._handleResult(this.shape['_apply'](input, options, nonce), input, options);
+      return this._handleResult(this.providedShape['_apply'](input, options, nonce), input, options);
     } finally {
       if (leading) {
         _stackMap.delete(nonce);
@@ -173,7 +173,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
       stack.push(input);
     }
 
-    return this.shape['_applyAsync'](input, options, nonce).then(
+    return this.providedShape['_applyAsync'](input, options, nonce).then(
       result => {
         if (leading) {
           _stackMap.delete(nonce);
@@ -194,10 +194,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     input: unknown,
     options: ApplyOptions
   ): Result<Output<ProvidedShape> | Pointer> {
-    const { _applyChecks } = this;
-
     let output = input;
-    let issues;
 
     if (result !== null) {
       if (isArray(result)) {
@@ -205,9 +202,6 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
       }
       output = result.value;
     }
-    if (_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) {
-      return result;
-    }
-    return issues;
+    return this._applyOperations(input, output, options, null);
   }
 }

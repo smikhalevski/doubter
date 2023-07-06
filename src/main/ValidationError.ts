@@ -1,18 +1,18 @@
 import { Issue } from './types';
 
 /**
- * An error thrown if parsing failed. Custom check callbacks, refinement predicates, transformers, and fallback
+ * An error thrown if parsing failed. Custom check callbacks, refinement predicates, converters, and fallback
  * functions can throw this error to notify that the operation has failed.
  *
- * @group Errors
+ * @group Other
  */
 export class ValidationError extends Error {
   /**
    * Creates a new {@linkcode ValidationError} instance.
    *
    * @param issues The array of issues that caused the validation error.
-   * @param message The error message. If omitted then `issues` are converted to a string using
-   * {@linkcode ValidationError.formatIssues} and used as a message.
+   * @param message The error message. If omitted then `issues` are converted to a string using {@linkcode formatIssues}
+   * and used as a message.
    */
   constructor(
     /**

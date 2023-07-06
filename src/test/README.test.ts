@@ -5,7 +5,7 @@ import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from 
 
 describe('Cookbook', () => {
   test('Rename object keys', () => {
-    const keyShape = d.enum(['foo', 'bar']).transform(value => value.toUpperCase() as 'FOO' | 'BAR');
+    const keyShape = d.enum(['foo', 'bar']).convert(value => value.toUpperCase() as 'FOO' | 'BAR');
 
     const shape = d.record(keyShape, d.number());
 
@@ -170,21 +170,8 @@ describe('Advanced shapes', () => {
           ];
         }
 
-        // 2️⃣ Prepare the output value
-        const output = parseFloat(input);
-
-        // 3️⃣ Apply checks to the output value
-        if (this._applyChecks) {
-          const issues = this._applyChecks(output, null, options);
-
-          if (issues !== null) {
-            // 4️⃣ Return issues if the output value is invalid
-            return issues;
-          }
-        }
-
-        // 5️⃣ Return the parsing result
-        return { ok: true, value: output };
+        // 2️⃣ Apply operations to the output value
+        return this._applyOperations(input, parseFloat(input), options, null);
       }
     }
 

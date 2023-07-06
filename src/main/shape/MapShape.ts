@@ -2,18 +2,16 @@ import { CODE_TYPE, MESSAGE_MAP_TYPE } from '../constants';
 import {
   applyShape,
   concatIssues,
-  copyUnsafeChecks,
   getCanonicalValueOf,
   isArray,
   isIterableObject,
   isMapEntry,
   isObjectLike,
-  ok,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import {
@@ -24,7 +22,6 @@ import {
   NEVER,
   OptionalDeepPartialShape,
   Output,
-  Result,
 } from './Shape';
 
 /**
@@ -43,7 +40,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   implements DeepPartialProtocol<MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>>>
 {
   /**
-   * The type constraint options or an issue message.
+   * The issue options or the issue message.
    */
   protected _options;
 
@@ -57,7 +54,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
    *
    * @param keyShape The key shape.
    * @param valueShape The value shape.
-   * @param options The type constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template KeyShape The key shape.
    * @template ValueShape The value shape.
    */
@@ -70,7 +67,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
      * The value shape.
      */
     readonly valueShape: ValueShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -84,9 +81,10 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
   deepPartial(): MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>> {
     const keyShape = toDeepPartialShape(this.keyShape);
+
     const valueShape = toDeepPartialShape(this.valueShape).optional();
 
-    return copyUnsafeChecks(this, new MapShape<any, any>(keyShape, valueShape, this._options));
+    return new MapShape<any, any>(keyShape, valueShape, this._options);
   }
 
   protected _isAsync(): boolean {
@@ -118,7 +116,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
+    const { keyShape, valueShape, operations } = this;
     const entriesLength = entries.length;
 
     let issues = null;
@@ -160,22 +158,14 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         }
       }
 
-      if ((_isUnsafe || issues === null) && (keyResult !== null || valueResult !== null)) {
+      if ((issues === null || operations.length !== 0) && (keyResult !== null || valueResult !== null)) {
         changed = true;
         entry[0] = key;
         entry[1] = value;
       }
     }
 
-    const output = changed ? new Map(entries) : input;
-
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
-    }
-    if (changed && issues === null) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, changed ? new Map(entries) : input, options, issues);
   }
 
   protected _applyAsync(
@@ -197,7 +187,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         return;
       }
 
-      const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
+      const { keyShape, valueShape, operations } = this;
       const entriesLength = entries.length;
 
       let issues: Issue[] | null = null;
@@ -242,7 +232,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           }
         }
 
-        if ((_isUnsafe || issues === null) && (keyChanged || valueResult !== null)) {
+        if ((issues === null || operations.length !== 0) && (keyChanged || valueResult !== null)) {
           changed = true;
           entry[0] = key;
           entry[1] = value;
@@ -261,15 +251,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           return applyShape(keyShape, key, options, nonce, handleKeyResult);
         }
 
-        const output = changed ? new Map(entries) : input;
-
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-          issues = _applyChecks(output, issues, options);
-        }
-        if (changed && issues === null) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, changed ? new Map(entries) : input, options, issues);
       };
 
       resolve(next());

@@ -1,12 +1,12 @@
 import { NeverShape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the shape that always raises an issue.
  *
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @group DSL
  */
-export function never(options?: ConstraintOptions | Message): NeverShape {
+export function never(options?: IssueOptions | Message): NeverShape {
   return new NeverShape(options);
 }

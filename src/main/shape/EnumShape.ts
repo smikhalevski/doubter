@@ -1,10 +1,10 @@
 import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
-import { getCanonicalValueOf, isArray, ok, ReadonlyDict, unique } from '../internal';
+import { getCanonicalValueOf, isArray, ReadonlyDict, unique } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Result } from './Shape';
+import { NEVER } from './Shape';
 
 /**
  * The shape of a value enumeration.
@@ -27,7 +27,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
    * Creates a new {@linkcode EnumShape} instance.
    *
    * @param source The array of allowed values, a const key-value mapping, or an enum object.
-   * @param options The type constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template Value The union of allowed enum values.
    */
   constructor(
@@ -35,7 +35,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
      * The array of allowed values, a const key-value mapping, or an TypeScript enum object.
      */
     readonly source: readonly Value[] | ReadonlyDict<Value>,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -57,22 +57,15 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
-    const { values, _applyChecks } = this;
-
     let output = input;
-    let issues = null;
-    let changed = false;
 
     if (
-      !values.includes(output) &&
-      (!(changed = options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+      !this.values.includes(output) &&
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
-    if ((_applyChecks === null || (issues = _applyChecks(output, null, options)) === null) && changed) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, null);
   }
 
   /**

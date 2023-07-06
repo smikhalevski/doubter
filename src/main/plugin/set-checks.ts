@@ -10,59 +10,44 @@
  * @module doubter/plugin/set-checks
  */
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
-import { AnyShape, ConstraintOptions, Message, SetShape } from '../core';
+import { AnyShape, IssueOptions, Message, SetShape } from '../core';
+import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {
     /**
-     * The minimum set size, or `undefined` if there's no minimum size.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/set-checks!}
-     */
-    readonly minSize: number | undefined;
-
-    /**
-     * The maximum set size, or `undefined` if there's no maximum size.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/set-checks!}
-     */
-    readonly maxSize: number | undefined;
-
-    /**
      * Constrains the set size.
      *
      * @param size The minimum set size.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/set-checks!}
      */
-    size(size: number, options?: ConstraintOptions | Message): this;
+    size(size: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the minimum set size.
      *
      * @param size The minimum set size.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/set-checks!}
      */
-    min(size: number, options?: ConstraintOptions | Message): this;
+    min(size: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the maximum set size.
      *
      * @param size The maximum set size.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/set-checks!}
      */
-    max(size: number, options?: ConstraintOptions | Message): this;
+    max(size: number, options?: IssueOptions | Message): this;
   }
 }
 
@@ -70,55 +55,49 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!SetShape} with additional checks.
  */
 export default function () {
-  const prototype = SetShape.prototype;
-
-  Object.defineProperties(prototype, {
-    minSize: {
-      configurable: true,
-      get(this: SetShape<any>) {
-        return this.getCheck(CODE_SET_MIN)?.param;
-      },
-    },
-
-    maxSize: {
-      configurable: true,
-      get(this: SetShape<any>) {
-        return this.getCheck(CODE_SET_MAX)?.param;
-      },
-    },
-  });
-
-  prototype.size = size;
-  prototype.min = min;
-  prototype.max = max;
+  SetShape.prototype.size = sizeCheck;
+  SetShape.prototype.min = minCheck;
+  SetShape.prototype.max = maxCheck;
 }
 
-function size(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
+function sizeCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   return this.min(size, options).max(size, options);
 }
 
-function min(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
+function minCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.size < param) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_SET_MIN,
+    param: size,
+    compose: next => (input, output, options, issues) => {
+      if (output.size < size) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_SET_MIN, param: size, unsafe: true }
-  );
+  });
 }
 
-function max(this: SetShape<any>, size: number, options?: ConstraintOptions | Message): SetShape<any> {
+function maxCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.size > param) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_SET_MAX,
+    param: size,
+    compose: next => (input, output, options, issues) => {
+      if (output.size > size) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_SET_MAX, param: size, unsafe: true }
-  );
+  });
 }

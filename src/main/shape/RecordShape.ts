@@ -3,18 +3,18 @@ import {
   applyShape,
   cloneDictHead,
   concatIssues,
-  copyUnsafeChecks,
+  INPUT,
   isArray,
   isObject,
-  ok,
+  OUTPUT,
   setObjectProperty,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Result, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
 type InferRecord<
   KeyShape extends Shape<string, PropertyKey> | null,
@@ -37,7 +37,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   implements DeepPartialProtocol<RecordShape<KeyShape, OptionalDeepPartialShape<ValueShape>>>
 {
   /**
-   * The type constraint options or an issue message.
+   * The issue options or the issue message.
    */
   protected _options;
 
@@ -51,7 +51,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
    *
    * @param keyShape The key shape, or `null` if keys should be preserved intact.
    * @param valueShape The value shape.
-   * @param options The type constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @template KeyShape The key shape.
    * @template ValueShape The value shape.
    */
@@ -64,7 +64,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
      * The value shape.
      */
     readonly valueShape: ValueShape,
-    options?: ConstraintOptions | Message
+    options?: IssueOptions | Message
   ) {
     super();
 
@@ -77,9 +77,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   }
 
   deepPartial(): RecordShape<KeyShape, OptionalDeepPartialShape<ValueShape>> {
-    const valueShape = toDeepPartialShape(this.valueShape).optional();
-
-    return copyUnsafeChecks(this, new RecordShape<any, any>(this.keyShape, valueShape, this._options));
+    return new RecordShape<any, any>(this.keyShape, toDeepPartialShape(this.valueShape).optional(), this._options);
   }
 
   protected _isAsync(): boolean {
@@ -99,7 +97,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
+    const { keyShape, valueShape, operations } = this;
 
     let output = input;
     let issues = null;
@@ -145,21 +143,14 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         }
       }
 
-      if ((_isUnsafe || issues === null) && (keyResult !== null || valueResult !== null)) {
+      if ((issues === null || operations.length !== 0) && (keyResult !== null || valueResult !== null)) {
         if (input === output) {
           output = cloneDictHead(input, index);
         }
         setObjectProperty(output, key, value);
       }
     }
-
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, issues);
   }
 
   protected _applyAsync(
@@ -173,7 +164,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         return;
       }
 
-      const { keyShape, valueShape, _applyChecks, _isUnsafe } = this;
+      const { keyShape, valueShape, operations } = this;
 
       const keys = Object.keys(input);
       const keysLength = keys.length;
@@ -220,7 +211,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           }
         }
 
-        if ((_isUnsafe || issues === null) && (keyChanged || valueResult !== null)) {
+        if ((issues === null || operations.length !== 0) && (keyChanged || valueResult !== null)) {
           if (input === output) {
             output = cloneDictHead(input, index);
           }
@@ -243,14 +234,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
             return valueShape['_applyAsync'](value, options, nonce).then(handleValueResult);
           }
         }
-
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-          issues = _applyChecks(output, issues, options);
-        }
-        if (issues === null && input !== output) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, output, options, issues);
       };
 
       resolve(next());

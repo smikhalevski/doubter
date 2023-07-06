@@ -14,11 +14,10 @@ describe('any', () => {
   test('returns a shape with a refinement', () => {
     const cb = () => true;
 
-    expect(d.any(cb).getCheck(cb)).toEqual({
-      key: cb,
-      callback: expect.any(Function),
-      isUnsafe: false,
-      param: cb,
+    expect(d.any(cb).operations[0]).toEqual({
+      type: cb,
+      param: undefined,
+      compose: expect.any(Function),
     });
   });
 });

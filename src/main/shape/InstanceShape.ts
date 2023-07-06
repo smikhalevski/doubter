@@ -1,9 +1,9 @@
 import { CODE_INSTANCE, MESSAGE_INSTANCE } from '../constants';
 import { isEqualOrSubclass } from '../internal';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../Type';
-import { ApplyOptions, ConstraintOptions, Message } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { Result, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of the class instance.
@@ -21,10 +21,10 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
    * Creates a new {@linkcode InstanceShape} instance.
    *
    * @param ctor The class constructor.
-   * @param options The type constraint options or the type issue message.
+   * @param options The issue options or the issue message.
    * @template Ctor The class constructor.
    */
-  constructor(readonly ctor: Ctor, options?: ConstraintOptions | Message) {
+  constructor(readonly ctor: Ctor, options?: IssueOptions | Message) {
     super();
 
     this._typeIssueFactory = createIssueFactory(CODE_INSTANCE, MESSAGE_INSTANCE, options, ctor);
@@ -55,14 +55,9 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<InstanceType<Ctor>> {
-    const { _applyChecks } = this;
-
     if (!(input instanceof this.ctor)) {
       return [this._typeIssueFactory(input, options)];
     }
-    if (_applyChecks !== null) {
-      return _applyChecks(input, null, options);
-    }
-    return null;
+    return this._applyOperations(input, input, options, null);
   }
 }

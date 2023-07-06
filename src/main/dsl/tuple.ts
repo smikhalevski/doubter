@@ -1,17 +1,17 @@
 import { AnyShape, ArrayShape, Shape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the tuple shape.
  *
  * @param shapes The array of tuple element shapes.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template HeadShapes The head tuple elements.
  * @group DSL
  */
 export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]]>(
   shapes: HeadShapes,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): ArrayShape<HeadShapes, null>;
 
 /**
@@ -19,7 +19,7 @@ export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]]>(
  *
  * @param shapes The array of tuple element shapes.
  * @param restShape The shape of rest elements.
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @template HeadShapes The head tuple elements.
  * @template RestShape The rest tuple elements.
  * @group DSL
@@ -27,13 +27,13 @@ export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]]>(
 export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]], RestShape extends AnyShape | null>(
   shapes: HeadShapes,
   restShape: RestShape,
-  options?: ConstraintOptions | Message
+  options?: IssueOptions | Message
 ): ArrayShape<HeadShapes, RestShape>;
 
 export function tuple(
   shapes: [AnyShape, ...AnyShape[]],
-  restShape?: AnyShape | ConstraintOptions | Message | null,
-  options?: ConstraintOptions | Message
+  restShape?: AnyShape | IssueOptions | Message | null,
+  options?: IssueOptions | Message
 ): ArrayShape<[AnyShape, ...AnyShape[]], AnyShape | null> {
   if (restShape === null || restShape === undefined || restShape instanceof Shape) {
     return new ArrayShape(shapes, restShape || null, options);

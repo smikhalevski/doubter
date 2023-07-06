@@ -20,7 +20,6 @@ export {
   AllowLiteralShape,
   AnyShape,
   Branded,
-  BrandShape,
   CatchShape,
   DeepPartialProtocol,
   DeepPartialShape,
@@ -31,12 +30,10 @@ export {
   NEVER,
   Output,
   PipeShape,
+  RefineShape,
   ReplaceLiteralShape,
-  Result,
   Shape,
-  TransformShape,
-  INPUT,
-  OUTPUT,
+  ConvertShape,
 } from './Shape';
 export { StringShape } from './StringShape';
 export { SymbolShape } from './SymbolShape';

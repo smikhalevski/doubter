@@ -1,12 +1,12 @@
-import * as d from 'doubter';
-import { OUTPUT } from 'doubter';
 import { expectType } from 'tsd';
+import * as d from '../../main';
+import { OUTPUT } from '../../main/internal';
 
 expectType<Map<string, number>>(d.map(d.string(), d.number())[OUTPUT]);
 
 expectType<Map<'bbb', number>>(
   d.map(
-    d.string().transform((): 'bbb' => 'bbb'),
+    d.string().convert((): 'bbb' => 'bbb'),
     d.number()
   )[OUTPUT]
 );

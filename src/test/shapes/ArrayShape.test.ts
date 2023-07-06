@@ -1,50 +1,30 @@
-import { ApplyOptions, ArrayShape, Err, NumberShape, ObjectShape, Ok, Result, Shape, StringShape } from '../../main';
-import {
-  CODE_TUPLE,
-  CODE_TYPE,
-  MESSAGE_ARRAY_TYPE,
-  MESSAGE_NUMBER_TYPE,
-  MESSAGE_STRING_TYPE,
-} from '../../main/constants';
-import { nextNonce } from '../../main/internal';
+import { ArrayShape, Err, NumberShape, ObjectShape, Ok, StringShape } from '../../main';
+import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_NUMBER_TYPE } from '../../main/constants';
+import { resetNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('ArrayShape', () => {
-  class AsyncShape extends Shape {
-    protected _isAsync(): boolean {
-      return true;
-    }
-
-    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-      return new Promise<Result>(resolve => {
-        resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-      });
-    }
-  }
-
-  let asyncShape: AsyncShape;
-
   beforeEach(() => {
-    nextNonce.nonce = 0;
-
-    asyncShape = new AsyncShape();
+    resetNonce();
   });
 
   test('creates an ArrayShape', () => {
-    const shape1 = new Shape();
-    const restShape = new Shape();
+    const headShape1 = new MockShape();
+    const restShape = new MockShape();
 
-    const arrShape = new ArrayShape([shape1], restShape);
+    const shape = new ArrayShape([headShape1], restShape);
 
-    expect(arrShape.headShapes).toEqual([shape1]);
-    expect(arrShape.restShape).toBe(restShape);
-    expect(arrShape.inputs).toEqual([TYPE_ARRAY]);
+    expect(shape.headShapes).toEqual([headShape1]);
+    expect(shape.restShape).toBe(restShape);
+    expect(shape.inputs).toEqual([TYPE_ARRAY]);
+    expect(shape.isAsync).toBe(false);
   });
 
   test('raises an issue if an input is not an unconstrained array', () => {
-    const arrShape = new ArrayShape([], new Shape());
+    const shape = new ArrayShape([], new MockShape());
 
-    const result = arrShape.try('aaa');
+    const result = shape.try('aaa');
 
     expect(result).toEqual({
       ok: false,
@@ -52,131 +32,111 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('does not check array elements if there are no tuple element shapes and no rest element shape', () => {
-    const arrShape = new ArrayShape([], new Shape());
+  test('parses head elements', () => {
+    const headShape1 = new MockShape();
+    const headShape2 = new MockShape();
 
-    const arr = [111, 222];
-    const result = arrShape.try(arr) as Ok<unknown>;
+    const shape = new ArrayShape([headShape1, headShape2], null);
 
-    expect(result).toEqual({ ok: true, value: arr });
-    expect(result.value).toBe(arr);
-  });
+    const input = [111, 222];
+    const result = shape.try(input) as Ok;
 
-  test('parses tuple elements', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape();
-
-    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
-    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
-
-    const arrShape = new ArrayShape([shape1, shape2], null);
-
-    const arr = [111, 222];
-    const result = arrShape.try(arr) as Ok<unknown>;
-
-    expect(result).toEqual({ ok: true, value: arr });
-    expect(result.value).toBe(arr);
-    expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-    expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
+    expect(result).toEqual({ ok: true, value: input });
+    expect(result.value).toBe(input);
+    expect(headShape1._apply).toHaveBeenCalledTimes(1);
+    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+    expect(headShape2._apply).toHaveBeenCalledTimes(1);
+    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
   });
 
   test('parses rest elements', () => {
-    const restShape = new Shape();
+    const restShape = new MockShape();
 
-    const restApplySpy = jest.spyOn<Shape, any>(restShape, '_apply');
+    const shape = new ArrayShape([], restShape);
 
-    const arrShape = new ArrayShape([], restShape);
+    const input = [111, 222];
+    const result = shape.try(input) as Ok;
 
-    const arr = [111, 222];
-    const result = arrShape.try(arr) as Ok<unknown>;
-
-    expect(result).toEqual({ ok: true, value: arr });
-    expect(result.value).toBe(arr);
-    expect(restApplySpy).toHaveBeenCalledTimes(2);
-    expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-    expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+    expect(result).toEqual({ ok: true, value: input });
+    expect(result.value).toBe(input);
+    expect(restShape._apply).toHaveBeenCalledTimes(2);
+    expect(restShape._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
   });
 
-  test('parses both tuple and rest elements at the same time', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape();
-    const restShape = new Shape();
+  test('parses both head and rest elements', () => {
+    const headShape1 = new MockShape();
+    const headShape2 = new MockShape();
+    const restShape = new MockShape();
 
-    const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
-    const applySpy2 = jest.spyOn<Shape, any>(shape2, '_apply');
-    const restApplySpy = jest.spyOn<Shape, any>(restShape, '_apply');
-
-    const arrShape = new ArrayShape([shape1, shape2], restShape);
+    const shape = new ArrayShape([headShape1, headShape2], restShape);
 
     const arr = [111, 222, 333, 444];
-    const result = arrShape.try(arr) as Ok<unknown>;
+    const result = shape.try(arr) as Ok;
 
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
-    expect(applySpy1).toHaveBeenCalledTimes(1);
-    expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-    expect(applySpy2).toHaveBeenCalledTimes(1);
-    expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
-    expect(restApplySpy).toHaveBeenCalledTimes(2);
-    expect(restApplySpy).toHaveBeenNthCalledWith(1, 333, { verbose: false, coerce: false }, 0);
-    expect(restApplySpy).toHaveBeenNthCalledWith(2, 444, { verbose: false, coerce: false }, 0);
+    expect(headShape1._apply).toHaveBeenCalledTimes(1);
+    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+    expect(headShape2._apply).toHaveBeenCalledTimes(1);
+    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
+    expect(restShape._apply).toHaveBeenCalledTimes(2);
+    expect(restShape._apply).toHaveBeenNthCalledWith(1, 333, { verbose: false, coerce: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(2, 444, { verbose: false, coerce: false }, 0);
   });
 
-  test('raises an issue if the tuple length does not match shapes', () => {
-    const arrShape = new ArrayShape([new Shape(), new Shape()], null);
+  test('raises an issue if the tuple length does not match head shapes', () => {
+    const shape = new ArrayShape([new MockShape(), new MockShape()], null);
 
-    expect(arrShape.try([111])).toEqual({
+    expect(shape.try([111])).toEqual({
       ok: false,
       issues: [{ code: CODE_TUPLE, input: [111], message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
   test('raises an issue if an input is not a tuple', () => {
-    const arrShape = new ArrayShape([new Shape(), new Shape()], null);
+    const shape = new ArrayShape([new MockShape(), new MockShape()], null);
 
-    expect(arrShape.try('aaa')).toEqual({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
       issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
   test('raises an issue if an input is not an array', () => {
-    const arrShape = new ArrayShape([], new Shape());
+    const shape = new ArrayShape([], new MockShape());
 
-    expect(arrShape.try('aaa')).toEqual({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY }],
     });
   });
 
   test('raises an issue if an input is too short for tuple with rest elements', () => {
-    const arrShape = new ArrayShape([new Shape(), new Shape()], new Shape());
+    const shape = new ArrayShape([new MockShape(), new MockShape()], new MockShape());
 
-    expect(arrShape.try(['aaa'])).toEqual({
+    expect(shape.try(['aaa'])).toEqual({
       ok: false,
       issues: [{ code: CODE_TUPLE, input: ['aaa'], message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
-  test('raises a single issue captured by the rest shape', () => {
-    const restShape = new Shape().check(() => [{ code: 'xxx' }]);
+  test('rest shape can raise an issue', () => {
+    const restShape = new MockShape().check(() => [{ code: 'xxx' }]);
+    const shape = new ArrayShape([], restShape);
 
-    const arrShape = new ArrayShape([], restShape);
-
-    expect(arrShape.try(['aaa', 'bbb'])).toEqual({
+    expect(shape.try(['aaa', 'bbb'])).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
   });
 
-  test('raises multiple issues captured by the rest shape in verbose mode', () => {
-    const restShape = new Shape().check(() => [{ code: 'xxx' }]);
+  test('rest shape can raise multiple issues in verbose mode', () => {
+    const restShape = new MockShape().check(() => [{ code: 'xxx' }]);
 
-    const arrShape = new ArrayShape([], restShape);
+    const shape = new ArrayShape([], restShape);
 
-    expect(arrShape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
+    expect(shape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -185,13 +145,25 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('raises multiple issues captured by tuple shapes in verbose mode', () => {
-    const shape1 = new Shape().check(() => [{ code: 'xxx' }]);
-    const shape2 = new Shape().check(() => [{ code: 'yyy' }]);
+  test('head shapes can raise an issue', () => {
+    const headShape1 = new MockShape().check(() => [{ code: 'xxx' }]);
+    const headShape2 = new MockShape().check(() => [{ code: 'yyy' }]);
 
-    const arrShape = new ArrayShape([shape1, shape2], null);
+    const shape = new ArrayShape([headShape1, headShape2], null);
 
-    expect(arrShape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
+    expect(shape.try(['aaa', 'bbb'])).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [0] }],
+    });
+  });
+
+  test('head shapes can raise multiple issues in verbose mode', () => {
+    const headShape1 = new MockShape().check(() => [{ code: 'xxx' }]);
+    const headShape2 = new MockShape().check(() => [{ code: 'yyy' }]);
+
+    const shape = new ArrayShape([headShape1, headShape2], null);
+
+    expect(shape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -200,233 +172,212 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('clones an array if a tuple element was transformed', () => {
-    const shape1 = new Shape();
-    const shape2 = new Shape().transform(() => 'aaa');
+  test('clones an array if a tuple element was converted', () => {
+    const headShape1 = new MockShape();
+    const headShape2 = new MockShape().convert(() => 'aaa');
 
-    const arrShape = new ArrayShape([shape1, shape2], null);
+    const shape = new ArrayShape([headShape1, headShape2], null);
 
-    const arr = [111, 222];
-    const result = arrShape.try(arr) as Ok<unknown>;
+    const input = [111, 222];
+    const result = shape.try(input) as Ok;
 
-    expect(arr).toEqual([111, 222]);
+    expect(input).toEqual([111, 222]);
     expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
-    expect(result.value).not.toBe(arr);
+    expect(result.value).not.toBe(input);
   });
 
-  test('applies checks', () => {
-    const arrShape = new ArrayShape([], new Shape()).check(() => [{ code: 'xxx' }]);
+  test('applies operations', () => {
+    const shape = new ArrayShape([], new MockShape()).check(() => [{ code: 'xxx' }]);
 
-    expect(arrShape.try([111])).toEqual({
+    expect(shape.try([111])).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
   });
 
-  test('does not apply checks if a tuple element raises an issue', () => {
-    const arrShape = new ArrayShape([new StringShape()], null).check(() => [{ code: 'xxx' }]);
-
-    expect(arrShape.try([111], { verbose: true })).toEqual({
-      ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [0] }],
-    });
-  });
-
-  test('applies unsafe checks if a tuple element raises an issue', () => {
-    const arrShape = new ArrayShape([new StringShape()], null).check(() => [{ code: 'xxx' }], { unsafe: true });
-
-    expect(arrShape.try([111], { verbose: true })).toEqual({
-      ok: false,
-      issues: [
-        { code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [0] },
-        { code: 'xxx' },
-      ],
-    });
-  });
-
   describe('at', () => {
-    test('returns the tuple element shape', () => {
-      const shape1 = new Shape();
-      const shape2 = new Shape();
+    test('returns the head element shape', () => {
+      const headShape1 = new MockShape();
+      const headShape2 = new MockShape();
 
-      const arrShape = new ArrayShape([shape1, shape2], null);
+      const shape = new ArrayShape([headShape1, headShape2], null);
 
-      expect(arrShape.at('0')).toBe(shape1);
-      expect(arrShape.at('1')).toBe(shape2);
-      expect(arrShape.at('2')).toBeNull();
+      expect(shape.at('0')).toBe(headShape1);
+      expect(shape.at('1')).toBe(headShape2);
+      expect(shape.at('2')).toBeNull();
 
-      expect(arrShape.at(0)).toBe(shape1);
-      expect(arrShape.at(1)).toBe(shape2);
-      expect(arrShape.at(2)).toBeNull();
+      expect(shape.at(0)).toBe(headShape1);
+      expect(shape.at(1)).toBe(headShape2);
+      expect(shape.at(2)).toBeNull();
 
-      expect(arrShape.at('000')).toBeNull();
-      expect(arrShape.at('1e+49')).toBeNull();
-      expect(arrShape.at(-111)).toBeNull();
-      expect(arrShape.at(111.222)).toBeNull();
-      expect(arrShape.at('aaa')).toBeNull();
+      expect(shape.at('000')).toBeNull();
+      expect(shape.at('1e+49')).toBeNull();
+      expect(shape.at(-111)).toBeNull();
+      expect(shape.at(111.222)).toBeNull();
+      expect(shape.at('aaa')).toBeNull();
     });
 
     test('returns the rest element shape', () => {
-      const restShape = new Shape();
+      const restShape = new MockShape();
 
-      const arrShape = new ArrayShape([], restShape);
+      const shape = new ArrayShape([], restShape);
 
-      expect(arrShape.at(0)).toBe(restShape);
-      expect(arrShape.at(1)).toBe(restShape);
+      expect(shape.at(0)).toBe(restShape);
+      expect(shape.at(1)).toBe(restShape);
     });
 
-    test('returns the rest element shape when tuple element shapes are available', () => {
-      const shape1 = new Shape();
-      const restShape = new Shape();
+    test('returns the rest element shape when head element shapes are available', () => {
+      const headShape = new MockShape();
+      const restShape = new MockShape();
 
-      const arrShape = new ArrayShape([shape1], restShape);
+      const shape = new ArrayShape([headShape], restShape);
 
-      expect(arrShape.at(0)).toBe(shape1);
-      expect(arrShape.at(1)).toBe(restShape);
-      expect(arrShape.at(2)).toBe(restShape);
+      expect(shape.at(0)).toBe(headShape);
+      expect(shape.at(1)).toBe(restShape);
+      expect(shape.at(2)).toBe(restShape);
     });
   });
 
   describe('rest', () => {
-    test('returns the shape clone with updated rest elements', () => {
-      const restShape = new Shape();
+    test('returns the shape clone', () => {
+      const shape = new ArrayShape([], null);
 
-      expect(new ArrayShape([], null).rest(restShape).restShape).toBe(restShape);
+      expect(shape.rest(new MockShape())).not.toBe(shape);
     });
 
-    test('copies unsafe checks', () => {
-      const cbMock1 = jest.fn();
-      const cbMock2 = jest.fn();
+    test('sets rest shape', () => {
+      const restShape = new MockShape();
 
-      const arrShape = new ArrayShape([], null).check(cbMock1, { unsafe: true }).check(cbMock2);
+      const shape = new ArrayShape([], null);
 
-      arrShape.rest(new Shape()).parse([]);
+      expect(shape.rest(restShape).restShape).toBe(restShape);
+    });
 
-      expect(cbMock1).toHaveBeenCalledTimes(1);
-      expect(cbMock2).not.toHaveBeenCalled();
+    test('strips operations', () => {
+      expect(new ArrayShape([], null).check(() => null).rest(new MockShape()).operations.length).toBe(0);
     });
   });
 
   describe('deepPartial', () => {
     test('raises an issue if deep partial tuple length is invalid', () => {
-      const arrShape = new ArrayShape(
+      const shape = new ArrayShape(
         [new ObjectShape({ key1: new StringShape() }, null)],
         new NumberShape()
       ).deepPartial();
 
-      expect(arrShape.parse([undefined])).toEqual([undefined]);
+      expect(shape.parse([undefined])).toEqual([undefined]);
 
-      expect(arrShape.try([])).toEqual({
+      expect(shape.try([])).toEqual({
         ok: false,
         issues: [{ code: CODE_TUPLE, input: [], message: 'Must be a tuple of length 1', param: 1 }],
       });
     });
 
     test('raises an issue if deep partial element is invalid', () => {
-      const arrShape = new ArrayShape([], new NumberShape()).deepPartial();
+      const shape = new ArrayShape([], new NumberShape()).deepPartial();
 
-      expect(arrShape.try(['aaa'])).toEqual({
+      expect(shape.try(['aaa'])).toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, path: [0], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
       });
     });
 
     test('parses deep partial tuple with rest elements', () => {
-      const arrShape = new ArrayShape(
+      const shape = new ArrayShape(
         [new ObjectShape({ key1: new StringShape() }, null)],
         new NumberShape()
       ).deepPartial();
 
-      expect(arrShape.parse([undefined])).toEqual([undefined]);
-      expect(arrShape.parse([{}])).toEqual([{}]);
-      expect(arrShape.parse([{}, undefined])).toEqual([{}, undefined]);
-      expect(arrShape.parse([undefined, undefined])).toEqual([undefined, undefined]);
-      expect(arrShape.parse([{}, 111, undefined])).toEqual([{}, 111, undefined]);
-      expect(arrShape.parse([{ key1: undefined }])).toEqual([{ key1: undefined }]);
+      expect(shape.parse([undefined])).toEqual([undefined]);
+      expect(shape.parse([{}])).toEqual([{}]);
+      expect(shape.parse([{}, undefined])).toEqual([{}, undefined]);
+      expect(shape.parse([undefined, undefined])).toEqual([undefined, undefined]);
+      expect(shape.parse([{}, 111, undefined])).toEqual([{}, 111, undefined]);
+      expect(shape.parse([{ key1: undefined }])).toEqual([{ key1: undefined }]);
     });
 
     test('parses deep partial array', () => {
-      const arrShape = new ArrayShape([], new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
+      const shape = new ArrayShape([], new ObjectShape({ key1: new StringShape() }, null)).deepPartial();
 
-      expect(arrShape.parse([undefined])).toEqual([undefined]);
-      expect(arrShape.parse([{}])).toEqual([{}]);
-      expect(arrShape.parse([{}, undefined])).toEqual([{}, undefined]);
-      expect(arrShape.parse([undefined, { key1: undefined }])).toEqual([undefined, { key1: undefined }]);
+      expect(shape.parse([undefined])).toEqual([undefined]);
+      expect(shape.parse([{}])).toEqual([{}]);
+      expect(shape.parse([{}, undefined])).toEqual([{}, undefined]);
+      expect(shape.parse([undefined, { key1: undefined }])).toEqual([undefined, { key1: undefined }]);
     });
   });
 
   describe('coerce', () => {
     test('allow unknown input type when shape is coerced and elements are unconstrained', () => {
-      const arrShape = new ArrayShape([], null).coerce();
+      const shape = new ArrayShape([], null).coerce();
 
-      expect(arrShape.inputs).toEqual([TYPE_UNKNOWN]);
+      expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
     });
 
     test('allows only array-like types when tuple has two elements', () => {
-      const arrShape = new ArrayShape([new StringShape(), new NumberShape()], null).coerce();
+      const shape = new ArrayShape([new StringShape(), new NumberShape()], null).coerce();
 
-      expect(arrShape.inputs).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
+      expect(shape.inputs).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
     });
 
     test('allows inputs of a single tuple element', () => {
-      const arrShape = new ArrayShape([new StringShape()], null).coerce();
+      const shape = new ArrayShape([new StringShape()], null).coerce();
 
-      expect(arrShape.inputs).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
+      expect(shape.inputs).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
     });
 
-    test('does not coerce if a tuple has no elements', () => {
-      const arrShape = new ArrayShape([], null).coerce();
+    test('does not coerce if an input tuple has no elements', () => {
+      const shape = new ArrayShape([], null).coerce();
 
-      expect(arrShape.try('aaa')).toEqual({
+      expect(shape.try('aaa')).toEqual({
         ok: false,
         issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 0', param: 0 }],
       });
     });
 
     test('coerces a non-array to a tuple of one element', () => {
-      const arrShape = new ArrayShape([new Shape()], null).coerce();
+      const shape = new ArrayShape([new MockShape()], null).coerce();
 
-      expect(arrShape.parse('aaa')).toEqual(['aaa']);
+      expect(shape.parse('aaa')).toEqual(['aaa']);
     });
 
     test('does not coerce if a tuple has more than one element', () => {
-      const arrShape = new ArrayShape([new Shape(), new Shape()], null).coerce();
+      const shape = new ArrayShape([new MockShape(), new MockShape()], null).coerce();
 
-      expect(arrShape.try('aaa')).toEqual({
+      expect(shape.try('aaa')).toEqual({
         ok: false,
         issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
       });
     });
 
     test('coerces a non-array to an array', () => {
-      const arrShape = new ArrayShape([], new Shape()).coerce();
+      const shape = new ArrayShape([], new MockShape()).coerce();
 
-      expect(arrShape.parse('aaa')).toEqual(['aaa']);
+      expect(shape.parse('aaa')).toEqual(['aaa']);
     });
 
     test('coerce if a tuple has no elements with rest elements', () => {
-      const arrShape = new ArrayShape([], new Shape()).coerce();
+      const shape = new ArrayShape([], new MockShape()).coerce();
 
-      expect(arrShape.parse('aaa')).toEqual(['aaa']);
+      expect(shape.parse('aaa')).toEqual(['aaa']);
     });
 
     test('coerces a non-array to a tuple of one element with rest elements', () => {
-      const arrShape = new ArrayShape([new Shape()], new Shape()).coerce();
+      const shape = new ArrayShape([new MockShape()], new MockShape()).coerce();
 
-      expect(arrShape.parse('aaa')).toEqual(['aaa']);
+      expect(shape.parse('aaa')).toEqual(['aaa']);
     });
 
     test('coerces a Set', () => {
-      const arrShape = new ArrayShape([], new Shape()).coerce();
+      const shape = new ArrayShape([], new MockShape()).coerce();
 
-      expect(arrShape.parse(new Set(['aaa']))).toEqual(['aaa']);
+      expect(shape.parse(new Set(['aaa']))).toEqual(['aaa']);
     });
 
     test('coerces a Map to an array of entries', () => {
-      const arrShape = new ArrayShape([], new Shape()).coerce();
+      const shape = new ArrayShape([], new MockShape()).coerce();
 
       expect(
-        arrShape.parse(
+        shape.parse(
           new Map([
             ['key1', 'aaa'],
             ['key2', 'bbb'],
@@ -439,21 +390,21 @@ describe('ArrayShape', () => {
     });
 
     test('coerces an array-like object', () => {
-      const arrShape = new ArrayShape([], new Shape()).coerce();
+      const shape = new ArrayShape([], new MockShape()).coerce();
 
-      expect(arrShape.parse({ length: 1, 0: 'aaa' })).toEqual(['aaa']);
+      expect(shape.parse({ length: 1, 0: 'aaa' })).toEqual(['aaa']);
     });
 
-    test('coerces a String wrapper', () => {
-      const arrShape = new ArrayShape([], new Shape()).coerce();
+    test('coerces a String object', () => {
+      const shape = new ArrayShape([], new MockShape()).coerce();
 
-      expect(arrShape.parse(new String('aaa'))).toEqual(['aaa']);
+      expect(shape.parse(new String('aaa'))).toEqual(['aaa']);
     });
 
     test('does not coerce if a tuple has more than one element with rest elements', () => {
-      const arrShape = new ArrayShape([new Shape(), new Shape()], new Shape()).coerce();
+      const shape = new ArrayShape([new MockShape(), new MockShape()], new MockShape()).coerce();
 
-      expect(arrShape.try('aaa')).toEqual({
+      expect(shape.try('aaa')).toEqual({
         ok: false,
         issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
       });
@@ -462,9 +413,9 @@ describe('ArrayShape', () => {
 
   describe('async', () => {
     test('raises an issue if an input is not an unconstrained array', async () => {
-      const arrShape = new ArrayShape([], asyncShape);
+      const shape = new ArrayShape([], new AsyncMockShape());
 
-      const result = await arrShape.tryAsync('aaa');
+      const result = await shape.tryAsync('aaa');
 
       expect(result).toEqual({
         ok: false,
@@ -473,91 +424,77 @@ describe('ArrayShape', () => {
     });
 
     test('downgrades to sync implementation if there are no async element shapes', async () => {
-      const arrShape = new ArrayShape([], new Shape());
+      const shape = spyOnShape(new ArrayShape([], new MockShape()));
 
-      const applySpy = jest.spyOn<Shape, any>(arrShape, '_apply');
-
-      await expect(arrShape.tryAsync([])).resolves.toEqual({ ok: true, value: [] });
-      expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, [], { verbose: false, coerce: false }, 0);
+      await expect(shape.tryAsync([])).resolves.toEqual({ ok: true, value: [] });
+      expect(shape._apply).toHaveBeenCalledTimes(1);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, [], { verbose: false, coerce: false }, 0);
     });
 
-    test('parses tuple elements', async () => {
-      const shape1 = new Shape();
-      const shape2 = asyncShape;
+    test('parses head elements', async () => {
+      const headShape1 = new MockShape();
+      const headShape2 = new AsyncMockShape();
 
-      shape1.isAsync;
-      shape2.isAsync;
+      const shape = new ArrayShape([headShape1, headShape2], null);
 
-      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_apply');
-      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
+      const input = [111, 222];
+      const result = (await shape.tryAsync(input)) as Ok;
 
-      const arrShape = new ArrayShape([shape1, shape2], null);
-
-      const arr = [111, 222];
-      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
-
-      expect(result).toEqual({ ok: true, value: arr });
-      expect(result.value).toBe(arr);
-      expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-      expect(applySpy2).toHaveBeenCalledTimes(1);
-      expect(applySpy2).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
+      expect(result).toEqual({ ok: true, value: input });
+      expect(result.value).toBe(input);
+      expect(headShape1._apply).toHaveBeenCalledTimes(1);
+      expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+      expect(headShape2._applyAsync).toHaveBeenCalledTimes(1);
+      expect(headShape2._applyAsync).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
     });
 
-    test('does not apply tuple element shape if previous shape raised an issue', async () => {
-      const shape1 = asyncShape.check(() => [{ code: 'xxx' }]);
-      const shape2 = asyncShape;
+    test('does not apply head element shape if previous shape raised an issue', async () => {
+      const headShape1 = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
+      const headShape2 = new AsyncMockShape();
 
-      shape1.isAsync;
-      shape2.isAsync;
+      const shape = new ArrayShape([headShape1, headShape2], null);
 
-      const applySpy1 = jest.spyOn<Shape, any>(shape1, '_applyAsync');
-      const applySpy2 = jest.spyOn<Shape, any>(shape2, '_applyAsync');
-
-      const arrShape = new ArrayShape([shape1, shape2], null);
-
-      const arr = [111, 222];
-      const result = (await arrShape.tryAsync(arr)) as Err;
+      const input = [111, 222];
+      const result = (await shape.tryAsync(input)) as Err;
 
       expect(result).toEqual({ ok: false, issues: [{ code: 'xxx', path: [0] }] });
-      expect(applySpy1).toHaveBeenCalledTimes(1);
-      expect(applySpy1).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-      expect(applySpy2).not.toHaveBeenCalled();
+      expect(headShape1._applyAsync).toHaveBeenCalledTimes(1);
+      expect(headShape1._applyAsync).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+      expect(headShape2._applyAsync).not.toHaveBeenCalled();
     });
 
     test('parses rest elements', async () => {
-      const restApplySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
+      const restShape = new AsyncMockShape();
 
-      const arrShape = new ArrayShape([], asyncShape);
+      const shape = new ArrayShape([], restShape);
 
-      const arr = [111, 222];
-      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
+      const input = [111, 222];
+      const result = (await shape.tryAsync(input)) as Ok;
 
-      expect(result).toEqual({ ok: true, value: arr });
-      expect(result.value).toBe(arr);
-      expect(restApplySpy).toHaveBeenCalledTimes(2);
-      expect(restApplySpy).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-      expect(restApplySpy).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+      expect(result).toEqual({ ok: true, value: input });
+      expect(result.value).toBe(input);
+      expect(restShape._applyAsync).toHaveBeenCalledTimes(2);
+      expect(restShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+      expect(restShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
     });
 
-    test('clones an array if a tuple element was transformed', async () => {
-      const shape1 = new Shape();
-      const shape2 = new Shape().transformAsync(() => Promise.resolve('aaa'));
+    test('clones an array if a tuple element was converted', async () => {
+      const headShape1 = new MockShape();
+      const headShape2 = new MockShape().convertAsync(() => Promise.resolve('aaa'));
 
-      const arrShape = new ArrayShape([shape1, shape2], null);
+      const shape = new ArrayShape([headShape1, headShape2], null);
 
-      const arr = [111, 222];
-      const result = (await arrShape.tryAsync(arr)) as Ok<unknown>;
+      const input = [111, 222];
+      const result = (await shape.tryAsync(input)) as Ok;
 
       expect(result).toEqual({ ok: true, value: [111, 'aaa'] });
-      expect(result.value).not.toBe(arr);
+      expect(result.value).not.toBe(input);
     });
 
-    test('applies checks', async () => {
-      const arrShape = new ArrayShape([], asyncShape).check(() => [{ code: 'xxx' }]);
+    test('applies operations', async () => {
+      const shape = new ArrayShape([], new AsyncMockShape()).check(() => [{ code: 'xxx' }]);
 
-      await expect(arrShape.tryAsync([111])).resolves.toEqual({
+      await expect(shape.tryAsync([111])).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -565,21 +502,21 @@ describe('ArrayShape', () => {
 
     describe('coerce', () => {
       test('coerces a non-array to an array', async () => {
-        const arrShape = new ArrayShape([], asyncShape).coerce();
+        const shape = new ArrayShape([], new AsyncMockShape()).coerce();
 
-        await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
+        await expect(shape.parseAsync('aaa')).resolves.toEqual(['aaa']);
       });
 
       test('coerces a non-array to a tuple of one element', async () => {
-        const arrShape = new ArrayShape([new Shape()], asyncShape).coerce();
+        const shape = new ArrayShape([new MockShape()], new AsyncMockShape()).coerce();
 
-        await expect(arrShape.parseAsync('aaa')).resolves.toEqual(['aaa']);
+        await expect(shape.parseAsync('aaa')).resolves.toEqual(['aaa']);
       });
 
       test('does not coerce if a tuple has more than one element with rest elements', async () => {
-        const arrShape = new ArrayShape([new Shape(), new Shape()], asyncShape).coerce();
+        const shape = new ArrayShape([new MockShape(), new MockShape()], new AsyncMockShape()).coerce();
 
-        await expect(arrShape.tryAsync('aaa')).resolves.toEqual({
+        await expect(shape.tryAsync('aaa')).resolves.toEqual({
           ok: false,
           issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
         });

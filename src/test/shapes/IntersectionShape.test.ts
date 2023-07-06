@@ -24,72 +24,52 @@ import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 
 describe('IntersectionShape', () => {
   test('returns the input as is if it matches all intersected shapes', () => {
-    const obj = { key1: 'aaa', key2: 111 };
+    const input = { key1: 'aaa', key2: 111 };
 
-    const andShape = new IntersectionShape([
-      new ObjectShape(
-        {
-          key1: new StringShape(),
-        },
-        null
-      ),
-      new ObjectShape(
-        {
-          key2: new NumberShape(),
-        },
-        null
-      ),
+    const shape = new IntersectionShape([
+      new ObjectShape({ key1: new StringShape() }, null),
+      new ObjectShape({ key2: new NumberShape() }, null),
     ]);
 
-    expect(andShape.parse(obj)).toBe(obj);
+    expect(shape.parse(input)).toBe(input);
   });
 
-  test('returns the intersection of transformed shapes', () => {
-    const obj = { key1: 'aaa', key2: 111 };
+  test('returns the intersection of converted shapes', () => {
+    const input = { key1: 'aaa', key2: 111 };
 
-    const andShape = new IntersectionShape([
-      new ObjectShape(
-        {
-          key1: new StringShape().transform(() => 'xxx'),
-        },
-        null
-      ).strip(),
-      new ObjectShape(
-        {
-          key2: new NumberShape().transform(() => 'yyy'),
-        },
-        null
-      ).strip(),
+    const shape = new IntersectionShape([
+      new ObjectShape({ key1: new StringShape().convert(() => 'xxx') }, null).strip(),
+      new ObjectShape({ key2: new NumberShape().convert(() => 'yyy') }, null).strip(),
     ]);
 
-    expect(andShape.parse(obj)).toEqual({ key1: 'xxx', key2: 'yyy' });
+    expect(shape.parse(input)).toEqual({ key1: 'xxx', key2: 'yyy' });
   });
 
   test('can be used in conjunction with union shape', () => {
-    const andShape = new IntersectionShape([new UnionShape([new StringShape(), new NumberShape()]), new NumberShape()]);
+    const shape = new IntersectionShape([new UnionShape([new StringShape(), new NumberShape()]), new NumberShape()]);
 
-    expect(andShape.parse(111)).toBe(111);
+    expect(shape.parse(111)).toBe(111);
   });
 
   test('NaN values are equal', () => {
-    const andShape = new IntersectionShape([new Shape(), new Shape()]);
+    const shape = new IntersectionShape([new Shape(), new Shape()]);
 
-    expect(andShape.parse(NaN)).toBe(NaN);
+    expect(shape.parse(NaN)).toBe(NaN);
   });
 
   test('raises an issue if an input does not conform one of shapes', () => {
-    const andShape = new IntersectionShape([new NumberShape(), new NumberShape()]);
+    const shape = new IntersectionShape([new NumberShape(), new NumberShape()]);
 
-    expect(andShape.try('aaa')).toEqual({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
     });
   });
 
-  test('raises an issue if an input does not conform several shapes in verbose mode', () => {
-    const andShape = new IntersectionShape([new NumberShape(), new BooleanShape()]);
+  test('raises multiple issues if an input does not conform several shapes in verbose mode', () => {
+    const shape = new IntersectionShape([new NumberShape(), new BooleanShape()]);
 
-    expect(andShape.try('aaa', { verbose: true })).toEqual({
+    expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
@@ -99,51 +79,51 @@ describe('IntersectionShape', () => {
   });
 
   test('raises an issue if outputs cannot be intersected', () => {
-    const andShape = new IntersectionShape([new StringShape(), new StringShape().transform(parseFloat)]);
+    const shape = new IntersectionShape([new StringShape(), new StringShape().convert(parseFloat)]);
 
-    expect(andShape.try('111.222')).toEqual({
+    expect(shape.try('111.222')).toEqual({
       ok: false,
       issues: [{ code: CODE_INTERSECTION, input: '111.222', message: MESSAGE_INTERSECTION }],
     });
   });
 
   test('raises an issue if child outputs cannot be intersected', () => {
-    const andShape = new IntersectionShape([
+    const shape = new IntersectionShape([
       new ArrayShape([], new StringShape()),
-      new ArrayShape([], new StringShape().transform(parseFloat)),
+      new ArrayShape([], new StringShape().convert(parseFloat)),
     ]);
 
-    expect(andShape.try(['111.222'])).toEqual({
+    expect(shape.try(['111.222'])).toEqual({
       ok: false,
       issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION }],
     });
   });
 
   test('empty intersections produce no issues', () => {
-    const orShape = new IntersectionShape([]);
+    const shape = new IntersectionShape([]);
 
-    expect(orShape.try('aaa')).toEqual({ ok: true, value: 'aaa' });
+    expect(shape.try('aaa')).toEqual({ ok: true, value: 'aaa' });
   });
 
-  test('applies checks', () => {
+  test('applies operations', () => {
     const shape1 = new Shape();
     const shape2 = new Shape();
 
-    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'xxx' }]);
+    const shape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'xxx' }]);
 
-    expect(orShape.try({})).toEqual({
+    expect(shape.try({})).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
   });
 
-  test('does not apply checks if an intersected shape raises an issue', () => {
+  test('does not apply operations if an intersected shape raises an issue', () => {
     const shape1 = new Shape();
     const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const orShape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { unsafe: true });
+    const shape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { force: true });
 
-    expect(orShape.try({}, { verbose: true })).toEqual({
+    expect(shape.try({}, { verbose: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -151,20 +131,19 @@ describe('IntersectionShape', () => {
 
   describe('at', () => {
     test('returns an intersection of child shapes at key', () => {
-      const shape1 = new Shape();
-      const shape2 = new Shape();
-      const shape3 = new Shape();
-      const objShape = new ObjectShape({ 1: shape1, key1: shape2 }, null);
-      const arrShape = new ArrayShape([], shape3);
+      const valueShape1 = new Shape();
+      const valueShape2 = new Shape();
+      const restShape = new Shape();
 
-      const andShape = new IntersectionShape([objShape, arrShape]);
+      const shape1 = new ObjectShape({ 1: valueShape1, key1: valueShape2 }, null);
+      const shape2 = new ArrayShape([], restShape);
 
-      const shape = andShape.at(1) as IntersectionShape<AnyShape[]>;
+      const shape = new IntersectionShape([shape1, shape2]).at(1) as IntersectionShape<AnyShape[]>;
 
       expect(shape instanceof IntersectionShape).toBe(true);
       expect(shape.shapes.length).toBe(2);
-      expect(shape.shapes[0]).toBe(shape1);
-      expect(shape.shapes[1]).toBe(shape3);
+      expect(shape.shapes[0]).toBe(valueShape1);
+      expect(shape.shapes[1]).toBe(restShape);
     });
 
     test('returns null if key does not exist in any of children', () => {
@@ -174,22 +153,22 @@ describe('IntersectionShape', () => {
 
   describe('deepPartial', () => {
     test('parses intersected deep partial objects', () => {
-      const andShape = new IntersectionShape([
+      const shape = new IntersectionShape([
         new ObjectShape({ key1: new StringShape() }, null),
         new ObjectShape({ key2: new StringShape() }, null),
       ]).deepPartial();
 
-      expect(andShape.parse({})).toEqual({});
-      expect(andShape.parse({ key1: undefined })).toEqual({ key1: undefined });
-      expect(andShape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
-      expect(andShape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
+      expect(shape.parse({})).toEqual({});
+      expect(shape.parse({ key1: undefined })).toEqual({ key1: undefined });
+      expect(shape.parse({ key2: 'aaa' })).toEqual({ key2: 'aaa' });
+      expect(shape.parse({ key1: 'aaa', key2: undefined })).toEqual({ key1: 'aaa', key2: undefined });
     });
 
     test('does not make shapes optional', () => {
-      const andShape = new IntersectionShape([new NumberShape()]).deepPartial();
+      const shape = new IntersectionShape([new NumberShape()]).deepPartial();
 
-      expect(andShape.parse(111)).toBe(111);
-      expect(andShape.try(undefined)).toEqual({
+      expect(shape.parse(111)).toBe(111);
+      expect(shape.try(undefined)).toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
       });
@@ -235,33 +214,23 @@ describe('IntersectionShape', () => {
 
   describe('async', () => {
     test('returns the input as is if it matches all intersected shapes', async () => {
-      const obj = { key1: 'aaa', key2: 111 };
+      const input = { key1: 'aaa', key2: 111 };
 
-      const andShape = new IntersectionShape([
-        new ObjectShape(
-          {
-            key1: new StringShape(),
-          },
-          null
-        ).transformAsync(value => Promise.resolve(value)),
-        new ObjectShape(
-          {
-            key2: new NumberShape().transformAsync(value => Promise.resolve(value)),
-          },
-          null
-        ),
+      const shape = new IntersectionShape([
+        new ObjectShape({ key1: new StringShape() }, null).convertAsync(value => Promise.resolve(value)),
+        new ObjectShape({ key2: new NumberShape().convertAsync(value => Promise.resolve(value)) }, null),
       ]);
 
-      await expect(andShape.parseAsync(obj)).resolves.toBe(obj);
+      await expect(shape.parseAsync(input)).resolves.toBe(input);
     });
 
     test('raises an issue if child outputs cannot be intersected', async () => {
-      const andShape = new IntersectionShape([
+      const shape = new IntersectionShape([
         new ArrayShape([], new StringShape()),
-        new ArrayShape([], new StringShape().transformAsync(value => Promise.resolve(value)).transform(parseFloat)),
+        new ArrayShape([], new StringShape().convertAsync(value => Promise.resolve(value)).convert(parseFloat)),
       ]);
 
-      await expect(andShape.tryAsync(['111.222'])).resolves.toEqual({
+      await expect(shape.tryAsync(['111.222'])).resolves.toEqual({
         ok: false,
         issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION }],
       });
@@ -283,9 +252,9 @@ describe('mergeValues', () => {
 
   describe('Date', () => {
     test('returns the left date if dates have the same time', () => {
-      const date = new Date(111);
+      const value = new Date(111);
 
-      expect(mergeValues(date, new Date(111))).toBe(date);
+      expect(mergeValues(value, new Date(111))).toBe(value);
     });
 
     test('returns NEVER if dates do not have the same time', () => {

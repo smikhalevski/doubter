@@ -1,204 +1,186 @@
 import {
-  ApplyOptions,
   DeepPartialProtocol,
   LazyShape,
   NumberShape,
   ObjectShape,
-  Result,
   Shape,
   StringShape,
   ValidationError,
 } from '../../main';
 import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
-import { identity, nextNonce } from '../../main/internal';
+import { identity, nextNonce, resetNonce } from '../../main/internal';
 import { TYPE_OBJECT } from '../../main/Type';
+import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('LazyShape', () => {
-  class AsyncShape extends Shape {
-    protected _isAsync(): boolean {
-      return true;
-    }
-
-    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-      return new Promise<Result>(resolve => {
-        resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-      });
-    }
-  }
-
-  let asyncShape: AsyncShape;
-
   beforeEach(() => {
-    nextNonce.nonce = 0;
-
-    asyncShape = new AsyncShape();
+    resetNonce();
   });
 
-  test('parses values with an underlying shape', () => {
-    const shape = new StringShape();
-    const lazyShape = new LazyShape(() => shape, identity);
+  test('parses values with the provided shape', () => {
+    const providedShape = new MockShape();
+    const shape = new LazyShape(() => providedShape, identity);
 
-    const applySpy = jest.spyOn<Shape, any>(shape, '_apply');
-
-    expect(lazyShape.isAsync).toBe(false);
-    expect(lazyShape.parse('aaa')).toBe('aaa');
-    expect(applySpy).toHaveBeenCalledTimes(1);
-    expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
+    expect(shape.isAsync).toBe(false);
+    expect(shape.parse('aaa')).toBe('aaa');
+    expect(providedShape._apply).toHaveBeenCalledTimes(1);
+    expect(providedShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
   });
 
-  test('applies checks to transformed value', () => {
-    const checkMock = jest.fn(() => [{ code: 'xxx' }]);
+  test('applies operations to converted value', () => {
+    const cbMock = jest.fn(() => [{ code: 'xxx' }]);
 
-    const shape = new StringShape().transform(parseFloat);
-    const lazyShape = new LazyShape(() => shape, identity).check(checkMock);
+    const providedShape = new StringShape().convert(parseFloat);
+    const shape = new LazyShape(() => providedShape, identity).check(cbMock);
 
-    expect(lazyShape.try('111')).toEqual({
+    expect(shape.try('111')).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
-    expect(checkMock).toHaveBeenCalledTimes(1);
-    expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerce: false });
+    expect(cbMock).toHaveBeenCalledTimes(1);
+    expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { verbose: false, coerce: false });
   });
 
-  test('does not apply checks if an underlying shape raises an issue', () => {
-    const shape = new Shape().check(() => [{ code: 'xxx' }]);
-    const lazyShape = new LazyShape(() => shape, identity).check(() => [{ code: 'yyy' }], { unsafe: true });
+  test('does not apply operations if the provided shape raises an issue', () => {
+    const providedShape = new Shape().check(() => [{ code: 'xxx' }]);
+    const shape = new LazyShape(() => providedShape, identity).check(() => [{ code: 'yyy' }], { force: true });
 
-    expect(lazyShape.try('aaa', { verbose: true })).toEqual({
+    expect(shape.try('aaa', { verbose: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
   });
 
   test('shape provider is called only once', () => {
-    const shape = new NumberShape();
-    const shapeProviderMock = jest.fn(() => shape);
+    const providedShape = new NumberShape();
+    const shapeProviderMock = jest.fn(() => providedShape);
 
-    const lazyShape1: LazyShape<any, any> = new LazyShape(shapeProviderMock, identity);
-    const lazyShape2 = lazyShape1.check(() => null);
+    const shape1: LazyShape<any, any> = new LazyShape(shapeProviderMock, identity);
+    const shape2 = shape1.check(() => null);
 
-    expect(lazyShape1.shape).toBe(shape);
-    expect(lazyShape2.shape).toBe(shape);
+    expect(shape1.providedShape).toBe(providedShape);
+    expect(shape2.providedShape).toBe(providedShape);
     expect(shapeProviderMock).toHaveBeenCalledTimes(1);
   });
 
   describe('_isAsync', () => {
     test('prevents short circuit', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape, identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => shape, identity);
 
-      expect(lazyShape['_isAsync']()).toBe(false);
+      expect(shape['_isAsync']()).toBe(false);
     });
 
     test('prevents infinite loop', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null), identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: shape }, null), identity);
 
-      expect(lazyShape['_isAsync']()).toBe(false);
+      expect(shape['_isAsync']()).toBe(false);
     });
 
     test('returns true if async', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(
-        () => new ObjectShape({ key1: lazyShape.transformAsync(() => Promise.resolve(111)) }, null),
+      const shape: LazyShape<any, any> = new LazyShape(
+        () => new ObjectShape({ key1: shape.convertAsync(() => Promise.resolve(111)) }, null),
         identity
       );
 
-      expect(lazyShape['_isAsync']()).toBe(true);
+      expect(shape['_isAsync']()).toBe(true);
     });
   });
 
   describe('inputs', () => {
     test('prevents short circuit', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape, identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => shape, identity);
 
-      expect(lazyShape.inputs).toEqual([]);
+      expect(shape.inputs).toEqual([]);
     });
 
     test('prevents infinite loop', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null), identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: shape }, null), identity);
 
-      expect(lazyShape.inputs).toEqual([TYPE_OBJECT]);
+      expect(shape.inputs).toEqual([TYPE_OBJECT]);
     });
   });
 
-  describe('shape', () => {
+  describe('providedShape', () => {
     test('prevents short circuit', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape, identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => shape, identity);
 
-      expect(lazyShape.shape).toBe(lazyShape);
+      expect(shape.providedShape).toBe(shape);
     });
 
     test('throws an exception on premature access', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape.shape, identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => shape.providedShape, identity);
 
-      expect(() => lazyShape.shape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
+      expect(() => shape.providedShape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
 
     test('throws an exception if shape is accessed from the provider', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape.check(() => null).shape, identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => shape.check(() => null).providedShape, identity);
 
-      expect(() => lazyShape.shape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
+      expect(() => shape.providedShape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
   });
 
   describe('deepPartial', () => {
-    test('marks shape as deep partial', () => {
-      class MockShape extends Shape implements DeepPartialProtocol<Shape> {
+    test('makes provided shape deep partial', () => {
+      const providedShape = new MockShape();
+
+      class DeepPartialAwareMockShape extends MockShape implements DeepPartialProtocol<Shape> {
         deepPartial() {
-          return deepPartialShape;
+          return providedShape;
         }
       }
 
-      const deepPartialShape = new MockShape();
-      const shapeProviderMock = jest.fn(() => new MockShape());
+      const shapeProviderMock = jest.fn(() => new DeepPartialAwareMockShape());
 
       const shape = new LazyShape(shapeProviderMock, identity).deepPartial();
 
       expect(shapeProviderMock).not.toHaveBeenCalled();
 
-      expect(shape.shape).toBe(deepPartialShape);
+      expect(shape.providedShape).toBe(providedShape);
       expect(shapeProviderMock).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('cyclic objects', () => {
     test('raises issues', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(
-        () => lazyShape,
+      const shape: LazyShape<any, any> = new LazyShape(
+        () => shape,
         () => {
           throw new ValidationError([{ code: 'xxx' }]);
         }
       );
 
-      expect(lazyShape.try(111)).toEqual({ ok: false, issues: [{ code: 'xxx' }] });
+      expect(shape.try(111)).toEqual({ ok: false, issues: [{ code: 'xxx' }] });
     });
 
     test('parses immediately recursive lazy shape', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => lazyShape, identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => shape, identity);
 
-      expect(lazyShape.parse(111)).toBe(111);
-      expect(lazyShape['_stackMap'].size).toBe(0);
+      expect(shape.parse(111)).toBe(111);
+      expect(shape['_stackMap'].size).toBe(0);
     });
 
     test('parses cyclic shapes', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: lazyShape }, null), identity);
+      const shape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: shape }, null), identity);
 
-      const obj: any = {};
-      obj.key1 = obj;
+      const input: any = {};
+      input.key1 = input;
 
-      expect(lazyShape.parse(obj)).toBe(obj);
-      expect(lazyShape['_stackMap'].size).toBe(0);
+      expect(shape.parse(input)).toBe(input);
+      expect(shape['_stackMap'].size).toBe(0);
     });
 
     test('shows issues only for the first input value', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(
-        () => new ObjectShape({ key1: new ObjectShape({ key2: lazyShape }, null), key3: new StringShape() }, null),
+      const shape: LazyShape<any, any> = new LazyShape(
+        () => new ObjectShape({ key1: new ObjectShape({ key2: shape }, null), key3: new StringShape() }, null),
         identity
       );
 
-      const obj: any = {};
-      obj.key1 = {};
-      obj.key1.key2 = obj;
+      const input: any = {};
+      input.key1 = {};
+      input.key1.key2 = input;
 
-      expect(lazyShape.try(obj, { verbose: true })).toEqual({
+      expect(shape.try(input, { verbose: true })).toEqual({
         ok: false,
         issues: [
           {
@@ -214,11 +196,11 @@ describe('LazyShape', () => {
     });
 
     test('clears stack if an error is thrown', () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(
+      const shape: LazyShape<any, any> = new LazyShape(
         () =>
           new ObjectShape(
             {
-              key1: lazyShape.check(() => {
+              key1: shape.check(() => {
                 throw new Error('expected');
               }),
             },
@@ -227,92 +209,86 @@ describe('LazyShape', () => {
         identity
       );
 
-      const obj: any = {};
-      obj.key1 = obj;
+      const input: any = {};
+      input.key1 = input;
 
-      expect(() => lazyShape.parse(obj)).toThrow('expected');
-      expect(lazyShape['_stackMap'].size).toBe(0);
-      expect(lazyShape.shape.shapes.key1['_stackMap'].size).toBe(0);
+      expect(() => shape.parse(input)).toThrow('expected');
+      expect(shape['_stackMap'].size).toBe(0);
+      expect(shape.providedShape.propShapes.key1['_stackMap'].size).toBe(0);
     });
 
     test('nested parse invocations are separated by nonce', () => {
-      const checkMock = jest.fn();
+      const cbMock = jest.fn();
 
-      const lazyShape: LazyShape<any, any> = new LazyShape(
+      const shape: LazyShape<any, any> = new LazyShape(
         () =>
-          lazyShape
-            .transform(value => {
-              return value !== 111 ? lazyShape.parse(111) : value;
+          shape
+            .convert(value => {
+              return value !== 111 ? shape.parse(111) : value;
             })
-            .check(checkMock),
+            .check(cbMock),
         identity
       );
 
-      lazyShape.parse(222);
+      shape.parse(222);
 
       expect(nextNonce()).toBe(2);
-      expect(checkMock).toHaveBeenCalledTimes(2);
-      expect(checkMock).toHaveBeenNthCalledWith(1, 111, undefined, { coerce: false, verbose: false });
-      expect(checkMock).toHaveBeenNthCalledWith(2, 111, undefined, { coerce: false, verbose: false });
+      expect(cbMock).toHaveBeenCalledTimes(2);
+      expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { coerce: false, verbose: false });
+      expect(cbMock).toHaveBeenNthCalledWith(2, 111, undefined, { coerce: false, verbose: false });
     });
   });
 
   describe('async', () => {
     test('parses values with an underlying shape', async () => {
-      const lazyShape = new LazyShape(() => asyncShape, identity);
+      const providedShape = new AsyncMockShape();
 
-      const applySpy = jest.spyOn<Shape, any>(asyncShape, '_applyAsync');
+      const shape = new LazyShape(() => providedShape, identity);
 
-      expect(lazyShape.isAsync).toBe(true);
-      await expect(lazyShape.parseAsync('aaa')).resolves.toBe('aaa');
-      expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
+      expect(shape.isAsync).toBe(true);
+      await expect(shape.parseAsync('aaa')).resolves.toBe('aaa');
+      expect(providedShape._applyAsync).toHaveBeenCalledTimes(1);
+      expect(providedShape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { verbose: false, coerce: false }, 0);
     });
 
     test('clears stack if an error is thrown', async () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(
-        () =>
-          new ObjectShape(
-            {
-              key1: lazyShape,
-              key2: new AsyncShape(),
-            },
-            null
-          ),
+      const shape: LazyShape<any, any> = new LazyShape(
+        () => new ObjectShape({ key1: shape, key2: new AsyncMockShape() }, null),
         identity
       ).check(() => {
         throw new Error('expected');
       });
-      const obj: any = {};
-      obj.key1 = obj;
 
-      await expect(lazyShape.parseAsync(obj)).rejects.toEqual(new Error('expected'));
+      const input: any = {};
+      input.key1 = input;
 
-      expect(lazyShape['_stackMap'].size).toBe(0);
-      expect(lazyShape.shape.shapes.key1['_stackMap'].size).toBe(0);
+      await expect(shape.parseAsync(input)).rejects.toEqual(new Error('expected'));
+
+      expect(shape['_stackMap'].size).toBe(0);
+      expect(shape.providedShape.propShapes.key1['_stackMap'].size).toBe(0);
     });
 
     test('parallel parse calls of cyclic shapes are separated by nonce', async () => {
-      const lazyShape: LazyShape<any, any> = new LazyShape(
-        () => new ObjectShape({ key1: lazyShape, key2: new AsyncShape() }, null),
+      const shape: LazyShape<any, any> = new LazyShape(
+        () => new ObjectShape({ key1: shape, key2: new AsyncMockShape() }, null),
         identity
       );
 
-      const applySpy = jest.spyOn<Shape, any>(lazyShape, '_applyAsync');
+      const shapeSpy = spyOnShape(shape);
 
-      const obj1: any = { key2: 'aaa' };
-      obj1.key1 = obj1;
+      const input1: any = { key2: 'aaa' };
+      input1.key1 = input1;
 
-      const obj2: any = { key2: 'bbb' };
-      obj2.key1 = obj2;
+      const input2: any = { key2: 'bbb' };
+      input2.key1 = input2;
 
-      await Promise.all([lazyShape.parseAsync(obj1), lazyShape.parseAsync(obj2)]);
+      await Promise.all([shape.parseAsync(input1), shape.parseAsync(input2)]);
 
-      expect(applySpy).toHaveBeenCalledTimes(4);
-      expect(applySpy).toHaveBeenNthCalledWith(1, obj1, { coerce: false, verbose: false }, 0);
-      expect(applySpy).toHaveBeenNthCalledWith(2, obj2, { coerce: false, verbose: false }, 1);
-      expect(applySpy).toHaveBeenNthCalledWith(3, obj1, { coerce: false, verbose: false }, 0);
-      expect(applySpy).toHaveBeenNthCalledWith(4, obj2, { coerce: false, verbose: false }, 1);
+      expect(shapeSpy._applyAsync).toHaveBeenCalledTimes(4);
+      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(1, input1, { coerce: false, verbose: false }, 0);
+      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(2, input2, { coerce: false, verbose: false }, 1);
+      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(3, input1, { coerce: false, verbose: false }, 0);
+      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(4, input2, { coerce: false, verbose: false }, 1);
     });
   });
 });

@@ -1,12 +1,12 @@
 import { DateShape } from '../shape';
-import { ConstraintOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the `Date` shape.
  *
- * @param options The constraint options or an issue message.
+ * @param options The issue options or the issue message.
  * @group DSL
  */
-export function date(options?: ConstraintOptions | Message): DateShape {
+export function date(options?: IssueOptions | Message): DateShape {
   return new DateShape(options);
 }

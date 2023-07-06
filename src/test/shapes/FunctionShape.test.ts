@@ -1,65 +1,52 @@
 import {
   AnyShape,
-  ApplyOptions,
   ArrayShape,
   FunctionShape,
   NumberShape,
   ObjectShape,
-  Result,
   Shape,
   StringShape,
   ValidationError,
 } from '../../main';
 import { CODE_TUPLE, CODE_TYPE, MESSAGE_NUMBER_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
-import { nextNonce } from '../../main/internal';
+import { resetNonce } from '../../main/internal';
 import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
+import { AsyncMockShape, MockShape } from './mocks';
 
 describe('FunctionShape', () => {
-  class AsyncShape extends Shape {
-    protected _isAsync(): boolean {
-      return true;
-    }
-
-    protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
-      return new Promise<Result>(resolve => {
-        resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
-      });
-    }
-  }
-
-  let arrayShape: AnyShape;
-  let asyncShape: AsyncShape;
+  let emptyArgsShape: AnyShape;
 
   beforeEach(() => {
-    nextNonce.nonce = 0;
+    resetNonce();
 
-    arrayShape = new ArrayShape([], null).length(0);
-    asyncShape = new AsyncShape();
+    emptyArgsShape = new ArrayShape([], null);
   });
 
   test('creates a FunctionShape', () => {
-    const shape = new FunctionShape(arrayShape, null, null);
+    const shape = new FunctionShape(emptyArgsShape, null, null);
 
     expect(shape.isAsync).toBe(false);
+    expect(shape.isStrict).toBe(false);
     expect(shape.isAsyncSignature).toBe(false);
-    expect(shape.argsShape).toBe(arrayShape);
+    expect(shape.argsShape).toBe(emptyArgsShape);
     expect(shape.returnShape).toBeNull();
     expect(shape.thisShape).toBeNull();
     expect(shape.inputs).toEqual([TYPE_FUNCTION]);
   });
 
-  test('does not wrap a function by default', () => {
-    const fn = () => undefined;
-    const wrapper = new FunctionShape(arrayShape, null, null).parse(fn);
+  test('does not ensure a function signature by default', () => {
+    const input = () => null;
 
-    expect(wrapper).toBe(fn);
+    const shape = new FunctionShape(emptyArgsShape, null, null);
+
+    expect(shape.parse(input)).toBe(input);
   });
 
   describe('return', () => {
     test('adds a return shape', () => {
       const returnShape = new Shape();
-      const shape1 = new FunctionShape(arrayShape, null, null);
 
+      const shape1 = new FunctionShape(emptyArgsShape, null, null);
       const shape2 = shape1.return(returnShape);
 
       expect(shape2).not.toBe(shape1);
@@ -70,8 +57,8 @@ describe('FunctionShape', () => {
   describe('this', () => {
     test('adds this value shape', () => {
       const thisShape = new Shape();
-      const shape1 = new FunctionShape(arrayShape, null, null);
 
+      const shape1 = new FunctionShape(emptyArgsShape, null, null);
       const shape2 = shape1.this(thisShape);
 
       expect(shape2).not.toBe(shape1);
@@ -80,49 +67,53 @@ describe('FunctionShape', () => {
   });
 
   describe('isAsyncSignature', () => {
-    test('wrapper is async if any of the arguments is async', () => {
-      const argsShape = new ArrayShape([asyncShape], null);
+    test('returns false if no argument shapes are async', () => {
+      const argsShape = new ArrayShape([new MockShape()], null);
+
+      expect(new FunctionShape(argsShape, null, null).isAsyncSignature).toBe(false);
+    });
+
+    test('returns true if any of the arguments is async', () => {
+      const argsShape = new ArrayShape([new AsyncMockShape()], null);
 
       expect(new FunctionShape(argsShape, null, null).isAsyncSignature).toBe(true);
     });
 
-    test('wrapper is async if return shape is async', () => {
-      expect(new FunctionShape(arrayShape, asyncShape, null).isAsyncSignature).toBe(true);
+    test('returns true if return shape is async', () => {
+      expect(new FunctionShape(emptyArgsShape, new AsyncMockShape(), null).isAsyncSignature).toBe(true);
     });
 
-    test('wrapper is async if this shape is async', () => {
-      expect(new FunctionShape(arrayShape, null, asyncShape).isAsyncSignature).toBe(true);
+    test('returns true if this shape is async', () => {
+      expect(new FunctionShape(emptyArgsShape, null, new AsyncMockShape()).isAsyncSignature).toBe(true);
     });
   });
 
   describe('strict', () => {
     test('marks shape is strict', () => {
-      const cbMock = jest.fn();
-
-      const shape = new FunctionShape(arrayShape.check(cbMock), null, null);
+      const shape = new FunctionShape(emptyArgsShape, null, null);
 
       expect(shape.isStrict).toBe(false);
       expect(shape.strict().isStrict).toBe(true);
     });
 
-    test('sets options used by the wrapper', () => {
+    test('sets options', () => {
       const cbMock = jest.fn();
 
-      new FunctionShape(arrayShape.check(cbMock), null, null)
+      new FunctionShape(emptyArgsShape.check(cbMock), null, null)
         .strict({ coerce: true })
-        .ensureSignature(() => undefined)();
+        .ensureSignature(() => null)();
 
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, [], undefined, { coerce: true });
     });
 
-    test('wraps a function', () => {
-      const fn = () => undefined;
-      const wrapper = new FunctionShape(arrayShape, null, null).strict().parse(fn);
+    test('ensures a function signature', () => {
+      const input = () => null;
+      const output = new FunctionShape(emptyArgsShape, null, null).strict().parse(input);
 
-      expect(wrapper).not.toBe(fn);
+      expect(output).not.toBe(input);
 
-      expect(() => wrapper('aaa')).toThrow(
+      expect(() => output('aaa')).toThrow(
         new ValidationError([
           {
             code: CODE_TUPLE,
@@ -137,9 +128,9 @@ describe('FunctionShape', () => {
   });
 
   describe('ensureSignature', () => {
-    test('wraps a function with 0 arguments', () => {
+    test('handles a function with 0 arguments', () => {
       const fnMock = jest.fn();
-      const shape = new FunctionShape(arrayShape, null, null);
+      const shape = new FunctionShape(emptyArgsShape, null, null);
 
       shape.ensureSignature(fnMock)();
 
@@ -147,21 +138,19 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1);
     });
 
-    test('wraps a function with 1 argument', () => {
+    test('handles a function with 1 argument', () => {
       const fnMock = jest.fn();
 
-      const argShape = new Shape();
+      const argShape = new MockShape();
       const shape = new FunctionShape(new ArrayShape([argShape], null), null, null);
-
-      const applySpy = jest.spyOn<Shape, any>(argShape, '_apply');
 
       shape.ensureSignature(fnMock)('aaa');
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
-      expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
+      expect(argShape._apply).toHaveBeenCalledTimes(1);
+      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
     });
 
     test('raises an issue if this is invalid', () => {
@@ -171,7 +160,7 @@ describe('FunctionShape', () => {
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      expect(() => shape.ensureSignature(() => undefined).call({ key1: 111 } as any)).toThrow(
+      expect(() => shape.ensureSignature(() => null).call({ key1: 111 } as any)).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -181,7 +170,7 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.ensureSignature(() => undefined).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.ensureSignature(() => null).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -191,7 +180,7 @@ describe('FunctionShape', () => {
     test('raises issues if arguments are invalid in verbose mode', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.ensureSignature(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.ensureSignature(() => null, { verbose: true }).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
           { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
@@ -211,9 +200,9 @@ describe('FunctionShape', () => {
   });
 
   describe('ensureAsyncSignature', () => {
-    test('wraps a function with 0 arguments', async () => {
+    test('handles a function with 0 arguments', async () => {
       const fnMock = jest.fn();
-      const shape = new FunctionShape(arrayShape, null, null);
+      const shape = new FunctionShape(emptyArgsShape, null, null);
 
       await shape.ensureAsyncSignature(fnMock)();
 
@@ -221,21 +210,19 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1);
     });
 
-    test('wraps a function with 1 argument', async () => {
+    test('handles a function with 1 argument', async () => {
       const fnMock = jest.fn();
 
-      const argShape = new Shape();
+      const argShape = new MockShape();
       const shape = new FunctionShape(new ArrayShape([argShape], null), null, null);
-
-      const applySpy = jest.spyOn<Shape, any>(argShape, '_apply');
 
       await shape.ensureAsyncSignature(fnMock)('aaa');
 
       expect(fnMock).toHaveBeenCalledTimes(1);
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
-      expect(applySpy).toHaveBeenCalledTimes(1);
-      expect(applySpy).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
+      expect(argShape._apply).toHaveBeenCalledTimes(1);
+      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
     });
 
     test('raises an issue if this is invalid', async () => {
@@ -245,7 +232,7 @@ describe('FunctionShape', () => {
         new ObjectShape({ key1: new StringShape() }, null)
       );
 
-      await expect(shape.ensureAsyncSignature(() => undefined).call({ key1: 111 } as any)).rejects.toEqual(
+      await expect(shape.ensureAsyncSignature(() => null).call({ key1: 111 } as any)).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['this', 'key1'], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -255,7 +242,7 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(shape.ensureAsyncSignature(() => undefined).call(undefined, 111, 'aaa')).rejects.toEqual(
+      await expect(shape.ensureAsyncSignature(() => null).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
@@ -266,7 +253,7 @@ describe('FunctionShape', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
       await expect(
-        shape.ensureAsyncSignature(() => undefined, { verbose: true }).call(undefined, 111, 'aaa')
+        shape.ensureAsyncSignature(() => null, { verbose: true }).call(undefined, 111, 'aaa')
       ).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },

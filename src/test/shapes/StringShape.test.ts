@@ -1,11 +1,5 @@
 import { NEVER, StringShape } from '../../main';
-import {
-  CODE_STRING_MAX,
-  CODE_STRING_MIN,
-  CODE_STRING_REGEX,
-  CODE_TYPE,
-  MESSAGE_STRING_TYPE,
-} from '../../main/constants';
+import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('StringShape', () => {
@@ -26,27 +20,13 @@ describe('StringShape', () => {
       issues: [{ code: CODE_TYPE, input: 111, param: TYPE_STRING, message: 'Must be a string' }],
     });
 
-    expect(new StringShape().min(2).parse('aaa')).toBe('aaa');
+    expect(new StringShape().parse('aaa')).toBe('aaa');
   });
 
   test('overrides message for type issue', () => {
     expect(new StringShape({ message: 'xxx', meta: 'yyy' }).try(111)).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: 111, param: TYPE_STRING, message: 'xxx', meta: 'yyy' }],
-    });
-  });
-
-  test('overrides message for min length issue', () => {
-    expect(new StringShape().min(2, { message: 'xxx', meta: 'yyy' }).try('a')).toEqual({
-      ok: false,
-      issues: [{ code: CODE_STRING_MIN, input: 'a', param: 2, message: 'xxx', meta: 'yyy' }],
-    });
-  });
-
-  test('overrides message for max length issue', () => {
-    expect(new StringShape().max(2, { message: 'xxx', meta: 'yyy' }).try('aaa')).toEqual({
-      ok: false,
-      issues: [{ code: CODE_STRING_MAX, input: 'aaa', param: 2, message: 'xxx', meta: 'yyy' }],
     });
   });
 
@@ -67,7 +47,7 @@ describe('StringShape', () => {
     });
   });
 
-  test('applies checks', () => {
+  test('applies operations', () => {
     const shape = new StringShape().check(() => [{ code: 'xxx' }]);
 
     expect(shape.try('')).toEqual({
@@ -76,7 +56,7 @@ describe('StringShape', () => {
     });
   });
 
-  test('updates inputs when coerced', () => {
+  test('extends shape inputs', () => {
     const shape = new StringShape().coerce();
 
     expect(shape.inputs).toEqual([
@@ -106,7 +86,7 @@ describe('StringShape', () => {
   });
 
   describe('coercion', () => {
-    test('coerces a String wrapper', () => {
+    test('coerces a String object', () => {
       expect(new StringShape()['_coerce'](String('aaa'))).toBe('aaa');
       expect(new StringShape()['_coerce']([String('aaa')])).toBe('aaa');
     });
@@ -142,7 +122,7 @@ describe('StringShape', () => {
 
     test('does not coerce objects and functions', () => {
       expect(new StringShape()['_coerce']({ key1: 111 })).toBe(NEVER);
-      expect(new StringShape()['_coerce'](() => undefined)).toBe(NEVER);
+      expect(new StringShape()['_coerce'](() => null)).toBe(NEVER);
     });
 
     test('does not coerce a symbol', () => {

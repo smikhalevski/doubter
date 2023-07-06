@@ -1,18 +1,20 @@
-import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_TYPE, MESSAGE_OBJECT_EXACT } from '../constants';
+import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_EXACT, MESSAGE_OBJECT_TYPE } from '../constants';
 import {
   applyShape,
   Bitmask,
   cloneDict,
   cloneDictKeys,
   concatIssues,
-  copyUnsafeChecks,
+  copyOperations,
   Dict,
   getBit,
+  INPUT,
   isArray,
   isAsyncShape,
   isObject,
   isPlainObject,
-  ok,
+  OUTPUT,
+  pushIssue,
   ReadonlyDict,
   setObjectProperty,
   toDeepPartialShape,
@@ -20,7 +22,7 @@ import {
   unshiftIssuesPath,
 } from '../internal';
 import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, ConstraintOptions, Issue, Message } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
 import {
@@ -28,21 +30,17 @@ import {
   AnyShape,
   DeepPartialProtocol,
   DenyLiteralShape,
-  INPUT,
   OptionalDeepPartialShape,
-  OUTPUT,
-  Result,
   Shape,
 } from './Shape';
 
-// prettier-ignore
 type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,
   RestShape extends AnyShape | null,
   Leg extends INPUT | OUTPUT
 > = Squash<
-  & UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][Leg] }>
-  & (RestShape extends null | undefined ? {} : RestShape extends AnyShape ? { [key: string]: RestShape[Leg] } : {})
+  UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][Leg] }> &
+    (RestShape extends null | undefined ? {} : RestShape extends AnyShape ? { [key: string]: RestShape[Leg] } : {})
 >;
 
 type UndefinedToOptional<T> = Omit<T, OptionalKeys<T>> & { [K in OptionalKeys<T>]?: T[K] };
@@ -93,7 +91,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   readonly keys: readonly StringKeyof<PropShapes>[];
 
   /**
-   * The type constraint options or an issue message.
+   * The issue options or the issue message.
    */
   protected _options;
 
@@ -120,11 +118,11 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Creates a new {@linkcode ObjectShape} instance.
    *
-   * @param shapes The mapping from an object key to a corresponding value shape.
+   * @param propShapes The mapping from an object key to a corresponding value shape.
    * @param restShape The shape that constrains values of
    * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures). If `null`
    * then values thea fall under the index signature are unconstrained.
-   * @param options The type constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @param keysMode The mode of keys handling.
    * @template PropShapes The mapping from an object key to a corresponding value shape.
    * @template RestShape The shape that constrains values of
@@ -134,13 +132,13 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     /**
      * The mapping from an object key to a corresponding value shape.
      */
-    readonly shapes: PropShapes,
+    readonly propShapes: PropShapes,
     /**
      * The shape that constrains values of
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
      */
     readonly restShape: RestShape,
-    options?: ConstraintOptions | Message,
+    options?: IssueOptions | Message,
     /**
      * The mode of keys handling.
      */
@@ -148,10 +146,10 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ) {
     super();
 
-    this.keys = Object.keys(shapes) as StringKeyof<PropShapes>[];
+    this.keys = Object.keys(propShapes) as StringKeyof<PropShapes>[];
 
     this._options = options;
-    this._valueShapes = Object.values(shapes);
+    this._valueShapes = Object.values(propShapes);
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
   }
 
@@ -163,11 +161,13 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   at(key: any): AnyShape | null {
-    return this.shapes.hasOwnProperty(key) ? this.shapes[key] : this.restShape;
+    return this.propShapes.hasOwnProperty(key) ? this.propShapes[key] : this.restShape;
   }
 
   /**
    * Merge properties from the other object shape.
+   *
+   * **Note** This method returns a shape without any operations.
    *
    * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
    * this shape and its {@linkcode keysMode} is preserved intact.
@@ -183,6 +183,8 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Add properties to an object shape.
    *
+   * **Note** This method returns a shape without any operations.
+   *
    * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
    * this shape and its {@linkcode keysMode} is preserved intact.
    *
@@ -195,49 +197,55 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): ObjectShape<Pick<PropShapes, Exclude<keyof PropShapes, keyof T>> & T, RestShape>;
 
   extend(shape: ObjectShape<any, any> | ReadonlyDict) {
-    const shapes = Object.assign({}, this.shapes, shape instanceof ObjectShape ? shape.shapes : shape);
+    const propsShapes = Object.assign({}, this.propShapes, shape instanceof ObjectShape ? shape.propShapes : shape);
 
-    return copyUnsafeChecks(this, new ObjectShape(shapes, this.restShape, this._options, this.keysMode));
+    return new ObjectShape(propsShapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
    * Returns an object shape that only has properties with listed keys.
+   *
+   * **Note** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to pick.
    * @returns The new object shape.
    * @template K The tuple of keys to pick.
    */
   pick<K extends readonly StringKeyof<PropShapes>[]>(keys: K): ObjectShape<Pick<PropShapes, K[number]>, RestShape> {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
+    for (const key in this.propShapes) {
       if (keys.includes(key)) {
-        shapes[key] = this.shapes[key];
+        propShapes[key] = this.propShapes[key];
       }
     }
-    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
+    return new ObjectShape<any, any>(propShapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
    * Returns an object shape that doesn't have the listed keys.
+   *
+   * **Note** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to omit.
    * @returns The new object shape.
    * @template K The tuple of keys to omit.
    */
   omit<K extends readonly StringKeyof<PropShapes>[]>(keys: K): ObjectShape<Omit<PropShapes, K[number]>, RestShape> {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
+    for (const key in this.propShapes) {
       if (!keys.includes(key)) {
-        shapes[key] = this.shapes[key];
+        propShapes[key] = this.propShapes[key];
       }
     }
-    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
+    return new ObjectShape<any, any>(propShapes, this.restShape, this._options, this.keysMode);
   }
 
   /**
    * Returns an object shape with all properties marked as optional.
+   *
+   * **Note** This method returns a shape without any operations.
    *
    * @returns The new object shape.
    */
@@ -245,6 +253,8 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
   /**
    * Returns an object shape with keys marked as optional.
+   *
+   * **Note** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to make optional.
    * @returns The new object shape.
@@ -255,24 +265,25 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): ObjectShape<Omit<PropShapes, K[number]> & OptionalProps<Pick<PropShapes, K[number]>>, RestShape>;
 
   partial(keys?: string[]) {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
-      shapes[key] = keys === undefined || keys.includes(key) ? this.shapes[key].optional() : this.shapes[key];
+    for (const key in this.propShapes) {
+      propShapes[key] =
+        keys === undefined || keys.includes(key) ? this.propShapes[key].optional() : this.propShapes[key];
     }
-    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
+    return new ObjectShape<any, any>(propShapes, this.restShape, this._options, this.keysMode);
   }
 
   deepPartial(): DeepPartialObjectShape<PropShapes, RestShape> {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
-      shapes[key] = toDeepPartialShape(this.shapes[key]).optional();
+    for (const key in this.propShapes) {
+      propShapes[key] = toDeepPartialShape(this.propShapes[key]).optional();
     }
 
     const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
-    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, restShape, this._options, this.keysMode));
+    return new ObjectShape<any, any>(propShapes, restShape, this._options, this.keysMode);
   }
 
   /**
@@ -294,26 +305,27 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): ObjectShape<Omit<PropShapes, K[number]> & RequiredProps<Pick<PropShapes, K[number]>>, RestShape>;
 
   required(keys?: string[]) {
-    const shapes: Dict<AnyShape> = {};
+    const propShapes: Dict<AnyShape> = {};
 
-    for (const key in this.shapes) {
-      shapes[key] = keys === undefined || keys.includes(key) ? this.shapes[key].nonOptional() : this.shapes[key];
+    for (const key in this.propShapes) {
+      propShapes[key] =
+        keys === undefined || keys.includes(key) ? this.propShapes[key].nonOptional() : this.propShapes[key];
     }
-    return copyUnsafeChecks(this, new ObjectShape<any, any>(shapes, this.restShape, this._options, this.keysMode));
+    return copyOperations(this, new ObjectShape<any, any>(propShapes, this.restShape, this._options, this.keysMode));
   }
 
   /**
    * Returns an object shape that allows only known keys and has no index signature.
    *
-   * @param options The constraint options or an issue message.
+   * @param options The issue options or the issue message.
    * @returns The new object shape.
    */
-  exact(options?: ConstraintOptions | Message): ObjectShape<PropShapes, null> {
-    const shape = new ObjectShape(this.shapes, null, this._options, 'exact');
+  exact(options?: IssueOptions | Message): ObjectShape<PropShapes, null> {
+    const shape = new ObjectShape(this.propShapes, null, this._options, 'exact');
 
     shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_EXACT, MESSAGE_OBJECT_EXACT, options);
 
-    return copyUnsafeChecks(this, shape);
+    return copyOperations(this, shape);
   }
 
   /**
@@ -322,7 +334,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    */
   strip(): ObjectShape<PropShapes, null> {
-    return copyUnsafeChecks(this, new ObjectShape(this.shapes, null, this._options, 'stripped'));
+    return copyOperations(this, new ObjectShape(this.propShapes, null, this._options, 'stripped'));
   }
 
   /**
@@ -331,7 +343,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    */
   preserve(): ObjectShape<PropShapes, null> {
-    return copyUnsafeChecks(this, new ObjectShape(this.shapes, null, this._options));
+    return copyOperations(this, new ObjectShape(this.propShapes, null, this._options));
   }
 
   /**
@@ -344,7 +356,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @template S The index signature shape.
    */
   rest<S extends AnyShape | null>(restShape: S): ObjectShape<PropShapes, S> {
-    return copyUnsafeChecks(this, new ObjectShape(this.shapes, restShape, this._options));
+    return copyOperations(this, new ObjectShape(this.propShapes, restShape, this._options));
   }
 
   /**
@@ -397,7 +409,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         return;
       }
 
-      const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
+      const { keys, keysMode, restShape, operations, _valueShapes } = this;
 
       const keysLength = keys.length;
 
@@ -480,7 +492,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_isUnsafe || issues === null) {
+          } else if (issues === null || operations.length !== 0) {
             if (input === output) {
               output = cloneDict(input);
             }
@@ -498,14 +510,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           key = entry[0];
           return applyShape(entry[2], entry[1], options, nonce, handleValueResult);
         }
-
-        if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-          issues = _applyChecks(output, issues, options);
-        }
-        if (issues === null && input !== output) {
-          return ok(output);
-        }
-        return issues;
+        return this._applyOperations(input, output, options, issues);
       };
 
       resolve(next());
@@ -516,7 +521,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are preserved as is and aren't checked.
    */
   private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, _valueShapes, _applyChecks, _isUnsafe } = this;
+    const { keys, operations, _valueShapes } = this;
 
     const keysLength = keys.length;
 
@@ -540,28 +545,21 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         issues = concatIssues(issues, result);
         continue;
       }
-      if (_isUnsafe || issues === null) {
+      if (issues === null || operations.length !== 0) {
         if (input === output) {
           output = cloneDict(input);
         }
         setObjectProperty(output, key, result.value);
       }
     }
-
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, issues);
   }
 
   /**
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, keysMode, restShape, _valueShapes, _applyChecks, _isUnsafe } = this;
+    const { keys, keysMode, restShape, operations, _valueShapes } = this;
 
     const keysLength = keys.length;
 
@@ -603,7 +601,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_isUnsafe || issues === null) {
+        if (issues === null || operations.length !== 0) {
           if (input === output) {
             output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
@@ -628,7 +626,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
 
       // Unknown keys are stripped
-      if (input === output && (_isUnsafe || issues === null)) {
+      if (input === output && (issues === null || operations.length !== 0)) {
         output = cloneDictKeys(input, keys);
       }
     }
@@ -640,7 +638,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       if (!options.verbose) {
         return [issue];
       }
-      issues = concatIssues(issues, [issue]);
+      issues = pushIssue(issues, issue);
     }
 
     // Parse absent known keys
@@ -666,7 +664,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_isUnsafe || issues === null) {
+        if (issues === null || operations.length !== 0) {
           if (input === output) {
             output = cloneDict(input);
           }
@@ -674,13 +672,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         }
       }
     }
-
-    if (_applyChecks !== null && (_isUnsafe || issues === null)) {
-      issues = _applyChecks(output, issues, options);
-    }
-    if (issues === null && input !== output) {
-      return ok(output);
-    }
-    return issues;
+    return this._applyOperations(input, output, options, issues);
   }
 }

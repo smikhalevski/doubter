@@ -3,6 +3,13 @@ import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('BooleanShape', () => {
+  test('creates a BooleanShape', () => {
+    const shape = new BooleanShape();
+
+    expect(shape.isAsync).toBe(false);
+    expect(shape.inputs).toEqual([TYPE_BOOLEAN]);
+  });
+
   test('parses boolean values', () => {
     expect(new BooleanShape().parse(true)).toBe(true);
   });
@@ -22,7 +29,7 @@ describe('BooleanShape', () => {
   });
 
   describe('coerce', () => {
-    test('updates inputs when coerced', () => {
+    test('extends shape inputs', () => {
       const shape = new BooleanShape().coerce();
 
       expect(shape.inputs).toEqual([TYPE_BOOLEAN, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, null, undefined]);
@@ -45,12 +52,12 @@ describe('BooleanShape', () => {
   });
 
   describe('_coerce', () => {
-    test('coerces a Boolean wrapper', () => {
+    test('coerces a Boolean object', () => {
       expect(new BooleanShape()['_coerce'](Boolean(true))).toBe(true);
       expect(new BooleanShape()['_coerce']([Boolean(false)])).toBe(false);
     });
 
-    test('coerces a String wrapper', () => {
+    test('coerces a String object', () => {
       expect(new BooleanShape()['_coerce'](String('true'))).toBe(true);
       expect(new BooleanShape()['_coerce']([String('false')])).toBe(false);
     });
@@ -93,7 +100,7 @@ describe('BooleanShape', () => {
 
     test('does not coerce objects and functions', () => {
       expect(new BooleanShape()['_coerce']({ key1: 111 })).toBe(NEVER);
-      expect(new BooleanShape()['_coerce'](() => undefined)).toBe(NEVER);
+      expect(new BooleanShape()['_coerce'](() => null)).toBe(NEVER);
     });
 
     test('does not coerce a symbol', () => {

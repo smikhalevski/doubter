@@ -4,7 +4,7 @@ import {
   CODE_NUMBER_GTE,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
-  CODE_NUMBER_MULTIPLE_OF,
+  CODE_NUMBER_MULTIPLE,
 } from '../../main/constants';
 
 describe('gt', () => {
@@ -94,14 +94,14 @@ describe('lte/max', () => {
   });
 });
 
-describe('multipleOf', () => {
+describe('multiple', () => {
   test('raises if value is not a multiple of a divisor', () => {
-    expect(new NumberShape().multipleOf(2).try(3)).toEqual({
+    expect(new NumberShape().multiple(2).try(3)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_MULTIPLE_OF, input: 3, param: 2, message: 'Must be a multiple of 2' }],
+      issues: [{ code: CODE_NUMBER_MULTIPLE, input: 3, param: 2, message: 'Must be a multiple of 2' }],
     });
 
-    expect(new NumberShape().multipleOf(2).parse(4)).toBe(4);
+    expect(new NumberShape().multiple(2).parse(4)).toBe(4);
   });
 });
 

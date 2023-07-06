@@ -11,75 +11,60 @@
  */
 
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
-import { ConstraintOptions, DateShape, Message, Shape } from '../core';
+import { DateShape, IssueOptions, Message, Shape } from '../core';
+import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface DateShape {
     /**
-     * The inclusive minimum date, or `undefined` if there's no minimum date.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/date-checks!}
-     */
-    readonly minValue: Date | undefined;
-
-    /**
-     * The inclusive maximum date, or `undefined` if there's no maximum date.
-     *
-     * @group Plugin Properties
-     * @plugin {@link doubter/plugin/date-checks!}
-     */
-    readonly maxValue: Date | undefined;
-
-    /**
      * Constrains the input date to be greater than or equal to another date.
      *
      * @param value The inclusive minimum date.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    min(value: Date | number | string, options?: ConstraintOptions | Message): this;
+    min(value: Date | number | string, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the input date to be less than or equal to another date.
      *
      * @param value The inclusive maximum date.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    max(value: Date | number | string, options?: ConstraintOptions | Message): this;
+    max(value: Date | number | string, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the input date to be greater than or equal to another date.
      *
      * @param value The inclusive minimum date.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode min}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    after(value: Date | number | string, options?: ConstraintOptions | Message): this;
+    after(value: Date | number | string, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the input date to be less than or equal to another date.
      *
      * @param value The inclusive maximum date.
-     * @param options The constraint options or an issue message.
+     * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @alias {@linkcode max}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    before(value: Date | number | string, options?: ConstraintOptions | Message): this;
+    before(value: Date | number | string, options?: IssueOptions | Message): this;
 
     /**
-     * Transforms date to an ISO string.
+     * Converts date to an ISO string.
      *
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
@@ -87,7 +72,7 @@ declare module '../core' {
     iso(): Shape<Date, string>;
 
     /**
-     * Transforms date to a timestamp integer number.
+     * Converts date to a timestamp integer number.
      *
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
@@ -100,66 +85,72 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!DateShape} with additional checks.
  */
 export default function () {
-  const prototype = DateShape.prototype;
-
-  Object.defineProperties(prototype, {
-    minValue: {
-      configurable: true,
-      get(this: DateShape) {
-        return this.getCheck(CODE_DATE_MIN)?.param;
-      },
-    },
-
-    maxValue: {
-      configurable: true,
-      get(this: DateShape) {
-        return this.getCheck(CODE_DATE_MAX)?.param;
-      },
-    },
-  });
-
-  prototype.min = min;
-  prototype.max = max;
-  prototype.after = min;
-  prototype.before = max;
-  prototype.iso = iso;
-  prototype.timestamp = timestamp;
+  DateShape.prototype.min = minCheck;
+  DateShape.prototype.max = maxCheck;
+  DateShape.prototype.after = minCheck;
+  DateShape.prototype.before = maxCheck;
+  DateShape.prototype.iso = convertToIsoString;
+  DateShape.prototype.timestamp = convertToTimestamp;
 }
 
-function min(this: DateShape, value: Date | number | string, options?: ConstraintOptions | Message): DateShape {
+function minCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
   value = new Date(value);
+
+  const timestamp = value.getTime();
 
   const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.getTime() < param.getTime()) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_DATE_MIN,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (output.getTime() < timestamp) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_DATE_MIN, param: value, unsafe: true }
-  );
+  });
 }
 
-function max(this: DateShape, value: Date | number | string, options?: ConstraintOptions | Message): DateShape {
+function maxCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
   value = new Date(value);
+
+  const timestamp = value.getTime();
 
   const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, value);
 
-  return this.check(
-    (input, param, options) => {
-      if (input.getTime() > param.getTime()) {
-        return issueFactory(input, options);
+  return this.addOperation({
+    type: CODE_DATE_MAX,
+    param: value,
+    compose: next => (input, output, options, issues) => {
+      if (output.getTime() > timestamp) {
+        issues = pushIssue(issues, issueFactory(output, options));
+
+        if (!options.verbose) {
+          return issues;
+        }
       }
+      return next(input, output, options, issues);
     },
-    { key: CODE_DATE_MAX, param: value, unsafe: true }
-  );
+  });
 }
 
-function iso(this: DateShape): Shape<Date, string> {
-  return this.transform(date => date.toISOString());
+function convertToIsoString(this: DateShape): Shape<Date, string> {
+  return this.convert(toISOString);
 }
 
-function timestamp(this: DateShape): Shape<Date, number> {
-  return this.transform(date => date.getTime());
+function convertToTimestamp(this: DateShape): Shape<Date, number> {
+  return this.convert(toTimestamp);
+}
+
+function toISOString(date: Date): string {
+  return date.toISOString();
+}
+
+function toTimestamp(date: Date): number {
+  return date.getTime();
 }
