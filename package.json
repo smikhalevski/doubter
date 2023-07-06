@@ -41,6 +41,11 @@
       "import": "./plugin/number-checks.mjs",
       "require": "./plugin/number-checks.js"
     },
+    "./plugin/object-checks": {
+      "types": "./plugin/object-checks.d.ts",
+      "import": "./plugin/object-checks.mjs",
+      "require": "./plugin/object-checks.js"
+    },
     "./plugin/set-checks": {
       "types": "./plugin/set-checks.d.ts",
       "import": "./plugin/set-checks.mjs",
