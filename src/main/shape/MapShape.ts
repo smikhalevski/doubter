@@ -116,7 +116,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _operations } = this;
+    const { keyShape, valueShape, operations } = this;
     const entriesLength = entries.length;
 
     let issues = null;
@@ -158,7 +158,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         }
       }
 
-      if ((_operations !== null || issues === null) && (keyResult !== null || valueResult !== null)) {
+      if ((issues === null || operations.length !== 0) && (keyResult !== null || valueResult !== null)) {
         changed = true;
         entry[0] = key;
         entry[1] = value;
@@ -187,7 +187,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         return;
       }
 
-      const { keyShape, valueShape, _operations } = this;
+      const { keyShape, valueShape, operations } = this;
       const entriesLength = entries.length;
 
       let issues: Issue[] | null = null;
@@ -232,7 +232,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           }
         }
 
-        if ((_operations !== null || issues === null) && (keyChanged || valueResult !== null)) {
+        if ((issues === null || operations.length !== 0) && (keyChanged || valueResult !== null)) {
           changed = true;
           entry[0] = key;
           entry[1] = value;

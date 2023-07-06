@@ -219,13 +219,44 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * The array of operations that the shape applies after the input value type is ensured.
+   *
+   * @see {@linkcode addOperation}
+   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
-  protected _operations: readonly Operation[] | null = null;
+  operations: readonly Operation[] = [];
 
   /**
-   * The callback that applies {@linkcode _operations operations} to the shape output value.
+   * The callback that applies {@linkcode operations operations} to the shape output value.
    */
   protected declare _applyOperations: OperationCallback;
+
+  /**
+   * Adds an operation to the shape.
+   *
+   * @param op The operation to add.
+   * @returns The clone of the shape.
+   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   */
+  addOperation(op: Operation<InputValue, OutputValue>): this {
+    const shape = this._clone();
+    shape.operations = this.operations.concat(op);
+    return shape;
+  }
+
+  /**
+   * Returns `true` if there's at least one operation with the given type, or `false` otherwise.
+   *
+   * @param type The type of the operation to look for. Types are compared using the strict equality operator.
+   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   */
+  hasOperation(type: unknown): boolean {
+    for (const op of this.operations) {
+      if (op.type === type) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -294,7 +325,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback, options: OperationOptions = {}): this {
     const { type = cb, param, force } = options;
 
-    return this._addOperation({
+    return this.addOperation({
       type,
       param,
       compose: next => (input, output, options, issues) => {
@@ -397,7 +428,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
-    return this._addOperation({
+    return this.addOperation({
       type,
       param,
       compose: next => (input, output, options, issues) => {
@@ -453,7 +484,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter(cb: AlterCallback, options: OperationOptions = {}): Shape {
     const { type = cb, param, force = false } = options;
 
-    return this._addOperation({
+    return this.addOperation({
       type,
       param,
       compose: next => (input, output, options, issues) => {
@@ -693,20 +724,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Adds an operation to the shape.
-   *
-   * @param op The operation to add.
-   * @returns The clone of the shape.
-   */
-  protected _addOperation(op: Operation<InputValue, OutputValue>): this {
-    const shape = this._clone();
-    shape._operations = this._operations !== null ? this._operations.concat(op) : [op];
-    return shape;
-  }
-
-  /**
    * Must return `true` if the shape must be used in async context only, otherwise the shape can be used in both sync
    * and async contexts. Override this method to implement a custom shape.
+   *
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _isAsync(): boolean {
     return false;
@@ -714,6 +735,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Returns input types and literal values that this shape can accept as an input.
+   *
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _getInputs(): unknown[] {
     return [TYPE_UNKNOWN];
@@ -721,6 +744,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Clones the shape.
+   *
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _clone(): this {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
@@ -735,6 +760,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options Parsing options.
    * @param nonce The globally unique number that identifies the parsing process.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<OutputValue> {
     return this._applyOperations(input, input, options, null);
@@ -749,6 +775,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options Parsing options.
    * @param nonce The globally unique number that identifies the parsing process.
    * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<OutputValue>> {
     return new Promise(resolve => {
@@ -1039,14 +1066,10 @@ Object.defineProperties(Shape.prototype, {
   _applyOperations: {
     configurable: true,
     get(this: Shape) {
-      const { _operations } = this;
-
       let cb = universalApplyOperations;
 
-      if (_operations !== null) {
-        for (let i = _operations.length - 1; i >= 0; --i) {
-          cb = _operations[i].compose(cb);
-        }
+      for (let i = this.operations.length - 1; i >= 0; --i) {
+        cb = this.operations[i].compose(cb);
       }
 
       Object.defineProperty(this, '_applyOperations', { writable: true, value: cb });

@@ -139,7 +139,7 @@ function addLengthCheck(this: StringShape, length: number, options?: IssueOption
 function addMinCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_STRING_MIN,
     param: length,
     compose: next => (input, output, options, issues) => {
@@ -158,7 +158,7 @@ function addMinCheck(this: StringShape, length: number, options?: IssueOptions |
 function addMaxCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_STRING_MAX,
     param: length,
     compose: next => (input, output, options, issues) => {
@@ -177,7 +177,7 @@ function addMaxCheck(this: StringShape, length: number, options?: IssueOptions |
 function addRegexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_STRING_REGEX,
     param: re,
     compose: next => (input, output, options, issues) => {
@@ -196,7 +196,7 @@ function addRegexCheck(this: StringShape, re: RegExp, options?: IssueOptions | M
 function addIncludesCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_STRING_INCLUDES,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -215,7 +215,7 @@ function addIncludesCheck(this: StringShape, value: string, options?: IssueOptio
 function addStartsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_STRING_STARTS_WITH,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -234,7 +234,7 @@ function addStartsWithCheck(this: StringShape, value: string, options?: IssueOpt
 function addEndsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_STRING_ENDS_WITH,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -251,7 +251,7 @@ function addEndsWithCheck(this: StringShape, value: string, options?: IssueOptio
 }
 
 function addTrimOperation(this: StringShape): StringShape {
-  return this._addOperation({
+  return this.addOperation({
     type: 'trim',
     param: undefined,
     compose: next => (input, output, options, issues) => next(input, output.trim(), options, issues),

@@ -67,7 +67,7 @@ function addSizeCheck(this: SetShape<any>, size: number, options?: IssueOptions 
 function addMinCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_SET_MIN,
     param: size,
     compose: next => (input, output, options, issues) => {
@@ -86,7 +86,7 @@ function addMinCheck(this: SetShape<any>, size: number, options?: IssueOptions |
 function addMaxCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_SET_MAX,
     param: size,
     compose: next => (input, output, options, issues) => {

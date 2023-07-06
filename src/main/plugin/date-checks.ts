@@ -100,7 +100,7 @@ function addMinCheck(this: DateShape, value: Date | number | string, options?: I
 
   const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_DATE_MIN,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -123,7 +123,7 @@ function addMaxCheck(this: DateShape, value: Date | number | string, options?: I
 
   const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_DATE_MAX,
     param: value,
     compose: next => (input, output, options, issues) => {

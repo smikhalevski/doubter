@@ -114,7 +114,7 @@ function addMinCheck(this: BigIntShape, value: bigint, options?: IssueOptions | 
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_BIGINT_MIN,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -135,7 +135,7 @@ function addMaxCheck(this: BigIntShape, value: bigint, options?: IssueOptions | 
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_BIGINT_MAX,
     param: value,
     compose: next => (input, output, options, issues) => {

@@ -1,7 +1,9 @@
 /**
  * A result returned from a shape after it was applied to an input value.
  *
- * This is the part of the internal API required for creating custom shapes.
+ * - `null` if the output is the same as the input;
+ * - an {@linkcode Ok} object if the output contains a new value;
+ * - an array of {@linkcode Issue} objects if parsing failed.
  *
  * - If `null` then the input value is valid and wasn't transformed.
  * - If an {@linkcode Ok} instance then the input value is valid and was transformed.
@@ -153,7 +155,7 @@ export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) =>
  * @see {@linkcode Shape#check Shape.check}
  * @see {@linkcode Shape#alter Shape.alter}
  * @see {@linkcode Shape#refine Shape.refine}
- * @see {@linkcode Shape#_addOperation Shape._addOperation}
+ * @see {@linkcode Shape#addOperation Shape.addOperation}
  * @group Operations
  */
 export interface Operation<InputValue = any, OutputValue = any> {

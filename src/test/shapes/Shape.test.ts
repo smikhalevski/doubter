@@ -40,6 +40,29 @@ describe('Shape', () => {
     expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
   });
 
+  describe('addOperation', () => {
+    test('clones the shape', () => {
+      const shape1 = new Shape();
+      const shape2 = shape1.addOperation({
+        type: 'aaa',
+        param: undefined,
+        compose: next => (input, output, options, issues) => next(input, output, options, issues),
+      });
+
+      expect(shape1).not.toBe(shape2);
+    });
+
+    test('returns the shape clone', () => {
+      const shape = new Shape().addOperation({
+        type: 'aaa',
+        param: undefined,
+        compose: next => (input, output, options, issues) => next(input, output, options, issues),
+      });
+
+      expect(shape.operations.length).toBe(1);
+    });
+  });
+
   describe('annotate', () => {
     test('updates annotations', () => {
       const shape1 = new Shape();
@@ -58,8 +81,8 @@ describe('Shape', () => {
       const shape2 = shape1.check(() => null);
 
       expect(shape1).not.toBe(shape2);
-      expect(shape1['_operations']).toBeNull();
-      expect(shape2['_operations']!.length).toBe(1);
+      expect(shape1.operations.length).toBe(0);
+      expect(shape2.operations.length).toBe(1);
     });
 
     test('added callback is applied', () => {
@@ -106,19 +129,19 @@ describe('Shape', () => {
       const cb = () => null;
       const shape = new Shape().check(cb);
 
-      expect(shape['_operations']![0].type).toBe(cb);
+      expect(shape.operations[0].type).toBe(cb);
     });
 
     test('overrides operation type', () => {
       const shape = new Shape().check(() => null, { type: 'aaa' });
 
-      expect(shape['_operations']![0].type).toBe('aaa');
+      expect(shape.operations[0].type).toBe('aaa');
     });
 
     test('adds the param to the operation', () => {
       const shape = new Shape().check(() => null, { param: 111 });
 
-      expect(shape['_operations']![0].param).toBe(111);
+      expect(shape.operations[0].param).toBe(111);
     });
 
     test('callback can return null', () => {
@@ -233,19 +256,19 @@ describe('Shape', () => {
       const cb = () => true;
       const shape = new Shape().refine(cb);
 
-      expect(shape['_operations']![0].type).toBe(cb);
+      expect(shape.operations[0].type).toBe(cb);
     });
 
     test('overrides operation type', () => {
       const shape = new Shape().refine(() => true, { type: 'aaa' });
 
-      expect(shape['_operations']![0].type).toBe('aaa');
+      expect(shape.operations[0].type).toBe('aaa');
     });
 
     test('adds the param to the operation', () => {
       const shape = new Shape().refine(() => true, { param: 111 });
 
-      expect(shape['_operations']![0].param).toBe(111);
+      expect(shape.operations[0].param).toBe(111);
     });
 
     test('returns issues if a predicate fails', () => {
@@ -378,19 +401,19 @@ describe('Shape', () => {
       const cb = () => 'aaa';
       const shape = new Shape().alter(cb);
 
-      expect(shape['_operations']![0].type).toBe(cb);
+      expect(shape.operations[0].type).toBe(cb);
     });
 
     test('overrides operation type', () => {
       const shape = new Shape().alter(() => 'aaa', { type: 'aaa' });
 
-      expect(shape['_operations']![0].type).toBe('aaa');
+      expect(shape.operations[0].type).toBe('aaa');
     });
 
     test('adds the param to the operation', () => {
       const shape = new Shape().alter(() => 'aaa', { param: 111 });
 
-      expect(shape['_operations']![0].param).toBe(111);
+      expect(shape.operations[0].param).toBe(111);
     });
 
     test('callback can throw an error with an empty array of issues', () => {
@@ -692,18 +715,6 @@ describe('Shape', () => {
       expect(shape).toBeInstanceOf(ExcludeShape);
       expect(shape.baseShape).toBe(baseShape);
       expect(shape.excludedShape).toBe(excludedShape);
-    });
-  });
-
-  describe('_addOperation', () => {
-    test('returns the shape clone', () => {
-      const shape = new Shape()['_addOperation']({
-        type: 'aaa',
-        param: 'bbb',
-        compose: next => (input, output, options, issues) => next(input, output, options, issues),
-      });
-
-      expect(shape['_operations']!.length).toBe(1);
     });
   });
 

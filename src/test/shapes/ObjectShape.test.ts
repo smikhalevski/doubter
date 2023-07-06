@@ -48,12 +48,12 @@ describe('ObjectShape', () => {
       const shape1 = new ObjectShape({}, null).check(() => null);
       const shape2 = shape1.rest(restShape);
 
-      expect(shape1['_operations']!.length).toBe(1);
+      expect(shape1.operations.length).toBe(1);
       expect(shape1.restShape).toBeNull();
       expect(shape1.keysMode).toBe('preserved');
 
       expect(shape2).not.toBe(shape1);
-      expect(shape2['_operations']!.length).toBe(1);
+      expect(shape2.operations.length).toBe(1);
       expect(shape2.restShape).toBe(restShape);
       expect(shape2.keysMode).toBe('preserved');
     });
@@ -65,7 +65,7 @@ describe('ObjectShape', () => {
       const shape2 = shape1.exact();
 
       expect(shape2).not.toBe(shape1);
-      expect(shape2['_operations']!.length).toBe(1);
+      expect(shape2.operations.length).toBe(1);
       expect(shape2.keysMode).toBe('exact');
     });
   });
@@ -76,7 +76,7 @@ describe('ObjectShape', () => {
       const shape2 = shape1.strip();
 
       expect(shape2).not.toBe(shape1);
-      expect(shape2['_operations']!.length).toBe(1);
+      expect(shape2.operations.length).toBe(1);
       expect(shape2.keysMode).toBe('stripped');
     });
   });
@@ -86,12 +86,12 @@ describe('ObjectShape', () => {
       const shape1 = new ObjectShape({}, null).strip().check(() => null);
       const shape2 = shape1.preserve();
 
-      expect(shape1['_operations']!.length).toBe(1);
+      expect(shape1.operations.length).toBe(1);
       expect(shape1.restShape).toBeNull();
       expect(shape1.keysMode).toBe('stripped');
 
       expect(shape2).not.toBe(shape1);
-      expect(shape2['_operations']!.length).toBe(1);
+      expect(shape2.operations.length).toBe(1);
       expect(shape2.keysMode).toBe('preserved');
     });
   });

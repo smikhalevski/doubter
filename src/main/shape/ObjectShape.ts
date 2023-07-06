@@ -409,7 +409,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         return;
       }
 
-      const { keys, keysMode, restShape, _valueShapes, _operations } = this;
+      const { keys, keysMode, restShape, operations, _valueShapes } = this;
 
       const keysLength = keys.length;
 
@@ -492,7 +492,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_operations !== null || issues === null) {
+          } else if (issues === null || operations.length !== 0) {
             if (input === output) {
               output = cloneDict(input);
             }
@@ -521,7 +521,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are preserved as is and aren't checked.
    */
   private _applyRestUnchecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, _valueShapes, _operations } = this;
+    const { keys, operations, _valueShapes } = this;
 
     const keysLength = keys.length;
 
@@ -545,7 +545,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         issues = concatIssues(issues, result);
         continue;
       }
-      if (_operations !== null || issues === null) {
+      if (issues === null || operations.length !== 0) {
         if (input === output) {
           output = cloneDict(input);
         }
@@ -559,7 +559,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
-    const { keys, keysMode, restShape, _valueShapes, _operations } = this;
+    const { keys, keysMode, restShape, operations, _valueShapes } = this;
 
     const keysLength = keys.length;
 
@@ -601,7 +601,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_operations !== null || issues === null) {
+        if (issues === null || operations.length !== 0) {
           if (input === output) {
             output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
@@ -626,7 +626,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
 
       // Unknown keys are stripped
-      if (input === output && (_operations !== null || issues === null)) {
+      if (input === output && (issues === null || operations.length !== 0)) {
         output = cloneDictKeys(input, keys);
       }
     }
@@ -664,7 +664,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_operations !== null || issues === null) {
+        if (issues === null || operations.length !== 0) {
           if (input === output) {
             output = cloneDict(input);
           }

@@ -97,7 +97,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, _operations } = this;
+    const { keyShape, valueShape, operations } = this;
 
     let output = input;
     let issues = null;
@@ -143,7 +143,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         }
       }
 
-      if ((_operations !== null || issues === null) && (keyResult !== null || valueResult !== null)) {
+      if ((issues === null || operations.length !== 0) && (keyResult !== null || valueResult !== null)) {
         if (input === output) {
           output = cloneDictHead(input, index);
         }
@@ -164,7 +164,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         return;
       }
 
-      const { keyShape, valueShape, _operations } = this;
+      const { keyShape, valueShape, operations } = this;
 
       const keys = Object.keys(input);
       const keysLength = keys.length;
@@ -211,7 +211,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           }
         }
 
-        if ((_operations !== null || issues === null) && (keyChanged || valueResult !== null)) {
+        if ((issues === null || operations.length !== 0) && (keyChanged || valueResult !== null)) {
           if (input === output) {
             output = cloneDictHead(input, index);
           }

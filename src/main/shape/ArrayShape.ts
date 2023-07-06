@@ -151,7 +151,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     options: ApplyOptions,
     nonce: number
   ): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
-    const { headShapes, restShape, _operations } = this;
+    const { headShapes, restShape, operations } = this;
 
     let output = input;
     let outputLength;
@@ -186,7 +186,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           issues = concatIssues(issues, result);
           continue;
         }
-        if (_operations !== null || issues === null) {
+        if (issues === null || operations.length !== 0) {
           if (input === output) {
             output = input.slice(0);
           }
@@ -203,7 +203,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     nonce: number
   ): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
-      const { headShapes, restShape, _operations } = this;
+      const { headShapes, restShape, operations } = this;
 
       let output = input;
       let outputLength: number;
@@ -232,7 +232,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
               return result;
             }
             issues = concatIssues(issues, result);
-          } else if (_operations !== null || issues === null) {
+          } else if (issues === null || operations.length !== 0) {
             if (input === output) {
               output = input.slice(0);
             }

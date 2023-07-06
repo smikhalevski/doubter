@@ -254,7 +254,7 @@ describe('ArrayShape', () => {
     });
 
     test('strips operations', () => {
-      expect(new ArrayShape([], null).check(() => null).rest(new MockShape())['_operations']).toBeNull();
+      expect(new ArrayShape([], null).check(() => null).rest(new MockShape()).operations.length).toBe(0);
     });
   });
 

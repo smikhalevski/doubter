@@ -14,7 +14,7 @@ describe('any', () => {
   test('returns a shape with a refinement', () => {
     const cb = () => true;
 
-    expect(d.any(cb)['_operations']![0]).toEqual({
+    expect(d.any(cb).operations[0]).toEqual({
       type: cb,
       param: undefined,
       compose: expect.any(Function),

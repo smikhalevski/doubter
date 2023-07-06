@@ -57,7 +57,7 @@ export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialSha
  * Copies checks from `baseShape` to `shape`.
  */
 export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
-  shape['_operations'] = baseShape['_operations'];
+  shape.operations = baseShape.operations;
   return shape;
 }
 

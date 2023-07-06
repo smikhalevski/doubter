@@ -248,7 +248,7 @@ function addNonNegativeCheck(this: NumberShape, options?: IssueOptions | Message
 function addGtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_NUMBER_GT,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -267,7 +267,7 @@ function addGtCheck(this: NumberShape, value: number, options?: IssueOptions | M
 function addLtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_NUMBER_LT,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -286,7 +286,7 @@ function addLtCheck(this: NumberShape, value: number, options?: IssueOptions | M
 function addGteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_NUMBER_GTE,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -305,7 +305,7 @@ function addGteCheck(this: NumberShape, value: number, options?: IssueOptions | 
 function addLteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_NUMBER_LTE,
     param: value,
     compose: next => (input, output, options, issues) => {
@@ -328,7 +328,7 @@ function addMultipleCheck(this: NumberShape, divisor: number, options?: Multiple
 
   const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE, MESSAGE_NUMBER_MULTIPLE, options, divisor);
 
-  return this._addOperation({
+  return this.addOperation({
     type: CODE_NUMBER_MULTIPLE,
     param: divisor,
     compose: next => (input, output, options, issues) => {

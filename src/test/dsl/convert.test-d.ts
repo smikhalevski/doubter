@@ -1,0 +1,13 @@
+import { expectType } from 'tsd';
+import * as d from '../../main';
+import { INPUT, OUTPUT } from '../../main/internal';
+
+const shape = d
+  .object({
+    years: d.array(d.string()).convert(years => years.map(parseFloat)),
+  })
+  .deepPartial();
+
+expectType<{ years?: string[] }>(shape[INPUT]);
+
+expectType<{ years?: number[] }>(shape[OUTPUT]);
