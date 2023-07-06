@@ -824,6 +824,12 @@ Note that we can still use the built-in `min` check after `alter` was applied. T
 the same shape class as the one it was applied to. This is helpful when you want to chain multiple operations that check
 and alter the value of the same type.
 
+Use any transformation library in conjunction with alternations:
+
+```ts
+d.number().alter(Math.abs).alter(Math.pow, { param: 3 });
+```
+
 Alteration callbacks must return the value of the same type, so consequent operations are type-safe. If you want to
 convert the shape output value to another type, consider using [conversions](#conversions).
 
