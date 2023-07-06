@@ -55,16 +55,16 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!SetShape} with additional checks.
  */
 export default function () {
-  SetShape.prototype.size = addSizeCheck;
-  SetShape.prototype.min = addMinCheck;
-  SetShape.prototype.max = addMaxCheck;
+  SetShape.prototype.size = sizeCheck;
+  SetShape.prototype.min = minCheck;
+  SetShape.prototype.max = maxCheck;
 }
 
-function addSizeCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
+function sizeCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   return this.min(size, options).max(size, options);
 }
 
-function addMinCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
+function minCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
   return this.addOperation({
@@ -83,7 +83,7 @@ function addMinCheck(this: SetShape<any>, size: number, options?: IssueOptions |
   });
 }
 
-function addMaxCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
+function maxCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
   return this.addOperation({

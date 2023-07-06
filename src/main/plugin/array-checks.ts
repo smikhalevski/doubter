@@ -84,14 +84,14 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!ArrayShape} with additional checks.
  */
 export default function () {
-  ArrayShape.prototype.length = addLengthCheck;
-  ArrayShape.prototype.min = addMinCheck;
-  ArrayShape.prototype.max = addMaxCheck;
-  ArrayShape.prototype.nonEmpty = addNonEmptyCheck;
-  ArrayShape.prototype.includes = addIncludesCheck;
+  ArrayShape.prototype.length = lengthCheck;
+  ArrayShape.prototype.min = minCheck;
+  ArrayShape.prototype.max = maxCheck;
+  ArrayShape.prototype.nonEmpty = nonEmptyCheck;
+  ArrayShape.prototype.includes = includesCheck;
 }
 
-function addLengthCheck(
+function lengthCheck(
   this: ArrayShape<any, any>,
   length: number,
   options?: IssueOptions | Message
@@ -99,11 +99,7 @@ function addLengthCheck(
   return this.min(length, options).max(length, options);
 }
 
-function addMinCheck(
-  this: ArrayShape<any, any>,
-  length: number,
-  options?: IssueOptions | Message
-): ArrayShape<any, any> {
+function minCheck(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
   return this.addOperation({
@@ -122,11 +118,7 @@ function addMinCheck(
   });
 }
 
-function addMaxCheck(
-  this: ArrayShape<any, any>,
-  length: number,
-  options?: IssueOptions | Message
-): ArrayShape<any, any> {
+function maxCheck(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
   return this.addOperation({
@@ -145,11 +137,11 @@ function addMaxCheck(
   });
 }
 
-function addNonEmptyCheck(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
+function nonEmptyCheck(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
   return this.min(1, options);
 }
 
-function addIncludesCheck(
+function includesCheck(
   this: ArrayShape<any, any>,
   shape: AnyShape,
   options?: IssueOptions | Message

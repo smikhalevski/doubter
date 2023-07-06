@@ -85,31 +85,31 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!BigIntShape} with additional checks.
  */
 export default function () {
-  BigIntShape.prototype.positive = addPositiveCheck;
-  BigIntShape.prototype.negative = addNegativeCheck;
-  BigIntShape.prototype.nonPositive = addNonPositiveCheck;
-  BigIntShape.prototype.nonNegative = addNonNegativeCheck;
-  BigIntShape.prototype.min = addMinCheck;
-  BigIntShape.prototype.max = addMaxCheck;
+  BigIntShape.prototype.positive = positiveCheck;
+  BigIntShape.prototype.negative = negativeCheck;
+  BigIntShape.prototype.nonPositive = nonPositiveCheck;
+  BigIntShape.prototype.nonNegative = nonNegativeCheck;
+  BigIntShape.prototype.min = minCheck;
+  BigIntShape.prototype.max = maxCheck;
 }
 
-function addPositiveCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
+function positiveCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.min(BigInt(0), options);
 }
 
-function addNegativeCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
+function negativeCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.max(BigInt(0), options);
 }
 
-function addNonPositiveCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
+function nonPositiveCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.max(BigInt(1), options);
 }
 
-function addNonNegativeCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
+function nonNegativeCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.min(BigInt(-1), options);
 }
 
-function addMinCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
+function minCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
   value = BigInt(value);
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, value);
@@ -130,7 +130,7 @@ function addMinCheck(this: BigIntShape, value: bigint, options?: IssueOptions | 
   });
 }
 
-function addMaxCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
+function maxCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
   value = BigInt(value);
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, value);

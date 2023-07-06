@@ -122,21 +122,21 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!StringShape} with additional checks.
  */
 export default function () {
-  StringShape.prototype.length = addLengthCheck;
-  StringShape.prototype.min = addMinCheck;
-  StringShape.prototype.max = addMaxCheck;
-  StringShape.prototype.regex = addRegexCheck;
-  StringShape.prototype.includes = addIncludesCheck;
-  StringShape.prototype.startsWith = addStartsWithCheck;
-  StringShape.prototype.endsWith = addEndsWithCheck;
-  StringShape.prototype.trim = addTrimOperation;
+  StringShape.prototype.length = lengthCheck;
+  StringShape.prototype.min = minCheck;
+  StringShape.prototype.max = maxCheck;
+  StringShape.prototype.regex = regexCheck;
+  StringShape.prototype.includes = includesCheck;
+  StringShape.prototype.startsWith = startsWithCheck;
+  StringShape.prototype.endsWith = endsWithCheck;
+  StringShape.prototype.trim = trimOperation;
 }
 
-function addLengthCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function lengthCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   return this.min(length, options).max(length, options);
 }
 
-function addMinCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function minCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
   return this.addOperation({
@@ -155,7 +155,7 @@ function addMinCheck(this: StringShape, length: number, options?: IssueOptions |
   });
 }
 
-function addMaxCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function maxCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
   return this.addOperation({
@@ -174,7 +174,7 @@ function addMaxCheck(this: StringShape, length: number, options?: IssueOptions |
   });
 }
 
-function addRegexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
+function regexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
   return this.addOperation({
@@ -193,7 +193,7 @@ function addRegexCheck(this: StringShape, re: RegExp, options?: IssueOptions | M
   });
 }
 
-function addIncludesCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function includesCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
   return this.addOperation({
@@ -212,7 +212,7 @@ function addIncludesCheck(this: StringShape, value: string, options?: IssueOptio
   });
 }
 
-function addStartsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function startsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
   return this.addOperation({
@@ -231,7 +231,7 @@ function addStartsWithCheck(this: StringShape, value: string, options?: IssueOpt
   });
 }
 
-function addEndsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function endsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
   return this.addOperation({
@@ -250,7 +250,7 @@ function addEndsWithCheck(this: StringShape, value: string, options?: IssueOptio
   });
 }
 
-function addTrimOperation(this: StringShape): StringShape {
+function trimOperation(this: StringShape): StringShape {
   return this.addOperation({
     type: 'trim',
     param: undefined,

@@ -85,15 +85,15 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!DateShape} with additional checks.
  */
 export default function () {
-  DateShape.prototype.min = addMinCheck;
-  DateShape.prototype.max = addMaxCheck;
-  DateShape.prototype.after = addMinCheck;
-  DateShape.prototype.before = addMaxCheck;
+  DateShape.prototype.min = minCheck;
+  DateShape.prototype.max = maxCheck;
+  DateShape.prototype.after = minCheck;
+  DateShape.prototype.before = maxCheck;
   DateShape.prototype.iso = convertToIsoString;
   DateShape.prototype.timestamp = convertToTimestamp;
 }
 
-function addMinCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
+function minCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
   value = new Date(value);
 
   const timestamp = value.getTime();
@@ -116,7 +116,7 @@ function addMinCheck(this: DateShape, value: Date | number | string, options?: I
   });
 }
 
-function addMaxCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
+function maxCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
   value = new Date(value);
 
   const timestamp = value.getTime();
