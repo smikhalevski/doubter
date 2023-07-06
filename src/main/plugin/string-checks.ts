@@ -317,7 +317,7 @@ function nonEmptyCheck(this: StringShape, options?: IssueOptions | Message): Str
 
 function trimOperation(this: StringShape): StringShape {
   return this.addOperation({
-    type: 'trim',
+    type: 'string_trim',
     param: undefined,
     compose: next => (input, output, options, issues) => next(input, output.trim(), options, issues),
   });
@@ -325,7 +325,7 @@ function trimOperation(this: StringShape): StringShape {
 
 function toLowerCaseOperation(this: StringShape): StringShape {
   return this.addOperation({
-    type: 'to_lower_case',
+    type: 'string_to_lower_case',
     param: undefined,
     compose: next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues),
   });
@@ -333,7 +333,7 @@ function toLowerCaseOperation(this: StringShape): StringShape {
 
 function toUpperCaseOperation(this: StringShape): StringShape {
   return this.addOperation({
-    type: 'to_upper_case',
+    type: 'string_to_upper_case',
     param: undefined,
     compose: next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues),
   });
