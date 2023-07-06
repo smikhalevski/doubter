@@ -32,12 +32,12 @@ npm install --save-prod doubter
 🚀&ensp;**Features**
 
 - [Basics](#basics)
-- [Parsing and trying](#parsing-and-trying)
-- [Sync and async shapes](#sync-and-async-shapes)
+- [The anatomy of a shape](#the-anatomy-of-a-shape)
 - [Validation errors](#validation-errors)
 - [Checks](#checks)
 - [Refinements](#refinements)
-- [Transformations](#transformations)
+- [Alterations](#alterations)
+- [Conversions](#conversions)
 - [Metadata](#metadata)
 - [Parsing context](#parsing-context)
 - [Shape piping](#shape-piping)
@@ -116,7 +116,7 @@ npm install --save-prod doubter
   [`unknown`](#unknown)
 
 - Other<br>
-  [`transform`](#transform-transformasync)
+  [`convert`](#convert-convertasync)
   [`lazy`](#lazy)
   [`never`](#never)
 
@@ -158,7 +158,7 @@ userShape.parse({
   name: 'Peter Parker',
   age: 17
 });
-// ❌ ValidationError: number_gt at /age: Must be greater than or equal to 18
+// ❌ ValidationError: number_gte at /age: Must be greater than or equal to 18
 ```
 
 Infer the user type from the shape:
@@ -172,7 +172,48 @@ const user: User = {
 };
 ```
 
-# Parsing and trying
+# The anatomy of a shape
+
+Shapes are validation and transformation pipelines that have an input and an output. Here's a shape that restricts an
+input to a string and produces a string as an output:
+
+```ts
+d.string();
+// ⮕ Shape<string>
+```
+
+Shapes can have different input and output types. For example, the shape below allows strings and
+[replaces `undefined`](#optional-and-non-optional) input values with a default value "Mars":
+
+```ts
+const shape = d.string().optional('Mars');
+// ⮕ Shape<string | undefined, string>
+
+shape.parse('Pluto');
+// ⮕ 'Pluto'
+
+shape.parse(undefined);
+// ⮕ 'Mars'
+```
+
+Infer the input and output types of the shape:
+
+```ts
+type MyInput = d.Input<typeof shape>;
+// ⮕ string | undefined
+
+type MyOutput = d.Output<typeof shape>;
+// ⮕ string
+```
+
+You can get input types and literal values that the shape accepts using [shape introspection](#introspection):
+
+```ts
+shape.inputs;
+// ⮕ [Type.STRING, undefined]
+```
+
+## Parsing and trying
 
 Each shape can parse input values and there are several methods for that purpose.
 
@@ -215,8 +256,8 @@ If `true` then all shapes that support type coercion would try to coerce an inpu
 <dt><code>context</code></dt>
 <dd>
 
-The custom context that can be accessed from custom check callbacks, refinement predicates, transformers, and fallback
-functions. Refer to [Parsing context](#parsing-context) section for more details.
+The custom context that can be accessed from custom check callbacks, refinement predicates, alteration callbacks,
+converters, and fallback functions. Refer to [Parsing context](#parsing-context) section for more details.
 
 </dd>
 <dt><code>errorMessage</code></dt>
@@ -230,7 +271,7 @@ is provided, it is used as is. You can also configure global issue formatter tha
 </dd>
 </dl>
 
-## `parse`
+### [`parse`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parse)
 
 You're already familiar with `parse` that takes an input value and returns an output value, or throws a validation error
 if parsing fails:
@@ -246,9 +287,10 @@ shape.parse('Mars');
 // ❌ ValidationError: type at /: Must be a number
 ```
 
-Use `parseAsync` with [async shapes](#async-shapes). It has the same semantics and returns a promise.
+Use [`parseAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseAsync) with
+[async shapes](#async-shapes). It has the same semantics and returns a promise.
 
-## `parseOrDefault`
+### [`parseOrDefault`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseOrDefault)
 
 Sometimes you don't care about validation errors, and want a default value to be returned if things go south:
 
@@ -268,9 +310,10 @@ shape.parseOrDefault('Pluto', 5.3361);
 
 If you need a fallback value for a nested shape [consider using `catch`](#fallback-value).
 
-Use `parseOrDefaultAsync` with [async shapes](#async-shapes). It has the same semantics and returns a promise.
+Use [`parseOrDefaultAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseOrDefaultAsync)
+with [async shapes](#async-shapes). It has the same semantics and returns a promise.
 
-## `try`
+### [`try`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#try)
 
 It isn't always convenient to write a try-catch blocks to handle validation errors. Use `try` method in such cases:
 
@@ -285,54 +328,47 @@ shape.try('Mars');
 // ⮕ { ok: false, issues: [{ code: 'type', … }] }
 ```
 
-Use `tryAsync` with [async shapes](#async-shapes). It has the same semantics and returns a promise.
+Use [`tryAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#tryAsync) with
+[async shapes](#async-shapes). It has the same semantics and returns a promise.
 
-# Sync and async shapes
+## Operations
 
-Shapes are validation and transformation pipelines that have an input and an output. Here's a shape that restricts an
-input to a string and produces a string as an output:
-
-```ts
-d.string();
-// ⮕ Shape<string>
-```
-
-Shapes can have different input and output types. For example, the shape below allows strings and
-[replaces `undefined`](#optional-and-non-optional) input values with a default value "Mars":
+As the final step of the parsing process, a shape applies operations that were added to it.
 
 ```ts
-const shape = d.string().optional('Mars');
-// ⮕ Shape<string | undefined, string>
+const shape = d.string().addOperation({
+  type: 'trim',
+  param: undefined,
+  compose: next => (input, output, options, issues) => {
+    return next(input, output.trim(), options, issues);
+  }
+});
 
-shape.parse('Pluto');
-// ⮕ 'Pluto'
-
-shape.parse(undefined);
-// ⮕ 'Mars'
+shape.parse('  Space  ');
+// ⮕ 'Space'
 ```
 
-Infer the input and output types of the shape:
+> **Note** Most of the time you don't need to use `addOperation` directly. Instead, you can use [checks](#checks),
+> [refinements](#refinements), and [alterations](#alterations) as a higher-level API.
+
+Operations can alter the shape output, populate issues, and delegate parsing to the next operation. Operations are
+executed in the same order they were added.
+
+Check that an operation with a particular type was added to the shape:
 
 ```ts
-type MyInput = d.Input<typeof shape>;
-// ⮕ string | undefined
-
-type MyOutput = d.Output<typeof shape>;
-// ⮕ string
+shape.hasOperation('trim');
+// ⮕ true
 ```
 
-You can get input types and literal values that the shape accepts using [shape introspection](#introspection):
-
-```ts
-shape.inputs;
-// ⮕ [Type.STRING, undefined]
-```
+You can access all operations that were added to the shape using the
+[`operations`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#operations) property.
 
 ## Async shapes
  
 What can make a shape asynchronous:
 
-- [Async transformations;](#async-transformations)
+- [Async type conversions;](#async-conversions)
 - Usage of [`d.promise`](#promise) that constrains the resolved value;
 - Usage of [custom async shapes.](#advanced-shapes)
 
@@ -390,7 +426,7 @@ const result = shape.try({ age: 'seventeen' });
 The `result` contains the [`Err`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Err.html) object with
 the array of issues:
 
-```ts
+```json5
 {
   ok: false,
   issues: [
@@ -487,9 +523,9 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 
 ## Global error message formatter
 
-By default, `ValidationError` uses `JSON.stringify` to produce an error message. While you can provide a custom error
-message by passing [`errorMessage` option](#parse) to `parse` and `parseAsync`, you also can configure the global
-formatter.
+By default, `ValidationError` uses `JSON.stringify` to produce an error message from an array of issues. While you can
+provide a custom error message by passing [`errorMessage` option](#parse) to `parse` and `parseAsync`, you also can
+configure the global formatter.
 
 ```ts
 d.ValidationError.formatIssues = issues => {
@@ -510,8 +546,8 @@ is omitted.
 
 # Checks
 
-Checks allow constraining the input value beyond type assertions. For example, if you want to constrain a numeric input
-to be greater than 5:
+Checks are the most common [operations](#operations) that allow constraining the input value beyond type assertions. For
+example, if you want to constrain a numeric input to be greater than 5:
 
 ```ts
 const shape = d.number().check(value => {
@@ -553,7 +589,7 @@ d.string().max(4).regex(/a/).try('Pluto');
 In the example above, an [`Err`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Err.html) object is
 returned:
 
-```ts
+```json5
 {
   ok: false,
   issues: [
@@ -601,13 +637,16 @@ to collect all issues that prevent input from being successfully parsed. To do t
 [parse method](#parsing-and-trying).
 
 ```ts
-d.string().max(4).regex(/a/).try('Pluto', { verbose: true });
+d.string()
+  .max(4)
+  .regex(/a/)
+  .try('Pluto', { verbose: true });
 ```
 
 This would return the [`Err`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Err.html) object with two
 issues:
 
-```ts
+```json5
 {
   ok: false,
   issues: [
@@ -633,54 +672,55 @@ issues:
 
 ## Forced checks
 
-Checks that you add using a
+Checks that you add using the
 [`check`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#check) method are "safe" by default,
-which means they aren't applied if any of the preceding checks have failed. For example, let's declare the shape of a
-greeting message:
+which means they aren't applied if any of the preceding operations have failed.
+
+For example, let's declare an overcomplicated shape of an oversimplified format of an international phone number:
 
 ```ts
-const helloCheck: d.CheckCallback<string> = value => {
-  if (!value.startsWith('Hello')) {
-    return { message: 'Must start with Hello' };
+const plusCheck: d.CheckCallback<string> = value => {
+  if (!value.startsWith('+')) {
+    return { code: 'expected_plus' };
   }
 };
 
-const noDigitsCheck: d.CheckCallback<string> = value => {
-  if (value.match(/\d/)) {
-    return { message: 'Must not contain digits' };
+const digitsCheck: d.CheckCallback<string> = value => {
+  if (!/^+\d+$/.test(value)) {
+    return { code: 'expected_digits' };
   }
 };
 
-const shape = d.string()
-  .check(helloCheck)
-  .check(noDigitsCheck);
+const phoneShape = d.string()
+  .check(plusCheck)
+  .check(digitsCheck);
 ```
 
-If the input violates the `helloCheck`, then `noDigitsCheck` isn't applied:
+If the input violates the `plusCheck`, then `digitsCheck` isn't applied:
 
 ```ts
-shape.parse('Adiós, R2D2', { verbose: true });
-// ❌ ValidationError: type at /: Must start with Hello
+phoneShape.parse('867-5309', { verbose: true });
+// ❌ ValidationError: expected_plus at /
 ```
 
-To force `noDigitsCheck` to be applied even if `helloCheck` has raised issues, pass the
+To force `digitsCheck` to be applied even if `plusCheck` has failed, pass the
 [`force`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.OperationOptions.html#force) option:
 
 ```ts
-const shape = d.string()
-  .check(helloCheck)
-  .check(noDigitsCheck, { force: true });
+const phoneShape = d.string()
+  .check(plusCheck)
+  .check(digitsCheck, { force: true });
 ```
 
 Both forced and non-forced checks are applied only if the type of the input is valid.
 
 ```ts
-shape.parse(42);
+phoneShape.parse(42);
 // ❌ ValidationError: type at /: Must be a number
 ```
 
-In the example above both `helloCheck` and `noDigitsCheck` _are not_ applied, despite that `noDigitsCheck` is marked as
-forced. This happens because the input value 42 is of the invalid type.
+In the example above both `plusCheck` and `digitsCheck` _are not_ applied, despite that `digitsCheck` is marked as
+forced. This is the case because the input value 42 has an invalid type.
 
 For composite shapes, forced checks may become non-type-safe. Let's consider an object with a custom check:
 
@@ -692,7 +732,7 @@ const userShape = d
   })
   .check(user => {
     if (user.age < user.yearsOfExperience) {
-      return { code: 'inconsistentAge' };
+      return { code: 'inconsistent_age' };
     }
   });
 // ⮕ Shape<{ age: number, yearsOfExperience: number }>
@@ -707,7 +747,8 @@ nameShape.parse({ age: 18 }, { verbose: true });
 // ❌ ValidationError: type at /yearsOfExperience: Must be a number
 ```
 
-Adding the `force` option in this case would cause the check to be applied even if _object properties are invalid_.
+Adding the `force` option in this case would cause the check to be applied even if _object properties have invalid
+types_.
 
 Some shapes cannot guarantee that the input value is of the required type. For example, if any of the underlying shapes
 in an intersection have raised issues, an intersection itself cannot guarantee that its checks would receive the value
@@ -720,64 +761,13 @@ These shapes won't apply forced checks if an underlying shape has raised an issu
 - [`LazyShape`](#lazy)
 - [`PipeShape`](#shape-piping)
 - [`ReplaceLiteralShape`](#replace-a-literal-value)
-- [`TransformShape`](#transformations)
+- [`ConvertShape`](#conversions)
 - [`UnionShape`](#union-or)
-
-## Add, get and delete checks
-
-Let's consider the same check being added to the shape twice:
-
-```ts
-const emailCheck: d.CheckCallback<string> = value => {
-  if (!value.includes('@')) {
-    return { code: 'email' };
-  }
-};
-
-const shape = d.string().check(emailCheck).check(emailCheck);
-// ⮕ Shape<string>
-```
-
-Doubter ensures that checks are distinct, so `emailCheck` check is added to the shape only once.
-
-Retrieve a check:
-
-```ts
-shape.check(emailCheck);
-
-shape.getOperationsByKey(emailCheck);
-// ⮕ { type: emailCheck, callback: emailCheck, isForced: false, param: undefined }
-```
-
-Delete a check:
-
-```ts
-shape.deleteCheck(emailCheck);
-// ⮕ Shape<string>
-```
-
-Using a check callback identity as a type isn't always convenient. Pass the
-[`type`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.OperationOptions.html#key) option to define a
-custom type:
-
-```ts
-shape.check(emailCheck, { type: 'email' });
-// ⮕ Shape<string>
-```
-
-Now you should use the type to get the check:
-
-```ts
-shape._getOperation('email');
-// ⮕ { type: 'email', callback: emailCheck, isForced: false, param: undefined }
-```
-
-Doubter considers checks to be identical if they have the same type.
 
 # Refinements
 
-Refinements are a simplified checks that use a predicate callback to validate an input. For example, the shape below
-would raise an issue if the input string is less than six characters long.
+Refinements are a simplified alternative to [checks](#checks) that use a predicate callback to validate an input. For
+example, the shape below would raise an issue if the input string is less than six characters long.
 
 ```ts
 const shape1 = d.string().refine(value => value.length >= 6);
@@ -801,32 +791,58 @@ d.string().refine(isMarsOrPluto)
 // ⮕ Shape<string, 'Mars' | 'Pluto'>
 ```
 
-By default, `refine` raises issues with have [`predicate`](#validation-errors) code. You can provide a custom code:
+By default, `refine` raises issues which have the [`predicate`](#validation-errors) code. You can provide a custom code:
 
 ```ts
 const shape2 = d.string().refine(
   isMarsOrPluto,
   {
-    code: 'unknownPlanet',
+    code: 'unknown_planet',
     message: 'Must be Mars or Pluto'
   }
 );
 
 shape2.parse('Venus');
-// ❌ ValidationError: unknownPlanet at /: Must be Mars or Pluto
+// ❌ ValidationError: unknown_planet at /: Must be Mars or Pluto
 ```
 
-# Transformations
+> **Note**&ensp;Refinements [can be parameterized](#parameterized-checks) and [forced](#forced-checks) the same way as
+> checks.
 
-Along with validation, shapes can transform values. Let's consider a shape that takes a string as an input and converts
-it to a number:
+# Alterations
+
+Alterations are [operations](#operations) that synchronously transform the shape output value without changing its type.
+For example, let's consider a string shape that trims the value and then checks that it has at least 3 characters:
 
 ```ts
-const shape = d.string().transform(parseFloat);
+d.string()
+  .alter(value => value.trim())
+  .min(3);
+// ⮕ StringShape
+```
+
+Note that we can still use the built-in `min` check after `alter` was applied. This is the case since `alter` returns
+the same shape class as the one it was applied to. This is helpful when you want to chain multiple operations that check
+and alter the value of the same type.
+
+Alteration callbacks must return the value of the same type, so consequent operations are type-safe. If you want to
+convert the shape output value to another type, consider using [conversions](#conversions).
+
+> **Note**&ensp;Alterations [can be parameterized](#parameterized-checks) and [forced](#forced-checks) the same way as
+> checks.
+
+# Conversions
+
+Conversions are close relatives of [alterations](#alterations) and can transform shape output value. The main difference
+from alterations is that conversions can change the shape output type. Let's consider a shape that takes a string as an
+input and converts it to a number:
+
+```ts
+const shape = d.string().convert(parseFloat);
 // ⮕ Shape<string, number>
 ```
 
-This shape ensures that the input value is a string and passes it to a transformation callback:
+This shape ensures that the input value is a string and passes it to a converter callback:
 
 ```ts
 shape.parse('42');
@@ -837,33 +853,33 @@ shape.parse('seventeen');
 ```
 
 Throw a [`ValidationError`](https://smikhalevski.github.io/doubter/classes/doubter_core.ValidationError.html) inside the
-transformation callback to notify parser that transformation cannot be successfully completed:
+callback to notify parser that the conversion cannot be successfully completed:
 
 ```ts
 function toNumber(input: string): number {
   const output = parseFloat(input);
 
   if (isNaN(output)) {
-    throw new d.ValidationError([{ code: 'kaputs' }]);
+    throw new d.ValidationError([{ code: 'not_a_number' }]);
   }
   return output;
 }
 
-const shape = d.string().transform(toNumber);
+const shape = d.string().convert(toNumber);
 
 shape.parse('42');
 // ⮕ 42
 
 shape.parse('seventeen');
-// ❌ ValidationError: kaputs at /
+// ❌ ValidationError: not_a_number at /
 ```
 
-## Async transformations
+## Async conversions
 
-Let's consider a _sync_ transformation:
+Let's consider a _sync_ conversion:
 
 ```ts
-const syncShape1 = d.string().transform(
+const syncShape1 = d.string().convert(
   value => 'Hello, ' + value
 );
 // ⮕ Shape<string>
@@ -874,12 +890,12 @@ syncShape1.parse('Jill');
 // ⮕ 'Hello, Jill'
 ```
 
-The transformation callback receives and returns a string and so does `syncShape1`.
+The converter callback receives and returns a string and so does `syncShape1`.
 
-Now lets return a promise from the transformation callback:
+Now lets return a promise from the converter callback:
 
 ```ts
-const syncShape2 = d.string().transform(
+const syncShape2 = d.string().convert(
   value => Promise.resolve('Hello, ' + value)
 );
 // ⮕ Shape<string, Promise<string>>
@@ -890,13 +906,13 @@ syncShape2.parse('Jill');
 // ⮕ Promise<string>
 ```
 
-Notice that `syncShape2` is asymmetric: it expects a string input and transforms it to a `Promise<string>`. `syncShape2`
-is still sync, since the transformation callback _synchronously wraps_ a value in a promise.
+Notice that `syncShape2` is asymmetric: it expects a string input and converts it to a `Promise<string>`. `syncShape2`
+is still sync, since the converter callback _synchronously wraps_ a value in a promise.
 
-Now let's create an _async_ shape using the async transformation:
+Now let's create an _async_ shape using the async conversion:
 
 ```ts
-const asyncShape1 = d.string().transformAsync(
+const asyncShape1 = d.string().convertAsync(
   value => Promise.resolve('Hello, ' + value)
 );
 // ⮕ Shape<string>
@@ -905,17 +921,16 @@ const asyncShape1 = d.string().transformAsync(
 asyncShape1.isAsync // ⮕ true
 
 await asyncShape1.parseAsync('Jill');
-// ⮕ 'Hello, Jill'
+// ⮕ Promise { 'Hello, Jill' }
 ```
 
-Notice that `asyncShape1` still transforms the input string value to output string but the transformation itself is
-async.
+Notice that `asyncShape1` converts the input string value to output string but the conversion itself is async.
 
-A shape is async if it uses async transformations. Here's an async object shape:
+A shape is async if it uses async conversions. Here's an async object shape:
 
 ```ts
 const asyncShape2 = d.object({
-  foo: d.string().transformAsync(
+  foo: d.string().convertAsync(
     value => Promise.resolve(value)
   )
 });
@@ -961,7 +976,7 @@ shape.annotate({ foo: 'bar' }).annotations;
 store an arbitrary data.
 
 You can pass the [`meta`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.ConstraintOptions.html#meta)
-option to any built-in check and its value is assigned to the `meta` property of the raised validation issue.
+option to any [built-in check](#checks) and its value is assigned to the `meta` property of the raised validation issue.
 
 ```ts
 const shape = d.number().gt(5, { meta: 'Useful data' });
@@ -980,15 +995,16 @@ processing. For example, during [localization](#localization).
 
 # Parsing context
 
-Inside [check](#checks) callbacks, [refinement predicates](#refinements), [transformers](#transformations) and
-[fallback](#fallback-value) functions you can access options passed to the parser. The
+Inside [check](#checks) callbacks, [refinement predicates](#refinements), [alteration](#alterations) callbacks,
+[converters](#conversions), [fallback](#fallback-value) functions, and [message](#localization) callbacks you can access
+options passed to the parser. The
 [`context`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.ApplyOptions.html#context) option may store
 an arbitrary data, which is `undefined` by default.
 
-For example, here's how you can use context to transform numbers to formatted strings:
+For example, here's how you can use context to convert numbers to formatted strings:
 
 ```ts
-const shape = d.number().transform(
+const shape = d.number().convert(
   (value, options) => new Intl.NumberFormat(options.context.locale).format(value)
 );
 // ⮕ Shape<number, string>
@@ -1009,7 +1025,7 @@ With shape piping you to can pass the shape output to another shape.
 
 ```ts
 d.string()
-  .transform(parseFloat)
+  .convert(parseFloat)
   .to(d.number().lt(5).gt(10));
 // ⮕ Shape<string, number>
 ```
@@ -1019,7 +1035,7 @@ properties using [`object`](#object):
 
 ```ts
 class Planet {
-  constructor(public name: string) {}
+  constructor(readonly name: string) {}
 }
 
 const shape = d.instance(Planet).to(
@@ -1086,13 +1102,13 @@ d.enum([33, 42]).replace(NaN, 0);
 Replaced values aren't processed by the underlying shape:
 
 ```ts
-const shape2 = d.number().min(3).replace(0, 'zero');
+const shape2 = d.number().gte(3).replace(0, 'zero');
 // ⮕ Shape<number | 'zero'>
 
 shape2.parse(2);
 // ❌ ValidationError: number_gte at /: Must be greater than 3
 
-// 🟡 Notice that 0 doesn't satisfy the min constraint
+// 🟡 Notice that 0 doesn't satisfy the gte constraint
 shape2.parse(0);
 // ⮕ 'zero'
 ```
@@ -1130,8 +1146,8 @@ const shape1 = d.enum(['Mars', 'Pluto', 'Jupiter']);
 // ⮕ Shape<'Mars' | 'Pluto' | 'Jupiter'>
 ```
 
-To remove a value from this enum you can use
-[`deny`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#deny):
+To remove a value from this enum you can use the
+[`deny`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#deny) method:
 
 ```ts
 shape1.deny('Pluto');
@@ -1154,7 +1170,7 @@ shape2.parse(42);
 `deny` prohibits value for _both input and output_:
 
 ```ts
-const shape3 = d.number().transform(value => value * 2).deny(42);
+const shape3 = d.number().convert(value => value * 2).deny(42);
 // ⮕ Shape<number>
 
 shape3.parse(21);
@@ -1206,11 +1222,7 @@ const shape1 = d.or([
 
 shape1.parse(undefined);
 // ⮕ undefined
-```
 
-Now let's mark this shape as non-optional:
-
-```ts
 const shape2 = shape1.nonOptional();
 // ⮕ Shape<string | number>
 
@@ -1339,19 +1351,20 @@ shape2.parse({ name: 8080 });
 // ❌ ValidationError: type at /name: Must be a string
 ```
 
-Deep partial isn't applied to transformed shapes:
+Deep partial isn't applied to [converted shapes](#conversions):
 
 ```ts
 const shape2 = d
   .object({
-    years: d.array(d.string()).transform(parseFloat)
+    years: d.array(d.string())
+      .convert(years => years.map(parseFloat))
   })
   .deepPartial();
 // ⮕ Shape<{ years?: string[] }, { years?: number[] }>
 ```
 
-In the example above, array elements don't allow `undefined` after `deepPartial` was applied, this happened because
-array was transformed.
+In the example above, array elements don't allow `undefined` even after `deepPartial` was applied, this happened because
+array is converted during parsing.
 
 # Fallback value
 
@@ -1412,7 +1425,9 @@ In TypeScript, values are considered to be of equivalent type if they are struct
 strings are assignable to one another:
 
 ```ts
-declare function bookTicket(flightCode: string): void;
+function bookTicket(flightCode: string): void {
+  // Booking logic
+}
 
 // 🟡 No type errors, but "Bill" isn't a flight code
 bookTicket('Bill');
@@ -1428,7 +1443,9 @@ const flightCodeShape = d.string().refine(isFlightCode).brand<'flightCode'>();
 type FlightCode = d.Output<typeof flightCodeShape>;
 
 // 🟡 Note that the argument type isn't a plain string
-declare function bookTicket(flightCode: FlightCode): void;
+function bookTicket(flightCode: FlightCode): void {
+  // Booking logic
+}
 
 bookTicket(flightCodeShape.parse('BA2490'));
 // Ok, valid flight code
@@ -1437,15 +1454,15 @@ bookTicket('Bill');
 // ❌ Error: Expected BRAND to be flightCode
 ```
 
-> **Note**&ensp;Branded types don't affect the runtime result of `parse`. It is a static-only construct.
+> **Note**&ensp;Branded types don't affect the runtime result of `parse`. It is a static-type-only construct.
 
 # Type coercion
 
 Type coercion is the process of converting value from one type to another (such as string to number, array to `Set`,
 and so on).
 
-When coercion is enabled, input values are implicitly converted to the required input type whenever possible.
-For example, you can coerce input values to string type:
+When coercion is enabled, input values are implicitly converted to the required input type whenever possible. For
+example, you can coerce input values to string type:
 
 ```ts
 const shape1 = d.string().coerce();
@@ -1515,8 +1532,9 @@ yesNoShape.parse('true')
 // ❌ ValidationError: type at /: Must be a boolean
 ```
 
-The callback passed to `corce` method is called only if the input value doesn't conform the requested type. If coercion
-isn't possible, return `d.NEVER`.
+The callback passed to the
+[`corce`](https://smikhalevski.github.io/doubter/classes/doubter_core.CoercibleShape.html#coerce) method is called only
+if the input value doesn't conform the requested type. If coercion isn't possible, return `d.NEVER`.
 
 # Introspection
 
@@ -1597,10 +1615,10 @@ Types returned from `Type.of` are a superset of types returned from the `typeof`
 ## Unknown value type
 
 `Type.UNKNOWN` type emerges when accepted inputs cannot be statically inferred. For example, if [`d.any`](#any),
-[`d.unknown`](#unknown), or [`d.transform`](#transform-transformasync) are used:
+[`d.unknown`](#unknown), or [`d.convert`](#convert-convertasync) are used:
 
 ```ts
-const shape1 = d.transfrorm(parseFloat);
+const shape1 = d.convert(parseFloat);
 // ⮕ Shape<any>
 
 shape1.inputs;
@@ -1727,7 +1745,7 @@ const userShape = d.object({
 });
 // ⮕ Shape<{ name: string, age: number }>
 
-userShape.shapes.name;
+userShape.propShapes.name;
 // ⮕ Shape<number>
 
 const userOrNameShape = d.or([userShape, d.string()]);
@@ -1775,7 +1793,7 @@ All shape factories and built-in checks support custom issue messages:
 d.string('Hey, string here').min(3, 'Too short');
 ```
 
-[Checks that have a param](#validation-errors), such as `min` constraint in the example above, can use a `%s`
+[Built-in checks that have a param](#validation-errors), such as `min` constraint in the example above, can use a `%s`
 placeholder that would be interpolated with the param value.
 
 ```ts
@@ -1873,21 +1891,21 @@ emailShape.parse('foo@bar.com');
 // ⮕ 'foo@bar.com'
 ```
 
-You can check that the shape describes an email using `hasCheck`:
+You can check that the shape describes an email using `hasOperation`:
 
 ```ts
-emailShape.hasCheck(isEmail);
+emailShape.hasOperation(isEmail);
 // ⮕ true
 ```
 
-Read more about [Refinements](#refinements) and how to [Add, get and delete checks](#add-get-and-delete-checks).
+Read more about operations in [Operations](#operations) section.
 
 # Advanced shapes
 
 You can create custom shapes by extending the
 [`Shape`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html) class.
 
-`Shape` has several protected methods that you can override to alter different aspects of the shape logic.
+`Shape` has several protected methods that you can override to change different aspects of the shape logic.
 
 <dl>
 <dt>
@@ -1899,9 +1917,12 @@ You can create custom shapes by extending the
 
 Synchronous input parsing is delegated to this method. It receives an `input` that must be parsed and should return
 the [`Result`](https://smikhalevski.github.io/doubter/types/doubter_core.Result.html):
+
 - `null` if the output is the same as the input;
-- [`Ok`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Ok.html) if the output contains a new value;
-- an array of [`Issue`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Issue.html) objects.
+- an [`Ok`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Ok.html) object if the output contains a
+  new value;
+- an array of [`Issue`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Issue.html) objects if parsing
+  failed.
 
 </dd>
 <dt>
@@ -1922,7 +1943,8 @@ You need to override this method only if you have a separate logic for async par
 </dt>
 <dd>
 
-The value returned from this method alters what method is used for parsing:
+The value returned from this method is toggles which method is used for parsing:
+
 - if `true` is returned then `_applyAsync` would be used for parsing, and `_apply` would always throw an error;
 - if `false` is returned then `_apply` would be used for parsing, and `_applyAsync` would always redirect to `_apply`.
 
@@ -1945,7 +1967,7 @@ Let's create a custom shape that parses an input string as a number:
 ```ts
 class NumberLikeShape extends d.Shape<string, number> {
 
-  protected _apply(input: unknown, options: d.ApplyOptions, nonce: number): d.Result<number> {
+  protected _apply(input: unknown, options: Readonly<d.ApplyOptions>, nonce: number): d.Result<number> {
 
     // 1️⃣ Validate the input and return issues if it is invalid
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {
@@ -1995,7 +2017,8 @@ This is sufficient to enable type inference and runtime support for `deepPartial
 
 # Performance
 
-The chart below showcases the performance comparison in terms of millions of operations per second (greater is better).
+The chart below showcases the performance comparison of Doubter and its peers, in terms of millions of operations per
+second (greater is better).
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/static/perf.svg" alt="Performance comparison chart"/>
@@ -2003,13 +2026,13 @@ The chart below showcases the performance comparison in terms of millions of ope
 
 Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast).
 
-[Here is the performance test suite](./src/test/perf/overall.perf.js) that produced the results above. To reproduce
-them, clone this repo and in the repo's root directory use:
+[The performance test suite](./src/test/perf/overall.perf.js) was run on Apple M1. To reproduce these results, clone
+this repo and in the repo's root directory run:
 
 ```shell
 npm ci
 npm run build
-npm run perf -- --testNamePattern Overall
+npm run perf -- -t overall
 ```
 
 # `any`
@@ -2073,7 +2096,7 @@ d.array(d.string()).length(5);
 Transform array values during parsing:
 
 ```ts
-d.array(d.string().transform(parseFloat));
+d.array(d.string().convert(parseFloat));
 // ⮕ Shape<string[], number[]>
 ```
 
@@ -2201,6 +2224,34 @@ d.const('Mars');
 There are shortcuts for [`null`](#null), [`undefined`](#undefined) and [`nan`](#nan) constants.
 
 Consider using [`enum`](#enum) if you want a value to be one of multiple literal values.
+
+# `convert`, `convertAsync`
+
+Both [`d.convert`](https://smikhalevski.github.io/doubter/functions/doubter_core.convert.html) and
+[`d.convertAsync`](https://smikhalevski.github.io/doubter/functions/doubter_core.convertAsync.html) return a
+[`ConvertShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.ConvertShape.html) instance.
+
+Transforms the input value:
+
+```ts
+const shape = d.convert(parseFloat);
+// ⮕ Shape<any, number>
+```
+
+Use `convert` in conjunction with [shape piping](#shape-piping):
+
+```ts
+shape.to(d.number().min(3).max(5));
+```
+
+Apply async conversions with `convertAsync`:
+
+```ts
+d.convertAsync(value => Promise.resolve('Hello, ' + value));
+// ⮕ Shape<any, string>
+```
+
+For more information, see [Conversions](#conversions) section.
 
 # `date`
 
@@ -2402,8 +2453,8 @@ shape1.parse('Mars');
 // ❌ ValidationError: type at /: Must be a function
 ```
 
-By default, the input function is returned as is during parsing. Tell the function shape to wrap the input function with
-a signature ensurance wrapper during parsing by calling `strict` method.
+By default, the input function is returned as is during parsing. If you want a parsed function to be strictly type-safe
+use `strict` method to [ensure its signature](#ensuring-function-signature) at runtime.
 
 ```ts
 const greetShape = d.fn([d.string()])
@@ -2416,10 +2467,9 @@ const greet = greetShape.parse(name => `Hello, $name!`);
 `greet` guarantees that the input function is called with arguments, `this` and return values that conform the
 respective shapes.
 
-## Implementing a function
+## Ensuring function signature
 
-You can wrap an input function with a signature ensurance wrapper that guarantees that the function signature is
-type-safe at runtime.
+You can wrap an input function to guarantee that the function signature is type-safe at runtime.
 
 Let's declare a function shape that takes two integers arguments and returns an integer as well:
 
@@ -2513,10 +2563,10 @@ plus2('40');
 
 ## Transforming arguments and return values
 
-Here's a function shape that transforms the input argument by parsing a string as a number:
+Here's a function shape that converts a string argument to a number:
 
 ```ts
-const shape = d.fn([d.string().transform(parseFloat)]);
+const shape = d.fn([d.string().convert(parseFloat)]);
 // ⮕ Shape<(arg: number) => any, (arg: string) => any>
 ```
 
@@ -2624,7 +2674,7 @@ When working with objects, [extend objects](#extending-objects) instead of inter
 object shapes are more performant than object intersection shapes.
 
 There's a logical difference between extended and intersected objects. Let's consider two shapes that both contain the
-same type:
+same key:
 
 ```ts
 const shape1 = d.object({
@@ -2669,7 +2719,7 @@ type JSON =
   | boolean
   | null
   | JSON[]
-  | { [type: string]: JSON };
+  | { [key: string]: JSON };
 
 const jsonShape: d.Shape<JSON> = d.lazy(() =>
   d.or([
@@ -2768,8 +2818,8 @@ userShape1.parse(hank);
 ```
 
 By default, Doubter neither parses nor validates an object if it was already seen, and returns such object as is. This
-behaviour was chosen as the default for `d.lazy` because otherwise the result would be ambiguous when transformations
-are introduced.
+behaviour was chosen as the default for `d.lazy` because otherwise the result would be ambiguous when conversions are
+introduced.
 
 ```ts
 interface Foo {
@@ -2784,7 +2834,7 @@ const fooShape: d.Shape<Foo, string> = d.lazy(() =>
   d.object({
     bar: fooShape.optional(),
   })
-).transform(output => {
+).convert(output => {
   //        ⮕ {bar?: Foo} | {bar?: string}
   return 'hello';
 });
@@ -3022,11 +3072,11 @@ d.object({
 // ⮕ Shape<{ name?: string | undefined }>
 ```
 
-If the transformation result extends `undefined` then the output property becomes optional:
+If the conversion result extends `undefined` then the output property becomes optional:
 
 ```ts
 d.object({
-  name: d.string().transform(
+  name: d.string().convert(
     value => value !== 'Google' ? value : undefined
   ),
 });
@@ -3052,7 +3102,7 @@ const restShape = d.or([
 // ⮕ Shape<string | number>
 
 shape.rest(restShape);
-// ⮕ Shape<{ foo: string, bar: number, [type: string]: string | number }>
+// ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
 Unlike an index signature in TypeScript, a rest shape is applied only to keys that aren't explicitly specified among
@@ -3067,7 +3117,7 @@ Keys that aren't defined explicitly can be handled in several ways:
 - preserved as is, this is the default behavior;
 - prohibited.
 
-Force an object to have only known keys. If an unknown type is met, a validation issue is raised.
+Force an object to have only known keys. If an unknown key is met, a validation issue is raised.
 
 ```ts
 d.object({
@@ -3076,7 +3126,7 @@ d.object({
 }).exact();
 ```
 
-Strip unknown keys, so the object is cloned if an unknown type is met, and only known keys are preserved.
+Strip unknown keys, so the object is cloned if an unknown key is met, and only known keys are preserved.
 
 ```ts
 d.object({
@@ -3147,7 +3197,7 @@ const barShape = d.object({
 });
 
 fooShape.extend(barShape);
-// ⮕ Shape<{ foo: string, bar: number, [type: string]: string | number }>
+// ⮕ Shape<{ foo: string, bar: number, [key: string]: string | number }>
 ```
 
 ## Making objects partial and required
@@ -3228,7 +3278,7 @@ Transform the value inside a promise:
 
 ```ts
 const shape = d.promise(
-  d.string().transform(parseFloat)
+  d.string().convert(parseFloat)
 );
 // ⮕ Shape<Promise<string>, Promise<number>>
 ```
@@ -3263,7 +3313,7 @@ d.record(d.string(), d.number())
 // ⮕ Shape<Record<string, number>>
 ```
 
-Pass any shape that extends `Shape<string>` as a type constraint:
+Pass any shape that extends `Shape<string>` as a key constraint:
 
 ```ts
 const keyShape = d.enum(['foo', 'bar']);
@@ -3420,34 +3470,6 @@ d.enum([FOO, BAR]);
 // ⮕  Shape<typeof FOO | typeof BAR>
 ```
 
-# `transform`, `transformAsync`
-
-Both [`d.transform`](https://smikhalevski.github.io/doubter/functions/doubter_core.transform.html) and
-[`d.transformAsync`](https://smikhalevski.github.io/doubter/functions/doubter_core.transformAsync.html) return a
-[`TransformShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.TransformShape.html) instance.
-
-Transforms the input value:
-
-```ts
-const shape = d.transform(parseFloat);
-// ⮕ Shape<any, number>
-```
-
-Use `transform` in conjunction with [shape piping](#shape-piping):
-
-```ts
-shape.to(d.number().min(3).max(5));
-```
-
-Apply async transformations with `transformAsync`:
-
-```ts
-d.transformAsync(value => Promise.resolve('Hello, ' + value));
-// ⮕ Shape<any, string>
-```
-
-For more information, see [Transformations](#transformations) section.
-
 # `tuple`
 
 [`d.tuple`](https://smikhalevski.github.io/doubter/functions/doubter_core.tuple.html) returns an
@@ -3505,7 +3527,7 @@ d.or([d.string(), d.number()]);
 
 ## Discriminated unions
 
-A discriminated union is a union of object shapes that all share a particular type.
+A discriminated union is a union of object shapes that all share a particular key.
 
 Doubter automatically applies various performance optimizations to union shapes and
 [discriminated union](https://www.typescriptlang.org/docs/handbook/unions-and-intersections.html#discriminating-unions)
@@ -3578,7 +3600,7 @@ shape.try({ name: 47, age: null });
 
 The result of `try` would contain a grouping issue:
 
-```ts
+```json5
 {
   code: 'union',
   path: [],
@@ -3644,7 +3666,7 @@ d.or([d.number(), d.string().min(6)]).try('Okay')
 In this example, only `d.string` can parse the `'Okay'` input value, so the result of `try` would contain a single
 string-related issue:
 
-```ts
+```json5
 {
   code: 'string_min',
   path: [],
@@ -3684,11 +3706,11 @@ d.void();
 
 ## Rename object keys
 
-First, create a shape that describes the type transformation. In this example we are going to
-[transform](#transformations) the [enumeration](#enum) of keys to uppercase alternatives:
+First, create a shape that describes the key transformation. In this example we are going to
+[convert](#conversions) the [enumeration](#enum) of keys to an uppercase string:
 
 ```ts
-const keyShape = d.enum(['foo', 'bar']).transform(
+const keyShape = d.enum(['foo', 'bar']).convert(
   value => value.toUpperCase() as 'FOO' | 'BAR'
 );
 // ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
@@ -3793,14 +3815,14 @@ const env = envShape.parse(
 ## Conditionally applied shapes
 
 If you need to apply a different shape depending on an input value, you can use
-[`transform`](#transform-transformasync).
+[`convert`](#convert-convertasync).
 
 ```ts
 const stringShape = d.string().min(5);
 
 const numberShape = d.number().positive();
 
-const shape = d.transform(value => {
+const shape = d.convert(value => {
   if (typeof value === 'string') {
     return stringShape.parse(value)
   } else {
@@ -3809,7 +3831,7 @@ const shape = d.transform(value => {
 });
 ```
 
-[`parse`](#parse) would throw a `ValidationError` that is captured by the enclosing `transform`.
+[`parse`](#parse) would throw a `ValidationError` that is captured by the enclosing `convert`.
 
 ```ts
 shape.parse('Uranus');
