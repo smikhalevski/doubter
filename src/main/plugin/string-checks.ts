@@ -135,6 +135,24 @@ declare module '../core' {
      * @plugin {@link doubter/plugin/string-checks!}
      */
     trim(): this;
+
+    /**
+     * Converts string to lowercase.
+     *
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/string-checks!}
+     */
+    toLowerCase(): this;
+
+    /**
+     * Converts string to uppercase.
+     *
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/string-checks!}
+     */
+    toUpperCase(): this;
   }
 }
 
@@ -152,6 +170,8 @@ export default function () {
   StringShape.prototype.nonBlank = nonBlankCheck;
   StringShape.prototype.nonEmpty = nonEmptyCheck;
   StringShape.prototype.trim = trimOperation;
+  StringShape.prototype.toLowerCase = toLowerCaseOperation;
+  StringShape.prototype.toUpperCase = toUpperCaseOperation;
 }
 
 function lengthCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
@@ -300,5 +320,21 @@ function trimOperation(this: StringShape): StringShape {
     type: 'trim',
     param: undefined,
     compose: next => (input, output, options, issues) => next(input, output.trim(), options, issues),
+  });
+}
+
+function toLowerCaseOperation(this: StringShape): StringShape {
+  return this.addOperation({
+    type: 'to_lower_case',
+    param: undefined,
+    compose: next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues),
+  });
+}
+
+function toUpperCaseOperation(this: StringShape): StringShape {
+  return this.addOperation({
+    type: 'to_upper_case',
+    param: undefined,
+    compose: next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues),
   });
 }
