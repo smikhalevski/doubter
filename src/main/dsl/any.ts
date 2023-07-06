@@ -27,7 +27,7 @@ export function any<Value>(
    * @param options Parsing options.
    * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => value is Value,
+  cb: (value: any, options: ApplyOptions) => value is Value,
   options?: RefineOptions | Message
 ): Shape<Value>;
 
@@ -45,14 +45,11 @@ export function any<Value = any>(
    * @param options Parsing options.
    * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => boolean,
+  cb: (value: any, options: ApplyOptions) => boolean,
   options?: RefineOptions | Message
 ): Shape<Value>;
 
-export function any(
-  cb?: (value: any, options: Readonly<ApplyOptions>) => boolean,
-  options?: RefineOptions | Message
-): AnyShape {
+export function any(cb?: (value: any, options: ApplyOptions) => boolean, options?: RefineOptions | Message): AnyShape {
   const shape = new Shape();
 
   return cb === null || cb === undefined ? shape : shape.refine(cb, options);

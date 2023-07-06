@@ -113,7 +113,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns issues which describe that an object has unknown properties.
    */
-  protected _exactIssueFactory?: (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue;
+  protected _exactIssueFactory?: (input: unknown, options: ApplyOptions, param: unknown) => Issue;
 
   /**
    * Creates a new {@linkcode ObjectShape} instance.

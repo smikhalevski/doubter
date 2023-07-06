@@ -18,7 +18,7 @@ export function convert<ConvertedValue>(
    * @param options Parsing options.
    * @return The conversion result.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => ConvertedValue
+  cb: (value: any, options: ApplyOptions) => ConvertedValue
 ): ConvertShape<ConvertedValue> {
   return new ConvertShape(cb);
 }
@@ -40,7 +40,7 @@ export function convertAsync<ConvertedValue>(
    * @param options Parsing options.
    * @return The conversion result.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => PromiseLike<ConvertedValue>
+  cb: (value: any, options: ApplyOptions) => PromiseLike<ConvertedValue>
 ): ConvertShape<ConvertedValue> {
   return new ConvertShape(cb, true);
 }

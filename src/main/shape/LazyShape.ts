@@ -42,7 +42,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     /**
      * The provider callback that returns the value that is used instead of a circular reference.
      */
-    readonly pointerProvider: (value: Input<ProvidedShape>, options: Readonly<ApplyOptions>) => Pointer
+    readonly pointerProvider: (value: Input<ProvidedShape>, options: ApplyOptions) => Pointer
   ) {
     super();
 
@@ -91,7 +91,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * @returns The clone of the shape.
    */
   circular<Pointer extends Literal>(
-    pointer: Pointer | ((value: Input<ProvidedShape>, options: Readonly<ApplyOptions>) => Pointer)
+    pointer: Pointer | ((value: Input<ProvidedShape>, options: ApplyOptions) => Pointer)
   ): LazyShape<ProvidedShape, Pointer> {
     return copyOperations(
       this,

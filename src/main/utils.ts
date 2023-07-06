@@ -30,7 +30,7 @@ export function createIssueFactory(
   defaultMessage: unknown,
   options: IssueOptions | Message | undefined,
   param: unknown
-): (input: unknown, options: Readonly<ApplyOptions>) => Issue;
+): (input: unknown, options: ApplyOptions) => Issue;
 
 /**
  * Returns a function that creates an issue.
@@ -44,14 +44,14 @@ export function createIssueFactory(
   code: unknown,
   defaultMessage: unknown,
   options: IssueOptions | Message | undefined
-): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue;
+): (input: unknown, options: ApplyOptions, param: unknown) => Issue;
 
 export function createIssueFactory(
   code: unknown,
   defaultMessage: any,
   options: IssueOptions | Message | undefined,
   param?: unknown
-): (input: unknown, options: Readonly<ApplyOptions>, param: unknown) => Issue {
+): (input: unknown, options: ApplyOptions, param: unknown) => Issue {
   const parameterized = arguments.length <= 3;
 
   let { message = defaultMessage, meta } = extractOptions(options);

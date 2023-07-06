@@ -145,7 +145,7 @@ export type Message = MessageCallback | string;
  * assigned a non-`undefined` value inside the callback.
  * @group Issues
  */
-export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) => any;
+export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
 
 /**
  * An operation that a shape applies to its output.
@@ -163,7 +163,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
    * The type of the operation such as {@linkcode StringShape#regex "string_regex"} or
    * {@linkcode ArrayShape#includes "array_includes"}.
    */
-  type: any;
+  readonly type: any;
 
   /**
    * The additional param associated with the operation.
@@ -175,7 +175,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
    *
    * @see {@linkcode Issue#param Issue.param}
    */
-  param: any;
+  readonly param: any;
 
   /**
    * Creates an {@link OperationCallback} that applies the logic of this operation to the shape output and passes
@@ -184,7 +184,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
    * @param next The callback that applies the next operation.
    * @returns The callback that applies an operation to the shape output.
    */
-  compose(this: Operation, next: OperationCallback): OperationCallback<InputValue, OutputValue>;
+  readonly compose: (this: Operation, next: OperationCallback) => OperationCallback<InputValue, OutputValue>;
 }
 
 /**
@@ -203,7 +203,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
 export type OperationCallback<InputValue = any, OutputValue = any> = (
   input: InputValue,
   output: OutputValue,
-  options: Readonly<ApplyOptions>,
+  options: ApplyOptions,
   issues: Issue[] | null
 ) => Result;
 
@@ -265,7 +265,7 @@ export interface ParameterizedOperationOptions<Param> extends OperationOptions {
 export type CheckCallback<Value = any, Param = any> = (
   value: Value,
   param: Param,
-  options: Readonly<ApplyOptions>
+  options: ApplyOptions
 ) => Issue[] | Issue | null | undefined | void;
 
 /**
@@ -283,11 +283,7 @@ export type CheckCallback<Value = any, Param = any> = (
  * @see {@linkcode Shape#refine}
  * @group Operations
  */
-export type RefineCallback<Value = any, Param = any> = (
-  value: Value,
-  param: Param,
-  options: Readonly<ApplyOptions>
-) => any;
+export type RefineCallback<Value = any, Param = any> = (value: Value, param: Param, options: ApplyOptions) => any;
 
 /**
  * A [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) that refines the value type.
@@ -308,7 +304,7 @@ export type RefineCallback<Value = any, Param = any> = (
 export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Param = any> = (
   value: Value,
   param: Param,
-  options: Readonly<ApplyOptions>
+  options: ApplyOptions
 ) => value is RefinedValue;
 
 /**
@@ -353,11 +349,7 @@ export interface ParameterizedRefineOptions<Param> extends RefineOptions {
  * @see {@linkcode Shape#convert}
  * @group Operations
  */
-export type AlterCallback<Value = any, Param = any> = (
-  value: Value,
-  param: Param,
-  options: Readonly<ApplyOptions>
-) => Value;
+export type AlterCallback<Value = any, Param = any> = (value: Value, param: Param, options: ApplyOptions) => Value;
 
 /**
  * Options used when a shape is applied to an input value.
@@ -373,19 +365,19 @@ export interface ApplyOptions {
    *
    * @default false
    */
-  verbose?: boolean;
+  readonly verbose?: boolean;
 
   /**
    * If `true` then shapes that support input value type coercion, would try to coerce an input to a required type.
    *
    * @default false
    */
-  coerce?: boolean;
+  readonly coerce?: boolean;
 
   /**
    * The custom context.
    */
-  context?: any;
+  readonly context?: any;
 }
 
 /**
@@ -407,7 +399,7 @@ export interface ParseOptions extends ApplyOptions {
   /**
    * A message that is passed to {@linkcode ValidationError} if issues are raised during parsing.
    */
-  errorMessage?: ErrorMessageCallback | string;
+  readonly errorMessage?: ErrorMessageCallback | string;
 }
 
 /**

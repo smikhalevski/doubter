@@ -56,7 +56,7 @@ export class FunctionShape<
   /**
    * Parsing options that are used by a wrapper.
    */
-  protected _parseOptions: Readonly<ParseOptions> | undefined;
+  protected _parseOptions: ParseOptions | undefined;
 
   /**
    * Creates a new {@linkcode FunctionShape} instance.
@@ -148,7 +148,7 @@ export class FunctionShape<
     F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>
   >(
     fn: F,
-    options?: Readonly<ParseOptions>
+    options?: ParseOptions
   ): (
     this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
     ...args: Input<ArgsShape>
@@ -195,7 +195,7 @@ export class FunctionShape<
     ) => Awaitable<ShapeValue<ReturnShape, INPUT>>
   >(
     fn: F,
-    options?: Readonly<ParseOptions>
+    options?: ParseOptions
   ): (
     this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
     ...args: Input<ArgsShape>

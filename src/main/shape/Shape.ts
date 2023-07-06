@@ -523,7 +523,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
      * @param options Parsing options.
      * @return The converted value.
      */
-    cb: (value: OutputValue, options: Readonly<ApplyOptions>) => ConvertedValue
+    cb: (value: OutputValue, options: ApplyOptions) => ConvertedValue
   ): Shape<InputValue, ConvertedValue> {
     return this.to(new ConvertShape(cb));
   }
@@ -544,7 +544,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
      * @param options Parsing options.
      * @return The converted value.
      */
-    cb: (value: OutputValue, options: Readonly<ApplyOptions>) => PromiseLike<ConvertedValue>
+    cb: (value: OutputValue, options: ApplyOptions) => PromiseLike<ConvertedValue>
   ): Shape<InputValue, ConvertedValue> {
     return this.to(new ConvertShape(cb, true));
   }
@@ -685,7 +685,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template FallbackValue The fallback value.
    */
   catch<FallbackValue extends Literal>(
-    fallback: FallbackValue | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => FallbackValue)
+    fallback: FallbackValue | ((input: any, issues: Issue[], options: ApplyOptions) => FallbackValue)
   ): CatchShape<this, FallbackValue>;
 
   catch(fallback?: unknown): Shape {
@@ -1103,7 +1103,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
      * @return The conversion result.
      * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
-    readonly converter: (value: any, options: Readonly<ApplyOptions>) => PromiseLike<ConvertedValue> | ConvertedValue,
+    readonly converter: (value: any, options: ApplyOptions) => PromiseLike<ConvertedValue> | ConvertedValue,
     async?: boolean
   ) {
     super();
@@ -1434,7 +1434,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   extends Shape<Input<BaseShape>, Output<BaseShape> | FallbackValue>
   implements DeepPartialProtocol<CatchShape<DeepPartialShape<BaseShape>, FallbackValue>>
 {
-  private _resultProvider: (input: unknown, issues: Issue[], options: Readonly<ApplyOptions>) => Ok<FallbackValue>;
+  private _resultProvider: (input: unknown, issues: Issue[], options: ApplyOptions) => Ok<FallbackValue>;
 
   /**
    * Creates the new {@linkcode CatchShape} instance.
@@ -1454,7 +1454,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
      *
      *  A callback receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
      */
-    readonly fallback: FallbackValue | ((input: any, issues: Issue[], options: Readonly<ApplyOptions>) => FallbackValue)
+    readonly fallback: FallbackValue | ((input: any, issues: Issue[], options: ApplyOptions) => FallbackValue)
   ) {
     super();
 
