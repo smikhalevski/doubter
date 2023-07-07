@@ -1,13 +1,13 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!StringShape} with additional checks.
+ * The plugin that enhances {@linkcode doubter/core!StringShape} with additional methods.
  *
  * ```ts
- * import stringChecks from 'doubter/plugin/string-checks';
+ * import pluginRichStrings from 'doubter/plugin/rich-strings';
  *
- * stringChecks();
+ * pluginRichStrings();
  * ```
  *
- * @module doubter/plugin/string-checks
+ * @module doubter/plugin/rich-strings
  */
 
 import {
@@ -39,7 +39,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     length(length: number, options?: IssueOptions | Message): this;
 
@@ -50,7 +50,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     min(length: number, options?: IssueOptions | Message): this;
 
@@ -61,7 +61,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     max(length: number, options?: IssueOptions | Message): this;
 
@@ -72,7 +72,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     regex(re: RegExp, options?: IssueOptions | Message): this;
 
@@ -83,7 +83,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     includes(value: string, options?: IssueOptions | Message): this;
 
@@ -94,7 +94,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     startsWith(value: string, options?: IssueOptions | Message): this;
 
@@ -105,7 +105,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     endsWith(value: string, options?: IssueOptions | Message): this;
 
@@ -114,7 +114,7 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     nonBlank(options?: IssueOptions | Message): this;
 
@@ -123,7 +123,7 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     nonEmpty(options?: IssueOptions | Message): this;
 
@@ -132,7 +132,7 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     trim(): this;
 
@@ -141,7 +141,7 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     toLowerCase(): this;
 
@@ -150,14 +150,14 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-checks!}
+     * @plugin {@link doubter/plugin/rich-strings!}
      */
     toUpperCase(): this;
   }
 }
 
 /**
- * Enhances {@linkcode doubter/core!StringShape} with additional checks.
+ * Enhances {@linkcode doubter/core!StringShape} with additional methods.
  */
 export default function () {
   StringShape.prototype.length = useLength;

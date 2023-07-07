@@ -1,13 +1,13 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!DateShape} with additional checks.
+ * The plugin that enhances {@linkcode doubter/core!DateShape} with additional methods.
  *
  * ```ts
- * import dateChecks from 'doubter/plugin/date-checks';
+ * import pluginRichDates from 'doubter/plugin/rich-dates';
  *
- * dateChecks();
+ * pluginRichDates();
  * ```
  *
- * @module doubter/plugin/date-checks
+ * @module doubter/plugin/rich-dates
  */
 
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
@@ -24,7 +24,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-checks!}
+     * @plugin {@link doubter/plugin/rich-dates!}
      */
     min(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -35,7 +35,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-checks!}
+     * @plugin {@link doubter/plugin/rich-dates!}
      */
     max(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -47,7 +47,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode min}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-checks!}
+     * @plugin {@link doubter/plugin/rich-dates!}
      */
     after(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -59,7 +59,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode max}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-checks!}
+     * @plugin {@link doubter/plugin/rich-dates!}
      */
     before(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -67,7 +67,7 @@ declare module '../core' {
      * Converts date to an ISO string.
      *
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-checks!}
+     * @plugin {@link doubter/plugin/rich-dates!}
      */
     toISOString(): Shape<Date, string>;
 
@@ -75,14 +75,14 @@ declare module '../core' {
      * Converts date to a timestamp integer number.
      *
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-checks!}
+     * @plugin {@link doubter/plugin/rich-dates!}
      */
     toTimestamp(): Shape<Date, number>;
   }
 }
 
 /**
- * Enhances {@linkcode doubter/core!DateShape} with additional checks.
+ * Enhances {@linkcode doubter/core!DateShape} with additional methods.
  */
 export default function () {
   DateShape.prototype.min = useMin;

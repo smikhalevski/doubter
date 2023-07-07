@@ -1,13 +1,13 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!NumberShape} with additional checks.
+ * The plugin that enhances {@linkcode doubter/core!NumberShape} with additional methods.
  *
  * ```ts
- * import numberChecks from 'doubter/plugin/number-checks';
+ * import pluginRichNumbers from 'doubter/plugin/rich-numbers';
  *
- * numberChecks();
+ * pluginRichNumbers();
  * ```
  *
- * @module doubter/plugin/number-checks
+ * @module doubter/plugin/rich-numbers
  */
 
 import {
@@ -56,7 +56,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     finite(options?: IssueOptions | Message): this;
 
@@ -66,7 +66,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     integer(options?: IssueOptions | Message): this;
 
@@ -76,7 +76,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     positive(options?: IssueOptions | Message): this;
 
@@ -86,7 +86,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     negative(options?: IssueOptions | Message): this;
 
@@ -96,7 +96,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     nonPositive(options?: IssueOptions | Message): this;
 
@@ -106,7 +106,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     nonNegative(options?: IssueOptions | Message): this;
 
@@ -117,7 +117,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     gt(value: number, options?: IssueOptions | Message): this;
 
@@ -128,7 +128,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     lt(value: number, options?: IssueOptions | Message): this;
 
@@ -139,7 +139,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     gte(value: number, options?: IssueOptions | Message): this;
 
@@ -150,7 +150,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     lte(value: number, options?: IssueOptions | Message): this;
 
@@ -162,7 +162,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode gte}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     min(value: number, options?: IssueOptions | Message): this;
 
@@ -174,7 +174,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode lte}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     max(value: number, options?: IssueOptions | Message): this;
 
@@ -185,7 +185,7 @@ declare module '../core' {
      * @param options The check options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     multiple(divisor: number, options?: MultipleOptions | Message): this;
 
@@ -195,14 +195,14 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-checks!}
+     * @plugin {@link doubter/plugin/rich-numbers!}
      */
     safe(options?: IssueOptions | Message): this;
   }
 }
 
 /**
- * Enhances {@linkcode doubter/core!NumberShape} with additional checks.
+ * Enhances {@linkcode doubter/core!NumberShape} with additional methods.
  */
 export default function () {
   NumberShape.prototype.finite = useFinite;

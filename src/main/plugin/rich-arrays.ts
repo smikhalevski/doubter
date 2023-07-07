@@ -1,13 +1,13 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!ArrayShape} with additional checks.
+ * The plugin that enhances {@linkcode doubter/core!ArrayShape} with additional methods.
  *
  * ```ts
- * import arrayChecks from 'doubter/plugin/array-checks';
+ * import pluginRichArrays from 'doubter/plugin/rich-arrays';
  *
- * arrayChecks();
+ * pluginRichArrays();
  * ```
  *
- * @module doubter/plugin/array-checks
+ * @module doubter/plugin/rich-arrays
  */
 
 import {
@@ -31,7 +31,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-checks!}
+     * @plugin {@link doubter/plugin/rich-arrays!}
      */
     length(length: number, options?: IssueOptions | Message): this;
 
@@ -42,7 +42,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-checks!}
+     * @plugin {@link doubter/plugin/rich-arrays!}
      */
     min(length: number, options?: IssueOptions | Message): this;
 
@@ -53,7 +53,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-checks!}
+     * @plugin {@link doubter/plugin/rich-arrays!}
      */
     max(length: number, options?: IssueOptions | Message): this;
 
@@ -63,7 +63,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-checks!}
+     * @plugin {@link doubter/plugin/rich-arrays!}
      */
     nonEmpty(options?: IssueOptions | Message): this;
 
@@ -74,14 +74,14 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-checks!}
+     * @plugin {@link doubter/plugin/rich-arrays!}
      */
     includes(shape: AnyShape, options?: IssueOptions | Message): this;
   }
 }
 
 /**
- * Enhances {@linkcode doubter/core!ArrayShape} with additional checks.
+ * Enhances {@linkcode doubter/core!ArrayShape} with additional methods.
  */
 export default function () {
   ArrayShape.prototype.length = useLength;

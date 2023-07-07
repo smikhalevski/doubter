@@ -1,13 +1,13 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!BigIntShape} with additional checks.
+ * The plugin that enhances {@linkcode doubter/core!BigIntShape} with additional methods.
  *
  * ```ts
- * import bigintChecks from 'doubter/plugin/bigint-checks';
+ * import pluginRichBigInts from 'doubter/plugin/rich-bigints';
  *
- * bigintChecks();
+ * pluginRichBigInts();
  * ```
  *
- * @module doubter/plugin/bigint-checks
+ * @module doubter/plugin/rich-bigints
  */
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
@@ -23,7 +23,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/bigint-checks!}
+     * @plugin {@link doubter/plugin/rich-bigints!}
      */
     positive(options?: IssueOptions | Message): this;
 
@@ -33,7 +33,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/bigint-checks!}
+     * @plugin {@link doubter/plugin/rich-bigints!}
      */
     negative(options?: IssueOptions | Message): this;
 
@@ -43,7 +43,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/bigint-checks!}
+     * @plugin {@link doubter/plugin/rich-bigints!}
      */
     nonPositive(options?: IssueOptions | Message): this;
 
@@ -53,7 +53,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/bigint-checks!}
+     * @plugin {@link doubter/plugin/rich-bigints!}
      */
     nonNegative(options?: IssueOptions | Message): this;
 
@@ -64,7 +64,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/bigint-checks!}
+     * @plugin {@link doubter/plugin/rich-bigints!}
      */
     min(value: bigint | number, options?: IssueOptions | Message): this;
 
@@ -75,14 +75,14 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/bigint-checks!}
+     * @plugin {@link doubter/plugin/rich-bigints!}
      */
     max(value: bigint | number, options?: IssueOptions | Message): this;
   }
 }
 
 /**
- * Enhances {@linkcode doubter/core!BigIntShape} with additional checks.
+ * Enhances {@linkcode doubter/core!BigIntShape} with additional methods.
  */
 export default function () {
   BigIntShape.prototype.positive = usePositive;

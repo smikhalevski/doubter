@@ -21,40 +21,40 @@
       "import": "./utils.mjs",
       "require": "./utils.js"
     },
-    "./plugin/array-checks": {
-      "types": "./plugin/array-checks.d.ts",
-      "import": "./plugin/array-checks.mjs",
-      "require": "./plugin/array-checks.js"
+    "./plugin/rich-arrays": {
+      "types": "./plugin/rich-arrays.d.ts",
+      "import": "./plugin/rich-arrays.mjs",
+      "require": "./plugin/rich-arrays.js"
     },
-    "./plugin/bigint-checks": {
-      "types": "./plugin/bigint-checks.d.ts",
-      "import": "./plugin/bigint-checks.mjs",
-      "require": "./plugin/bigint-checks.js"
+    "./plugin/rich-bigints": {
+      "types": "./plugin/rich-bigints.d.ts",
+      "import": "./plugin/rich-bigints.mjs",
+      "require": "./plugin/rich-bigints.js"
     },
-    "./plugin/date-checks": {
-      "types": "./plugin/date-checks.d.ts",
-      "import": "./plugin/date-checks.mjs",
-      "require": "./plugin/date-checks.js"
+    "./plugin/rich-dates": {
+      "types": "./plugin/rich-dates.d.ts",
+      "import": "./plugin/rich-dates.mjs",
+      "require": "./plugin/rich-dates.js"
     },
-    "./plugin/number-checks": {
-      "types": "./plugin/number-checks.d.ts",
-      "import": "./plugin/number-checks.mjs",
-      "require": "./plugin/number-checks.js"
+    "./plugin/rich-numbers": {
+      "types": "./plugin/rich-numbers.d.ts",
+      "import": "./plugin/rich-numbers.mjs",
+      "require": "./plugin/rich-numbers.js"
     },
-    "./plugin/object-checks": {
-      "types": "./plugin/object-checks.d.ts",
-      "import": "./plugin/object-checks.mjs",
-      "require": "./plugin/object-checks.js"
+    "./plugin/rich-objects": {
+      "types": "./plugin/rich-objects.d.ts",
+      "import": "./plugin/rich-objects.mjs",
+      "require": "./plugin/rich-objects.js"
     },
-    "./plugin/set-checks": {
-      "types": "./plugin/set-checks.d.ts",
-      "import": "./plugin/set-checks.mjs",
-      "require": "./plugin/set-checks.js"
+    "./plugin/rich-sets": {
+      "types": "./plugin/rich-sets.d.ts",
+      "import": "./plugin/rich-sets.mjs",
+      "require": "./plugin/rich-sets.js"
     },
-    "./plugin/string-checks": {
-      "types": "./plugin/string-checks.d.ts",
-      "import": "./plugin/string-checks.mjs",
-      "require": "./plugin/string-checks.js"
+    "./plugin/rich-strings": {
+      "types": "./plugin/rich-strings.d.ts",
+      "import": "./plugin/rich-strings.mjs",
+      "require": "./plugin/rich-strings.js"
     },
     "./package.json": "./package.json"
   },

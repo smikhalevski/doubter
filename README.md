@@ -1846,9 +1846,9 @@ You can cherry-pick plugins that you need:
 
 ```ts
 import * as d from 'doubter/core';
-import stringChecks from 'doubter/plugin/string-checks';
+import pluginRichStrings from 'doubter/plugin/rich-strings';
 
-stringChecks();
+pluginRichStrings();
 
 d.string().min(2); // ✅ min is defined
 
@@ -1857,15 +1857,15 @@ d.number().gte(3); // ❌ gte is undefined
 
 ## Built-in plugins
 
-| Import from                    | Description                                                                                                     |
-|--------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `doubter/plugin/array-checks`  | [Common array checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_array_checks.html)          |
-| `doubter/plugin/bigint-checks` | [Common bigint checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_bigint_checks.html)        |
-| `doubter/plugin/date-checks`   | [Common `Date` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_date_checks.html)          |
-| `doubter/plugin/number-checks` | [Common number checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_number_checks.html)        |
-| `doubter/plugin/object-checks` | [Common object checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_object_checks.html)        |
-| `doubter/plugin/set-checks`    | [Common `Set` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_set_checks.html)            |
-| `doubter/plugin/string-checks` | [Common string checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_string_checks.html)        |
+| Import from                   | Description                                                                                                         |
+|-------------------------------|---------------------------------------------------------------------------------------------------------------------|
+| `doubter/plugin/rich-arrays`  | [Additional `ArrayShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_arrays.html)   |
+| `doubter/plugin/rich-bigints` | [Additional `BigIntShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_bigints.html) |
+| `doubter/plugin/rich-dates`   | [Additional `DateShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_dates.html)     |
+| `doubter/plugin/rich-numbers` | [Additional `NumberShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_numbers.html) |
+| `doubter/plugin/rich-objects` | [Additional `ObjectShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_objects.html) |
+| `doubter/plugin/rich-sets`    | [Additional `SetShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_sets.html)       |
+| `doubter/plugin/rich-strings` | [Additional `StringShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_strings.html) |
 
 ## Integrations
 

@@ -8,28 +8,28 @@
  * @module doubter/core
  */
 
-import arrayChecks from './plugin/array-checks';
-import bigintChecks from './plugin/bigint-checks';
-import dateChecks from './plugin/date-checks';
-import numberChecks from './plugin/number-checks';
-import objectChecks from './plugin/object-checks';
-import setChecks from './plugin/set-checks';
-import stringChecks from './plugin/string-checks';
+import pluginRichArrays from './plugin/rich-arrays';
+import pluginRichBigInts from './plugin/rich-bigints';
+import pluginRichDates from './plugin/rich-dates';
+import pluginRichNumbers from './plugin/rich-numbers';
+import pluginRichObjects from './plugin/rich-objects';
+import pluginRichSets from './plugin/rich-sets';
+import pluginRichStrings from './plugin/rich-strings';
 
-export type * from './plugin/array-checks';
-export type * from './plugin/bigint-checks';
-export type * from './plugin/date-checks';
-export type * from './plugin/number-checks';
-export type * from './plugin/object-checks';
-export type * from './plugin/set-checks';
-export type * from './plugin/string-checks';
+export type * from './plugin/rich-arrays';
+export type * from './plugin/rich-bigints';
+export type * from './plugin/rich-dates';
+export type * from './plugin/rich-numbers';
+export type * from './plugin/rich-objects';
+export type * from './plugin/rich-sets';
+export type * from './plugin/rich-strings';
 
 export * from './core';
 
-arrayChecks();
-bigintChecks();
-dateChecks();
-numberChecks();
-objectChecks();
-setChecks();
-stringChecks();
+pluginRichArrays();
+pluginRichBigInts();
+pluginRichDates();
+pluginRichNumbers();
+pluginRichObjects();
+pluginRichSets();
+pluginRichStrings();
