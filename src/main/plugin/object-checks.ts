@@ -44,7 +44,7 @@ function plainCheck(this: ObjectShape<any, any>, options?: IssueOptions | Messag
       if (!isPlainObject(output)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }

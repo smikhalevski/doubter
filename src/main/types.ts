@@ -178,21 +178,14 @@ export interface Operation<InputValue = any, OutputValue = any> {
   readonly param: any;
 
   /**
-   * The factory that produces the operation callback.
+   * Creates an {@link OperationCallback} that applies the logic of the operation to the shape output and passes the
+   * control to the next operation.
+   *
+   * @param next The callback that applies the next operation.
+   * @returns The callback that applies an operation to the shape output.
    */
-  readonly factory: OperationCallbackFactory<InputValue, OutputValue>;
+  readonly factory: (next: OperationCallback) => OperationCallback<InputValue, OutputValue>;
 }
-
-/**
- * Creates an {@link OperationCallback} that applies the logic of the operation to the shape output and passes the
- * control to the next operation.
- *
- * @param next The callback that applies the next operation.
- * @returns The callback that applies an operation to the shape output.
- */
-export type OperationCallbackFactory<InputValue, OutputValue> = (
-  next: OperationCallback
-) => OperationCallback<InputValue, OutputValue>;
 
 /**
  * A callback that applies an operation to the shape output.
@@ -360,12 +353,11 @@ export type AlterCallback<Value = any, Param = any> = (value: Value, param: Para
  */
 export interface ApplyOptions {
   /**
-   * If `true` then all issues are collected during parsing, otherwise parsing is aborted after the first issue is
-   * encountered.
+   * If `true` then parsing is aborted after the first issue is encountered.
    *
    * @default false
    */
-  readonly verbose?: boolean;
+  readonly earlyReturn?: boolean;
 
   /**
    * If `true` then shapes that support input value type coercion, would try to coerce an input to a required type.

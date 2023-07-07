@@ -180,7 +180,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         if (isArray(result)) {
           unshiftIssuesPath(result, i);
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return result;
           }
           issues = concatIssues(issues, result);
@@ -228,7 +228,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           if (isArray(result)) {
             unshiftIssuesPath(result, index);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return result;
             }
             issues = concatIssues(issues, result);

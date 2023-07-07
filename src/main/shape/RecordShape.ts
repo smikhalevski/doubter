@@ -116,7 +116,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return keyResult;
             }
             issues = concatIssues(issues, keyResult);
@@ -133,7 +133,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         if (isArray(valueResult)) {
           unshiftIssuesPath(valueResult, key);
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return valueResult;
           }
           issues = concatIssues(issues, valueResult);
@@ -184,7 +184,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return keyResult;
             }
             issues = concatIssues(issues, keyResult);
@@ -201,7 +201,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           if (isArray(valueResult)) {
             unshiftIssuesPath(valueResult, key);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return valueResult;
             }
             issues = concatIssues(issues, valueResult);

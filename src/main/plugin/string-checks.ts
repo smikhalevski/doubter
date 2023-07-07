@@ -160,25 +160,25 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!StringShape} with additional checks.
  */
 export default function () {
-  StringShape.prototype.length = lengthCheck;
-  StringShape.prototype.min = minCheck;
-  StringShape.prototype.max = maxCheck;
-  StringShape.prototype.regex = regexCheck;
-  StringShape.prototype.includes = includesCheck;
-  StringShape.prototype.startsWith = startsWithCheck;
-  StringShape.prototype.endsWith = endsWithCheck;
-  StringShape.prototype.nonBlank = nonBlankCheck;
-  StringShape.prototype.nonEmpty = nonEmptyCheck;
-  StringShape.prototype.trim = trimOperation;
-  StringShape.prototype.toLowerCase = toLowerCaseOperation;
-  StringShape.prototype.toUpperCase = toUpperCaseOperation;
+  StringShape.prototype.length = useLength;
+  StringShape.prototype.min = useMin;
+  StringShape.prototype.max = useMax;
+  StringShape.prototype.regex = useRegex;
+  StringShape.prototype.includes = useIncludes;
+  StringShape.prototype.startsWith = useStartsWith;
+  StringShape.prototype.endsWith = useEndsWith;
+  StringShape.prototype.nonBlank = useNonBlank;
+  StringShape.prototype.nonEmpty = useNonEmpty;
+  StringShape.prototype.trim = useTrim;
+  StringShape.prototype.toLowerCase = useToLowerCase;
+  StringShape.prototype.toUpperCase = useToUpperCase;
 }
 
-function lengthCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function useLength(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   return this.min(length, options).max(length, options);
 }
 
-function minCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function useMin(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
   return this.use(
@@ -186,7 +186,7 @@ function minCheck(this: StringShape, length: number, options?: IssueOptions | Me
       if (output.length < length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -196,7 +196,7 @@ function minCheck(this: StringShape, length: number, options?: IssueOptions | Me
   );
 }
 
-function maxCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
+function useMax(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
   return this.use(
@@ -204,7 +204,7 @@ function maxCheck(this: StringShape, length: number, options?: IssueOptions | Me
       if (output.length > length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -214,7 +214,7 @@ function maxCheck(this: StringShape, length: number, options?: IssueOptions | Me
   );
 }
 
-function regexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
+function useRegex(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
   return this.use(
@@ -222,7 +222,7 @@ function regexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Mess
       if (!re.test(output)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -232,7 +232,7 @@ function regexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Mess
   );
 }
 
-function includesCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function useIncludes(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
   return this.use(
@@ -240,7 +240,7 @@ function includesCheck(this: StringShape, value: string, options?: IssueOptions 
       if (output.indexOf(value) === -1) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -250,7 +250,7 @@ function includesCheck(this: StringShape, value: string, options?: IssueOptions 
   );
 }
 
-function startsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function useStartsWith(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
   return this.use(
@@ -258,7 +258,7 @@ function startsWithCheck(this: StringShape, value: string, options?: IssueOption
       if (!output.startsWith(value)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -268,7 +268,7 @@ function startsWithCheck(this: StringShape, value: string, options?: IssueOption
   );
 }
 
-function endsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
+function useEndsWith(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
   return this.use(
@@ -276,7 +276,7 @@ function endsWithCheck(this: StringShape, value: string, options?: IssueOptions 
       if (!output.endsWith(value)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -286,7 +286,7 @@ function endsWithCheck(this: StringShape, value: string, options?: IssueOptions 
   );
 }
 
-function nonBlankCheck(this: StringShape, options?: IssueOptions | Message): StringShape {
+function useNonBlank(this: StringShape, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_BLANK, MESSAGE_STRING_BLANK, options, undefined);
 
   return this.use(
@@ -294,7 +294,7 @@ function nonBlankCheck(this: StringShape, options?: IssueOptions | Message): Str
       if (output.trim().length === 0) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -304,23 +304,23 @@ function nonBlankCheck(this: StringShape, options?: IssueOptions | Message): Str
   );
 }
 
-function nonEmptyCheck(this: StringShape, options?: IssueOptions | Message): StringShape {
+function useNonEmpty(this: StringShape, options?: IssueOptions | Message): StringShape {
   return this.min(1, options);
 }
 
-function trimOperation(this: StringShape): StringShape {
+function useTrim(this: StringShape): StringShape {
   return this.use(next => (input, output, options, issues) => next(input, output.trim(), options, issues), {
     type: 'string_trim',
   });
 }
 
-function toLowerCaseOperation(this: StringShape): StringShape {
+function useToLowerCase(this: StringShape): StringShape {
   return this.use(next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues), {
     type: 'string_to_lower_case',
   });
 }
 
-function toUpperCaseOperation(this: StringShape): StringShape {
+function useToUpperCase(this: StringShape): StringShape {
   return this.use(next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues), {
     type: 'string_to_upper_case',
   });

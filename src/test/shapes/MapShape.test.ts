@@ -57,7 +57,7 @@ describe('MapShape', () => {
           ['key1', 'aaa'],
           ['key2', 'bbb'],
         ]),
-        { verbose: true }
+        { earlyReturn: true }
       )
     ).toEqual({
       ok: false,
@@ -318,7 +318,7 @@ describe('MapShape', () => {
             ['key1', 'aaa'],
             ['key2', 'bbb'],
           ]),
-          { verbose: true }
+          { earlyReturn: true }
         )
       ).resolves.toEqual({
         ok: false,

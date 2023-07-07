@@ -69,7 +69,7 @@ describe('IntersectionShape', () => {
   test('raises multiple issues if an input does not conform several shapes in verbose mode', () => {
     const shape = new IntersectionShape([new NumberShape(), new BooleanShape()]);
 
-    expect(shape.try('aaa', { verbose: true })).toEqual({
+    expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,
       issues: [
         { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
@@ -123,7 +123,7 @@ describe('IntersectionShape', () => {
 
     const shape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { force: true });
 
-    expect(shape.try({}, { verbose: true })).toEqual({
+    expect(shape.try({}, { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });

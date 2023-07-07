@@ -111,7 +111,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         continue;
       }
       if (isArray(result)) {
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return result;
         }
         issues = concatIssues(issues, result);
@@ -151,7 +151,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
       const handleResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return result;
             }
             issues = concatIssues(issues, result);

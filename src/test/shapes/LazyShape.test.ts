@@ -45,7 +45,7 @@ describe('LazyShape', () => {
     const providedShape = new Shape().check(() => [{ code: 'xxx' }]);
     const shape = new LazyShape(() => providedShape, identity).check(() => [{ code: 'yyy' }], { force: true });
 
-    expect(shape.try('aaa', { verbose: true })).toEqual({
+    expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -180,7 +180,7 @@ describe('LazyShape', () => {
       input.key1 = {};
       input.key1.key2 = input;
 
-      expect(shape.try(input, { verbose: true })).toEqual({
+      expect(shape.try(input, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [
           {

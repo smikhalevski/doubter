@@ -189,7 +189,7 @@ describe('ObjectShape', () => {
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null).partial();
       const input = {};
 
-      expect(shape.try(input, { verbose: true })).toEqual({ ok: true, value: input });
+      expect(shape.try(input, { earlyReturn: true })).toEqual({ ok: true, value: input });
     });
 
     test('marks all properties with given keys as optional', () => {
@@ -199,7 +199,7 @@ describe('ObjectShape', () => {
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null).partial(['key2']);
       const input = {};
 
-      expect(shape.try(input, { verbose: true })).toEqual({
+      expect(shape.try(input, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1'] }],
       });
@@ -214,7 +214,7 @@ describe('ObjectShape', () => {
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null).required();
       const input = {};
 
-      expect(shape.try(input, { verbose: true })).toEqual({
+      expect(shape.try(input, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [
           { code: CODE_DENIED, message: 'Must not be equal to undefined', path: ['key1'] },
@@ -230,7 +230,7 @@ describe('ObjectShape', () => {
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null).required(['key1']);
       const input = {};
 
-      expect(shape.try(input, { verbose: true })).toEqual({
+      expect(shape.try(input, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: CODE_DENIED, message: 'Must not be equal to undefined', path: ['key1'] }],
       });
@@ -322,7 +322,7 @@ describe('ObjectShape', () => {
 
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null);
 
-      const result = shape.try({}, { verbose: true }) as Ok;
+      const result = shape.try({}, { earlyReturn: true }) as Ok;
 
       expect(result).toEqual({
         ok: false,
@@ -404,7 +404,7 @@ describe('ObjectShape', () => {
 
       const shape = new ObjectShape({ key1: valueShape1 }, restShape);
 
-      const result = shape.try({ key2: 'aaa' }, { verbose: true }) as Ok;
+      const result = shape.try({ key2: 'aaa' }, { earlyReturn: true }) as Ok;
 
       expect(result).toEqual({
         ok: false,
@@ -490,7 +490,7 @@ describe('ObjectShape', () => {
 
       const input = { key1: 'aaa', key2: 'bbb', key3: 'ccc' };
 
-      const result = shape.try(input, { verbose: true });
+      const result = shape.try(input, { earlyReturn: true });
 
       expect(result).toEqual({
         ok: false,
@@ -552,7 +552,7 @@ describe('ObjectShape', () => {
 
       const shape = new ObjectShape({ key1: valueShape1 }, restShape);
 
-      const result = await shape.tryAsync({ key2: 'aaa' }, { verbose: true });
+      const result = await shape.tryAsync({ key2: 'aaa' }, { earlyReturn: true });
 
       expect(result).toEqual({
         ok: false,
@@ -626,7 +626,7 @@ describe('ObjectShape', () => {
 
       const input = { key1: 'aaa', key2: 'bbb', key3: 'ccc' };
 
-      const result = await shape.tryAsync(input, { verbose: true });
+      const result = await shape.tryAsync(input, { earlyReturn: true });
 
       expect(result).toEqual({
         ok: false,

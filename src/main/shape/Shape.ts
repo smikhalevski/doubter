@@ -43,7 +43,6 @@ import {
   Ok,
   Operation,
   OperationCallback,
-  OperationCallbackFactory,
   OperationOptions,
   ParameterizedOperationOptions,
   ParameterizedRefineOptions,
@@ -219,7 +218,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   annotations: Dict = {};
 
   /**
-   * The array of operations that the shape applies after the input value type is ensured.
+   * The array of operations that are applied to the shape output.
    *
    * @see {@linkcode use}
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
@@ -274,22 +273,24 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
-  use(cb: OperationCallbackFactory<InputValue, OutputValue>, options?: OperationOptions): this {
+  use(
+    /**
+     * Creates an {@link OperationCallback} that applies the logic of the operation to the shape output and passes the
+     * control to the next operation.
+     *
+     * @param next The callback that applies the next operation.
+     * @returns The callback that applies an operation to the shape output.
+     */
+    cb: (next: OperationCallback) => OperationCallback<InputValue, OutputValue>,
+    options?: OperationOptions
+  ): this {
     const shape = this._clone();
-
-    shape.operations = this.operations.concat({
-      type: options?.type,
-      param: options?.param,
-      factory: cb,
-    });
-
+    shape.operations = this.operations.concat({ type: options?.type, param: options?.param, factory: cb });
     return shape;
   }
 
   /**
-   * Adds the check that is applied to the shape output.
-   *
-   * If the {@linkcode ParameterizedOperationOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   * Adds the check {@link use operation} that is applied to the shape output.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
@@ -302,9 +303,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check<Param>(cb: CheckCallback<OutputValue, Param>, options: ParameterizedOperationOptions<Param>): this;
 
   /**
-   * Adds the check that is applied to the shape output.
-   *
-   * If the {@linkcode OperationOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   * Adds the check {@link use operation} that is applied to the shape output.
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
@@ -315,8 +314,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   check(cb: CheckCallback<OutputValue>, options?: OperationOptions): this;
 
-  check(cb: CheckCallback, options: OperationOptions = {}): this {
-    const { param } = options;
+  check(cb: CheckCallback, options?: OperationOptions): this {
+    const param = options?.param;
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -326,22 +325,17 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return issues;
           }
         }
 
-        if (!isObjectLike(result)) {
-          return next(input, output, options, issues);
-        }
-
-        if (!isArray(result)) {
-          issues = pushIssue(issues, result);
-        } else if (result.length !== 0) {
-          issues = concatIssues(issues, result);
-        }
-
-        if (issues !== null && !options.verbose) {
+        if (
+          isObjectLike(result) &&
+          // prettier-ignore
+          (issues = isArray(result) ? result.length === 0 ? issues : concatIssues(issues, result) : pushIssue(issues, result)) !== null &&
+          options.earlyReturn
+        ) {
           return issues;
         }
 
@@ -352,10 +346,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Refines the shape output type with the
+   * Adds an {@link use operation} that refines the shape output type with the
    * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
-   *
-   * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The operation options or the issue message.
@@ -370,10 +362,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   ): RefineShape<this, RefinedValue>;
 
   /**
-   * Refines the shape output type with the
+   * Adds an {@link use operation} that refines the shape output type with the
    * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
-   *
-   * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
    *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The operation options or the issue message.
@@ -387,9 +377,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   ): RefineShape<this, RefinedValue>;
 
   /**
-   * Checks that the output value conforms the predicate.
-   *
-   * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   * Adds an {@link use operation} that checks that the output value conforms the predicate.
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The operation options or the issue message.
@@ -400,9 +388,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine<Param>(cb: RefineCallback<OutputValue, Param>, options?: ParameterizedRefineOptions<Param> | Message): this;
 
   /**
-   * Checks that the output value conforms the predicate.
-   *
-   * If the {@linkcode RefineOptions#type type} is `undefined` then the `cb` identity is used as a type.
+   * Adds an {@link use operation} that checks that the output value conforms the predicate.
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The operation options or the issue message.
@@ -412,7 +398,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): this;
 
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
-    const { type, code = CODE_PREDICATE, param } = extractOptions(options);
+    const { type, param, code = CODE_PREDICATE } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
@@ -424,7 +410,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return issues;
           }
         }
@@ -432,11 +418,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
         if (!result) {
           issues = pushIssue(issues, issueFactory(output, options));
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return issues;
           }
         }
-
         return next(input, output, options, issues);
       },
       { type, param }
@@ -444,7 +429,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Alters the shape output value without changing its type.
+   * Adds an {@link use operation} that alters the output value without changing its type.
    *
    * @param cb The callback that alters the shape output.
    * @param options The operation options.
@@ -455,7 +440,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter<Param>(cb: AlterCallback<OutputValue, Param>, options: ParameterizedOperationOptions<Param>): this;
 
   /**
-   * Alters the shape output value without changing its type.
+   * Adds an {@link use operation} that alters the output value without changing its type.
    *
    * @param cb The callback that alters the shape output.
    * @param options The operation options.
@@ -464,8 +449,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   alter(cb: AlterCallback<OutputValue>, options?: OperationOptions): this;
 
-  alter(cb: AlterCallback, options: OperationOptions = {}): Shape {
-    const { param } = options;
+  alter(cb: AlterCallback, options?: OperationOptions): Shape {
+    const param = options?.param;
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -474,11 +459,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
         } catch (error) {
           issues = concatIssues(issues, captureIssues(error));
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return issues;
           }
         }
-
         return next(input, output, options, issues);
       },
       options
@@ -563,7 +547,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
-   * Allows a literal input value, so it is passed directly to the output without any checks.
+   * Allows a literal input value, so it is passed directly to the output.
    *
    * @param value The allowed value.
    * @template AllowedValue The allowed value.
@@ -1093,7 +1077,6 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ConvertedValue> {
     let output;
-
     try {
       output = this.converter(input, options) as ConvertedValue;
     } catch (error) {

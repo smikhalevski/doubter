@@ -205,33 +205,32 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!NumberShape} with additional checks.
  */
 export default function () {
-  NumberShape.prototype.finite = finiteCheck;
-  NumberShape.prototype.integer = integerCheck;
-  NumberShape.prototype.positive = positiveCheck;
-  NumberShape.prototype.negative = negativeCheck;
-  NumberShape.prototype.nonPositive = nonPositiveCheck;
-  NumberShape.prototype.nonNegative = nonNegativeCheck;
-  NumberShape.prototype.gt = gtCheck;
-  NumberShape.prototype.lt = ltCheck;
-  NumberShape.prototype.gte = gteCheck;
-  NumberShape.prototype.lte = lteCheck;
-  NumberShape.prototype.min = gteCheck;
-  NumberShape.prototype.max = lteCheck;
-  NumberShape.prototype.multiple = multipleCheck;
-  NumberShape.prototype.safe = safeCheck;
+  NumberShape.prototype.finite = useFinite;
+  NumberShape.prototype.integer = useInteger;
+  NumberShape.prototype.positive = usePositive;
+  NumberShape.prototype.negative = useNegative;
+  NumberShape.prototype.nonPositive = useNonPositive;
+  NumberShape.prototype.nonNegative = useNonNegative;
+  NumberShape.prototype.gt = useExclusiveMin;
+  NumberShape.prototype.lt = useExclusiveMax;
+  NumberShape.prototype.gte = useMin;
+  NumberShape.prototype.lte = useMax;
+  NumberShape.prototype.min = useMin;
+  NumberShape.prototype.max = useMax;
+  NumberShape.prototype.multiple = useMultiple;
+  NumberShape.prototype.safe = useSafe;
 }
 
-function finiteCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
-
+function useFinite(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   const { isFinite } = Number;
+  const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
 
   return this.use(
     next => (input, output, options, issues) => {
       if (!isFinite(output)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -241,17 +240,16 @@ function finiteCheck(this: NumberShape, options?: IssueOptions | Message): Numbe
   );
 }
 
-function integerCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  const issueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
-
+function useInteger(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   const { isInteger } = Number;
+  const issueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
 
   return this.use(
     next => (input, output, options, issues) => {
       if (!isInteger(output)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -261,23 +259,23 @@ function integerCheck(this: NumberShape, options?: IssueOptions | Message): Numb
   );
 }
 
-function positiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function usePositive(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.gt(0, options);
 }
 
-function negativeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function useNegative(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.lt(0, options);
 }
 
-function nonPositiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function useNonPositive(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.lte(0, options);
 }
 
-function nonNegativeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function useNonNegative(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.gte(0, options);
 }
 
-function gtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
+function useExclusiveMin(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
   return this.use(
@@ -285,7 +283,7 @@ function gtCheck(this: NumberShape, value: number, options?: IssueOptions | Mess
       if (output <= value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -295,7 +293,7 @@ function gtCheck(this: NumberShape, value: number, options?: IssueOptions | Mess
   );
 }
 
-function ltCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
+function useExclusiveMax(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
   return this.use(
@@ -303,7 +301,7 @@ function ltCheck(this: NumberShape, value: number, options?: IssueOptions | Mess
       if (output >= value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -313,7 +311,7 @@ function ltCheck(this: NumberShape, value: number, options?: IssueOptions | Mess
   );
 }
 
-function gteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
+function useMin(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
   return this.use(
@@ -321,7 +319,7 @@ function gteCheck(this: NumberShape, value: number, options?: IssueOptions | Mes
       if (output < value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -331,7 +329,7 @@ function gteCheck(this: NumberShape, value: number, options?: IssueOptions | Mes
   );
 }
 
-function lteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
+function useMax(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
   return this.use(
@@ -339,7 +337,7 @@ function lteCheck(this: NumberShape, value: number, options?: IssueOptions | Mes
       if (output > value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -349,21 +347,20 @@ function lteCheck(this: NumberShape, value: number, options?: IssueOptions | Mes
   );
 }
 
-function multipleCheck(this: NumberShape, divisor: number, options?: MultipleOptions | Message): NumberShape {
+function useMultiple(this: NumberShape, divisor: number, options?: MultipleOptions | Message): NumberShape {
+  const { abs, round } = Math;
   const { precision } = extractOptions(options);
 
   const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
 
   const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE, MESSAGE_NUMBER_MULTIPLE, options, divisor);
 
-  const { abs, round } = Math;
-
   return this.use(
     next => (input, output, options, issues) => {
       if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) < epsilon : output % divisor !== 0) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -373,6 +370,6 @@ function multipleCheck(this: NumberShape, divisor: number, options?: MultipleOpt
   );
 }
 
-function safeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
+function useSafe(this: NumberShape, options?: IssueOptions | Message): NumberShape {
   return this.min(Number.MIN_SAFE_INTEGER, options).max(Number.MAX_SAFE_INTEGER, options);
 }

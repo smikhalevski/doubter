@@ -427,7 +427,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
           unknownKeys = [key];
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             break;
           }
           continue;
@@ -441,7 +441,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       if (unknownKeys !== null) {
         issues = [this._exactIssueFactory!(input, options, unknownKeys)];
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           resolve(issues);
           return;
         }
@@ -466,7 +466,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           if (isArray(result)) {
             unshiftIssuesPath(result, key);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return result;
             }
             issues = concatIssues(issues, result);
@@ -517,7 +517,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       if (isArray(result)) {
         unshiftIssuesPath(result, key);
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return result;
         }
         issues = concatIssues(issues, result);
@@ -573,7 +573,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         if (isArray(result)) {
           unshiftIssuesPath(result, key);
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return result;
           }
           issues = concatIssues(issues, result);
@@ -597,7 +597,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
         unknownKeys = [key];
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           break;
         }
         continue;
@@ -613,7 +613,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     if (unknownKeys !== null) {
       const issue = this._exactIssueFactory!(input, options, unknownKeys);
 
-      if (!options.verbose) {
+      if (options.earlyReturn) {
         return [issue];
       }
       issues = pushIssue(issues, issue);
@@ -636,7 +636,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         if (isArray(result)) {
           unshiftIssuesPath(result, key);
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return result;
           }
           issues = concatIssues(issues, result);

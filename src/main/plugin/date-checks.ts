@@ -69,7 +69,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    iso(): Shape<Date, string>;
+    toISOString(): Shape<Date, string>;
 
     /**
      * Converts date to a timestamp integer number.
@@ -77,7 +77,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-checks!}
      */
-    timestamp(): Shape<Date, number>;
+    toTimestamp(): Shape<Date, number>;
   }
 }
 
@@ -85,59 +85,55 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!DateShape} with additional checks.
  */
 export default function () {
-  DateShape.prototype.min = minCheck;
-  DateShape.prototype.max = maxCheck;
-  DateShape.prototype.after = minCheck;
-  DateShape.prototype.before = maxCheck;
-  DateShape.prototype.iso = convertToIsoString;
-  DateShape.prototype.timestamp = convertToTimestamp;
+  DateShape.prototype.min = useMin;
+  DateShape.prototype.max = useMax;
+  DateShape.prototype.after = useMin;
+  DateShape.prototype.before = useMax;
+  DateShape.prototype.toISOString = convertToISOString;
+  DateShape.prototype.toTimestamp = convertToTimestamp;
 }
 
-function minCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
-  value = new Date(value);
-
-  const timestamp = value.getTime();
-
-  const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, value);
+function useMin(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
+  const param = new Date(value);
+  const timestamp = param.getTime();
+  const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, param);
 
   return this.use(
     next => (input, output, options, issues) => {
       if (output.getTime() < timestamp) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
       return next(input, output, options, issues);
     },
-    { type: CODE_DATE_MIN, param: value }
+    { type: CODE_DATE_MIN, param }
   );
 }
 
-function maxCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
-  value = new Date(value);
-
-  const timestamp = value.getTime();
-
-  const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, value);
+function useMax(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
+  const param = new Date(value);
+  const timestamp = param.getTime();
+  const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, param);
 
   return this.use(
     next => (input, output, options, issues) => {
       if (output.getTime() > timestamp) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
       return next(input, output, options, issues);
     },
-    { type: CODE_DATE_MAX, param: value }
+    { type: CODE_DATE_MAX, param }
   );
 }
 
-function convertToIsoString(this: DateShape): Shape<Date, string> {
+function convertToISOString(this: DateShape): Shape<Date, string> {
   return this.convert(toISOString);
 }
 

@@ -131,7 +131,7 @@ describe('PromiseShape', () => {
 
       const shape = new PromiseShape(valueShape).check(() => [{ code: 'yyy' }], { force: true });
 
-      await expect(shape.tryAsync(Promise.resolve(111), { verbose: true })).resolves.toEqual({
+      await expect(shape.tryAsync(Promise.resolve(111), { earlyReturn: true })).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx' }, { code: 'yyy' }],
       });

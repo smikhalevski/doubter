@@ -283,7 +283,7 @@ describe('UnionShape', () => {
 
       const shape = new UnionShape([shape1, shape2]);
 
-      await expect(shape.tryAsync({ type: 'bbb' }, { verbose: true })).resolves.toEqual({
+      await expect(shape.tryAsync({ type: 'bbb' }, { earlyReturn: true })).resolves.toEqual({
         ok: false,
         issues: [{ code: 'zzz', path: ['key1'] }, { code: 'yyy' }],
       });

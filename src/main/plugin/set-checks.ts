@@ -55,16 +55,16 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!SetShape} with additional checks.
  */
 export default function () {
-  SetShape.prototype.size = sizeCheck;
-  SetShape.prototype.min = minCheck;
-  SetShape.prototype.max = maxCheck;
+  SetShape.prototype.size = useSize;
+  SetShape.prototype.min = useMin;
+  SetShape.prototype.max = useMax;
 }
 
-function sizeCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
+function useSize(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   return this.min(size, options).max(size, options);
 }
 
-function minCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
+function useMin(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
   return this.use(
@@ -72,7 +72,7 @@ function minCheck(this: SetShape<any>, size: number, options?: IssueOptions | Me
       if (output.size < size) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -82,7 +82,7 @@ function minCheck(this: SetShape<any>, size: number, options?: IssueOptions | Me
   );
 }
 
-function maxCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
+function useMax(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
   return this.use(
@@ -90,7 +90,7 @@ function maxCheck(this: SetShape<any>, size: number, options?: IssueOptions | Me
       if (output.size > size) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }

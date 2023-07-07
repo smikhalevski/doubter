@@ -3,7 +3,7 @@ import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from
 import { ValidationError } from '../ValidationError';
 import { isArray, isEqual, isObjectLike } from './lang';
 
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerce: false });
+export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, coerce: false });
 
 export const INPUT = Symbol();
 export const OUTPUT = Symbol();

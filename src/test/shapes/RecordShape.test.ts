@@ -44,7 +44,7 @@ describe('RecordShape', () => {
 
     const shape = new RecordShape(keyShape, valueShape);
 
-    expect(shape.try({ key1: 'aaa', key2: 'bbb' }, { verbose: true })).toEqual({
+    expect(shape.try({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: ['key1'] },
@@ -196,7 +196,7 @@ describe('RecordShape', () => {
 
       const shape = new RecordShape(keyShape, valueShape);
 
-      await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' }, { verbose: true })).resolves.toEqual({
+      await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true })).resolves.toEqual({
         ok: false,
         issues: [
           { code: 'xxx', path: ['key1'] },

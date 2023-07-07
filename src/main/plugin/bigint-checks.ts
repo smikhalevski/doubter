@@ -85,66 +85,64 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!BigIntShape} with additional checks.
  */
 export default function () {
-  BigIntShape.prototype.positive = positiveCheck;
-  BigIntShape.prototype.negative = negativeCheck;
-  BigIntShape.prototype.nonPositive = nonPositiveCheck;
-  BigIntShape.prototype.nonNegative = nonNegativeCheck;
-  BigIntShape.prototype.min = minCheck;
-  BigIntShape.prototype.max = maxCheck;
+  BigIntShape.prototype.positive = usePositive;
+  BigIntShape.prototype.negative = useNegative;
+  BigIntShape.prototype.nonPositive = useNonPositive;
+  BigIntShape.prototype.nonNegative = useNonNegative;
+  BigIntShape.prototype.min = useMin;
+  BigIntShape.prototype.max = useMax;
 }
 
-function positiveCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
+function usePositive(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.min(BigInt(0), options);
 }
 
-function negativeCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
+function useNegative(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.max(BigInt(0), options);
 }
 
-function nonPositiveCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
+function useNonPositive(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.max(BigInt(1), options);
 }
 
-function nonNegativeCheck(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
+function useNonNegative(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
   return this.min(BigInt(-1), options);
 }
 
-function minCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
-  value = BigInt(value);
-
-  const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, value);
+function useMin(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
+  const param = BigInt(value);
+  const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, param);
 
   return this.use(
     next => (input, output, options, issues) => {
-      if (output < value) {
+      if (output < param) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
       return next(input, output, options, issues);
     },
-    { type: CODE_BIGINT_MIN, param: value }
+    { type: CODE_BIGINT_MIN, param }
   );
 }
 
-function maxCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
-  value = BigInt(value);
-
-  const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, value);
+function useMax(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
+  const param = BigInt(value);
+  const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, param);
 
   return this.use(
     next => (input, output, options, issues) => {
-      if (output > value) {
+      if (output > param) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
       return next(input, output, options, issues);
     },
-    { type: CODE_BIGINT_MAX, param: value }
+    { type: CODE_BIGINT_MAX, param }
   );
 }

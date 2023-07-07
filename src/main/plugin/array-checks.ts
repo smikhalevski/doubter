@@ -84,22 +84,18 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!ArrayShape} with additional checks.
  */
 export default function () {
-  ArrayShape.prototype.length = lengthCheck;
-  ArrayShape.prototype.min = minCheck;
-  ArrayShape.prototype.max = maxCheck;
-  ArrayShape.prototype.nonEmpty = nonEmptyCheck;
-  ArrayShape.prototype.includes = includesCheck;
+  ArrayShape.prototype.length = useLength;
+  ArrayShape.prototype.min = useMin;
+  ArrayShape.prototype.max = useMax;
+  ArrayShape.prototype.nonEmpty = useNonEmpty;
+  ArrayShape.prototype.includes = useIncludes;
 }
 
-function lengthCheck(
-  this: ArrayShape<any, any>,
-  length: number,
-  options?: IssueOptions | Message
-): ArrayShape<any, any> {
+function useLength(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
   return this.min(length, options).max(length, options);
 }
 
-function minCheck(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
+function useMin(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
   return this.use(
@@ -107,7 +103,7 @@ function minCheck(this: ArrayShape<any, any>, length: number, options?: IssueOpt
       if (output.length < length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -117,7 +113,7 @@ function minCheck(this: ArrayShape<any, any>, length: number, options?: IssueOpt
   );
 }
 
-function maxCheck(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
+function useMax(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
   return this.use(
@@ -125,7 +121,7 @@ function maxCheck(this: ArrayShape<any, any>, length: number, options?: IssueOpt
       if (output.length > length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return issues;
         }
       }
@@ -136,11 +132,11 @@ function maxCheck(this: ArrayShape<any, any>, length: number, options?: IssueOpt
   );
 }
 
-function nonEmptyCheck(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
+function useNonEmpty(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
   return this.min(1, options);
 }
 
-function includesCheck(
+function useIncludes(
   this: ArrayShape<any, any>,
   shape: AnyShape,
   options?: IssueOptions | Message
@@ -157,7 +153,7 @@ function includesCheck(
 
       issues = pushIssue(issues, issueFactory(output, options));
 
-      if (!options.verbose) {
+      if (options.earlyReturn) {
         return issues;
       }
 

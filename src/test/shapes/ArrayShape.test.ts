@@ -136,7 +136,7 @@ describe('ArrayShape', () => {
 
     const shape = new ArrayShape([], restShape);
 
-    expect(shape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
+    expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -163,7 +163,7 @@ describe('ArrayShape', () => {
 
     const shape = new ArrayShape([headShape1, headShape2], null);
 
-    expect(shape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
+    expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },

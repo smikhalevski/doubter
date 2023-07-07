@@ -61,7 +61,7 @@ describe('SetShape', () => {
 
     const shape = new SetShape(valueShape);
 
-    expect(shape.try(new Set(['aaa', 'bbb']), { verbose: true })).toEqual({
+    expect(shape.try(new Set(['aaa', 'bbb']), { earlyReturn: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },

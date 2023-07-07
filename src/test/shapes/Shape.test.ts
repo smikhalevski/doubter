@@ -219,7 +219,7 @@ describe('Shape', () => {
 
       const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
 
-      expect(shape.try(111, { verbose: true })).toEqual({
+      expect(shape.try(111, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -233,7 +233,7 @@ describe('Shape', () => {
 
       const shape = new Shape().check(cbMock1).check(cbMock2).check(cbMock3, { force: true });
 
-      expect(shape.try(111, { verbose: true })).toEqual({
+      expect(shape.try(111, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -356,7 +356,7 @@ describe('Shape', () => {
 
       const shape = new Shape().refine(cbMock1).refine(cbMock2, { force: true });
 
-      expect(shape.try(111, { verbose: true })).toEqual({
+      expect(shape.try(111, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: CODE_PREDICATE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
       });
@@ -370,7 +370,7 @@ describe('Shape', () => {
 
       const shape = new Shape().refine(cbMock1).refine(cbMock2).refine(cbMock3, { force: true });
 
-      expect(shape.try(111, { verbose: true })).toEqual({
+      expect(shape.try(111, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: CODE_PREDICATE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
       });
@@ -441,7 +441,7 @@ describe('Shape', () => {
 
       const shape = new Shape().check(cbMock1).alter(cbMock2, { force: true });
 
-      expect(shape.try(111, { verbose: true })).toEqual({
+      expect(shape.try(111, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -455,7 +455,7 @@ describe('Shape', () => {
 
       const shape = new Shape().check(cbMock1).alter(cbMock2).refine(cbMock3, { force: true });
 
-      expect(shape.try(111, { verbose: true })).toEqual({
+      expect(shape.try(111, { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -864,7 +864,7 @@ describe('Shape', () => {
 
       const shape = new Shape().check(cbMock1).check(cbMock2);
 
-      expect(shape.try('aaa', { verbose: true })).toEqual({
+      expect(shape.try('aaa', { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -879,7 +879,7 @@ describe('Shape', () => {
 
       const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
 
-      expect(shape.try('aaa', { verbose: true })).toEqual({
+      expect(shape.try('aaa', { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -895,7 +895,7 @@ describe('Shape', () => {
 
       const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
 
-      expect(shape.try('aaa', { verbose: true })).toEqual({
+      expect(shape.try('aaa', { earlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }, { code: 'yyy' }],
       });
@@ -1280,7 +1280,7 @@ describe('ReplaceLiteralShape', () => {
       222
     ).check(() => [{ code: 'yyy' }], { force: true });
 
-    expect(shape.try('aaa', { verbose: true })).toEqual({
+    expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -1334,7 +1334,7 @@ describe('ReplaceLiteralShape', () => {
         222
       ).check(() => [{ code: 'yyy' }], { force: true });
 
-      await expect(shape.tryAsync('aaa', { verbose: true })).resolves.toEqual({
+      await expect(shape.tryAsync('aaa', { earlyReturn: true })).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -1403,7 +1403,7 @@ describe('DenyLiteralShape', () => {
       undefined
     ).check(() => [{ code: 'yyy' }], { force: true });
 
-    expect(shape.try(111, { verbose: true })).toEqual({
+    expect(shape.try(111, { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
