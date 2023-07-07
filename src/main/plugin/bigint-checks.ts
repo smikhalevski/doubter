@@ -114,10 +114,8 @@ function minCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Mes
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, value);
 
-  return this.addOperation({
-    type: CODE_BIGINT_MIN,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output < value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -127,7 +125,8 @@ function minCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Mes
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_BIGINT_MIN, param: value }
+  );
 }
 
 function maxCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
@@ -135,10 +134,8 @@ function maxCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Mes
 
   const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, value);
 
-  return this.addOperation({
-    type: CODE_BIGINT_MAX,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output > value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -148,5 +145,6 @@ function maxCheck(this: BigIntShape, value: bigint, options?: IssueOptions | Mes
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_BIGINT_MAX, param: value }
+  );
 }

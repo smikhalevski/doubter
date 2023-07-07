@@ -102,10 +102,8 @@ function lengthCheck(
 function minCheck(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-  return this.addOperation({
-    type: CODE_ARRAY_MIN,
-    param: length,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.length < length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -115,16 +113,15 @@ function minCheck(this: ArrayShape<any, any>, length: number, options?: IssueOpt
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_ARRAY_MIN, param: length }
+  );
 }
 
 function maxCheck(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-  return this.addOperation({
-    type: CODE_ARRAY_MAX,
-    param: length,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.length > length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -134,7 +131,9 @@ function maxCheck(this: ArrayShape<any, any>, length: number, options?: IssueOpt
       }
       return next(input, output, options, issues);
     },
-  });
+
+    { type: CODE_ARRAY_MAX, param: length }
+  );
 }
 
 function nonEmptyCheck(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
@@ -148,10 +147,8 @@ function includesCheck(
 ): ArrayShape<any, any> {
   const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, MESSAGE_ARRAY_INCLUDES, options, undefined);
 
-  return this.addOperation({
-    type: CODE_ARRAY_INCLUDES,
-    param: shape,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       for (const value of output) {
         if (shape.try(value, options).ok) {
           return next(input, output, options, issues);
@@ -166,5 +163,6 @@ function includesCheck(
 
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_ARRAY_INCLUDES, param: shape }
+  );
 }

@@ -285,7 +285,7 @@ shape.parse('Mars');
 ```
 
 Use [`parseAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseAsync) with
-[async shapes](#async-shapes). It has the same semantics and returns a promise.
+[async shapes.](#async-shapes) It has the same semantics and returns a promise.
 
 ### [`parseOrDefault`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseOrDefault)
 
@@ -308,7 +308,7 @@ shape.parseOrDefault('Pluto', 5.3361);
 If you need a fallback value for a nested shape [consider using `catch`](#fallback-value).
 
 Use [`parseOrDefaultAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseOrDefaultAsync)
-with [async shapes](#async-shapes). It has the same semantics and returns a promise.
+with [async shapes.](#async-shapes) It has the same semantics and returns a promise.
 
 ### [`try`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#try)
 
@@ -326,14 +326,14 @@ shape.try('Mars');
 ```
 
 Use [`tryAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#tryAsync) with
-[async shapes](#async-shapes). It has the same semantics and returns a promise.
+[async shapes.](#async-shapes) It has the same semantics and returns a promise.
 
 ## Operations
 
 As the final step of the parsing process, a shape applies operations that were added to it.
 
 ```ts
-const shape = d.string().addOperation({
+const shape = d.string().use({
   type: 'trim',
   param: undefined,
   compose: next => (input, output, options, issues) => {
@@ -345,20 +345,11 @@ shape.parse('  Space  ');
 // ⮕ 'Space'
 ```
 
-> **Note** Most of the time you don't need to use `addOperation` directly. Instead, you can use [checks](#checks),
+> **Note** Most of the time you don't need to use `use` directly. Instead, you can use [checks](#checks),
 > [refinements](#refinements), and [alterations](#alterations) as a higher-level API.
 
-Operations can alter the shape output, populate issues, and delegate parsing to the next operation. Operations are
-executed in the same order they were added.
-
-Check that an operation with a particular type was added to the shape:
-
-```ts
-shape.hasOperation('trim');
-// ⮕ true
-```
-
-You can access all operations that were added to the shape using the
+Operations can alter the shape output, populate issues, and delegate parsing to the next operation. They are
+executed in the same order they were added. You can access all operations that were added to the shape using the
 [`operations`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#operations) property.
 
 ## Async shapes
@@ -452,7 +443,7 @@ The code of the validation issue. Shapes provide various checks and each check h
 <dd>
 
 The object path as an array of keys, or `undefined` if there's no path. Keys can be strings, numbers (for example, array
-indices), symbols, and any other values since they can be [`Map` keys](#map).
+indices), symbols, and any other values since they can be [`Map` keys.](#map)
 
 </dd>
 <dt><code>input</code></dt>
@@ -633,7 +624,7 @@ shape.parse(['Venus']);
 Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
 to collect all issues that prevent input from being successfully parsed. To do this, pass the
 [`verbose`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.ApplyOptions.html#verbose) option to the
-[parse method](#parsing-and-trying).
+[parse method.](#parsing-and-trying)
 
 ```ts
 d.string()
@@ -831,7 +822,7 @@ d.number().alter(Math.abs).alter(Math.pow, { param: 3 });
 ```
 
 Alteration callbacks must return the value of the same type, so consequent operations are type-safe. If you want to
-convert the shape output value to another type, consider using [conversions](#conversions).
+convert the shape output value to another type, consider using [conversions.](#conversions)
 
 > **Note**&ensp;Alterations [can be parameterized](#parameterized-checks) and [forced](#forced-checks) the same way as
 > checks.
@@ -996,7 +987,7 @@ if (!result.ok) {
 ```
 
 This comes handy if you want to enhance an issue with an additional data that can be used later during issues
-processing. For example, during [localization](#localization).
+processing. For example, during [localization.](#localization)
 
 # Parsing context
 
@@ -1896,15 +1887,6 @@ emailShape.parse('foo@bar.com');
 // ⮕ 'foo@bar.com'
 ```
 
-You can check that the shape describes an email using `hasOperation`:
-
-```ts
-emailShape.hasOperation(isEmail);
-// ⮕ true
-```
-
-Read more about operations in [Operations](#operations) section.
-
 # Advanced shapes
 
 You can create custom shapes by extending the
@@ -2029,7 +2011,7 @@ second (greater is better).
   <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/static/perf.svg" alt="Performance comparison chart"/>
 </p>
 
-Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast).
+Tests were conducted using [TooFast.](https://github.com/smikhalevski/toofast)
 
 [The performance test suite](./src/test/perf/overall.perf.js) was run on Apple M1. To reproduce these results, clone
 this repo and in the repo's root directory run:
@@ -3446,7 +3428,7 @@ d.tuple([d.string(), d.number()]).rest(d.boolean());
 // ⮕ Shape<[string, number, ...boolean]>
 ```
 
-Tuples follow [array type coercion rules](#coerce-to-an-array).
+Tuples follow [array type coercion rules.](#coerce-to-an-array)
 
 # `undefined`
 
@@ -3701,7 +3683,7 @@ Key takeaways:
 
 1. The object shape is marked as [partial](#making-objects-partial-and-required), so absence of any query param won't
 raise a validation issue. You can mark individual params as optional and
-[provide a default value](#optional-and-non-optional). 
+[provide a default value.](#optional-and-non-optional) 
 
 2. Query params are strings. So `name` doesn't require additional attention since it's constrained by
 [`d.string`](#string). On the other hand, `age` is an integer, so [type coercion](#type-coercion) must be enabled to

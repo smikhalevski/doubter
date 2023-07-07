@@ -39,10 +39,8 @@ export default function () {
 function plainCheck(this: ObjectShape<any, any>, options?: IssueOptions | Message): ObjectShape<any, any> {
   const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, MESSAGE_OBJECT_PLAIN, options, undefined);
 
-  return this.addOperation({
-    type: CODE_OBJECT_PLAIN,
-    param: undefined,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (!isPlainObject(output)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -52,5 +50,6 @@ function plainCheck(this: ObjectShape<any, any>, options?: IssueOptions | Messag
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_OBJECT_PLAIN }
+  );
 }

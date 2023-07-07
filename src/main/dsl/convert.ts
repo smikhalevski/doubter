@@ -1,14 +1,15 @@
-import { ConvertShape } from '../shape';
+import { ConvertShape, Shape } from '../shape';
 import { ApplyOptions } from '../types';
 
 /**
  * Creates the shape that synchronously converts the input value.
  *
  * @param cb The callback that converts the input value.
+ * @template Value The input value.
  * @template ConvertedValue The output value.
  * @group DSL
  */
-export function convert<ConvertedValue>(
+export function convert<Value = any, ConvertedValue = Value>(
   /**
    * The callback that converts the input value.
    *
@@ -19,7 +20,7 @@ export function convert<ConvertedValue>(
    * @return The conversion result.
    */
   cb: (value: any, options: ApplyOptions) => ConvertedValue
-): ConvertShape<ConvertedValue> {
+): Shape<Value, ConvertedValue> {
   return new ConvertShape(cb);
 }
 
@@ -27,10 +28,11 @@ export function convert<ConvertedValue>(
  * Creates the shape that asynchronously converts the input value.
  *
  * @param cb The callback that converts the input value.
+ * @template Value The input value.
  * @template ConvertedValue The output value.
  * @group DSL
  */
-export function convertAsync<ConvertedValue>(
+export function convertAsync<Value = any, ConvertedValue = Value>(
   /**
    * The callback that converts the input value.
    *
@@ -41,6 +43,6 @@ export function convertAsync<ConvertedValue>(
    * @return The conversion result.
    */
   cb: (value: any, options: ApplyOptions) => PromiseLike<ConvertedValue>
-): ConvertShape<ConvertedValue> {
+): Shape<Value, ConvertedValue> {
   return new ConvertShape(cb, true);
 }

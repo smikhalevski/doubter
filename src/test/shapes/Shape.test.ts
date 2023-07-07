@@ -40,10 +40,10 @@ describe('Shape', () => {
     expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
   });
 
-  describe('addOperation', () => {
+  describe('use', () => {
     test('clones the shape', () => {
       const shape1 = new Shape();
-      const shape2 = shape1.addOperation({
+      const shape2 = shape1.use({
         type: 'aaa',
         param: undefined,
         compose: next => (input, output, options, issues) => next(input, output, options, issues),
@@ -53,7 +53,7 @@ describe('Shape', () => {
     });
 
     test('returns the shape clone', () => {
-      const shape = new Shape().addOperation({
+      const shape = new Shape().use({
         type: 'aaa',
         param: undefined,
         compose: next => (input, output, options, issues) => next(input, output, options, issues),

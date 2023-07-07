@@ -67,10 +67,8 @@ function sizeCheck(this: SetShape<any>, size: number, options?: IssueOptions | M
 function minCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-  return this.addOperation({
-    type: CODE_SET_MIN,
-    param: size,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.size < size) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -80,16 +78,15 @@ function minCheck(this: SetShape<any>, size: number, options?: IssueOptions | Me
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_SET_MIN, param: size }
+  );
 }
 
 function maxCheck(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
   const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-  return this.addOperation({
-    type: CODE_SET_MAX,
-    param: size,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.size > size) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -99,5 +96,6 @@ function maxCheck(this: SetShape<any>, size: number, options?: IssueOptions | Me
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_SET_MAX, param: size }
+  );
 }

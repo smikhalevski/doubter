@@ -2,7 +2,7 @@ import { AnyShape, IntersectionShape } from '../shape';
 import { IssueOptions, Message } from '../types';
 
 /**
- * Creates an intersection shape that tries to parse the input with all provided shapes.
+ * Creates an intersection shape that tries to parse the input with all provided shapes and merge parsing results.
  *
  * @param shapes The array of shapes.
  * @param options The issue options or the issue message.

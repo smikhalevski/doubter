@@ -155,7 +155,7 @@ export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
  * @see {@linkcode Shape#check Shape.check}
  * @see {@linkcode Shape#alter Shape.alter}
  * @see {@linkcode Shape#refine Shape.refine}
- * @see {@linkcode Shape#addOperation Shape.addOperation}
+ * @see {@linkcode Shape#use Shape.use}
  * @group Operations
  */
 export interface Operation<InputValue = any, OutputValue = any> {
@@ -178,14 +178,21 @@ export interface Operation<InputValue = any, OutputValue = any> {
   readonly param: any;
 
   /**
-   * Creates an {@link OperationCallback} that applies the logic of this operation to the shape output and passes
-   * control to the next operation.
-   *
-   * @param next The callback that applies the next operation.
-   * @returns The callback that applies an operation to the shape output.
+   * The factory that produces the operation callback.
    */
-  readonly compose: (this: Operation, next: OperationCallback) => OperationCallback<InputValue, OutputValue>;
+  readonly factory: OperationCallbackFactory<InputValue, OutputValue>;
 }
+
+/**
+ * Creates an {@link OperationCallback} that applies the logic of the operation to the shape output and passes the
+ * control to the next operation.
+ *
+ * @param next The callback that applies the next operation.
+ * @returns The callback that applies an operation to the shape output.
+ */
+export type OperationCallbackFactory<InputValue, OutputValue> = (
+  next: OperationCallback
+) => OperationCallback<InputValue, OutputValue>;
 
 /**
  * A callback that applies an operation to the shape output.
@@ -229,13 +236,6 @@ export interface OperationOptions {
    * @see {@linkcode Operation#param Operation.param}
    */
   param?: any;
-
-  /**
-   * If `true` then the operation is applied even if some of the preceding operations have failed.
-   *
-   * @default false
-   */
-  force?: boolean;
 }
 
 /**

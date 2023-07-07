@@ -226,10 +226,8 @@ function finiteCheck(this: NumberShape, options?: IssueOptions | Message): Numbe
 
   const { isFinite } = Number;
 
-  return this.addOperation({
-    type: CODE_NUMBER_FINITE,
-    param: undefined,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (!isFinite(output)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -239,7 +237,8 @@ function finiteCheck(this: NumberShape, options?: IssueOptions | Message): Numbe
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_NUMBER_FINITE }
+  );
 }
 
 function integerCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
@@ -247,10 +246,8 @@ function integerCheck(this: NumberShape, options?: IssueOptions | Message): Numb
 
   const { isInteger } = Number;
 
-  return this.addOperation({
-    type: CODE_NUMBER_INTEGER,
-    param: undefined,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (!isInteger(output)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -260,7 +257,8 @@ function integerCheck(this: NumberShape, options?: IssueOptions | Message): Numb
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_NUMBER_INTEGER }
+  );
 }
 
 function positiveCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {
@@ -282,10 +280,8 @@ function nonNegativeCheck(this: NumberShape, options?: IssueOptions | Message): 
 function gtCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
 
-  return this.addOperation({
-    type: CODE_NUMBER_GT,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output <= value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -295,16 +291,15 @@ function gtCheck(this: NumberShape, value: number, options?: IssueOptions | Mess
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_NUMBER_GT, param: value }
+  );
 }
 
 function ltCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
 
-  return this.addOperation({
-    type: CODE_NUMBER_LT,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output >= value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -314,16 +309,15 @@ function ltCheck(this: NumberShape, value: number, options?: IssueOptions | Mess
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_NUMBER_LT, param: value }
+  );
 }
 
 function gteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
 
-  return this.addOperation({
-    type: CODE_NUMBER_GTE,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output < value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -333,16 +327,15 @@ function gteCheck(this: NumberShape, value: number, options?: IssueOptions | Mes
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_NUMBER_GTE, param: value }
+  );
 }
 
 function lteCheck(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
   const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
 
-  return this.addOperation({
-    type: CODE_NUMBER_LTE,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output > value) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -352,7 +345,8 @@ function lteCheck(this: NumberShape, value: number, options?: IssueOptions | Mes
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_NUMBER_LTE, param: value }
+  );
 }
 
 function multipleCheck(this: NumberShape, divisor: number, options?: MultipleOptions | Message): NumberShape {
@@ -364,10 +358,8 @@ function multipleCheck(this: NumberShape, divisor: number, options?: MultipleOpt
 
   const { abs, round } = Math;
 
-  return this.addOperation({
-    type: CODE_NUMBER_MULTIPLE,
-    param: divisor,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) < epsilon : output % divisor !== 0) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -377,7 +369,8 @@ function multipleCheck(this: NumberShape, divisor: number, options?: MultipleOpt
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_NUMBER_MULTIPLE, param: divisor }
+  );
 }
 
 function safeCheck(this: NumberShape, options?: IssueOptions | Message): NumberShape {

@@ -45,8 +45,8 @@ export function unionTypes(types: unknown[]): unknown[] {
 }
 
 /**
- * Takes an array of arrays of types that are treated as an intersection of unions, and applied distribution rule that
- * produces a union.
+ * Takes an array of arrays of types that are treated as an intersection of unions, and applies the distribution rule
+ * that produces a union.
  *
  * ```
  * (a | b) & (a | b | c) → a | b

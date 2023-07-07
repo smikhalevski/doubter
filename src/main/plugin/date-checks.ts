@@ -100,10 +100,8 @@ function minCheck(this: DateShape, value: Date | number | string, options?: Issu
 
   const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, value);
 
-  return this.addOperation({
-    type: CODE_DATE_MIN,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.getTime() < timestamp) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -113,7 +111,8 @@ function minCheck(this: DateShape, value: Date | number | string, options?: Issu
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_DATE_MIN, param: value }
+  );
 }
 
 function maxCheck(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
@@ -123,10 +122,8 @@ function maxCheck(this: DateShape, value: Date | number | string, options?: Issu
 
   const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, value);
 
-  return this.addOperation({
-    type: CODE_DATE_MAX,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.getTime() > timestamp) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -136,7 +133,8 @@ function maxCheck(this: DateShape, value: Date | number | string, options?: Issu
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_DATE_MAX, param: value }
+  );
 }
 
 function convertToIsoString(this: DateShape): Shape<Date, string> {

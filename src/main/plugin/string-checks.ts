@@ -181,10 +181,8 @@ function lengthCheck(this: StringShape, length: number, options?: IssueOptions |
 function minCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-  return this.addOperation({
-    type: CODE_STRING_MIN,
-    param: length,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.length < length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -194,16 +192,15 @@ function minCheck(this: StringShape, length: number, options?: IssueOptions | Me
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_STRING_MIN, param: length }
+  );
 }
 
 function maxCheck(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-  return this.addOperation({
-    type: CODE_STRING_MAX,
-    param: length,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.length > length) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -213,16 +210,15 @@ function maxCheck(this: StringShape, length: number, options?: IssueOptions | Me
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_STRING_MAX, param: length }
+  );
 }
 
 function regexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-  return this.addOperation({
-    type: CODE_STRING_REGEX,
-    param: re,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (!re.test(output)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -232,16 +228,15 @@ function regexCheck(this: StringShape, re: RegExp, options?: IssueOptions | Mess
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_STRING_REGEX, param: re }
+  );
 }
 
 function includesCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
-  return this.addOperation({
-    type: CODE_STRING_INCLUDES,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.indexOf(value) === -1) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -251,16 +246,15 @@ function includesCheck(this: StringShape, value: string, options?: IssueOptions 
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_STRING_INCLUDES, param: value }
+  );
 }
 
 function startsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
-  return this.addOperation({
-    type: CODE_STRING_STARTS_WITH,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (!output.startsWith(value)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -270,16 +264,15 @@ function startsWithCheck(this: StringShape, value: string, options?: IssueOption
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_STRING_STARTS_WITH, param: value }
+  );
 }
 
 function endsWithCheck(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
-  return this.addOperation({
-    type: CODE_STRING_ENDS_WITH,
-    param: value,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (!output.endsWith(value)) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -289,16 +282,15 @@ function endsWithCheck(this: StringShape, value: string, options?: IssueOptions 
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_STRING_ENDS_WITH, param: value }
+  );
 }
 
 function nonBlankCheck(this: StringShape, options?: IssueOptions | Message): StringShape {
   const issueFactory = createIssueFactory(CODE_STRING_BLANK, MESSAGE_STRING_BLANK, options, undefined);
 
-  return this.addOperation({
-    type: CODE_STRING_BLANK,
-    param: undefined,
-    compose: next => (input, output, options, issues) => {
+  return this.use(
+    next => (input, output, options, issues) => {
       if (output.trim().length === 0) {
         issues = pushIssue(issues, issueFactory(output, options));
 
@@ -308,7 +300,8 @@ function nonBlankCheck(this: StringShape, options?: IssueOptions | Message): Str
       }
       return next(input, output, options, issues);
     },
-  });
+    { type: CODE_STRING_BLANK }
+  );
 }
 
 function nonEmptyCheck(this: StringShape, options?: IssueOptions | Message): StringShape {
@@ -316,25 +309,19 @@ function nonEmptyCheck(this: StringShape, options?: IssueOptions | Message): Str
 }
 
 function trimOperation(this: StringShape): StringShape {
-  return this.addOperation({
+  return this.use(next => (input, output, options, issues) => next(input, output.trim(), options, issues), {
     type: 'string_trim',
-    param: undefined,
-    compose: next => (input, output, options, issues) => next(input, output.trim(), options, issues),
   });
 }
 
 function toLowerCaseOperation(this: StringShape): StringShape {
-  return this.addOperation({
+  return this.use(next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues), {
     type: 'string_to_lower_case',
-    param: undefined,
-    compose: next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues),
   });
 }
 
 function toUpperCaseOperation(this: StringShape): StringShape {
-  return this.addOperation({
+  return this.use(next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues), {
     type: 'string_to_upper_case',
-    param: undefined,
-    compose: next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues),
   });
 }

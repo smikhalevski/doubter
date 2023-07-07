@@ -43,6 +43,7 @@ import {
   Ok,
   Operation,
   OperationCallback,
+  OperationCallbackFactory,
   OperationOptions,
   ParameterizedOperationOptions,
   ParameterizedRefineOptions,
@@ -220,7 +221,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * The array of operations that the shape applies after the input value type is ensured.
    *
-   * @see {@linkcode addOperation}
+   * @see {@linkcode use}
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
   operations: readonly Operation[] = [];
@@ -229,34 +230,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * The callback that applies {@linkcode operations operations} to the shape output value.
    */
   protected declare _applyOperations: OperationCallback;
-
-  /**
-   * Adds an operation to the shape.
-   *
-   * @param op The operation to add.
-   * @returns The clone of the shape.
-   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
-   */
-  addOperation(op: Operation<InputValue, OutputValue>): this {
-    const shape = this._clone();
-    shape.operations = this.operations.concat(op);
-    return shape;
-  }
-
-  /**
-   * Returns `true` if there's at least one operation with the given type, or `false` otherwise.
-   *
-   * @param type The type of the operation to look for. Types are compared using the strict equality operator.
-   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
-   */
-  hasOperation(type: unknown): boolean {
-    for (const op of this.operations) {
-      if (op.type === type) {
-        return true;
-      }
-    }
-    return false;
-  }
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -294,6 +267,26 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
+   * Appends an operation to the shape.
+   *
+   * @param cb The factory that produces the operation callback.
+   * @param options The operation operations.
+   * @returns The clone of the shape.
+   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   */
+  use(cb: OperationCallbackFactory<InputValue, OutputValue>, options?: OperationOptions): this {
+    const shape = this._clone();
+
+    shape.operations = this.operations.concat({
+      type: options?.type,
+      param: options?.param,
+      factory: cb,
+    });
+
+    return shape;
+  }
+
+  /**
    * Adds the check that is applied to the shape output.
    *
    * If the {@linkcode ParameterizedOperationOptions#type type} is `undefined` then the `cb` identity is used as a type.
@@ -323,16 +316,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback<OutputValue>, options?: OperationOptions): this;
 
   check(cb: CheckCallback, options: OperationOptions = {}): this {
-    const { type = cb, param, force } = options;
+    const { param } = options;
 
-    return this.addOperation({
-      type,
-      param,
-      compose: next => (input, output, options, issues) => {
-        if (issues !== null && !force) {
-          return next(input, output, options, issues);
-        }
-
+    return this.use(
+      next => (input, output, options, issues) => {
         let result;
         try {
           result = cb(output, param, options);
@@ -360,7 +347,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
         return next(input, output, options, issues);
       },
-    });
+      options
+    );
   }
 
   /**
@@ -424,18 +412,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): this;
 
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
-    const { type = cb, code = CODE_PREDICATE, param, force = false } = extractOptions(options);
+    const { type, code = CODE_PREDICATE, param } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
-    return this.addOperation({
-      type,
-      param,
-      compose: next => (input, output, options, issues) => {
-        if (issues !== null && !force) {
-          return next(input, output, options, issues);
-        }
-
+    return this.use(
+      next => (input, output, options, issues) => {
         let result;
         try {
           result = cb(output, param, options);
@@ -457,7 +439,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
         return next(input, output, options, issues);
       },
-    });
+      { type, param }
+    );
   }
 
   /**
@@ -482,16 +465,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter(cb: AlterCallback<OutputValue>, options?: OperationOptions): this;
 
   alter(cb: AlterCallback, options: OperationOptions = {}): Shape {
-    const { type = cb, param, force = false } = options;
+    const { param } = options;
 
-    return this.addOperation({
-      type,
-      param,
-      compose: next => (input, output, options, issues) => {
-        if (issues !== null && !force) {
-          return next(input, output, options, issues);
-        }
-
+    return this.use(
+      next => (input, output, options, issues) => {
         try {
           output = cb(output, param, options);
         } catch (error) {
@@ -504,7 +481,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
         return next(input, output, options, issues);
       },
-    });
+      options
+    );
   }
 
   /**
@@ -1069,7 +1047,7 @@ Object.defineProperties(Shape.prototype, {
       let cb = universalApplyOperations;
 
       for (let i = this.operations.length - 1; i >= 0; --i) {
-        cb = this.operations[i].compose(cb);
+        cb = this.operations[i].factory(cb);
       }
 
       Object.defineProperty(this, '_applyOperations', { writable: true, value: cb });
