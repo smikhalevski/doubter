@@ -52,7 +52,6 @@
     "SetSignature"
   ],
   "intentionallyNotExported": [
-    "ApplyChecksCallback",
     "Awaitable",
     "Awaited",
     "DeepPartialArrayShape",
@@ -62,11 +61,11 @@
     "DeepPartialUnionShape",
     "Dict",
     "ExcludeLiteral",
-    "OptionalDeepPartialShape",
     "InferPromise",
     "InferRecord",
     "Intersect",
-    "Lookup",
+    "LookupCallback",
+    "OptionalDeepPartialShape",
     "OptionalKeys",
     "OptionalProps",
     "Promisify",

@@ -112,14 +112,14 @@ export interface IssueOptions {
    * The custom issue message.
    *
    * @see {@linkcode Message}
-   * @see {@linkcode Issue#message Issue.message}
+   * @see {@linkcode doubter/core!Issue#message Issue.message}
    */
   message?: Message | any;
 
   /**
    * An arbitrary metadata that is added to an issue.
    *
-   * @see {@linkcode Issue#meta Issue.meta}
+   * @see {@linkcode doubter/core!Issue#meta Issue.meta}
    */
   meta?: any;
 }
@@ -169,7 +169,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
    * The additional param associated with the operation.
    *
    * This param usually contains a {@link type type-specific} data is used in the {@link OperationCallback callback}
-   * returned by the {@linkcode compose} method.
+   * returned by the {@linkcode factory} method.
    *
    * Built-in operations use the same param for an operation and an issue that is raised if an operation fails.
    *
@@ -197,7 +197,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
  * @returns The result of the operation.
  * @template InputValue The input value to which the shape was applied.
  * @template OutputValue The shape output value to which the operation must be applied.
- * @see {@linkcode Operation#compose Operation.compose}
+ * @see {@linkcode Operation#factory Operation.factory}
  * @group Operations
  */
 export type OperationCallback<InputValue = any, OutputValue = any> = (
