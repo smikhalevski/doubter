@@ -15,14 +15,14 @@ export interface MockShape {
 }
 
 export class AsyncMockShape extends MockShape {
-  protected _isAsync(): boolean {
-    return true;
-  }
-
   _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
     return new Promise<Result>(resolve => {
       resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
     });
+  }
+
+  protected _isAsync(): boolean {
+    return true;
   }
 }
 

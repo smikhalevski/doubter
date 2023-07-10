@@ -36,7 +36,7 @@ function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
 function function_<
   InputArgs extends readonly any[],
   OutputArgs extends readonly any[],
-  ArgsShape extends Shape<InputArgs, OutputArgs>
+  ArgsShape extends Shape<InputArgs, OutputArgs>,
 >(argsShape: ArgsShape, options?: IssueOptions | Message): FunctionShape<ArgsShape, null, null>;
 
 function function_(argShapes?: Shape | AnyShape[] | IssueOptions | Message, options?: IssueOptions | Message) {

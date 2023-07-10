@@ -22,7 +22,7 @@ import { AnyShape, Input, Output, Shape } from './Shape';
 type ShapeValue<
   Shape extends AnyShape | null | undefined,
   Leg extends INPUT | OUTPUT,
-  DefaultValue = any
+  DefaultValue = any,
 > = Shape extends null | undefined ? DefaultValue : Shape extends AnyShape ? Shape[Leg] : DefaultValue;
 
 type ThisType<F> = F extends (this: infer T, ...args: any[]) => any ? T : any;
@@ -38,7 +38,7 @@ type ThisType<F> = F extends (this: infer T, ...args: any[]) => any ? T : any;
 export class FunctionShape<
   ArgsShape extends Shape<readonly any[], readonly any[]>,
   ReturnShape extends AnyShape | null,
-  ThisShape extends AnyShape | null
+  ThisShape extends AnyShape | null,
 > extends Shape<
   (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>,
   (this: ShapeValue<ThisShape, INPUT>, ...args: Input<ArgsShape>) => ShapeValue<ReturnShape, OUTPUT>
@@ -145,7 +145,7 @@ export class FunctionShape<
    * @template F The function to wrap.
    */
   ensureSignature<
-    F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>
+    F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>,
   >(
     fn: F,
     options?: ParseOptions
@@ -192,7 +192,7 @@ export class FunctionShape<
     F extends (
       this: ShapeValue<ThisShape, OUTPUT>,
       ...args: Output<ArgsShape>
-    ) => Awaitable<ShapeValue<ReturnShape, INPUT>>
+    ) => Awaitable<ShapeValue<ReturnShape, INPUT>>,
   >(
     fn: F,
     options?: ParseOptions

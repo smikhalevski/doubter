@@ -15,7 +15,7 @@ import {
 import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
 import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shape/UnionShape';
 import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
-import { AsyncMockShape, spyOnShape, MockShape } from './mocks';
+import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('UnionShape', () => {
   test('distributes buckets by inputs', () => {

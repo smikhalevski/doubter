@@ -11,7 +11,7 @@ import { Shape } from './Shape';
 export abstract class CoercibleShape<
   InputValue = any,
   OutputValue = InputValue,
-  CoercedValue = InputValue
+  CoercedValue = InputValue,
 > extends Shape<InputValue, OutputValue> {
   /**
    * `true` if this shapes coerces input values to the required type during parsing, or `false` otherwise.

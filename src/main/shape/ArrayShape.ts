@@ -21,10 +21,10 @@ import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape } from '
 type InferArray<
   HeadShapes extends readonly AnyShape[],
   RestShape extends AnyShape | null,
-  Leg extends INPUT | OUTPUT
+  Leg extends INPUT | OUTPUT,
 > = [
   ...{ [K in keyof HeadShapes]: HeadShapes[K][Leg] },
-  ...(RestShape extends null | undefined ? [] : RestShape extends AnyShape ? RestShape[Leg][] : [])
+  ...(RestShape extends null | undefined ? [] : RestShape extends AnyShape ? RestShape[Leg][] : []),
 ];
 
 type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> = ArrayShape<

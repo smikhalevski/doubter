@@ -19,7 +19,7 @@ import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from '
 type InferRecord<
   KeyShape extends Shape<string, PropertyKey> | null,
   ValueShape extends AnyShape,
-  Leg extends INPUT | OUTPUT
+  Leg extends INPUT | OUTPUT,
 > = Record<
   KeyShape extends null | undefined ? string : KeyShape extends Shape ? KeyShape[Leg] : string,
   ValueShape[Leg]
