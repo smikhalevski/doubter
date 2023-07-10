@@ -156,14 +156,12 @@ describe('Overall', () => {
         }),
       });
 
-      const options = { verbose: true };
-
       measure(() => {
         shape.parse(validValue);
       });
 
       measure(() => {
-        shape.try(invalidValue, options);
+        shape.try(invalidValue);
       });
     });
   });
@@ -293,14 +291,12 @@ describe('Overall', () => {
         })
         .exact();
 
-      const options = { verbose: true };
-
       measure(() => {
         shape.parse(validValue);
       });
 
       measure(() => {
-        shape.try(invalidValue, options);
+        shape.try(invalidValue);
       });
     });
   });

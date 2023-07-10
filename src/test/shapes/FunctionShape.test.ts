@@ -150,7 +150,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(argShape._apply).toHaveBeenCalledTimes(1);
-      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
+      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
     });
 
     test('raises an issue if this is invalid', () => {
@@ -222,7 +222,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(argShape._apply).toHaveBeenCalledTimes(1);
-      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { coerce: false, verbose: false }, 0);
+      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
     });
 
     test('raises an issue if this is invalid', async () => {

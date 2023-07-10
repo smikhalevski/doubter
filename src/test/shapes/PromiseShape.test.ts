@@ -39,7 +39,7 @@ describe('PromiseShape', () => {
     });
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false, coerce: false });
   });
 
   test('returns the same promise if the resolved value did not change', () => {
@@ -123,7 +123,7 @@ describe('PromiseShape', () => {
       });
 
       expect(checkMock).toHaveBeenCalledTimes(1);
-      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerce: false });
+      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false, coerce: false });
     });
 
     test('applies forced operations if value shape raised issues', async () => {
