@@ -17,7 +17,7 @@ describe('any', () => {
     expect(d.any(cb).operations[0]).toEqual({
       type: cb,
       param: undefined,
-      compose: expect.any(Function),
+      factory: expect.any(Function),
     });
   });
 });

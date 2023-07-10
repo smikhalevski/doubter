@@ -285,7 +285,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     cb: (next: OperationCallback) => OperationCallback<InputValue, OutputValue>,
     options: OperationOptions = {}
   ): this {
-    const { type, param } = options;
+    const { type = cb, param } = options;
     const shape = this._clone();
     shape.operations = this.operations.concat({ type, param, factory: cb });
     return shape;
@@ -317,7 +317,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: CheckCallback<OutputValue>, options?: CustomOperationOptions): this;
 
   check(cb: CheckCallback, options: CustomOperationOptions = {}): this {
-    const { param, force = false } = options;
+    const { type = cb, param, force = false } = options;
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -344,7 +344,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
         }
         return next(input, output, options, issues);
       },
-      options
+      { type, param }
     );
   }
 
@@ -401,7 +401,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): this;
 
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
-    const { type, param, force = false, code = CODE_PREDICATE } = extractOptions(options);
+    const { type = cb, param, force = false, code = CODE_PREDICATE } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
@@ -455,7 +455,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter(cb: AlterCallback<OutputValue>, options?: CustomOperationOptions): this;
 
   alter(cb: AlterCallback, options: CustomOperationOptions = {}): Shape {
-    const { param, force = false } = options;
+    const { type = cb, param, force = false } = options;
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -472,7 +472,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
         }
         return next(input, output, options, issues);
       },
-      options
+      { type, param }
     );
   }
 
