@@ -287,7 +287,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   ): this {
     const { type = cb, param } = options;
     const shape = this._clone();
+
     shape.operations = this.operations.concat({ type, param, factory: cb });
+
     return shape;
   }
 
@@ -408,7 +410,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     return this.use(
       next => (input, output, options, issues) => {
         if (issues === null || force) {
-          let result;
+          let result = true;
           try {
             result = cb(output, param, options);
           } catch (error) {

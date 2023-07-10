@@ -167,20 +167,20 @@ describe('FunctionShape', () => {
       );
     });
 
-    test('raises an issue if an argument is invalid', () => {
+    test('raises an issue if an argument is invalid in an early-return mode', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.ensureSignature(() => null).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.ensureSignature(() => null, { earlyReturn: true }).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
 
-    test('raises issues if arguments are invalid in verbose mode', () => {
+    test('raises issues if arguments are invalid', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.ensureSignature(() => null, { earlyReturn: true }).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.ensureSignature(() => null).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
           { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
@@ -239,22 +239,22 @@ describe('FunctionShape', () => {
       );
     });
 
-    test('raises an issue if an argument is invalid', async () => {
+    test('raises an issue if an argument is invalid in an early-return mode', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(shape.ensureAsyncSignature(() => null).call(undefined, 111, 'aaa')).rejects.toEqual(
+      await expect(
+        shape.ensureAsyncSignature(() => null, { earlyReturn: true }).call(undefined, 111, 'aaa')
+      ).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
         ])
       );
     });
 
-    test('raises issues if arguments are invalid in verbose mode', async () => {
+    test('raises issues if arguments are invalid', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(
-        shape.ensureAsyncSignature(() => null, { earlyReturn: true }).call(undefined, 111, 'aaa')
-      ).rejects.toEqual(
+      await expect(shape.ensureAsyncSignature(() => null).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
           { code: CODE_TYPE, path: ['arguments', 0], input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING },
           { code: CODE_TYPE, path: ['arguments', 1], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },

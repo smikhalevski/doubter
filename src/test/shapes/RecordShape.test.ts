@@ -22,7 +22,10 @@ describe('RecordShape', () => {
 
     expect(shape.try({ key1: 'aaa', key2: 'bbb' })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: ['key1'] }],
+      issues: [
+        { code: 'xxx', path: ['key1'] },
+        { code: 'xxx', path: ['key2'] },
+      ],
     });
   });
 
@@ -34,11 +37,16 @@ describe('RecordShape', () => {
 
     expect(shape.try({ key1: 'aaa', key2: 'bbb' })).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: ['key1'] }],
+      issues: [
+        { code: 'xxx', path: ['key1'] },
+        { code: 'yyy', path: ['key1'] },
+        { code: 'xxx', path: ['key2'] },
+        { code: 'yyy', path: ['key2'] },
+      ],
     });
   });
 
-  test('raises multiple issues in verbose mode', () => {
+  test('raises a single issue issues in an early-return mode', () => {
     const keyShape = new Shape().check(() => [{ code: 'xxx' }]);
     const valueShape = new Shape().check(() => [{ code: 'yyy' }]);
 
@@ -46,12 +54,7 @@ describe('RecordShape', () => {
 
     expect(shape.try({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true })).toEqual({
       ok: false,
-      issues: [
-        { code: 'xxx', path: ['key1'] },
-        { code: 'yyy', path: ['key1'] },
-        { code: 'xxx', path: ['key2'] },
-        { code: 'yyy', path: ['key2'] },
-      ],
+      issues: [{ code: 'xxx', path: ['key1'] }],
     });
   });
 
@@ -154,7 +157,10 @@ describe('RecordShape', () => {
 
       await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: ['key1'] }],
+        issues: [
+          { code: 'xxx', path: ['key1'] },
+          { code: 'xxx', path: ['key2'] },
+        ],
       });
     });
 
@@ -166,37 +172,42 @@ describe('RecordShape', () => {
 
       await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: ['key1'] }],
+        issues: [
+          { code: 'xxx', path: ['key1'] },
+          { code: 'yyy', path: ['key1'] },
+          { code: 'xxx', path: ['key2'] },
+          { code: 'yyy', path: ['key2'] },
+        ],
       });
     });
 
-    test('does not invoke the value shape if the previous key shape has raised an issue', async () => {
+    test('does not invoke the value shape if the previous key shape has raised an issue in an early-return mode', async () => {
       const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
       const valueShape = new AsyncMockShape();
 
-      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' });
+      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true });
 
       expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
       expect(valueShape._applyAsync).not.toHaveBeenCalled();
     });
 
-    test('does not invoke the key shape if the previous value shape has raised an issue', async () => {
+    test('does not invoke the key shape if the previous value shape has raised an issue in an early-return mode', async () => {
       const keyShape = new AsyncMockShape();
       const valueShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
 
-      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' });
+      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true });
 
       expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
       expect(valueShape._applyAsync).toHaveBeenCalledTimes(1);
     });
 
-    test('raises multiple issues in verbose mode', async () => {
+    test('raises multiple issues', async () => {
       const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
       const valueShape = new AsyncMockShape().check(() => [{ code: 'yyy' }]);
 
       const shape = new RecordShape(keyShape, valueShape);
 
-      await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true })).resolves.toEqual({
+      await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual({
         ok: false,
         issues: [
           { code: 'xxx', path: ['key1'] },

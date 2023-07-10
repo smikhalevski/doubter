@@ -45,12 +45,12 @@ describe('max', () => {
 
 describe('iso', () => {
   test('converts date to iso', () => {
-    expect(new DateShape().iso().parse(currDate)).toBe(currDate.toISOString());
+    expect(new DateShape().toISOString().parse(currDate)).toBe(currDate.toISOString());
   });
 });
 
 describe('timestamp', () => {
   test('converts date to timestamp', () => {
-    expect(new DateShape().timestamp().parse(currDate)).toBe(currDate.getTime());
+    expect(new DateShape().toTimestamp().parse(currDate)).toBe(currDate.getTime());
   });
 });

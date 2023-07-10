@@ -3,11 +3,11 @@ import { CODE_STRING_MAX, CODE_STRING_MIN, CODE_STRING_REGEX } from '../../main/
 
 describe('length', () => {
   test('raises if string length is not equal to', () => {
-    expect(new StringShape().length(2).try('a', { verbose: true })).toEqual({
+    expect(new StringShape().length(2).try('a')).toEqual({
       ok: false,
       issues: [{ code: CODE_STRING_MIN, input: 'a', param: 2, message: 'Must have the minimum length of 2' }],
     });
-    expect(new StringShape().length(2).try('aaa', { verbose: true })).toEqual({
+    expect(new StringShape().length(2).try('aaa')).toEqual({
       ok: false,
       issues: [{ code: CODE_STRING_MAX, input: 'aaa', param: 2, message: 'Must have the maximum length of 2' }],
     });

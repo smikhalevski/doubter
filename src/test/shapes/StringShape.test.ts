@@ -30,8 +30,8 @@ describe('StringShape', () => {
     });
   });
 
-  test('raises multiple issues in verbose mode', () => {
-    expect(new StringShape({}).min(3).regex(/aaaa/).try('aa', { verbose: true })).toEqual({
+  test('raises multiple issues', () => {
+    expect(new StringShape({}).min(3).regex(/aaaa/).try('aa')).toEqual({
       ok: false,
       issues: [
         { code: CODE_STRING_MIN, input: 'aa', param: 3, message: 'Must have the minimum length of 3' },
@@ -40,8 +40,8 @@ describe('StringShape', () => {
     });
   });
 
-  test('raises a single issue', () => {
-    expect(new StringShape().min(3).regex(/aaaa/).try('aa')).toEqual({
+  test('raises a single issue in an early-return mode', () => {
+    expect(new StringShape().min(3).regex(/aaaa/).try('aa', { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: CODE_STRING_MIN, input: 'aa', param: 3, message: 'Must have the minimum length of 3' }],
     });

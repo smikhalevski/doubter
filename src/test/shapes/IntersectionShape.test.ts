@@ -57,19 +57,19 @@ describe('IntersectionShape', () => {
     expect(shape.parse(NaN)).toBe(NaN);
   });
 
-  test('raises an issue if an input does not conform one of shapes', () => {
+  test('raises an issue if an input does not conform one of shapes in an early-return mode', () => {
     const shape = new IntersectionShape([new NumberShape(), new NumberShape()]);
 
-    expect(shape.try('aaa')).toEqual({
+    expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
     });
   });
 
-  test('raises multiple issues if an input does not conform several shapes in verbose mode', () => {
+  test('raises multiple issues if an input does not conform several shapes', () => {
     const shape = new IntersectionShape([new NumberShape(), new BooleanShape()]);
 
-    expect(shape.try('aaa', { earlyReturn: true })).toEqual({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
       issues: [
         { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },

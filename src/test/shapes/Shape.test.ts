@@ -43,20 +43,18 @@ describe('Shape', () => {
   describe('use', () => {
     test('clones the shape', () => {
       const shape1 = new Shape();
-      const shape2 = shape1.use({
+      const shape2 = shape1.use(next => (input, output, options, issues) => next(input, output, options, issues), {
         type: 'aaa',
         param: undefined,
-        compose: next => (input, output, options, issues) => next(input, output, options, issues),
       });
 
       expect(shape1).not.toBe(shape2);
     });
 
     test('returns the shape clone', () => {
-      const shape = new Shape().use({
+      const shape = new Shape().use(next => (input, output, options, issues) => next(input, output, options, issues), {
         type: 'aaa',
         param: undefined,
-        compose: next => (input, output, options, issues) => next(input, output, options, issues),
       });
 
       expect(shape.operations.length).toBe(1);
@@ -213,27 +211,27 @@ describe('Shape', () => {
       });
     });
 
-    test('applies forced callback even if the preceding operation has failed in verbose mode', () => {
+    test('applies forced callback even if the preceding operation has failed', () => {
       const cbMock1 = () => [{ code: 'xxx' }];
       const cbMock2 = jest.fn();
 
       const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
 
-      expect(shape.try(111, { earlyReturn: true })).toEqual({
+      expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
       expect(cbMock2).toHaveBeenCalledTimes(1);
     });
 
-    test('delegates to the next operation if the preceding operation has failed in verbose mode', () => {
+    test('delegates to the next operation if the preceding operation has failed', () => {
       const cbMock1 = () => [{ code: 'xxx' }];
       const cbMock2 = jest.fn();
       const cbMock3 = jest.fn();
 
       const shape = new Shape().check(cbMock1).check(cbMock2).check(cbMock3, { force: true });
 
-      expect(shape.try(111, { earlyReturn: true })).toEqual({
+      expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -350,27 +348,27 @@ describe('Shape', () => {
       });
     });
 
-    test('applies forced callback even if the preceding operation has failed in verbose mode', () => {
+    test('applies forced callback even if the preceding operation has failed', () => {
       const cbMock1 = () => false;
       const cbMock2 = jest.fn(() => true);
 
       const shape = new Shape().refine(cbMock1).refine(cbMock2, { force: true });
 
-      expect(shape.try(111, { earlyReturn: true })).toEqual({
+      expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: CODE_PREDICATE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
       });
       expect(cbMock2).toHaveBeenCalledTimes(1);
     });
 
-    test('delegates to the next operation if the preceding operation has failed in verbose mode', () => {
+    test('delegates to the next operation if the preceding operation has failed', () => {
       const cbMock1 = () => false;
       const cbMock2 = jest.fn(() => true);
       const cbMock3 = jest.fn(() => true);
 
       const shape = new Shape().refine(cbMock1).refine(cbMock2).refine(cbMock3, { force: true });
 
-      expect(shape.try(111, { earlyReturn: true })).toEqual({
+      expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: CODE_PREDICATE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
       });
@@ -435,27 +433,27 @@ describe('Shape', () => {
       });
     });
 
-    test('applies forced callback even if the preceding operation has failed in verbose mode', () => {
+    test('applies forced callback even if the preceding operation has failed', () => {
       const cbMock1 = () => [{ code: 'xxx' }];
       const cbMock2 = jest.fn(() => 'aaa');
 
       const shape = new Shape().check(cbMock1).alter(cbMock2, { force: true });
 
-      expect(shape.try(111, { earlyReturn: true })).toEqual({
+      expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
       expect(cbMock2).toHaveBeenCalledTimes(1);
     });
 
-    test('delegates to the next operation if the preceding operation has failed in verbose mode', () => {
+    test('delegates to the next operation if the preceding operation has failed', () => {
       const cbMock1 = () => [{ code: 'xxx' }];
       const cbMock2 = jest.fn(() => 'aaa');
       const cbMock3 = jest.fn(() => true);
 
       const shape = new Shape().check(cbMock1).alter(cbMock2).refine(cbMock3, { force: true });
 
-      expect(shape.try(111, { earlyReturn: true })).toEqual({
+      expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -858,13 +856,13 @@ describe('Shape', () => {
       expect(() => shape.try('aaa')).toThrow(new Error('expected'));
     });
 
-    test('check is not called in verbose mode if the preceding operation failed', () => {
+    test('check is not called if the preceding operation failed', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn();
 
       const shape = new Shape().check(cbMock1).check(cbMock2);
 
-      expect(shape.try('aaa', { earlyReturn: true })).toEqual({
+      expect(shape.try('aaa')).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
@@ -873,36 +871,36 @@ describe('Shape', () => {
       expect(cbMock2).not.toHaveBeenCalled();
     });
 
-    test('forced operations are called in verbose mode even if the preceding operation failed', () => {
+    test('forced operations are called even if the preceding operation failed', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn();
 
       const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
 
-      expect(shape.try('aaa', { earlyReturn: true })).toEqual({
+      expect(shape.try('aaa')).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
 
       expect(cbMock1).toHaveBeenCalledTimes(1);
       expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
+      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
     });
 
-    test('collects all issues in verbose mode', () => {
+    test('collects all issues', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn(() => [{ code: 'yyy' }]);
 
       const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
 
-      expect(shape.try('aaa', { earlyReturn: true })).toEqual({
+      expect(shape.try('aaa')).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }, { code: 'yyy' }],
       });
 
       expect(cbMock1).toHaveBeenCalledTimes(1);
       expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { verbose: true });
+      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
     });
   });
 

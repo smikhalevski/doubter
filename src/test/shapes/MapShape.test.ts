@@ -41,11 +41,16 @@ describe('MapShape', () => {
       )
     ).toEqual({
       ok: false,
-      issues: [{ code: 'xxx', path: ['key1'] }],
+      issues: [
+        { code: 'xxx', path: ['key1'] },
+        { code: 'yyy', path: ['key1'] },
+        { code: 'xxx', path: ['key2'] },
+        { code: 'yyy', path: ['key2'] },
+      ],
     });
   });
 
-  test('raises multiple issues in verbose mode', () => {
+  test('raises a single issue in an early-return mode', () => {
     const keyShape = new Shape().check(() => [{ code: 'xxx' }]);
     const valueShape = new Shape().check(() => [{ code: 'yyy' }]);
 
@@ -61,12 +66,7 @@ describe('MapShape', () => {
       )
     ).toEqual({
       ok: false,
-      issues: [
-        { code: 'xxx', path: ['key1'] },
-        { code: 'yyy', path: ['key1'] },
-        { code: 'xxx', path: ['key2'] },
-        { code: 'yyy', path: ['key2'] },
-      ],
+      issues: [{ code: 'xxx', path: ['key1'] }],
     });
   });
 
@@ -272,11 +272,16 @@ describe('MapShape', () => {
         )
       ).resolves.toEqual({
         ok: false,
-        issues: [{ code: 'xxx', path: ['key1'] }],
+        issues: [
+          { code: 'xxx', path: ['key1'] },
+          { code: 'yyy', path: ['key1'] },
+          { code: 'xxx', path: ['key2'] },
+          { code: 'yyy', path: ['key2'] },
+        ],
       });
     });
 
-    test('does not invoke the value shape if the previous key shape has raised an issue', async () => {
+    test('does not invoke the value shape if the previous key shape has raised an issue in an early-return mode', async () => {
       const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
       const valueShape = new AsyncMockShape();
 
@@ -284,14 +289,15 @@ describe('MapShape', () => {
         new Map([
           ['key1', 'aaa'],
           ['key2', 'bbb'],
-        ])
+        ]),
+        { earlyReturn: true }
       );
 
       expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
       expect(valueShape._applyAsync).not.toHaveBeenCalled();
     });
 
-    test('does not invoke the key shape if the previous value shape has raised an issue', async () => {
+    test('does not invoke the key shape if the previous value shape has raised an issue in an early-return mode', async () => {
       const keyShape = new AsyncMockShape();
       const valueShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
 
@@ -299,14 +305,15 @@ describe('MapShape', () => {
         new Map([
           ['key1', 'aaa'],
           ['key2', 'bbb'],
-        ])
+        ]),
+        { earlyReturn: true }
       );
 
       expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
       expect(valueShape._applyAsync).toHaveBeenCalledTimes(1);
     });
 
-    test('raises multiple issues in verbose mode', async () => {
+    test('raises multiple issues', async () => {
       const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
       const valueShape = new AsyncMockShape().check(() => [{ code: 'yyy' }]);
 
@@ -317,8 +324,7 @@ describe('MapShape', () => {
           new Map([
             ['key1', 'aaa'],
             ['key2', 'bbb'],
-          ]),
-          { earlyReturn: true }
+          ])
         )
       ).resolves.toEqual({
         ok: false,

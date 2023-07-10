@@ -121,22 +121,22 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('rest shape can raise an issue', () => {
+  test('rest shape can raise an issue in an early-return mode', () => {
     const restShape = new MockShape().check(() => [{ code: 'xxx' }]);
     const shape = new ArrayShape([], restShape);
 
-    expect(shape.try(['aaa', 'bbb'])).toEqual({
+    expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
   });
 
-  test('rest shape can raise multiple issues in verbose mode', () => {
+  test('rest shape can raise multiple issues', () => {
     const restShape = new MockShape().check(() => [{ code: 'xxx' }]);
 
     const shape = new ArrayShape([], restShape);
 
-    expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
+    expect(shape.try(['aaa', 'bbb'])).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -145,25 +145,25 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('head shapes can raise an issue', () => {
-    const headShape1 = new MockShape().check(() => [{ code: 'xxx' }]);
-    const headShape2 = new MockShape().check(() => [{ code: 'yyy' }]);
-
-    const shape = new ArrayShape([headShape1, headShape2], null);
-
-    expect(shape.try(['aaa', 'bbb'])).toEqual({
-      ok: false,
-      issues: [{ code: 'xxx', path: [0] }],
-    });
-  });
-
-  test('head shapes can raise multiple issues in verbose mode', () => {
+  test('head shapes can raise an issue in an early-return mode', () => {
     const headShape1 = new MockShape().check(() => [{ code: 'xxx' }]);
     const headShape2 = new MockShape().check(() => [{ code: 'yyy' }]);
 
     const shape = new ArrayShape([headShape1, headShape2], null);
 
     expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [0] }],
+    });
+  });
+
+  test('head shapes can raise multiple issues', () => {
+    const headShape1 = new MockShape().check(() => [{ code: 'xxx' }]);
+    const headShape2 = new MockShape().check(() => [{ code: 'yyy' }]);
+
+    const shape = new ArrayShape([headShape1, headShape2], null);
+
+    expect(shape.try(['aaa', 'bbb'])).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -448,18 +448,18 @@ describe('ArrayShape', () => {
       expect(headShape2._applyAsync).toHaveBeenNthCalledWith(1, 222, { earlyReturn: false, coerce: false }, 0);
     });
 
-    test('does not apply head element shape if previous shape raised an issue', async () => {
+    test('does not apply head element shape if previous shape raised an issue in an early-return mode', async () => {
       const headShape1 = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
       const headShape2 = new AsyncMockShape();
 
       const shape = new ArrayShape([headShape1, headShape2], null);
 
       const input = [111, 222];
-      const result = (await shape.tryAsync(input)) as Err;
+      const result = (await shape.tryAsync(input, { earlyReturn: true })) as Err;
 
       expect(result).toEqual({ ok: false, issues: [{ code: 'xxx', path: [0] }] });
       expect(headShape1._applyAsync).toHaveBeenCalledTimes(1);
-      expect(headShape1._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
+      expect(headShape1._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: true }, 0);
       expect(headShape2._applyAsync).not.toHaveBeenCalled();
     });
 

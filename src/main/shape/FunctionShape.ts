@@ -123,8 +123,8 @@ export class FunctionShape<
    * function receives arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape}
    * respectively, and returns the value that conforms {@linkcode returnShape}.
    *
-   * @param options Options that are used by the wrapper. If omitted then default options are applied: not verbose, no
-   * type coercion.
+   * @param options Options that are used by the wrapper. If omitted then default options are applied: no early-return,
+   * no type coercion.
    * @returns The new function shape.
    */
   strict(options?: ParseOptions): this {
