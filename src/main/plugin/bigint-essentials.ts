@@ -3,12 +3,12 @@
  *
  * ```ts
  * import { BigIntShape } from 'doubter/core';
- * import enhanceBigIntShape from 'doubter/plugin/rich-bigints';
+ * import enableBigIntEssentials from 'doubter/plugin/bigint-essentials';
  *
- * enhanceBigIntShape(BigIntShape.prototype);
+ * enableBigIntEssentials(BigIntShape.prototype);
  * ```
  *
- * @module doubter/plugin/rich-bigints
+ * @module doubter/plugin/bigint-essentials
  */
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
@@ -24,7 +24,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-bigints!}
+     * @plugin {@link doubter/plugin/bigint-essentials!}
      */
     positive(options?: IssueOptions | Message): this;
 
@@ -34,7 +34,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-bigints!}
+     * @plugin {@link doubter/plugin/bigint-essentials!}
      */
     negative(options?: IssueOptions | Message): this;
 
@@ -44,7 +44,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-bigints!}
+     * @plugin {@link doubter/plugin/bigint-essentials!}
      */
     nonPositive(options?: IssueOptions | Message): this;
 
@@ -54,7 +54,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-bigints!}
+     * @plugin {@link doubter/plugin/bigint-essentials!}
      */
     nonNegative(options?: IssueOptions | Message): this;
 
@@ -65,7 +65,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-bigints!}
+     * @plugin {@link doubter/plugin/bigint-essentials!}
      */
     min(value: bigint | number, options?: IssueOptions | Message): this;
 
@@ -76,7 +76,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-bigints!}
+     * @plugin {@link doubter/plugin/bigint-essentials!}
      */
     max(value: bigint | number, options?: IssueOptions | Message): this;
   }

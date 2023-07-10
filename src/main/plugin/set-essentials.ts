@@ -3,12 +3,12 @@
  *
  * ```ts
  * import { SetShape } from 'doubter/core';
- * import enhanceSetShape from 'doubter/plugin/rich-sets';
+ * import enableSetEssentials from 'doubter/plugin/set-essentials';
  *
- * enhanceSetShape(SetShape.prototype);
+ * enableSetEssentials(SetShape.prototype);
  * ```
  *
- * @module doubter/plugin/rich-sets
+ * @module doubter/plugin/set-essentials
  */
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
 import { AnyShape, IssueOptions, Message, SetShape } from '../core';
@@ -24,7 +24,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-sets!}
+     * @plugin {@link doubter/plugin/set-essentials!}
      */
     size(size: number, options?: IssueOptions | Message): this;
 
@@ -35,7 +35,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-sets!}
+     * @plugin {@link doubter/plugin/set-essentials!}
      */
     min(size: number, options?: IssueOptions | Message): this;
 
@@ -46,7 +46,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-sets!}
+     * @plugin {@link doubter/plugin/set-essentials!}
      */
     max(size: number, options?: IssueOptions | Message): this;
 
@@ -56,7 +56,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-sets!}
+     * @plugin {@link doubter/plugin/set-essentials!}
      */
     nonEmpty(options?: IssueOptions | Message): this;
   }

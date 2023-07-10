@@ -3,12 +3,12 @@
  *
  * ```ts
  * import { DateShape } from 'doubter/core';
- * import enhanceDateShape from 'doubter/plugin/rich-dates';
+ * import enableDateEssentials from 'doubter/plugin/date-essentials';
  *
- * enhanceDateShape(DateShape.prototype);
+ * enableDateEssentials(DateShape.prototype);
  * ```
  *
- * @module doubter/plugin/rich-dates
+ * @module doubter/plugin/date-essentials
  */
 
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
@@ -25,7 +25,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-dates!}
+     * @plugin {@link doubter/plugin/date-essentials!}
      */
     min(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -36,7 +36,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-dates!}
+     * @plugin {@link doubter/plugin/date-essentials!}
      */
     max(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -48,7 +48,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode min}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-dates!}
+     * @plugin {@link doubter/plugin/date-essentials!}
      */
     after(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -60,7 +60,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode max}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-dates!}
+     * @plugin {@link doubter/plugin/date-essentials!}
      */
     before(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -68,7 +68,7 @@ declare module '../core' {
      * Converts date to an ISO string.
      *
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-dates!}
+     * @plugin {@link doubter/plugin/date-essentials!}
      */
     iso(): Shape<Date, string>;
 
@@ -76,7 +76,7 @@ declare module '../core' {
      * Converts date to a timestamp integer number.
      *
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-dates!}
+     * @plugin {@link doubter/plugin/date-essentials!}
      */
     timestamp(): Shape<Date, number>;
   }

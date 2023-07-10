@@ -3,12 +3,12 @@
  *
  * ```ts
  * import { NumberShape } from 'doubter/core';
- * import enhanceNumberShape from 'doubter/plugin/rich-numbers';
+ * import enableNumberEssentials from 'doubter/plugin/number-essentials';
  *
- * enhanceNumberShape(NumberShape.prototype);
+ * enableNumberEssentials(NumberShape.prototype);
  * ```
  *
- * @module doubter/plugin/rich-numbers
+ * @module doubter/plugin/number-essentials
  */
 
 import {
@@ -57,7 +57,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     finite(options?: IssueOptions | Message): this;
 
@@ -67,7 +67,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     integer(options?: IssueOptions | Message): this;
 
@@ -77,7 +77,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     positive(options?: IssueOptions | Message): this;
 
@@ -87,7 +87,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     negative(options?: IssueOptions | Message): this;
 
@@ -97,7 +97,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     nonPositive(options?: IssueOptions | Message): this;
 
@@ -107,7 +107,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     nonNegative(options?: IssueOptions | Message): this;
 
@@ -118,7 +118,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     gt(value: number, options?: IssueOptions | Message): this;
 
@@ -129,7 +129,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     lt(value: number, options?: IssueOptions | Message): this;
 
@@ -140,7 +140,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     gte(value: number, options?: IssueOptions | Message): this;
 
@@ -151,7 +151,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     lte(value: number, options?: IssueOptions | Message): this;
 
@@ -163,7 +163,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode gte}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     min(value: number, options?: IssueOptions | Message): this;
 
@@ -175,7 +175,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@linkcode lte}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     max(value: number, options?: IssueOptions | Message): this;
 
@@ -186,7 +186,7 @@ declare module '../core' {
      * @param options The check options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     multiple(divisor: number, options?: MultipleOptions | Message): this;
 
@@ -196,7 +196,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-numbers!}
+     * @plugin {@link doubter/plugin/number-essentials!}
      */
     safe(options?: IssueOptions | Message): this;
   }

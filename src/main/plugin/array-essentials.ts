@@ -3,12 +3,12 @@
  *
  * ```ts
  * import { ArrayShape } from 'doubter/core';
- * import enhanceArrayShape from 'doubter/plugin/rich-arrays';
+ * import enableArrayEssentials from 'doubter/plugin/array-essentials';
  *
- * enhanceArrayShape(ArrayShape.prototype);
+ * enableArrayEssentials(ArrayShape.prototype);
  * ```
  *
- * @module doubter/plugin/rich-arrays
+ * @module doubter/plugin/array-essentials
  */
 
 import {
@@ -33,7 +33,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-arrays!}
+     * @plugin {@link doubter/plugin/array-essentials!}
      */
     length(length: number, options?: IssueOptions | Message): this;
 
@@ -44,7 +44,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-arrays!}
+     * @plugin {@link doubter/plugin/array-essentials!}
      */
     min(length: number, options?: IssueOptions | Message): this;
 
@@ -55,7 +55,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-arrays!}
+     * @plugin {@link doubter/plugin/array-essentials!}
      */
     max(length: number, options?: IssueOptions | Message): this;
 
@@ -65,7 +65,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-arrays!}
+     * @plugin {@link doubter/plugin/array-essentials!}
      */
     nonEmpty(options?: IssueOptions | Message): this;
 
@@ -77,7 +77,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-arrays!}
+     * @plugin {@link doubter/plugin/array-essentials!}
      */
     includes(value: AnyShape | any, options?: IssueOptions | Message): this;
   }

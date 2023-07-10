@@ -1896,27 +1896,32 @@ You can cherry-pick plugins that you need:
 
 ```ts
 import * as d from 'doubter/core';
-import enhanceStringShape from 'doubter/plugin/rich-strings';
+import enableStringEssentials from 'doubter/plugin/string-essentials';
 
-enhanceStringShape(d.StringShape.prototype);
+enableStringEssentials(d.StringShape.prototype);
 
 d.string().min(2); // ✅ min is defined
 
 d.number().gte(3); // ❌ gte is undefined
 ```
 
-## Official plugins
+## Built-in plugins
 
-| Import from                     | Description                                                                                                         |
-|---------------------------------|---------------------------------------------------------------------------------------------------------------------|
-| `doubter/plugin/rich-arrays`    | [Additional `ArrayShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_arrays.html)   |
-| `doubter/plugin/rich-bigints`   | [Additional `BigIntShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_bigints.html) |
-| `doubter/plugin/rich-dates`     | [Additional `DateShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_dates.html)     |
-| `doubter/plugin/rich-numbers`   | [Additional `NumberShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_numbers.html) |
-| `doubter/plugin/rich-objects`   | [Additional `ObjectShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_objects.html) |
-| `doubter/plugin/rich-sets`      | [Additional `SetShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_sets.html)       |
-| `doubter/plugin/rich-strings`   | [Additional `StringShape` methods](https://smikhalevski.github.io/doubter/modules/doubter_plugin_rich_strings.html) |
-| `@doubter/plugin-string-format` | [Email, FQDN, MIME, and many other string formats](https://github.com/smikhalevski/doubter-plugin-string-format)    |
+| Import from                        | Description                                                                                                            |
+|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `doubter/plugin/array-essentials`  | [Essential `ArrayShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_array_essentials.html)   |
+| `doubter/plugin/bigint-essentials` | [Essential `BigIntShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_bigint_essentials.html) |
+| `doubter/plugin/date-essentials`   | [Essential `DateShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_date_essentials.html)     |
+| `doubter/plugin/number-essentials` | [Essential `NumberShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_number_essentials.html) |
+| `doubter/plugin/object-essentials` | [Essential `ObjectShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_object_essentials.html) |
+| `doubter/plugin/set-essentials`    | [Essential `SetShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_set_essentials.html)       |
+| `doubter/plugin/string-essentials` | [Essential `StringShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_string_essentials.html) |
+
+## Other plugins
+
+| Import from                        | Description                                                                                                            |
+|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| `@doubter/plugin-string-format`    | [Email, FQDN, MIME, and many other string formats](https://github.com/smikhalevski/doubter-plugin-string-format)       |
 
 ## Integrations
 

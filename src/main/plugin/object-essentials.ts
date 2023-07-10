@@ -3,12 +3,12 @@
  *
  * ```ts
  * import { ObjectShape } from 'doubter/core';
- * import enhanceObjectShape from 'doubter/plugin/rich-objects';
+ * import enableObjectEssentials from 'doubter/plugin/object-essentials';
  *
- * enhanceObjectShape(ObjectShape.prototype);
+ * enableObjectEssentials(ObjectShape.prototype);
  * ```
  *
- * @module doubter/plugin/rich-objects
+ * @module doubter/plugin/object-essentials
  */
 
 import {
@@ -33,7 +33,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-objects!}
+     * @plugin {@link doubter/plugin/object-essentials!}
      */
     plain(options?: IssueOptions | Message): this;
 
@@ -45,7 +45,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-objects!}
+     * @plugin {@link doubter/plugin/object-essentials!}
      */
     keysAnd<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
 
@@ -56,7 +56,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-objects!}
+     * @plugin {@link doubter/plugin/object-essentials!}
      */
     keysOr<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
 
@@ -67,7 +67,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/rich-objects!}
+     * @plugin {@link doubter/plugin/object-essentials!}
      */
     keysXor<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
   }

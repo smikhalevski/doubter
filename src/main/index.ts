@@ -8,29 +8,29 @@
  * @module doubter/core
  */
 
-import enhanceArrayShape from './plugin/rich-arrays';
-import enhanceBigIntShape from './plugin/rich-bigints';
-import enhanceDateShape from './plugin/rich-dates';
-import enhanceNumberShape from './plugin/rich-numbers';
-import enhanceObjectShape from './plugin/rich-objects';
-import enhanceSetShape from './plugin/rich-sets';
-import enhanceStringShape from './plugin/rich-strings';
+import enableArrayEssentials from './plugin/array-essentials';
+import enableBigIntEssentials from './plugin/bigint-essentials';
+import enableDateEssentials from './plugin/date-essentials';
+import enableNumberEssentials from './plugin/number-essentials';
+import enableObjectEssentials from './plugin/object-essentials';
+import enableSetEssentials from './plugin/set-essentials';
+import enableStringEssentials from './plugin/string-essentials';
 import { ArrayShape, BigIntShape, DateShape, NumberShape, ObjectShape, SetShape, StringShape } from './shape';
 
-export type * from './plugin/rich-arrays';
-export type * from './plugin/rich-bigints';
-export type * from './plugin/rich-dates';
-export type * from './plugin/rich-numbers';
-export type * from './plugin/rich-objects';
-export type * from './plugin/rich-sets';
-export type * from './plugin/rich-strings';
+export type * from './plugin/array-essentials';
+export type * from './plugin/bigint-essentials';
+export type * from './plugin/date-essentials';
+export type * from './plugin/number-essentials';
+export type * from './plugin/object-essentials';
+export type * from './plugin/set-essentials';
+export type * from './plugin/string-essentials';
 
 export * from './core';
 
-enhanceArrayShape(ArrayShape.prototype);
-enhanceBigIntShape(BigIntShape.prototype);
-enhanceDateShape(DateShape.prototype);
-enhanceNumberShape(NumberShape.prototype);
-enhanceObjectShape(ObjectShape.prototype);
-enhanceSetShape(SetShape.prototype);
-enhanceStringShape(StringShape.prototype);
+enableArrayEssentials(ArrayShape.prototype);
+enableBigIntEssentials(BigIntShape.prototype);
+enableDateEssentials(DateShape.prototype);
+enableNumberEssentials(NumberShape.prototype);
+enableObjectEssentials(ObjectShape.prototype);
+enableSetEssentials(SetShape.prototype);
+enableStringEssentials(StringShape.prototype);
