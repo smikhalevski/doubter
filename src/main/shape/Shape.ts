@@ -35,6 +35,7 @@ import {
   AlterCallback,
   ApplyOptions,
   CheckCallback,
+  CustomOperationOptions,
   Err,
   Issue,
   IssueOptions,
@@ -44,7 +45,7 @@ import {
   Operation,
   OperationCallback,
   OperationOptions,
-  ParameterizedOperationOptions,
+  ParameterizedCustomOperationOptions,
   ParameterizedRefineOptions,
   ParseOptions,
   RefineCallback,
@@ -282,10 +283,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
      * @returns The callback that applies an operation to the shape output.
      */
     cb: (next: OperationCallback) => OperationCallback<InputValue, OutputValue>,
-    options?: OperationOptions
+    options: OperationOptions = {}
   ): this {
+    const { type, param } = options;
     const shape = this._clone();
-    shape.operations = this.operations.concat({ type: options?.type, param: options?.param, factory: cb });
+    shape.operations = this.operations.concat({ type, param, factory: cb });
     return shape;
   }
 
@@ -300,7 +302,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the {@linkcode CheckCallback} when a check operation is applied.
    * @see {@linkcode refine}
    */
-  check<Param>(cb: CheckCallback<OutputValue, Param>, options: ParameterizedOperationOptions<Param>): this;
+  check<Param>(cb: CheckCallback<OutputValue, Param>, options: ParameterizedCustomOperationOptions<Param>): this;
 
   /**
    * Adds the check {@link use operation} that is applied to the shape output.
@@ -312,33 +314,34 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@linkcode refine}
    */
-  check(cb: CheckCallback<OutputValue>, options?: OperationOptions): this;
+  check(cb: CheckCallback<OutputValue>, options?: CustomOperationOptions): this;
 
-  check(cb: CheckCallback, options?: OperationOptions): this {
-    const param = options?.param;
+  check(cb: CheckCallback, options: CustomOperationOptions = {}): this {
+    const { param, force = false } = options;
 
     return this.use(
       next => (input, output, options, issues) => {
-        let result;
-        try {
-          result = cb(output, param, options);
-        } catch (error) {
-          issues = concatIssues(issues, captureIssues(error));
+        if (issues === null || force) {
+          let result;
+          try {
+            result = cb(output, param, options);
+          } catch (error) {
+            issues = concatIssues(issues, captureIssues(error));
 
-          if (options.earlyReturn) {
+            if (options.earlyReturn) {
+              return issues;
+            }
+          }
+
+          if (
+            isObjectLike(result) &&
+            // prettier-ignore
+            (issues = isArray(result) ? result.length === 0 ? issues : concatIssues(issues, result) : pushIssue(issues, result)) !== null &&
+            options.earlyReturn
+          ) {
             return issues;
           }
         }
-
-        if (
-          isObjectLike(result) &&
-          // prettier-ignore
-          (issues = isArray(result) ? result.length === 0 ? issues : concatIssues(issues, result) : pushIssue(issues, result)) !== null &&
-          options.earlyReturn
-        ) {
-          return issues;
-        }
-
         return next(input, output, options, issues);
       },
       options
@@ -398,28 +401,30 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): this;
 
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
-    const { type, param, code = CODE_PREDICATE } = extractOptions(options);
+    const { type, param, force = false, code = CODE_PREDICATE } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, MESSAGE_PREDICATE, options, cb);
 
     return this.use(
       next => (input, output, options, issues) => {
-        let result;
-        try {
-          result = cb(output, param, options);
-        } catch (error) {
-          issues = concatIssues(issues, captureIssues(error));
+        if (issues === null || force) {
+          let result;
+          try {
+            result = cb(output, param, options);
+          } catch (error) {
+            issues = concatIssues(issues, captureIssues(error));
 
-          if (options.earlyReturn) {
-            return issues;
+            if (options.earlyReturn) {
+              return issues;
+            }
           }
-        }
 
-        if (!result) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          if (!result) {
+            issues = pushIssue(issues, issueFactory(output, options));
 
-          if (options.earlyReturn) {
-            return issues;
+            if (options.earlyReturn) {
+              return issues;
+            }
           }
         }
         return next(input, output, options, issues);
@@ -437,7 +442,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the {@linkcode AlterCallback} when an alteration operation is applied.
    * @see {@linkcode convert}
    */
-  alter<Param>(cb: AlterCallback<OutputValue, Param>, options: ParameterizedOperationOptions<Param>): this;
+  alter<Param>(cb: AlterCallback<OutputValue, Param>, options: ParameterizedCustomOperationOptions<Param>): this;
 
   /**
    * Adds an {@link use operation} that alters the output value without changing its type.
@@ -447,20 +452,22 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@linkcode convert}
    */
-  alter(cb: AlterCallback<OutputValue>, options?: OperationOptions): this;
+  alter(cb: AlterCallback<OutputValue>, options?: CustomOperationOptions): this;
 
-  alter(cb: AlterCallback, options?: OperationOptions): Shape {
-    const param = options?.param;
+  alter(cb: AlterCallback, options: CustomOperationOptions = {}): Shape {
+    const { param, force = false } = options;
 
     return this.use(
       next => (input, output, options, issues) => {
-        try {
-          output = cb(output, param, options);
-        } catch (error) {
-          issues = concatIssues(issues, captureIssues(error));
+        if (issues === null || force) {
+          try {
+            output = cb(output, param, options);
+          } catch (error) {
+            issues = concatIssues(issues, captureIssues(error));
 
-          if (options.earlyReturn) {
-            return issues;
+            if (options.earlyReturn) {
+              return issues;
+            }
           }
         }
         return next(input, output, options, issues);

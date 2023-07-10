@@ -208,11 +208,8 @@ export type OperationCallback<InputValue = any, OutputValue = any> = (
 ) => Result;
 
 /**
- * Options of a custom {@link Operation operation}.
+ * Options of a generic {@link Operation operation}.
  *
- * @see {@linkcode Shape#check Shape.check}
- * @see {@linkcode Shape#alter Shape.alter}
- * @see {@linkcode Shape#refine Shape.refine}
  * @group Operations
  */
 export interface OperationOptions {
@@ -232,11 +229,28 @@ export interface OperationOptions {
 }
 
 /**
+ * Options of a custom {@link Operation operation}.
+ *
+ * @see {@linkcode Shape#check Shape.check}
+ * @see {@linkcode Shape#alter Shape.alter}
+ * @see {@linkcode Shape#refine Shape.refine}
+ * @group Operations
+ */
+export interface CustomOperationOptions extends OperationOptions {
+  /**
+   * If `true` then the operation is applied even if some of the preceding operations have failed.
+   *
+   * @default false
+   */
+  force?: boolean;
+}
+
+/**
  * @inheritDoc
  * @template Param The param that is passed to a callback when an operation is applied.
  * @group Operations
  */
-export interface ParameterizedOperationOptions<Param> extends OperationOptions {
+export interface ParameterizedCustomOperationOptions<Param> extends CustomOperationOptions {
   param: Param;
 }
 
@@ -305,7 +319,7 @@ export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Par
  *
  * @group Operations
  */
-export interface RefineOptions extends OperationOptions, IssueOptions {
+export interface RefineOptions extends CustomOperationOptions, IssueOptions {
   /**
    * The code of an issue that would be raised if the refinement fails.
    *
