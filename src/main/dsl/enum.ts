@@ -1,6 +1,6 @@
 import { ReadonlyDict } from '../internal';
 import { EnumShape } from '../shape';
-import { IssueOptions, Literal, Message } from '../types';
+import { Any, IssueOptions, Message } from '../types';
 
 /**
  * Creates the shape that constrains input with the array of values.
@@ -11,7 +11,7 @@ import { IssueOptions, Literal, Message } from '../types';
  * @template ValuesArray The array of allowed values.
  * @group DSL
  */
-function enum_<Value extends Literal, ValuesArray extends readonly [Value, ...Value[]]>(
+function enum_<Value extends Any, ValuesArray extends readonly [Value, ...Value[]]>(
   values: ValuesArray,
   options?: IssueOptions | Message
 ): EnumShape<ValuesArray[number]>;
@@ -26,7 +26,7 @@ function enum_<Value extends Literal, ValuesArray extends readonly [Value, ...Va
  * @template ValuesDict The object that maps from the key to an enum value.
  * @group DSL
  */
-function enum_<Value extends Literal, ValuesDict extends ReadonlyDict<Value>>(
+function enum_<Value extends Any, ValuesDict extends ReadonlyDict<Value>>(
   values: ValuesDict,
   options?: IssueOptions | Message
 ): EnumShape<ValuesDict[keyof ValuesDict]>;

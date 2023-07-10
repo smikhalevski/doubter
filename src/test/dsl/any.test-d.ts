@@ -20,7 +20,7 @@ expectType<any>(d.any().refine((value: unknown): value is number => true)[INPUT]
 
 expectType<number>(d.any().refine((value: unknown): value is number => true)[OUTPUT]);
 
-// ReplaceLiteralShape
+// ReplaceShape
 
 expectType<string | null>(d.any<string>().nullable()[OUTPUT]);
 

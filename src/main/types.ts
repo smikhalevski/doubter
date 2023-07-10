@@ -413,4 +413,4 @@ export interface ParseOptions extends ApplyOptions {
  *
  * @group Other
  */
-export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;
+export type Any = object | string | number | bigint | boolean | symbol | null | undefined;

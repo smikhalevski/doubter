@@ -33,7 +33,7 @@ import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOptions extends IssueOptions {
   /**
-   * By default, {@linkcode NumberShape#multiple NumberShape.multiple} uses
+   * By default, {@linkcode doubter/core!NumberShape#multiple NumberShape.multiple} uses
    * [the modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
    * may produce unexpected results when used with floating point numbers. This happens because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).

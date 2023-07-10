@@ -33,13 +33,13 @@ import {
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   AlterCallback,
+  Any,
   ApplyOptions,
   CheckCallback,
   CustomOperationOptions,
   Err,
   Issue,
   IssueOptions,
-  Literal,
   Message,
   Ok,
   Operation,
@@ -157,16 +157,16 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
  * @template S The shape to convert to an optional deep partial alternative.
  * @group Shapes
  */
-export type OptionalDeepPartialShape<S extends AnyShape> = AllowLiteralShape<DeepPartialShape<S>, undefined>;
+export type OptionalDeepPartialShape<S extends AnyShape> = AllowShape<DeepPartialShape<S>, undefined>;
 
 /**
- * Shortcut for {@linkcode ReplaceLiteralShape} that allows the same value as both an input and an output.
+ * Shortcut for {@linkcode ReplaceShape} that allows the same value as both an input and an output.
  *
  * @template S The shape that parses the input without the replaced value.
  * @template AllowedValue The value that is allowed as an input and output.
  * @group Shapes
  */
-export type AllowLiteralShape<S extends AnyShape, AllowedValue> = ReplaceLiteralShape<S, AllowedValue, AllowedValue>;
+export type AllowShape<S extends AnyShape, AllowedValue> = ReplaceShape<S, AllowedValue, AllowedValue>;
 
 /**
  * Shortcut for {@linkcode ExcludeShape} that doesn't impose the exclusion on the type level.
@@ -548,20 +548,20 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template InputValue The input value to replace.
    * @template OutputValue The output value that is used as the replacement for an input value.
    */
-  replace<InputValue extends Literal, OutputValue extends Literal>(
+  replace<InputValue extends Any, OutputValue extends Any>(
     inputValue: InputValue,
     outputValue: OutputValue
-  ): ReplaceLiteralShape<this, InputValue, OutputValue> {
-    return new ReplaceLiteralShape(this, inputValue, outputValue);
+  ): ReplaceShape<this, InputValue, OutputValue> {
+    return new ReplaceShape(this, inputValue, outputValue);
   }
 
   /**
-   * Allows a literal input value, so it is passed directly to the output.
+   * Allows an input value, so it is passed directly to the output.
    *
    * @param value The allowed value.
    * @template AllowedValue The allowed value.
    */
-  allow<AllowedValue extends Literal>(value: AllowedValue): AllowLiteralShape<this, AllowedValue> {
+  allow<AllowedValue extends Any>(value: AllowedValue): AllowShape<this, AllowedValue> {
     return this.replace(value, value);
   }
 
@@ -575,14 +575,14 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   deny<DeniedValue extends InputValue | OutputValue>(
     value: DeniedValue,
     options?: IssueOptions | Message
-  ): DenyLiteralShape<this, DeniedValue> {
-    return new DenyLiteralShape(this, value, options);
+  ): DenyShape<this, DeniedValue> {
+    return new DenyShape(this, value, options);
   }
 
   /**
    * Replaces `undefined` input value with an `undefined` output value.
    */
-  optional(): AllowLiteralShape<this, undefined>;
+  optional(): AllowShape<this, undefined>;
 
   /**
    * Replaces `undefined` input value with a default output value.
@@ -590,9 +590,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param defaultValue The value that should be used if an input value is `undefined`.
    * @template DefaultValue The value that is used as the replacement for `undefined`.
    */
-  optional<DefaultValue extends Literal>(
-    defaultValue: DefaultValue
-  ): ReplaceLiteralShape<this, undefined, DefaultValue>;
+  optional<DefaultValue extends Any>(defaultValue: DefaultValue): ReplaceShape<this, undefined, DefaultValue>;
 
   optional(defaultValue?: any) {
     return this.replace(undefined, defaultValue);
@@ -601,7 +599,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Replaces `null` input value with an `null` output value.
    */
-  nullable(): AllowLiteralShape<this, null>;
+  nullable(): AllowShape<this, null>;
 
   /**
    * Replaces `null` input value with a default output value.
@@ -609,7 +607,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param defaultValue The value that should be used if an input value is `null`.
    * @template DefaultValue The value that is used as the replacement for `null`.
    */
-  nullable<DefaultValue extends Literal>(defaultValue: DefaultValue): ReplaceLiteralShape<this, null, DefaultValue>;
+  nullable<DefaultValue extends Any>(defaultValue: DefaultValue): ReplaceShape<this, null, DefaultValue>;
 
   nullable(defaultValue?: any) {
     return this.replace(null, arguments.length === 0 ? null : defaultValue);
@@ -618,7 +616,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Passes `null` and `undefined` input values directly to the output without parsing.
    */
-  nullish(): AllowLiteralShape<AllowLiteralShape<this, null>, undefined>;
+  nullish(): AllowShape<AllowShape<this, null>, undefined>;
 
   /**
    * Replaces `null` and `undefined` input value with a default output value.
@@ -626,9 +624,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param defaultValue The value that should be used if an input value is `undefined` or `null`.
    * @template DefaultValue The value that is used as the replacement for `undefined` and `null`.
    */
-  nullish<DefaultValue extends Literal>(
+  nullish<DefaultValue extends Any>(
     defaultValue?: DefaultValue
-  ): ReplaceLiteralShape<ReplaceLiteralShape<this, null, DefaultValue>, undefined, DefaultValue>;
+  ): ReplaceShape<ReplaceShape<this, null, DefaultValue>, undefined, DefaultValue>;
 
   nullish(defaultValue?: any) {
     return this.nullable(arguments.length === 0 ? null : defaultValue).replace(undefined, defaultValue);
@@ -639,8 +637,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param options The issue options or the issue message.
    */
-  nonOptional(options?: IssueOptions | Message): DenyLiteralShape<this, undefined> {
-    return new DenyLiteralShape(this, undefined, options);
+  nonOptional(options?: IssueOptions | Message): DenyShape<this, undefined> {
+    return new DenyShape(this, undefined, options);
   }
 
   /**
@@ -655,7 +653,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
    * @template FallbackValue The fallback value.
    */
-  catch<FallbackValue extends Literal>(
+  catch<FallbackValue extends Any>(
     fallback: FallbackValue | ((input: any, issues: Issue[], options: ApplyOptions) => FallbackValue)
   ): CatchShape<this, FallbackValue>;
 
@@ -1195,21 +1193,21 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
 }
 
 /**
- * The shape that replaces an input literal value with an output literal value.
+ * The shape that replaces an input value with an output value.
  *
  * @template BaseShape The shape that parses the input without the replaced value.
  * @template InputValue The input value to replace.
  * @template OutputValue The output value that is used as the replacement for an input value.
  * @group Shapes
  */
-export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputValue>
+export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
   extends Shape<Input<BaseShape> | InputValue, ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue>
-  implements DeepPartialProtocol<ReplaceLiteralShape<DeepPartialShape<BaseShape>, InputValue, OutputValue>>
+  implements DeepPartialProtocol<ReplaceShape<DeepPartialShape<BaseShape>, InputValue, OutputValue>>
 {
   private _result: Result<OutputValue>;
 
   /**
-   * Creates the new {@linkcode ReplaceLiteralShape} instance.
+   * Creates the new {@linkcode ReplaceShape} instance.
    *
    * @param baseShape The shape that parses the input without the replaced value.
    * @param inputValue The input value to replace.
@@ -1228,7 +1226,7 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
      */
     readonly inputValue: InputValue,
     /**
-     * The output value that is returned if an {@linkcode ReplaceLiteralShape#inputValue} is received.
+     * The output value that is returned if an {@linkcode ReplaceShape#inputValue} is received.
      */
     readonly outputValue: OutputValue
   ) {
@@ -1237,8 +1235,8 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
     this._result = isEqual(inputValue, outputValue) ? null : { ok: true, value: outputValue };
   }
 
-  deepPartial(): ReplaceLiteralShape<DeepPartialShape<BaseShape>, InputValue, OutputValue> {
-    return new ReplaceLiteralShape(toDeepPartialShape(this.baseShape), this.inputValue, this.outputValue);
+  deepPartial(): ReplaceShape<DeepPartialShape<BaseShape>, InputValue, OutputValue> {
+    return new ReplaceShape(toDeepPartialShape(this.baseShape), this.inputValue, this.outputValue);
   }
 
   protected _isAsync(): boolean {
@@ -1290,15 +1288,15 @@ export class ReplaceLiteralShape<BaseShape extends AnyShape, InputValue, OutputV
 }
 
 /**
- * The shape that prevents both input and output from being equal to a denied literal value.
+ * The shape that prevents both input and output from being equal to a denied value.
  *
  * @template BaseShape The shape that parses the input without the denied value.
  * @template DeniedValue The denied value.
  * @group Shapes
  */
-export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
+export class DenyShape<BaseShape extends AnyShape, DeniedValue>
   extends Shape<ExcludeLiteral<Input<BaseShape>, DeniedValue>, ExcludeLiteral<Output<BaseShape>, DeniedValue>>
-  implements DeepPartialProtocol<DenyLiteralShape<DeepPartialShape<BaseShape>, DeniedValue>>
+  implements DeepPartialProtocol<DenyShape<DeepPartialShape<BaseShape>, DeniedValue>>
 {
   /**
    * The constraint options or an issue message.
@@ -1311,7 +1309,7 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
   protected _typeIssueFactory;
 
   /**
-   * Creates the new {@linkcode DenyLiteralShape} instance.
+   * Creates the new {@linkcode DenyShape} instance.
    *
    * @param baseShape The shape that parses the input without the denied value.
    * @param deniedValue The dined value.
@@ -1336,8 +1334,8 @@ export class DenyLiteralShape<BaseShape extends AnyShape, DeniedValue>
     this._typeIssueFactory = createIssueFactory(CODE_DENIED, MESSAGE_DENIED, options, deniedValue);
   }
 
-  deepPartial(): DenyLiteralShape<DeepPartialShape<BaseShape>, DeniedValue> {
-    return new DenyLiteralShape(toDeepPartialShape(this.baseShape), this.deniedValue, this._options);
+  deepPartial(): DenyShape<DeepPartialShape<BaseShape>, DeniedValue> {
+    return new DenyShape(toDeepPartialShape(this.baseShape), this.deniedValue, this._options);
   }
 
   protected _isAsync(): boolean {

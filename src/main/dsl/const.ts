@@ -1,5 +1,5 @@
 import { ConstShape } from '../shape';
-import { IssueOptions, Literal, Message } from '../types';
+import { Any, IssueOptions, Message } from '../types';
 
 /**
  * Creates the constant value shape.
@@ -9,7 +9,7 @@ import { IssueOptions, Literal, Message } from '../types';
  * @template Value The expected value.
  * @group DSL
  */
-function const_<Value extends Literal>(value: Value, options?: IssueOptions | Message): ConstShape<Value> {
+function const_<Value extends Any>(value: Value, options?: IssueOptions | Message): ConstShape<Value> {
   return new ConstShape(value, options);
 }
 

@@ -1,6 +1,6 @@
 import { ERR_SHAPE_EXPECTED } from '../constants';
 import { captureIssues, copyOperations, identity, isArray, ok, toDeepPartialShape } from '../internal';
-import { ApplyOptions, Literal, Result } from '../types';
+import { Any, ApplyOptions, Result } from '../types';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
@@ -90,7 +90,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * @template Pointer The value returned when a cyclic reference is detected.
    * @returns The clone of the shape.
    */
-  circular<Pointer extends Literal>(
+  circular<Pointer extends Any>(
     pointer: Pointer | ((value: Input<ProvidedShape>, options: ApplyOptions) => Pointer)
   ): LazyShape<ProvidedShape, Pointer> {
     return copyOperations(

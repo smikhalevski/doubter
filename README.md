@@ -481,7 +481,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `bigint_min`      | [`d.bigint().min(x)`](#bigint)                | The minimum value `x`                                 |
 | `bigint_max`      | [`d.bigint().max(x)`](#bigint)                | The maximum value `x`                                 |
 | `const`           | [`d.const(x)`](#const)                        | The expected constant value `x`                       |
-| `denied`          | [`shape.deny(x)`](#deny-a-literal-value)      | The denied value `x`                                  |
+| `denied`          | [`shape.deny(x)`](#deny-a-value)              | The denied value `x`                                  |
 | `date_min`        | [`d.date().min(x)`](#date)                    | The minimum value `x`                                 |
 | `date_max`        | [`d.date().max(x)`](#date)                    | The maximum value `x`                                 |
 | `enum`            | [`d.enum([x, y, z])`](#enum)                  | The array of unique values`[x, y, z]`                 |
@@ -796,11 +796,11 @@ of the expected type, so it won't apply its forced checks.
 
 These shapes won't apply forced checks if an underlying shape has raised an issue:
 
-- [`DenyLiteralShape`](#deny-a-literal-value)
+- [`DenyShape`](#deny-a-value)
 - [`IntersectionShape`](#intersection-and)
 - [`LazyShape`](#lazy)
 - [`PipeShape`](#shape-piping)
-- [`ReplaceLiteralShape`](#replace-a-literal-value)
+- [`ReplaceShape`](#replace-a-value)
 - [`ConvertShape`](#conversions)
 - [`UnionShape`](#union-or)
 
@@ -1107,9 +1107,9 @@ All shapes support [`replace`](https://smikhalevski.github.io/doubter/classes/do
 [`deny`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#deny) methods that change how separate
 literal values are processed.
 
-## Replace a literal value
+## Replace a value
 
-You can replace an input literal value with an output literal value:
+You can replace an input value with an output value:
 
 ```ts
 const shape1 = d.enum(['Mars', 'Pluto']).replace('Pluto', 'Jupiter');
@@ -1159,16 +1159,16 @@ shape2.parse(0);
 // ⮕ 'zero'
 ```
 
-## Allow a literal value
+## Allow a value
 
-You can allow a literal as both input and output:
+You can allow a value as both input and output:
 
 ```ts
 d.const('Mars').allow('Pluto');
 // ⮕ Shape<'Mars' | 'Pluto'>
 ```
 
-`allow` follows exactly the same semantics as [`replace`](#replace-a-literal-value).
+`allow` follows exactly the same semantics as [`replace`](#replace-a-value).
 
 You can allow a value for a non-literal input types:
 
@@ -1183,7 +1183,7 @@ shape.parse(Infinity);
 // ❌ ValidationError: number_finite at /: Must be a finite number
 ```
 
-## Deny a literal value
+## Deny a value
 
 Consider the enum shape:
 
@@ -1225,7 +1225,7 @@ shape3.parse(21);
 
 # Optional and non-optional
 
-Marking a shape as optional [allows `undefined`](#allow-a-literal-value) in both its input and output:
+Marking a shape as optional [allows `undefined`](#allow-a-value) in both its input and output:
 
 ```ts
 d.string().optional();
@@ -1249,14 +1249,14 @@ d.or([
 // ⮕ Shape<string | undefined>
 ```
 
-Or using [`allow`](#allow-a-literal-value):
+Or using [`allow`](#allow-a-value):
 
 ```ts
 d.string().allow(undefined);
 // ⮕ Shape<string | undefined>
 ```
 
-You can mark any shape as non-optional which effectively [denies `undefined`](#deny-a-literal-value) values from both
+You can mark any shape as non-optional which effectively [denies `undefined`](#deny-a-value) values from both
 input and output. For example, lets consider a union of an optional string and a number:
 
 ```ts
@@ -1278,7 +1278,7 @@ shape2.parse(undefined);
 
 # Nullable and nullish
 
-Marking a shape as nullable [allows `null`](#allow-a-literal-value) for both input and output:
+Marking a shape as nullable [allows `null`](#allow-a-value) for both input and output:
 
 ```ts
 d.string().nullable();
@@ -1715,7 +1715,7 @@ shape1.accepts('Venus');
 // ⮕ true
 ```
 
-Check that a literal value is accepted:
+Check that a value is accepted:
 
 ```ts
 const shape2 = d.enum(['Mars', 'Venus']);
@@ -2130,7 +2130,7 @@ Limit both minimum and maximum array length at the same time:
 d.array(d.string()).length(5);
 ```
 
-Transform array values during parsing:
+Convert array values during parsing:
 
 ```ts
 d.array(d.string().convert(parseFloat));
@@ -2260,7 +2260,7 @@ d.const('Mars');
 
 There are shortcuts for [`null`](#null), [`undefined`](#undefined) and [`nan`](#nan) constants.
 
-Consider using [`enum`](#enum) if you want a value to be one of multiple literal values.
+Consider using [`enum`](#enum) if you want a value to be one of multiple values.
 
 # `convert`, `convertAsync`
 
@@ -2268,7 +2268,7 @@ Both [`d.convert`](https://smikhalevski.github.io/doubter/functions/doubter_core
 [`d.convertAsync`](https://smikhalevski.github.io/doubter/functions/doubter_core.convertAsync.html) return a
 [`ConvertShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.ConvertShape.html) instance.
 
-Transforms the input value:
+Converts the input value:
 
 ```ts
 const shape = d.convert(parseFloat);
@@ -2300,6 +2300,22 @@ Constrains a value to be a valid date.
 ```ts
 d.date();
 // ⮕ Shape<Date>
+```
+
+Constrain the minimum and maximum dates:
+
+```ts
+d.date().after('2003-03-12').before('2030-01-01');
+```
+
+Convert date to ISO string or timestamp:
+
+```ts
+d.date().iso().parse(new Date());
+// ⮕ '2023-07-10T19:31:52.395Z'
+
+d.date().timestamp().parse(new Date());
+// ⮕ 1689017512395
 ```
 
 ## Coerce to a `Date`
@@ -3277,7 +3293,7 @@ d.promise(d.string());
 // ⮕ Shape<Promise<string>>
 ```
 
-Transform the value inside a promise:
+Convert a value inside a promise:
 
 ```ts
 const shape = d.promise(

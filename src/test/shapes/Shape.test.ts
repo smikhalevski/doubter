@@ -2,14 +2,14 @@ import {
   CatchShape,
   ConstShape,
   ConvertShape,
-  DenyLiteralShape,
+  DenyShape,
   EnumShape,
   ExcludeShape,
   NeverShape,
   NumberShape,
   ObjectShape,
   PipeShape,
-  ReplaceLiteralShape,
+  ReplaceShape,
   Shape,
   StringShape,
   ValidationError,
@@ -524,11 +524,11 @@ describe('Shape', () => {
   });
 
   describe('replace', () => {
-    test('returns a ReplaceLiteralShape', () => {
+    test('returns a ReplaceShape', () => {
       const baseShape = new Shape();
       const shape = baseShape.replace('aaa', 'bbb');
 
-      expect(shape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(shape).toBeInstanceOf(ReplaceShape);
       expect(shape.baseShape).toBe(baseShape);
       expect(shape.inputValue).toBe('aaa');
       expect(shape.outputValue).toBe('bbb');
@@ -536,11 +536,11 @@ describe('Shape', () => {
   });
 
   describe('allow', () => {
-    test('returns a ReplaceLiteralShape', () => {
+    test('returns a ReplaceShape', () => {
       const baseShape = new Shape();
       const shape = baseShape.allow('aaa');
 
-      expect(shape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(shape).toBeInstanceOf(ReplaceShape);
       expect(shape.baseShape).toBe(baseShape);
       expect(shape.inputValue).toBe('aaa');
       expect(shape.outputValue).toBe('aaa');
@@ -548,22 +548,22 @@ describe('Shape', () => {
   });
 
   describe('deny', () => {
-    test('returns a DenyLiteralShape', () => {
+    test('returns a DenyShape', () => {
       const baseShape = new Shape();
       const shape = baseShape.deny('aaa');
 
-      expect(shape).toBeInstanceOf(DenyLiteralShape);
+      expect(shape).toBeInstanceOf(DenyShape);
       expect(shape.baseShape).toBe(baseShape);
       expect(shape.deniedValue).toBe('aaa');
     });
   });
 
   describe('optional', () => {
-    test('returns a ReplaceLiteralShape', () => {
+    test('returns a ReplaceShape', () => {
       const baseShape = new Shape();
       const shape = baseShape.optional();
 
-      expect(shape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(shape).toBeInstanceOf(ReplaceShape);
       expect(shape.baseShape).toBe(baseShape);
       expect(shape.inputValue).toBeUndefined();
       expect(shape.outputValue).toBeUndefined();
@@ -573,7 +573,7 @@ describe('Shape', () => {
       const shape = new Shape();
       const replaceShape = shape.optional('aaa');
 
-      expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(replaceShape).toBeInstanceOf(ReplaceShape);
       expect(replaceShape.baseShape).toBe(shape);
       expect(replaceShape.inputValue).toBeUndefined();
       expect(replaceShape.outputValue).toBe('aaa');
@@ -587,11 +587,11 @@ describe('Shape', () => {
   });
 
   describe('nullable', () => {
-    test('returns a ReplaceLiteralShape', () => {
+    test('returns a ReplaceShape', () => {
       const baseShape = new Shape();
       const shape = baseShape.nullable();
 
-      expect(shape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(shape).toBeInstanceOf(ReplaceShape);
       expect(shape.baseShape).toBe(baseShape);
       expect(shape.inputValue).toBeNull();
       expect(shape.outputValue).toBeNull();
@@ -601,7 +601,7 @@ describe('Shape', () => {
       const shape = new Shape();
       const replaceShape = shape.nullable('aaa');
 
-      expect(replaceShape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(replaceShape).toBeInstanceOf(ReplaceShape);
       expect(replaceShape.baseShape).toBe(shape);
       expect(replaceShape.inputValue).toBeNull();
       expect(replaceShape.outputValue).toBe('aaa');
@@ -615,12 +615,12 @@ describe('Shape', () => {
   });
 
   describe('nullish', () => {
-    test('returns a ReplaceLiteralShape', () => {
+    test('returns a ReplaceShape', () => {
       const baseShape = new Shape();
       const shape = baseShape.nullish();
 
-      expect(shape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(shape.baseShape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(shape).toBeInstanceOf(ReplaceShape);
+      expect(shape.baseShape).toBeInstanceOf(ReplaceShape);
       expect(shape.inputValue).toBeUndefined();
       expect(shape.outputValue).toBeUndefined();
 
@@ -633,8 +633,8 @@ describe('Shape', () => {
       const baseShape = new Shape();
       const shape = baseShape.nullish('aaa');
 
-      expect(shape).toBeInstanceOf(ReplaceLiteralShape);
-      expect(shape.baseShape).toBeInstanceOf(ReplaceLiteralShape);
+      expect(shape).toBeInstanceOf(ReplaceShape);
+      expect(shape.baseShape).toBeInstanceOf(ReplaceShape);
       expect(shape.inputValue).toBeUndefined();
       expect(shape.outputValue).toBe('aaa');
 
@@ -652,11 +652,11 @@ describe('Shape', () => {
   });
 
   describe('nonOptional', () => {
-    test('returns a DenyLiteralShape', () => {
+    test('returns a DenyShape', () => {
       const baseShape = new Shape();
       const shape = baseShape.nonOptional();
 
-      expect(shape).toBeInstanceOf(DenyLiteralShape);
+      expect(shape).toBeInstanceOf(DenyShape);
       expect(shape.baseShape).toBe(baseShape);
       expect(shape.deniedValue).toBeUndefined();
     });
@@ -1249,9 +1249,9 @@ describe('PipeShape', () => {
   });
 });
 
-describe('ReplaceLiteralShape', () => {
+describe('ReplaceShape', () => {
   test('replaces an input value value with an output value', () => {
-    const shape = new ReplaceLiteralShape(new Shape(), 111, 222);
+    const shape = new ReplaceShape(new Shape(), 111, 222);
 
     expect(shape.parse('aaa')).toBe('aaa');
     expect(shape.parse(111)).toBe(222);
@@ -1259,7 +1259,7 @@ describe('ReplaceLiteralShape', () => {
   });
 
   test('raises issues returned from the shape', () => {
-    const shape = new ReplaceLiteralShape(
+    const shape = new ReplaceShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       111,
       222
@@ -1272,7 +1272,7 @@ describe('ReplaceLiteralShape', () => {
   });
 
   test('does not apply operations if the shape raised issues', () => {
-    const shape = new ReplaceLiteralShape(
+    const shape = new ReplaceShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       111,
       222
@@ -1287,7 +1287,7 @@ describe('ReplaceLiteralShape', () => {
   test('applies operations to the replaced value', () => {
     const cbMock = jest.fn();
 
-    new ReplaceLiteralShape(new Shape(), 111, 222).check(cbMock).try(111);
+    new ReplaceShape(new Shape(), 111, 222).check(cbMock).try(111);
 
     expect(cbMock).toHaveBeenCalledTimes(1);
     expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { earlyReturn: false, coerce: false });
@@ -1295,17 +1295,17 @@ describe('ReplaceLiteralShape', () => {
 
   describe('inputs', () => {
     test('concatenates inputs of the underlying shape with the replaced value', () => {
-      expect(new ReplaceLiteralShape(new NumberShape(), 'aaa', 111).inputs).toEqual([TYPE_NUMBER, 'aaa']);
+      expect(new ReplaceShape(new NumberShape(), 'aaa', 111).inputs).toEqual([TYPE_NUMBER, 'aaa']);
     });
 
     test('erases never', () => {
-      expect(new ReplaceLiteralShape(new NeverShape(), 'aaa', 111).inputs).toEqual(['aaa']);
+      expect(new ReplaceShape(new NeverShape(), 'aaa', 111).inputs).toEqual(['aaa']);
     });
   });
 
   describe('async', () => {
     test('replaces an input value value with an output value', async () => {
-      const shape = new ReplaceLiteralShape(new AsyncMockShape(), 111, 222);
+      const shape = new ReplaceShape(new AsyncMockShape(), 111, 222);
 
       await expect(shape.parseAsync('aaa')).resolves.toBe('aaa');
       await expect(shape.parseAsync(111)).resolves.toBe(222);
@@ -1313,7 +1313,7 @@ describe('ReplaceLiteralShape', () => {
     });
 
     test('raises issues returned from the shape', async () => {
-      const shape = new ReplaceLiteralShape(
+      const shape = new ReplaceShape(
         new AsyncMockShape().check(() => [{ code: 'xxx' }]),
         111,
         222
@@ -1326,7 +1326,7 @@ describe('ReplaceLiteralShape', () => {
     });
 
     test('does not apply operations if the shape raised issues', async () => {
-      const shape = new ReplaceLiteralShape(
+      const shape = new ReplaceShape(
         new AsyncMockShape().check(() => [{ code: 'xxx' }]),
         111,
         222
@@ -1341,7 +1341,7 @@ describe('ReplaceLiteralShape', () => {
     test('applies operations to the replaced value', async () => {
       const cbMock = jest.fn();
 
-      await new ReplaceLiteralShape(new AsyncMockShape(), 111, 222).check(cbMock).tryAsync(111);
+      await new ReplaceShape(new AsyncMockShape(), 111, 222).check(cbMock).tryAsync(111);
 
       expect(cbMock).toHaveBeenCalledTimes(1);
       expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { earlyReturn: false, coerce: false });
@@ -1349,15 +1349,15 @@ describe('ReplaceLiteralShape', () => {
   });
 });
 
-describe('DenyLiteralShape', () => {
+describe('DenyShape', () => {
   test('returns input as is', () => {
-    const shape = new DenyLiteralShape(new Shape(), 'aaa');
+    const shape = new DenyShape(new Shape(), 'aaa');
 
     expect(shape.try(111)).toEqual({ ok: true, value: 111 });
   });
 
   test('returns output as is', () => {
-    const shape = new DenyLiteralShape(
+    const shape = new DenyShape(
       new Shape().convert(() => 222),
       'aaa'
     );
@@ -1366,7 +1366,7 @@ describe('DenyLiteralShape', () => {
   });
 
   test('raises an issue if an input is denied', () => {
-    const shape = new DenyLiteralShape(new Shape(), 111);
+    const shape = new DenyShape(new Shape(), 111);
 
     expect(shape.try(111)).toEqual({
       ok: false,
@@ -1375,7 +1375,7 @@ describe('DenyLiteralShape', () => {
   });
 
   test('raises an issue if an output is denied', () => {
-    const shape = new DenyLiteralShape(
+    const shape = new DenyShape(
       new Shape().convert(() => 111),
       111
     );
@@ -1389,14 +1389,14 @@ describe('DenyLiteralShape', () => {
   test('applies operations', () => {
     const cbMock = jest.fn(() => null);
 
-    new DenyLiteralShape(new Shape(), 111).check(cbMock).parse('aaa');
+    new DenyShape(new Shape(), 111).check(cbMock).parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
     expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
   });
 
   test('does not apply operations if shape raises an issue', () => {
-    const shape = new DenyLiteralShape(
+    const shape = new DenyShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       undefined
     ).check(() => [{ code: 'yyy' }], { force: true });
@@ -1409,27 +1409,27 @@ describe('DenyLiteralShape', () => {
 
   describe('inputs', () => {
     test('returns inputs of the underlying shape', () => {
-      expect(new DenyLiteralShape(new StringShape(), 111).inputs).toEqual([TYPE_STRING]);
+      expect(new DenyShape(new StringShape(), 111).inputs).toEqual([TYPE_STRING]);
     });
 
     test('returns an empty array if an underlying shape is NeverShape', () => {
-      expect(new DenyLiteralShape(new NeverShape(), 111).inputs).toEqual([]);
+      expect(new DenyShape(new NeverShape(), 111).inputs).toEqual([]);
     });
 
     test('removes denied value from the array of discrete inputs', () => {
-      expect(new DenyLiteralShape(new EnumShape(['aaa', 'bbb']), 'bbb').inputs).toEqual(['aaa']);
+      expect(new DenyShape(new EnumShape(['aaa', 'bbb']), 'bbb').inputs).toEqual(['aaa']);
     });
   });
 
   describe('async', () => {
     test('returns input as is', async () => {
-      const shape = new DenyLiteralShape(new AsyncMockShape(), 'aaa');
+      const shape = new DenyShape(new AsyncMockShape(), 'aaa');
 
       await expect(shape.tryAsync(111)).resolves.toEqual({ ok: true, value: 111 });
     });
 
     test('returns output as is', async () => {
-      const shape = new DenyLiteralShape(
+      const shape = new DenyShape(
         new Shape().convertAsync(() => Promise.resolve(222)),
         'aaa'
       );
@@ -1438,7 +1438,7 @@ describe('DenyLiteralShape', () => {
     });
 
     test('raises an issue if an input is denied', async () => {
-      const shape = new DenyLiteralShape(new AsyncMockShape(), 111);
+      const shape = new DenyShape(new AsyncMockShape(), 111);
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
@@ -1447,7 +1447,7 @@ describe('DenyLiteralShape', () => {
     });
 
     test('raises an issue if an output is denied', async () => {
-      const shape = new DenyLiteralShape(
+      const shape = new DenyShape(
         new Shape().convertAsync(() => Promise.resolve(111)),
         111
       );

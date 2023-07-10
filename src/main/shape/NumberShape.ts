@@ -1,10 +1,10 @@
 import { CODE_TYPE, MESSAGE_NUMBER_TYPE } from '../constants';
 import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, IssueOptions, Literal, Message, Result } from '../types';
+import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AllowLiteralShape, NEVER, ReplaceLiteralShape } from './Shape';
+import { AllowShape, NEVER, ReplaceShape } from './Shape';
 
 /**
  * The shape of a number value.
@@ -31,14 +31,14 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Allows `NaN` as an input and output value.
    */
-  nan(): AllowLiteralShape<this, number>;
+  nan(): AllowShape<this, number>;
 
   /**
    * Replaces an input `NaN` value with a default output value.
    *
    * @param defaultValue The value that is used instead of `NaN` in the output.
    */
-  nan<T extends Literal>(defaultValue: T): ReplaceLiteralShape<this, number, T>;
+  nan<T extends Any>(defaultValue: T): ReplaceShape<this, number, T>;
 
   nan(defaultValue?: any) {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);

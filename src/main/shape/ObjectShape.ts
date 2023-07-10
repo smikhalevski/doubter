@@ -24,19 +24,12 @@ import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
-import {
-  AllowLiteralShape,
-  AnyShape,
-  DeepPartialProtocol,
-  DenyLiteralShape,
-  OptionalDeepPartialShape,
-  Shape,
-} from './Shape';
+import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
 
 type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,
   RestShape extends AnyShape | null,
-  Leg extends INPUT | OUTPUT
+  Leg extends INPUT | OUTPUT,
 > = Squash<
   UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][Leg] }> &
     (RestShape extends null | undefined ? {} : RestShape extends AnyShape ? { [key: string]: RestShape[Leg] } : {})
@@ -49,11 +42,11 @@ type OptionalKeys<T> = { [K in keyof T]: undefined extends Extract<T[K], undefin
 type Squash<T> = { [K in keyof T]: T[K] } & {};
 
 type OptionalProps<PropShapes extends ReadonlyDict<AnyShape>> = {
-  [K in keyof PropShapes]: AllowLiteralShape<PropShapes[K], undefined>;
+  [K in keyof PropShapes]: AllowShape<PropShapes[K], undefined>;
 };
 
 type RequiredProps<PropShapes extends ReadonlyDict<AnyShape>> = {
-  [K in keyof PropShapes]: DenyLiteralShape<PropShapes[K], undefined>;
+  [K in keyof PropShapes]: DenyShape<PropShapes[K], undefined>;
 };
 
 type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> = ObjectShape<
