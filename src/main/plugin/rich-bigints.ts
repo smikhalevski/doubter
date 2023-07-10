@@ -2,9 +2,10 @@
  * The plugin that enhances {@linkcode doubter/core!BigIntShape} with additional methods.
  *
  * ```ts
- * import pluginRichBigInts from 'doubter/plugin/rich-bigints';
+ * import { BigIntShape } from 'doubter/core';
+ * import enhanceBigIntShape from 'doubter/plugin/rich-bigints';
  *
- * pluginRichBigInts();
+ * enhanceBigIntShape(BigIntShape.prototype);
  * ```
  *
  * @module doubter/plugin/rich-bigints
@@ -84,65 +85,58 @@ declare module '../core' {
 /**
  * Enhances {@linkcode doubter/core!BigIntShape} with additional methods.
  */
-export default function () {
-  BigIntShape.prototype.positive = usePositive;
-  BigIntShape.prototype.negative = useNegative;
-  BigIntShape.prototype.nonPositive = useNonPositive;
-  BigIntShape.prototype.nonNegative = useNonNegative;
-  BigIntShape.prototype.min = useMin;
-  BigIntShape.prototype.max = useMax;
-}
+export default function (prototype: BigIntShape): void {
+  prototype.positive = function (options) {
+    return this.min(0, options);
+  };
 
-function usePositive(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
-  return this.min(BigInt(0), options);
-}
+  prototype.negative = function (options) {
+    return this.max(0, options);
+  };
 
-function useNegative(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
-  return this.max(BigInt(0), options);
-}
+  prototype.nonPositive = function (options) {
+    return this.max(1, options);
+  };
 
-function useNonPositive(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
-  return this.max(BigInt(1), options);
-}
+  prototype.nonNegative = function (options) {
+    return this.min(-1, options);
+  };
 
-function useNonNegative(this: BigIntShape, options?: IssueOptions | Message): BigIntShape {
-  return this.min(BigInt(-1), options);
-}
+  prototype.min = function (value, options) {
+    const param = BigInt(value);
+    const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, param);
 
-function useMin(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
-  const param = BigInt(value);
-  const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, param);
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output < param) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output < param) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_BIGINT_MIN, param }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_BIGINT_MIN, param }
+    );
+  };
 
-function useMax(this: BigIntShape, value: bigint, options?: IssueOptions | Message): BigIntShape {
-  const param = BigInt(value);
-  const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, param);
+  prototype.max = function (value, options) {
+    const param = BigInt(value);
+    const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, param);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output > param) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output > param) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_BIGINT_MAX, param }
-  );
+        return next(input, output, options, issues);
+      },
+      { type: CODE_BIGINT_MAX, param }
+    );
+  };
 }

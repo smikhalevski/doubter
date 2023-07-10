@@ -7,7 +7,7 @@ import {
   StringShape,
   ValidationError,
 } from '../../main';
-import { ERROR_SHAPE_EXPECTED } from '../../main/constants';
+import { ERR_SHAPE_EXPECTED } from '../../main/constants';
 import { identity, nextNonce, resetNonce } from '../../main/internal';
 import { TYPE_OBJECT } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
@@ -110,13 +110,13 @@ describe('LazyShape', () => {
     test('throws an exception on premature access', () => {
       const shape: LazyShape<any, any> = new LazyShape(() => shape.providedShape, identity);
 
-      expect(() => shape.providedShape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
+      expect(() => shape.providedShape).toThrow(new Error(ERR_SHAPE_EXPECTED));
     });
 
     test('throws an exception if shape is accessed from the provider', () => {
       const shape: LazyShape<any, any> = new LazyShape(() => shape.check(() => null).providedShape, identity);
 
-      expect(() => shape.providedShape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
+      expect(() => shape.providedShape).toThrow(new Error(ERR_SHAPE_EXPECTED));
     });
   });
 

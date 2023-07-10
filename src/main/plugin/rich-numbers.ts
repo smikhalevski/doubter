@@ -2,9 +2,10 @@
  * The plugin that enhances {@linkcode doubter/core!NumberShape} with additional methods.
  *
  * ```ts
- * import pluginRichNumbers from 'doubter/plugin/rich-numbers';
+ * import { NumberShape } from 'doubter/core';
+ * import enhanceNumberShape from 'doubter/plugin/rich-numbers';
  *
- * pluginRichNumbers();
+ * enhanceNumberShape(NumberShape.prototype);
  * ```
  *
  * @module doubter/plugin/rich-numbers
@@ -204,172 +205,161 @@ declare module '../core' {
 /**
  * Enhances {@linkcode doubter/core!NumberShape} with additional methods.
  */
-export default function () {
-  NumberShape.prototype.finite = useFinite;
-  NumberShape.prototype.integer = useInteger;
-  NumberShape.prototype.positive = usePositive;
-  NumberShape.prototype.negative = useNegative;
-  NumberShape.prototype.nonPositive = useNonPositive;
-  NumberShape.prototype.nonNegative = useNonNegative;
-  NumberShape.prototype.gt = useExclusiveMin;
-  NumberShape.prototype.lt = useExclusiveMax;
-  NumberShape.prototype.gte = useMin;
-  NumberShape.prototype.lte = useMax;
-  NumberShape.prototype.min = useMin;
-  NumberShape.prototype.max = useMax;
-  NumberShape.prototype.multiple = useMultiple;
-  NumberShape.prototype.safe = useSafe;
-}
-
-function useFinite(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  const { isFinite } = Number;
-  const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
-
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (!isFinite(output)) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
-        }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_NUMBER_FINITE }
-  );
-}
-
-function useInteger(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  const { isInteger } = Number;
-  const issueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
-
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (!isInteger(output)) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
-        }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_NUMBER_INTEGER }
-  );
-}
-
-function usePositive(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  return this.gt(0, options);
-}
-
-function useNegative(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  return this.lt(0, options);
-}
-
-function useNonPositive(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  return this.lte(0, options);
-}
-
-function useNonNegative(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  return this.gte(0, options);
-}
-
-function useExclusiveMin(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
-  const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
-
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output <= value) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
-        }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_NUMBER_GT, param: value }
-  );
-}
-
-function useExclusiveMax(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
-  const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
-
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output >= value) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
-        }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_NUMBER_LT, param: value }
-  );
-}
-
-function useMin(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
-  const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
-
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output < value) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
-        }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_NUMBER_GTE, param: value }
-  );
-}
-
-function useMax(this: NumberShape, value: number, options?: IssueOptions | Message): NumberShape {
-  const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
-
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output > value) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
-        }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_NUMBER_LTE, param: value }
-  );
-}
-
-function useMultiple(this: NumberShape, divisor: number, options?: MultipleOptions | Message): NumberShape {
+export default function (prototype: NumberShape): void {
   const { abs, round } = Math;
-  const { precision } = extractOptions(options);
+  const { isFinite, isInteger } = Number;
 
-  const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
+  prototype.finite = function (options) {
+    const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
 
-  const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE, MESSAGE_NUMBER_MULTIPLE, options, divisor);
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (!isFinite(output)) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) < epsilon : output % divisor !== 0) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_NUMBER_MULTIPLE, param: divisor }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_NUMBER_FINITE }
+    );
+  };
 
-function useSafe(this: NumberShape, options?: IssueOptions | Message): NumberShape {
-  return this.min(Number.MIN_SAFE_INTEGER, options).max(Number.MAX_SAFE_INTEGER, options);
+  prototype.integer = function (options) {
+    const issueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
+
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (!isInteger(output)) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_NUMBER_INTEGER }
+    );
+  };
+
+  prototype.positive = function (options) {
+    return this.gt(0, options);
+  };
+
+  prototype.negative = function (options) {
+    return this.lt(0, options);
+  };
+
+  prototype.nonPositive = function (options) {
+    return this.lte(0, options);
+  };
+
+  prototype.nonNegative = function (options) {
+    return this.gte(0, options);
+  };
+
+  prototype.gt = function (value, options) {
+    const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
+
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output <= value) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_NUMBER_GT, param: value }
+    );
+  };
+
+  prototype.lt = function (value, options) {
+    const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
+
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output >= value) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_NUMBER_LT, param: value }
+    );
+  };
+
+  prototype.gte = function (value, options) {
+    const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
+
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output < value) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_NUMBER_GTE, param: value }
+    );
+  };
+
+  prototype.lte = function (value, options) {
+    const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
+
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output > value) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_NUMBER_LTE, param: value }
+    );
+  };
+
+  prototype.min = prototype.gte;
+
+  prototype.max = prototype.lte;
+
+  prototype.multiple = function (divisor, options) {
+    const { precision } = extractOptions(options);
+
+    const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
+
+    const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE, MESSAGE_NUMBER_MULTIPLE, options, divisor);
+
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) > epsilon : output % divisor !== 0) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_NUMBER_MULTIPLE, param: divisor }
+    );
+  };
+
+  prototype.safe = function (options) {
+    return this.min(Number.MIN_SAFE_INTEGER, options).max(Number.MAX_SAFE_INTEGER, options);
+  };
 }

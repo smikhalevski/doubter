@@ -2,9 +2,10 @@
  * The plugin that enhances {@linkcode doubter/core!SetShape} with additional methods.
  *
  * ```ts
- * import pluginRichSets from 'doubter/plugin/rich-sets';
+ * import { SetShape } from 'doubter/core';
+ * import enhanceSetShape from 'doubter/plugin/rich-sets';
  *
- * pluginRichSets();
+ * enhanceSetShape(SetShape.prototype);
  * ```
  *
  * @module doubter/plugin/rich-sets
@@ -48,54 +49,64 @@ declare module '../core' {
      * @plugin {@link doubter/plugin/rich-sets!}
      */
     max(size: number, options?: IssueOptions | Message): this;
+
+    /**
+     * Constrains the `Set` to contain at least one element.
+     *
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/rich-sets!}
+     */
+    nonEmpty(options?: IssueOptions | Message): this;
   }
 }
 
 /**
  * Enhances {@linkcode doubter/core!SetShape} with additional methods.
  */
-export default function () {
-  SetShape.prototype.size = useSize;
-  SetShape.prototype.min = useMin;
-  SetShape.prototype.max = useMax;
-}
+export default function (prototype: SetShape<any>): void {
+  prototype.size = function (size, options) {
+    return this.min(size, options).max(size, options);
+  };
 
-function useSize(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
-  return this.min(size, options).max(size, options);
-}
+  prototype.min = function (size, options) {
+    const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
 
-function useMin(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
-  const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.size < size) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.size < size) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_SET_MIN, param: size }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_SET_MIN, param: size }
+    );
+  };
 
-function useMax(this: SetShape<any>, size: number, options?: IssueOptions | Message): SetShape<any> {
-  const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
+  prototype.max = function (size, options) {
+    const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.size > size) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.size > size) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_SET_MAX, param: size }
-  );
+        return next(input, output, options, issues);
+      },
+      { type: CODE_SET_MAX, param: size }
+    );
+  };
+
+  prototype.nonEmpty = function (options) {
+    return this.min(1, options);
+  };
 }

@@ -1,6 +1,11 @@
-export const ERROR_REQUIRES_ASYNC = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
-export const ERROR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';
-export const ERROR_ASYNC_FUNCTION = 'The function signature is constrained by async shapes, use ensureAsyncSignature.';
+export const ERR_SYNC_UNSUPPORTED = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
+export const ERR_SYNC_REQUIRED = 'Shape cannot be used because it is async.';
+export const ERR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';
+export const ERR_ASYNC_FUNCTION = 'The function signature is constrained by async shapes, use ensureAsyncSignature.';
+
+export const OP_STRING_TRIM = 'string_trim';
+export const OP_STRING_LOWER = 'string_lower';
+export const OP_STRING_UPPER = 'string_upper';
 
 export const CODE_ARRAY_INCLUDES = 'array_includes';
 export const CODE_ARRAY_MIN = 'array_min';
@@ -24,6 +29,9 @@ export const CODE_NUMBER_LT = 'number_lt';
 export const CODE_NUMBER_GTE = 'number_gte';
 export const CODE_NUMBER_LTE = 'number_lte';
 export const CODE_NUMBER_MULTIPLE = 'number_multiple';
+export const CODE_OBJECT_KEYS_AND = 'object_keys_and';
+export const CODE_OBJECT_KEYS_OR = 'object_keys_or';
+export const CODE_OBJECT_KEYS_XOR = 'object_keys_xor';
 export const CODE_OBJECT_EXACT = 'object_exact';
 export const CODE_OBJECT_PLAIN = 'object_plain';
 export const CODE_SET_MIN = 'set_min';
@@ -68,6 +76,9 @@ export const MESSAGE_NUMBER_LT = 'Must be less than %s';
 export const MESSAGE_NUMBER_LTE = 'Must be less than or equal to %s';
 export const MESSAGE_NUMBER_MULTIPLE = 'Must be a multiple of %s';
 export const MESSAGE_OBJECT_TYPE = 'Must be an object';
+export const MESSAGE_OBJECT_KEYS_AND = 'Must contain all or none of keys: %s';
+export const MESSAGE_OBJECT_KEYS_OR = 'Must contain at least one key: %s';
+export const MESSAGE_OBJECT_KEYS_XOR = 'Must contain exactly one key: %s';
 export const MESSAGE_OBJECT_EXACT = 'Must not have unknown keys: %s';
 export const MESSAGE_OBJECT_PLAIN = 'Must be a plain object';
 export const MESSAGE_PREDICATE = 'Must conform the predicate';

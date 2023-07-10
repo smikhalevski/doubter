@@ -2,9 +2,10 @@
  * The plugin that enhances {@linkcode doubter/core!ArrayShape} with additional methods.
  *
  * ```ts
- * import pluginRichArrays from 'doubter/plugin/rich-arrays';
+ * import { ArrayShape } from 'doubter/core';
+ * import enhanceArrayShape from 'doubter/plugin/rich-arrays';
  *
- * pluginRichArrays();
+ * enhanceArrayShape(ArrayShape.prototype);
  * ```
  *
  * @module doubter/plugin/rich-arrays
@@ -14,11 +15,12 @@ import {
   CODE_ARRAY_INCLUDES,
   CODE_ARRAY_MAX,
   CODE_ARRAY_MIN,
+  ERR_SYNC_REQUIRED,
   MESSAGE_ARRAY_INCLUDES,
   MESSAGE_ARRAY_MAX,
   MESSAGE_ARRAY_MIN,
 } from '../constants';
-import { AnyShape, ArrayShape, IssueOptions, Message } from '../core';
+import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Shape } from '../core';
 import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
@@ -70,95 +72,100 @@ declare module '../core' {
     /**
      * Requires an array to contain at least one element that conforms the given shape.
      *
-     * @param shape The shape of the required element.
+     * @param value The shape of the required element or its literal value. If a shape is provided, then it _must_
+     * support {@link Shape#isAsync the synchronous parsing}.
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/rich-arrays!}
      */
-    includes(shape: AnyShape, options?: IssueOptions | Message): this;
+    includes(value: AnyShape | any, options?: IssueOptions | Message): this;
   }
 }
 
 /**
  * Enhances {@linkcode doubter/core!ArrayShape} with additional methods.
  */
-export default function () {
-  ArrayShape.prototype.length = useLength;
-  ArrayShape.prototype.min = useMin;
-  ArrayShape.prototype.max = useMax;
-  ArrayShape.prototype.nonEmpty = useNonEmpty;
-  ArrayShape.prototype.includes = useIncludes;
-}
+export default function (prototype: ArrayShape<any, any>): void {
+  prototype.length = function (length, options) {
+    return this.min(length, options).max(length, options);
+  };
 
-function useLength(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
-  return this.min(length, options).max(length, options);
-}
+  prototype.min = function (length, options) {
+    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
 
-function useMin(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
-  const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.length < length) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.length < length) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_ARRAY_MIN, param: length }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_ARRAY_MIN, param: length }
+    );
+  };
 
-function useMax(this: ArrayShape<any, any>, length: number, options?: IssueOptions | Message): ArrayShape<any, any> {
-  const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
+  prototype.max = function (length, options) {
+    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.length > length) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.length > length) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
+        return next(input, output, options, issues);
+      },
+
+      { type: CODE_ARRAY_MAX, param: length }
+    );
+  };
+
+  prototype.nonEmpty = function (options) {
+    return this.min(1, options);
+  };
+
+  prototype.includes = function (value, options) {
+    const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, MESSAGE_ARRAY_INCLUDES, options, value);
+
+    let lookup: (output: unknown[], options: ApplyOptions) => boolean;
+
+    if (value instanceof Shape) {
+      if (value.isAsync) {
+        throw new Error(ERR_SYNC_REQUIRED);
       }
-      return next(input, output, options, issues);
-    },
 
-    { type: CODE_ARRAY_MAX, param: length }
-  );
-}
-
-function useNonEmpty(this: ArrayShape<any, any>, options?: IssueOptions | Message): ArrayShape<any, any> {
-  return this.min(1, options);
-}
-
-function useIncludes(
-  this: ArrayShape<any, any>,
-  shape: AnyShape,
-  options?: IssueOptions | Message
-): ArrayShape<any, any> {
-  const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, MESSAGE_ARRAY_INCLUDES, options, undefined);
-
-  return this.use(
-    next => (input, output, options, issues) => {
-      for (const value of output) {
-        if (shape.try(value, options).ok) {
-          return next(input, output, options, issues);
+      lookup = (output, options) => {
+        for (const outputValue of output) {
+          if (value.try(outputValue, options).ok) {
+            return true;
+          }
         }
-      }
+        return false;
+      };
+    } else {
+      lookup = (output, options) => output.includes(value);
+    }
 
-      issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (!lookup(output, options)) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-      if (options.earlyReturn) {
-        return issues;
-      }
-
-      return next(input, output, options, issues);
-    },
-    { type: CODE_ARRAY_INCLUDES, param: shape }
-  );
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_ARRAY_INCLUDES, param: value }
+    );
+  };
 }

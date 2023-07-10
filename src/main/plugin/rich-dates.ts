@@ -2,9 +2,10 @@
  * The plugin that enhances {@linkcode doubter/core!DateShape} with additional methods.
  *
  * ```ts
- * import pluginRichDates from 'doubter/plugin/rich-dates';
+ * import { DateShape } from 'doubter/core';
+ * import enhanceDateShape from 'doubter/plugin/rich-dates';
  *
- * pluginRichDates();
+ * enhanceDateShape(DateShape.prototype);
  * ```
  *
  * @module doubter/plugin/rich-dates
@@ -69,7 +70,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/rich-dates!}
      */
-    toISOString(): Shape<Date, string>;
+    iso(): Shape<Date, string>;
 
     /**
      * Converts date to a timestamp integer number.
@@ -77,68 +78,65 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/rich-dates!}
      */
-    toTimestamp(): Shape<Date, number>;
+    timestamp(): Shape<Date, number>;
   }
 }
 
 /**
  * Enhances {@linkcode doubter/core!DateShape} with additional methods.
  */
-export default function () {
-  DateShape.prototype.min = useMin;
-  DateShape.prototype.max = useMax;
-  DateShape.prototype.after = useMin;
-  DateShape.prototype.before = useMax;
-  DateShape.prototype.toISOString = convertToISOString;
-  DateShape.prototype.toTimestamp = convertToTimestamp;
-}
+export default function (prototype: DateShape): void {
+  prototype.min = function (value, options) {
+    const param = new Date(value);
+    const timestamp = param.getTime();
+    const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, param);
 
-function useMin(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
-  const param = new Date(value);
-  const timestamp = param.getTime();
-  const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, param);
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.getTime() < timestamp) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.getTime() < timestamp) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_DATE_MIN, param }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_DATE_MIN, param }
+    );
+  };
 
-function useMax(this: DateShape, value: Date | number | string, options?: IssueOptions | Message): DateShape {
-  const param = new Date(value);
-  const timestamp = param.getTime();
-  const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, param);
+  prototype.max = function (value, options) {
+    const param = new Date(value);
+    const timestamp = param.getTime();
+    const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, param);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.getTime() > timestamp) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.getTime() > timestamp) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_DATE_MAX, param }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_DATE_MAX, param }
+    );
+  };
 
-function convertToISOString(this: DateShape): Shape<Date, string> {
-  return this.convert(toISOString);
-}
+  prototype.after = prototype.min;
 
-function convertToTimestamp(this: DateShape): Shape<Date, number> {
-  return this.convert(toTimestamp);
+  prototype.before = prototype.max;
+
+  prototype.iso = function () {
+    return this.convert(toISOString);
+  };
+
+  prototype.timestamp = function () {
+    return this.convert(toTimestamp);
+  };
 }
 
 function toISOString(date: Date): string {

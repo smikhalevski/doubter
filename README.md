@@ -1846,9 +1846,9 @@ You can cherry-pick plugins that you need:
 
 ```ts
 import * as d from 'doubter/core';
-import pluginRichStrings from 'doubter/plugin/rich-strings';
+import enhanceStringShape from 'doubter/plugin/rich-strings';
 
-pluginRichStrings();
+enhanceStringShape(d.StringShape.prototype);
 
 d.string().min(2); // ✅ min is defined
 

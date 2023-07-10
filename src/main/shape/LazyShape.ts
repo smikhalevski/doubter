@@ -1,4 +1,4 @@
-import { ERROR_SHAPE_EXPECTED } from '../constants';
+import { ERR_SHAPE_EXPECTED } from '../constants';
 import { captureIssues, copyOperations, identity, isArray, ok, toDeepPartialShape } from '../internal';
 import { ApplyOptions, Literal, Result } from '../types';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
@@ -55,7 +55,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
         return shape;
       }
       shape = 0;
-      throw new Error(ERROR_SHAPE_EXPECTED);
+      throw new Error(ERR_SHAPE_EXPECTED);
     };
   }
 

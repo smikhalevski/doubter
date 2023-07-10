@@ -19,7 +19,7 @@ import {
   CODE_EXCLUDED,
   CODE_PREDICATE,
   CODE_TYPE,
-  ERROR_REQUIRES_ASYNC,
+  ERR_SYNC_UNSUPPORTED,
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
   MESSAGE_STRING_TYPE,
@@ -983,8 +983,8 @@ describe('Shape', () => {
 
   describe('async', () => {
     test('throws if sync methods are invoked', () => {
-      expect(() => new AsyncMockShape().parse('')).toThrow(new Error(ERROR_REQUIRES_ASYNC));
-      expect(() => new AsyncMockShape().try('')).toThrow(new Error(ERROR_REQUIRES_ASYNC));
+      expect(() => new AsyncMockShape().parse('')).toThrow(new Error(ERR_SYNC_UNSUPPORTED));
+      expect(() => new AsyncMockShape().try('')).toThrow(new Error(ERR_SYNC_UNSUPPORTED));
     });
 
     describe('tryAsync', () => {

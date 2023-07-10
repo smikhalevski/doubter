@@ -8,13 +8,14 @@
  * @module doubter/core
  */
 
-import pluginRichArrays from './plugin/rich-arrays';
-import pluginRichBigInts from './plugin/rich-bigints';
-import pluginRichDates from './plugin/rich-dates';
-import pluginRichNumbers from './plugin/rich-numbers';
-import pluginRichObjects from './plugin/rich-objects';
-import pluginRichSets from './plugin/rich-sets';
-import pluginRichStrings from './plugin/rich-strings';
+import enhanceArrayShape from './plugin/rich-arrays';
+import enhanceBigIntShape from './plugin/rich-bigints';
+import enhanceDateShape from './plugin/rich-dates';
+import enhanceNumberShape from './plugin/rich-numbers';
+import enhanceObjectShape from './plugin/rich-objects';
+import enhanceSetShape from './plugin/rich-sets';
+import enhanceStringShape from './plugin/rich-strings';
+import { ArrayShape, BigIntShape, DateShape, NumberShape, ObjectShape, SetShape, StringShape } from './shape';
 
 export type * from './plugin/rich-arrays';
 export type * from './plugin/rich-bigints';
@@ -26,10 +27,10 @@ export type * from './plugin/rich-strings';
 
 export * from './core';
 
-pluginRichArrays();
-pluginRichBigInts();
-pluginRichDates();
-pluginRichNumbers();
-pluginRichObjects();
-pluginRichSets();
-pluginRichStrings();
+enhanceArrayShape(ArrayShape.prototype);
+enhanceBigIntShape(BigIntShape.prototype);
+enhanceDateShape(DateShape.prototype);
+enhanceNumberShape(NumberShape.prototype);
+enhanceObjectShape(ObjectShape.prototype);
+enhanceSetShape(SetShape.prototype);
+enhanceStringShape(StringShape.prototype);

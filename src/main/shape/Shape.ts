@@ -2,7 +2,7 @@ import {
   CODE_DENIED,
   CODE_EXCLUDED,
   CODE_PREDICATE,
-  ERROR_REQUIRES_ASYNC,
+  ERR_SYNC_UNSUPPORTED,
   MESSAGE_DENIED,
   MESSAGE_EXCLUDED,
   MESSAGE_PREDICATE,
@@ -880,7 +880,7 @@ Object.defineProperties(Shape.prototype, {
 
       if (async) {
         this._apply = () => {
-          throw new Error(ERROR_REQUIRES_ASYNC);
+          throw new Error(ERR_SYNC_UNSUPPORTED);
         };
       } else if (this._applyAsync !== universalApplyAsync) {
         this._applyAsync = universalApplyAsync;

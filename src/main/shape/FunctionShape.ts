@@ -1,4 +1,4 @@
-import { CODE_TYPE, ERROR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../constants';
+import { CODE_TYPE, ERR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../constants';
 import {
   applyShape,
   Awaitable,
@@ -158,7 +158,7 @@ export class FunctionShape<
     const { argsShape, returnShape, thisShape } = this;
 
     if (this.isAsyncSignature) {
-      throw new Error(ERROR_ASYNC_FUNCTION);
+      throw new Error(ERR_ASYNC_FUNCTION);
     }
 
     return function (this: any, ...args: any) {

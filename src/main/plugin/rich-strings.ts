@@ -2,9 +2,10 @@
  * The plugin that enhances {@linkcode doubter/core!StringShape} with additional methods.
  *
  * ```ts
- * import pluginRichStrings from 'doubter/plugin/rich-strings';
+ * import { StringShape } from 'doubter/core';
+ * import enhanceStringShape from 'doubter/plugin/rich-strings';
  *
- * pluginRichStrings();
+ * enhanceStringShape(StringShape.prototype);
  * ```
  *
  * @module doubter/plugin/rich-strings
@@ -25,6 +26,9 @@ import {
   MESSAGE_STRING_MIN,
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_STARTS_WITH,
+  OP_STRING_LOWER,
+  OP_STRING_TRIM,
+  OP_STRING_UPPER,
 } from '../constants';
 import { IssueOptions, Message, StringShape } from '../core';
 import { pushIssue } from '../internal';
@@ -143,7 +147,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/rich-strings!}
      */
-    toLowerCase(): this;
+    lower(): this;
 
     /**
      * Converts string to uppercase.
@@ -152,176 +156,163 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/rich-strings!}
      */
-    toUpperCase(): this;
+    upper(): this;
   }
 }
 
 /**
  * Enhances {@linkcode doubter/core!StringShape} with additional methods.
  */
-export default function () {
-  StringShape.prototype.length = useLength;
-  StringShape.prototype.min = useMin;
-  StringShape.prototype.max = useMax;
-  StringShape.prototype.regex = useRegex;
-  StringShape.prototype.includes = useIncludes;
-  StringShape.prototype.startsWith = useStartsWith;
-  StringShape.prototype.endsWith = useEndsWith;
-  StringShape.prototype.nonBlank = useNonBlank;
-  StringShape.prototype.nonEmpty = useNonEmpty;
-  StringShape.prototype.trim = useTrim;
-  StringShape.prototype.toLowerCase = useToLowerCase;
-  StringShape.prototype.toUpperCase = useToUpperCase;
-}
+export default function (prototype: StringShape): void {
+  prototype.length = function (length, options) {
+    return this.min(length, options).max(length, options);
+  };
 
-function useLength(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
-  return this.min(length, options).max(length, options);
-}
+  prototype.min = function (length, options) {
+    const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
 
-function useMin(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
-  const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.length < length) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.length < length) {
-        issues = pushIssue(issues, issueFactory(output, options));
-
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_STRING_MIN, param: length }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_STRING_MIN, param: length }
+    );
+  };
 
-function useMax(this: StringShape, length: number, options?: IssueOptions | Message): StringShape {
-  const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
+  prototype.max = function (length, options) {
+    const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.length > length) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.length > length) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_STRING_MAX, param: length }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_STRING_MAX, param: length }
+    );
+  };
 
-function useRegex(this: StringShape, re: RegExp, options?: IssueOptions | Message): StringShape {
-  const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
+  prototype.regex = function (re, options) {
+    const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (!re.test(output)) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (!re.test(output)) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_STRING_REGEX, param: re }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_STRING_REGEX, param: re }
+    );
+  };
 
-function useIncludes(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
-  const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
+  prototype.includes = function (value, options) {
+    const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.indexOf(value) === -1) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.indexOf(value) === -1) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_STRING_INCLUDES, param: value }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_STRING_INCLUDES, param: value }
+    );
+  };
 
-function useStartsWith(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
-  const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
+  prototype.startsWith = function (value, options) {
+    const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (!output.startsWith(value)) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (!output.startsWith(value)) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_STRING_STARTS_WITH, param: value }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_STRING_STARTS_WITH, param: value }
+    );
+  };
 
-function useEndsWith(this: StringShape, value: string, options?: IssueOptions | Message): StringShape {
-  const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
+  prototype.endsWith = function (value, options) {
+    const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (!output.endsWith(value)) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (!output.endsWith(value)) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_STRING_ENDS_WITH, param: value }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_STRING_ENDS_WITH, param: value }
+    );
+  };
 
-function useNonBlank(this: StringShape, options?: IssueOptions | Message): StringShape {
-  const issueFactory = createIssueFactory(CODE_STRING_BLANK, MESSAGE_STRING_BLANK, options, undefined);
+  prototype.nonBlank = function (options) {
+    const issueFactory = createIssueFactory(CODE_STRING_BLANK, MESSAGE_STRING_BLANK, options, undefined);
 
-  return this.use(
-    next => (input, output, options, issues) => {
-      if (output.trim().length === 0) {
-        issues = pushIssue(issues, issueFactory(output, options));
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (output.trim().length === 0) {
+          issues = pushIssue(issues, issueFactory(output, options));
 
-        if (options.earlyReturn) {
-          return issues;
+          if (options.earlyReturn) {
+            return issues;
+          }
         }
-      }
-      return next(input, output, options, issues);
-    },
-    { type: CODE_STRING_BLANK }
-  );
-}
+        return next(input, output, options, issues);
+      },
+      { type: CODE_STRING_BLANK }
+    );
+  };
 
-function useNonEmpty(this: StringShape, options?: IssueOptions | Message): StringShape {
-  return this.min(1, options);
-}
+  prototype.nonEmpty = function (options) {
+    return this.min(1, options);
+  };
 
-function useTrim(this: StringShape): StringShape {
-  return this.use(next => (input, output, options, issues) => next(input, output.trim(), options, issues), {
-    type: 'string_trim',
-  });
-}
+  prototype.trim = function () {
+    return this.use(next => (input, output, options, issues) => next(input, output.trim(), options, issues), {
+      type: OP_STRING_TRIM,
+    });
+  };
 
-function useToLowerCase(this: StringShape): StringShape {
-  return this.use(next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues), {
-    type: 'string_to_lower_case',
-  });
-}
+  prototype.lower = function () {
+    return this.use(next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues), {
+      type: OP_STRING_LOWER,
+    });
+  };
 
-function useToUpperCase(this: StringShape): StringShape {
-  return this.use(next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues), {
-    type: 'string_to_upper_case',
-  });
+  prototype.upper = function () {
+    return this.use(next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues), {
+      type: OP_STRING_UPPER,
+    });
+  };
 }

@@ -140,6 +140,15 @@ describe('multiple', () => {
 
     expect(new NumberShape().multiple(2).parse(4)).toBe(4);
   });
+
+  test('respects precision', () => {
+    expect(new NumberShape().multiple(0.1).try(49.9)).toEqual({
+      ok: false,
+      issues: [{ code: CODE_NUMBER_MULTIPLE, input: 49.9, param: 0.1, message: 'Must be a multiple of 0.1' }],
+    });
+
+    expect(new NumberShape().multiple(0.1, { precision: 1 }).parse(49.9)).toBe(49.9);
+  });
 });
 
 describe('positive/nonNegative', () => {
