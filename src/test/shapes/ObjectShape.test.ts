@@ -96,9 +96,9 @@ describe('ObjectShape', () => {
     });
   });
 
-  describe('keyof', () => {
+  describe('keysShape', () => {
     test('returns an enum of keys', () => {
-      const keysShape = new ObjectShape({ key1: new Shape(), key2: new Shape() }, null).keyof();
+      const keysShape = new ObjectShape({ key1: new Shape(), key2: new Shape() }, null).keysShape;
 
       expect(keysShape.try('key1')).toEqual({ ok: true, value: 'key1' });
       expect(keysShape.try('key2')).toEqual({ ok: true, value: 'key2' });
@@ -108,6 +108,12 @@ describe('ObjectShape', () => {
           { code: CODE_ENUM, input: 'xxx', message: 'Must be equal to one of key1,key2', param: ['key1', 'key2'] },
         ],
       });
+    });
+
+    test('returns the same shape every time', () => {
+      const shape = new ObjectShape({ key1: new Shape(), key2: new Shape() }, null);
+
+      expect(shape.keysShape).toBe(shape.keysShape);
     });
   });
 
