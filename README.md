@@ -9,7 +9,7 @@ Runtime validation and transformation library.
 - TypeScript first;
 - Sync and async validation and transformation flows;
 - [Circular object references support;](#circular-object-references)
-- [Collect all validation issues](#verbose-mode), or exit early;
+- Collect all validation issues, or [exit early;](#early-return)
 - [Runtime type introspection;](#introspection)
 - [Human-oriented type coercion;](#type-coercion)
 - [High performance and low memory consumption;](#performance)
@@ -32,7 +32,7 @@ npm install --save-prod doubter
 🚀&ensp;**Features**
 
 - [Basics](#basics)
-- [The anatomy of a shape](#the-anatomy-of-a-shape)
+- [Shapes](#shapes)
 - [Validation errors](#validation-errors)
 - [Checks](#checks)
 - [Refinements](#refinements)
@@ -169,7 +169,7 @@ const user: User = {
 };
 ```
 
-# The anatomy of a shape
+# Shapes
 
 Shapes are validation and transformation pipelines that have an input and an output. Here's a shape that restricts an
 input to a string and produces a string as an output:
@@ -236,11 +236,11 @@ d.number().parse('42', { coerce: true });
 Following options are available:
 
 <dl>
-<dt><code>verbose</code></dt>
+<dt><code>earlyReturn</code></dt>
 <dd>
 
-If `true` then Doubter collects all issues during parsing, otherwise parsing is aborted after the first issue is
-encountered. Refer to [Verbose mode](#verbose-mode) section for more details.
+If `true` then parsing is aborted after the first issue is encountered. Refer to [Early return](#early-return) section
+for more details.
 
 </dd>
 <dt><code>coerce</code></dt>
@@ -270,8 +270,8 @@ is provided, it is used as is. You can also configure global issue formatter tha
 
 ### [`parse`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parse)
 
-You're already familiar with `parse` that takes an input value and returns an output value, or throws a validation error
-if parsing fails:
+You've already met `parse` in the [Basics](#basics) section. This method takes an input value and returns an output
+value, or throws a [validation error](#validation-errors) if parsing fails:
 
 ```ts
 const shape = d.number();
@@ -284,7 +284,7 @@ shape.parse('Mars');
 // ❌ ValidationError: type at /: Must be a number
 ```
 
-Use [`parseAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseAsync) with
+Use [`parseAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseAsync) method with
 [async shapes.](#async-shapes) It has the same semantics and returns a promise.
 
 ### [`parseOrDefault`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseOrDefault)
@@ -308,7 +308,7 @@ shape.parseOrDefault('Pluto', 5.3361);
 If you need a fallback value for a nested shape [consider using `catch`](#fallback-value).
 
 Use [`parseOrDefaultAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#parseOrDefaultAsync)
-with [async shapes.](#async-shapes) It has the same semantics and returns a promise.
+method with [async shapes.](#async-shapes) It has the same semantics and returns a promise.
 
 ### [`try`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#try)
 
@@ -325,28 +325,26 @@ shape.try('Mars');
 // ⮕ { ok: false, issues: [{ code: 'type', … }] }
 ```
 
-Use [`tryAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#tryAsync) with
+Use [`tryAsync`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#tryAsync) method with
 [async shapes.](#async-shapes) It has the same semantics and returns a promise.
 
 ## Operations
 
-As the final step of the parsing process, a shape applies operations that were added to it.
+At the final stage of the parsing process, a shape applies operations that were added to it.
 
 ```ts
-const shape = d.string().use({
-  type: 'trim',
-  param: undefined,
-  compose: next => (input, output, options, issues) => {
+const shape = d.string().use(
+  next => (input, output, options, issues) => {
     return next(input, output.trim(), options, issues);
   }
-});
+);
 
 shape.parse('  Space  ');
 // ⮕ 'Space'
 ```
 
-> **Note** Most of the time you don't need to use `use` directly. Instead, you can use [checks](#checks),
-> [refinements](#refinements), and [alterations](#alterations) as a higher-level API.
+> **Warning** Most of the time you don't need to add operations directly. Instead, you can use the higher-level API:
+> [checks](#checks), [refinements](#refinements), and [alterations](#alterations).
 
 Operations can alter the shape output, populate issues, and delegate parsing to the next operation. They are
 executed in the same order they were added. You can access all operations that were added to the shape using the
@@ -356,7 +354,7 @@ executed in the same order they were added. You can access all operations that w
  
 What can make a shape asynchronous:
 
-- [Async type conversions;](#async-conversions)
+- [Async value conversions;](#async-conversions)
 - Usage of [`d.promise`](#promise) that constrains the resolved value;
 - Usage of [custom async shapes.](#advanced-shapes)
 
@@ -476,40 +474,43 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 
 <br/>
 
-| Code              | Caused by                                | Param                                                 |
-|:------------------|:-----------------------------------------|:------------------------------------------------------|
-| `array_min`       | [`d.array().min(n)`](#array)             | The minimum array length `n`                          |
-| `array_max`       | [`d.array().max(n)`](#array)             | The maximum array length `n`                          |
-| `bigint_min`      | [`d.bigint().min(x)`](#bigint)           | The minimum value `x`                                 |
-| `bigint_max`      | [`d.bigint().max(x)`](#bigint)           | The maximum value `x`                                 |
-| `const`           | [`d.const(x)`](#const)                   | The expected constant value `x`                       |
-| `denied`          | [`shape.deny(x)`](#deny-a-literal-value) | The denied value `x`                                  |
-| `date_min`        | [`d.date().min(x)`](#date)               | The minimum value `x`                                 |
-| `date_max`        | [`d.date().max(x)`](#date)               | The maximum value `x`                                 |
-| `enum`            | [`d.enum([x, y, z])`](#enum)             | The array of unique values`[x, y, z]`                 |
-| `excluded`        | [`shape.exclude(…)`](#exclude-a-shape)   | The excluded shape                                    |
-| `instance`        | [`d.instance(Class)`](#instance)         | The class constructor `Class`                         |
-| `intersection`    | [`d.and(…)`](#intersection-and)          | —                                                     |
-| `predicate`       | [`shape.refine(…)`](#refinements)        | The predicate callback                                |
-| `never`           | [`d.never()`](#never)                    | —                                                     |
-| `number_integer`  | [`d.number().integer()`](#number)        | —                                                     |
-| `number_finite`   | [`d.number().finite()`](#number)         | —                                                     |
-| `number_gt`       | [`d.number().gte(x)`](#number)           | The minimum value `x`                                 |
-| `number_lt`       | [`d.number().lte(x)`](#number)           | The maximum value `x`                                 |
-| `number_gte`      | [`d.number().gt(x)`](#number)            | The exclusive minimum value `x`                       |
-| `number_lte`      | [`d.number().lt(x)`](#number)            | The exclusive maximum value `x`                       |
-| `number_multiple` | [`d.number().multiple(x)`](#number)      | The divisor `x`                                       |
-| `object_exact`    | [`d.object().exact()`](#unknown-keys)    | The array of unknown keys                             |
-| `object_plain`    | [`d.object().plain()`](#object)          | —                                                     |
-| `set_min`         | [`d.set().min(n)`](#set)                 | The minimum `Set` size `n`                            |
-| `set_max`         | [`d.set().max(n)`](#set)                 | The maximum `Set` size `n`                            |
-| `string_min`      | [`d.string().min(n)`](#string)           | The minimum string length `n`                         |
-| `string_max`      | [`d.string().max(n)`](#string)           | The maximum string length `n`                         |
-| `string_regex`    | [`d.string().regex(re)`](#string)        | The regular expression `re`                           |
-| `string_blank`    | [`d.string().nonBlank()`](#string)       | —                                                     |
-| `type`            | All shapes                               | The expected [input value type](#introspection)       |
-| `tuple`           | [`d.tuple([…])`](#tuple)                 | The expected tuple length                             |
-| `union`           | [`d.or(…)`](#union-or)                   | [Issues raised by a union](#issues-raised-by-a-union) |
+| Code              | Caused by                                     | Param                                                 |
+|:------------------|:----------------------------------------------|:------------------------------------------------------|
+| `array_min`       | [`d.array().min(n)`](#array)                  | The minimum array length `n`                          |
+| `array_max`       | [`d.array().max(n)`](#array)                  | The maximum array length `n`                          |
+| `bigint_min`      | [`d.bigint().min(x)`](#bigint)                | The minimum value `x`                                 |
+| `bigint_max`      | [`d.bigint().max(x)`](#bigint)                | The maximum value `x`                                 |
+| `const`           | [`d.const(x)`](#const)                        | The expected constant value `x`                       |
+| `denied`          | [`shape.deny(x)`](#deny-a-literal-value)      | The denied value `x`                                  |
+| `date_min`        | [`d.date().min(x)`](#date)                    | The minimum value `x`                                 |
+| `date_max`        | [`d.date().max(x)`](#date)                    | The maximum value `x`                                 |
+| `enum`            | [`d.enum([x, y, z])`](#enum)                  | The array of unique values`[x, y, z]`                 |
+| `excluded`        | [`shape.exclude(…)`](#exclude-a-shape)        | The excluded shape                                    |
+| `instance`        | [`d.instance(Class)`](#instance)              | The class constructor `Class`                         |
+| `intersection`    | [`d.and(…)`](#intersection-and)               | —                                                     |
+| `predicate`       | [`shape.refine(…)`](#refinements)             | The predicate callback                                |
+| `never`           | [`d.never()`](#never)                         | —                                                     |
+| `number_integer`  | [`d.number().integer()`](#number)             | —                                                     |
+| `number_finite`   | [`d.number().finite()`](#number)              | —                                                     |
+| `number_gt`       | [`d.number().gte(x)`](#number)                | The minimum value `x`                                 |
+| `number_lt`       | [`d.number().lte(x)`](#number)                | The maximum value `x`                                 |
+| `number_gte`      | [`d.number().gt(x)`](#number)                 | The exclusive minimum value `x`                       |
+| `number_lte`      | [`d.number().lt(x)`](#number)                 | The exclusive maximum value `x`                       |
+| `number_multiple` | [`d.number().multiple(x)`](#number)           | The divisor `x`                                       |
+| `object_keys_and` | [`d.object().keysAnd(x)`](#key-relationships) | The array of keys `x`                                 |
+| `object_keys_or`  | [`d.object().keysOr(x)`](#key-relationships)  | The array of keys `x`                                 |
+| `object_keys_xor` | [`d.object().keysXor(x)`](#key-relationships) | The array of keys `x`                                 |
+| `object_exact`    | [`d.object().exact()`](#unknown-keys)         | The array of unknown keys                             |
+| `object_plain`    | [`d.object().plain()`](#object)               | —                                                     |
+| `set_min`         | [`d.set().min(n)`](#set)                      | The minimum `Set` size `n`                            |
+| `set_max`         | [`d.set().max(n)`](#set)                      | The maximum `Set` size `n`                            |
+| `string_min`      | [`d.string().min(n)`](#string)                | The minimum string length `n`                         |
+| `string_max`      | [`d.string().max(n)`](#string)                | The maximum string length `n`                         |
+| `string_regex`    | [`d.string().regex(re)`](#string)             | The regular expression `re`                           |
+| `string_blank`    | [`d.string().nonBlank()`](#string)            | —                                                     |
+| `type`            | All shapes                                    | The expected [input value type](#introspection)       |
+| `tuple`           | [`d.tuple([…])`](#tuple)                      | The expected tuple length                             |
+| `union`           | [`d.or(…)`](#union-or)                        | [Issues raised by a union](#issues-raised-by-a-union) |
 
 ## Global error message formatter
 
@@ -590,6 +591,14 @@ returned:
       message: 'Must have the maximum length of 4',
       param: 4,
       meta: undefied
+    },
+    {
+      code: 'string_regex',
+      path: [],
+      input: 'Pluto',
+      message: 'Must match the pattern /a/',
+      param: /a/,
+      meta: undefied
     }
   ]
 }
@@ -619,22 +628,22 @@ shape.parse(['Venus']);
 // ❌ ValidationError: unknown at /: Must include Mars
 ```
 
-## Verbose mode
+## Early return
 
-Doubter halts parsing and raises a validation error as soon as the first issue was encountered. Sometimes you may want
-to collect all issues that prevent input from being successfully parsed. To do this, pass the
-[`verbose`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.ApplyOptions.html#verbose) option to the
-[parse method.](#parsing-and-trying)
+By default, Doubter collects all issues during parsing. In some cases, you may want to halt parsing and raise a
+validation error as soon as the first issue was encountered. To do this, pass the
+[`earlyReturn`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.ApplyOptions.html#earlyReturn) option to
+the [`parse*` method.](#parsing-and-trying)
 
 ```ts
 d.string()
   .max(4)
   .regex(/a/)
-  .try('Pluto', { verbose: true });
+  .try('Pluto', { earlyReturn: true });
 ```
 
-This would return the [`Err`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Err.html) object with two
-issues:
+This would return the [`Err`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Err.html) object with only
+one issue:
 
 ```json5
 {
@@ -642,18 +651,10 @@ issues:
   issues: [
     {
       code: 'string_max',
-      path: [],
+      path: undefied,
       input: 'Pluto',
       message: 'Must have the maximum length of 4',
       param: 4,
-      meta: undefied
-    },
-    {
-      code: 'string_regex',
-      path: [],
-      input: 'Pluto',
-      message: 'Must match the pattern /a/',
-      param: /a/,
       meta: undefied
     }
   ]
@@ -662,55 +663,104 @@ issues:
 
 ## Forced checks
 
-Checks that you add using the
-[`check`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#check) method are "safe" by default,
+Checks added using the
+[`check`](https://smikhalevski.github.io/doubter/classes/doubter_core.Shape.html#check) method are type-safe by default,
 which means they aren't applied if any of the preceding operations have failed.
 
-For example, let's declare an overcomplicated shape of an oversimplified format of an international phone number:
+For example, let's declare a shape with two custom checks:
 
 ```ts
-const plusCheck: d.CheckCallback<string> = value => {
-  if (!value.startsWith('+')) {
-    return { code: 'expected_plus' };
+const lengthCheck: d.CheckCallback<string> = value => {
+  if (value.length < 10) {
+    return { code: 'too_short' };
   }
 };
 
-const digitsCheck: d.CheckCallback<string> = value => {
-  if (!/^+\d+$/.test(value)) {
-    return { code: 'expected_digits' };
+const contentsCheck: d.CheckCallback<string> = value => {
+  if (!/^\d+$/.test(value)) {
+    return { code: 'not_digits' };
   }
 };
-
-const phoneShape = d.string()
-  .check(plusCheck)
-  .check(digitsCheck);
 ```
 
-If the input violates the `plusCheck`, then `digitsCheck` isn't applied:
+By default, if the input violates the `lengthCheck`, then `contentsCheck` isn't applied:
 
 ```ts
-phoneShape.parse('867-5309', { verbose: true });
-// ❌ ValidationError: expected_plus at /
+d.string()
+  .check(lengthCheck)
+  .check(contentsCheck)
+  .try('Mars');
 ```
 
-To force `digitsCheck` to be applied even if `plusCheck` has failed, pass the
+This would return the [`Err`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Err.html) object with only
+one issue produced by the `lengthCheck`:
+
+```json5
+{
+  ok: false,
+  issues: [
+    // 🟡 Only one issue was raised
+    { code: 'too_short' }
+  ]
+}
+```
+
+To force `contentsCheck` to be applied even if `lengthCheck` has failed, pass the
 [`force`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.OperationOptions.html#force) option:
 
 ```ts
-const phoneShape = d.string()
-  .check(plusCheck)
-  .check(digitsCheck, { force: true });
+d.string()
+  .check(lengthCheck)
+  .check(contentsCheck, { force: true })
+  .try('Mars');
 ```
+
+This would return the [`Err`](https://smikhalevski.github.io/doubter/interfaces/doubter_core.Err.html) object with two
+issues produced by the `lengthCheck` and `contentsCheck`:
+
+```json5
+{
+  ok: false,
+  issues: [
+    { code: 'too_short' },
+    { code: 'not_digits' },
+  ]
+}
+```
+
+### Respecting the shape type
 
 Both forced and non-forced checks are applied only if the type of the input is valid.
 
 ```ts
-phoneShape.parse(42);
-// ❌ ValidationError: type at /: Must be a number
+d.string()
+  .check(lengthCheck)
+  .check(contentsCheck, { force: true })
+  // 🟡 Parsing a non-string value
+  .try(42);
 ```
 
-In the example above both `plusCheck` and `digitsCheck` _are not_ applied, despite that `digitsCheck` is marked as
-forced. This is the case because the input value 42 has an invalid type.
+Neither `lengthCheck` nor `contentsCheck` are applied (and even marking `contentsCheck` as forced didn't help):
+
+```json5
+{
+  ok: false,
+  issues: [
+    {
+      code: 'type',
+      path: undefied,
+      input: 42,
+      message: 'Must be a string',
+      param: 'string',
+      meta: undefied,
+    },
+  ]
+}
+```
+
+This happens because the input value 42 has a number type which is invalid since [`d.string`](#string) shape was used.
+
+### Loosing type-safety
 
 For composite shapes, forced checks may become non-type-safe. Let's consider an object with a custom check:
 
@@ -733,12 +783,12 @@ object the check won't be called:
 
 ```ts
 // 🟡 Check isn't applied
-nameShape.parse({ age: 18 }, { verbose: true });
+nameShape.parse({ age: 18 });
 // ❌ ValidationError: type at /yearsOfExperience: Must be a number
 ```
 
-Adding the `force` option in this case would cause the check to be applied even if _object properties have invalid
-types_.
+Adding the `force` option to the `check` call, in this case would cause the check to be applied even if _object
+properties have invalid types_.
 
 Some shapes cannot guarantee that the input value is of the required type. For example, if any of the underlying shapes
 in an intersection have raised issues, an intersection itself cannot guarantee that its checks would receive the value
@@ -829,9 +879,9 @@ convert the shape output value to another type, consider using [conversions.](#c
 
 # Conversions
 
-Conversions are close relatives of [alterations](#alterations) and can transform shape output value. The main difference
-from alterations is that conversions can change the shape output type. Let's consider a shape that takes a string as an
-input and converts it to a number:
+Conversions are close relatives of [alterations](#alterations) that also transform shape output value. The main
+difference from alterations is that conversions can change the shape output type. Let's consider a shape that takes a
+string as an input and converts it to a number:
 
 ```ts
 const shape = d.string().convert(parseFloat);
@@ -2998,7 +3048,7 @@ d.object({
 // ⮕ Shape<{ name?: string | undefined, age: number }>
 ```
 
-Or you can define optional properties as a union:
+Or you can define optional properties as a union with [`d.undefined`](#undefined):
 
 ```ts
 d.object({
@@ -3186,8 +3236,26 @@ const shape = d.object({
   age: d.number()
 });
 
-const keyShape = shape.keyof();
+shape.keysShape;
 // ⮕ Shape<'name' | 'age'>
+```
+
+## Key relationships
+
+Declare relationships between object keys using
+[`keysAnd`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysAnd),
+[`keysOr`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysOr), and
+[`keysXor`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysXor):
+
+```ts
+const shape = d.object({
+  foo: d.string().optional(),
+  bar: d.number().optional(),
+  baz: d.boolean().optional()
+}).keysXor(['foo', 'bar']);
+
+shape.parse({ foo: 'Mars', bar: 42 });
+// ❌ ValidationError: object_keys_xor at /: Must contain exactly one key: foo,bar
 ```
 
 # `promise`
@@ -3679,7 +3747,7 @@ const queryShape = d
 // ⮕ Shape<{ name?: string | undefined, age?: number | undefined }>
 ```
 
-Key takeaways:
+🎯&ensp;**Key takeaways**
 
 1. The object shape is marked as [partial](#making-objects-partial-and-required), so absence of any query param won't
 raise a validation issue. You can mark individual params as optional and
@@ -3728,7 +3796,7 @@ const envShape = d
   .strip();
 ```
 
-Key takeaways:
+🎯&ensp;**Key takeaways**
 
 1. Since env variables are strings, we should enable [type coercion](#type-coercion) to convert the value of
 `HELLO_DATE` to a `Date` instance.

@@ -38,7 +38,7 @@ declare module '../core' {
     plain(options?: IssueOptions | Message): this;
 
     /**
-     * Defines an all-or-nothing relationship between keys where if one of the peers is present, all of them are
+     * Defines an all-or-nothing relationship between keys where if one of the keys is present, all of them are
      * required as well.
      *
      * @param keys The keys of which, if one present, all are required.
@@ -50,7 +50,7 @@ declare module '../core' {
     keysAnd<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
 
     /**
-     * Defines a relationship between keys where one of the peers is required (and more than one is allowed).
+     * Defines a relationship between keys where one of the keys is required (and more than one is allowed).
      *
      * @param keys The keys of which at least one must appear.
      * @param options The issue options or the issue message.
