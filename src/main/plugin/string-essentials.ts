@@ -26,9 +26,9 @@ import {
   MESSAGE_STRING_MIN,
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_STARTS_WITH,
-  OP_STRING_LOWER,
+  OP_STRING_LOWER_CASE,
   OP_STRING_TRIM,
-  OP_STRING_UPPER,
+  OP_STRING_UPPER_CASE,
 } from '../constants';
 import { IssueOptions, Message, StringShape } from '../core';
 import { pushIssue } from '../internal';
@@ -141,22 +141,22 @@ declare module '../core' {
     trim(): this;
 
     /**
-     * Converts string to lowercase.
+     * Converts string to lower case.
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-essentials!}
      */
-    lower(): this;
+    lowerCase(): this;
 
     /**
-     * Converts string to uppercase.
+     * Converts string to upper case.
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-essentials!}
      */
-    upper(): this;
+    upperCase(): this;
   }
 }
 
@@ -304,15 +304,15 @@ export default function (prototype: StringShape): void {
     });
   };
 
-  prototype.lower = function () {
+  prototype.lowerCase = function () {
     return this.use(next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues), {
-      type: OP_STRING_LOWER,
+      type: OP_STRING_LOWER_CASE,
     });
   };
 
-  prototype.upper = function () {
+  prototype.upperCase = function () {
     return this.use(next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues), {
-      type: OP_STRING_UPPER,
+      type: OP_STRING_UPPER_CASE,
     });
   };
 }

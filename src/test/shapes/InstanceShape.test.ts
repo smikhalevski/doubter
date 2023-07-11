@@ -1,5 +1,5 @@
 import { InstanceShape } from '../../main';
-import { CODE_INSTANCE } from '../../main/constants';
+import { CODE_INSTANCE_OF } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../../main/Type';
 
 describe('InstanceShape', () => {
@@ -21,14 +21,14 @@ describe('InstanceShape', () => {
   test('raises an issue if an input is not an instance of the class', () => {
     expect(new InstanceShape(TestClass).try({})).toEqual({
       ok: false,
-      issues: [{ code: CODE_INSTANCE, input: {}, param: TestClass, message: 'Must be a class instance' }],
+      issues: [{ code: CODE_INSTANCE_OF, input: {}, param: TestClass, message: 'Must be a class instance' }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new InstanceShape(TestClass, { message: 'aaa', meta: 'bbb' }).try({})).toEqual({
       ok: false,
-      issues: [{ code: CODE_INSTANCE, input: {}, param: TestClass, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_INSTANCE_OF, input: {}, param: TestClass, message: 'aaa', meta: 'bbb' }],
     });
   });
 

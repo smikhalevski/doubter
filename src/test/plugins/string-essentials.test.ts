@@ -133,14 +133,14 @@ describe('trim', () => {
   });
 });
 
-describe('lower', () => {
+describe('lowerCase', () => {
   test('converts string to lower case', () => {
-    expect(new StringShape().lower().parse('AAA')).toBe('aaa');
+    expect(new StringShape().lowerCase().parse('AAA')).toBe('aaa');
   });
 });
 
-describe('upper', () => {
+describe('upperCase', () => {
   test('converts string to upper case', () => {
-    expect(new StringShape().upper().parse('aaa')).toBe('AAA');
+    expect(new StringShape().upperCase().parse('aaa')).toBe('AAA');
   });
 });

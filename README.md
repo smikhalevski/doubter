@@ -83,7 +83,7 @@ npm install --save-prod doubter
 - Objects<br>
   [`object`](#object)
   [`record`](#record)
-  [`instance`](#instance)
+  [`instanceOf`](#instanceof)
 
 - Collections<br>
   [`array`](#array)
@@ -486,7 +486,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `date_max`            | [`d.date().max(n)`](#date)                          | The maximum value `n`                                 |
 | `enum`                | [`d.enum(…)`](#enum)                                | The array of unique value                             |
 | `excluded`            | [`shape.exclude(…)`](#exclude-a-shape)              | The excluded shape                                    |
-| `instance`            | [`d.instance(Class)`](#instance)                    | The class constructor `Class`                         |
+| `instance_of`         | [`d.instanceOf(Class)`](#instanceof)                | The class constructor `Class`                         |
 | `intersection`        | [`d.and(…)`](#intersection-and)                     | —                                                     |
 | `predicate`           | [`shape.refine(…)`](#refinements)                   | The predicate callback                                |
 | `never`               | [`d.never()`](#never)                               | —                                                     |
@@ -496,7 +496,7 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `number_lt`           | [`d.number().lte(x)`](#number)                      | The maximum value `x`                                 |
 | `number_gte`          | [`d.number().gt(x)`](#number)                       | The exclusive minimum value `x`                       |
 | `number_lte`          | [`d.number().lt(x)`](#number)                       | The exclusive maximum value `x`                       |
-| `number_multiple`     | [`d.number().multiple(x)`](#number)                 | The divisor `x`                                       |
+| `number_multiple_of`  | [`d.number().multipleOf(x)`](#number)               | The divisor `x`                                       |
 | `object_all_keys`     | [`d.object().allKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
 | `object_not_all_keys` | [`d.object().notAllKeys(keys)`](#key-relationships) | The array of `keys`                                   |
 | `object_or_keys`      | [`d.object().orKeys(keys)`](#key-relationships)     | The array of `keys`                                   |
@@ -1078,7 +1078,7 @@ d.string()
 // ⮕ Shape<string, number>
 ```
 
-For example, you can validate that an input value is an [instance of a class](#instance) and then validate its
+For example, you can validate that an input value is an [instance of a class](#instanceof) and then validate its
 properties using [`object`](#object):
 
 ```ts
@@ -1086,14 +1086,14 @@ class Planet {
   constructor(readonly name: string) {}
 }
 
-const shape = d.instance(Planet).to(
+const shape = d.instanceOf(Planet).to(
   d.object({
     name: d.string().min(4)
   })
 );
 
 shape.parse({ name: 'Pluto' });
-// ❌ ValidationError: instance at /: Must be a class instance
+// ❌ ValidationError: instance_of at /: Must be a class instance
 
 shape.parse(new Planet('X'));
 // ❌ ValidationError: string_min at /name: Must have the minimum length of 4
@@ -1945,7 +1945,7 @@ d.number().gte(3); // ❌ gte is undefined
   [`lte`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#lte)
   [`min`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#min)
   [`max`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#max)
-  [`multiple`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#multiple)
+  [`multipleOf`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#multipleOf)
   [`safe`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#safe)
 
 - [**Object essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_object_essentials.html)<br/>
@@ -1973,8 +1973,8 @@ d.number().gte(3); // ❌ gte is undefined
   [`nonBlank`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#nonBlank)
   [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#nonEmpty)
   [`trim`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#trim)
-  [`lower`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#lower)
-  [`upper`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#upper)
+  [`lowerCase`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#lowerCase)
+  [`upperCase`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#upperCase)
 
 ## Other plugins
 
@@ -2694,9 +2694,9 @@ function outputFunction(...inputArguments) {
 }
 ```
 
-# `instance`
+# `instanceOf`
 
-[`d.instance`](https://smikhalevski.github.io/doubter/functions/doubter_core.instance.html) returns an
+[`d.instanceOf`](https://smikhalevski.github.io/doubter/functions/doubter_core.instanceOf.html) returns an
 [`InstanceShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.InstanceShape.html) instance.
 
 Constrains a value to be an object that is an instance of a class:
@@ -2706,7 +2706,7 @@ class User {
   name?: string;
 }
 
-d.instance(User);
+d.instanceOf(User);
 // ⮕ Shape<User>
 ```
 
@@ -3055,7 +3055,7 @@ Constrain a number to be a multiple of a divisor:
 
 ```ts
 // Number must be divisible by 5 without a remainder
-d.number().multiple(5);
+d.number().multipleOf(5);
 ```
 
 Constrain the number to be an integer:

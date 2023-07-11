@@ -18,28 +18,28 @@ import {
   CODE_NUMBER_INTEGER,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
-  CODE_NUMBER_MULTIPLE,
+  CODE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
   MESSAGE_NUMBER_INTEGER,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
-  MESSAGE_NUMBER_MULTIPLE,
+  MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { IssueOptions, Message, NumberShape } from '../core';
 import { pushIssue } from '../internal';
 import { createIssueFactory, extractOptions } from '../utils';
 
-export interface MultipleOptions extends IssueOptions {
+export interface MultipleOfOptions extends IssueOptions {
   /**
-   * By default, {@linkcode doubter/core!NumberShape#multiple NumberShape.multiple} uses
+   * By default, {@linkcode doubter/core!NumberShape#multipleOf NumberShape.multipleOf} uses
    * [the modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
    * may produce unexpected results when used with floating point numbers. This happens because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
    *
    * For example, for small dividers such as 0.01 the result of the division is usually not integer (even when it should
-   * be integer). If you need to use fractional dividers set this option to some positive integer to have `multiple`
+   * be integer). If you need to use fractional dividers set this option to some positive integer to have `multipleOf`
    * validated using this formula:
    *
    * ```
@@ -188,7 +188,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-essentials!}
      */
-    multiple(divisor: number, options?: MultipleOptions | Message): this;
+    multipleOf(divisor: number, options?: MultipleOfOptions | Message): this;
 
     /**
      * Number must be between `Number.MIN_SAFE_INTEGER` and `Number.MAX_SAFE_INTEGER`.
@@ -337,12 +337,12 @@ export default function (prototype: NumberShape): void {
 
   prototype.max = prototype.lte;
 
-  prototype.multiple = function (divisor, options) {
+  prototype.multipleOf = function (divisor, options) {
     const { precision } = extractOptions(options);
 
     const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
 
-    const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE, MESSAGE_NUMBER_MULTIPLE, options, divisor);
+    const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, divisor);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -355,7 +355,7 @@ export default function (prototype: NumberShape): void {
         }
         return next(input, output, options, issues);
       },
-      { type: CODE_NUMBER_MULTIPLE, param: divisor }
+      { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
     );
   };
 

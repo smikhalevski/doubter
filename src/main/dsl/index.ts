@@ -6,7 +6,7 @@ export * from './const';
 export * from './date';
 export * from './enum';
 export * from './function';
-export * from './instance';
+export * from './instanceOf';
 export * from './intersection';
 export * from './lazy';
 export * from './map';

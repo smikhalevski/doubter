@@ -6,7 +6,7 @@ import {
   CODE_NUMBER_INTEGER,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
-  CODE_NUMBER_MULTIPLE,
+  CODE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_INTEGER,
 } from '../../main/constants';
@@ -131,23 +131,23 @@ describe('lte/max', () => {
   });
 });
 
-describe('multiple', () => {
+describe('multipleOf', () => {
   test('raises if value is not a multiple of a divisor', () => {
-    expect(new NumberShape().multiple(2).try(3)).toEqual({
+    expect(new NumberShape().multipleOf(2).try(3)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_MULTIPLE, input: 3, param: 2, message: 'Must be a multiple of 2' }],
+      issues: [{ code: CODE_NUMBER_MULTIPLE_OF, input: 3, param: 2, message: 'Must be a multiple of 2' }],
     });
 
-    expect(new NumberShape().multiple(2).parse(4)).toBe(4);
+    expect(new NumberShape().multipleOf(2).parse(4)).toBe(4);
   });
 
   test('respects precision', () => {
-    expect(new NumberShape().multiple(0.1).try(49.9)).toEqual({
+    expect(new NumberShape().multipleOf(0.1).try(49.9)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_MULTIPLE, input: 49.9, param: 0.1, message: 'Must be a multiple of 0.1' }],
+      issues: [{ code: CODE_NUMBER_MULTIPLE_OF, input: 49.9, param: 0.1, message: 'Must be a multiple of 0.1' }],
     });
 
-    expect(new NumberShape().multiple(0.1, { precision: 1 }).parse(49.9)).toBe(49.9);
+    expect(new NumberShape().multipleOf(0.1, { precision: 1 }).parse(49.9)).toBe(49.9);
   });
 });
 

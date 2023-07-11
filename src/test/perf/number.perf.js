@@ -51,7 +51,7 @@ describe('number()', () => {
   });
 });
 
-describe('number().multiple(1)', () => {
+describe('number().multipleOf(1)', () => {
   const value = 49;
 
   test('Ajv', measure => {
@@ -75,7 +75,7 @@ describe('number().multiple(1)', () => {
   });
 
   test('doubter', measure => {
-    const shape = doubter.number().multiple(1);
+    const shape = doubter.number().multipleOf(1);
 
     measure(() => {
       shape.parse(value);

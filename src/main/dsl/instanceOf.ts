@@ -9,7 +9,7 @@ import { IssueOptions, Message } from '../types';
  * @template Ctor The instance constructor.
  * @group DSL
  */
-export function instance<Ctor extends new (...args: any[]) => any>(
+export function instanceOf<Ctor extends new (...args: any[]) => any>(
   ctor: Ctor,
   options?: IssueOptions | Message
 ): InstanceShape<Ctor> {

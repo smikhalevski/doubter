@@ -1,5 +1,5 @@
 import { NEVER, NumberShape } from '../../main';
-import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE, CODE_TYPE, MESSAGE_NUMBER_TYPE } from '../../main/constants';
+import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE, MESSAGE_NUMBER_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('NumberShape', () => {
@@ -40,18 +40,18 @@ describe('NumberShape', () => {
   });
 
   test('raises a single issue in an early-return mode', () => {
-    expect(new NumberShape().gt(2).multiple(3).try(1, { earlyReturn: true })).toEqual({
+    expect(new NumberShape().gt(2).multipleOf(3).try(1, { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: CODE_NUMBER_GT, input: 1, param: 2, message: 'Must be greater than 2' }],
     });
   });
 
   test('raises multiple issues', () => {
-    expect(new NumberShape().gt(2).multiple(3).try(1)).toEqual({
+    expect(new NumberShape().gt(2).multipleOf(3).try(1)).toEqual({
       ok: false,
       issues: [
         { code: CODE_NUMBER_GT, input: 1, param: 2, message: 'Must be greater than 2' },
-        { code: CODE_NUMBER_MULTIPLE, input: 1, param: 3, message: 'Must be a multiple of 3' },
+        { code: CODE_NUMBER_MULTIPLE_OF, input: 1, param: 3, message: 'Must be a multiple of 3' },
       ],
     });
   });
