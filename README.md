@@ -474,43 +474,43 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 
 <br/>
 
-| Code              | Caused by                                     | Param                                                 |
-|:------------------|:----------------------------------------------|:------------------------------------------------------|
-| `array_min`       | [`d.array().min(n)`](#array)                  | The minimum array length `n`                          |
-| `array_max`       | [`d.array().max(n)`](#array)                  | The maximum array length `n`                          |
-| `bigint_min`      | [`d.bigint().min(x)`](#bigint)                | The minimum value `x`                                 |
-| `bigint_max`      | [`d.bigint().max(x)`](#bigint)                | The maximum value `x`                                 |
-| `const`           | [`d.const(x)`](#const)                        | The expected constant value `x`                       |
-| `denied`          | [`shape.deny(x)`](#deny-a-value)              | The denied value `x`                                  |
-| `date_min`        | [`d.date().min(x)`](#date)                    | The minimum value `x`                                 |
-| `date_max`        | [`d.date().max(x)`](#date)                    | The maximum value `x`                                 |
-| `enum`            | [`d.enum([x, y, z])`](#enum)                  | The array of unique values`[x, y, z]`                 |
-| `excluded`        | [`shape.exclude(…)`](#exclude-a-shape)        | The excluded shape                                    |
-| `instance`        | [`d.instance(Class)`](#instance)              | The class constructor `Class`                         |
-| `intersection`    | [`d.and(…)`](#intersection-and)               | —                                                     |
-| `predicate`       | [`shape.refine(…)`](#refinements)             | The predicate callback                                |
-| `never`           | [`d.never()`](#never)                         | —                                                     |
-| `number_integer`  | [`d.number().integer()`](#number)             | —                                                     |
-| `number_finite`   | [`d.number().finite()`](#number)              | —                                                     |
-| `number_gt`       | [`d.number().gte(x)`](#number)                | The minimum value `x`                                 |
-| `number_lt`       | [`d.number().lte(x)`](#number)                | The maximum value `x`                                 |
-| `number_gte`      | [`d.number().gt(x)`](#number)                 | The exclusive minimum value `x`                       |
-| `number_lte`      | [`d.number().lt(x)`](#number)                 | The exclusive maximum value `x`                       |
-| `number_multiple` | [`d.number().multiple(x)`](#number)           | The divisor `x`                                       |
-| `object_keys_and` | [`d.object().keysAnd(x)`](#key-relationships) | The array of keys `x`                                 |
-| `object_keys_or`  | [`d.object().keysOr(x)`](#key-relationships)  | The array of keys `x`                                 |
-| `object_keys_xor` | [`d.object().keysXor(x)`](#key-relationships) | The array of keys `x`                                 |
-| `object_exact`    | [`d.object().exact()`](#unknown-keys)         | The array of unknown keys                             |
-| `object_plain`    | [`d.object().plain()`](#object)               | —                                                     |
-| `set_min`         | [`d.set().min(n)`](#set)                      | The minimum `Set` size `n`                            |
-| `set_max`         | [`d.set().max(n)`](#set)                      | The maximum `Set` size `n`                            |
-| `string_min`      | [`d.string().min(n)`](#string)                | The minimum string length `n`                         |
-| `string_max`      | [`d.string().max(n)`](#string)                | The maximum string length `n`                         |
-| `string_regex`    | [`d.string().regex(re)`](#string)             | The regular expression `re`                           |
-| `string_blank`    | [`d.string().nonBlank()`](#string)            | —                                                     |
-| `type`            | All shapes                                    | The expected [input value type](#introspection)       |
-| `tuple`           | [`d.tuple([…])`](#tuple)                      | The expected tuple length                             |
-| `union`           | [`d.or(…)`](#union-or)                        | [Issues raised by a union](#issues-raised-by-a-union) |
+| Code              | Caused by                                        | Param                                                 |
+|:------------------|:-------------------------------------------------|:------------------------------------------------------|
+| `array_min`       | [`d.array().min(n)`](#array)                     | The minimum array length `n`                          |
+| `array_max`       | [`d.array().max(n)`](#array)                     | The maximum array length `n`                          |
+| `bigint_min`      | [`d.bigint().min(n)`](#bigint)                   | The minimum value `n`                                 |
+| `bigint_max`      | [`d.bigint().max(n)`](#bigint)                   | The maximum value `n`                                 |
+| `const`           | [`d.const(x)`](#const)                           | The expected constant value `x`                       |
+| `denied`          | [`shape.deny(x)`](#deny-a-value)                 | The denied value `x`                                  |
+| `date_min`        | [`d.date().min(n)`](#date)                       | The minimum value `n`                                 |
+| `date_max`        | [`d.date().max(n)`](#date)                       | The maximum value `n`                                 |
+| `enum`            | [`d.enum(…)`](#enum)                             | The array of unique value                             |
+| `excluded`        | [`shape.exclude(…)`](#exclude-a-shape)           | The excluded shape                                    |
+| `instance`        | [`d.instance(Class)`](#instance)                 | The class constructor `Class`                         |
+| `intersection`    | [`d.and(…)`](#intersection-and)                  | —                                                     |
+| `predicate`       | [`shape.refine(…)`](#refinements)                | The predicate callback                                |
+| `never`           | [`d.never()`](#never)                            | —                                                     |
+| `number_integer`  | [`d.number().integer()`](#number)                | —                                                     |
+| `number_finite`   | [`d.number().finite()`](#number)                 | —                                                     |
+| `number_gt`       | [`d.number().gte(x)`](#number)                   | The minimum value `x`                                 |
+| `number_lt`       | [`d.number().lte(x)`](#number)                   | The maximum value `x`                                 |
+| `number_gte`      | [`d.number().gt(x)`](#number)                    | The exclusive minimum value `x`                       |
+| `number_lte`      | [`d.number().lt(x)`](#number)                    | The exclusive maximum value `x`                       |
+| `number_multiple` | [`d.number().multiple(x)`](#number)              | The divisor `x`                                       |
+| `object_keys_and` | [`d.object().keysAnd(keys)`](#key-relationships) | The array of `keys`                                   |
+| `object_keys_or`  | [`d.object().keysOr(keys)`](#key-relationships)  | The array of `keys`                                   |
+| `object_keys_xor` | [`d.object().keysXor(keys)`](#key-relationships) | The array of `keys`                                   |
+| `object_exact`    | [`d.object().exact()`](#unknown-keys)            | The array of unknown keys                             |
+| `object_plain`    | [`d.object().plain()`](#object)                  | —                                                     |
+| `set_min`         | [`d.set().min(n)`](#set)                         | The minimum `Set` size `n`                            |
+| `set_max`         | [`d.set().max(n)`](#set)                         | The maximum `Set` size `n`                            |
+| `string_min`      | [`d.string().min(n)`](#string)                   | The minimum string length `n`                         |
+| `string_max`      | [`d.string().max(n)`](#string)                   | The maximum string length `n`                         |
+| `string_regex`    | [`d.string().regex(re)`](#string)                | The regular expression `re`                           |
+| `string_blank`    | [`d.string().nonBlank()`](#string)               | —                                                     |
+| `type`            | All shapes                                       | The expected [input value type](#introspection)       |
+| `tuple`           | [`d.tuple([…])`](#tuple)                         | The expected tuple length                             |
+| `union`           | [`d.or(…)`](#union-or)                           | [Issues raised by a union](#issues-raised-by-a-union) |
 
 ## Global error message formatter
 
@@ -1907,21 +1907,75 @@ d.number().gte(3); // ❌ gte is undefined
 
 ## Built-in plugins
 
-| Import from                        | Description                                                                                                            |
-|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| `doubter/plugin/array-essentials`  | [Essential `ArrayShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_array_essentials.html)   |
-| `doubter/plugin/bigint-essentials` | [Essential `BigIntShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_bigint_essentials.html) |
-| `doubter/plugin/date-essentials`   | [Essential `DateShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_date_essentials.html)     |
-| `doubter/plugin/number-essentials` | [Essential `NumberShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_number_essentials.html) |
-| `doubter/plugin/object-essentials` | [Essential `ObjectShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_object_essentials.html) |
-| `doubter/plugin/set-essentials`    | [Essential `SetShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_set_essentials.html)       |
-| `doubter/plugin/string-essentials` | [Essential `StringShape` checks](https://smikhalevski.github.io/doubter/modules/doubter_plugin_string_essentials.html) |
+- [**Array essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_array_essentials.html)<br/>
+  [`length`](https://smikhalevski.github.io/doubter/classes/doubter_core.ArrayShape.html#length)
+  [`min`](https://smikhalevski.github.io/doubter/classes/doubter_core.ArrayShape.html#min)
+  [`max`](https://smikhalevski.github.io/doubter/classes/doubter_core.ArrayShape.html#max)
+  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/doubter_core.ArrayShape.html#nonEmpty)
+  [`includes`](https://smikhalevski.github.io/doubter/classes/doubter_core.ArrayShape.html#includes)
+
+- [**Bigint essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_bigint_essentials.html)<br/>
+  [`positive`](https://smikhalevski.github.io/doubter/classes/doubter_core.BigIntShape.html#positive)
+  [`negative`](https://smikhalevski.github.io/doubter/classes/doubter_core.BigIntShape.html#negative)
+  [`nonPositive`](https://smikhalevski.github.io/doubter/classes/doubter_core.BigIntShape.html#nonPositive)
+  [`nonNegative`](https://smikhalevski.github.io/doubter/classes/doubter_core.BigIntShape.html#nonNegative)
+  [`min`](https://smikhalevski.github.io/doubter/classes/doubter_core.BigIntShape.html#min)
+  [`max`](https://smikhalevski.github.io/doubter/classes/doubter_core.BigIntShape.html#max)
+
+- [**Date essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_date_essentials.html)<br/>
+  [`min`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#min)
+  [`max`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#max)
+  [`after`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#after)
+  [`before`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#before)
+  [`iso`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#iso)
+  [`timestamp`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#timestamp)
+
+- [**Number essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_number_essentials.html)<br/>
+  [`finite`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#finite)
+  [`integer`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#integer)
+  [`positive`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#positive)
+  [`negative`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#negative)
+  [`nonPositive`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#nonPositive)
+  [`nonNegative`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#nonNegative)
+  [`gt`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#gt)
+  [`lt`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#lt)
+  [`gte`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#gte)
+  [`lte`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#lte)
+  [`min`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#min)
+  [`max`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#max)
+  [`multiple`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#multiple)
+  [`safe`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#safe)
+
+- [**Object essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_object_essentials.html)<br/>
+  [`plain`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#plain)
+  [`keysAnd`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysAnd)
+  [`keysOr`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysOr)
+  [`keysXor`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysXor)
+
+- [**Set essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_set_essentials.html)<br/>
+  [`size`](https://smikhalevski.github.io/doubter/classes/doubter_core.SetShape.html#size)
+  [`min`](https://smikhalevski.github.io/doubter/classes/doubter_core.SetShape.html#min)
+  [`max`](https://smikhalevski.github.io/doubter/classes/doubter_core.SetShape.html#max)
+  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/doubter_core.SetShape.html#nonEmpty)
+
+- [**String essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_string_essentials.html)<br/>
+  [`length`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#length)
+  [`min`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#min)
+  [`max`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#max)
+  [`regex`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#regex)
+  [`includes`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#includes)
+  [`startsWith`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#startsWith)
+  [`endsWith`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#endsWith)
+  [`nonBlank`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#nonBlank)
+  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#nonEmpty)
+  [`trim`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#trim)
+  [`lower`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#lower)
+  [`upper`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#upper)
 
 ## Other plugins
 
-| Import from                        | Description                                                                                                            |
-|------------------------------------|------------------------------------------------------------------------------------------------------------------------|
-| `@doubter/plugin-string-format`    | [Email, FQDN, MIME, and many other string formats](https://github.com/smikhalevski/doubter-plugin-string-format)       |
+- [@doubter/plugin-string-format](https://github.com/smikhalevski/doubter-plugin-string-format)<br>
+  Extends `StringShape` with email, FQDN, MIME, BIC, ISIN, Luhn, and many other format checks.
 
 ## Integrations
 
