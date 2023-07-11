@@ -474,43 +474,45 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 
 <br/>
 
-| Code              | Caused by                                        | Param                                                 |
-|:------------------|:-------------------------------------------------|:------------------------------------------------------|
-| `array_min`       | [`d.array().min(n)`](#array)                     | The minimum array length `n`                          |
-| `array_max`       | [`d.array().max(n)`](#array)                     | The maximum array length `n`                          |
-| `bigint_min`      | [`d.bigint().min(n)`](#bigint)                   | The minimum value `n`                                 |
-| `bigint_max`      | [`d.bigint().max(n)`](#bigint)                   | The maximum value `n`                                 |
-| `const`           | [`d.const(x)`](#const)                           | The expected constant value `x`                       |
-| `denied`          | [`shape.deny(x)`](#deny-a-value)                 | The denied value `x`                                  |
-| `date_min`        | [`d.date().min(n)`](#date)                       | The minimum value `n`                                 |
-| `date_max`        | [`d.date().max(n)`](#date)                       | The maximum value `n`                                 |
-| `enum`            | [`d.enum(…)`](#enum)                             | The array of unique value                             |
-| `excluded`        | [`shape.exclude(…)`](#exclude-a-shape)           | The excluded shape                                    |
-| `instance`        | [`d.instance(Class)`](#instance)                 | The class constructor `Class`                         |
-| `intersection`    | [`d.and(…)`](#intersection-and)                  | —                                                     |
-| `predicate`       | [`shape.refine(…)`](#refinements)                | The predicate callback                                |
-| `never`           | [`d.never()`](#never)                            | —                                                     |
-| `number_integer`  | [`d.number().integer()`](#number)                | —                                                     |
-| `number_finite`   | [`d.number().finite()`](#number)                 | —                                                     |
-| `number_gt`       | [`d.number().gte(x)`](#number)                   | The minimum value `x`                                 |
-| `number_lt`       | [`d.number().lte(x)`](#number)                   | The maximum value `x`                                 |
-| `number_gte`      | [`d.number().gt(x)`](#number)                    | The exclusive minimum value `x`                       |
-| `number_lte`      | [`d.number().lt(x)`](#number)                    | The exclusive maximum value `x`                       |
-| `number_multiple` | [`d.number().multiple(x)`](#number)              | The divisor `x`                                       |
-| `object_keys_and` | [`d.object().keysAnd(keys)`](#key-relationships) | The array of `keys`                                   |
-| `object_keys_or`  | [`d.object().keysOr(keys)`](#key-relationships)  | The array of `keys`                                   |
-| `object_keys_xor` | [`d.object().keysXor(keys)`](#key-relationships) | The array of `keys`                                   |
-| `object_exact`    | [`d.object().exact()`](#unknown-keys)            | The array of unknown keys                             |
-| `object_plain`    | [`d.object().plain()`](#object)                  | —                                                     |
-| `set_min`         | [`d.set().min(n)`](#set)                         | The minimum `Set` size `n`                            |
-| `set_max`         | [`d.set().max(n)`](#set)                         | The maximum `Set` size `n`                            |
-| `string_min`      | [`d.string().min(n)`](#string)                   | The minimum string length `n`                         |
-| `string_max`      | [`d.string().max(n)`](#string)                   | The maximum string length `n`                         |
-| `string_regex`    | [`d.string().regex(re)`](#string)                | The regular expression `re`                           |
-| `string_blank`    | [`d.string().nonBlank()`](#string)               | —                                                     |
-| `type`            | All shapes                                       | The expected [input value type](#introspection)       |
-| `tuple`           | [`d.tuple([…])`](#tuple)                         | The expected tuple length                             |
-| `union`           | [`d.or(…)`](#union-or)                           | [Issues raised by a union](#issues-raised-by-a-union) |
+| Code                  | Caused by                                           | Param                                                 |
+|:----------------------|:----------------------------------------------------|:------------------------------------------------------|
+| `array_min`           | [`d.array().min(n)`](#array)                        | The minimum array length `n`                          |
+| `array_max`           | [`d.array().max(n)`](#array)                        | The maximum array length `n`                          |
+| `bigint_min`          | [`d.bigint().min(n)`](#bigint)                      | The minimum value `n`                                 |
+| `bigint_max`          | [`d.bigint().max(n)`](#bigint)                      | The maximum value `n`                                 |
+| `const`               | [`d.const(x)`](#const)                              | The expected constant value `x`                       |
+| `denied`              | [`shape.deny(x)`](#deny-a-value)                    | The denied value `x`                                  |
+| `date_min`            | [`d.date().min(n)`](#date)                          | The minimum value `n`                                 |
+| `date_max`            | [`d.date().max(n)`](#date)                          | The maximum value `n`                                 |
+| `enum`                | [`d.enum(…)`](#enum)                                | The array of unique value                             |
+| `excluded`            | [`shape.exclude(…)`](#exclude-a-shape)              | The excluded shape                                    |
+| `instance`            | [`d.instance(Class)`](#instance)                    | The class constructor `Class`                         |
+| `intersection`        | [`d.and(…)`](#intersection-and)                     | —                                                     |
+| `predicate`           | [`shape.refine(…)`](#refinements)                   | The predicate callback                                |
+| `never`               | [`d.never()`](#never)                               | —                                                     |
+| `number_integer`      | [`d.number().integer()`](#number)                   | —                                                     |
+| `number_finite`       | [`d.number().finite()`](#number)                    | —                                                     |
+| `number_gt`           | [`d.number().gte(x)`](#number)                      | The minimum value `x`                                 |
+| `number_lt`           | [`d.number().lte(x)`](#number)                      | The maximum value `x`                                 |
+| `number_gte`          | [`d.number().gt(x)`](#number)                       | The exclusive minimum value `x`                       |
+| `number_lte`          | [`d.number().lt(x)`](#number)                       | The exclusive maximum value `x`                       |
+| `number_multiple`     | [`d.number().multiple(x)`](#number)                 | The divisor `x`                                       |
+| `object_all_keys`     | [`d.object().allKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
+| `object_not_all_keys` | [`d.object().notAllKeys(keys)`](#key-relationships) | The array of `keys`                                   |
+| `object_or_keys`      | [`d.object().orKeys(keys)`](#key-relationships)     | The array of `keys`                                   |
+| `object_xor_keys`     | [`d.object().xorKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
+| `object_oxor_keys`    | [`d.object().oxorKeys(keys)`](#key-relationships)   | The array of `keys`                                   |
+| `object_exact`        | [`d.object().exact()`](#unknown-keys)               | The array of unknown keys                             |
+| `object_plain`        | [`d.object().plain()`](#object)                     | —                                                     |
+| `set_min`             | [`d.set().min(n)`](#set)                            | The minimum `Set` size `n`                            |
+| `set_max`             | [`d.set().max(n)`](#set)                            | The maximum `Set` size `n`                            |
+| `string_min`          | [`d.string().min(n)`](#string)                      | The minimum string length `n`                         |
+| `string_max`          | [`d.string().max(n)`](#string)                      | The maximum string length `n`                         |
+| `string_regex`        | [`d.string().regex(re)`](#string)                   | The regular expression `re`                           |
+| `string_blank`        | [`d.string().nonBlank()`](#string)                  | —                                                     |
+| `type`                | All shapes                                          | The expected [input value type](#introspection)       |
+| `tuple`               | [`d.tuple([…])`](#tuple)                            | The expected tuple length                             |
+| `union`               | [`d.or(…)`](#union-or)                              | [Issues raised by a union](#issues-raised-by-a-union) |
 
 ## Global error message formatter
 
@@ -1948,9 +1950,11 @@ d.number().gte(3); // ❌ gte is undefined
 
 - [**Object essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_object_essentials.html)<br/>
   [`plain`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#plain)
-  [`keysAnd`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysAnd)
-  [`keysOr`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysOr)
-  [`keysXor`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysXor)
+  [`allKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#allKeys)
+  [`notAllKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#notAllKeys)
+  [`orKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#orKeys)
+  [`xorKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#xorKeys)
+  [`oxorKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#oxorKeys)
 
 - [**Set essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_set_essentials.html)<br/>
   [`size`](https://smikhalevski.github.io/doubter/classes/doubter_core.SetShape.html#size)
@@ -3319,19 +3323,23 @@ shape.keysShape;
 ## Key relationships
 
 Declare relationships between object keys using
-[`keysAnd`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysAnd),
-[`keysOr`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysOr), and
-[`keysXor`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#keysXor):
+[`allKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#allKeys)
+[`notAllKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#notAllKeys)
+[`orKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#orKeys)
+[`xorKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#xorKeys)
+[`oxorKeys`](https://smikhalevski.github.io/doubter/classes/doubter_core.ObjectShape.html#oxorKeys)
 
 ```ts
 const shape = d.object({
-  foo: d.string().optional(),
-  bar: d.number().optional(),
-  baz: d.boolean().optional()
-}).keysXor(['foo', 'bar']);
+  foo: d.string(),
+  bar: d.number(),
+  baz: d.boolean()
+})
+  .partial()
+  .xorKeys(['foo', 'bar']);
 
 shape.parse({ foo: 'Mars', bar: 42 });
-// ❌ ValidationError: object_keys_xor at /: Must contain exactly one key: foo,bar
+// ❌ ValidationError: object_xor_keys at /: Must contain exactly one key: foo,bar
 ```
 
 # `promise`

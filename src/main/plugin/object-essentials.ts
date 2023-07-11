@@ -12,14 +12,18 @@
  */
 
 import {
-  CODE_OBJECT_KEYS_AND,
-  CODE_OBJECT_KEYS_OR,
-  CODE_OBJECT_KEYS_XOR,
+  CODE_OBJECT_ALL_KEYS,
+  CODE_OBJECT_NOT_ALL_KEYS,
+  CODE_OBJECT_OR_KEYS,
+  CODE_OBJECT_OXOR_KEYS,
   CODE_OBJECT_PLAIN,
-  MESSAGE_OBJECT_KEYS_AND,
-  MESSAGE_OBJECT_KEYS_OR,
-  MESSAGE_OBJECT_KEYS_XOR,
+  CODE_OBJECT_XOR_KEYS,
+  MESSAGE_OBJECT_ALL_KEYS,
+  MESSAGE_OBJECT_NOT_ALL_KEYS,
+  MESSAGE_OBJECT_OR_KEYS,
+  MESSAGE_OBJECT_OXOR_KEYS,
   MESSAGE_OBJECT_PLAIN,
+  MESSAGE_OBJECT_XOR_KEYS,
 } from '../constants';
 import { AnyShape, IssueOptions, Message, ObjectShape } from '../core';
 import { isPlainObject, pushIssue, ReadonlyDict } from '../internal';
@@ -47,10 +51,21 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/object-essentials!}
      */
-    keysAnd<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+    allKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
 
     /**
-     * Defines a relationship between keys where one of the keys is required (and more than one is allowed).
+     * Defines a relationship between keys where not all peers can be present at the same time.
+     *
+     * @param keys The keys of which, if one present, the others may not all be present.
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/object-essentials!}
+     */
+    notAllKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+
+    /**
+     * Defines a relationship between keys where at least one of the keys is required (and more than one is allowed).
      *
      * @param keys The keys of which at least one must appear.
      * @param options The issue options or the issue message.
@@ -58,7 +73,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/object-essentials!}
      */
-    keysOr<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+    orKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where one of them is required but not at the same time.
@@ -69,7 +84,18 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/object-essentials!}
      */
-    keysXor<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+    xorKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+
+    /**
+     * Defines an exclusive relationship between a set of keys where only one is allowed but none are required.
+     *
+     * @param keys The exclusive keys that must not appear together but where none are required.
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link doubter/plugin/object-essentials!}
+     */
+    oxorKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
   }
 }
 
@@ -95,14 +121,14 @@ export default function (prototype: ObjectShape<any, any>): void {
     );
   };
 
-  prototype.keysAnd = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_KEYS_AND, MESSAGE_OBJECT_KEYS_AND, options, keys);
+  prototype.allKeys = function (keys, options) {
+    const issueFactory = createIssueFactory(CODE_OBJECT_ALL_KEYS, MESSAGE_OBJECT_ALL_KEYS, options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
-        const count = getKeyCount(output, keys, keys.length);
+        const keyCount = getKeyCount(output, keys, keys.length);
 
-        if (count > 0 && count < keys.length) {
+        if (keyCount > 0 && keyCount < keys.length) {
           issues = pushIssue(issues, issueFactory(output, options));
 
           if (options.earlyReturn) {
@@ -111,12 +137,32 @@ export default function (prototype: ObjectShape<any, any>): void {
         }
         return next(input, output, options, issues);
       },
-      { type: CODE_OBJECT_KEYS_AND, param: keys }
+      { type: CODE_OBJECT_ALL_KEYS, param: keys }
     );
   };
 
-  prototype.keysOr = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_KEYS_OR, MESSAGE_OBJECT_KEYS_OR, options, keys);
+  prototype.notAllKeys = function (keys, options) {
+    const issueFactory = createIssueFactory(CODE_OBJECT_NOT_ALL_KEYS, MESSAGE_OBJECT_NOT_ALL_KEYS, options, keys);
+
+    return this.use(
+      next => (input, output, options, issues) => {
+        const keyCount = getKeyCount(output, keys, keys.length);
+
+        if (keyCount > 0 && keyCount <= keys.length) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_OBJECT_NOT_ALL_KEYS, param: keys }
+    );
+  };
+
+  prototype.orKeys = function (keys, options) {
+    const issueFactory = createIssueFactory(CODE_OBJECT_OR_KEYS, MESSAGE_OBJECT_OR_KEYS, options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -129,12 +175,12 @@ export default function (prototype: ObjectShape<any, any>): void {
         }
         return next(input, output, options, issues);
       },
-      { type: CODE_OBJECT_KEYS_OR, param: keys }
+      { type: CODE_OBJECT_OR_KEYS, param: keys }
     );
   };
 
-  prototype.keysXor = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_KEYS_XOR, MESSAGE_OBJECT_KEYS_XOR, options, keys);
+  prototype.xorKeys = function (keys, options) {
+    const issueFactory = createIssueFactory(CODE_OBJECT_XOR_KEYS, MESSAGE_OBJECT_XOR_KEYS, options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -147,7 +193,25 @@ export default function (prototype: ObjectShape<any, any>): void {
         }
         return next(input, output, options, issues);
       },
-      { type: CODE_OBJECT_KEYS_XOR, param: keys }
+      { type: CODE_OBJECT_XOR_KEYS, param: keys }
+    );
+  };
+
+  prototype.oxorKeys = function (keys, options) {
+    const issueFactory = createIssueFactory(CODE_OBJECT_OXOR_KEYS, MESSAGE_OBJECT_OXOR_KEYS, options, keys);
+
+    return this.use(
+      next => (input, output, options, issues) => {
+        if (getKeyCount(output, keys, 2) > 1) {
+          issues = pushIssue(issues, issueFactory(output, options));
+
+          if (options.earlyReturn) {
+            return issues;
+          }
+        }
+        return next(input, output, options, issues);
+      },
+      { type: CODE_OBJECT_OXOR_KEYS, param: keys }
     );
   };
 }
