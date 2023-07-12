@@ -133,7 +133,7 @@ import * as d from 'doubter';
 
 const userShape = d.object({
   name: d.string(),
-  age: d.number().integer().gte(18).lt(100)
+  age: d.number().int().gte(18).lt(100)
 });
 // ⮕ Shape<{ name: string, age: number }>
 ```
@@ -155,7 +155,7 @@ userShape.parse({
   name: 'Peter Parker',
   age: 17
 });
-// ❌ ValidationError: number_gte at /age: Must be greater than or equal to 18
+// ❌ ValidationError: number.gte at /age: Must be greater than or equal to 18
 ```
 
 Infer the user type from the shape:
@@ -421,7 +421,7 @@ the array of issues:
       path: ['age'],
       input: 'seventeen',
       message: 'Must be a number',
-      param: 'number',
+      param: Type.NUMBER,
       meta: undefied
     }
   ]
@@ -474,45 +474,49 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 
 <br/>
 
-| Code                  | Caused by                                           | Param                                                 |
-|:----------------------|:----------------------------------------------------|:------------------------------------------------------|
-| `array_min`           | [`d.array().min(n)`](#array)                        | The minimum array length `n`                          |
-| `array_max`           | [`d.array().max(n)`](#array)                        | The maximum array length `n`                          |
-| `bigint_min`          | [`d.bigint().min(n)`](#bigint)                      | The minimum value `n`                                 |
-| `bigint_max`          | [`d.bigint().max(n)`](#bigint)                      | The maximum value `n`                                 |
-| `const`               | [`d.const(x)`](#const)                              | The expected constant value `x`                       |
-| `denied`              | [`shape.deny(x)`](#deny-a-value)                    | The denied value `x`                                  |
-| `date_min`            | [`d.date().min(n)`](#date)                          | The minimum value `n`                                 |
-| `date_max`            | [`d.date().max(n)`](#date)                          | The maximum value `n`                                 |
-| `enum`                | [`d.enum(…)`](#enum)                                | The array of unique value                             |
-| `excluded`            | [`shape.exclude(…)`](#exclude-a-shape)              | The excluded shape                                    |
-| `instance_of`         | [`d.instanceOf(Class)`](#instanceof)                | The class constructor `Class`                         |
-| `intersection`        | [`d.and(…)`](#intersection-and)                     | —                                                     |
-| `predicate`           | [`shape.refine(…)`](#refinements)                   | The predicate callback                                |
-| `never`               | [`d.never()`](#never)                               | —                                                     |
-| `number_integer`      | [`d.number().integer()`](#number)                   | —                                                     |
-| `number_finite`       | [`d.number().finite()`](#number)                    | —                                                     |
-| `number_gt`           | [`d.number().gte(x)`](#number)                      | The minimum value `x`                                 |
-| `number_lt`           | [`d.number().lte(x)`](#number)                      | The maximum value `x`                                 |
-| `number_gte`          | [`d.number().gt(x)`](#number)                       | The exclusive minimum value `x`                       |
-| `number_lte`          | [`d.number().lt(x)`](#number)                       | The exclusive maximum value `x`                       |
-| `number_multiple_of`  | [`d.number().multipleOf(x)`](#number)               | The divisor `x`                                       |
-| `object_all_keys`     | [`d.object().allKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
-| `object_not_all_keys` | [`d.object().notAllKeys(keys)`](#key-relationships) | The array of `keys`                                   |
-| `object_or_keys`      | [`d.object().orKeys(keys)`](#key-relationships)     | The array of `keys`                                   |
-| `object_xor_keys`     | [`d.object().xorKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
-| `object_oxor_keys`    | [`d.object().oxorKeys(keys)`](#key-relationships)   | The array of `keys`                                   |
-| `object_exact`        | [`d.object().exact()`](#unknown-keys)               | The array of unknown keys                             |
-| `object_plain`        | [`d.object().plain()`](#object)                     | —                                                     |
-| `set_min`             | [`d.set().min(n)`](#set)                            | The minimum `Set` size `n`                            |
-| `set_max`             | [`d.set().max(n)`](#set)                            | The maximum `Set` size `n`                            |
-| `string_min`          | [`d.string().min(n)`](#string)                      | The minimum string length `n`                         |
-| `string_max`          | [`d.string().max(n)`](#string)                      | The maximum string length `n`                         |
-| `string_regex`        | [`d.string().regex(re)`](#string)                   | The regular expression `re`                           |
-| `string_blank`        | [`d.string().nonBlank()`](#string)                  | —                                                     |
-| `type`                | All shapes                                          | The expected [input value type](#introspection)       |
-| `tuple`               | [`d.tuple([…])`](#tuple)                            | The expected tuple length                             |
-| `union`               | [`d.or(…)`](#union-or)                              | [Issues raised by a union](#issues-raised-by-a-union) |
+| Code                | Caused by                                           | Param                                                 |
+|:--------------------|:----------------------------------------------------|:------------------------------------------------------|
+| `any.deny`          | [`shape.deny(x)`](#deny-a-value)                    | The denied value `x`                                  |
+| `any.exclude`       | [`shape.exclude(…)`](#exclude-a-shape)              | The excluded shape                                    |
+| `any.refine`        | [`shape.refine(…)`](#refinements)                   | The predicate callback                                |
+| `array.includes`    | [`d.array().includes(x)`](#array)                   | The included value `x`                                |
+| `array.min`         | [`d.array().min(n)`](#array)                        | The minimum array length `n`                          |
+| `array.max`         | [`d.array().max(n)`](#array)                        | The maximum array length `n`                          |
+| `bigint.min`        | [`d.bigint().min(n)`](#bigint)                      | The minimum value `n`                                 |
+| `bigint.max`        | [`d.bigint().max(n)`](#bigint)                      | The maximum value `n`                                 |
+| `date.min`          | [`d.date().min(n)`](#date)                          | The minimum value `n`                                 |
+| `date.max`          | [`d.date().max(n)`](#date)                          | The maximum value `n`                                 |
+| `number.finite`     | [`d.number().finite()`](#number)                    | —                                                     |
+| `number.int`        | [`d.number().int()`](#number)                       | —                                                     |
+| `number.gt`         | [`d.number().gte(x)`](#number)                      | The minimum value `x`                                 |
+| `number.lt`         | [`d.number().lte(x)`](#number)                      | The maximum value `x`                                 |
+| `number.gte`        | [`d.number().gt(x)`](#number)                       | The exclusive minimum value `x`                       |
+| `number.lte`        | [`d.number().lt(x)`](#number)                       | The exclusive maximum value `x`                       |
+| `number.multipleOf` | [`d.number().multipleOf(x)`](#number)               | The divisor `x`                                       |
+| `object.allKeys`    | [`d.object().allKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
+| `object.notAllKeys` | [`d.object().notAllKeys(keys)`](#key-relationships) | The array of `keys`                                   |
+| `object.orKeys`     | [`d.object().orKeys(keys)`](#key-relationships)     | The array of `keys`                                   |
+| `object.xorKeys`    | [`d.object().xorKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
+| `object.oxorKeys`   | [`d.object().oxorKeys(keys)`](#key-relationships)   | The array of `keys`                                   |
+| `object.exact`      | [`d.object().exact()`](#unknown-keys)               | The array of unknown keys                             |
+| `object.plain`      | [`d.object().plain()`](#object)                     | —                                                     |
+| `set.min`           | [`d.set().min(n)`](#set)                            | The minimum `Set` size `n`                            |
+| `set.max`           | [`d.set().max(n)`](#set)                            | The maximum `Set` size `n`                            |
+| `string.nonBlank`   | [`d.string().nonBlank()`](#string)                  | —                                                     |
+| `string.min`        | [`d.string().min(n)`](#string)                      | The minimum string length `n`                         |
+| `string.max`        | [`d.string().max(n)`](#string)                      | The maximum string length `n`                         |
+| `string.regex`      | [`d.string().regex(re)`](#string)                   | The regular expression `re`                           |
+| `string.includes`   | [`d.string().includes(x)`](#string)                 | The included string `x`                               |
+| `string.startsWith` | [`d.string().startsWith(x)`](#string)               | The substring `x`                                     |
+| `string.endsWith`   | [`d.string().endsWith(x)`](#string)                 | The substring `x`                                     |
+| `type`              | All shapes                                          | The expected [input value type](#introspection)       |
+| `type.const`        | [`d.const(x)`](#const)                              | The expected constant value `x`                       |
+| `type.enum`         | [`d.enum(…)`](#enum)                                | The array of unique value                             |
+| `type.instanceOf`   | [`d.instanceOf(Class)`](#instanceof)                | The class constructor `Class`                         |
+| `type.intersection` | [`d.and(…)`](#intersection-and)                     | —                                                     |
+| `type.never`        | [`d.never()`](#never)                               | —                                                     |
+| `type.tuple`        | [`d.tuple([…])`](#tuple)                            | The expected tuple length                             |
+| `type.union`        | [`d.or(…)`](#union-or)                              | [Issues raised by a union](#issues-raised-by-a-union) |
 
 ## Global error message formatter
 
@@ -587,7 +591,7 @@ returned:
   ok: false,
   issues: [
     {
-      code: 'string_max',
+      code: 'string.max',
       path: [],
       input: 'Pluto',
       message: 'Must have the maximum length of 4',
@@ -595,7 +599,7 @@ returned:
       meta: undefied
     },
     {
-      code: 'string_regex',
+      code: 'string.regex',
       path: [],
       input: 'Pluto',
       message: 'Must match the pattern /a/',
@@ -652,7 +656,7 @@ one issue:
   ok: false,
   issues: [
     {
-      code: 'string_max',
+      code: 'string.max',
       path: undefied,
       input: 'Pluto',
       message: 'Must have the maximum length of 4',
@@ -674,13 +678,13 @@ For example, let's declare a shape with two custom checks:
 ```ts
 const lengthCheck: d.CheckCallback<string> = value => {
   if (value.length < 10) {
-    return { code: 'too_short' };
+    return { code: 'length' };
   }
 };
 
 const contentsCheck: d.CheckCallback<string> = value => {
   if (!/^\d+$/.test(value)) {
-    return { code: 'not_digits' };
+    return { code: 'contents' };
   }
 };
 ```
@@ -702,7 +706,7 @@ one issue produced by the `lengthCheck`:
   ok: false,
   issues: [
     // 🟡 Only one issue was raised
-    { code: 'too_short' }
+    { code: 'length' }
   ]
 }
 ```
@@ -724,8 +728,8 @@ issues produced by the `lengthCheck` and `contentsCheck`:
 {
   ok: false,
   issues: [
-    { code: 'too_short' },
-    { code: 'not_digits' },
+    { code: 'length' },
+    { code: 'contents' },
   ]
 }
 ```
@@ -753,7 +757,7 @@ Neither `lengthCheck` nor `contentsCheck` are applied (and even marking `content
       path: undefied,
       input: 42,
       message: 'Must be a string',
-      param: 'string',
+      param: Type.STRING,
       meta: undefied,
     },
   ]
@@ -774,7 +778,7 @@ const userShape = d
   })
   .check(user => {
     if (user.age < user.yearsOfExperience) {
-      return { code: 'inconsistent_age' };
+      return { code: 'age' };
     }
   });
 // ⮕ Shape<{ age: number, yearsOfExperience: number }>
@@ -819,7 +823,7 @@ shape1.parse('Uranus');
 // ⮕ 'Uranus'
 
 shape1.parse('Mars');
-// ❌ ValidationError: predicate at /: Must conform the predicate
+// ❌ ValidationError: any.refine at /: Must conform the predicate
 ```
 
 Use refinements to [narrow](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) the output type of the shape:
@@ -833,19 +837,20 @@ d.string().refine(isMarsOrPluto)
 // ⮕ Shape<string, 'Mars' | 'Pluto'>
 ```
 
-By default, `refine` raises issues which have the [`predicate`](#validation-errors) code. You can provide a custom code:
+By default, `refine` raises issues which have the [`"any.refine"`](#validation-errors) code. You can provide a custom
+code:
 
 ```ts
 const shape2 = d.string().refine(
   isMarsOrPluto,
   {
-    code: 'unknown_planet',
+    code: 'planet',
     message: 'Must be Mars or Pluto'
   }
 );
 
 shape2.parse('Venus');
-// ❌ ValidationError: unknown_planet at /: Must be Mars or Pluto
+// ❌ ValidationError: planet at /: Must be Mars or Pluto
 ```
 
 > **Note**&ensp;Refinements [can be parameterized](#parameterized-checks) and [forced](#forced-checks) the same way as
@@ -908,7 +913,7 @@ function toNumber(input: string): number {
   const output = parseFloat(input);
 
   if (isNaN(output)) {
-    throw new d.ValidationError([{ code: 'not_a_number' }]);
+    throw new d.ValidationError([{ code: 'nan' }]);
   }
   return output;
 }
@@ -919,7 +924,7 @@ shape.parse('42');
 // ⮕ 42
 
 shape.parse('seventeen');
-// ❌ ValidationError: not_a_number at /
+// ❌ ValidationError: nan at /
 ```
 
 ## Async conversions
@@ -1093,10 +1098,10 @@ const shape = d.instanceOf(Planet).to(
 );
 
 shape.parse({ name: 'Pluto' });
-// ❌ ValidationError: instance_of at /: Must be a class instance
+// ❌ ValidationError: type.instanceOf at /: Must be a class instance
 
 shape.parse(new Planet('X'));
-// ❌ ValidationError: string_min at /name: Must have the minimum length of 4
+// ❌ ValidationError: string.min at /name: Must have the minimum length of 4
 
 shape.parse(new Planet('Mars'));
 // ⮕ Planet { name: 'Mars' }
@@ -1154,7 +1159,7 @@ const shape2 = d.number().gte(3).replace(0, 'zero');
 // ⮕ Shape<number | 'zero'>
 
 shape2.parse(2);
-// ❌ ValidationError: number_gte at /: Must be greater than 3
+// ❌ ValidationError: number.gte at /: Must be greater than 3
 
 // 🟡 Notice that 0 doesn't satisfy the gte constraint
 shape2.parse(0);
@@ -1182,7 +1187,7 @@ shape.parse(NaN);
 // ⮕ NaN
 
 shape.parse(Infinity);
-// ❌ ValidationError: number_finite at /: Must be a finite number
+// ❌ ValidationError: number.finite at /: Must be a finite number
 ```
 
 ## Deny a value
@@ -1212,7 +1217,7 @@ shape2.parse(33);
 // ⮕ 33
 
 shape2.parse(42);
-// ❌ ValidationError: denied at /: Must not be equal to 42
+// ❌ ValidationError: any.deny at /: Must not be equal to 42
 ```
 
 `deny` prohibits value for _both input and output_:
@@ -1222,7 +1227,7 @@ const shape3 = d.number().convert(value => value * 2).deny(42);
 // ⮕ Shape<number>
 
 shape3.parse(21);
-// ❌ ValidationError: denied at /: Must not be equal to 42
+// ❌ ValidationError: any.deny at /: Must not be equal to 42
 ```
 
 # Optional and non-optional
@@ -1275,7 +1280,7 @@ const shape2 = shape1.nonOptional();
 // ⮕ Shape<string | number>
 
 shape2.parse(undefined);
-// ❌ ValidationError: denied at /: Must not be equal to undefined
+// ❌ ValidationError: any.deny at /: Must not be equal to undefined
 ```
 
 # Nullable and nullish
@@ -1321,7 +1326,7 @@ shape.parse('Mars');
 // ⮕ 'Mars'
 
 shape.parse('Pluto');
-// ❌ ValidationError: excluded at /: Must not conform the excluded shape
+// ❌ ValidationError: any.exclude at /: Must not conform the excluded shape
 ```
 
 Exclusions work with any shape combinations:
@@ -1929,12 +1934,12 @@ d.number().gte(3); // ❌ gte is undefined
   [`max`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#max)
   [`after`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#after)
   [`before`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#before)
-  [`iso`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#iso)
-  [`timestamp`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#timestamp)
+  [`toISOString`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#toISOString)
+  [`toTimestamp`](https://smikhalevski.github.io/doubter/classes/doubter_core.DateShape.html#toTimestamp)
 
 - [**Number essentials**](https://smikhalevski.github.io/doubter/modules/doubter_plugin_number_essentials.html)<br/>
   [`finite`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#finite)
-  [`integer`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#integer)
+  [`int`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#int)
   [`positive`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#positive)
   [`negative`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#negative)
   [`nonPositive`](https://smikhalevski.github.io/doubter/classes/doubter_core.NumberShape.html#nonPositive)
@@ -1973,8 +1978,8 @@ d.number().gte(3); // ❌ gte is undefined
   [`nonBlank`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#nonBlank)
   [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#nonEmpty)
   [`trim`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#trim)
-  [`lowerCase`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#lowerCase)
-  [`upperCase`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#upperCase)
+  [`toLowerCase`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#toLowerCase)
+  [`toUpperCase`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#toUpperCase)
 
 ## Other plugins
 
@@ -1995,7 +2000,7 @@ const emailShape = d.string().refine(isEmail, 'Must be an email');
 // ⮕ Shape<string>
 
 emailShape.parse('Not an email');
-// ❌ ValidationError: predicate at /: Must be an email
+// ❌ ValidationError: any.refine at /: Must be an email
 
 emailShape.parse('foo@bar.com');
 // ⮕ 'foo@bar.com'
@@ -2324,7 +2329,7 @@ d.const('Mars');
 
 There are shortcuts for [`null`](#null), [`undefined`](#undefined) and [`nan`](#nan) constants.
 
-Consider using [`enum`](#enum) if you want a value to be one of multiple values.
+Consider using [`enum`](#enum) if you want to check that an input is one of multiple values.
 
 # `convert`, `convertAsync`
 
@@ -2375,10 +2380,10 @@ d.date().after('2003-03-12').before('2030-01-01');
 Convert date to ISO string or timestamp:
 
 ```ts
-d.date().iso().parse(new Date());
+d.date().toISOString().parse(new Date());
 // ⮕ '2023-07-10T19:31:52.395Z'
 
-d.date().timestamp().parse(new Date());
+d.date().toTimestamp().parse(new Date());
 // ⮕ 1689017512395
 ```
 
@@ -2596,13 +2601,13 @@ sum(NaN, 2);
 // ❌ ValidationError: type at /arguments/0: Must be an number
 
 sum(1, 2, 3);
-// ❌ ValidationError: array_max at /arguments: Must have the maximum length of 2
+// ❌ ValidationError: array.max at /arguments: Must have the maximum length of 2
 ```
 
 Using function shape you can parse `this` and return values.
 
 ```ts
-const atShape = d.fn([d.number().integer()])
+const atShape = d.fn([d.number().int()])
   .this(d.array(d.string()))
   .return(d.string());
 // ⮕ Shape<(this: string[], arg: number) => string>
@@ -2631,7 +2636,7 @@ An error is thrown if an argument isn't an integer:
 
 ```ts
 at.call(['Bill', 'Tess'], 3.14);
-// ❌ ValidationError: number_integer at /arguments/0: Must be an integer
+// ❌ ValidationError: number.int at /arguments/0: Must be an integer
 ```
 
 ## Coercing arguments
@@ -2807,7 +2812,7 @@ jsonShape.parse({ name: 'Jill' });
 // ⮕ { name: 'Jill' }
 
 jsonShape.parse({ tag: Symbol() });
-// ❌ ValidationError: intersection at /tag: Must conform the union
+// ❌ ValidationError: type.union at /tag: Must conform the union
 ```
 
 Note that the `JSON` type is defined explicitly, because it cannot be inferred from the shape which references itself
@@ -3000,7 +3005,7 @@ shape.parse(42);
 // ⮕ 42
 
 shape.parse('Bill');
-// ❌ ValidationError: excluded at /: Must not conform the excluded shape
+// ❌ ValidationError: any.exclude at /: Must not conform the excluded shape
 ```
 
 More about exclusions in the [Exclude a shape](#exclude-a-shape) section.
@@ -3061,7 +3066,7 @@ d.number().multipleOf(5);
 Constrain the number to be an integer:
 
 ```ts
-d.number().integer();
+d.number().int();
 ```
 
 Constrain the input to be a finite number (not `NaN`, `Infinity` or `-Infinity`):
@@ -3339,7 +3344,7 @@ const shape = d.object({
   .xorKeys(['foo', 'bar']);
 
 shape.parse({ foo: 'Mars', bar: 42 });
-// ❌ ValidationError: object_xor_keys at /: Must contain exactly one key: foo,bar
+// ❌ ValidationError: object.xorKeys at /: Must contain exactly one key: foo,bar
 ```
 
 # `promise`
@@ -3627,7 +3632,7 @@ Sole entrepreneur goes first:
 const entrepreneurShape = d.object({
   bisinessType: d.const('entrepreneur'),
   name: d.string(),
-  age: d.number().integer().gte(18)
+  age: d.number().int().gte(18)
 });
 // ⮕ Shape<{ type: 'entrepreneur', name: string, age: number }>
 ```
@@ -3640,7 +3645,7 @@ const companyShape = d.object({
     d.const('llc'),
     d.enum(['corporation', 'partnership'])
   ]),
-  headcount: d.number().integer().positive()
+  headcount: d.number().int().positive()
 });
 // ⮕ Shape<{ type: 'llc' | 'corporation' | 'partneership', headcount: number }>
 ```
@@ -3664,7 +3669,7 @@ businessType.parse({
   businessType: 'corporation',
   headcount: 0
 });
-// ❌ ValidationError: number_gte at /headcount: Must be greater than 0
+// ❌ ValidationError: number.gte at /headcount: Must be greater than 0
 ```
 
 ## Issues raised by a union
@@ -3689,7 +3694,7 @@ The result of `try` would contain a grouping issue:
 
 ```json5
 {
-  code: 'union',
+  code: 'type.union',
   path: [],
   input: {
     name: 47,
@@ -3705,15 +3710,16 @@ The result of `try` would contain a grouping issue:
           path: ['name'],
           input: 47,
           message: 'Must be a string',
-          param: 'string'
+          param: Type.STRING
         }
       ],
       [
         {
           code: 'type',
           path: ['age'],
+          input: null,
           message: 'Must be a number',
-          param: 'number'
+          param: Type.NUMBER
         }
       ]
     ]
@@ -3755,7 +3761,7 @@ string-related issue:
 
 ```json5
 {
-  code: 'string_min',
+  code: 'string.min',
   path: [],
   input: 'Okay',
   message: 'Must have the minimum length of 6',
@@ -3825,7 +3831,7 @@ Let's define a shape that describes the query with `name` and `age` params:
 const queryShape = d
   .object({
     name: d.string(),
-    age: d.number().integer().nonNegative().catch()
+    age: d.number().int().nonNegative().catch()
   })
   .partial();
 // ⮕ Shape<{ name?: string | undefined, age?: number | undefined }>
@@ -3925,13 +3931,13 @@ shape.parse('Uranus');
 // ⮕ 'Mars'
 
 shape.parse('Mars');
-// ❌ ValidationError: string_min at /: Must have the minimum length of 5
+// ❌ ValidationError: string.min at /: Must have the minimum length of 5
 
 shape.parse(42);
 // ⮕ 42
 
 shape.parse(-273.15);
-// ❌ ValidationError: number_gte at /: Must be greater than 0
+// ❌ ValidationError: number.gte at /: Must be greater than 0
 ```
 
 <hr/>

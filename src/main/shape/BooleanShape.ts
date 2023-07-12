@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_BOOLEAN } from '../constants';
 import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -25,7 +25,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_BOOLEAN_TYPE, options, TYPE_BOOLEAN);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_BOOLEAN, options, TYPE_BOOLEAN);
   }
 
   protected _getInputs(): unknown[] {

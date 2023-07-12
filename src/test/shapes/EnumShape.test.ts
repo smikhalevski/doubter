@@ -1,5 +1,5 @@
 import { EnumShape } from '../../main';
-import { CODE_ENUM } from '../../main/constants';
+import { CODE_TYPE_ENUM } from '../../main/constants';
 import { getEnumValues } from '../../main/shape/EnumShape';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../../main/Type';
 
@@ -50,7 +50,7 @@ describe('EnumShape', () => {
       ok: false,
       issues: [
         {
-          code: CODE_ENUM,
+          code: CODE_TYPE_ENUM,
           input: 2,
           param: [NumberMockEnum.AAA, NumberMockEnum.BBB],
           message: 'Must be equal to one of 0,1',
@@ -64,7 +64,7 @@ describe('EnumShape', () => {
       ok: false,
       issues: [
         {
-          code: CODE_ENUM,
+          code: CODE_TYPE_ENUM,
           input: 'AAA',
           param: [NumberMockEnum.AAA, NumberMockEnum.BBB],
           message: 'Must be equal to one of 0,1',
@@ -78,7 +78,7 @@ describe('EnumShape', () => {
       ok: false,
       issues: [
         {
-          code: CODE_ENUM,
+          code: CODE_TYPE_ENUM,
           input: 'ccc',
           param: [StringMockEnum.AAA, StringMockEnum.BBB],
           message: 'Must be equal to one of aaa,bbb',
@@ -98,7 +98,9 @@ describe('EnumShape', () => {
   test('raises an issue when an input is not one of values from the list', () => {
     expect(new EnumShape(['aaa', 'bbb']).try('ccc')).toEqual({
       ok: false,
-      issues: [{ code: CODE_ENUM, input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of aaa,bbb' }],
+      issues: [
+        { code: CODE_TYPE_ENUM, input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of aaa,bbb' },
+      ],
     });
   });
 

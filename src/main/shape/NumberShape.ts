@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_NUMBER_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_NUMBER } from '../constants';
 import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -25,7 +25,7 @@ export class NumberShape extends CoercibleShape<number> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_NUMBER_TYPE, options, TYPE_NUMBER);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_NUMBER, options, TYPE_NUMBER);
   }
 
   /**

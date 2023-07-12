@@ -1,5 +1,5 @@
 import { DateShape, NEVER } from '../../main';
-import { CODE_TYPE, MESSAGE_DATE_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_TYPE_DATE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('DateShape', () => {
@@ -19,7 +19,7 @@ describe('DateShape', () => {
   test('raises an issue if an input is not a Date instance', () => {
     expect(new DateShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_DATE, message: MESSAGE_DATE_TYPE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_DATE, message: MESSAGE_TYPE_DATE }],
     });
   });
 
@@ -48,7 +48,7 @@ describe('DateShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new DateShape().coerce().try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_DATE_TYPE, param: TYPE_DATE }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_DATE, param: TYPE_DATE }],
       });
     });
   });

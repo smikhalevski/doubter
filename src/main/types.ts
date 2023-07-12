@@ -160,8 +160,8 @@ export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
  */
 export interface Operation<InputValue = any, OutputValue = any> {
   /**
-   * The type of the operation such as {@linkcode StringShape#regex "string_regex"} or
-   * {@linkcode ArrayShape#includes "array_includes"}.
+   * The type of the operation such as {@linkcode StringShape#regex "string.regex"} or
+   * {@linkcode ArrayShape#includes "array.includes"}.
    */
   readonly type: any;
 
@@ -323,7 +323,7 @@ export interface RefineOptions extends CustomOperationOptions, IssueOptions {
   /**
    * The code of an issue that would be raised if the refinement fails.
    *
-   * @default "predicate"
+   * @default "any.refine"
    * @see {@linkcode Issue#code Issue.code}
    */
   code?: any;

@@ -1,4 +1,4 @@
-import { CODE_INSTANCE_OF, MESSAGE_INSTANCE_OF } from '../constants';
+import { CODE_TYPE_INSTANCE_OF, MESSAGE_TYPE_INSTANCE_OF } from '../constants';
 import { isEqualOrSubclass } from '../internal';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -30,7 +30,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_INSTANCE_OF, MESSAGE_INSTANCE_OF, options, ctor);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_INSTANCE_OF, MESSAGE_TYPE_INSTANCE_OF, options, ctor);
   }
 
   protected _getInputs(): unknown[] {

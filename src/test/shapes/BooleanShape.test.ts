@@ -1,5 +1,5 @@
 import { BooleanShape, NEVER } from '../../main';
-import { CODE_TYPE, MESSAGE_BOOLEAN_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_TYPE_BOOLEAN } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('BooleanShape', () => {
@@ -17,7 +17,7 @@ describe('BooleanShape', () => {
   test('raises an issue if an input is not a boolean', () => {
     expect(new BooleanShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_BOOLEAN, message: MESSAGE_BOOLEAN_TYPE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_BOOLEAN, message: MESSAGE_TYPE_BOOLEAN }],
     });
   });
 
@@ -46,7 +46,7 @@ describe('BooleanShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new BooleanShape().coerce().try(222)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 222, message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN }],
+        issues: [{ code: CODE_TYPE, input: 222, message: MESSAGE_TYPE_BOOLEAN, param: TYPE_BOOLEAN }],
       });
     });
   });

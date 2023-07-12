@@ -1,13 +1,13 @@
 import { StringShape } from '../../main';
 import {
-  CODE_STRING_BLANK,
   CODE_STRING_ENDS_WITH,
   CODE_STRING_INCLUDES,
   CODE_STRING_MAX,
   CODE_STRING_MIN,
+  CODE_STRING_NON_BLANK,
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
-  MESSAGE_STRING_BLANK,
+  MESSAGE_STRING_NON_BLANK,
 } from '../../main/constants';
 
 describe('length', () => {
@@ -109,7 +109,7 @@ describe('nonBlank', () => {
   test('raises if string contains only spaces', () => {
     expect(new StringShape().nonBlank().try(' \t\n ')).toEqual({
       ok: false,
-      issues: [{ code: CODE_STRING_BLANK, input: ' \t\n ', message: MESSAGE_STRING_BLANK }],
+      issues: [{ code: CODE_STRING_NON_BLANK, input: ' \t\n ', message: MESSAGE_STRING_NON_BLANK }],
     });
 
     expect(new StringShape().nonBlank().parse('aaa')).toBe('aaa');
@@ -133,14 +133,14 @@ describe('trim', () => {
   });
 });
 
-describe('lowerCase', () => {
+describe('toLowerCase', () => {
   test('converts string to lower case', () => {
-    expect(new StringShape().lowerCase().parse('AAA')).toBe('aaa');
+    expect(new StringShape().toLowerCase().parse('AAA')).toBe('aaa');
   });
 });
 
-describe('upperCase', () => {
+describe('toUpperCase', () => {
   test('converts string to upper case', () => {
-    expect(new StringShape().upperCase().parse('aaa')).toBe('AAA');
+    expect(new StringShape().toUpperCase().parse('aaa')).toBe('AAA');
   });
 });

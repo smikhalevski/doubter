@@ -1,4 +1,4 @@
-import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_EXACT, MESSAGE_OBJECT_TYPE } from '../constants';
+import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants';
 import {
   applyShape,
   Bitmask,
@@ -135,7 +135,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     this.valueShapes = Object.values(propShapes);
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_OBJECT, options, TYPE_OBJECT);
   }
 
   /**

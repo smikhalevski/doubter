@@ -12,23 +12,20 @@
  */
 
 import {
-  CODE_STRING_BLANK,
   CODE_STRING_ENDS_WITH,
   CODE_STRING_INCLUDES,
   CODE_STRING_MAX,
   CODE_STRING_MIN,
+  CODE_STRING_NON_BLANK,
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
-  MESSAGE_STRING_BLANK,
   MESSAGE_STRING_ENDS_WITH,
   MESSAGE_STRING_INCLUDES,
   MESSAGE_STRING_MAX,
   MESSAGE_STRING_MIN,
+  MESSAGE_STRING_NON_BLANK,
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_STARTS_WITH,
-  OP_STRING_LOWER_CASE,
-  OP_STRING_TRIM,
-  OP_STRING_UPPER_CASE,
 } from '../constants';
 import { IssueOptions, Message, StringShape } from '../core';
 import { pushIssue } from '../internal';
@@ -147,7 +144,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-essentials!}
      */
-    lowerCase(): this;
+    toLowerCase(): this;
 
     /**
      * Converts string to upper case.
@@ -156,7 +153,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/string-essentials!}
      */
-    upperCase(): this;
+    toUpperCase(): this;
   }
 }
 
@@ -277,7 +274,7 @@ export default function (prototype: StringShape): void {
   };
 
   prototype.nonBlank = function (options) {
-    const issueFactory = createIssueFactory(CODE_STRING_BLANK, MESSAGE_STRING_BLANK, options, undefined);
+    const issueFactory = createIssueFactory(CODE_STRING_NON_BLANK, MESSAGE_STRING_NON_BLANK, options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -290,7 +287,7 @@ export default function (prototype: StringShape): void {
         }
         return next(input, output, options, issues);
       },
-      { type: CODE_STRING_BLANK }
+      { type: CODE_STRING_NON_BLANK }
     );
   };
 
@@ -300,19 +297,19 @@ export default function (prototype: StringShape): void {
 
   prototype.trim = function () {
     return this.use(next => (input, output, options, issues) => next(input, output.trim(), options, issues), {
-      type: OP_STRING_TRIM,
+      type: 'string.trim',
     });
   };
 
-  prototype.lowerCase = function () {
+  prototype.toLowerCase = function () {
     return this.use(next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues), {
-      type: OP_STRING_LOWER_CASE,
+      type: 'string.toLowerCase',
     });
   };
 
-  prototype.upperCase = function () {
+  prototype.toUpperCase = function () {
     return this.use(next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues), {
-      type: OP_STRING_UPPER_CASE,
+      type: 'string.toUpperCase',
     });
   };
 }

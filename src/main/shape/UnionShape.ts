@@ -1,4 +1,4 @@
-import { CODE_UNION, MESSAGE_UNION } from '../constants';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants';
 import {
   applyShape,
   Dict,
@@ -62,7 +62,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_UNION, MESSAGE_TYPE_UNION, options);
   }
 
   protected get _lookup(): LookupCallback {

@@ -1,4 +1,4 @@
-import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
+import { CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION } from '../constants';
 import {
   applyShape,
   concatIssues,
@@ -63,7 +63,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION, options, undefined);
   }
 
   at(key: unknown): AnyShape | null {

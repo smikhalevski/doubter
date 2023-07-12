@@ -15,14 +15,14 @@ import {
   ValidationError,
 } from '../../main';
 import {
-  CODE_DENIED,
-  CODE_EXCLUDED,
-  CODE_PREDICATE,
+  CODE_ANY_DENY,
+  CODE_ANY_EXCLUDE,
+  CODE_ANY_REFINE,
   CODE_TYPE,
   ERR_SYNC_UNSUPPORTED,
-  MESSAGE_EXCLUDED,
-  MESSAGE_PREDICATE,
-  MESSAGE_STRING_TYPE,
+  MESSAGE_ANY_EXCLUDE,
+  MESSAGE_ANY_REFINE,
+  MESSAGE_TYPE_STRING,
 } from '../../main/constants';
 import { resetNonce } from '../../main/internal';
 import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
@@ -274,7 +274,7 @@ describe('Shape', () => {
 
       expect(new Shape().refine(cb).try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: MESSAGE_PREDICATE, param: cb }],
+        issues: [{ code: CODE_ANY_REFINE, input: 'aaa', message: MESSAGE_ANY_REFINE, param: cb }],
       });
     });
 
@@ -285,7 +285,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: 'bbb', param: cb }],
+        issues: [{ code: CODE_ANY_REFINE, input: 'aaa', message: 'bbb', param: cb }],
       });
     });
 
@@ -296,7 +296,7 @@ describe('Shape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, input: 'aaa', message: 'bbb', param: cb }],
+        issues: [{ code: CODE_ANY_REFINE, input: 'aaa', message: 'bbb', param: cb }],
       });
     });
 
@@ -305,7 +305,7 @@ describe('Shape', () => {
 
       expect(new Shape().refine(cb, { meta: 'aaa' }).try('bbb')).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, input: 'bbb', message: MESSAGE_PREDICATE, meta: 'aaa', param: cb }],
+        issues: [{ code: CODE_ANY_REFINE, input: 'bbb', message: MESSAGE_ANY_REFINE, meta: 'aaa', param: cb }],
       });
     });
 
@@ -356,7 +356,7 @@ describe('Shape', () => {
 
       expect(shape.try(111)).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
+        issues: [{ code: CODE_ANY_REFINE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
       });
       expect(cbMock2).toHaveBeenCalledTimes(1);
     });
@@ -370,7 +370,7 @@ describe('Shape', () => {
 
       expect(shape.try(111)).toEqual({
         ok: false,
-        issues: [{ code: CODE_PREDICATE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
+        issues: [{ code: CODE_ANY_REFINE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
       });
       expect(cbMock2).not.toHaveBeenCalled();
       expect(cbMock3).toHaveBeenCalledTimes(1);
@@ -1370,7 +1370,7 @@ describe('DenyShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_DENIED, input: 111, message: 'Must not be equal to 111', param: 111 }],
+      issues: [{ code: CODE_ANY_DENY, input: 111, message: 'Must not be equal to 111', param: 111 }],
     });
   });
 
@@ -1382,7 +1382,7 @@ describe('DenyShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_DENIED, input: 111, message: 'Must not be equal to 111', param: 111 }],
+      issues: [{ code: CODE_ANY_DENY, input: 111, message: 'Must not be equal to 111', param: 111 }],
     });
   });
 
@@ -1442,7 +1442,7 @@ describe('DenyShape', () => {
 
       await expect(shape.tryAsync(111)).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_DENIED, message: 'Must not be equal to 111', input: 111, param: 111 }],
+        issues: [{ code: CODE_ANY_DENY, message: 'Must not be equal to 111', input: 111, param: 111 }],
       });
     });
 
@@ -1454,7 +1454,7 @@ describe('DenyShape', () => {
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_DENIED, input: 'aaa', message: 'Must not be equal to 111', param: 111 }],
+        issues: [{ code: CODE_ANY_DENY, input: 'aaa', message: 'Must not be equal to 111', param: 111 }],
       });
     });
   });
@@ -1482,7 +1482,7 @@ describe('CatchShape', () => {
     expect(cbMock).toHaveBeenNthCalledWith(
       1,
       111,
-      [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
+      [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING }],
       { earlyReturn: false, coerce: false }
     );
   });
@@ -1558,7 +1558,7 @@ describe('ExcludeShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_EXCLUDED, input: 111, message: MESSAGE_EXCLUDED, param: excludedShape }],
+      issues: [{ code: CODE_ANY_EXCLUDE, input: 111, message: MESSAGE_ANY_EXCLUDE, param: excludedShape }],
     });
   });
 
@@ -1613,7 +1613,7 @@ describe('ExcludeShape', () => {
 
       await expect(new ExcludeShape(new Shape(), shape).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_EXCLUDED, input: 'aaa', message: MESSAGE_EXCLUDED, param: shape }],
+        issues: [{ code: CODE_ANY_EXCLUDE, input: 'aaa', message: MESSAGE_ANY_EXCLUDE, param: shape }],
       });
     });
 

@@ -3,12 +3,12 @@ import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
-  CODE_NUMBER_INTEGER,
+  CODE_NUMBER_INT,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_FINITE,
-  MESSAGE_NUMBER_INTEGER,
+  MESSAGE_NUMBER_INT,
 } from '../../main/constants';
 
 describe('finite', () => {
@@ -24,22 +24,22 @@ describe('finite', () => {
   });
 });
 
-describe('integer', () => {
+describe('int', () => {
   test('allows integer numbers', () => {
-    expect(new NumberShape().integer().parse(111)).toBe(111);
+    expect(new NumberShape().int().parse(111)).toBe(111);
   });
 
   test('raises if value is an infinity', () => {
-    expect(new NumberShape().integer().try(Infinity)).toEqual({
+    expect(new NumberShape().int().try(Infinity)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_INTEGER, input: Infinity, message: MESSAGE_NUMBER_INTEGER }],
+      issues: [{ code: CODE_NUMBER_INT, input: Infinity, message: MESSAGE_NUMBER_INT }],
     });
   });
 
   test('raises if value is a real number', () => {
-    expect(new NumberShape().integer().try(111.222)).toEqual({
+    expect(new NumberShape().int().try(111.222)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_INTEGER, input: 111.222, message: MESSAGE_NUMBER_INTEGER }],
+      issues: [{ code: CODE_NUMBER_INT, input: 111.222, message: MESSAGE_NUMBER_INT }],
     });
   });
 });

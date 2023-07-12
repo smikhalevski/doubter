@@ -15,14 +15,14 @@ import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
-  CODE_NUMBER_INTEGER,
+  CODE_NUMBER_INT,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_GT,
   MESSAGE_NUMBER_GTE,
-  MESSAGE_NUMBER_INTEGER,
+  MESSAGE_NUMBER_INT,
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
@@ -69,7 +69,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-essentials!}
      */
-    integer(options?: IssueOptions | Message): this;
+    int(options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be greater than zero.
@@ -227,8 +227,8 @@ export default function (prototype: NumberShape): void {
     );
   };
 
-  prototype.integer = function (options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_INTEGER, MESSAGE_NUMBER_INTEGER, options, undefined);
+  prototype.int = function (options) {
+    const issueFactory = createIssueFactory(CODE_NUMBER_INT, MESSAGE_NUMBER_INT, options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -241,7 +241,7 @@ export default function (prototype: NumberShape): void {
         }
         return next(input, output, options, issues);
       },
-      { type: CODE_NUMBER_INTEGER }
+      { type: CODE_NUMBER_INT }
     );
   };
 

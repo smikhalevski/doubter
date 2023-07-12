@@ -70,7 +70,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-essentials!}
      */
-    iso(): Shape<Date, string>;
+    toISOString(): Shape<Date, string>;
 
     /**
      * Converts date to a timestamp integer number.
@@ -78,7 +78,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-essentials!}
      */
-    timestamp(): Shape<Date, number>;
+    toTimestamp(): Shape<Date, number>;
   }
 }
 
@@ -130,11 +130,11 @@ export default function (prototype: DateShape): void {
 
   prototype.before = prototype.max;
 
-  prototype.iso = function () {
+  prototype.toISOString = function () {
     return this.convert(toISOString);
   };
 
-  prototype.timestamp = function () {
+  prototype.toTimestamp = function () {
     return this.convert(toTimestamp);
   };
 }

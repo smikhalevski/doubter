@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_OBJECT } from '../constants';
 import {
   applyShape,
   cloneDictHead,
@@ -69,7 +69,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_OBJECT, options, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {

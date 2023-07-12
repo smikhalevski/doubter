@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_SET_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_SET } from '../constants';
 import {
   concatIssues,
   getCanonicalValueOf,
@@ -51,7 +51,7 @@ export class SetShape<ValueShape extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_SET_TYPE, options, TYPE_SET);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_SET, options, TYPE_SET);
   }
 
   at(key: unknown): AnyShape | null {

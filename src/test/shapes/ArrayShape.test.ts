@@ -1,5 +1,5 @@
 import { ArrayShape, Err, NumberShape, ObjectShape, Ok, StringShape } from '../../main';
-import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_NUMBER_TYPE } from '../../main/constants';
+import { CODE_TYPE, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_NUMBER } from '../../main/constants';
 import { resetNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
@@ -28,7 +28,7 @@ describe('ArrayShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
     });
   });
 
@@ -90,7 +90,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try([111])).toEqual({
       ok: false,
-      issues: [{ code: CODE_TUPLE, input: [111], message: 'Must be a tuple of length 2', param: 2 }],
+      issues: [{ code: CODE_TYPE_TUPLE, input: [111], message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
@@ -99,7 +99,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
+      issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
@@ -108,7 +108,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
     });
   });
 
@@ -117,7 +117,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try(['aaa'])).toEqual({
       ok: false,
-      issues: [{ code: CODE_TUPLE, input: ['aaa'], message: 'Must be a tuple of length 2', param: 2 }],
+      issues: [{ code: CODE_TYPE_TUPLE, input: ['aaa'], message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
@@ -269,7 +269,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try([])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: [], message: 'Must be a tuple of length 1', param: 1 }],
+        issues: [{ code: CODE_TYPE_TUPLE, input: [], message: 'Must be a tuple of length 1', param: 1 }],
       });
     });
 
@@ -278,7 +278,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, path: [0], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
+        issues: [{ code: CODE_TYPE, path: [0], input: 'aaa', message: MESSAGE_TYPE_NUMBER, param: TYPE_NUMBER }],
       });
     });
 
@@ -330,7 +330,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 0', param: 0 }],
+        issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 0', param: 0 }],
       });
     });
 
@@ -345,7 +345,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
+        issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
       });
     });
 
@@ -406,7 +406,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
+        issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
       });
     });
   });
@@ -419,7 +419,7 @@ describe('ArrayShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
       });
     });
 
@@ -518,7 +518,7 @@ describe('ArrayShape', () => {
 
         await expect(shape.tryAsync('aaa')).resolves.toEqual({
           ok: false,
-          issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
+          issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
         });
       });
     });
