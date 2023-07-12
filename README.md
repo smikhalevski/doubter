@@ -1981,7 +1981,7 @@ d.number().gte(3); // ❌ gte is undefined
   [`toLowerCase`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#toLowerCase)
   [`toUpperCase`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html#toUpperCase)
 
-## Other plugins
+## Recommended plugins
 
 - [@doubter/plugin-string-format](https://github.com/smikhalevski/doubter-plugin-string-format)<br>
   Extends `StringShape` with email, FQDN, MIME, BIC, ISIN, Luhn, and many other format checks.
@@ -1990,7 +1990,8 @@ d.number().gte(3); // ❌ gte is undefined
 
 You can combine Doubter with your favourite predicate library using [refinements.](#refinements)
 
-For example, create a shape that validates that input is an email:
+For example, create a shape that validates that input is an email using
+[Validator.js](https://github.com/validatorjs/validator.js):
 
 ```ts
 import * as d from 'doubter';
@@ -2004,6 +2005,30 @@ emailShape.parse('Not an email');
 
 emailShape.parse('foo@bar.com');
 // ⮕ 'foo@bar.com'
+```
+
+You can use Doubter [alterations](#alterations) with various utility libraries, such as [Lodash](https://lodash.com/):
+
+```ts
+import * as d from 'doubter';
+import * as _ from 'lodash';
+
+const shape = d.array(d.number()).alter(_.uniq);
+
+shape.parse([1, 2, 3, 3, 2]);
+// ⮕ [1, 2, 3])
+```
+
+Or use native JavaScript methods as alteration callbacks:
+
+```ts
+const shape = d.number().alter(Math.abs).alter(Math.round).min(3);
+
+shape.parse(-3.1415);
+// ⮕ 3
+
+shape.parse(2);
+// ❌ ValidationError: number.min at /: Must be greater than or equal to 3
 ```
 
 # Advanced shapes
