@@ -2031,6 +2031,46 @@ shape.parse(2);
 // ❌ ValidationError: number.gte at /: Must be greater than or equal to 3
 ```
 
+## Authoring a plugin
+
+Plugins use
+[TypeScript's module augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation)
+to extend functionality of shapes exported from the
+[doubter/core](https://smikhalevski.github.io/doubter/classes/doubter_core.html) module.
+
+Below is an example, how you can implement a naive `email` check and extend the
+[`StringShape`](https://smikhalevski.github.io/doubter/classes/doubter_core.StringShape.html).
+
+```ts
+import { StringShape } from 'doubter/core';
+
+declare module 'doubter/core' {
+  interface StringShape {
+    email(): this;
+  }
+}
+
+StringShape.prototype.email = function () {
+  return this.refine(str => str.includes('@'), 'Must be an email');
+};
+```
+
+Now you can use the check when building a string shape:
+
+```ts
+const shape = d.string().email();
+
+shape.parse('foo@bar.com');
+// ⮕ 'foo@bar.com'
+
+shape.parse('foo');
+// ❌ ValidationError: any.refine at /: Must be an email
+```
+
+You can use generic [operations](#operations), [checks](#checks), [refinements](#refinements),
+[alterations](#alterations), [conversions](#conversions), and any other functionality of the shape that is being
+extended.
+
 # Advanced shapes
 
 You can create custom shapes by extending the
