@@ -2,23 +2,38 @@ import { ObjectShape } from '../../main';
 import {
   CODE_OBJECT_ALL_KEYS,
   CODE_OBJECT_OR_KEYS,
-  CODE_OBJECT_XOR_KEYS,
-  CODE_OBJECT_PLAIN,
-  MESSAGE_OBJECT_PLAIN,
   CODE_OBJECT_OXOR_KEYS,
+  CODE_OBJECT_PLAIN,
+  CODE_OBJECT_XOR_KEYS,
+  MESSAGE_OBJECT_PLAIN,
 } from '../../main/constants';
 import { MockShape } from '../shapes/mocks';
 
 describe('plain', () => {
-  test('raises if object is not plain', () => {
-    const shape = new ObjectShape({}, null).plain();
+  const shape = new ObjectShape({}, null).plain();
 
+  test('raises if object is not plain', () => {
     expect(shape.parse({})).toEqual({});
 
     expect(shape.try(new (class {})())).toEqual({
       ok: false,
       issues: [{ code: CODE_OBJECT_PLAIN, input: {}, message: MESSAGE_OBJECT_PLAIN, param: undefined }],
     });
+  });
+
+  test('detects plain objects', () => {
+    expect(shape.try({}).ok).toBe(true);
+    expect(shape.try({ a: 1 }).ok).toBe(true);
+    expect(shape.try({ constructor: () => undefined }).ok).toBe(true);
+    expect(shape.try([1, 2, 3]).ok).toBe(false);
+  });
+
+  test('returns true for objects with a [[Prototype]] of null', () => {
+    expect(shape.try(Object.create(null)).ok).toBe(true);
+  });
+
+  test('returns false for non-Object objects', () => {
+    expect(shape.try(Error).ok).toBe(false);
   });
 });
 

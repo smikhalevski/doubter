@@ -206,10 +206,8 @@ declare module '../core' {
  * Enhances {@linkcode doubter/core!NumberShape} with additional methods.
  */
 export default function (prototype: NumberShape): void {
-  const { abs, round } = Math;
-  const { isFinite, isInteger } = Number;
-
   prototype.finite = function (options) {
+    const { isFinite } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
 
     return this.use(
@@ -228,6 +226,7 @@ export default function (prototype: NumberShape): void {
   };
 
   prototype.int = function (options) {
+    const { isInteger } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_INT, MESSAGE_NUMBER_INT, options, undefined);
 
     return this.use(
@@ -338,6 +337,7 @@ export default function (prototype: NumberShape): void {
   prototype.max = prototype.lte;
 
   prototype.multipleOf = function (divisor, options) {
+    const { abs, round } = Math;
     const { precision } = extractOptions(options);
 
     const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;

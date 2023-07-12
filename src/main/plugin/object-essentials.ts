@@ -26,7 +26,7 @@ import {
   MESSAGE_OBJECT_XOR_KEYS,
 } from '../constants';
 import { AnyShape, IssueOptions, Message, ObjectShape } from '../core';
-import { isPlainObject, pushIssue, ReadonlyDict } from '../internal';
+import { pushIssue, ReadonlyDict } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -104,11 +104,14 @@ declare module '../core' {
  */
 export default function (prototype: ObjectShape<any, any>): void {
   prototype.plain = function (options) {
+    const { getPrototypeOf } = Object;
     const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, MESSAGE_OBJECT_PLAIN, options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
-        if (!isPlainObject(output)) {
+        const prototype = getPrototypeOf(output);
+
+        if (prototype !== null && prototype.constructor !== Object) {
           issues = pushIssue(issues, issueFactory(output, options));
 
           if (options.earlyReturn) {
