@@ -15,7 +15,7 @@ import enableNumberEssentials from './plugin/number-essentials';
 import enableObjectEssentials from './plugin/object-essentials';
 import enableSetEssentials from './plugin/set-essentials';
 import enableStringEssentials from './plugin/string-essentials';
-import { ArrayShape, BigIntShape, DateShape, NumberShape, ObjectShape, SetShape, StringShape } from './shape';
+import { ArrayShape, BigIntShape, DateShape, NumberShape, ObjectShape, SetShape, StringShape } from './core';
 
 export type * from './plugin/array-essentials';
 export type * from './plugin/bigint-essentials';
