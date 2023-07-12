@@ -1983,7 +1983,7 @@ d.number().gte(3); // ❌ gte is undefined
 
 ## Recommended plugins
 
-- [@doubter/plugin-string-format](https://github.com/smikhalevski/doubter-plugin-string-format)<br>
+- [@doubter/plugin-string-format](https://github.com/smikhalevski/doubter-plugin-string-format#readme)<br>
   Extends `StringShape` with email, FQDN, MIME, BIC, ISIN, Luhn, and many other format checks.
 
 ## Integrations
@@ -2028,7 +2028,7 @@ shape.parse(-3.1415);
 // ⮕ 3
 
 shape.parse(2);
-// ❌ ValidationError: number.min at /: Must be greater than or equal to 3
+// ❌ ValidationError: number.gte at /: Must be greater than or equal to 3
 ```
 
 # Advanced shapes
