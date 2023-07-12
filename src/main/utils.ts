@@ -1,3 +1,13 @@
+/**
+ * The module with the utility functions that can be used for plugin development.
+ *
+ * ```ts
+ * import { createIssueFactory } from 'doubter/utils';
+ * ```
+ *
+ * @module doubter/utils
+ */
+
 import { ApplyOptions, Issue, IssueOptions, Message, MessageCallback } from './core';
 import { isObjectLike } from './internal';
 
@@ -21,7 +31,7 @@ export function extractOptions<T extends IssueOptions>(source: T | Message | und
  *
  * @param code The code of the issue.
  * @param defaultMessage The default message that is used if message isn't provided through options.
- * @param options Options provided by the user.
+ * @param options The issue options or the issue message.
  * @param param The param that is added to the issue.
  * @returns The callback that takes an input and options, and returns an issue.
  */
@@ -37,7 +47,7 @@ export function createIssueFactory(
  *
  * @param code The code of the issue.
  * @param defaultMessage The default message that is used if message isn't provided through options.
- * @param options Options provided by the user.
+ * @param options The issue options or the issue message.
  * @returns The callback that takes an input, options, and a param, and returns an issue.
  */
 export function createIssueFactory(
