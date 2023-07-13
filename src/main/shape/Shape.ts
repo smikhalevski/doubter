@@ -197,20 +197,6 @@ export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
-   * The shape input type.
-   *
-   * @internal
-   */
-  declare readonly [INPUT]: InputValue;
-
-  /**
-   * The shape output type.
-   *
-   * @internal
-   */
-  declare readonly [OUTPUT]: OutputValue;
-
-  /**
    * The dictionary of shape annotations.
    *
    * @see {@link Shape.annotate}
@@ -750,6 +736,20 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 }
 
 export interface Shape<InputValue, OutputValue> {
+  /**
+   * The shape input type.
+   *
+   * @internal
+   */
+  readonly [INPUT]: InputValue;
+
+  /**
+   * The shape output type.
+   *
+   * @internal
+   */
+  readonly [OUTPUT]: OutputValue;
+
   /**
    * The array of unique input types and values that are accepted by the shape.
    */
