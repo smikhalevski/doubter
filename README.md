@@ -17,6 +17,7 @@ Runtime validation and transformation library.
 - Zero dependencies;
 - [Pluggable architecture;](#plugins)
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- [Extensive API documentation;](https://smikhalevski.github.io/doubter)
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
 🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/y5kec4)
