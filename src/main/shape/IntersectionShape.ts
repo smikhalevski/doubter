@@ -3,9 +3,8 @@ import {
   applyShape,
   concatIssues,
   distributeTypes,
-  getShapeInputs,
   isArray,
-  isAsyncShape,
+  isAsyncShapes,
   isEqual,
   setObjectProperty,
   toDeepPartialShape,
@@ -90,11 +89,16 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   }
 
   protected _isAsync(): boolean {
-    return this.shapes.some(isAsyncShape);
+    return isAsyncShapes(this.shapes);
   }
 
   protected _getInputs(): unknown[] {
-    return distributeTypes(this.shapes.map(getShapeInputs));
+    const inputs = [];
+
+    for (const shape of this.shapes) {
+      inputs.push(shape.inputs);
+    }
+    return distributeTypes(inputs);
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Output<Intersect<Shapes[number]>>> {

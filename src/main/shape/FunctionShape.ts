@@ -4,7 +4,7 @@ import {
   Awaitable,
   copyOperations,
   defaultApplyOptions,
-  getErrorMessage,
+  getMessage,
   INPUT,
   isArray,
   nextNonce,
@@ -266,7 +266,7 @@ function getOrDie<T>(key: 'this' | 'arguments' | 'return', result: Result<T>, in
   }
   if (isArray(result)) {
     unshiftIssuesPath(result, key);
-    throw new ValidationError(result, getErrorMessage(result, input, options));
+    throw new ValidationError(result, getMessage(result, input, options));
   }
   return result.value;
 }

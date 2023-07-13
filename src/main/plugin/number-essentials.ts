@@ -28,7 +28,6 @@ import {
   MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { IssueOptions, Message, NumberShape } from '../core';
-import { pushIssue } from '../internal';
 import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
@@ -213,7 +212,7 @@ export default function (prototype: NumberShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (!isFinite(output)) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -232,7 +231,7 @@ export default function (prototype: NumberShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (!isInteger(output)) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -266,7 +265,7 @@ export default function (prototype: NumberShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output <= value) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -284,7 +283,7 @@ export default function (prototype: NumberShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output >= value) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -302,7 +301,7 @@ export default function (prototype: NumberShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output < value) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -320,7 +319,7 @@ export default function (prototype: NumberShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output > value) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -347,7 +346,7 @@ export default function (prototype: NumberShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) > epsilon : output % divisor !== 0) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;

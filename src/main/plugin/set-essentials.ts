@@ -12,7 +12,6 @@
  */
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
 import { AnyShape, IssueOptions, Message, SetShape } from '../core';
-import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -76,7 +75,7 @@ export default function (prototype: SetShape<any>): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output.size < size) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -94,7 +93,7 @@ export default function (prototype: SetShape<any>): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output.size > size) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;

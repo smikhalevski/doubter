@@ -13,7 +13,7 @@ import {
   concatIssues,
   defaultApplyOptions,
   Dict,
-  getErrorMessage,
+  getMessage,
   INPUT,
   isArray,
   isEqual,
@@ -23,7 +23,6 @@ import {
   ok,
   OUTPUT,
   Promisify,
-  pushIssue,
   ReadonlyDict,
   returnTrue,
   toDeepPartialShape,
@@ -337,8 +336,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
           if (
             isObjectLike(result) &&
-            // prettier-ignore
-            (issues = isArray(result) ? result.length === 0 ? issues : concatIssues(issues, result) : pushIssue(issues, result)) !== null &&
+            (isArray(result)
+              ? result.length !== 0 && (issues = concatIssues(issues, result)) !== null
+              : (issues ||= []).push(result) !== 0) &&
             options.earlyReturn
           ) {
             return issues;
@@ -422,7 +422,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
           }
 
           if (!result) {
-            issues = pushIssue(issues, issueFactory(output, options));
+            (issues ||= []).push(issueFactory(output, options));
 
             if (options.earlyReturn) {
               return issues;
@@ -895,8 +895,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['try'] = (input, options = defaultApplyOptions) => {
-        const result = this._apply(input, options, nextNonce());
+      const cb: Shape['try'] = (input, options) => {
+        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
           return { ok: true, value: input };
@@ -918,8 +918,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['tryAsync'] = (input, options = defaultApplyOptions) => {
-        return this._applyAsync(input, options, nextNonce()).then(result => {
+      const cb: Shape['tryAsync'] = (input, options) => {
+        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return { ok: true, value: input };
           }
@@ -941,14 +941,14 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parse'] = (input, options = defaultApplyOptions) => {
-        const result = this._apply(input, options, nextNonce());
+      const cb: Shape['parse'] = (input, options) => {
+        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
           return input;
         }
         if (isArray(result)) {
-          throw new ValidationError(result, getErrorMessage(result, input, options));
+          throw new ValidationError(result, getMessage(result, input, options));
         }
         return result.value;
       };
@@ -964,13 +964,13 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseAsync'] = (input, options = defaultApplyOptions) => {
-        return this._applyAsync(input, options, nextNonce()).then(result => {
+      const cb: Shape['parseAsync'] = (input, options) => {
+        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
           if (isArray(result)) {
-            throw new ValidationError(result, getErrorMessage(result, input, options));
+            throw new ValidationError(result, getMessage(result, input, options));
           }
           return result.value;
         });
@@ -987,8 +987,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options = defaultApplyOptions) => {
-        const result = this._apply(input, options, nextNonce());
+      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
+        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
           return input;
@@ -1010,12 +1010,8 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseOrDefaultAsync'] = (
-        input: unknown,
-        defaultValue?: unknown,
-        options = defaultApplyOptions
-      ) => {
-        return this._applyAsync(input, options, nextNonce()).then(result => {
+      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
+        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }

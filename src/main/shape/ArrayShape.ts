@@ -5,7 +5,7 @@ import {
   getCanonicalValueOf,
   INPUT,
   isArray,
-  isAsyncShape,
+  isAsyncShapes,
   isIterableObject,
   OUTPUT,
   toArrayIndex,
@@ -125,7 +125,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   }
 
   protected _isAsync(): boolean {
-    return this.headShapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
+    return isAsyncShapes(this.headShapes) || this.restShape?.isAsync || false;
   }
 
   protected _getInputs(): unknown[] {

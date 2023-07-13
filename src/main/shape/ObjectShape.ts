@@ -10,10 +10,9 @@ import {
   getBit,
   INPUT,
   isArray,
-  isAsyncShape,
+  isAsyncShapes,
   isObject,
   OUTPUT,
-  pushIssue,
   ReadonlyDict,
   setObjectProperty,
   toDeepPartialShape,
@@ -349,7 +348,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   protected _isAsync(): boolean {
-    return this.restShape?.isAsync || this.valueShapes.some(isAsyncShape);
+    return this.restShape?.isAsync || isAsyncShapes(this.valueShapes);
   }
 
   protected _getInputs(): unknown[] {
@@ -611,7 +610,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       if (options.earlyReturn) {
         return [issue];
       }
-      issues = pushIssue(issues, issue);
+      (issues ||= []).push(issue);
     }
 
     // Parse absent known keys

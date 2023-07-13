@@ -13,7 +13,6 @@
 
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
 import { DateShape, IssueOptions, Message, Shape } from '../core';
-import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -94,7 +93,7 @@ export default function (prototype: DateShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output.getTime() < timestamp) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -114,7 +113,7 @@ export default function (prototype: DateShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output.getTime() > timestamp) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;

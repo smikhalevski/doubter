@@ -13,7 +13,6 @@
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
 import { BigIntShape, IssueOptions, Message } from '../core';
-import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -109,7 +108,7 @@ export default function (prototype: BigIntShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output < param) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -128,7 +127,7 @@ export default function (prototype: BigIntShape): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output > param) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;

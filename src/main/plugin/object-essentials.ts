@@ -26,7 +26,7 @@ import {
   MESSAGE_OBJECT_XOR_KEYS,
 } from '../constants';
 import { AnyShape, IssueOptions, Message, ObjectShape } from '../core';
-import { pushIssue, ReadonlyDict } from '../internal';
+import { ReadonlyDict } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -112,7 +112,7 @@ export default function (prototype: ObjectShape<any, any>): void {
         const prototype = getPrototypeOf(output);
 
         if (prototype !== null && prototype.constructor !== Object) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -132,7 +132,7 @@ export default function (prototype: ObjectShape<any, any>): void {
         const keyCount = getKeyCount(output, keys, keys.length);
 
         if (keyCount > 0 && keyCount < keys.length) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -152,7 +152,7 @@ export default function (prototype: ObjectShape<any, any>): void {
         const keyCount = getKeyCount(output, keys, keys.length);
 
         if (keyCount > 0 && keyCount <= keys.length) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -170,7 +170,7 @@ export default function (prototype: ObjectShape<any, any>): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (getKeyCount(output, keys, 1) === 0) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -188,7 +188,7 @@ export default function (prototype: ObjectShape<any, any>): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (getKeyCount(output, keys, 2) !== 1) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -206,7 +206,7 @@ export default function (prototype: ObjectShape<any, any>): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (getKeyCount(output, keys, 2) > 1) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;

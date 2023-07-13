@@ -21,7 +21,6 @@ import {
   MESSAGE_ARRAY_MIN,
 } from '../constants';
 import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Shape } from '../core';
-import { pushIssue } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -97,7 +96,7 @@ export default function (prototype: ArrayShape<any, any>): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output.length < length) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -115,7 +114,7 @@ export default function (prototype: ArrayShape<any, any>): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (output.length > length) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
@@ -157,7 +156,7 @@ export default function (prototype: ArrayShape<any, any>): void {
     return this.use(
       next => (input, output, options, issues) => {
         if (!lookup(output, options)) {
-          issues = pushIssue(issues, issueFactory(output, options));
+          (issues ||= []).push(issueFactory(output, options));
 
           if (options.earlyReturn) {
             return issues;
