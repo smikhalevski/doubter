@@ -2,7 +2,7 @@ name: publish-next
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "next" ]
 
 jobs:
 

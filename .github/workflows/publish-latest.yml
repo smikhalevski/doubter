@@ -57,8 +57,8 @@ jobs:
           set -x
 
           git reset HEAD --hard
-          git fetch origin master:master
-          git checkout master
+          git fetch origin next:next
+          git checkout next
           git checkout -b latest
           git push --force origin latest
 

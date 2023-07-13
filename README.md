@@ -26,7 +26,7 @@ Runtime validation and transformation library.
 npm install --save-prod doubter
 ```
 
-> **Note**&ensp;Docs on the [`master`](https://github.com/smikhalevski/doubter/tree/master#readme) branch describe the
+> **Note**&ensp;Docs on the [`next`](https://github.com/smikhalevski/doubter/tree/next#readme) branch describe the
 > canary release `doubter@next`. Navigate to the [`latest`](https://github.com/smikhalevski/doubter/tree/latest#readme)
 > branch for docs that describe the latest stable release.
 
