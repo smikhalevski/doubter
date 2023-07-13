@@ -147,7 +147,7 @@ describe('Overall', () => {
 
     test('doubter', measure => {
       const shape = doubter.object({
-        a1: doubter.array(doubter.integer()),
+        a1: doubter.array(doubter.number().int()),
         a2: doubter.string().min(3),
         a3: doubter.boolean(),
         a4: doubter.object({
@@ -156,14 +156,12 @@ describe('Overall', () => {
         }),
       });
 
-      const options = { verbose: true };
-
       measure(() => {
         shape.parse(validValue);
       });
 
       measure(() => {
-        shape.try(invalidValue, options);
+        shape.try(invalidValue);
       });
     });
   });
@@ -281,7 +279,7 @@ describe('Overall', () => {
     test('doubter', measure => {
       const shape = doubter
         .object({
-          a1: doubter.array(doubter.integer()),
+          a1: doubter.array(doubter.number().int()),
           a2: doubter.string().min(3),
           a3: doubter.boolean(),
           a4: doubter
@@ -293,14 +291,12 @@ describe('Overall', () => {
         })
         .exact();
 
-      const options = { verbose: true };
-
       measure(() => {
         shape.parse(validValue);
       });
 
       measure(() => {
-        shape.try(invalidValue, options);
+        shape.try(invalidValue);
       });
     });
   });

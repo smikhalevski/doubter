@@ -1,11 +1,48 @@
 import { NumberShape } from '../../main';
 import {
+  CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
   CODE_NUMBER_GTE,
+  CODE_NUMBER_INT,
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
-  CODE_NUMBER_MULTIPLE,
+  CODE_NUMBER_MULTIPLE_OF,
+  MESSAGE_NUMBER_FINITE,
+  MESSAGE_NUMBER_INT,
 } from '../../main/constants';
+
+describe('finite', () => {
+  test('allows finite numbers', () => {
+    expect(new NumberShape().finite().parse(111.222)).toBe(111.222);
+  });
+
+  test('raises if value is an infinity', () => {
+    expect(new NumberShape().finite().try(Infinity)).toEqual({
+      ok: false,
+      issues: [{ code: CODE_NUMBER_FINITE, input: Infinity, message: MESSAGE_NUMBER_FINITE }],
+    });
+  });
+});
+
+describe('int', () => {
+  test('allows integer numbers', () => {
+    expect(new NumberShape().int().parse(111)).toBe(111);
+  });
+
+  test('raises if value is an infinity', () => {
+    expect(new NumberShape().int().try(Infinity)).toEqual({
+      ok: false,
+      issues: [{ code: CODE_NUMBER_INT, input: Infinity, message: MESSAGE_NUMBER_INT }],
+    });
+  });
+
+  test('raises if value is a real number', () => {
+    expect(new NumberShape().int().try(111.222)).toEqual({
+      ok: false,
+      issues: [{ code: CODE_NUMBER_INT, input: 111.222, message: MESSAGE_NUMBER_INT }],
+    });
+  });
+});
 
 describe('gt', () => {
   test('raises if value is not greater than', () => {
@@ -94,14 +131,23 @@ describe('lte/max', () => {
   });
 });
 
-describe('multiple', () => {
+describe('multipleOf', () => {
   test('raises if value is not a multiple of a divisor', () => {
-    expect(new NumberShape().multiple(2).try(3)).toEqual({
+    expect(new NumberShape().multipleOf(2).try(3)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_MULTIPLE, input: 3, param: 2, message: 'Must be a multiple of 2' }],
+      issues: [{ code: CODE_NUMBER_MULTIPLE_OF, input: 3, param: 2, message: 'Must be a multiple of 2' }],
     });
 
-    expect(new NumberShape().multiple(2).parse(4)).toBe(4);
+    expect(new NumberShape().multipleOf(2).parse(4)).toBe(4);
+  });
+
+  test('respects precision', () => {
+    expect(new NumberShape().multipleOf(0.1).try(49.9)).toEqual({
+      ok: false,
+      issues: [{ code: CODE_NUMBER_MULTIPLE_OF, input: 49.9, param: 0.1, message: 'Must be a multiple of 0.1' }],
+    });
+
+    expect(new NumberShape().multipleOf(0.1, { precision: 1 }).parse(49.9)).toBe(49.9);
   });
 });
 

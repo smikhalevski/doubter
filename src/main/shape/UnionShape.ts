@@ -1,15 +1,5 @@
-import { CODE_UNION, MESSAGE_UNION } from '../constants';
-import {
-  applyShape,
-  Dict,
-  getShapeInputs,
-  isArray,
-  isAsyncShape,
-  isObject,
-  isType,
-  toDeepPartialShape,
-  unique,
-} from '../internal';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants';
+import { applyShape, Dict, isArray, isAsyncShapes, isObject, isType, toDeepPartialShape, unique } from '../internal';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -62,7 +52,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_UNION, MESSAGE_UNION, options);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_UNION, MESSAGE_TYPE_UNION, options);
   }
 
   protected get _lookup(): LookupCallback {
@@ -98,12 +88,16 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 
   protected _isAsync(): boolean {
-    return this.shapes.some(isAsyncShape);
+    return isAsyncShapes(this.shapes);
   }
 
   protected _getInputs(): unknown[] {
-    // flatMap
-    return Array.prototype.concat.apply([], this.shapes.map(getShapeInputs));
+    const inputs = [];
+
+    for (const shape of this.shapes) {
+      inputs.push(...shape.inputs);
+    }
+    return inputs;
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<Shapes[number]>> {

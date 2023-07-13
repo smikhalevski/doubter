@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_PROMISE_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_PROMISE } from '../constants';
 import { applyShape, INPUT, isArray, OUTPUT, Promisify, toDeepPartialShape } from '../internal';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -41,11 +41,14 @@ export class PromiseShape<ValueShape extends AnyShape | null>
    * @param options The issue options or the issue message.
    * @template ValueShape The shape of the resolved value.
    */
-  constructor(readonly valueShape: ValueShape, options?: IssueOptions | Message) {
+  constructor(
+    readonly valueShape: ValueShape,
+    options?: IssueOptions | Message
+  ) {
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_PROMISE_TYPE, options, TYPE_PROMISE);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_PROMISE, options, TYPE_PROMISE);
   }
 
   deepPartial(): DeepPartialPromiseShape<ValueShape> {
@@ -100,7 +103,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
 
         if (result !== null) {
           if (isArray(result)) {
-            if (!options.verbose || this.operations.length === 0) {
+            if (options.earlyReturn || this.operations.length === 0) {
               return result;
             }
             issues = result;

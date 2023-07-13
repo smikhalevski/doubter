@@ -1,11 +1,10 @@
-import { CODE_INTERSECTION, MESSAGE_INTERSECTION } from '../constants';
+import { CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION } from '../constants';
 import {
   applyShape,
   concatIssues,
   distributeTypes,
-  getShapeInputs,
   isArray,
-  isAsyncShape,
+  isAsyncShapes,
   isEqual,
   setObjectProperty,
   toDeepPartialShape,
@@ -63,7 +62,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_INTERSECTION, MESSAGE_INTERSECTION, options, undefined);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION, options, undefined);
   }
 
   at(key: unknown): AnyShape | null {
@@ -90,11 +89,16 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   }
 
   protected _isAsync(): boolean {
-    return this.shapes.some(isAsyncShape);
+    return isAsyncShapes(this.shapes);
   }
 
   protected _getInputs(): unknown[] {
-    return distributeTypes(this.shapes.map(getShapeInputs));
+    const inputs = [];
+
+    for (const shape of this.shapes) {
+      inputs.push(shape.inputs);
+    }
+    return distributeTypes(inputs);
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Output<Intersect<Shapes[number]>>> {
@@ -111,7 +115,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         continue;
       }
       if (isArray(result)) {
-        if (!options.verbose) {
+        if (options.earlyReturn) {
           return result;
         }
         issues = concatIssues(issues, result);
@@ -151,7 +155,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
       const handleResult = (result: Result) => {
         if (result !== null) {
           if (isArray(result)) {
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return result;
             }
             issues = concatIssues(issues, result);

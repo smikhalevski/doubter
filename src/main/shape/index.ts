@@ -17,13 +17,13 @@ export { PromiseShape } from './PromiseShape';
 export { RecordShape } from './RecordShape';
 export { SetShape } from './SetShape';
 export {
-  AllowLiteralShape,
+  AllowShape,
   AnyShape,
   Branded,
   CatchShape,
   DeepPartialProtocol,
   DeepPartialShape,
-  DenyLiteralShape,
+  DenyShape,
   ExcludeShape,
   Input,
   NotShape,
@@ -31,7 +31,7 @@ export {
   Output,
   PipeShape,
   RefineShape,
-  ReplaceLiteralShape,
+  ReplaceShape,
   Shape,
   ConvertShape,
 } from './Shape';

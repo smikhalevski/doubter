@@ -1,5 +1,5 @@
 import { NEVER, StringShape } from '../../main';
-import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('StringShape', () => {
@@ -30,8 +30,8 @@ describe('StringShape', () => {
     });
   });
 
-  test('raises multiple issues in verbose mode', () => {
-    expect(new StringShape({}).min(3).regex(/aaaa/).try('aa', { verbose: true })).toEqual({
+  test('raises multiple issues', () => {
+    expect(new StringShape({}).min(3).regex(/aaaa/).try('aa')).toEqual({
       ok: false,
       issues: [
         { code: CODE_STRING_MIN, input: 'aa', param: 3, message: 'Must have the minimum length of 3' },
@@ -40,8 +40,8 @@ describe('StringShape', () => {
     });
   });
 
-  test('raises a single issue', () => {
-    expect(new StringShape().min(3).regex(/aaaa/).try('aa')).toEqual({
+  test('raises a single issue in an early-return mode', () => {
+    expect(new StringShape().min(3).regex(/aaaa/).try('aa', { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: CODE_STRING_MIN, input: 'aa', param: 3, message: 'Must have the minimum length of 3' }],
     });
@@ -81,7 +81,7 @@ describe('StringShape', () => {
   test('raises an issue if coercion fails', () => {
     expect(new StringShape().coerce().try([111, 222])).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: [111, 222], message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
+      issues: [{ code: CODE_TYPE, input: [111, 222], message: MESSAGE_TYPE_STRING, param: TYPE_STRING }],
     });
   });
 

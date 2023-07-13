@@ -1,4 +1,4 @@
-import { CODE_ENUM, MESSAGE_ENUM } from '../constants';
+import { CODE_TYPE_ENUM, MESSAGE_TYPE_ENUM } from '../constants';
 import { getCanonicalValueOf, isArray, ReadonlyDict, unique } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -41,7 +41,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
 
     this.values = (isArray(source) ? source : getEnumValues(source)).filter(unique);
 
-    this._typeIssueFactory = createIssueFactory(CODE_ENUM, MESSAGE_ENUM, options, this.values);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, MESSAGE_TYPE_ENUM, options, this.values);
   }
 
   protected _getInputs(): unknown[] {

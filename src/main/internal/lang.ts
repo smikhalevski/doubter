@@ -19,21 +19,12 @@ export function isObject(value: unknown): boolean {
   return isObjectLike(value) && !isArray(value);
 }
 
-export function isPlainObject(value: any): boolean {
-  let proto;
-  return isObjectLike(value) && ((proto = Object.getPrototypeOf(value)) === null || proto.constructor === Object);
-}
-
 export function isIterableObject(value: any): value is Iterable<any> {
   return isObjectLike(value) && ((typeof Symbol !== 'undefined' && Symbol.iterator in value) || !isNaN(value.length));
 }
 
 export function isEqualOrSubclass(ctor: Function, superCtor: Function): boolean {
   return ctor === superCtor || superCtor.prototype.isPrototypeOf(ctor.prototype);
-}
-
-export function isNumber(value: unknown): boolean {
-  return typeof value === 'number' && value === value;
 }
 
 export function isValidDate(value: unknown): value is Date {

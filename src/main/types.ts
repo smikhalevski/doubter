@@ -112,14 +112,14 @@ export interface IssueOptions {
    * The custom issue message.
    *
    * @see {@linkcode Message}
-   * @see {@linkcode Issue#message Issue.message}
+   * @see {@linkcode doubter/core!Issue#message Issue.message}
    */
   message?: Message | any;
 
   /**
    * An arbitrary metadata that is added to an issue.
    *
-   * @see {@linkcode Issue#meta Issue.meta}
+   * @see {@linkcode doubter/core!Issue#meta Issue.meta}
    */
   meta?: any;
 }
@@ -145,7 +145,7 @@ export type Message = MessageCallback | string;
  * assigned a non-`undefined` value inside the callback.
  * @group Issues
  */
-export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) => any;
+export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
 
 /**
  * An operation that a shape applies to its output.
@@ -155,36 +155,36 @@ export type MessageCallback = (issue: Issue, options: Readonly<ApplyOptions>) =>
  * @see {@linkcode Shape#check Shape.check}
  * @see {@linkcode Shape#alter Shape.alter}
  * @see {@linkcode Shape#refine Shape.refine}
- * @see {@linkcode Shape#addOperation Shape.addOperation}
+ * @see {@linkcode Shape#use Shape.use}
  * @group Operations
  */
 export interface Operation<InputValue = any, OutputValue = any> {
   /**
-   * The type of the operation such as {@linkcode StringShape#regex "string_regex"} or
-   * {@linkcode ArrayShape#includes "array_includes"}.
+   * The type of the operation such as {@linkcode StringShape#regex "string.regex"} or
+   * {@linkcode ArrayShape#includes "array.includes"}.
    */
-  type: any;
+  readonly type: any;
 
   /**
    * The additional param associated with the operation.
    *
    * This param usually contains a {@link type type-specific} data is used in the {@link OperationCallback callback}
-   * returned by the {@linkcode compose} method.
+   * returned by the {@linkcode factory} method.
    *
    * Built-in operations use the same param for an operation and an issue that is raised if an operation fails.
    *
    * @see {@linkcode Issue#param Issue.param}
    */
-  param: any;
+  readonly param: any;
 
   /**
-   * Creates an {@link OperationCallback} that applies the logic of this operation to the shape output and passes
+   * Creates an {@link OperationCallback} that applies the logic of the operation to the shape output and passes the
    * control to the next operation.
    *
    * @param next The callback that applies the next operation.
    * @returns The callback that applies an operation to the shape output.
    */
-  compose(this: Operation, next: OperationCallback): OperationCallback<InputValue, OutputValue>;
+  readonly factory: (next: OperationCallback) => OperationCallback<InputValue, OutputValue>;
 }
 
 /**
@@ -197,22 +197,19 @@ export interface Operation<InputValue = any, OutputValue = any> {
  * @returns The result of the operation.
  * @template InputValue The input value to which the shape was applied.
  * @template OutputValue The shape output value to which the operation must be applied.
- * @see {@linkcode Operation#compose Operation.compose}
+ * @see {@linkcode Operation#factory Operation.factory}
  * @group Operations
  */
 export type OperationCallback<InputValue = any, OutputValue = any> = (
   input: InputValue,
   output: OutputValue,
-  options: Readonly<ApplyOptions>,
+  options: ApplyOptions,
   issues: Issue[] | null
 ) => Result;
 
 /**
- * Options of a custom {@link Operation operation}.
+ * Options of a generic {@link Operation operation}.
  *
- * @see {@linkcode Shape#check Shape.check}
- * @see {@linkcode Shape#alter Shape.alter}
- * @see {@linkcode Shape#refine Shape.refine}
  * @group Operations
  */
 export interface OperationOptions {
@@ -229,7 +226,17 @@ export interface OperationOptions {
    * @see {@linkcode Operation#param Operation.param}
    */
   param?: any;
+}
 
+/**
+ * Options of a custom {@link Operation operation}.
+ *
+ * @see {@linkcode Shape#check Shape.check}
+ * @see {@linkcode Shape#alter Shape.alter}
+ * @see {@linkcode Shape#refine Shape.refine}
+ * @group Operations
+ */
+export interface CustomOperationOptions extends OperationOptions {
   /**
    * If `true` then the operation is applied even if some of the preceding operations have failed.
    *
@@ -243,7 +250,7 @@ export interface OperationOptions {
  * @template Param The param that is passed to a callback when an operation is applied.
  * @group Operations
  */
-export interface ParameterizedOperationOptions<Param> extends OperationOptions {
+export interface ParameterizedCustomOperationOptions<Param> extends CustomOperationOptions {
   param: Param;
 }
 
@@ -265,7 +272,7 @@ export interface ParameterizedOperationOptions<Param> extends OperationOptions {
 export type CheckCallback<Value = any, Param = any> = (
   value: Value,
   param: Param,
-  options: Readonly<ApplyOptions>
+  options: ApplyOptions
 ) => Issue[] | Issue | null | undefined | void;
 
 /**
@@ -283,11 +290,7 @@ export type CheckCallback<Value = any, Param = any> = (
  * @see {@linkcode Shape#refine}
  * @group Operations
  */
-export type RefineCallback<Value = any, Param = any> = (
-  value: Value,
-  param: Param,
-  options: Readonly<ApplyOptions>
-) => any;
+export type RefineCallback<Value = any, Param = any> = (value: Value, param: Param, options: ApplyOptions) => any;
 
 /**
  * A [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) that refines the value type.
@@ -308,7 +311,7 @@ export type RefineCallback<Value = any, Param = any> = (
 export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Param = any> = (
   value: Value,
   param: Param,
-  options: Readonly<ApplyOptions>
+  options: ApplyOptions
 ) => value is RefinedValue;
 
 /**
@@ -316,11 +319,11 @@ export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Par
  *
  * @group Operations
  */
-export interface RefineOptions extends OperationOptions, IssueOptions {
+export interface RefineOptions extends CustomOperationOptions, IssueOptions {
   /**
    * The code of an issue that would be raised if the refinement fails.
    *
-   * @default "predicate"
+   * @default "any.refine"
    * @see {@linkcode Issue#code Issue.code}
    */
   code?: any;
@@ -353,11 +356,7 @@ export interface ParameterizedRefineOptions<Param> extends RefineOptions {
  * @see {@linkcode Shape#convert}
  * @group Operations
  */
-export type AlterCallback<Value = any, Param = any> = (
-  value: Value,
-  param: Param,
-  options: Readonly<ApplyOptions>
-) => Value;
+export type AlterCallback<Value = any, Param = any> = (value: Value, param: Param, options: ApplyOptions) => Value;
 
 /**
  * Options used when a shape is applied to an input value.
@@ -368,24 +367,23 @@ export type AlterCallback<Value = any, Param = any> = (
  */
 export interface ApplyOptions {
   /**
-   * If `true` then all issues are collected during parsing, otherwise parsing is aborted after the first issue is
-   * encountered.
+   * If `true` then parsing is aborted after the first issue is encountered.
    *
    * @default false
    */
-  verbose?: boolean;
+  readonly earlyReturn?: boolean;
 
   /**
    * If `true` then shapes that support input value type coercion, would try to coerce an input to a required type.
    *
    * @default false
    */
-  coerce?: boolean;
+  readonly coerce?: boolean;
 
   /**
    * The custom context.
    */
-  context?: any;
+  readonly context?: any;
 }
 
 /**
@@ -407,7 +405,7 @@ export interface ParseOptions extends ApplyOptions {
   /**
    * A message that is passed to {@linkcode ValidationError} if issues are raised during parsing.
    */
-  errorMessage?: ErrorMessageCallback | string;
+  readonly errorMessage?: ErrorMessageCallback | string;
 }
 
 /**
@@ -415,4 +413,4 @@ export interface ParseOptions extends ApplyOptions {
  *
  * @group Other
  */
-export type Literal = object | string | number | bigint | boolean | symbol | null | undefined;
+export type Any = object | string | number | bigint | boolean | symbol | null | undefined;

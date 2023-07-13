@@ -31,3 +31,5 @@ expectType<number>(d.number().allow(Infinity)[OUTPUT]);
 expectType<number>(d.number().deny(111)[INPUT]);
 
 expectType<number>(d.number().deny(111)[OUTPUT]);
+
+expectType<number>(d.number().alter(Math.abs).alter(Math.pow, { param: 3 })[OUTPUT]);

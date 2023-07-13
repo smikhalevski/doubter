@@ -51,7 +51,7 @@ describe('number()', () => {
   });
 });
 
-describe('number().multiple(1)', () => {
+describe('number().multipleOf(1)', () => {
   const value = 49;
 
   test('Ajv', measure => {
@@ -75,7 +75,7 @@ describe('number().multiple(1)', () => {
   });
 
   test('doubter', measure => {
-    const shape = doubter.number().multiple(1);
+    const shape = doubter.number().multipleOf(1);
 
     measure(() => {
       shape.parse(value);
@@ -124,7 +124,7 @@ describe('number().gte(1).lte(5)', () => {
   });
 });
 
-describe('integer()', () => {
+describe('number().int()', () => {
   const value = 4;
 
   test('Ajv', measure => {
@@ -147,7 +147,7 @@ describe('integer()', () => {
   });
 
   test('doubter', measure => {
-    const shape = doubter.integer();
+    const shape = doubter.number().int();
 
     measure(() => {
       shape.parse(value);

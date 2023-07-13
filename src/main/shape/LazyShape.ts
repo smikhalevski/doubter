@@ -1,6 +1,6 @@
-import { ERROR_SHAPE_EXPECTED } from '../constants';
+import { ERR_SHAPE_EXPECTED } from '../constants';
 import { captureIssues, copyOperations, identity, isArray, ok, toDeepPartialShape } from '../internal';
-import { ApplyOptions, Literal, Result } from '../types';
+import { Any, ApplyOptions, Result } from '../types';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
@@ -42,7 +42,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     /**
      * The provider callback that returns the value that is used instead of a circular reference.
      */
-    readonly pointerProvider: (value: Input<ProvidedShape>, options: Readonly<ApplyOptions>) => Pointer
+    readonly pointerProvider: (value: Input<ProvidedShape>, options: ApplyOptions) => Pointer
   ) {
     super();
 
@@ -55,7 +55,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
         return shape;
       }
       shape = 0;
-      throw new Error(ERROR_SHAPE_EXPECTED);
+      throw new Error(ERR_SHAPE_EXPECTED);
     };
   }
 
@@ -90,8 +90,8 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * @template Pointer The value returned when a cyclic reference is detected.
    * @returns The clone of the shape.
    */
-  circular<Pointer extends Literal>(
-    pointer: Pointer | ((value: Input<ProvidedShape>, options: Readonly<ApplyOptions>) => Pointer)
+  circular<Pointer extends Any>(
+    pointer: Pointer | ((value: Input<ProvidedShape>, options: ApplyOptions) => Pointer)
   ): LazyShape<ProvidedShape, Pointer> {
     return copyOperations(
       this,

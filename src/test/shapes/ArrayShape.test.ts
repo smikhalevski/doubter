@@ -1,5 +1,5 @@
 import { ArrayShape, Err, NumberShape, ObjectShape, Ok, StringShape } from '../../main';
-import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_NUMBER_TYPE } from '../../main/constants';
+import { CODE_TYPE, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_NUMBER } from '../../main/constants';
 import { resetNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
@@ -28,7 +28,7 @@ describe('ArrayShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
     });
   });
 
@@ -44,9 +44,9 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: input });
     expect(result.value).toBe(input);
     expect(headShape1._apply).toHaveBeenCalledTimes(1);
-    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
     expect(headShape2._apply).toHaveBeenCalledTimes(1);
-    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
+    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { earlyReturn: false, coerce: false }, 0);
   });
 
   test('parses rest elements', () => {
@@ -60,8 +60,8 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: input });
     expect(result.value).toBe(input);
     expect(restShape._apply).toHaveBeenCalledTimes(2);
-    expect(restShape._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-    expect(restShape._apply).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false, coerce: false }, 0);
   });
 
   test('parses both head and rest elements', () => {
@@ -77,12 +77,12 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(headShape1._apply).toHaveBeenCalledTimes(1);
-    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
     expect(headShape2._apply).toHaveBeenCalledTimes(1);
-    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
+    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { earlyReturn: false, coerce: false }, 0);
     expect(restShape._apply).toHaveBeenCalledTimes(2);
-    expect(restShape._apply).toHaveBeenNthCalledWith(1, 333, { verbose: false, coerce: false }, 0);
-    expect(restShape._apply).toHaveBeenNthCalledWith(2, 444, { verbose: false, coerce: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(1, 333, { earlyReturn: false, coerce: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(2, 444, { earlyReturn: false, coerce: false }, 0);
   });
 
   test('raises an issue if the tuple length does not match head shapes', () => {
@@ -90,7 +90,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try([111])).toEqual({
       ok: false,
-      issues: [{ code: CODE_TUPLE, input: [111], message: 'Must be a tuple of length 2', param: 2 }],
+      issues: [{ code: CODE_TYPE_TUPLE, input: [111], message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
@@ -99,7 +99,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
+      issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
@@ -108,7 +108,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
     });
   });
 
@@ -117,26 +117,26 @@ describe('ArrayShape', () => {
 
     expect(shape.try(['aaa'])).toEqual({
       ok: false,
-      issues: [{ code: CODE_TUPLE, input: ['aaa'], message: 'Must be a tuple of length 2', param: 2 }],
+      issues: [{ code: CODE_TYPE_TUPLE, input: ['aaa'], message: 'Must be a tuple of length 2', param: 2 }],
     });
   });
 
-  test('rest shape can raise an issue', () => {
+  test('rest shape can raise an issue in an early-return mode', () => {
     const restShape = new MockShape().check(() => [{ code: 'xxx' }]);
     const shape = new ArrayShape([], restShape);
 
-    expect(shape.try(['aaa', 'bbb'])).toEqual({
+    expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
   });
 
-  test('rest shape can raise multiple issues in verbose mode', () => {
+  test('rest shape can raise multiple issues', () => {
     const restShape = new MockShape().check(() => [{ code: 'xxx' }]);
 
     const shape = new ArrayShape([], restShape);
 
-    expect(shape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
+    expect(shape.try(['aaa', 'bbb'])).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -145,25 +145,25 @@ describe('ArrayShape', () => {
     });
   });
 
-  test('head shapes can raise an issue', () => {
+  test('head shapes can raise an issue in an early-return mode', () => {
+    const headShape1 = new MockShape().check(() => [{ code: 'xxx' }]);
+    const headShape2 = new MockShape().check(() => [{ code: 'yyy' }]);
+
+    const shape = new ArrayShape([headShape1, headShape2], null);
+
+    expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
+      ok: false,
+      issues: [{ code: 'xxx', path: [0] }],
+    });
+  });
+
+  test('head shapes can raise multiple issues', () => {
     const headShape1 = new MockShape().check(() => [{ code: 'xxx' }]);
     const headShape2 = new MockShape().check(() => [{ code: 'yyy' }]);
 
     const shape = new ArrayShape([headShape1, headShape2], null);
 
     expect(shape.try(['aaa', 'bbb'])).toEqual({
-      ok: false,
-      issues: [{ code: 'xxx', path: [0] }],
-    });
-  });
-
-  test('head shapes can raise multiple issues in verbose mode', () => {
-    const headShape1 = new MockShape().check(() => [{ code: 'xxx' }]);
-    const headShape2 = new MockShape().check(() => [{ code: 'yyy' }]);
-
-    const shape = new ArrayShape([headShape1, headShape2], null);
-
-    expect(shape.try(['aaa', 'bbb'], { verbose: true })).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -269,7 +269,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try([])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: [], message: 'Must be a tuple of length 1', param: 1 }],
+        issues: [{ code: CODE_TYPE_TUPLE, input: [], message: 'Must be a tuple of length 1', param: 1 }],
       });
     });
 
@@ -278,7 +278,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, path: [0], input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
+        issues: [{ code: CODE_TYPE, path: [0], input: 'aaa', message: MESSAGE_TYPE_NUMBER, param: TYPE_NUMBER }],
       });
     });
 
@@ -330,7 +330,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 0', param: 0 }],
+        issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 0', param: 0 }],
       });
     });
 
@@ -345,7 +345,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
+        issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
       });
     });
 
@@ -406,7 +406,7 @@ describe('ArrayShape', () => {
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
+        issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
       });
     });
   });
@@ -419,7 +419,7 @@ describe('ArrayShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_ARRAY_TYPE, param: TYPE_ARRAY }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
       });
     });
 
@@ -428,7 +428,7 @@ describe('ArrayShape', () => {
 
       await expect(shape.tryAsync([])).resolves.toEqual({ ok: true, value: [] });
       expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, [], { verbose: false, coerce: false }, 0);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, [], { earlyReturn: false, coerce: false }, 0);
     });
 
     test('parses head elements', async () => {
@@ -443,23 +443,23 @@ describe('ArrayShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(headShape1._apply).toHaveBeenCalledTimes(1);
-      expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+      expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
       expect(headShape2._applyAsync).toHaveBeenCalledTimes(1);
-      expect(headShape2._applyAsync).toHaveBeenNthCalledWith(1, 222, { verbose: false, coerce: false }, 0);
+      expect(headShape2._applyAsync).toHaveBeenNthCalledWith(1, 222, { earlyReturn: false, coerce: false }, 0);
     });
 
-    test('does not apply head element shape if previous shape raised an issue', async () => {
+    test('does not apply head element shape if previous shape raised an issue in an early-return mode', async () => {
       const headShape1 = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
       const headShape2 = new AsyncMockShape();
 
       const shape = new ArrayShape([headShape1, headShape2], null);
 
       const input = [111, 222];
-      const result = (await shape.tryAsync(input)) as Err;
+      const result = (await shape.tryAsync(input, { earlyReturn: true })) as Err;
 
       expect(result).toEqual({ ok: false, issues: [{ code: 'xxx', path: [0] }] });
       expect(headShape1._applyAsync).toHaveBeenCalledTimes(1);
-      expect(headShape1._applyAsync).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
+      expect(headShape1._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: true }, 0);
       expect(headShape2._applyAsync).not.toHaveBeenCalled();
     });
 
@@ -474,8 +474,8 @@ describe('ArrayShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(restShape._applyAsync).toHaveBeenCalledTimes(2);
-      expect(restShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-      expect(restShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+      expect(restShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
+      expect(restShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false, coerce: false }, 0);
     });
 
     test('clones an array if a tuple element was converted', async () => {
@@ -518,7 +518,7 @@ describe('ArrayShape', () => {
 
         await expect(shape.tryAsync('aaa')).resolves.toEqual({
           ok: false,
-          issues: [{ code: CODE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
+          issues: [{ code: CODE_TYPE_TUPLE, input: 'aaa', message: 'Must be a tuple of length 2', param: 2 }],
         });
       });
     });

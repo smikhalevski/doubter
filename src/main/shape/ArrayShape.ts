@@ -1,11 +1,11 @@
-import { CODE_TUPLE, CODE_TYPE, MESSAGE_ARRAY_TYPE, MESSAGE_TUPLE } from '../constants';
+import { CODE_TYPE, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants';
 import {
   applyShape,
   concatIssues,
   getCanonicalValueOf,
   INPUT,
   isArray,
-  isAsyncShape,
+  isAsyncShapes,
   isIterableObject,
   OUTPUT,
   toArrayIndex,
@@ -21,10 +21,10 @@ import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape } from '
 type InferArray<
   HeadShapes extends readonly AnyShape[],
   RestShape extends AnyShape | null,
-  Leg extends INPUT | OUTPUT
+  Leg extends INPUT | OUTPUT,
 > = [
   ...{ [K in keyof HeadShapes]: HeadShapes[K][Leg] },
-  ...(RestShape extends null | undefined ? [] : RestShape extends AnyShape ? RestShape[Leg][] : [])
+  ...(RestShape extends null | undefined ? [] : RestShape extends AnyShape ? RestShape[Leg][] : []),
 ];
 
 type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> = ArrayShape<
@@ -85,9 +85,9 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     this._options = options;
 
     if (headShapes.length !== 0 || restShape === null) {
-      this._typeIssueFactory = createIssueFactory(CODE_TUPLE, MESSAGE_TUPLE, options, headShapes.length);
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE_TUPLE, MESSAGE_TYPE_TUPLE, options, headShapes.length);
     } else {
-      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_ARRAY_TYPE, options, TYPE_ARRAY);
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_ARRAY, options, TYPE_ARRAY);
     }
   }
 
@@ -125,7 +125,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   }
 
   protected _isAsync(): boolean {
-    return this.headShapes?.some(isAsyncShape) || this.restShape?.isAsync || false;
+    return isAsyncShapes(this.headShapes) || this.restShape?.isAsync || false;
   }
 
   protected _getInputs(): unknown[] {
@@ -180,7 +180,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         if (isArray(result)) {
           unshiftIssuesPath(result, i);
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return result;
           }
           issues = concatIssues(issues, result);
@@ -228,7 +228,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           if (isArray(result)) {
             unshiftIssuesPath(result, index);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return result;
             }
             issues = concatIssues(issues, result);

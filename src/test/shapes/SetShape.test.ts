@@ -1,8 +1,8 @@
 import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_SET_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_TYPE_SET, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { resetNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/Type';
-import { AsyncMockShape, spyOnShape, MockShape } from './mocks';
+import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('SetShape', () => {
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe('SetShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: TYPE_SET }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_SET, param: TYPE_SET }],
     });
   });
 
@@ -41,27 +41,27 @@ describe('SetShape', () => {
     expect(result).toEqual({ ok: true, value: input });
     expect(result.value).toBe(input);
     expect(valueShape._apply).toHaveBeenCalledTimes(2);
-    expect(valueShape._apply).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-    expect(valueShape._apply).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+    expect(valueShape._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
+    expect(valueShape._apply).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false, coerce: false }, 0);
   });
 
-  test('raises a single issue captured by the value shape', () => {
+  test('raises a single issue captured by the value shape in an early-return mode', () => {
     const valueShape = new Shape().check(() => [{ code: 'xxx' }]);
 
     const shape = new SetShape(valueShape);
 
-    expect(shape.try(new Set(['aaa', 'bbb']))).toEqual({
+    expect(shape.try(new Set(['aaa', 'bbb']), { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
   });
 
-  test('raises multiple issues captured by the value shape in verbose mode', () => {
+  test('raises multiple issues captured by the value shape', () => {
     const valueShape = new Shape().check(() => [{ code: 'xxx' }]);
 
     const shape = new SetShape(valueShape);
 
-    expect(shape.try(new Set(['aaa', 'bbb']), { verbose: true })).toEqual({
+    expect(shape.try(new Set(['aaa', 'bbb']))).toEqual({
       ok: false,
       issues: [
         { code: 'xxx', path: [0] },
@@ -160,7 +160,7 @@ describe('SetShape', () => {
 
       expect(shape.try(new Set([{ key1: 111 }]))).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: [0, 'key1'] }],
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: [0, 'key1'] }],
       });
     });
   });
@@ -173,7 +173,7 @@ describe('SetShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_SET_TYPE, param: TYPE_SET }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_SET, param: TYPE_SET }],
       });
     });
 
@@ -182,7 +182,7 @@ describe('SetShape', () => {
 
       await expect(shape.tryAsync(new Set())).resolves.toEqual({ ok: true, value: new Set() });
       expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, new Set(), { verbose: false, coerce: false }, 0);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, new Set(), { earlyReturn: false, coerce: false }, 0);
     });
 
     test('parses values in a Set', async () => {
@@ -197,11 +197,11 @@ describe('SetShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape._applyAsync).toHaveBeenCalledTimes(2);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false, coerce: false }, 0);
     });
 
-    test('does not apply value shape if the previous value raised an issue', async () => {
+    test('does not apply value shape if the previous value raised an issue in an early-return mode', async () => {
       const cbMock = jest
         .fn()
         .mockReturnValueOnce(undefined)
@@ -213,11 +213,11 @@ describe('SetShape', () => {
 
       const input = new Set([111, 222, 333]);
 
-      await shape.tryAsync(input);
+      await shape.tryAsync(input, { earlyReturn: true });
 
       expect(valueShape._applyAsync).toHaveBeenCalledTimes(2);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { verbose: false, coerce: false }, 0);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { verbose: false, coerce: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: true }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { earlyReturn: true }, 0);
     });
 
     test('returns a new set if some values were converted', async () => {

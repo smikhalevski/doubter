@@ -8,28 +8,29 @@
  * @module doubter/core
  */
 
-import arrayChecks from './plugin/array-checks';
-import bigintChecks from './plugin/bigint-checks';
-import dateChecks from './plugin/date-checks';
-import numberChecks from './plugin/number-checks';
-import setChecks from './plugin/set-checks';
-import shapeHelpers from './plugin/shape-helpers';
-import stringChecks from './plugin/string-checks';
+import enableArrayEssentials from './plugin/array-essentials';
+import enableBigIntEssentials from './plugin/bigint-essentials';
+import enableDateEssentials from './plugin/date-essentials';
+import enableNumberEssentials from './plugin/number-essentials';
+import enableObjectEssentials from './plugin/object-essentials';
+import enableSetEssentials from './plugin/set-essentials';
+import enableStringEssentials from './plugin/string-essentials';
+import { ArrayShape, BigIntShape, DateShape, NumberShape, ObjectShape, SetShape, StringShape } from './core';
 
-export type * from './plugin/array-checks';
-export type * from './plugin/bigint-checks';
-export type * from './plugin/date-checks';
-export type * from './plugin/number-checks';
-export type * from './plugin/set-checks';
-export type * from './plugin/shape-helpers';
-export type * from './plugin/string-checks';
+export type * from './plugin/array-essentials';
+export type * from './plugin/bigint-essentials';
+export type * from './plugin/date-essentials';
+export type * from './plugin/number-essentials';
+export type * from './plugin/object-essentials';
+export type * from './plugin/set-essentials';
+export type * from './plugin/string-essentials';
 
 export * from './core';
 
-arrayChecks();
-bigintChecks();
-dateChecks();
-numberChecks();
-setChecks();
-shapeHelpers();
-stringChecks();
+enableArrayEssentials(ArrayShape.prototype);
+enableBigIntEssentials(BigIntShape.prototype);
+enableDateEssentials(DateShape.prototype);
+enableNumberEssentials(NumberShape.prototype);
+enableObjectEssentials(ObjectShape.prototype);
+enableSetEssentials(SetShape.prototype);
+enableStringEssentials(StringShape.prototype);

@@ -1,11 +1,4 @@
-import {
-  getCanonicalValueOf,
-  isEqual,
-  isEqualOrSubclass,
-  isIterableObject,
-  isPlainObject,
-  isValidDate,
-} from '../../main/internal';
+import { getCanonicalValueOf, isEqual, isEqualOrSubclass, isIterableObject, isValidDate } from '../../main/internal';
 
 describe('isEqual', () => {
   test('checks equality', () => {
@@ -17,29 +10,6 @@ describe('isEqual', () => {
 
   test('0 is equal -0', () => {
     expect(isEqual(0, -0)).toBe(true);
-  });
-});
-
-describe('isPlainObject', () => {
-  test('detects plain objects', () => {
-    expect(isPlainObject({})).toBe(true);
-    expect(isPlainObject({ a: 1 })).toBe(true);
-    expect(isPlainObject({ constructor: () => undefined })).toBe(true);
-    expect(isPlainObject([1, 2, 3])).toBe(false);
-    expect(isPlainObject(new (class {})())).toBe(false);
-  });
-
-  test('returns true for objects with a [[Prototype]] of null', () => {
-    expect(isPlainObject(Object.create(null))).toBe(true);
-  });
-
-  test('returns false for non-Object objects', () => {
-    expect(isPlainObject(Error)).toBe(false);
-  });
-
-  test('returns false for non-objects', () => {
-    expect(isPlainObject(111)).toBe(false);
-    expect(isPlainObject('aaa')).toBe(false);
   });
 });
 

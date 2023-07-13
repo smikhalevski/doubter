@@ -13,11 +13,11 @@ import {
   UnionShape,
 } from '../../main';
 import {
-  CODE_INTERSECTION,
   CODE_TYPE,
-  MESSAGE_BOOLEAN_TYPE,
-  MESSAGE_INTERSECTION,
-  MESSAGE_NUMBER_TYPE,
+  CODE_TYPE_INTERSECTION,
+  MESSAGE_TYPE_BOOLEAN,
+  MESSAGE_TYPE_INTERSECTION,
+  MESSAGE_TYPE_NUMBER,
 } from '../../main/constants';
 import { mergeValues } from '../../main/shape/IntersectionShape';
 import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
@@ -57,23 +57,23 @@ describe('IntersectionShape', () => {
     expect(shape.parse(NaN)).toBe(NaN);
   });
 
-  test('raises an issue if an input does not conform one of shapes', () => {
+  test('raises an issue if an input does not conform one of shapes in an early-return mode', () => {
     const shape = new IntersectionShape([new NumberShape(), new NumberShape()]);
 
-    expect(shape.try('aaa')).toEqual({
+    expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_NUMBER, param: TYPE_NUMBER }],
     });
   });
 
-  test('raises multiple issues if an input does not conform several shapes in verbose mode', () => {
+  test('raises multiple issues if an input does not conform several shapes', () => {
     const shape = new IntersectionShape([new NumberShape(), new BooleanShape()]);
 
-    expect(shape.try('aaa', { verbose: true })).toEqual({
+    expect(shape.try('aaa')).toEqual({
       ok: false,
       issues: [
-        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER },
-        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_BOOLEAN_TYPE, param: TYPE_BOOLEAN },
+        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_NUMBER, param: TYPE_NUMBER },
+        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_BOOLEAN, param: TYPE_BOOLEAN },
       ],
     });
   });
@@ -83,7 +83,7 @@ describe('IntersectionShape', () => {
 
     expect(shape.try('111.222')).toEqual({
       ok: false,
-      issues: [{ code: CODE_INTERSECTION, input: '111.222', message: MESSAGE_INTERSECTION }],
+      issues: [{ code: CODE_TYPE_INTERSECTION, input: '111.222', message: MESSAGE_TYPE_INTERSECTION }],
     });
   });
 
@@ -95,7 +95,7 @@ describe('IntersectionShape', () => {
 
     expect(shape.try(['111.222'])).toEqual({
       ok: false,
-      issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION }],
+      issues: [{ code: CODE_TYPE_INTERSECTION, input: ['111.222'], message: MESSAGE_TYPE_INTERSECTION }],
     });
   });
 
@@ -123,7 +123,7 @@ describe('IntersectionShape', () => {
 
     const shape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { force: true });
 
-    expect(shape.try({}, { verbose: true })).toEqual({
+    expect(shape.try({}, { earlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });
@@ -170,7 +170,7 @@ describe('IntersectionShape', () => {
       expect(shape.parse(111)).toBe(111);
       expect(shape.try(undefined)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, message: MESSAGE_NUMBER_TYPE, param: TYPE_NUMBER }],
+        issues: [{ code: CODE_TYPE, message: MESSAGE_TYPE_NUMBER, param: TYPE_NUMBER }],
       });
     });
   });
@@ -232,7 +232,7 @@ describe('IntersectionShape', () => {
 
       await expect(shape.tryAsync(['111.222'])).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_INTERSECTION, input: ['111.222'], message: MESSAGE_INTERSECTION }],
+        issues: [{ code: CODE_TYPE_INTERSECTION, input: ['111.222'], message: MESSAGE_TYPE_INTERSECTION }],
       });
     });
   });

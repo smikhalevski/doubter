@@ -12,7 +12,7 @@ import { ApplyOptions, Message, RefineOptions } from '../types';
 export function any<Value = any>(): Shape<Value>;
 
 /**
- * Creates a shape that is constrained with a
+ * Creates the shape that is constrained with a
  * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
  *
  * @param cb The type predicate that returns `true` if value conforms the required type, or `false` otherwise.
@@ -27,12 +27,12 @@ export function any<Value>(
    * @param options Parsing options.
    * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => value is Value,
+  cb: (value: any, options: ApplyOptions) => value is Value,
   options?: RefineOptions | Message
 ): Shape<Value>;
 
 /**
- * Creates a shape that is constrained with a predicate.
+ * Creates the shape that is constrained with a predicate.
  *
  * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
  * @param options The issue options or the issue message.
@@ -45,14 +45,11 @@ export function any<Value = any>(
    * @param options Parsing options.
    * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
-  cb: (value: any, options: Readonly<ApplyOptions>) => boolean,
+  cb: (value: any, options: ApplyOptions) => boolean,
   options?: RefineOptions | Message
 ): Shape<Value>;
 
-export function any(
-  cb?: (value: any, options: Readonly<ApplyOptions>) => boolean,
-  options?: RefineOptions | Message
-): AnyShape {
+export function any(cb?: (value: any, options: ApplyOptions) => boolean, options?: RefineOptions | Message): AnyShape {
   const shape = new Shape();
 
   return cb === null || cb === undefined ? shape : shape.refine(cb, options);

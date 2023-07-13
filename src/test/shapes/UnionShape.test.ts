@@ -12,10 +12,10 @@ import {
   StringShape,
   UnionShape,
 } from '../../main';
-import { CODE_UNION, MESSAGE_UNION } from '../../main/constants';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../../main/constants';
 import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shape/UnionShape';
 import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
-import { AsyncMockShape, spyOnShape, MockShape } from './mocks';
+import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('UnionShape', () => {
   test('distributes buckets by inputs', () => {
@@ -79,9 +79,9 @@ describe('UnionShape', () => {
       ok: false,
       issues: [
         {
-          code: CODE_UNION,
+          code: CODE_TYPE_UNION,
           input: 'aaa',
-          message: MESSAGE_UNION,
+          message: MESSAGE_TYPE_UNION,
           param: {
             inputs: [TYPE_UNKNOWN],
             issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
@@ -191,8 +191,8 @@ describe('UnionShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_UNION,
-            message: MESSAGE_UNION,
+            code: CODE_TYPE_UNION,
+            message: MESSAGE_TYPE_UNION,
             param: {
               inputs: [TYPE_NUMBER],
               issueGroups: null,
@@ -259,9 +259,9 @@ describe('UnionShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_UNION,
+            code: CODE_TYPE_UNION,
             input: 'aaa',
-            message: MESSAGE_UNION,
+            message: MESSAGE_TYPE_UNION,
             param: {
               inputs: [TYPE_UNKNOWN],
               issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
@@ -283,7 +283,7 @@ describe('UnionShape', () => {
 
       const shape = new UnionShape([shape1, shape2]);
 
-      await expect(shape.tryAsync({ type: 'bbb' }, { verbose: true })).resolves.toEqual({
+      await expect(shape.tryAsync({ type: 'bbb' })).resolves.toEqual({
         ok: false,
         issues: [{ code: 'zzz', path: ['key1'] }, { code: 'yyy' }],
       });

@@ -1,9 +1,9 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
 import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from '../types';
 import { ValidationError } from '../ValidationError';
-import { isArray, isEqual, isObjectLike } from './lang';
+import { isArray, isEqual } from './lang';
 
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({ verbose: false, coerce: false });
+export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, coerce: false });
 
 export const INPUT = Symbol();
 export const OUTPUT = Symbol();
@@ -37,12 +37,15 @@ export const universalApplyOperations: OperationCallback = (input, output, optio
   return ok(output);
 };
 
-export function isAsyncShape(shape: AnyShape): boolean {
-  return shape.isAsync;
-}
-
-export function getShapeInputs(shape: AnyShape): readonly unknown[] {
-  return shape.inputs;
+export function isAsyncShapes(shapes: readonly AnyShape[] | null | undefined): boolean {
+  if (shapes !== null && shapes !== undefined) {
+    for (const shape of shapes) {
+      if (shape.isAsync) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -92,19 +95,11 @@ export function unshiftIssuesPath(issues: Issue[], key: unknown): void {
   }
 }
 
-export function concatIssues(issues: Issue[] | null, result: Issue[]): Issue[] {
+export function concatIssues(issues: Issue[] | null, otherIssues: Issue[]): Issue[] {
   if (issues === null) {
-    return result;
+    return otherIssues;
   }
-  issues.push(...result);
-  return issues;
-}
-
-export function pushIssue(issues: Issue[] | null, result: Issue): Issue[] {
-  if (issues === null) {
-    return [result];
-  }
-  issues.push(result);
+  issues.push(...otherIssues);
   return issues;
 }
 
@@ -118,21 +113,13 @@ export function captureIssues(error: unknown): Issue[] {
 /**
  * Returns an error message that is composed of the captured issues and parsing options.
  */
-export function getErrorMessage(
-  issues: Issue[],
-  input: unknown,
-  options: ParseOptions | undefined
-): string | undefined {
-  if (!isObjectLike(options)) {
-    return;
-  }
+export function getMessage(issues: Issue[], input: unknown, options: ParseOptions | undefined): string | undefined {
+  const message = options?.errorMessage;
 
-  const { errorMessage } = options;
-
-  if (typeof errorMessage === 'function') {
-    return errorMessage(issues, input);
+  if (typeof message === 'function') {
+    return message(issues, input);
   }
-  if (errorMessage !== undefined) {
-    return String(errorMessage);
+  if (message !== undefined) {
+    return String(message);
   }
 }

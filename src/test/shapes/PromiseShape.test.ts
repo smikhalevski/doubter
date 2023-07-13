@@ -1,5 +1,5 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_PROMISE_TYPE, MESSAGE_STRING_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_TYPE_PROMISE, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { TYPE_PROMISE, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 
 describe('PromiseShape', () => {
@@ -23,7 +23,7 @@ describe('PromiseShape', () => {
   test('raises an issue if value is not a Promise', () => {
     expect(new PromiseShape(null).try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: TYPE_PROMISE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_PROMISE, param: TYPE_PROMISE }],
     });
   });
 
@@ -39,7 +39,7 @@ describe('PromiseShape', () => {
     });
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false, coerce: false });
   });
 
   test('returns the same promise if the resolved value did not change', () => {
@@ -80,7 +80,7 @@ describe('PromiseShape', () => {
 
       await expect(shape.tryAsync(Promise.resolve(111))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING }],
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING }],
       });
     });
 
@@ -94,7 +94,7 @@ describe('PromiseShape', () => {
 
       await expect(shape.tryAsync(Promise.resolve({ key1: 111 }))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_STRING_TYPE, param: TYPE_STRING, path: ['key1'] }],
+        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: ['key1'] }],
       });
     });
   });
@@ -107,7 +107,7 @@ describe('PromiseShape', () => {
     test('raises an issue if value is not a Promise', async () => {
       await expect(new PromiseShape(new Shape()).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_PROMISE_TYPE, param: TYPE_PROMISE }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_PROMISE, param: TYPE_PROMISE }],
       });
     });
 
@@ -123,7 +123,7 @@ describe('PromiseShape', () => {
       });
 
       expect(checkMock).toHaveBeenCalledTimes(1);
-      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { verbose: false, coerce: false });
+      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false, coerce: false });
     });
 
     test('applies forced operations if value shape raised issues', async () => {
@@ -131,7 +131,7 @@ describe('PromiseShape', () => {
 
       const shape = new PromiseShape(valueShape).check(() => [{ code: 'yyy' }], { force: true });
 
-      await expect(shape.tryAsync(Promise.resolve(111), { verbose: true })).resolves.toEqual({
+      await expect(shape.tryAsync(Promise.resolve(111))).resolves.toEqual({
         ok: false,
         issues: [{ code: 'xxx' }, { code: 'yyy' }],
       });

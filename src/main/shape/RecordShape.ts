@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_OBJECT_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_OBJECT } from '../constants';
 import {
   applyShape,
   cloneDictHead,
@@ -19,7 +19,7 @@ import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from '
 type InferRecord<
   KeyShape extends Shape<string, PropertyKey> | null,
   ValueShape extends AnyShape,
-  Leg extends INPUT | OUTPUT
+  Leg extends INPUT | OUTPUT,
 > = Record<
   KeyShape extends null | undefined ? string : KeyShape extends Shape ? KeyShape[Leg] : string,
   ValueShape[Leg]
@@ -69,7 +69,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_OBJECT_TYPE, options, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_OBJECT, options, TYPE_OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
@@ -116,7 +116,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return keyResult;
             }
             issues = concatIssues(issues, keyResult);
@@ -133,7 +133,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         if (isArray(valueResult)) {
           unshiftIssuesPath(valueResult, key);
 
-          if (!options.verbose) {
+          if (options.earlyReturn) {
             return valueResult;
           }
           issues = concatIssues(issues, valueResult);
@@ -184,7 +184,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return keyResult;
             }
             issues = concatIssues(issues, keyResult);
@@ -201,7 +201,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           if (isArray(valueResult)) {
             unshiftIssuesPath(valueResult, key);
 
-            if (!options.verbose) {
+            if (options.earlyReturn) {
               return valueResult;
             }
             issues = concatIssues(issues, valueResult);

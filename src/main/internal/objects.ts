@@ -51,7 +51,7 @@ export function cloneDictHead(dict: ReadonlyDict, count: number): Dict {
 /**
  * Clones known keys of a dictionary-like object.
  */
-export function cloneDictKeys(dict: ReadonlyDict, keys: readonly string[]): Dict {
+export function cloneDictKeys(dict: ReadonlyDict, keys: readonly any[]): Dict {
   const obj = {};
 
   for (const key of keys) {

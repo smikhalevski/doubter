@@ -1,10 +1,10 @@
-import { CODE_TYPE, ERROR_ASYNC_FUNCTION, MESSAGE_FUNCTION_TYPE } from '../constants';
+import { CODE_TYPE, ERR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants';
 import {
   applyShape,
   Awaitable,
   copyOperations,
   defaultApplyOptions,
-  getErrorMessage,
+  getMessage,
   INPUT,
   isArray,
   nextNonce,
@@ -22,7 +22,7 @@ import { AnyShape, Input, Output, Shape } from './Shape';
 type ShapeValue<
   Shape extends AnyShape | null | undefined,
   Leg extends INPUT | OUTPUT,
-  DefaultValue = any
+  DefaultValue = any,
 > = Shape extends null | undefined ? DefaultValue : Shape extends AnyShape ? Shape[Leg] : DefaultValue;
 
 type ThisType<F> = F extends (this: infer T, ...args: any[]) => any ? T : any;
@@ -38,7 +38,7 @@ type ThisType<F> = F extends (this: infer T, ...args: any[]) => any ? T : any;
 export class FunctionShape<
   ArgsShape extends Shape<readonly any[], readonly any[]>,
   ReturnShape extends AnyShape | null,
-  ThisShape extends AnyShape | null
+  ThisShape extends AnyShape | null,
 > extends Shape<
   (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>,
   (this: ShapeValue<ThisShape, INPUT>, ...args: Input<ArgsShape>) => ShapeValue<ReturnShape, OUTPUT>
@@ -56,7 +56,7 @@ export class FunctionShape<
   /**
    * Parsing options that are used by a wrapper.
    */
-  protected _parseOptions: Readonly<ParseOptions> | undefined;
+  protected _parseOptions: ParseOptions | undefined;
 
   /**
    * Creates a new {@linkcode FunctionShape} instance.
@@ -86,7 +86,7 @@ export class FunctionShape<
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_FUNCTION_TYPE, options, TYPE_FUNCTION);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_FUNCTION, options, TYPE_FUNCTION);
   }
 
   /**
@@ -123,8 +123,8 @@ export class FunctionShape<
    * function receives arguments and `this` values that conform {@linkcode argsShape} and {@linkcode thisShape}
    * respectively, and returns the value that conforms {@linkcode returnShape}.
    *
-   * @param options Options that are used by the wrapper. If omitted then default options are applied: not verbose, no
-   * type coercion.
+   * @param options Options that are used by the wrapper. If omitted then default options are applied: no early-return,
+   * no type coercion.
    * @returns The new function shape.
    */
   strict(options?: ParseOptions): this {
@@ -145,10 +145,10 @@ export class FunctionShape<
    * @template F The function to wrap.
    */
   ensureSignature<
-    F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>
+    F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>,
   >(
     fn: F,
-    options?: Readonly<ParseOptions>
+    options?: ParseOptions
   ): (
     this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
     ...args: Input<ArgsShape>
@@ -158,7 +158,7 @@ export class FunctionShape<
     const { argsShape, returnShape, thisShape } = this;
 
     if (this.isAsyncSignature) {
-      throw new Error(ERROR_ASYNC_FUNCTION);
+      throw new Error(ERR_ASYNC_FUNCTION);
     }
 
     return function (this: any, ...args: any) {
@@ -192,10 +192,10 @@ export class FunctionShape<
     F extends (
       this: ShapeValue<ThisShape, OUTPUT>,
       ...args: Output<ArgsShape>
-    ) => Awaitable<ShapeValue<ReturnShape, INPUT>>
+    ) => Awaitable<ShapeValue<ReturnShape, INPUT>>,
   >(
     fn: F,
-    options?: Readonly<ParseOptions>
+    options?: ParseOptions
   ): (
     this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
     ...args: Input<ArgsShape>
@@ -266,7 +266,7 @@ function getOrDie<T>(key: 'this' | 'arguments' | 'return', result: Result<T>, in
   }
   if (isArray(result)) {
     unshiftIssuesPath(result, key);
-    throw new ValidationError(result, getErrorMessage(result, input, options));
+    throw new ValidationError(result, getMessage(result, input, options));
   }
   return result.value;
 }
