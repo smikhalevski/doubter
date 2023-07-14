@@ -2,7 +2,18 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape
 import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isEqual } from './lang';
-import { Awaited } from './promises';
+
+// Copied to support TS prior to v4.5
+// prettier-ignore
+type Awaited<T> =
+  T extends null | undefined ? T :
+  T extends object & { then(fn: infer F, ...args: any): any } ?
+  F extends (value: infer V, ...args: any) => any ? Awaited<V> : never :
+  T;
+
+export type Promisify<T> = Promise<Awaited<T>>;
+
+export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
 export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, coerce: false });
 
