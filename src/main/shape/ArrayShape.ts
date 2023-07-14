@@ -16,7 +16,7 @@ import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape } from './Shape';
+import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Shape } from './Shape';
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],
@@ -24,12 +24,12 @@ type InferArray<
   Leg extends INPUT | OUTPUT,
 > = [
   ...{ [K in keyof HeadShapes]: HeadShapes[K][Leg] },
-  ...(RestShape extends null | undefined ? [] : RestShape extends AnyShape ? RestShape[Leg][] : []),
+  ...(RestShape extends null | undefined ? [] : RestShape extends Shape ? RestShape[Leg][] : []),
 ];
 
 type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> = ArrayShape<
   { [K in keyof HeadShapes]: OptionalDeepPartialShape<HeadShapes[K]> },
-  RestShape extends null | undefined ? null : RestShape extends AnyShape ? OptionalDeepPartialShape<RestShape> : null
+  RestShape extends null | undefined ? null : RestShape extends Shape ? OptionalDeepPartialShape<RestShape> : RestShape
 >;
 
 /**

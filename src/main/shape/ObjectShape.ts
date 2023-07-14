@@ -29,28 +29,29 @@ type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,
   RestShape extends AnyShape | null,
   Leg extends INPUT | OUTPUT,
-> = Squash<
+> = Prettify<
   UndefinedToOptional<{ [K in keyof PropShapes]: PropShapes[K][Leg] }> &
-    (RestShape extends null | undefined ? {} : RestShape extends AnyShape ? { [key: string]: RestShape[Leg] } : {})
+    (RestShape extends null | undefined ? {} : RestShape extends Shape ? { [key: string]: RestShape[Leg] } : {})
 >;
 
 type UndefinedToOptional<T> = Omit<T, OptionalKeys<T>> & { [K in OptionalKeys<T>]?: T[K] };
 
-type OptionalKeys<T> = { [K in keyof T]: undefined extends T[K] ? K : never }[keyof T];
+// Extract is required for disabled strictNullChecks
+type OptionalKeys<T> = { [K in keyof T]: undefined extends Extract<T[K], undefined> ? K : never }[keyof T];
 
-type Squash<T> = { [K in keyof T]: T[K] } & {};
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
 
-type OptionalProps<PropShapes extends ReadonlyDict<AnyShape>> = {
+type OptionalPropShapes<PropShapes extends ReadonlyDict<AnyShape>> = {
   [K in keyof PropShapes]: AllowShape<PropShapes[K], undefined>;
 };
 
-type RequiredProps<PropShapes extends ReadonlyDict<AnyShape>> = {
+type RequiredPropShapes<PropShapes extends ReadonlyDict<AnyShape>> = {
   [K in keyof PropShapes]: DenyShape<PropShapes[K], undefined>;
 };
 
 type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> = ObjectShape<
   { [K in keyof PropShapes]: OptionalDeepPartialShape<PropShapes[K]> },
-  RestShape extends null | undefined ? null : RestShape extends AnyShape ? OptionalDeepPartialShape<RestShape> : null
+  RestShape extends null | undefined ? null : RestShape extends Shape ? OptionalDeepPartialShape<RestShape> : RestShape
 >;
 
 /**
@@ -235,7 +236,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    *
    * @returns The new object shape.
    */
-  partial(): ObjectShape<OptionalProps<PropShapes>, RestShape>;
+  partial(): ObjectShape<OptionalPropShapes<PropShapes>, RestShape>;
 
   /**
    * Returns an object shape with keys marked as optional.
@@ -248,7 +249,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    */
   partial<K extends ReadonlyArray<keyof PropShapes>>(
     keys: K
-  ): ObjectShape<Omit<PropShapes, K[number]> & OptionalProps<Pick<PropShapes, K[number]>>, RestShape>;
+  ): ObjectShape<Omit<PropShapes, K[number]> & OptionalPropShapes<Pick<PropShapes, K[number]>>, RestShape>;
 
   partial(keys?: string[]) {
     const propShapes: Dict<AnyShape> = {};
@@ -277,7 +278,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    *
    * @returns The new object shape.
    */
-  required(): ObjectShape<RequiredProps<PropShapes>, RestShape>;
+  required(): ObjectShape<RequiredPropShapes<PropShapes>, RestShape>;
 
   /**
    * Returns an object shape with keys marked as required.
@@ -288,7 +289,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    */
   required<K extends ReadonlyArray<keyof PropShapes>>(
     keys: K
-  ): ObjectShape<Omit<PropShapes, K[number]> & RequiredProps<Pick<PropShapes, K[number]>>, RestShape>;
+  ): ObjectShape<Omit<PropShapes, K[number]> & RequiredPropShapes<Pick<PropShapes, K[number]>>, RestShape>;
 
   required(keys?: string[]) {
     const propShapes: Dict<AnyShape> = {};
