@@ -1,6 +1,6 @@
 <p align="center">
   <a href="#readme">
-    <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/static/logo.png" alt="Doubter" width="400"/>
+    <img src="./assets/logo.png" alt="Doubter" width="400"/>
   </a>
 </p>
 
@@ -17,6 +17,7 @@ Runtime validation and transformation library.
 - Zero dependencies;
 - [Pluggable architecture;](#plugins)
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- [Extensive API documentation;](https://smikhalevski.github.io/doubter)
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
 🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/y5kec4)
@@ -25,7 +26,7 @@ Runtime validation and transformation library.
 npm install --save-prod doubter
 ```
 
-> **Note**&ensp;Docs on the [`master`](https://github.com/smikhalevski/doubter/tree/master#readme) branch describe the
+> **Note**&ensp;Docs on the [`next`](https://github.com/smikhalevski/doubter/tree/next#readme) branch describe the
 > canary release `doubter@next`. Navigate to the [`latest`](https://github.com/smikhalevski/doubter/tree/latest#readme)
 > branch for docs that describe the latest stable release.
 
@@ -2192,13 +2193,12 @@ The chart below showcases the performance comparison of Doubter and its peers, i
 second (greater is better).
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/smikhalevski/doubter/master/static/perf.svg" alt="Performance comparison chart"/>
+  <img src="./assets/perf.svg" alt="Performance comparison chart"/>
 </p>
 
-Tests were conducted using [TooFast.](https://github.com/smikhalevski/toofast)
+Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast#readme) on Apple M1 with Node.js v20.4.0.
 
-[The performance test suite](./src/test/perf/overall.perf.js) was run on Apple M1. To reproduce these results, clone
-this repo and in the repo's root directory run:
+To reproduce [the performance test suite](./src/test/perf/overall.perf.js) results, clone this repo and run:
 
 ```shell
 npm ci
