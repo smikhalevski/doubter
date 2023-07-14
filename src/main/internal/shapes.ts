@@ -2,6 +2,7 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape
 import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isEqual } from './lang';
+import { Awaited } from './promises';
 
 export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, coerce: false });
 
@@ -52,8 +53,10 @@ export function isAsyncShapes(shapes: readonly AnyShape[] | null | undefined): b
  * Converts the shape to its deep partial alternative if shape implements {@link DeepPartialProtocol}, or returns
  * the shape as is.
  */
-export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialShape<S> {
-  return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
+export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(
+  shape: S
+): DeepPartialShape<S> {
+  return typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
 /**
