@@ -51,7 +51,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/object-essentials!}
      */
-    allKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+    allKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where not all peers can be present at the same time.
@@ -62,7 +62,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/object-essentials!}
      */
-    notAllKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+    notAllKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where at least one of the keys is required (and more than one is allowed).
@@ -73,7 +73,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/object-essentials!}
      */
-    orKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+    orKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where one of them is required but not at the same time.
@@ -84,7 +84,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/object-essentials!}
      */
-    xorKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+    xorKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where only one is allowed but none are required.
@@ -95,7 +95,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/object-essentials!}
      */
-    oxorKeys<K extends readonly (keyof PropShapes)[]>(keys: K, options?: IssueOptions | Message): this;
+    oxorKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
   }
 }
 

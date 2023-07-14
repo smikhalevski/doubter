@@ -52,7 +52,7 @@ export function unionTypes(types: unknown[]): unknown[] {
  * (a | b) & (a | b | c) → a | b
  * ```
  */
-export function distributeTypes(types: readonly (readonly unknown[])[]): unknown[] {
+export function distributeTypes(types: ReadonlyArray<ReadonlyArray<unknown>>): unknown[] {
   if (types.length === 0) {
     return [];
   }

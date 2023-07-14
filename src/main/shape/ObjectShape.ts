@@ -36,7 +36,7 @@ type InferObject<
 
 type UndefinedToOptional<T> = Omit<T, OptionalKeys<T>> & { [K in OptionalKeys<T>]?: T[K] };
 
-type OptionalKeys<T> = { [K in keyof T]: undefined extends Extract<T[K], undefined> ? K : never }[keyof T];
+type OptionalKeys<T> = { [K in keyof T]: undefined extends T[K] ? K : never }[keyof T];
 
 type Squash<T> = { [K in keyof T]: T[K] } & {};
 
@@ -197,7 +197,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    * @template K The tuple of keys to pick.
    */
-  pick<K extends readonly (keyof PropShapes)[]>(keys: K): ObjectShape<Pick<PropShapes, K[number]>, RestShape> {
+  pick<K extends ReadonlyArray<keyof PropShapes>>(keys: K): ObjectShape<Pick<PropShapes, K[number]>, RestShape> {
     const propShapes: Dict<AnyShape> = {};
 
     for (const key in this.propShapes) {
@@ -217,7 +217,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    * @template K The tuple of keys to omit.
    */
-  omit<K extends readonly (keyof PropShapes)[]>(keys: K): ObjectShape<Omit<PropShapes, K[number]>, RestShape> {
+  omit<K extends ReadonlyArray<keyof PropShapes>>(keys: K): ObjectShape<Omit<PropShapes, K[number]>, RestShape> {
     const propShapes: Dict<AnyShape> = {};
 
     for (const key in this.propShapes) {
@@ -246,7 +246,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    * @template K The array of string keys.
    */
-  partial<K extends readonly (keyof PropShapes)[]>(
+  partial<K extends ReadonlyArray<keyof PropShapes>>(
     keys: K
   ): ObjectShape<Omit<PropShapes, K[number]> & OptionalProps<Pick<PropShapes, K[number]>>, RestShape>;
 
@@ -286,7 +286,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    * @template K The array of string keys.
    */
-  required<K extends readonly (keyof PropShapes)[]>(
+  required<K extends ReadonlyArray<keyof PropShapes>>(
     keys: K
   ): ObjectShape<Omit<PropShapes, K[number]> & RequiredProps<Pick<PropShapes, K[number]>>, RestShape>;
 
