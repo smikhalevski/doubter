@@ -166,7 +166,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    */
   extend<T extends ReadonlyDict<AnyShape>>(
     shape: ObjectShape<T, any>
-  ): ObjectShape<Pick<PropShapes, Exclude<keyof PropShapes, keyof T>> & T, RestShape>;
+  ): ObjectShape<Omit<PropShapes, keyof T> & T, RestShape>;
 
   /**
    * Add properties to an object shape.
@@ -180,9 +180,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * @returns The new object shape.
    * @template T The shapes of properties to add.
    */
-  extend<T extends ReadonlyDict<AnyShape>>(
-    shapes: T
-  ): ObjectShape<Pick<PropShapes, Exclude<keyof PropShapes, keyof T>> & T, RestShape>;
+  extend<T extends ReadonlyDict<AnyShape>>(shapes: T): ObjectShape<Omit<PropShapes, keyof T> & T, RestShape>;
 
   extend(shape: ObjectShape<any, any> | ReadonlyDict) {
     const propsShapes = Object.assign({}, this.propShapes, shape instanceof ObjectShape ? shape.propShapes : shape);
