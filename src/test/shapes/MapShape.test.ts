@@ -397,6 +397,37 @@ describe('MapShape', () => {
       });
     });
 
+    test('does not swallow errors thrown by value shape', async () => {
+      const shape = new MapShape(
+        new AsyncMockShape(),
+        new AsyncMockShape().check(() => {
+          throw new Error('expected');
+        })
+      );
+
+      await expect(shape.tryAsync(new Map([['aaa', 111]]))).rejects.toEqual(new Error('expected'));
+    });
+
+    test('does not swallow errors thrown by key shape', async () => {
+      const keyCheck = jest
+        .fn()
+        .mockImplementationOnce(value => value)
+        .mockImplementationOnce(() => {
+          throw new Error('expected');
+        });
+
+      const shape = new MapShape(new AsyncMockShape().check(keyCheck), new AsyncMockShape());
+
+      await expect(
+        shape.tryAsync(
+          new Map([
+            ['aaa', 111],
+            ['bbb', 222],
+          ])
+        )
+      ).rejects.toEqual(new Error('expected'));
+    });
+
     describe('coerce', () => {
       test('coerces an object', async () => {
         const shape = new MapShape(new AsyncMockShape(), new AsyncMockShape()).coerce();

@@ -297,6 +297,17 @@ describe('UnionShape', () => {
         issues: [{ code: 'xxx' }],
       });
     });
+
+    test('does not swallow errors', async () => {
+      const shape = new UnionShape([
+        new AsyncMockShape().refine(() => false),
+        new AsyncMockShape().check(() => {
+          throw new Error('expected');
+        }),
+      ]);
+
+      await expect(shape.tryAsync(111)).rejects.toEqual(new Error('expected'));
+    });
   });
 });
 

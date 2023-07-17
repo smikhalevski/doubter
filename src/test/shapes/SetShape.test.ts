@@ -246,6 +246,16 @@ describe('SetShape', () => {
       });
     });
 
+    test('does not swallow errors', async () => {
+      const shape = new SetShape(
+        new AsyncMockShape().check(() => {
+          throw new Error('expected');
+        })
+      );
+
+      await expect(shape.tryAsync(new Set([111]))).rejects.toEqual(new Error('expected'));
+    });
+
     describe('coerce', () => {
       test('coerces a non-array value', async () => {
         const shape = new SetShape(new AsyncMockShape()).coerce();
