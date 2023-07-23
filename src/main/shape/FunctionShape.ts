@@ -19,8 +19,13 @@ import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';
 
-type ShapeValue<
-  Shape extends AnyShape | null | undefined,
+const KEY_THIS = 'this';
+const KEY_ARGS = 'arguments';
+const KEY_RETURN = 'return';
+
+// prettier-ignore
+type Infer<
+  Shape extends AnyShape | null,
   Leg extends INPUT | OUTPUT,
   DefaultValue = any,
 > = Shape extends null | undefined ? DefaultValue : Shape extends AnyShape ? Shape[Leg] : DefaultValue;
@@ -40,8 +45,8 @@ export class FunctionShape<
   ReturnShape extends AnyShape | null,
   ThisShape extends AnyShape | null,
 > extends Shape<
-  (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>,
-  (this: ShapeValue<ThisShape, INPUT>, ...args: Input<ArgsShape>) => ShapeValue<ReturnShape, OUTPUT>
+  (this: Infer<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => Infer<ReturnShape, INPUT>,
+  (this: Infer<ThisShape, INPUT>, ...args: Input<ArgsShape>) => Infer<ReturnShape, OUTPUT>
 > {
   /**
    * `true` if input functions are wrapped during parsing to ensure runtime signature type-safety, or `false` otherwise.
@@ -92,7 +97,7 @@ export class FunctionShape<
   /**
    * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, or `false` otherwise.
    */
-  get isAsyncSignature(): boolean {
+  get isAsyncFunction(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
   }
 
@@ -136,104 +141,101 @@ export class FunctionShape<
   }
 
   /**
-   * Wraps a function to ensure runtime signature type-safety. The returned wrapper function ensures that `fn` receives
-   * arguments and `this` values that conform {@link FunctionShape.argsShape} and {@link FunctionShape.thisShape}
-   * respectively, and _synchronously_ returns the value that conforms {@link FunctionShape.returnShape}.
-   *
+   * Creates a function that ensures that `fn` receives arguments and `this` values that conform the
+   * {@linkcode FunctionShape.argsShape} and the {@linkcode FunctionShape.thisShape} respectively, and _synchronously_
+   * returns the value that conforms the {@linkcode FunctionShape.returnShape}.
+   * *
    * @param fn The underlying function.
-   * @param options Parsing options used by the wrapper. By default, options provided to {@link FunctionShape.strict}
-   * are used.
+   * @param options Parsing options. By default, options provided to {@linkcode FunctionShape.strict} are used.
    * @returns The wrapper function.
-   * @template F The function to wrap.
+   * @template F The function to which signature must be ensured.
    */
-  ensureSignature<
-    F extends (this: ShapeValue<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => ShapeValue<ReturnShape, INPUT>,
-  >(
+  ensure<F extends (this: Infer<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => Infer<ReturnShape, INPUT>>(
     fn: F,
     options?: ParseOptions
   ): (
-    this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
+    this: Infer<ThisShape, INPUT, ThisType<F>>,
     ...args: Input<ArgsShape>
-  ) => ShapeValue<ReturnShape, OUTPUT, ReturnType<F>>;
+  ) => Infer<ReturnShape, OUTPUT, ReturnType<F>>;
 
-  ensureSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
-    const { argsShape, returnShape, thisShape } = this;
-
-    if (this.isAsyncSignature) {
+  ensure(fn: Function, options: ParseOptions) {
+    if (this.isAsyncFunction) {
       throw new Error(ERR_ASYNC_FUNCTION);
     }
 
+    const { argsShape, returnShape, thisShape } = this;
+
+    options ||= this._parseOptions || defaultApplyOptions;
+
     return function (this: any, ...args: any) {
-      const result = fn.apply(
-        thisShape !== null ? getOrDie('this', thisShape['_apply'](this, options, nextNonce()), this, options) : this,
-        getOrDie('arguments', argsShape['_apply'](args, options, nextNonce()), args, options)
+      const fnValue = fn.apply(
+        thisShape !== null ? getValue(KEY_THIS, thisShape['_apply'](this, options, nextNonce()), this, options) : this,
+        getValue(KEY_ARGS, argsShape['_apply'](args, options, nextNonce()), args, options)
       );
 
       if (returnShape !== null) {
-        return getOrDie('return', returnShape['_apply'](result, options, nextNonce()), result, options);
+        return getValue(KEY_RETURN, returnShape['_apply'](fnValue, options, nextNonce()), fnValue, options);
       }
 
-      return result;
+      return fnValue;
     };
   }
 
   /**
-   * Wraps a function to ensure runtime signature type-safety. The returned wrapper function ensures that `fn` receives
-   * arguments and `this` values that conform {@link FunctionShape.argsShape} and {@link FunctionShape.thisShape}
-   * respectively, and _asynchronously_ returns the value that conforms {@link FunctionShape.returnShape}.
+   * Creates a function that ensures that `fn` receives arguments and `this` values that conform the
+   * {@linkcode FunctionShape.argsShape} and the {@linkcode FunctionShape.thisShape} respectively, and _asynchronously_
+   * returns the value that conforms the {@linkcode FunctionShape.returnShape}.
    *
-   * Use this method if {@link isAsyncSignature some shapes that describe the function signature} are
+   * Use this method if {@link FunctionShape.isAsyncFunction some shapes that describe the function signature} are
    * {@link Shape.isAsync async}.
    *
    * @param fn The underlying function.
-   * @param options Parsing options used by the wrapper. By default, options provided to {@link FunctionShape.strict}
-   * are used.
+   * @param options Parsing options. By default, options provided to {@linkcode FunctionShape.strict} are used.
    * @returns The wrapper function.
-   * @template F The function to wrap.
+   * @template F The function to which signature must be ensured.
    */
-  ensureAsyncSignature<
-    F extends (
-      this: ShapeValue<ThisShape, OUTPUT>,
-      ...args: Output<ArgsShape>
-    ) => Awaitable<ShapeValue<ReturnShape, INPUT>>,
+  ensureAsync<
+    F extends (this: Infer<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => Awaitable<Infer<ReturnShape, INPUT>>,
   >(
     fn: F,
     options?: ParseOptions
   ): (
-    this: ShapeValue<ThisShape, INPUT, ThisType<F>>,
+    this: Infer<ThisShape, INPUT, ThisType<F>>,
     ...args: Input<ArgsShape>
-  ) => Promisify<ShapeValue<ReturnShape, OUTPUT, ReturnType<F>>>;
+  ) => Promisify<Infer<ReturnShape, OUTPUT, ReturnType<F>>>;
 
-  ensureAsyncSignature(fn: Function, options = this._parseOptions || defaultApplyOptions) {
+  ensureAsync(fn: Function, options: ParseOptions) {
     const { argsShape, returnShape, thisShape } = this;
+
+    options ||= this._parseOptions || defaultApplyOptions;
 
     return function (this: any, ...args: any) {
       return new Promise(resolve => {
-        let result;
+        let fnValue: unknown;
 
         if (thisShape !== null) {
-          result = applyShape(thisShape, this, options, nextNonce(), thisResult => {
-            const thisValue = getOrDie('this', thisResult, this, options);
+          fnValue = applyShape(thisShape, this, options, nextNonce(), thisResult => {
+            const thisValue = getValue(KEY_THIS, thisResult, this, options);
 
             return applyShape(argsShape, args, options, nextNonce(), argsResult =>
-              fn.apply(thisValue, getOrDie('arguments', argsResult, args, options))
+              fn.apply(thisValue, getValue(KEY_ARGS, argsResult, args, options))
             );
           });
         } else {
-          result = applyShape(argsShape, args, options, nextNonce(), argsResult =>
-            fn.apply(this, getOrDie('arguments', argsResult, args, options))
+          fnValue = applyShape(argsShape, args, options, nextNonce(), argsResult =>
+            fn.apply(this, getValue(KEY_ARGS, argsResult, args, options))
           );
         }
 
         if (returnShape !== null) {
-          result = Promise.resolve(result).then(result =>
-            applyShape(returnShape, result, options, nextNonce(), resultResult =>
-              getOrDie('return', resultResult, result, options)
+          resolve(
+            applyShape(returnShape, fnValue, options, nextNonce(), resultResult =>
+              getValue(KEY_RETURN, resultResult, fnValue, options)
             )
           );
         }
 
-        resolve(result);
+        resolve(fnValue);
       });
     };
   }
@@ -246,7 +248,7 @@ export class FunctionShape<
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Result<(this: ShapeValue<ThisShape, INPUT>, ...args: Input<ArgsShape>) => ShapeValue<ReturnShape, OUTPUT>> {
+  ): Result<(this: Infer<ThisShape, INPUT>, ...args: Input<ArgsShape>) => Infer<ReturnShape, OUTPUT>> {
     if (typeof input !== 'function') {
       return [this._typeIssueFactory(input, options)];
     }
@@ -259,11 +261,11 @@ export class FunctionShape<
 
     const output = result === null ? input : result.value;
 
-    return ok<any>(this.isAsyncSignature ? this.ensureAsyncSignature(output) : this.ensureSignature(output));
+    return ok<any>(this.isAsyncFunction ? this.ensureAsync(output) : this.ensure(output));
   }
 }
 
-function getOrDie<T>(key: 'this' | 'arguments' | 'return', result: Result<T>, input: any, options: ParseOptions): T {
+function getValue(key: string, result: Result, input: unknown, options: ParseOptions): unknown {
   if (result === null) {
     return input;
   }

@@ -2558,7 +2558,7 @@ shape.parse([1, 2]);
 [`d.function`](https://smikhalevski.github.io/doubter/next/functions/doubter_core.function.html) returns a
 [`FunctionShape`](https://smikhalevski.github.io/doubter/next/classes/doubter_core.FunctionShape.html) instance.
 
-Constrain a value to be a function that has an ensured signature at runtime.
+Constrain a value to be a function with the given signature.
 
 A function that has no arguments and returns `any`:
 
@@ -2584,7 +2584,7 @@ d.fn(d.array(d.string()));
 // ⮕ Shape<(...args: string[]) => any>
 ```
 
-A shape that constrains an array type would do, you can even use a union:
+Any shape that constrains an array type would do, you can even use a union:
 
 ```ts
 d.fn(
@@ -2626,8 +2626,8 @@ shape1.parse('Mars');
 // ❌ ValidationError: type at /: Must be a function
 ```
 
-By default, the input function is returned as is during parsing. If you want a parsed function to be strictly type-safe
-use `strict` method to [ensure its signature](#ensuring-function-signature) at runtime.
+By default, the input function is returned as-is during parsing. If you want a parsed function to be type-safe at
+runtime use `strict` method to [ensure the parsed function signature](#ensuring-function-signature).
 
 ```ts
 const greetShape = d.fn([d.string()])
@@ -2642,9 +2642,9 @@ respective shapes.
 
 ## Ensuring function signature
 
-You can wrap an input function to guarantee that the function signature is type-safe at runtime.
+You can ensure a type-safe function signature at runtime.
 
-Let's declare a function shape that takes two number arguments and returns an number as well:
+Let's declare a function shape that takes two number arguments and returns a number as well:
 
 ```ts
 const sumShape = d.fn([d.number(), d.number()]).return(d.number());
@@ -2654,7 +2654,7 @@ const sumShape = d.fn([d.number(), d.number()]).return(d.number());
 Now let's provide a concrete implementation:
 
 ```ts
-const sum = sumShape.ensureSignature(
+const sum = sumShape.ensure(
   (arg1, arg2) => arg1 + arg2
 );
 // ⮕ (arg1: number, arg2: number) => number
@@ -2676,15 +2676,15 @@ sum(1, 2, 3);
 // ❌ ValidationError: array.max at /arguments: Must have the maximum length of 2
 ```
 
-Using function shape you can parse `this` and return values.
+Using function shape you can parse `this` and return values as well.
 
 ```ts
-const atShape = d.fn([d.number().int()])
+const callbackShape = d.fn([d.number().int()])
   .this(d.array(d.string()))
   .return(d.string());
 // ⮕ Shape<(this: string[], arg: number) => string>
 
-const at = atShape.ensureSignature(function (index) {
+const callback = callbackShape.ensure(function (index) {
   // 🟡 May be undefined if index is out of bounds
   return this[index];
 });
@@ -2693,21 +2693,21 @@ const at = atShape.ensureSignature(function (index) {
 When called with a valid index, a string is returned: 
 
 ```ts
-at.call(['Jill', 'Sarah'], 1);
+callback.call(['Jill', 'Sarah'], 1);
 // ⮕ 'Sarah'
 ```
 
 But if an index is out of bounds, an error is thrown:
 
 ```ts
-at.call(['James', 'Bob'], 33);
+callback.call(['James', 'Bob'], 33);
 // ❌ ValidationError: type at /return: Must be a string
 ```
 
 An error is thrown if an argument isn't an integer:
 
 ```ts
-at.call(['Bill', 'Tess'], 3.14);
+callback.call(['Bill', 'Tess'], 3.14);
 // ❌ ValidationError: number.int at /arguments/0: Must be an integer
 ```
 
@@ -2719,7 +2719,7 @@ Function shapes go well with [type coercion](#type-coercion):
 const plus2Shape = d.fn([d.number().coerce()]).return(d.number());
 // ⮕ Shape<(arg: number) => number>
 
-const plus2 = plus2Shape.ensureSignature(
+const plus2 = plus2Shape.ensure(
   arg => arg + 2
 );
 // ⮕ (arg: number) => number
@@ -2750,20 +2750,20 @@ function inputFunction(arg: number): any {
   return arg + 2;
 }
 
-const outputFunction = shape.ensureSignature(inputFunction);
+const outputFunction = shape.ensure(inputFunction);
 // ⮕ (arg: string) => any
 ```
 
 The pseudocode below demonstrates the inner workings of the `outputFunction`:
 
 ```ts
-function outputFunction(...inputArguments) {
+function outputFunction(...inputArgs) {
 
   const outputThis = shape.thisShape.parse(this);
 
-  const outputArguments = shape.argsShape.parse(inputArguments);
+  const outputArgs = shape.argsShape.parse(inputArgs);
 
-  const inputResult = inputFunction.apply(outputThis, outputArguments);
+  const inputResult = inputFunction.apply(outputThis, outputArgs);
   
   const outputResult = shape.resultShape.parse(inputResult);
   
