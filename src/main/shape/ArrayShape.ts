@@ -106,7 +106,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   /**
    * Returns an array shape that has rest elements constrained by the given shape.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * @param restShape The shape of rest elements, or `null` if there are no rest elements.
    * @returns The new array shape.

@@ -118,7 +118,7 @@ export interface DeepPartialProtocol<S extends AnyShape> {
   /**
    * Converts the shape and its child shapes to deep partial alternatives.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * @returns The deep partial clone of the shape.
    */
@@ -481,18 +481,16 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Synchronously converts the output value of the shape.
    *
-   * @param cb The callback that converts the shape output value.
+   * @param cb The callback that converts the input value. Throw a {@linkcode ValidationError} to notify that the
+   * conversion cannot be successfully completed.
    * @returns The {@linkcode ConvertShape} instance.
    * @template ConvertedValue The value returned from the callback that converts the output value of this shape.
    * @see {@linkcode alter}
    */
   convert<ConvertedValue>(
     /**
-     * Throw a {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
-     *
      * @param value The shape output value.
      * @param options Parsing options.
-     * @return The converted value.
      */
     cb: (value: OutputValue, options: ApplyOptions) => ConvertedValue
   ): Shape<InputValue, ConvertedValue> {
@@ -502,18 +500,16 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Asynchronously converts the output value of the shape.
    *
-   * @param cb The callback that converts the shape output value.
+   * @param cb The callback that converts the input value asynchronously. The returned promise can be rejected with a
+   * {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
    * @returns The {@linkcode ConvertShape} instance.
    * @template ConvertedValue The value returned from the callback that converts the output value of this shape.
    * @see {@linkcode alter}
    */
   convertAsync<ConvertedValue>(
     /**
-     * Reject with a {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
-     *
      * @param value The shape output value.
      * @param options Parsing options.
-     * @return The converted value.
      */
     cb: (value: OutputValue, options: ApplyOptions) => PromiseLike<ConvertedValue>
   ): Shape<InputValue, ConvertedValue> {
@@ -723,7 +719,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Synchronously parses the input.
    *
-   * **Note** Don't store or update returned instances of {@link Ok} since they can be reused.
+   * **Note:** Don't store or update returned instances of {@link Ok} since they can be reused.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -738,7 +734,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Asynchronously parses the input.
    *
-   * **Note** Don't store or update returned instances of {@link Ok} since they can be reused.
+   * **Note:** Don't store or update returned instances of {@link Ok} since they can be reused.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -800,8 +796,8 @@ export interface Shape<InputValue, OutputValue> {
    *
    * @param input The value to parse.
    * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   * @returns The promise that resolves with the value that conforms the output type of the shape, or rejects with a
+   * {@linkcode ValidationError} if any issues occur during parsing.
    */
   parseAsync(input: unknown, options?: ParseOptions): Promisify<OutputValue>;
 
@@ -1054,19 +1050,18 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
   /**
    * Creates the new {@linkcode ConvertShape} instance.
    *
-   * @param converter The callback that converts the input value.
+   * @param converter The callback that converts the input value. Converters can throw or reject with a
+   * {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
    * @param async If `true` then the convert shape waits for the promise returned from the callback to be fulfilled.
    * Otherwise, the value that is synchronously returned from the callback is used as an output.
    * @template ConvertedValue The output value of the callback that converts the input value.
    */
   constructor(
     /**
-     * The callback that converts the input value.
+     * The converter that is applied to the shape output value.
      *
      * @param value The input value.
      * @param options Parsing options.
-     * @return The conversion result.
-     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
     readonly converter: (value: any, options: ApplyOptions) => PromiseLike<ConvertedValue> | ConvertedValue,
     async?: boolean
