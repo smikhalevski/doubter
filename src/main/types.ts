@@ -123,7 +123,7 @@ export interface IssueOptions {
 /**
  * A callback that returns an issue message, or an issue message string.
  *
- * `%s` placeholder in string messages is replaced with the {@link Issue#param issue param}.
+ * `%s` placeholder in string messages is replaced with the {@link Issue.param issue param}.
  *
  * @group Issues
  */
@@ -310,7 +310,7 @@ export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Par
 ) => value is RefinedValue;
 
 /**
- * Options of {@link Shape#refine a refinement operation}.
+ * Options of {@link Shape.refine a refinement operation}.
  *
  * @group Operations
  */

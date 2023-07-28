@@ -2,7 +2,7 @@ import { AnyShape, PromiseShape, Shape } from '../shape';
 import { IssueOptions, Message } from '../types';
 
 /**
- * Creates the `Promise` instance shape.
+ * Creates the {@link !Promise Promise} instance shape.
  *
  * @param options The issue options or the issue message.
  * @template ValueShape The shape of the resolved value.
@@ -11,7 +11,7 @@ import { IssueOptions, Message } from '../types';
 export function promise(options?: IssueOptions | Message): PromiseShape<null>;
 
 /**
- * Creates the `Promise` instance shape that validates the fulfillment value.
+ * Creates the {@link !Promise Promise} instance shape that validates the fulfillment value.
  *
  * @param shape The shape of the resolved value.
  * @param options The issue options or the issue message.

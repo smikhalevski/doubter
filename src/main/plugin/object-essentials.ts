@@ -32,7 +32,7 @@ import { createIssueFactory } from '../utils';
 declare module '../core' {
   interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
     /**
-     * Constrains an object to have a `null` or `Object` prototype.
+     * Constrains an object to have a `null` or {@link !Object Object} prototype.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.

@@ -15,7 +15,7 @@ import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output } from './Shape';
 
 /**
- * The shape of a `Set` instance.
+ * The shape of a {@link !Set Set} instance.
  *
  * @template ValueShape The value shape.
  * @group Shapes
@@ -166,9 +166,9 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   /**
-   * Coerces a value to an array of `Set` values.
+   * Coerces a value to an array of {@link !Set Set} values.
    *
-   * @param value The non-`Set` value to coerce.
+   * @param value The non-{@link !Set Set} value to coerce.
    * @returns An array, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): unknown[] {

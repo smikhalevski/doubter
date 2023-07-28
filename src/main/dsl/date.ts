@@ -2,7 +2,7 @@ import { DateShape } from '../shape';
 import { IssueOptions, Message } from '../types';
 
 /**
- * Creates the `Date` shape.
+ * Creates the {@link !Date Date} shape.
  *
  * @param options The issue options or the issue message.
  * @group DSL

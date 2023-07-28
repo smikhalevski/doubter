@@ -58,8 +58,8 @@ import { ValidationError } from '../ValidationError';
 /**
  * The marker object that is used to denote an impossible value.
  *
- * For example, `NEVER` is returned from {@link CoercibleShape#_coerce CoercibleShape._coerce} method when coercion
- * is not possible.
+ * For example, {@link NEVER} is returned from {@link CoercibleShape._coerce CoercibleShape._coerce} method when
+ * coercion is not possible.
  *
  * @group Other
  */
@@ -767,7 +767,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The {@link Ok} instance if parsing has succeeded or {@link Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
+   * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
    */
   try(input: unknown, options?: ApplyOptions): Ok<OutputValue> | Err;
 
@@ -786,7 +786,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
+   * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
    * @throws {@link ValidationError} if any issues occur during parsing.
    */
   parse(input: unknown, options?: ParseOptions): OutputValue;
@@ -806,7 +806,7 @@ export interface Shape<InputValue, OutputValue> {
    *
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
+   * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
    */
   parseOrDefault(input: unknown): OutputValue | undefined;
 
@@ -818,7 +818,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param options Parsing options.
    * @template DefaultValue The default value that is returned if parsing fails.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
+   * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
    */
   parseOrDefault<DefaultValue>(
     input: unknown,
@@ -1217,7 +1217,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
      */
     readonly inputValue: InputValue,
     /**
-     * The output value that is returned if an {@link ReplaceShape#inputValue} is received.
+     * The output value that is returned if an {@link ReplaceShape.inputValue} is received.
      */
     readonly outputValue: OutputValue
   ) {

@@ -50,7 +50,7 @@ declare module '../core' {
     max(size: number, options?: IssueOptions | Message): this;
 
     /**
-     * Constrains the `Set` to contain at least one element.
+     * Constrains the {@link !Set Set} to contain at least one element.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.

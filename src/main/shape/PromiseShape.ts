@@ -15,7 +15,7 @@ type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
 >;
 
 /**
- * The shape of a `Promise` value.
+ * The shape of a {@link !Promise Promise} value.
  *
  * @template ValueShape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
  * @group Shapes
