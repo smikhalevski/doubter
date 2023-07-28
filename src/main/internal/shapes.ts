@@ -49,7 +49,7 @@ export function isAsyncShapes(shapes: readonly AnyShape[] | null | undefined): b
 }
 
 /**
- * Converts the shape to its deep partial alternative if shape implements {@linkcode DeepPartialProtocol}, or returns
+ * Converts the shape to its deep partial alternative if shape implements {@link DeepPartialProtocol}, or returns
  * the shape as is.
  */
 export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialShape<S> {

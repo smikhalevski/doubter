@@ -18,7 +18,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode BigIntShape} instance.
+   * Creates a new {@link BigIntShape} instance.
    *
    * @param options The issue options or the issue message.
    */
@@ -52,7 +52,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
    * Coerces a value to a bigint.
    *
    * @param value The non-bigint value to coerce.
-   * @returns A bigint value, or {@linkcode NEVER} if coercion isn't possible.
+   * @returns A bigint value, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: any): bigint {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {

@@ -15,7 +15,7 @@ export class NeverShape extends Shape<never> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode NeverShape} instance.
+   * Creates a new {@link NeverShape} instance.
    *
    * @param options The issue options or the issue message.
    */

@@ -47,7 +47,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode RecordShape} instance.
+   * Creates a new {@link RecordShape} instance.
    *
    * @param keyShape The key shape, or `null` if keys should be preserved intact.
    * @param valueShape The value shape.

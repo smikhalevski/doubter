@@ -61,7 +61,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode ArrayShape} instance.
+   * Creates a new {@link ArrayShape} instance.
    *
    * @param headShapes The array of positioned element shapes.
    * @param restShape The shape of rest elements or `null` if there are no rest elements.
@@ -266,7 +266,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
    * Coerces a value to an array.
    *
    * @param value The non-array value to coerce.
-   * @returns An array, or {@linkcode NEVER} if coercion isn't possible.
+   * @returns An array, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): unknown[] {
     value = getCanonicalValueOf(value);

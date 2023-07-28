@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!ArrayShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!ArrayShape} with additional methods.
  *
  * ```ts
  * import { ArrayShape } from 'doubter/core';
@@ -83,7 +83,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!ArrayShape} with additional methods.
+ * Enhances {@link doubter/core!ArrayShape} with additional methods.
  */
 export default function (prototype: ArrayShape<any, any>): void {
   prototype.length = function (length, options) {

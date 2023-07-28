@@ -35,7 +35,7 @@ export class SetShape<ValueShape extends AnyShape>
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode SetShape} instance.
+   * Creates a new {@link SetShape} instance.
    *
    * @param valueShape The value shape.
    * @param options The issue options or the issue message.
@@ -169,7 +169,7 @@ export class SetShape<ValueShape extends AnyShape>
    * Coerces a value to an array of `Set` values.
    *
    * @param value The non-`Set` value to coerce.
-   * @returns An array, or {@linkcode NEVER} if coercion isn't possible.
+   * @returns An array, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): unknown[] {
     value = getCanonicalValueOf(value);

@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!DateShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!DateShape} with additional methods.
  *
  * ```ts
  * import { DateShape } from 'doubter/core';
@@ -45,7 +45,7 @@ declare module '../core' {
      * @param value The inclusive minimum date.
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
-     * @alias {@linkcode min}
+     * @alias {@link DateShape.min}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-essentials!}
      */
@@ -57,7 +57,7 @@ declare module '../core' {
      * @param value The inclusive maximum date.
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
-     * @alias {@linkcode max}
+     * @alias {@link DateShape.max}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/date-essentials!}
      */
@@ -82,7 +82,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!DateShape} with additional methods.
+ * Enhances {@link doubter/core!DateShape} with additional methods.
  */
 export default function (prototype: DateShape): void {
   prototype.min = function (value, options) {

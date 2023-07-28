@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!SetShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!SetShape} with additional methods.
  *
  * ```ts
  * import { SetShape } from 'doubter/core';
@@ -62,7 +62,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!SetShape} with additional methods.
+ * Enhances {@link doubter/core!SetShape} with additional methods.
  */
 export default function (prototype: SetShape<any>): void {
   prototype.size = function (size, options) {

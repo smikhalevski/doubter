@@ -18,7 +18,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode BooleanShape} instance.
+   * Creates a new {@link BooleanShape} instance.
    *
    * @param options The issue options or the issue message.
    */
@@ -52,7 +52,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
    * Coerces a value to a boolean.
    *
    * @param value The non-boolean value to coerce.
-   * @returns A boolean value, or {@linkcode NEVER} if coercion isn't possible.
+   * @returns A boolean value, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): boolean {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'boolean') {

@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!ObjectShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!ObjectShape} with additional methods.
  *
  * ```ts
  * import { ObjectShape } from 'doubter/core';
@@ -100,7 +100,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!ObjectShape} with additional methods.
+ * Enhances {@link doubter/core!ObjectShape} with additional methods.
  */
 export default function (prototype: ObjectShape<any, any>): void {
   prototype.plain = function (options) {

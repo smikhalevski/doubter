@@ -24,7 +24,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode EnumShape} instance.
+   * Creates a new {@link EnumShape} instance.
    *
    * @param source The array of allowed values, a const key-value mapping, or an enum object.
    * @param options The issue options or the issue message.
@@ -72,7 +72,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
    * Coerces a value to an enum value.
    *
    * @param value The non-enum value to coerce.
-   * @returns An enum value, or {@linkcode NEVER} if coercion isn't possible.
+   * @returns An enum value, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: any): Value {
     const { source } = this;

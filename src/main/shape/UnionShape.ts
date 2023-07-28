@@ -36,7 +36,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode UnionShape} instance.
+   * Creates a new {@link UnionShape} instance.
    *
    * @param shapes The array of shapes that comprise a union.
    * @param options The union constraint options or an issue message.

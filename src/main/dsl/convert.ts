@@ -4,8 +4,8 @@ import { ApplyOptions } from '../types';
 /**
  * Creates the shape that synchronously converts the input value.
  *
- * @param cb The callback that converts the input value. Throw a {@linkcode ValidationError} to notify that the
- * conversion cannot be successfully completed.
+ * @param cb The callback that converts the input value. Throw a {@link ValidationError} to notify that the conversion
+ * cannot be successfully completed.
  * @template Value The input value.
  * @template ConvertedValue The output value.
  * @group DSL
@@ -24,7 +24,7 @@ export function convert<Value = any, ConvertedValue = Value>(
  * Creates the shape that asynchronously converts the input value.
  *
  * @param cb The callback that converts the input value asynchronously. The returned promise can be rejected with a
- * {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
+ * {@link ValidationError} to notify that the conversion cannot be successfully completed.
  * @template Value The input value.
  * @template ConvertedValue The output value.
  * @group DSL

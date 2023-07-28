@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!BigIntShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!BigIntShape} with additional methods.
  *
  * ```ts
  * import { BigIntShape } from 'doubter/core';
@@ -82,7 +82,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!BigIntShape} with additional methods.
+ * Enhances {@link doubter/core!BigIntShape} with additional methods.
  */
 export default function (prototype: BigIntShape): void {
   prototype.positive = function (options) {

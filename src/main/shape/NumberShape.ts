@@ -18,7 +18,7 @@ export class NumberShape extends CoercibleShape<number> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode NumberShape} instance.
+   * Creates a new {@link NumberShape} instance.
    *
    * @param options The issue options or the issue message.
    */
@@ -68,7 +68,7 @@ export class NumberShape extends CoercibleShape<number> {
    * Coerces a value to a number (not `NaN`).
    *
    * @param value The non-number value to coerce.
-   * @returns A number value, or {@linkcode NEVER} if coercion isn't possible.
+   * @returns A number value, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: any): number {
     if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number') {

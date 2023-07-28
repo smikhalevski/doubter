@@ -17,7 +17,7 @@ export class DateShape extends CoercibleShape<Date> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode DateShape} instance.
+   * Creates a new {@link DateShape} instance.
    *
    * @param options The issue options or the issue message.
    */
@@ -48,7 +48,7 @@ export class DateShape extends CoercibleShape<Date> {
    * Coerces a value to a `Date`.
    *
    * @param value The non-`Date` value to coerce.
-   * @returns A `Date` value, or {@linkcode NEVER} if coercion isn't possible.
+   * @returns A `Date` value, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): Date {
     if (isArray(value) && value.length === 1 && isValidDate((value = value[0]))) {

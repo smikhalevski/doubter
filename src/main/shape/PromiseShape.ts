@@ -35,7 +35,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode PromiseShape} instance.
+   * Creates a new {@link PromiseShape} instance.
    *
    * @param valueShape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
    * @param options The issue options or the issue message.
