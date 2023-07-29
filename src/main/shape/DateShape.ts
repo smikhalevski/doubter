@@ -7,7 +7,7 @@ import { CoercibleShape } from './CoercibleShape';
 import { NEVER } from './Shape';
 
 /**
- * The shape of the `Date` object.
+ * The shape of the {@link !Date Date} object.
  * @group Shapes
  */
 export class DateShape extends CoercibleShape<Date> {
@@ -17,7 +17,7 @@ export class DateShape extends CoercibleShape<Date> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode DateShape} instance.
+   * Creates a new {@link DateShape} instance.
    *
    * @param options The issue options or the issue message.
    */
@@ -45,10 +45,10 @@ export class DateShape extends CoercibleShape<Date> {
   }
 
   /**
-   * Coerces a value to a `Date`.
+   * Coerces a value to a {@link !Date Date}.
    *
-   * @param value The non-`Date` value to coerce.
-   * @returns A `Date` value, or {@linkcode NEVER} if coercion isn't possible.
+   * @param value The non-{@link !Date Date} value to coerce.
+   * @returns A {@link !Date Date} value, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: unknown): Date {
     if (isArray(value) && value.length === 1 && isValidDate((value = value[0]))) {

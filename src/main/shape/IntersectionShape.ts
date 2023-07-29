@@ -46,7 +46,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode IntersectionShape} instance.
+   * Creates a new {@link IntersectionShape} instance.
    *
    * @param shapes The array of shapes that comprise an intersection.
    * @param options The intersection constraint options or an issue message.
@@ -219,7 +219,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
 }
 
 /**
- * Merges values into one, or returns {@linkcode NEVER} if values are incompatible.
+ * Merges values into one, or returns {@link NEVER} if values are incompatible.
  */
 export function mergeValues(a: any, b: any): any {
   if (isEqual(a, b)) {

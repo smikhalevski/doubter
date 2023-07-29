@@ -25,7 +25,6 @@ export function any<Value>(
   /**
    * @param value The input value.
    * @param options Parsing options.
-   * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
   cb: (value: any, options: ApplyOptions) => value is Value,
   options?: RefineOptions | Message
@@ -43,7 +42,6 @@ export function any<Value = any>(
   /**
    * @param value The input value.
    * @param options Parsing options.
-   * @returns `true` if value conforms the predicate, or `false` otherwise.
    */
   cb: (value: any, options: ApplyOptions) => boolean,
   options?: RefineOptions | Message

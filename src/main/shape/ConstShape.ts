@@ -21,7 +21,7 @@ export class ConstShape<Value> extends Shape<Value> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode ConstShape} instance.
+   * Creates a new {@link ConstShape} instance.
    *
    * @param value The expected value.
    * @param options The issue options or the issue message.

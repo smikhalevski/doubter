@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!NumberShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!NumberShape} with additional methods.
  *
  * ```ts
  * import { NumberShape } from 'doubter/core';
@@ -32,7 +32,7 @@ import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**
-   * By default, {@linkcode doubter/core!NumberShape#multipleOf NumberShape.multipleOf} uses
+   * By default, {@link doubter/core!NumberShape#multipleOf NumberShape.multipleOf} uses
    * [the modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
    * may produce unexpected results when used with floating point numbers. This happens because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
@@ -160,7 +160,7 @@ declare module '../core' {
      * @param value The inclusive minimum value.
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
-     * @alias {@linkcode gte}
+     * @alias {@link NumberShape.gte}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-essentials!}
      */
@@ -172,7 +172,7 @@ declare module '../core' {
      * @param value The inclusive maximum value.
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
-     * @alias {@linkcode lte}
+     * @alias {@link NumberShape.lte}
      * @group Plugin Methods
      * @plugin {@link doubter/plugin/number-essentials!}
      */
@@ -202,7 +202,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!NumberShape} with additional methods.
+ * Enhances {@link doubter/core!NumberShape} with additional methods.
  */
 export default function (prototype: NumberShape): void {
   prototype.finite = function (options) {

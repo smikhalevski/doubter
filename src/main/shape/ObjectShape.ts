@@ -56,7 +56,7 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
 /**
  * Defines how object keys are handled.
  *
- * @see {@linkcode ObjectShape#keysMode ObjectShape.keysMode}
+ * @see {@link ObjectShape.keysMode ObjectShape.keysMode}
  * @group Other
  */
 export type ObjectKeysMode = 'preserved' | 'stripped' | 'exact';
@@ -80,7 +80,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   readonly keys: readonly string[];
 
   /**
-   * The array of property shapes, parallel to {@linkcode keys}.
+   * The array of property shapes, parallel to {@link ObjectShape.keys}.
    */
   readonly valueShapes: readonly Shape[];
 
@@ -100,7 +100,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   protected _exactIssueFactory?: (input: unknown, options: ApplyOptions, param: unknown) => Issue;
 
   /**
-   * Creates a new {@linkcode ObjectShape} instance.
+   * Creates a new {@link ObjectShape} instance.
    *
    * @param propShapes The mapping from an object key to a corresponding value shape.
    * @param restShape The shape that constrains values of
@@ -155,10 +155,10 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Merge properties from the other object shape.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
-   * this shape and its {@linkcode keysMode} is preserved intact.
+   * this shape and its {@link ObjectShape.keysMode} is preserved intact.
    *
    * @param shape The object shape which properties must be added to this object shape.
    * @returns The new object shape.
@@ -171,10 +171,10 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Add properties to an object shape.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
-   * this shape and its {@linkcode keysMode} is preserved intact.
+   * this shape and its {@link ObjectShape.keysMode} is preserved intact.
    *
    * @param shapes The properties to add.
    * @returns The new object shape.
@@ -193,7 +193,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape that only has properties with listed keys.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to pick.
    * @returns The new object shape.
@@ -213,7 +213,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape that doesn't have the listed keys.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to omit.
    * @returns The new object shape.
@@ -233,7 +233,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape with all properties marked as optional.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * @returns The new object shape.
    */
@@ -242,7 +242,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns an object shape with keys marked as optional.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * @param keys The array of property keys to make optional.
    * @returns The new object shape.
@@ -528,7 +528,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   /**
-   * Unknown keys are either parsed with a {@linkcode restShape}, stripped, or cause an issue.
+   * Unknown keys are either parsed with a {@link ObjectShape.restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ApplyOptions, nonce: number): Result {
     const { keys, keysMode, restShape, operations, valueShapes } = this;

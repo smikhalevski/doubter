@@ -27,7 +27,7 @@ export abstract class CoercibleShape<
   coerce(
     /**
      * @param value The value to coerce.
-     * @returns The coerced value, or {@linkcode NEVER} if coercion isn't possible.
+     * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
      */
     cb?: (value: unknown) => CoercedValue
   ): this {
@@ -45,7 +45,7 @@ export abstract class CoercibleShape<
    * Coerces an input value to another type.
    *
    * @param value The value to coerce.
-   * @returns The coerced value, or {@linkcode NEVER} if coercion isn't possible.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
    */
   protected abstract _coerce(value: unknown): CoercedValue;
 }

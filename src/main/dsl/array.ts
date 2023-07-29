@@ -12,9 +12,9 @@ export function array(options?: IssueOptions | Message): ArrayShape<[], Shape>;
 /**
  * Creates the array shape with elements that conform the element shape.
  *
- * @param shape The shape of array elements.
+ * @param shape The shape of an array element.
  * @param options The issue options or the issue message.
- * @template ValueShape The shape of array elements.
+ * @template ValueShape The shape of an array element.
  * @group DSL
  */
 export function array<ValueShape extends AnyShape>(

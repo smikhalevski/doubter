@@ -1,17 +1,13 @@
 /**
  * A result returned from a shape after it was applied to an input value.
  *
- * - `null` if the output is the same as the input;
- * - an {@linkcode Ok} object if the output contains a new value;
- * - an array of {@linkcode Issue} objects if parsing failed.
- *
  * - If `null` then the input value is valid and wasn't transformed.
- * - If an {@linkcode Ok} instance then the input value is valid and was transformed.
+ * - If an {@link Ok} instance then the input value is valid and was transformed.
  * - If an array of {@link Issue issues} then the input value is invalid.
  *
  * @template Value The output value.
- * @see {@linkcode Shape#_apply Shape._apply}
- * @see {@linkcode Shape#_applyAsync Shape._applyAsync}
+ * @see {@link Shape._apply}
+ * @see {@link Shape._applyAsync}
  * @group Other
  */
 export type Result<Value = any> = Ok<Value> | Issue[] | null;
@@ -54,18 +50,18 @@ export interface Issue {
   /**
    * A code of the validation issue, which uniquely identifies the reason of an issue.
    *
-   * For all built-in shape operations, a code can be used to infer the type of the {@linkcode param}.
+   * For all built-in shape operations, a code can be used to infer the type of the {@link Issue.param}.
    *
    * @see [Validation errors](https://github.com/smikhalevski/doubter#validation-errors)
    */
   code?: any;
 
   /**
-   * An object path to {@linkcode input} value starting from the parsed object. Both an empty array and `undefined` mean
-   * that an issue is caused by the {@linkcode input} value itself.
+   * An object path to {@link Issue.input} value starting from the parsed object. Both an empty array and `undefined`
+   * mean that an issue is caused by the {@link Issue.input} value itself.
    *
    * @example ['users', 0, 'age']
-   * @see {@linkcode Shape#at Shape.at}
+   * @see {@link Shape.at}
    */
   path?: any[];
 
@@ -104,22 +100,22 @@ export interface Issue {
 /**
  * Options used by shapes and built-in operations to create an issue.
  *
- * @see {@linkcode Issue}
+ * @see {@link Issue}
  * @group Issues
  */
 export interface IssueOptions {
   /**
    * The custom issue message.
    *
-   * @see {@linkcode Message}
-   * @see {@linkcode doubter/core!Issue#message Issue.message}
+   * @see {@link Message}
+   * @see {@link doubter/core!Issue#message Issue.message}
    */
   message?: Message | any;
 
   /**
    * An arbitrary metadata that is added to an issue.
    *
-   * @see {@linkcode doubter/core!Issue#meta Issue.meta}
+   * @see {@link doubter/core!Issue#meta Issue.meta}
    */
   meta?: any;
 }
@@ -127,7 +123,7 @@ export interface IssueOptions {
 /**
  * A callback that returns an issue message, or an issue message string.
  *
- * `%s` placeholder in string messages is replaced with the {@link Issue#param issue param}.
+ * `%s` placeholder in string messages is replaced with the {@link Issue.param issue param}.
  *
  * @group Issues
  */
@@ -136,8 +132,7 @@ export type Message = MessageCallback | string;
 /**
  * Returns a human-readable message that describes an issue.
  *
- * You can assign the {@linkcode Issue#message issue.message} property directly inside this callback or return the
- * message.
+ * You can assign the {@link Issue.message} property directly inside this callback or return the message.
  *
  * @param issue The issue for which the message should be produced.
  * @param options The parsing options.
@@ -152,28 +147,28 @@ export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
  *
  * @template InputValue The input value to which the shape was applied.
  * @template OutputValue The shape output value to which the operation must be applied.
- * @see {@linkcode Shape#check Shape.check}
- * @see {@linkcode Shape#alter Shape.alter}
- * @see {@linkcode Shape#refine Shape.refine}
- * @see {@linkcode Shape#use Shape.use}
+ * @see {@link Shape.check}
+ * @see {@link Shape.alter}
+ * @see {@link Shape.refine}
+ * @see {@link Shape.use}
  * @group Operations
  */
 export interface Operation<InputValue = any, OutputValue = any> {
   /**
-   * The type of the operation such as {@linkcode StringShape#regex "string.regex"} or
-   * {@linkcode ArrayShape#includes "array.includes"}.
+   * The type of the operation such as {@link StringShape.regex "string.regex"} or
+   * {@link ArrayShape.includes "array.includes"}.
    */
   readonly type: any;
 
   /**
    * The additional param associated with the operation.
    *
-   * This param usually contains a {@link type type-specific} data is used in the {@link OperationCallback callback}
-   * returned by the {@linkcode factory} method.
+   * This param usually contains a {@link Operation.type}-specific data is used in the
+   * {@link OperationCallback callback} returned by the {@link Operation.factory} method.
    *
    * Built-in operations use the same param for an operation and an issue that is raised if an operation fails.
    *
-   * @see {@linkcode Issue#param Issue.param}
+   * @see {@link Issue.param Issue.param}
    */
   readonly param: any;
 
@@ -197,7 +192,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
  * @returns The result of the operation.
  * @template InputValue The input value to which the shape was applied.
  * @template OutputValue The shape output value to which the operation must be applied.
- * @see {@linkcode Operation#factory Operation.factory}
+ * @see {@link Operation.factory Operation.factory}
  * @group Operations
  */
 export type OperationCallback<InputValue = any, OutputValue = any> = (
@@ -216,14 +211,14 @@ export interface OperationOptions {
   /**
    * The type of the operation.
    *
-   * @see {@linkcode Operation#type Operation.type}
+   * @see {@link Operation.type Operation.type}
    */
   type?: any;
 
   /**
    * The additional param associated with the operation.
    *
-   * @see {@linkcode Operation#param Operation.param}
+   * @see {@link Operation.param Operation.param}
    */
   param?: any;
 }
@@ -231,9 +226,9 @@ export interface OperationOptions {
 /**
  * Options of a custom {@link Operation operation}.
  *
- * @see {@linkcode Shape#check Shape.check}
- * @see {@linkcode Shape#alter Shape.alter}
- * @see {@linkcode Shape#refine Shape.refine}
+ * @see {@link Shape.check}
+ * @see {@link Shape.alter}
+ * @see {@link Shape.refine}
  * @group Operations
  */
 export interface CustomOperationOptions extends OperationOptions {
@@ -257,7 +252,7 @@ export interface ParameterizedCustomOperationOptions<Param> extends CustomOperat
 /**
  * Checks that a value satisfies a requirement and returns issues if it doesn't.
  *
- * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result.
+ * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result.
  *
  * @param value The value to check.
  * @param param The additional param that was associated with the operation.
@@ -266,7 +261,7 @@ export interface ParameterizedCustomOperationOptions<Param> extends CustomOperat
  * doesn't satisfy a requirement.
  * @template Value The value to check.
  * @template Param The additional param that was associated with the check operation.
- * @see {@linkcode Shape#check}
+ * @see {@link Shape.check}
  * @group Operations
  */
 export type CheckCallback<Value = any, Param = any> = (
@@ -278,7 +273,7 @@ export type CheckCallback<Value = any, Param = any> = (
 /**
  * Checks that a value matches a predicate.
  *
- * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
+ * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
  * refinement cannot be performed, and you want to abort the operation.
  *
  * @param value The value to refine.
@@ -287,7 +282,7 @@ export type CheckCallback<Value = any, Param = any> = (
  * @return Truthy if value matches the predicate, or falsy if it doesn't.
  * @template Value The value to refine.
  * @template Param The additional param that was associated with the operation.
- * @see {@linkcode Shape#refine}
+ * @see {@link Shape.refine}
  * @group Operations
  */
 export type RefineCallback<Value = any, Param = any> = (value: Value, param: Param, options: ApplyOptions) => any;
@@ -295,7 +290,7 @@ export type RefineCallback<Value = any, Param = any> = (value: Value, param: Par
 /**
  * A [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) that refines the value type.
  *
- * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
+ * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
  * refinement cannot be performed, and you want to abort the operation.
  *
  * @param value The value to refine.
@@ -305,7 +300,7 @@ export type RefineCallback<Value = any, Param = any> = (value: Value, param: Par
  * @template Value The value to refine.
  * @template RefinedValue The refined value.
  * @template Param The additional param that was associated with the operation.
- * @see {@linkcode Shape#refine}
+ * @see {@link Shape.refine}
  * @group Operations
  */
 export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Param = any> = (
@@ -315,7 +310,7 @@ export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Par
 ) => value is RefinedValue;
 
 /**
- * Options of {@link Shape#refine a refinement operation}.
+ * Options of {@link Shape.refine a refinement operation}.
  *
  * @group Operations
  */
@@ -324,7 +319,7 @@ export interface RefineOptions extends CustomOperationOptions, IssueOptions {
    * The code of an issue that would be raised if the refinement fails.
    *
    * @default "any.refine"
-   * @see {@linkcode Issue#code Issue.code}
+   * @see {@link Issue.code Issue.code}
    */
   code?: any;
 }
@@ -341,9 +336,9 @@ export interface ParameterizedRefineOptions<Param> extends RefineOptions {
 /**
  * Alters the value without changing its base type.
  *
- * If you want to change the base type, consider using {@linkcode Shape#convert Shape.convert}.
+ * If you want to change the base type, consider using {@link Shape.convert Shape.convert}.
  *
- * If a {@linkcode ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
+ * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
  * alteration cannot be performed, and you want to abort the operation.
  *
  * @param value The value to alter.
@@ -352,8 +347,8 @@ export interface ParameterizedRefineOptions<Param> extends RefineOptions {
  * @returns The altered value.
  * @template Value The value to alter.
  * @template Param The additional param that was associated with the operation.
- * @see {@linkcode Shape#alter}
- * @see {@linkcode Shape#convert}
+ * @see {@link Shape.alter}
+ * @see {@link Shape.convert}
  * @group Operations
  */
 export type AlterCallback<Value = any, Param = any> = (value: Value, param: Param, options: ApplyOptions) => Value;
@@ -361,8 +356,8 @@ export type AlterCallback<Value = any, Param = any> = (value: Value, param: Para
 /**
  * Options used when a shape is applied to an input value.
  *
- * @see {@linkcode Shape#_apply Shape._apply}
- * @see {@linkcode Shape#_applyAsync Shape._applyAsync}
+ * @see {@link Shape._apply}
+ * @see {@link Shape._applyAsync}
  * @group Other
  */
 export interface ApplyOptions {
@@ -391,7 +386,7 @@ export interface ApplyOptions {
  *
  * @param issues The array of issues that were raised.
  * @param input The input value that was parsed.
- * @see {@linkcode ParseOptions#errorMessage ParseOptions.errorMessage}
+ * @see {@link ParseOptions.errorMessage ParseOptions.errorMessage}
  * @group Other
  */
 export type ErrorMessageCallback = (issues: Issue[], input: any) => string;
@@ -403,7 +398,7 @@ export type ErrorMessageCallback = (issues: Issue[], input: any) => string;
  */
 export interface ParseOptions extends ApplyOptions {
   /**
-   * A message that is passed to {@linkcode ValidationError} if issues are raised during parsing.
+   * A message that is passed to {@link ValidationError} if issues are raised during parsing.
    */
   readonly errorMessage?: ErrorMessageCallback | string;
 }

@@ -26,7 +26,7 @@ export type TypeName =
  * The enum-like class that describes a value type.
  *
  * @template T The name of the value type.
- * @see {@linkcode Shape#inputs Shape.inputs}
+ * @see {@link Shape.inputs}
  * @group Type Inference
  */
 export class Type<T extends TypeName = TypeName> {

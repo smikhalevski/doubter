@@ -16,7 +16,7 @@ export class SymbolShape extends Shape<symbol> {
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode SymbolShape} instance.
+   * Creates a new {@link SymbolShape} instance.
    *
    * @param options The issue options or the issue message.
    */

@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!ObjectShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!ObjectShape} with additional methods.
  *
  * ```ts
  * import { ObjectShape } from 'doubter/core';
@@ -32,7 +32,7 @@ import { createIssueFactory } from '../utils';
 declare module '../core' {
   interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
     /**
-     * Constrains an object to have a `null` or `Object` prototype.
+     * Constrains an object to have a `null` or {@link !Object Object} prototype.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
@@ -100,7 +100,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!ObjectShape} with additional methods.
+ * Enhances {@link doubter/core!ObjectShape} with additional methods.
  */
 export default function (prototype: ObjectShape<any, any>): void {
   prototype.plain = function (options) {

@@ -1,8 +1,13 @@
 <p align="center">
-  <a href="#readme">
-    <img src="./assets/logo.png" alt="Doubter" width="400"/>
-  </a>
+  <a href="#readme"><img src="./assets/logo.png" alt="Doubter" width="400"/></a>
 </p>
+
+<p align="center">
+  <a href="https://codesandbox.io/s/y5kec4"><img src="./assets/button-playground.png" alt="Playground" height="41"/></a>
+  <a href="https://smikhalevski.github.io/doubter/"><img src="./assets/button-api-docs.png" alt="API Docs" height="41"/></a>
+</p>
+
+<br>
 
 Runtime validation and transformation library.
 
@@ -17,10 +22,7 @@ Runtime validation and transformation library.
 - Zero dependencies;
 - [Pluggable architecture;](#plugins)
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
-- [Extensive API documentation;](https://smikhalevski.github.io/doubter)
 - Check out the [Cookbook](#cookbook) for real-life examples!
-
-🔥&ensp;[**Try Doubter on CodeSandbox**](https://codesandbox.io/s/y5kec4)
 
 ```shell
 npm install --save-prod doubter

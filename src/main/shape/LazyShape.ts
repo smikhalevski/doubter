@@ -25,9 +25,9 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   private _stackMap = new Map<number, unknown[]>();
 
   /**
-   * Creates a new {@linkcode LazyShape} instance.
+   * Creates a new {@link LazyShape} instance.
    *
-   * @param shapeProvider The provider callback that returns the shape to which {@linkcode LazyShape} delegates input
+   * @param shapeProvider The provider callback that returns the shape to which {@link LazyShape} delegates input
    * handling. The provider is called only once.
    * @param pointerProvider The provider callback that returns the value that is used instead of a circular
    * reference.
@@ -36,7 +36,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    */
   constructor(
     /**
-     * The provider callback that returns the shape to which {@linkcode LazyShape} delegates input handling.
+     * The provider callback that returns the shape to which {@link LazyShape} delegates input handling.
      */
     readonly shapeProvider: () => ProvidedShape,
     /**

@@ -25,7 +25,7 @@ import {
 } from './Shape';
 
 /**
- * The shape of a `Map` instance.
+ * The shape of a {@link !Map Map} instance.
  *
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
@@ -50,7 +50,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode MapShape} instance.
+   * Creates a new {@link MapShape} instance.
    *
    * @param keyShape The key shape.
    * @param valueShape The value shape.
@@ -259,10 +259,10 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   }
 
   /**
-   * Coerces a value to an array of `Map` entries.
+   * Coerces a value to an array of {@link !Map Map} entries.
    *
-   * @param value A non-`Map` value to coerce.
-   * @returns An array of entries, or {@linkcode NEVER} if coercion isn't possible.
+   * @param value A non-{@link !Map Map} value to coerce.
+   * @returns An array of entries, or {@link NEVER} if coercion isn't possible.
    */
   protected _coerce(value: any): [unknown, unknown][] {
     if (isArray(value)) {

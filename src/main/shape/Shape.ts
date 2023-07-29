@@ -58,8 +58,8 @@ import { ValidationError } from '../ValidationError';
 /**
  * The marker object that is used to denote an impossible value.
  *
- * For example, `NEVER` is returned from {@linkcode CoercibleShape#_coerce CoercibleShape._coerce} method when coercion
- * is not possible.
+ * For example, {@link NEVER} is returned from {@link CoercibleShape._coerce CoercibleShape._coerce} method when
+ * coercion is not possible.
  *
  * @group Other
  */
@@ -95,7 +95,7 @@ type ExcludeLiteral<T, U> =
   Exclude<T, U>;
 
 /**
- * The ephemeral unique symbol that is used for type branding by {@linkcode Branded}.
+ * The ephemeral unique symbol that is used for type branding by {@link Branded}.
  */
 declare const BRAND: unique symbol;
 
@@ -109,7 +109,7 @@ declare const BRAND: unique symbol;
 export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
 
 /**
- * A shape should implement {@linkcode DeepPartialProtocol} to support conversion to a deep partial alternative.
+ * A shape should implement {@link DeepPartialProtocol} to support conversion to a deep partial alternative.
  *
  * @template S The deep partial alternative of the shape.
  * @group Other
@@ -118,7 +118,7 @@ export interface DeepPartialProtocol<S extends AnyShape> {
   /**
    * Converts the shape and its child shapes to deep partial alternatives.
    *
-   * **Note** This method returns a shape without any operations.
+   * **Note:** This method returns a shape without any operations.
    *
    * @returns The deep partial clone of the shape.
    */
@@ -142,8 +142,8 @@ export type AnyShape = Shape | Shape<never>;
 export type RefineShape<S extends AnyShape, RefinedValue> = Shape<Input<S>, RefinedValue> & Omit<S, keyof Shape>;
 
 /**
- * Returns the deep partial alternative of the shape if it implements {@linkcode DeepPartialProtocol}, or returns shape
- * as is if it doesn't.
+ * Returns the deep partial alternative of the shape if it implements {@link DeepPartialProtocol}, or returns shape as
+ * is if it doesn't.
  *
  * @template S The shape to convert to a deep partial alternative.
  * @group Shapes
@@ -159,7 +159,7 @@ export type DeepPartialShape<S extends AnyShape> = S extends DeepPartialProtocol
 export type OptionalDeepPartialShape<S extends AnyShape> = AllowShape<DeepPartialShape<S>, undefined>;
 
 /**
- * Shortcut for {@linkcode ReplaceShape} that allows the same value as both an input and an output.
+ * Shortcut for {@link ReplaceShape} that allows the same value as both an input and an output.
  *
  * @template S The shape that parses the input without the replaced value.
  * @template AllowedValue The value that is allowed as an input and output.
@@ -168,7 +168,7 @@ export type OptionalDeepPartialShape<S extends AnyShape> = AllowShape<DeepPartia
 export type AllowShape<S extends AnyShape, AllowedValue> = ReplaceShape<S, AllowedValue, AllowedValue>;
 
 /**
- * Shortcut for {@linkcode ExcludeShape} that doesn't impose the exclusion on the type level.
+ * Shortcut for {@link ExcludeShape} that doesn't impose the exclusion on the type level.
  *
  * @template BaseShape The base shape.
  * @template ExcludedShape The shape to which the output must not conform.
@@ -213,20 +213,20 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * The dictionary of shape annotations.
    *
-   * @see {@linkcode annotate}
+   * @see {@link Shape.annotate}
    */
   annotations: Dict = {};
 
   /**
    * The array of operations that are applied to the shape output.
    *
-   * @see {@linkcode use}
+   * @see {@link Shape.use}
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
   operations: readonly Operation[] = [];
 
   /**
-   * The callback that applies {@linkcode operations operations} to the shape output value.
+   * The callback that applies {@link Shape.operations} to the shape output value.
    */
   protected declare _applyOperations: OperationCallback;
 
@@ -257,7 +257,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param annotations Annotations to add.
    * @returns The clone of the shape with the updated annotations.
-   * @see {@linkcode annotations}
+   * @see {@link Shape.annotations}
    */
   annotate(annotations: ReadonlyDict): this {
     const shape = this._clone();
@@ -300,8 +300,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that checks the shape output.
    * @param options The operation options.
    * @returns The clone of the shape.
-   * @template Param The param that is passed to the {@linkcode CheckCallback} when a check operation is applied.
-   * @see {@linkcode refine}
+   * @template Param The param that is passed to the {@link CheckCallback} when a check operation is applied.
+   * @see {@link Shape.refine}
    */
   check<Param>(cb: CheckCallback<OutputValue, Param>, options: ParameterizedCustomOperationOptions<Param>): this;
 
@@ -313,7 +313,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that checks the shape output.
    * @param options The operation options.
    * @returns The clone of the shape.
-   * @see {@linkcode refine}
+   * @see {@link Shape.refine}
    */
   check(cb: CheckCallback<OutputValue>, options?: CustomOperationOptions): this;
 
@@ -358,8 +358,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options The operation options or the issue message.
    * @returns The shape with the narrowed output.
    * @template RefinedValue The narrowed output value.
-   * @template Param The param that is passed to the {@linkcode RefinePredicate} when a refinement operation is applied.
-   * @see {@linkcode check}
+   * @template Param The param that is passed to the {@link RefinePredicate} when a refinement operation is applied.
+   * @see {@link Shape.check}
    */
   refine<RefinedValue extends OutputValue, Param>(
     cb: RefinePredicate<OutputValue, RefinedValue, Param>,
@@ -374,7 +374,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options The operation options or the issue message.
    * @returns The shape with the narrowed output.
    * @template RefinedValue The narrowed output value.
-   * @see {@linkcode check}
+   * @see {@link Shape.check}
    */
   refine<RefinedValue extends OutputValue>(
     cb: RefinePredicate<OutputValue, RefinedValue>,
@@ -387,8 +387,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The operation options or the issue message.
    * @returns The clone of the shape.
-   * @template Param The param that is passed to the {@linkcode RefineCallback} when a refinement operation is applied.
-   * @see {@linkcode check}
+   * @template Param The param that is passed to the {@link RefineCallback} when a refinement operation is applied.
+   * @see {@link Shape.check}
    */
   refine<Param>(cb: RefineCallback<OutputValue, Param>, options?: ParameterizedRefineOptions<Param> | Message): this;
 
@@ -398,7 +398,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The operation options or the issue message.
    * @returns The clone of the shape.
-   * @see {@linkcode check}
+   * @see {@link Shape.check}
    */
   refine(cb: RefineCallback<OutputValue>, options?: RefineOptions | Message): this;
 
@@ -441,8 +441,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that alters the shape output.
    * @param options The operation options.
    * @returns The clone of the shape.
-   * @template Param The param that is passed to the {@linkcode AlterCallback} when an alteration operation is applied.
-   * @see {@linkcode convert}
+   * @template Param The param that is passed to the {@link AlterCallback} when an alteration operation is applied.
+   * @see {@link Shape.convert}
    */
   alter<Param>(cb: AlterCallback<OutputValue, Param>, options: ParameterizedCustomOperationOptions<Param>): this;
 
@@ -452,7 +452,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that alters the shape output.
    * @param options The operation options.
    * @returns The clone of the shape.
-   * @see {@linkcode convert}
+   * @see {@link Shape.convert}
    */
   alter(cb: AlterCallback<OutputValue>, options?: CustomOperationOptions): this;
 
@@ -481,18 +481,16 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Synchronously converts the output value of the shape.
    *
-   * @param cb The callback that converts the shape output value.
-   * @returns The {@linkcode ConvertShape} instance.
+   * @param cb The callback that converts the input value. Throw a {@link ValidationError} to notify that the conversion
+   * cannot be successfully completed.
+   * @returns The {@link ConvertShape} instance.
    * @template ConvertedValue The value returned from the callback that converts the output value of this shape.
-   * @see {@linkcode alter}
+   * @see {@link Shape.alter}
    */
   convert<ConvertedValue>(
     /**
-     * Throw a {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
-     *
      * @param value The shape output value.
      * @param options Parsing options.
-     * @return The converted value.
      */
     cb: (value: OutputValue, options: ApplyOptions) => ConvertedValue
   ): Shape<InputValue, ConvertedValue> {
@@ -502,18 +500,16 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Asynchronously converts the output value of the shape.
    *
-   * @param cb The callback that converts the shape output value.
-   * @returns The {@linkcode ConvertShape} instance.
+   * @param cb The callback that converts the input value asynchronously. The returned promise can be rejected with a
+   * {@link ValidationError} to notify that the conversion cannot be successfully completed.
+   * @returns The {@link ConvertShape} instance.
    * @template ConvertedValue The value returned from the callback that converts the output value of this shape.
-   * @see {@linkcode alter}
+   * @see {@link Shape.alter}
    */
   convertAsync<ConvertedValue>(
     /**
-     * Reject with a {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
-     *
      * @param value The shape output value.
      * @param options Parsing options.
-     * @return The converted value.
      */
     cb: (value: OutputValue, options: ApplyOptions) => PromiseLike<ConvertedValue>
   ): Shape<InputValue, ConvertedValue> {
@@ -678,7 +674,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Checks that the input doesn't match the shape.
    *
-   * This method works exactly as {@linkcode exclude} at runtime, but it doesn't perform the exclusion on the type
+   * This method works exactly as {@link Shape.exclude} at runtime, but it doesn't perform the exclusion on the type
    * level.
    *
    * @param shape The shape to which the output must not conform.
@@ -723,12 +719,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Synchronously parses the input.
    *
-   * **Note** Don't store or update returned instances of {@link Ok} since they can be reused.
+   * **Note:** Don't store or update returned instances of {@link Ok} since they can be reused.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
    * @param nonce The globally unique number that identifies the parsing process.
-   * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
+   * @returns `null` if input matches the output, {@link Ok} that wraps the output, or an array of captured issues.
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<OutputValue> {
@@ -738,12 +734,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Asynchronously parses the input.
    *
-   * **Note** Don't store or update returned instances of {@link Ok} since they can be reused.
+   * **Note:** Don't store or update returned instances of {@link Ok} since they can be reused.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
    * @param nonce The globally unique number that identifies the parsing process.
-   * @returns `null` if input matches the output, {@linkcode Ok} that wraps the output, or an array of captured issues.
+   * @returns `null` if input matches the output, {@link Ok} that wraps the output, or an array of captured issues.
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<OutputValue>> {
@@ -760,27 +756,27 @@ export interface Shape<InputValue, OutputValue> {
   readonly inputs: readonly unknown[];
 
   /**
-   * `true` if the shape allows only {@linkcode parseAsync} and throws an error if {@linkcode parse} is called, or
+   * `true` if the shape allows only {@link Shape.parseAsync} and throws an error if {@link Shape.parse} is called, or
    * `false` if the shape can be used in both sync and async contexts.
    */
   readonly isAsync: boolean;
 
   /**
-   * Synchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   * Synchronously parses the value and returns {@link Ok} or {@link Err} object that wraps the result.
    *
    * @param input The value to parse.
    * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @returns The {@link Ok} instance if parsing has succeeded or {@link Err} if parsing has failed.
+   * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
    */
   try(input: unknown, options?: ApplyOptions): Ok<OutputValue> | Err;
 
   /**
-   * Asynchronously parses the value and returns {@linkcode Ok} or {@linkcode Err} object that wraps the result.
+   * Asynchronously parses the value and returns {@link Ok} or {@link Err} object that wraps the result.
    *
    * @param input The value to parse.
    * @param options Parsing options.
-   * @returns The {@linkcode Ok} instance if parsing has succeeded or {@linkcode Err} if parsing has failed.
+   * @returns The {@link Ok} instance if parsing has succeeded or {@link Err} if parsing has failed.
    */
   tryAsync(input: unknown, options?: ApplyOptions): Promise<Ok<OutputValue> | Err>;
 
@@ -790,8 +786,8 @@ export interface Shape<InputValue, OutputValue> {
    * @param input The value to parse.
    * @param options Parsing options.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
+   * @throws {@link ValidationError} if any issues occur during parsing.
    */
   parse(input: unknown, options?: ParseOptions): OutputValue;
 
@@ -800,8 +796,8 @@ export interface Shape<InputValue, OutputValue> {
    *
    * @param input The value to parse.
    * @param options Parsing options.
-   * @returns The value that conforms the output type of the shape.
-   * @throws {@linkcode ValidationError} if any issues occur during parsing.
+   * @returns The promise that resolves with the value that conforms the output type of the shape, or rejects with a
+   * {@link ValidationError} if any issues occur during parsing.
    */
   parseAsync(input: unknown, options?: ParseOptions): Promisify<OutputValue>;
 
@@ -810,7 +806,7 @@ export interface Shape<InputValue, OutputValue> {
    *
    * @param input The value to parse.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
    */
   parseOrDefault(input: unknown): OutputValue | undefined;
 
@@ -822,7 +818,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param options Parsing options.
    * @template DefaultValue The default value that is returned if parsing fails.
    * @returns The value that conforms the output type of the shape.
-   * @throws `Error` if the shape doesn't support the sync parsing, see {@linkcode isAsync}.
+   * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
    */
   parseOrDefault<DefaultValue>(
     input: unknown,
@@ -1052,21 +1048,20 @@ Object.defineProperties(Shape.prototype, {
  */
 export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
   /**
-   * Creates the new {@linkcode ConvertShape} instance.
+   * Creates the new {@link ConvertShape} instance.
    *
-   * @param converter The callback that converts the input value.
+   * @param converter The callback that converts the input value. Converters can throw or reject with a
+   * {@link ValidationError} to notify that the conversion cannot be successfully completed.
    * @param async If `true` then the convert shape waits for the promise returned from the callback to be fulfilled.
    * Otherwise, the value that is synchronously returned from the callback is used as an output.
    * @template ConvertedValue The output value of the callback that converts the input value.
    */
   constructor(
     /**
-     * The callback that converts the input value.
+     * The converter that is applied to the shape output value.
      *
      * @param value The input value.
      * @param options Parsing options.
-     * @return The conversion result.
-     * @throws {@linkcode ValidationError} to notify that the conversion cannot be successfully completed.
      */
     readonly converter: (value: any, options: ApplyOptions) => PromiseLike<ConvertedValue> | ConvertedValue,
     async?: boolean
@@ -1107,7 +1102,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
   implements DeepPartialProtocol<PipeShape<DeepPartialShape<InputShape>, DeepPartialShape<OutputShape>>>
 {
   /**
-   * Creates the new {@linkcode PipeShape} instance.
+   * Creates the new {@link PipeShape} instance.
    *
    * @param inputShape The shape that parses the input value.
    * @param outputShape The shape that parses the output of `inputShape`.
@@ -1203,7 +1198,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
   private _result: Result<OutputValue>;
 
   /**
-   * Creates the new {@linkcode ReplaceShape} instance.
+   * Creates the new {@link ReplaceShape} instance.
    *
    * @param baseShape The shape that parses the input without the replaced value.
    * @param inputValue The input value to replace.
@@ -1222,7 +1217,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
      */
     readonly inputValue: InputValue,
     /**
-     * The output value that is returned if an {@linkcode ReplaceShape#inputValue} is received.
+     * The output value that is returned if an {@link ReplaceShape.inputValue} is received.
      */
     readonly outputValue: OutputValue
   ) {
@@ -1305,7 +1300,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
   protected _typeIssueFactory;
 
   /**
-   * Creates the new {@linkcode DenyShape} instance.
+   * Creates the new {@link DenyShape} instance.
    *
    * @param baseShape The shape that parses the input without the denied value.
    * @param deniedValue The dined value.
@@ -1401,7 +1396,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   private _resultProvider: (input: unknown, issues: Issue[], options: ApplyOptions) => Ok<FallbackValue>;
 
   /**
-   * Creates the new {@linkcode CatchShape} instance.
+   * Creates the new {@link CatchShape} instance.
    *
    * @param baseShape The shape that parses the input.
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed.
@@ -1499,7 +1494,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
   protected _typeIssueFactory;
 
   /**
-   * Creates the new {@linkcode ExcludeShape} instance.
+   * Creates the new {@link ExcludeShape} instance.
    *
    * @param baseShape The shape that parses the input.
    * @param excludedShape The shape to which the output must not conform.

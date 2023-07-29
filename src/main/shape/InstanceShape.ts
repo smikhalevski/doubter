@@ -18,7 +18,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
   protected _typeIssueFactory;
 
   /**
-   * Creates a new {@linkcode InstanceShape} instance.
+   * Creates a new {@link InstanceShape} instance.
    *
    * @param ctor The class constructor.
    * @param options The issue options or the issue message.

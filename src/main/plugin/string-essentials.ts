@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!StringShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!StringShape} with additional methods.
  *
  * ```ts
  * import { StringShape } from 'doubter/core';
@@ -33,7 +33,7 @@ import { createIssueFactory } from '../utils';
 declare module '../core' {
   export interface StringShape {
     /**
-     * The shortcut to apply both {@linkcode min} and {@linkcode max} constraints.
+     * The shortcut to apply both {@link StringShape.min} and {@link StringShape.max} constraints.
      *
      * @param length The exact length a string must have.
      * @param options The issue options or the issue message.
@@ -157,7 +157,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!StringShape} with additional methods.
+ * Enhances {@link doubter/core!StringShape} with additional methods.
  */
 export default function (prototype: StringShape): void {
   prototype.length = function (length, options) {

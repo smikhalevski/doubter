@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@linkcode doubter/core!ArrayShape} with additional methods.
+ * The plugin that enhances {@link doubter/core!ArrayShape} with additional methods.
  *
  * ```ts
  * import { ArrayShape } from 'doubter/core';
@@ -72,7 +72,7 @@ declare module '../core' {
      * Requires an array to contain at least one element that conforms the given shape.
      *
      * @param value The shape of the required element or its literal value. If a shape is provided, then it _must_
-     * support {@link Shape#isAsync the synchronous parsing}.
+     * support {@link Shape.isAsync the synchronous parsing}.
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
@@ -83,7 +83,7 @@ declare module '../core' {
 }
 
 /**
- * Enhances {@linkcode doubter/core!ArrayShape} with additional methods.
+ * Enhances {@link doubter/core!ArrayShape} with additional methods.
  */
 export default function (prototype: ArrayShape<any, any>): void {
   prototype.length = function (length, options) {
