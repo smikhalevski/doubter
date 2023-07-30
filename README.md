@@ -28,7 +28,8 @@ Runtime validation and transformation library.
 npm install --save-prod doubter
 ```
 
-> **Note**&ensp;Docs on the [`next`](https://github.com/smikhalevski/doubter/tree/next#readme) branch describe the
+> [!NOTE]\
+> Docs on the [`next`](https://github.com/smikhalevski/doubter/tree/next#readme) branch describe the
 > canary release `doubter@next`. Navigate to the [`latest`](https://github.com/smikhalevski/doubter/tree/latest#readme)
 > branch for docs that describe the latest stable release.
 
@@ -346,7 +347,8 @@ shape.parse('  Space  ');
 // ⮕ 'Space'
 ```
 
-> **Warning** Most of the time you don't need to add operations directly. Instead, you can use the higher-level API:
+> [!WARNING]\
+> Most of the time you don't need to add operations directly. Instead, you can use the higher-level API:
 > [checks](#checks), [refinements](#refinements), and [alterations](#alterations).
 
 Operations can alter the shape output, populate issues, and delegate parsing to the next operation. They are
@@ -567,7 +569,8 @@ shape.parse(3);
 
 A check callback receives the shape output value and must return an issue or an array of issues if the value is invalid.
 
-> **Note**&ensp;Check callbacks can throw a [`ValidationError`](#validation-errors) to notify Doubter that parsing
+> [!NOTE]\
+> Check callbacks can throw a [`ValidationError`](#validation-errors) to notify Doubter that parsing
 > issues occurred. While this has the same effect as returning an array of issues, it is recommended to throw a
 > `ValidationError` as the last resort since catching errors has a high performance penalty.
 
@@ -613,8 +616,9 @@ returned:
 }
 ```
 
-> **Note**&ensp;You can find the list of issue codes and corresponding param values in
-> [Validation errors](#validation-errors) section.
+> [!NOTE]\
+> You can find the list of issue codes and corresponding param values in [Validation errors](#validation-errors)
+> section.
 
 ## Parameterized checks
 
@@ -856,8 +860,8 @@ shape2.parse('Venus');
 // ❌ ValidationError: planet at /: Must be Mars or Pluto
 ```
 
-> **Note**&ensp;Refinements [can be parameterized](#parameterized-checks) and [forced](#forced-checks) the same way as
-> checks.
+> [!NOTE]\
+> Refinements [can be parameterized](#parameterized-checks) and [forced](#forced-checks) the same way as checks.
 
 # Alterations
 
@@ -884,8 +888,8 @@ d.number().alter(Math.abs).alter(Math.pow, { param: 3 });
 Alteration callbacks must return the value of the same type, so consequent operations are type-safe. If you want to
 convert the shape output value to another type, consider using [conversions.](#conversions)
 
-> **Note**&ensp;Alterations [can be parameterized](#parameterized-checks) and [forced](#forced-checks) the same way as
-> checks.
+> [!NOTE]\
+> Alterations [can be parameterized](#parameterized-checks) and [forced](#forced-checks) the same way as checks.
 
 # Conversions
 
@@ -995,8 +999,8 @@ const asyncShape2 = d.object({
 asyncShape2.isAsync // ⮕ true
 ```
 
-> **Note**&ensp;Composite shapes are async if they rely on a [`promise`](#promise) shape that constrains a resolved
-> value:
+> [!NOTE]\
+> Composite shapes are async if they rely on a [`promise`](#promise) shape that constrains a resolved value:
 >
 > ```ts
 > const shape = d.object({
@@ -1510,7 +1514,8 @@ bookTicket('Bill');
 // ❌ Error: Expected BRAND to be flightCode
 ```
 
-> **Note**&ensp;Branded types don't affect the runtime result of `parse`. It is a static-type-only construct.
+> [!NOTE]\
+> Branded types don't affect the runtime result of `parse`. It is a static-type-only construct.
 
 # Type coercion
 
