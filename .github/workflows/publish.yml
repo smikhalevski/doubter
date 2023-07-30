@@ -1,0 +1,88 @@
+name: publish
+
+on:
+  push:
+    tags: [ "v[0-9]+.[0-9]+.[0-9]+" ]
+    branches: [ "next" ]
+
+env:
+  NPM_TAG: ${{ github.ref_type == 'tag' && 'latest' || github.ref_name }}
+
+jobs:
+
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Configure git user
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - name: Switch branch
+        if: ${{ env.NPM_TAG != 'next' }}
+        run: |
+          set -x
+
+          git checkout -b ${{ env.NPM_TAG }}
+
+          find . \( -name '*.ts' -o -name '*.md' \) \
+            -exec sed -i '' \
+            -e 's/smikhalevski.github.io\/doubter\/next\//smikhalevski.github.io\/doubter\/${{ env.NPM_TAG }}\//g' \
+            -e 's/github.com\/smikhalevski\/doubter#/github.com\/smikhalevski\/doubter\/tree\/${{ env.NPM_TAG }}#/g' \
+            {} \;
+
+          git add .
+          git commit -m 'Updated doc links'
+          git push --force origin ${{ env.NPM_TAG }}
+
+      - name: Bump version
+        if: ${{ env.NPM_TAG != 'latest' }}
+        run: |
+          VERSION="$(npm pkg get version | xargs)-${{ env.NPM_TAG }}.${GITHUB_SHA::7}"
+          npm version --no-git-tag-version ${VERSION}
+          echo "::notice title=Version::${VERSION}"
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run docs
+      - run: npm test
+      - run: npm run test:definitions
+
+      - name: Publish package
+        run: |
+          cd ./lib
+          npm publish --tag ${{ env.NPM_TAG }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish docs
+        run: |
+          set -x
+
+          mv ./docs /tmp/docs
+
+          git reset HEAD --hard
+          git fetch origin ghpages:ghpages
+          git checkout ghpages
+          git rm -rf --ignore-unmatch ./${{ env.NPM_TAG }}
+          git clean -fxd
+
+          mv /tmp/docs ./${{ env.NPM_TAG }}
+
+          git add .
+          git commit -m "Updated ${{ env.NPM_TAG }} docs (${GITHUB_SHA::7})"
+          git push origin ghpages
+
+      - name: Create release draft
+        if: ${{ env.NPM_TAG == 'latest' }}
+        run: gh release create ${{ github.ref_name }} --generate-notes --draft
+        env:
+          GH_TOKEN: ${{ github.token }}
