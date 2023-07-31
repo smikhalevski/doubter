@@ -64,14 +64,12 @@ meter {
 
 :root {
     --light-color-background: #ffffff;
-
     --light-color-warning-text: #cca213;
     --light-color-background-secondary: rgb(246, 248, 250);
     --light-color-active-menu-item: #ddd;
     --light-color-accent: #e0e1e1;
     --light-code-color-background: rgba(175, 184, 193, 0.2);
     --light-select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 24' width='25' height='20'><g transform='translate(0 2)'><path fill='%23000' d='M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z'/></g></svg>");
-
     --light-button-color: rgb(36, 41, 47);
     --light-button-background: rgb(246, 248, 250);
     --light-button-border-color: rgba(31, 35, 40, 0.15);
@@ -80,11 +78,12 @@ meter {
     --light-button-border-color-hover: rgba(31, 35, 40, 0.15);
     --light-button-box-shadow: rgba(31, 35, 40, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
 
-    --dark-color-warning-text: #f3c736;
-    --dark-color-background-secondary: #272a2f;
+    --dark-color-background: rgb(13, 17, 23);
+    --dark-color-warning-text: #f1e05a;
+    --dark-color-accent: #7d828c;
+    --dark-color-background-secondary: rgb(22, 27, 34);
     --dark-code-color-background: rgba(175, 184, 193, 0.2);
     --dark-select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 24' width='25' height='20'><g transform='translate(0 2)'><path fill='%23fff' d='M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z'/></g></svg>");
-
     --dark-button-color: rgb(201, 209, 217);
     --dark-button-background: rgb(45, 47, 54);
     --dark-button-border-color: rgba(240, 246, 252, 0.1);
@@ -94,6 +93,7 @@ meter {
     --dark-button-box-shadow: none;
 
     --pre-color-background: var(--color-background-secondary);
+    --code-color-background: var(--color-background-secondary);
 
     --font-family-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     --font-family-mono: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
