@@ -77,10 +77,13 @@ meter {
     --light-button-background-hover: rgb(239, 241, 243);
     --light-button-border-color-hover: rgba(31, 35, 40, 0.15);
     --light-button-box-shadow: rgba(31, 35, 40, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+    --light-input-border-color: rgb(208, 215, 222);
+    --light-input-border-color-focus: rgb(9, 105, 218);
 
     --dark-color-background: rgb(13, 17, 23);
     --dark-color-warning-text: #f1e05a;
-    --dark-color-accent: #7d828c;
+    --dark-color-text-aside: #9b9b9b;
+    --dark-color-accent: #45464d;
     --dark-color-background-secondary: rgb(22, 27, 34);
     --dark-code-color-background: rgba(175, 184, 193, 0.2);
     --dark-select-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 24' width='25' height='20'><g transform='translate(0 2)'><path fill='%23fff' d='M4.93896 8.531L12 15.591L19.061 8.531L16.939 6.409L12 11.349L7.06098 6.409L4.93896 8.531Z'/></g></svg>");
@@ -91,6 +94,8 @@ meter {
     --dark-button-background-hover: rgb(48, 50, 58);
     --dark-button-border-color-hover: rgba(240, 246, 252, 0.1);
     --dark-button-box-shadow: none;
+    --dark-input-border-color: rgb(149, 155, 159);
+    --dark-input-border-color-focus: rgb(9, 105, 218);
 
     --pre-color-background: var(--color-background-secondary);
     --code-color-background: var(--color-background-secondary);
@@ -102,7 +107,7 @@ meter {
     --font-size-h2: 1.8rem;
     --font-size-h3: 1.5rem;
     --font-size-aside: 0.875rem;
-    --header-height: 2.5rem;
+    --header-height: 3rem;
     --line-height: 1.5;
     --member-group-spacing: 3rem;
     --member-spacing: 2rem;
@@ -117,6 +122,7 @@ meter {
     --content-spacing: 2rem;
     --anchor-icon-size: 1.2rem;
     --anchor-icon-offset: -1.4rem;
+    --toolbar-icon-width: 2.5rem;
 }
 
 @media (prefers-color-scheme: light) {
@@ -130,6 +136,8 @@ meter {
         --button-background-hover: var(--light-button-background-hover);
         --button-border-color-hover: var(--light-button-border-color-hover);
         --button-box-shadow: var(--light-button-box-shadow);
+        --input-border-color: var(--light-input-border-color);
+        --input-border-color-focus: var(--light-input-border-color-focus);
     }
 }
 
@@ -144,6 +152,8 @@ meter {
         --button-background-hover: var(--dark-button-background-hover);
         --button-border-color-hover: var(--dark-button-border-color-hover);
         --button-box-shadow: var(--dark-button-box-shadow);
+        --input-border-color: var(--dark-input-border-color);
+        --input-border-color-focus: var(--dark-input-border-color-focus);
     }
 }
 
@@ -157,6 +167,8 @@ meter {
     --button-background-hover: var(--light-button-background-hover);
     --button-border-color-hover: var(--light-button-border-color-hover);
     --button-box-shadow: var(--light-button-box-shadow);
+    --input-border-color: var(--light-input-border-color);
+    --input-border-color-focus: var(--light-input-border-color-focus);
 }
 
 :root[data-theme="dark"] {
@@ -169,6 +181,8 @@ meter {
     --button-background-hover: var(--dark-button-background-hover);
     --button-border-color-hover: var(--dark-button-border-color-hover);
     --button-box-shadow: var(--dark-button-box-shadow);
+    --input-border-color: var(--dark-input-border-color);
+    --input-border-color-focus: var(--dark-input-border-color-focus);
 }
 
 body {
@@ -192,7 +206,7 @@ input,
 select {
     font-family: var(--font-family-body);
     font-size: 1rem;
-    border: solid 1px rgb(208, 215, 222);
+    border: solid 1px var(--input-border-color);
     border-radius: var(--border-radius);
     vertical-align: middle;
 }
@@ -204,6 +218,12 @@ input {
 select {
     padding: 0.3em 1.8em 0.3em 0.7em;
     background: right center no-repeat var(--select-chevron);
+}
+
+input:focus,
+select:focus {
+    border-color: var(--input-border-color-focus);
+    outline: solid 1px var(--input-border-color-focus);
 }
 
 dl, menu, ol, ul {
@@ -664,20 +684,95 @@ a.tsd-index-link {
 
 /* ---------------------------------------------------- SEARCH ----------------------------------------------------- */
 
-#tsd-search .results {
-    overflow: hidden;
-    border-bottom-right-radius: var(--border-radius);
-    border-bottom-left-radius: var(--border-radius);
-    box-shadow: 0 17px 40px rgba(0, 0, 0, 0.35);
+.tsd-widget {
+    height: 100%;
 }
 
+.tsd-widget.no-caption {
+    width: auto;
+}
+
+.tsd-page-toolbar .table-cell {
+    line-height: inherit;
+}
+
+.tsd-page-toolbar .tsd-toolbar-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: var(--toolbar-icon-width);
+    padding: 0;
+}
+
+.tsd-page-toolbar .tsd-toolbar-icon.menu {
+    display: none;
+}
+
+#tsd-search {
+    display: flex;
+    align-items: center;
+}
+
+#tsd-search.has-focus {
+    background: none;
+}
+
+/* Magnifying glass icon */
+#tsd-search .field {
+    display: flex;
+    height: auto;
+    width: 100%;
+    position: absolute;
+    top: auto;
+    bottom: auto;
+    right: 0;
+    justify-content: flex-end;
+}
+
+#tsd-search .field input {
+    z-index: 100;
+    flex-grow: 1;
+    padding: 0.3em var(--toolbar-icon-width) 0.3em 0.7em;
+    border: solid 1px rgb(208, 215, 222);
+    background-color: ;
+}
+
+#tsd-search .field input:focus {
+    border-color: var(--input-border-color-focus);
+    outline: solid 1px var(--input-border-color-focus);
+}
+
+#tsd-search .field label {
+    position: absolute;
+    right: auto;
+    z-index: 200;
+}
+
+#tsd-search .results {
+    top: calc(100% + 0.45rem);
+    overflow: hidden;
+    border: solid 1px var(--input-border-color);
+    border-radius: var(--border-radius);
+    box-shadow: none;
+}
+
+#tsd-search:not(.ready) .results,
+#tsd-search .results:empty {
+    display: none;
+}
+
+#tsd-search .results li {
+    padding: 0.5rem 0.7rem;
+    background: var(--color-background-secondary);
+}
 
 /* ----------------------------------------------------- PAGE ------------------------------------------------------ */
 
 /* Header */
 .tsd-page-toolbar .tsd-toolbar-contents {
     height: var(--header-height);
-    align-items: center;
 
     /* Compensate navigation menu item padding */
     padding: 0 calc(var(--content-spacing) + 0.4rem);
@@ -706,6 +801,7 @@ a.tsd-index-link {
 .col-content {
     margin: var(--paragraph-spacing) 0 0 0;
     padding: 0 var(--content-spacing);
+    overflow-x: hidden;
 }
 
 .col-content .tsd-panel:last-child {
@@ -718,7 +814,7 @@ a.tsd-index-link {
         --font-size-h2: 1.5rem;
         --font-size-h3: 1.3rem;
         --font-size-aside: 0.875rem;
-        --header-height: 2.5rem;
+        --header-height: 3rem;
         --line-height: 1.5;
         --member-group-spacing: 2rem;
         --member-spacing: 1.5rem;
@@ -747,6 +843,10 @@ a.tsd-index-link {
 
     .site-menu {
         padding: var(--paragraph-spacing) 0 0 0 !important;
+    }
+
+    .tsd-page-toolbar .tsd-toolbar-icon.menu {
+        display: flex;
     }
 }
 
