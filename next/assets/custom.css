@@ -713,7 +713,6 @@ a.tsd-index-link {
 #tsd-search {
     display: flex;
     align-items: center;
-    overflow: hidden;
 }
 
 #tsd-search.has-focus {
@@ -772,6 +771,7 @@ a.tsd-index-link {
 #tsd-search .title {
     display: block;
     max-width: calc(100% - var(--toolbar-icon-width));
+    position: absolute;
     overflow: hidden;
     text-overflow: ellipsis;
 }
