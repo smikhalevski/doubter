@@ -123,7 +123,7 @@ export interface IssueOptions {
 /**
  * A callback that returns an issue message, or an issue message string.
  *
- * `%s` placeholder in string messages is replaced with the {@link Issue.param issue param}.
+ * `%s` placeholder in string messages is replaced with the {@link Issue.param}.
  *
  * @group Issues
  */
@@ -155,8 +155,8 @@ export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
  */
 export interface Operation<InputValue = any, OutputValue = any> {
   /**
-   * The type of the operation such as {@link StringShape.regex "string.regex"} or
-   * {@link ArrayShape.includes "array.includes"}.
+   * The type of the operation such as {@link StringShape#regex "string.regex"} or
+   * {@link ArrayShape#includes "array.includes"}.
    */
   readonly type: any;
 
@@ -168,7 +168,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
    *
    * Built-in operations use the same param for an operation and an issue that is raised if an operation fails.
    *
-   * @see {@link Issue.param Issue.param}
+   * @see {@link Issue.param}
    */
   readonly param: any;
 
@@ -192,7 +192,7 @@ export interface Operation<InputValue = any, OutputValue = any> {
  * @returns The result of the operation.
  * @template InputValue The input value to which the shape was applied.
  * @template OutputValue The shape output value to which the operation must be applied.
- * @see {@link Operation.factory Operation.factory}
+ * @see {@link Operation.factory}
  * @group Operations
  */
 export type OperationCallback<InputValue = any, OutputValue = any> = (
@@ -211,14 +211,14 @@ export interface OperationOptions {
   /**
    * The type of the operation.
    *
-   * @see {@link Operation.type Operation.type}
+   * @see {@link Operation.type}
    */
   type?: any;
 
   /**
    * The additional param associated with the operation.
    *
-   * @see {@link Operation.param Operation.param}
+   * @see {@link Operation.param}
    */
   param?: any;
 }
@@ -319,7 +319,7 @@ export interface RefineOptions extends CustomOperationOptions, IssueOptions {
    * The code of an issue that would be raised if the refinement fails.
    *
    * @default "any.refine"
-   * @see {@link Issue.code Issue.code}
+   * @see {@link Issue.code}
    */
   code?: any;
 }
@@ -336,7 +336,7 @@ export interface ParameterizedRefineOptions<Param> extends RefineOptions {
 /**
  * Alters the value without changing its base type.
  *
- * If you want to change the base type, consider using {@link Shape.convert Shape.convert}.
+ * If you want to change the base type, consider using {@link Shape.convert}.
  *
  * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
  * alteration cannot be performed, and you want to abort the operation.
@@ -386,7 +386,7 @@ export interface ApplyOptions {
  *
  * @param issues The array of issues that were raised.
  * @param input The input value that was parsed.
- * @see {@link ParseOptions.errorMessage ParseOptions.errorMessage}
+ * @see {@link ParseOptions.errorMessage}
  * @group Other
  */
 export type ErrorMessageCallback = (issues: Issue[], input: any) => string;

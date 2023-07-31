@@ -58,8 +58,7 @@ import { ValidationError } from '../ValidationError';
 /**
  * The marker object that is used to denote an impossible value.
  *
- * For example, {@link NEVER} is returned from {@link CoercibleShape._coerce CoercibleShape._coerce} method when
- * coercion is not possible.
+ * For example, {@link NEVER} is returned from {@link CoercibleShape._coerce} method when coercion is not possible.
  *
  * @group Other
  */

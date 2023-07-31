@@ -57,7 +57,7 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
 /**
  * Defines how object keys are handled.
  *
- * @see {@link ObjectShape.keysMode ObjectShape.keysMode}
+ * @see {@link ObjectShape.keysMode}
  * @group Other
  */
 export type ObjectKeysMode = 'preserved' | 'stripped' | 'exact';
