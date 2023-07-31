@@ -26,8 +26,7 @@ export type OUTPUT = typeof OUTPUT;
 let nonce = -1;
 
 export function nextNonce(): number {
-  nonce = (nonce + 1) | 0;
-  return nonce;
+  return ++nonce;
 }
 
 // For test purposes only
