@@ -233,9 +233,9 @@ export class FunctionShape<
               getValue(KEY_RETURN, resultResult, fnValue, options)
             )
           );
+        } else {
+          resolve(fnValue);
         }
-
-        resolve(fnValue);
       });
     };
   }
