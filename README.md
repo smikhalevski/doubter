@@ -28,10 +28,13 @@ Runtime validation and transformation library.
 npm install --save-prod doubter
 ```
 
-> [!NOTE]\
-> Docs on the [`next`](https://github.com/smikhalevski/doubter/tree/next#readme) branch describe the
-> canary release `doubter@next`. Navigate to the [`latest`](https://github.com/smikhalevski/doubter/tree/latest#readme)
-> branch for docs that describe the latest stable release.
+> [!IMPORTANT]\
+> Docs on the [`next`](https://github.com/smikhalevski/doubter/tree/next#readme) branch describe the canary release
+> [`doubter@next`](https://www.npmjs.com/package/doubter/v/next). Navigate to the
+> [`latest`](https://github.com/smikhalevski/doubter/tree/latest#readme) branch for docs that describe the latest stable
+> release.
+
+<br>
 
 🚀&ensp;**Features**
 
@@ -347,7 +350,7 @@ shape.parse('  Space  ');
 // ⮕ 'Space'
 ```
 
-> [!WARNING]\
+> [!IMPORTANT]\
 > Most of the time you don't need to add operations directly. Instead, you can use the higher-level API:
 > [checks](#checks), [refinements](#refinements), and [alterations](#alterations).
 
