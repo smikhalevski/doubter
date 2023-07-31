@@ -223,7 +223,7 @@ select {
 input:focus,
 select:focus {
     border-color: var(--input-border-color-focus);
-    outline: solid 1px var(--input-border-color-focus);
+    box-shadow: 0 0 0 1px var(--input-border-color-focus);
 }
 
 dl, menu, ol, ul {
@@ -713,6 +713,7 @@ a.tsd-index-link {
 #tsd-search {
     display: flex;
     align-items: center;
+    overflow: hidden;
 }
 
 #tsd-search.has-focus {
@@ -741,7 +742,7 @@ a.tsd-index-link {
 
 #tsd-search .field input:focus {
     border-color: var(--input-border-color-focus);
-    outline: solid 1px var(--input-border-color-focus);
+    box-shadow: 0 0 0 1px var(--input-border-color-focus);
 }
 
 #tsd-search .field label {
@@ -766,6 +767,13 @@ a.tsd-index-link {
 #tsd-search .results li {
     padding: 0.5rem 0.7rem;
     background: var(--color-background-secondary);
+}
+
+#tsd-search .title {
+    display: block;
+    max-width: calc(100% - var(--toolbar-icon-width));
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ----------------------------------------------------- PAGE ------------------------------------------------------ */
