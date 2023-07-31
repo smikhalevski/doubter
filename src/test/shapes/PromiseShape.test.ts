@@ -1,6 +1,7 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE, MESSAGE_TYPE_PROMISE, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { TYPE_PROMISE, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { AsyncMockShape } from './mocks';
 
 describe('PromiseShape', () => {
   test('creates a PromiseShape', () => {
@@ -153,6 +154,16 @@ describe('PromiseShape', () => {
       expect(result.value).not.toBe(input);
 
       await expect(result.value).resolves.toBe(111);
+    });
+
+    test('does not swallow errors', async () => {
+      const shape = new PromiseShape(
+        new AsyncMockShape().check(() => {
+          throw new Error('expected');
+        })
+      );
+
+      await expect(shape.tryAsync(Promise.resolve(111))).rejects.toEqual(new Error('expected'));
     });
 
     describe('coerce', () => {

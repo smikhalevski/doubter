@@ -31,5 +31,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npm install typescript@${{ matrix.typescript }}
+      - run: npm install --save-exact typescript@${{ matrix.typescript }}
       - run: npm run test:definitions

@@ -21,6 +21,7 @@ import {
 } from '../../main/constants';
 import { mergeValues } from '../../main/shape/IntersectionShape';
 import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
+import { AsyncMockShape } from './mocks';
 
 describe('IntersectionShape', () => {
   test('returns the input as is if it matches all intersected shapes', () => {
@@ -234,6 +235,17 @@ describe('IntersectionShape', () => {
         ok: false,
         issues: [{ code: CODE_TYPE_INTERSECTION, input: ['111.222'], message: MESSAGE_TYPE_INTERSECTION }],
       });
+    });
+
+    test('does not swallow errors', async () => {
+      const shape = new IntersectionShape([
+        new AsyncMockShape(),
+        new AsyncMockShape().check(() => {
+          throw new Error('expected');
+        }),
+      ]);
+
+      await expect(shape.tryAsync([111, 111])).rejects.toEqual(new Error('expected'));
     });
   });
 });

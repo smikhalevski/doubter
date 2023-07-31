@@ -657,5 +657,19 @@ describe('ObjectShape', () => {
         issues: [{ code: 'xxx' }],
       });
     });
+
+    test('does not swallow errors', async () => {
+      const shape = new ObjectShape(
+        {
+          aaa: new AsyncMockShape(),
+          bbb: new AsyncMockShape().check(() => {
+            throw new Error('expected');
+          }),
+        },
+        null
+      );
+
+      await expect(shape.tryAsync({ aaa: 111, bbb: 222 })).rejects.toEqual(new Error('expected'));
+    });
   });
 });

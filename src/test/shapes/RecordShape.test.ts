@@ -254,5 +254,29 @@ describe('RecordShape', () => {
         issues: [{ code: 'xxx' }],
       });
     });
+
+    test('does not swallow errors thrown by value shape', async () => {
+      const shape = new RecordShape(
+        new AsyncMockShape(),
+        new AsyncMockShape().check(() => {
+          throw new Error('expected');
+        })
+      );
+
+      await expect(shape.tryAsync({ aaa: 111 })).rejects.toEqual(new Error('expected'));
+    });
+
+    test('does not swallow errors thrown by key shape', async () => {
+      const keyCheck = jest
+        .fn()
+        .mockImplementationOnce(value => value)
+        .mockImplementationOnce(() => {
+          throw new Error('expected');
+        });
+
+      const shape = new RecordShape(new AsyncMockShape().check(keyCheck), new AsyncMockShape());
+
+      await expect(shape.tryAsync({ aaa: 111, bbb: 222 })).rejects.toEqual(new Error('expected'));
+    });
   });
 });

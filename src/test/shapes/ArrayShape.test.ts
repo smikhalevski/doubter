@@ -522,5 +522,19 @@ describe('ArrayShape', () => {
         });
       });
     });
+
+    test('does not swallow errors', async () => {
+      const shape = new ArrayShape(
+        [
+          new AsyncMockShape(),
+          new AsyncMockShape().check(() => {
+            throw new Error('expected');
+          }),
+        ],
+        null
+      );
+
+      await expect(shape.tryAsync([111, 222])).rejects.toEqual(new Error('expected'));
+    });
   });
 });

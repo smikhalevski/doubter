@@ -19,7 +19,7 @@ import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, 
  */
 // prettier-ignore
 type Intersect<U extends AnyShape> =
-  (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends AnyShape ? I : never : never;
+  (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I extends Shape ? I : never : never;
 
 type DeepPartialIntersectionShape<Shapes extends readonly AnyShape[]> = IntersectionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;

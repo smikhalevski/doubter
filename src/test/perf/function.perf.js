@@ -1,7 +1,7 @@
 const zod = require('zod');
 const doubter = require('../../../lib');
 
-describe('fn([number(), number()])', () => {
+describe('fn([number(), number()]).ensure(…)', () => {
   test('zod', measure => {
     const fn = zod.function(zod.tuple([zod.number(), zod.number()])).implement((a, b) => a + b);
 
@@ -11,7 +11,7 @@ describe('fn([number(), number()])', () => {
   });
 
   test('doubter', measure => {
-    const fn = doubter.fn([doubter.number(), doubter.number()]).ensureSignature((a, b) => a + b);
+    const fn = doubter.fn([doubter.number(), doubter.number()]).ensure((a, b) => a + b);
 
     measure(() => {
       fn(1, 2);

@@ -3,6 +3,18 @@ import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from
 import { ValidationError } from '../ValidationError';
 import { isArray, isEqual } from './lang';
 
+// Copied to support TS prior to v4.5
+// prettier-ignore
+type Awaited<T> =
+  T extends null | undefined ? T :
+  T extends object & { then(fn: infer F, ...args: any): any } ?
+  F extends (value: infer V, ...args: any) => any ? Awaited<V> : never :
+  T;
+
+export type Promisify<T> = Promise<Awaited<T>>;
+
+export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
+
 export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, coerce: false });
 
 export const INPUT = Symbol();
@@ -14,8 +26,7 @@ export type OUTPUT = typeof OUTPUT;
 let nonce = -1;
 
 export function nextNonce(): number {
-  nonce = (nonce + 1) | 0;
-  return nonce;
+  return ++nonce;
 }
 
 // For test purposes only
@@ -52,8 +63,10 @@ export function isAsyncShapes(shapes: readonly AnyShape[] | null | undefined): b
  * Converts the shape to its deep partial alternative if shape implements {@link DeepPartialProtocol}, or returns
  * the shape as is.
  */
-export function toDeepPartialShape<S extends AnyShape>(shape: S): DeepPartialShape<S> {
-  return 'deepPartial' in shape && typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
+export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(
+  shape: S
+): DeepPartialShape<S> {
+  return typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
 }
 
 /**

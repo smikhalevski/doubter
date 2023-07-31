@@ -58,8 +58,7 @@ import { ValidationError } from '../ValidationError';
 /**
  * The marker object that is used to denote an impossible value.
  *
- * For example, {@link NEVER} is returned from {@link CoercibleShape._coerce CoercibleShape._coerce} method when
- * coercion is not possible.
+ * For example, {@link NEVER} is returned from {@link CoercibleShape._coerce} method when coercion is not possible.
  *
  * @group Other
  */
@@ -196,20 +195,6 @@ export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
  * @group Shapes
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
-  /**
-   * The shape input type.
-   *
-   * @internal
-   */
-  declare readonly [INPUT]: InputValue;
-
-  /**
-   * The shape output type.
-   *
-   * @internal
-   */
-  declare readonly [OUTPUT]: OutputValue;
-
   /**
    * The dictionary of shape annotations.
    *
@@ -750,6 +735,20 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 }
 
 export interface Shape<InputValue, OutputValue> {
+  /**
+   * The shape input type.
+   *
+   * @internal
+   */
+  readonly [INPUT]: InputValue;
+
+  /**
+   * The shape output type.
+   *
+   * @internal
+   */
+  readonly [OUTPUT]: OutputValue;
+
   /**
    * The array of unique input types and values that are accepted by the shape.
    */

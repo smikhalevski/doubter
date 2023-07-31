@@ -17,7 +17,7 @@ export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]]>(
 /**
  * Creates the tuple shape with rest elements.
  *
- * @param shapes The array of tuple element shapes.
+ * @param headShapes The array of tuple element shapes.
  * @param restShape The shape of rest elements.
  * @param options The issue options or the issue message.
  * @template HeadShapes The head tuple elements.
@@ -25,7 +25,7 @@ export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]]>(
  * @group DSL
  */
 export function tuple<HeadShapes extends readonly [AnyShape, ...AnyShape[]], RestShape extends AnyShape | null>(
-  shapes: HeadShapes,
+  headShapes: HeadShapes,
   restShape: RestShape,
   options?: IssueOptions | Message
 ): ArrayShape<HeadShapes, RestShape>;

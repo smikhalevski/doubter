@@ -56,14 +56,14 @@ expectType<(this: number) => any>(d.fn().this(d.string().convert(parseFloat))[IN
 
 expectType<(this: string) => any>(d.fn().this(d.string().convert(parseFloat))[OUTPUT]);
 
-// ensureSignature
+// ensure
 
 expectType<(this: number, arg: boolean) => boolean>(
   d
     .fn([d.boolean().convert(() => 111)])
     .this(d.number().convert(() => 'aaa'))
     .return(d.string().convert(() => true))
-    .ensureSignature(function (arg) {
+    .ensure(function (arg) {
       expectType<string>(this);
       expectType<number>(arg);
 
@@ -77,7 +77,7 @@ expectNotType<(this: number, arg1: boolean, arg2: unknown) => string>(
     .fn([d.boolean()])
     .this(d.number())
     .return(d.string())
-    .ensureSignature(function () {
+    .ensure(function () {
       expectType<number>(this);
       return 'aaa';
     })
@@ -88,7 +88,7 @@ expectType<(this: number, arg: boolean) => string>(
     .fn([d.boolean()])
     .this(d.number())
     .return(d.string())
-    .ensureSignature(function () {
+    .ensure(function () {
       expectType<number>(this);
       return 'aaa';
     })
@@ -99,7 +99,7 @@ expectType<(this: number) => string>(
     .fn()
     .this(d.number())
     .return(d.string())
-    .ensureSignature(function () {
+    .ensure(function () {
       expectType<number>(this);
       return 'aaa';
     })
@@ -109,26 +109,26 @@ expectType<(this: number) => string>(
   d
     .fn()
     .return(d.string())
-    .ensureSignature(function (this: number) {
+    .ensure(function (this: number) {
       return 'aaa';
     })
 );
 
 expectType<(this: number) => string>(
-  d.fn().ensureSignature(function (this: number) {
+  d.fn().ensure(function (this: number) {
     return 'aaa';
   })
 );
 
-expectType<() => number>(d.fn().ensureSignature(() => 111));
+expectType<() => number>(d.fn().ensure(() => 111));
 
-// ensureAsyncSignature
+// ensureAsync
 
 expectType<() => Promise<string>>(
   d
     .fn()
     .return(d.promise(d.string()))
-    .ensureAsyncSignature(async function () {
+    .ensureAsync(async function () {
       return 'aaa';
     })
 );
@@ -138,7 +138,7 @@ expectType<(this: number, arg: boolean) => Promise<boolean>>(
     .fn([d.boolean().convert(() => 111)])
     .this(d.number().convert(() => 'aaa'))
     .return(d.string().convert(() => true))
-    .ensureAsyncSignature(function (arg) {
+    .ensureAsync(function (arg) {
       expectType<string>(this);
       expectType<number>(arg);
 
@@ -151,7 +151,7 @@ expectType<(this: number, arg: boolean) => Promise<boolean>>(
     .fn([d.boolean().convert(() => 111)])
     .this(d.number().convert(() => 'aaa'))
     .return(d.string().convert(() => true))
-    .ensureAsyncSignature(async function (arg) {
+    .ensureAsync(async function (arg) {
       expectType<string>(this);
       expectType<number>(arg);
 
@@ -164,7 +164,7 @@ expectType<(this: number, arg: boolean) => Promise<boolean>>(
     .fn([d.boolean().convertAsync(() => Promise.resolve(111))])
     .this(d.number().convert(() => 'aaa'))
     .return(d.string().convert(() => true))
-    .ensureAsyncSignature(function (arg) {
+    .ensureAsync(function (arg) {
       expectType<string>(this);
       expectType<number>(arg);
 
@@ -178,7 +178,7 @@ expectNotType<(this: number, arg1: boolean, arg2: unknown) => Promise<string>>(
     .fn([d.boolean()])
     .this(d.number())
     .return(d.string())
-    .ensureAsyncSignature(function () {
+    .ensureAsync(function () {
       expectType<number>(this);
       return 'aaa';
     })
@@ -189,7 +189,7 @@ expectType<(this: number, arg: boolean) => Promise<string>>(
     .fn([d.boolean()])
     .this(d.number())
     .return(d.string())
-    .ensureAsyncSignature(function () {
+    .ensureAsync(function () {
       expectType<number>(this);
       return 'aaa';
     })
@@ -200,7 +200,7 @@ expectType<(this: number) => Promise<string>>(
     .fn()
     .this(d.number())
     .return(d.string())
-    .ensureAsyncSignature(function () {
+    .ensureAsync(function () {
       expectType<number>(this);
       return 'aaa';
     })
@@ -210,7 +210,7 @@ expectType<(this: number) => Promise<string>>(
   d
     .fn()
     .return(d.string())
-    .ensureAsyncSignature(function (this: number) {
+    .ensureAsync(function (this: number) {
       return 'aaa';
     })
 );
@@ -219,21 +219,21 @@ expectType<(this: number) => Promise<string>>(
   d
     .fn()
     .return(d.promise(d.string()))
-    .ensureAsyncSignature(async function (this: number) {
+    .ensureAsync(async function (this: number) {
       return 'aaa';
     })
 );
 
 expectType<(this: number) => Promise<string>>(
-  d.fn().ensureAsyncSignature(function (this: number) {
+  d.fn().ensureAsync(function (this: number) {
     return 'aaa';
   })
 );
 
 expectType<() => Promise<string>>(
-  d.fn().ensureAsyncSignature(async function () {
+  d.fn().ensureAsync(async function () {
     return 'aaa';
   })
 );
 
-expectType<() => Promise<number>>(d.fn().ensureAsyncSignature(() => 111));
+expectType<() => Promise<number>>(d.fn().ensureAsync(() => 111));
