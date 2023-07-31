@@ -70,7 +70,7 @@
     "Promisify",
     "ReadonlyDict",
     "RequiredPropShapes",
-    "Infer",
+    "InferOrDefault",
     "ThisType",
     "INPUT",
     "OUTPUT"

@@ -498,11 +498,11 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `number.gte`        | [`d.number().gt(x)`](#number)                       | The exclusive minimum value `x`                       |
 | `number.lte`        | [`d.number().lt(x)`](#number)                       | The exclusive maximum value `x`                       |
 | `number.multipleOf` | [`d.number().multipleOf(x)`](#number)               | The divisor `x`                                       |
-| `object.allKeys`    | [`d.object().allKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
-| `object.notAllKeys` | [`d.object().notAllKeys(keys)`](#key-relationships) | The array of `keys`                                   |
-| `object.orKeys`     | [`d.object().orKeys(keys)`](#key-relationships)     | The array of `keys`                                   |
-| `object.xorKeys`    | [`d.object().xorKeys(keys)`](#key-relationships)    | The array of `keys`                                   |
-| `object.oxorKeys`   | [`d.object().oxorKeys(keys)`](#key-relationships)   | The array of `keys`                                   |
+| `object.allKeys`    | [`d.object().allKeys(keys)`](#key-relationships)    | The `keys` array                                   |
+| `object.notAllKeys` | [`d.object().notAllKeys(keys)`](#key-relationships) | The `keys` array                                   |
+| `object.orKeys`     | [`d.object().orKeys(keys)`](#key-relationships)     | The `keys` array                                   |
+| `object.xorKeys`    | [`d.object().xorKeys(keys)`](#key-relationships)    | The `keys` array                                   |
+| `object.oxorKeys`   | [`d.object().oxorKeys(keys)`](#key-relationships)   | The `keys` array                                   |
 | `object.exact`      | [`d.object().exact()`](#unknown-keys)               | The array of unknown keys                             |
 | `object.plain`      | [`d.object().plain()`](#object)                     | —                                                     |
 | `set.min`           | [`d.set().min(n)`](#set)                            | The minimum `Set` size `n`                            |
@@ -2630,19 +2630,20 @@ By default, the input function is returned as-is during parsing. If you want a p
 runtime use `strict` method to [ensure the parsed function signature](#ensuring-function-signature).
 
 ```ts
-const greetShape = d.fn([d.string()])
-  .return(d.string())
+const callbackShape = d.fn([d.string()])
+  .return(d.number().int())
   .strict();
 
-const greet = greetShape.parse(name => `Hello, $name!`);
+const callback = callbackShape.parse(value => parseInt(value));
+// ⮕ (arg: string) => number
 ```
 
-`greet` guarantees that the input function is called with arguments, `this` and return values that conform the
-respective shapes.
+`callback` ensures that the argument is string and the returned value is a number, or throws a `ValidationError` if
+types are invalid at runtime.
 
 ## Ensuring function signature
 
-You can ensure a type-safe function signature at runtime.
+You can ensure a function signature type-safety at runtime.
 
 Let's declare a function shape that takes two number arguments and returns a number as well:
 
@@ -2651,7 +2652,7 @@ const sumShape = d.fn([d.number(), d.number()]).return(d.number());
 // ⮕ Shape<(arg1: number, arg2: number) => number>
 ```
 
-Now let's provide a concrete implementation:
+Now let's ensure a signature of a particular function:
 
 ```ts
 const sum = sumShape.ensure(

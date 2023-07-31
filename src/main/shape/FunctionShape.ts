@@ -24,7 +24,7 @@ const KEY_ARGS = 'arguments';
 const KEY_RETURN = 'return';
 
 // prettier-ignore
-type Infer<
+type InferOrDefault<
   Shape extends AnyShape | null,
   Leg extends INPUT | OUTPUT,
   DefaultValue = any,
@@ -45,8 +45,8 @@ export class FunctionShape<
   ReturnShape extends AnyShape | null,
   ThisShape extends AnyShape | null,
 > extends Shape<
-  (this: Infer<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => Infer<ReturnShape, INPUT>,
-  (this: Infer<ThisShape, INPUT>, ...args: Input<ArgsShape>) => Infer<ReturnShape, OUTPUT>
+  (this: InferOrDefault<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => InferOrDefault<ReturnShape, INPUT>,
+  (this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>
 > {
   /**
    * `true` if input functions are wrapped during parsing to ensure runtime signature type-safety, or `false` otherwise.
@@ -150,13 +150,18 @@ export class FunctionShape<
    * @returns The wrapper function.
    * @template F The function to which signature must be ensured.
    */
-  ensure<F extends (this: Infer<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => Infer<ReturnShape, INPUT>>(
+  ensure<
+    F extends (
+      this: InferOrDefault<ThisShape, OUTPUT>,
+      ...args: Output<ArgsShape>
+    ) => InferOrDefault<ReturnShape, INPUT>,
+  >(
     fn: F,
     options?: ParseOptions
   ): (
-    this: Infer<ThisShape, INPUT, ThisType<F>>,
+    this: InferOrDefault<ThisShape, INPUT, ThisType<F>>,
     ...args: Input<ArgsShape>
-  ) => Infer<ReturnShape, OUTPUT, ReturnType<F>>;
+  ) => InferOrDefault<ReturnShape, OUTPUT, ReturnType<F>>;
 
   ensure(fn: Function, options: ParseOptions) {
     if (this.isAsyncFunction) {
@@ -195,14 +200,17 @@ export class FunctionShape<
    * @template F The function to which signature must be ensured.
    */
   ensureAsync<
-    F extends (this: Infer<ThisShape, OUTPUT>, ...args: Output<ArgsShape>) => Awaitable<Infer<ReturnShape, INPUT>>,
+    F extends (
+      this: InferOrDefault<ThisShape, OUTPUT>,
+      ...args: Output<ArgsShape>
+    ) => Awaitable<InferOrDefault<ReturnShape, INPUT>>,
   >(
     fn: F,
     options?: ParseOptions
   ): (
-    this: Infer<ThisShape, INPUT, ThisType<F>>,
+    this: InferOrDefault<ThisShape, INPUT, ThisType<F>>,
     ...args: Input<ArgsShape>
-  ) => Promisify<Infer<ReturnShape, OUTPUT, ReturnType<F>>>;
+  ) => Promisify<InferOrDefault<ReturnShape, OUTPUT, ReturnType<F>>>;
 
   ensureAsync(fn: Function, options: ParseOptions) {
     const { argsShape, returnShape, thisShape } = this;
@@ -248,7 +256,9 @@ export class FunctionShape<
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Result<(this: Infer<ThisShape, INPUT>, ...args: Input<ArgsShape>) => Infer<ReturnShape, OUTPUT>> {
+  ): Result<
+    (this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>
+  > {
     if (typeof input !== 'function') {
       return [this._typeIssueFactory(input, options)];
     }
