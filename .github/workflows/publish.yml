@@ -34,7 +34,7 @@ jobs:
           git checkout -b latest
 
           find . \( -name '*.ts' -o -name '*.md' \) \
-            -exec sed -i '' \
+            -exec sed -i \
             -e 's/smikhalevski.github.io\/doubter\/next\//smikhalevski.github.io\/doubter\/latest\//g' \
             -e 's/github.com\/smikhalevski\/doubter#/github.com\/smikhalevski\/doubter\/tree\/latest#/g' \
             {} \;
