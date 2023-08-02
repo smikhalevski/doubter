@@ -63,11 +63,9 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * The lazy-loaded shape.
    */
   get providedShape(): ProvidedShape {
-    Object.defineProperty(this, 'shape', { configurable: true, value: undefined });
-
     const shape = this._cachingShapeProvider();
 
-    Object.defineProperty(this, 'shape', { configurable: true, value: shape });
+    Object.defineProperty(this, 'providedShape', { configurable: true, value: shape });
 
     return shape;
   }
