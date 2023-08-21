@@ -501,11 +501,11 @@ The optional metadata associated with the issue. Refer to [Metadata](#metadata) 
 | `number.gte`        | [`d.number().gt(x)`](#number)                       | The exclusive minimum value `x`                       |
 | `number.lte`        | [`d.number().lt(x)`](#number)                       | The exclusive maximum value `x`                       |
 | `number.multipleOf` | [`d.number().multipleOf(x)`](#number)               | The divisor `x`                                       |
-| `object.allKeys`    | [`d.object().allKeys(keys)`](#key-relationships)    | The `keys` array                                   |
-| `object.notAllKeys` | [`d.object().notAllKeys(keys)`](#key-relationships) | The `keys` array                                   |
-| `object.orKeys`     | [`d.object().orKeys(keys)`](#key-relationships)     | The `keys` array                                   |
-| `object.xorKeys`    | [`d.object().xorKeys(keys)`](#key-relationships)    | The `keys` array                                   |
-| `object.oxorKeys`   | [`d.object().oxorKeys(keys)`](#key-relationships)   | The `keys` array                                   |
+| `object.allKeys`    | [`d.object().allKeys(keys)`](#key-relationships)    | The `keys` array                                      |
+| `object.notAllKeys` | [`d.object().notAllKeys(keys)`](#key-relationships) | The `keys` array                                      |
+| `object.orKeys`     | [`d.object().orKeys(keys)`](#key-relationships)     | The `keys` array                                      |
+| `object.xorKeys`    | [`d.object().xorKeys(keys)`](#key-relationships)    | The `keys` array                                      |
+| `object.oxorKeys`   | [`d.object().oxorKeys(keys)`](#key-relationships)   | The `keys` array                                      |
 | `object.exact`      | [`d.object().exact()`](#unknown-keys)               | The array of unknown keys                             |
 | `object.plain`      | [`d.object().plain()`](#object)                     | —                                                     |
 | `set.min`           | [`d.set().min(n)`](#set)                            | The minimum `Set` size `n`                            |

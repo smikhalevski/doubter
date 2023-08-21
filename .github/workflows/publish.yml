@@ -27,7 +27,7 @@ jobs:
           git config user.name "github-actions[bot]"
 
       - name: Checkout latest branch
-        if: ${{ env.NPM_TAG == 'latest' }}
+        if: env.NPM_TAG == 'latest'
         run: |
           set -x
 
@@ -44,7 +44,7 @@ jobs:
           git push --force origin latest
 
       - name: Update next version
-        if: ${{ env.NPM_TAG == 'next' }}
+        if: env.NPM_TAG == 'next'
         run: |
           VERSION="$(npm pkg get version | xargs)-next.${GITHUB_SHA::7}"
           npm version --no-git-tag-version ${VERSION}
@@ -78,11 +78,14 @@ jobs:
           mv /tmp/docs ./${{ env.NPM_TAG }}
 
           git add .
+
+          ! git diff --staged --quiet --exit-code || exit 0
+          
           git commit -m "Updated ${{ env.NPM_TAG }} docs (${GITHUB_SHA::7})"
           git push origin ghpages
 
       - name: Create release draft
-        if: ${{ env.NPM_TAG == 'latest' }}
+        if: env.NPM_TAG == 'latest'
         run: gh release create ${{ github.ref_name }} --generate-notes --draft
         env:
           GH_TOKEN: ${{ github.token }}
