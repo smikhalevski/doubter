@@ -57,9 +57,8 @@ jobs:
       - run: npm run test:definitions
 
       - name: Publish package
-        run: |
-          cd ./lib
-          npm publish --tag ${{ env.NPM_TAG }}
+        working-directory: ./lib
+        run: npm publish --tag ${{ env.NPM_TAG }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

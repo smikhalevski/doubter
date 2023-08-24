@@ -58,7 +58,10 @@
     },
     "./package.json": "./package.json"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./index.mjs",
+    "./index.js"
+  ],
   "scripts": {
     "build": "tsc --project tsconfig.build.json && rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
     "clean": "rimraf gen lib docs coverage",
