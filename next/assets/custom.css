@@ -232,6 +232,10 @@ dl, menu, ol, ul {
 
 /* -------------------------------------------------- TYPOGRAPHY --------------------------------------------------- */
 
+.tsd-typography {
+    line-height: var(--line-height);
+}
+
 .tsd-typography:empty {
     display: none;
 }
@@ -571,6 +575,10 @@ code.tsd-tag {
 
 .tsd-nested-navigation > li > a {
     width: auto;
+}
+
+.tsd-nested-navigation > li > details {
+    margin-left: 0;
 }
 
 .tsd-navigation .tsd-accordion-summary {
