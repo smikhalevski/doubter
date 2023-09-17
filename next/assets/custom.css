@@ -115,7 +115,8 @@ meter {
     --header-margin: 1.5rem 0 1rem 0;
     --term-spacing: 0.5rem;
     --list-spacing: 1.5rem;
-    --menu-spacing: 1.5rem;
+    --menu-spacing-vertical: 0.8rem;
+    --menu-spacing-horizontal: 1.5rem;
     --header-border-spacing: 0.2rem;
     --border-radius: 0.35rem;
     --table-padding: 0.75rem;
@@ -200,6 +201,7 @@ i, em {
 
 svg {
     vertical-align: middle;
+    flex-shrink: 0;
 }
 
 input,
@@ -544,7 +546,8 @@ code.tsd-tag {
 }
 
 .tsd-page-navigation a {
-    display: block;
+    display: flex;
+    align-items: flex-start;
     width: auto;
     padding: 0.25rem 0;
 }
@@ -556,25 +559,32 @@ code.tsd-tag {
 .tsd-navigation a {
     display: flex;
     align-items: flex-start;
-    width: auto;
+    width: 100%;
     padding: 0.25rem 0.4rem;
     border-radius: var(--border-radius);
 }
 
 .tsd-page-navigation .tsd-accordion-details {
-    margin: var(--paragraph-spacing) 0 0 0;
+    margin: var(--menu-spacing-vertical) 0 0 0;
 }
 
 .tsd-page-navigation ul {
-    padding: 0 0 0 var(--menu-spacing);
+    padding: 0 0 0 var(--menu-spacing-horizontal);
 }
 
 .tsd-nested-navigation {
-    margin: 0 0 0 var(--menu-spacing);
+    margin: 0 0 0 calc(var(--menu-spacing-horizontal) * 2);
 }
 
 .tsd-nested-navigation > li > a {
+    display: flex;
+    align-items: flex-start;
     width: auto;
+    max-width: 100%;
+}
+
+.tsd-nested-navigation > li > a > span {
+    overflow: hidden;
 }
 
 .tsd-nested-navigation > li > details {
@@ -584,19 +594,20 @@ code.tsd-tag {
 .tsd-navigation .tsd-accordion-summary {
     position: relative;
     width: auto;
+    display: flex;
+    align-items: baseline;
+}
+
+.tsd-accordion-summary > h3 > svg {
+    margin-right: 0.2rem;
 }
 
 .tsd-small-nested-navigation {
-    margin: 0;
+    margin: 0 0 0 var(--menu-spacing-horizontal);
 }
 
-/* Move arrow outside of an element */
-.tsd-small-nested-navigation .tsd-accordion-summary > svg {
-    display: none;
-}
-
-.tsd-small-nested-navigation > li > details {
-    margin: 0;
+.tsd-index-accordion {
+    margin: var(--menu-spacing-vertical) 0 0 0;
 }
 
 /* --------------------------------------------------- SETTINGS ---------------------------------------------------- */
@@ -638,7 +649,15 @@ code.tsd-tag {
 }
 
 .settings .tsd-accordion-details {
-    padding: 0 0 0 var(--menu-spacing);
+    padding: 0 0 0 var(--menu-spacing-horizontal);
+}
+
+.tsd-filter-input input[type="checkbox"]:not(:checked) + svg {
+    --color-text: transparent;
+}
+
+.tsd-checkbox-checkmark {
+    stroke: var(--color-text);
 }
 
 /* --------------------------------------------------- HIERARCHY --------------------------------------------------- */
@@ -803,7 +822,7 @@ a.tsd-index-link {
 
 /* Compensate for padding of .tsd-navigation a */
 .page-menu {
-    padding-left: 0.4rem;
+    padding-left: 0.22rem;
 }
 
 .container {
@@ -838,7 +857,8 @@ a.tsd-index-link {
         --header-margin: 1rem 0 0.5rem 0;
         --term-spacing: 0.2rem;
         --list-spacing: 1rem;
-        --menu-spacing: 1rem;
+        --menu-spacing-vertical: 0.4rem;
+        --menu-spacing-horizontal: 1.5rem;
         --header-border-spacing: 0.1rem;
         --border-radius: 0.35rem;
         --table-padding: 0.5rem;
@@ -854,6 +874,7 @@ a.tsd-index-link {
     .col-sidebar {
         gap: 0 !important;
         padding: var(--paragraph-spacing) !important;;
+        overflow-y: auto;
         overflow-x: hidden;
     }
 
@@ -870,7 +891,8 @@ a.tsd-index-link {
     .col-sidebar {
         padding: var(--paragraph-spacing) 0;
         max-height: calc(100vh - var(--header-height));
-        overflow: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
         position: sticky;
         top: var(--header-height);
     }
