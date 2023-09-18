@@ -1,5 +1,9 @@
 <p align="center">
-  <a href="#readme"><img src="./assets/logo.png" alt="Doubter" width="400"/></a>
+  <a href="#readme"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo-dark.png" />
+    <source media="(prefers-color-scheme: light)" srcset="./assets/logo-light.png" />
+    <img alt="Doubter" src="./assets/logo-light.png" width="400" />
+  </picture></a>
 </p>
 
 <p align="center">
