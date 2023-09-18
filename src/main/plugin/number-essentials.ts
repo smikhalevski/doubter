@@ -204,7 +204,7 @@ declare module '../core' {
 /**
  * Enhances {@link doubter/core!NumberShape} with additional methods.
  */
-export default function (prototype: NumberShape): void {
+export default function enableNumberEssentials(prototype: NumberShape): void {
   prototype.finite = function (options) {
     const { isFinite } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);

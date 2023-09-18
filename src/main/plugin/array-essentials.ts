@@ -85,7 +85,7 @@ declare module '../core' {
 /**
  * Enhances {@link doubter/core!ArrayShape} with additional methods.
  */
-export default function (prototype: ArrayShape<any, any>): void {
+export default function enableArrayEssentials(prototype: ArrayShape<any, any>): void {
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);
   };

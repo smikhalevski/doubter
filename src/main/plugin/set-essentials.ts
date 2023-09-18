@@ -64,7 +64,7 @@ declare module '../core' {
 /**
  * Enhances {@link doubter/core!SetShape} with additional methods.
  */
-export default function (prototype: SetShape<any>): void {
+export default function enableSetEssentials(prototype: SetShape<any>): void {
   prototype.size = function (size, options) {
     return this.min(size, options).max(size, options);
   };

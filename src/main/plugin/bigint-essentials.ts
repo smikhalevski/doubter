@@ -84,7 +84,7 @@ declare module '../core' {
 /**
  * Enhances {@link doubter/core!BigIntShape} with additional methods.
  */
-export default function (prototype: BigIntShape): void {
+export default function enableBigIntEssentials(prototype: BigIntShape): void {
   prototype.positive = function (options) {
     return this.min(0, options);
   };

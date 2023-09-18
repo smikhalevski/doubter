@@ -102,7 +102,7 @@ declare module '../core' {
 /**
  * Enhances {@link doubter/core!ObjectShape} with additional methods.
  */
-export default function (prototype: ObjectShape<any, any>): void {
+export default function enableObjectEssentials(prototype: ObjectShape<any, any>): void {
   prototype.plain = function (options) {
     const { getPrototypeOf } = Object;
     const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, MESSAGE_OBJECT_PLAIN, options, undefined);

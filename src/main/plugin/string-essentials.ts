@@ -159,7 +159,7 @@ declare module '../core' {
 /**
  * Enhances {@link doubter/core!StringShape} with additional methods.
  */
-export default function (prototype: StringShape): void {
+export default function enableStringEssentials(prototype: StringShape): void {
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);
   };

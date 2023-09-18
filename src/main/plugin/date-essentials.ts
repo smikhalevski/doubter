@@ -84,7 +84,7 @@ declare module '../core' {
 /**
  * Enhances {@link doubter/core!DateShape} with additional methods.
  */
-export default function (prototype: DateShape): void {
+export default function enableDateEssentials(prototype: DateShape): void {
   prototype.min = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
