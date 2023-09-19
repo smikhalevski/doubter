@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@link doubter/core!DateShape} with additional methods.
+ * The plugin that enhances {@link core!DateShape DateShape} with additional methods.
  *
  * ```ts
  * import { DateShape } from 'doubter/core';
@@ -8,7 +8,7 @@
  * enableDateEssentials(DateShape.prototype);
  * ```
  *
- * @module doubter/plugin/date-essentials
+ * @module plugin/date-essentials
  */
 
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
@@ -24,7 +24,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-essentials!}
+     * @plugin {@link plugin/date-essentials! plugin/date-essentials}
      */
     min(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -35,7 +35,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-essentials!}
+     * @plugin {@link plugin/date-essentials! plugin/date-essentials}
      */
     max(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -47,7 +47,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@link DateShape.min}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-essentials!}
+     * @plugin {@link plugin/date-essentials! plugin/date-essentials}
      */
     after(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -59,7 +59,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@link DateShape.max}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-essentials!}
+     * @plugin {@link plugin/date-essentials! plugin/date-essentials}
      */
     before(value: Date | number | string, options?: IssueOptions | Message): this;
 
@@ -67,7 +67,7 @@ declare module '../core' {
      * Converts date to an ISO string.
      *
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-essentials!}
+     * @plugin {@link plugin/date-essentials! plugin/date-essentials}
      */
     toISOString(): Shape<Date, string>;
 
@@ -75,14 +75,14 @@ declare module '../core' {
      * Converts date to a timestamp integer number.
      *
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/date-essentials!}
+     * @plugin {@link plugin/date-essentials! plugin/date-essentials}
      */
     toTimestamp(): Shape<Date, number>;
   }
 }
 
 /**
- * Enhances {@link doubter/core!DateShape} with additional methods.
+ * Enhances {@link core!DateShape DateShape} with additional methods.
  */
 export default function enableDateEssentials(prototype: DateShape): void {
   prototype.min = function (value, options) {

@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@link doubter/core!ArrayShape} with additional methods.
+ * The plugin that enhances {@link core!ArrayShape ArrayShape} with additional methods.
  *
  * ```ts
  * import { ArrayShape } from 'doubter/core';
@@ -8,7 +8,7 @@
  * enableArrayEssentials(ArrayShape.prototype);
  * ```
  *
- * @module doubter/plugin/array-essentials
+ * @module plugin/array-essentials
  */
 
 import {
@@ -32,7 +32,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-essentials!}
+     * @plugin {@link plugin/array-essentials! plugin/array-essentials}
      */
     length(length: number, options?: IssueOptions | Message): this;
 
@@ -43,7 +43,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-essentials!}
+     * @plugin {@link plugin/array-essentials! plugin/array-essentials}
      */
     min(length: number, options?: IssueOptions | Message): this;
 
@@ -54,7 +54,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-essentials!}
+     * @plugin {@link plugin/array-essentials! plugin/array-essentials}
      */
     max(length: number, options?: IssueOptions | Message): this;
 
@@ -64,7 +64,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-essentials!}
+     * @plugin {@link plugin/array-essentials! plugin/array-essentials}
      */
     nonEmpty(options?: IssueOptions | Message): this;
 
@@ -76,14 +76,14 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/array-essentials!}
+     * @plugin {@link plugin/array-essentials! plugin/array-essentials}
      */
     includes(value: AnyShape | any, options?: IssueOptions | Message): this;
   }
 }
 
 /**
- * Enhances {@link doubter/core!ArrayShape} with additional methods.
+ * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
  */
 export default function enableArrayEssentials(prototype: ArrayShape<any, any>): void {
   prototype.length = function (length, options) {
