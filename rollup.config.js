@@ -4,45 +4,35 @@ const dts = require('rollup-plugin-dts');
 const fs = require('fs');
 const path = require('path');
 
-const entries = fs
+module.exports = fs
   .readdirSync('src/main/plugin')
-  .map(e => 'plugin/' + path.basename(e, '.ts'))
-  .concat('index', 'core', 'utils');
-
-const plugins = [
-  nodeResolve(),
-
-  alias({
-    entries: { tslib: path.resolve('gen/tslib.js') },
-  }),
-
-  // Rewrite relative imports and exports
-  { renderChunk: (code, chunk) => code.replace(/(require\(|from )'\.[^']+/g, '$&' + path.extname(chunk.fileName)) },
-];
-
-module.exports = entries.flatMap(e => {
-  const external = RegExp(
-    entries
-      .filter(x => x !== e)
-      .map(e => '\\./' + e)
-      .join('|')
-  );
-
-  return [
+  .map(it => 'plugin/' + path.basename(it, '.ts'))
+  .concat('index', 'core', 'utils')
+  .flatMap((input, _, inputs) => [
     {
-      input: `gen/${e}.js`,
+      input: `gen/${input}.js`,
       output: [
-        { file: `lib/${e}.js`, format: 'cjs' },
-        { file: `lib/${e}.mjs`, format: 'es' },
+        { file: `lib/${input}.js`, format: 'cjs' },
+        { file: `lib/${input}.mjs`, format: 'es' },
       ],
-      plugins,
-      external,
+      plugins: [
+        nodeResolve(),
+
+        alias({
+          entries: { tslib: path.resolve('gen/tslib.js') },
+        }),
+
+        // Append a file extension to relative imports and exports
+        {
+          renderChunk: (code, chunk) => code.replace(/(require\(|from )'\.[^']+/g, '$&' + path.extname(chunk.fileName)),
+        },
+      ],
+      external: inputs.map(input => RegExp('\\./' + input)),
     },
     {
-      input: `gen/${e}.d.ts`,
-      output: { file: `lib/${e}.d.ts`, format: 'es' },
+      input: `gen/${input}.d.ts`,
+      output: { file: `lib/${input}.d.ts`, format: 'es' },
       plugins: [dts.default()],
-      external,
+      external: inputs.map(input => RegExp('\\./' + input)),
     },
-  ];
-});
+  ]);
