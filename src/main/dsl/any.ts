@@ -4,7 +4,9 @@ import { ApplyOptions, Message, RefineOptions } from '../types';
 /**
  * Creates the unconstrained shape.
  *
- * You can specify compile-time type to enhance type inference. This provides _no runtime type-safety_!
+ * You can specify compile-time type to enhance type inference.
+ *
+ * This provides _no runtime type-safety_!
  *
  * @template Value The input and the output value.
  * @group DSL

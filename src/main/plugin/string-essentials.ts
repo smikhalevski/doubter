@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@link doubter/core!StringShape} with additional methods.
+ * The plugin that enhances {@link core!StringShape StringShape} with additional methods.
  *
  * ```ts
  * import { StringShape } from 'doubter/core';
@@ -8,7 +8,7 @@
  * enableStringEssentials(StringShape.prototype);
  * ```
  *
- * @module doubter/plugin/string-essentials
+ * @module plugin/string-essentials
  */
 
 import {
@@ -39,7 +39,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     length(length: number, options?: IssueOptions | Message): this;
 
@@ -50,7 +50,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     min(length: number, options?: IssueOptions | Message): this;
 
@@ -61,7 +61,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     max(length: number, options?: IssueOptions | Message): this;
 
@@ -72,7 +72,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     regex(re: RegExp, options?: IssueOptions | Message): this;
 
@@ -83,7 +83,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     includes(value: string, options?: IssueOptions | Message): this;
 
@@ -94,7 +94,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     startsWith(value: string, options?: IssueOptions | Message): this;
 
@@ -105,7 +105,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     endsWith(value: string, options?: IssueOptions | Message): this;
 
@@ -114,7 +114,7 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     nonBlank(options?: IssueOptions | Message): this;
 
@@ -123,7 +123,7 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     nonEmpty(options?: IssueOptions | Message): this;
 
@@ -132,7 +132,7 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     trim(): this;
 
@@ -141,7 +141,7 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     toLowerCase(): this;
 
@@ -150,14 +150,14 @@ declare module '../core' {
      *
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/string-essentials!}
+     * @plugin {@link plugin/string-essentials! plugin/string-essentials}
      */
     toUpperCase(): this;
   }
 }
 
 /**
- * Enhances {@link doubter/core!StringShape} with additional methods.
+ * Enhances {@link core!StringShape StringShape} with additional methods.
  */
 export default function enableStringEssentials(prototype: StringShape): void {
   prototype.length = function (length, options) {

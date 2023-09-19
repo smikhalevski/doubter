@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@link doubter/core!SetShape} with additional methods.
+ * The plugin that enhances {@link core!SetShape SetShape} with additional methods.
  *
  * ```ts
  * import { SetShape } from 'doubter/core';
@@ -8,7 +8,7 @@
  * enableSetEssentials(SetShape.prototype);
  * ```
  *
- * @module doubter/plugin/set-essentials
+ * @module plugin/set-essentials
  */
 import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
 import { AnyShape, IssueOptions, Message, SetShape } from '../core';
@@ -23,7 +23,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/set-essentials!}
+     * @plugin {@link plugin/set-essentials! plugin/set-essentials}
      */
     size(size: number, options?: IssueOptions | Message): this;
 
@@ -34,7 +34,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/set-essentials!}
+     * @plugin {@link plugin/set-essentials! plugin/set-essentials}
      */
     min(size: number, options?: IssueOptions | Message): this;
 
@@ -45,7 +45,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/set-essentials!}
+     * @plugin {@link plugin/set-essentials! plugin/set-essentials}
      */
     max(size: number, options?: IssueOptions | Message): this;
 
@@ -55,14 +55,14 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/set-essentials!}
+     * @plugin {@link plugin/set-essentials! plugin/set-essentials}
      */
     nonEmpty(options?: IssueOptions | Message): this;
   }
 }
 
 /**
- * Enhances {@link doubter/core!SetShape} with additional methods.
+ * Enhances {@link core!SetShape SetShape} with additional methods.
  */
 export default function enableSetEssentials(prototype: SetShape<any>): void {
   prototype.size = function (size, options) {

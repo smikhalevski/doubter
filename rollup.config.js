@@ -4,29 +4,45 @@ const dts = require('rollup-plugin-dts');
 const fs = require('fs');
 const path = require('path');
 
-module.exports = fs
-  .readdirSync('./src/main/plugin')
-  .map(name => 'plugin/' + path.basename(name, '.ts'))
-  .concat('index', 'core', 'utils')
-  .flatMap(name => [
+const entries = fs
+  .readdirSync('src/main/plugin')
+  .map(e => 'plugin/' + path.basename(e, '.ts'))
+  .concat('index', 'core', 'utils');
+
+const plugins = [
+  nodeResolve(),
+
+  alias({
+    entries: { tslib: path.resolve('gen/tslib.js') },
+  }),
+
+  // Rewrite relative imports and exports
+  { renderChunk: (code, chunk) => code.replace(/(require\(|from )'\.[^']+/g, '$&' + path.extname(chunk.fileName)) },
+];
+
+module.exports = entries.flatMap(e => {
+  const external = RegExp(
+    entries
+      .filter(x => x !== e)
+      .map(e => '\\./' + e)
+      .join('|')
+  );
+
+  return [
     {
-      input: './gen/' + name + '.js',
+      input: `gen/${e}.js`,
       output: [
-        { file: './lib/' + name + '.js', format: 'cjs' },
-        { file: './lib/' + name + '.mjs', format: 'es' },
+        { file: `lib/${e}.js`, format: 'cjs' },
+        { file: `lib/${e}.mjs`, format: 'es' },
       ],
-      plugins: [
-        nodeResolve(),
-        alias({
-          entries: [{ find: 'tslib', replacement: path.resolve('./gen/tslib') }],
-        }),
-      ],
-      external: /\.\/(plugin|core|utils)/,
+      plugins,
+      external,
     },
     {
-      input: './gen/' + name + '.d.ts',
-      output: { file: './lib/' + name + '.d.ts', format: 'es' },
+      input: `gen/${e}.d.ts`,
+      output: { file: `lib/${e}.d.ts`, format: 'es' },
       plugins: [dts.default()],
-      external: /\.\/(plugin|core|utils)/,
+      external,
     },
-  ]);
+  ];
+});

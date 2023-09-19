@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@link doubter/core!NumberShape} with additional methods.
+ * The plugin that enhances {@link core!NumberShape NumberShape} with additional methods.
  *
  * ```ts
  * import { NumberShape } from 'doubter/core';
@@ -8,7 +8,7 @@
  * enableNumberEssentials(NumberShape.prototype);
  * ```
  *
- * @module doubter/plugin/number-essentials
+ * @module plugin/number-essentials
  */
 
 import {
@@ -32,7 +32,7 @@ import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**
-   * By default, {@link doubter/core!NumberShape#multipleOf NumberShape.multipleOf} uses
+   * By default, {@link core!NumberShape#multipleOf NumberShape.multipleOf} uses
    * [the modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
    * may produce unexpected results when used with floating point numbers. This happens because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
@@ -56,7 +56,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     finite(options?: IssueOptions | Message): this;
 
@@ -66,7 +66,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     int(options?: IssueOptions | Message): this;
 
@@ -76,7 +76,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     positive(options?: IssueOptions | Message): this;
 
@@ -86,7 +86,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     negative(options?: IssueOptions | Message): this;
 
@@ -96,7 +96,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     nonPositive(options?: IssueOptions | Message): this;
 
@@ -106,7 +106,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     nonNegative(options?: IssueOptions | Message): this;
 
@@ -117,7 +117,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     gt(value: number, options?: IssueOptions | Message): this;
 
@@ -128,7 +128,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     lt(value: number, options?: IssueOptions | Message): this;
 
@@ -139,7 +139,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     gte(value: number, options?: IssueOptions | Message): this;
 
@@ -150,7 +150,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     lte(value: number, options?: IssueOptions | Message): this;
 
@@ -162,7 +162,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@link NumberShape.gte}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     min(value: number, options?: IssueOptions | Message): this;
 
@@ -174,7 +174,7 @@ declare module '../core' {
      * @returns The clone of the shape.
      * @alias {@link NumberShape.lte}
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     max(value: number, options?: IssueOptions | Message): this;
 
@@ -185,7 +185,7 @@ declare module '../core' {
      * @param options The check options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     multipleOf(divisor: number, options?: MultipleOfOptions | Message): this;
 
@@ -195,14 +195,14 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/number-essentials!}
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     safe(options?: IssueOptions | Message): this;
   }
 }
 
 /**
- * Enhances {@link doubter/core!NumberShape} with additional methods.
+ * Enhances {@link core!NumberShape NumberShape} with additional methods.
  */
 export default function enableNumberEssentials(prototype: NumberShape): void {
   prototype.finite = function (options) {

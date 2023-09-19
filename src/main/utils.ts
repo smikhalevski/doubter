@@ -5,7 +5,7 @@
  * import { createIssueFactory } from 'doubter/utils';
  * ```
  *
- * @module doubter/utils
+ * @module utils
  */
 
 import { ApplyOptions, Issue, IssueOptions, Message, MessageCallback } from './core';

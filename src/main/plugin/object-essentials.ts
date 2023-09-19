@@ -1,5 +1,5 @@
 /**
- * The plugin that enhances {@link doubter/core!ObjectShape} with additional methods.
+ * The plugin that enhances {@link core!ObjectShape ObjectShape} with additional methods.
  *
  * ```ts
  * import { ObjectShape } from 'doubter/core';
@@ -8,7 +8,7 @@
  * enableObjectEssentials(ObjectShape.prototype);
  * ```
  *
- * @module doubter/plugin/object-essentials
+ * @module plugin/object-essentials
  */
 
 import {
@@ -37,7 +37,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/object-essentials!}
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
     plain(options?: IssueOptions | Message): this;
 
@@ -49,7 +49,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/object-essentials!}
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
     allKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
 
@@ -60,7 +60,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/object-essentials!}
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
     notAllKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
 
@@ -71,7 +71,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/object-essentials!}
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
     orKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
 
@@ -82,7 +82,7 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/object-essentials!}
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
     xorKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
 
@@ -93,14 +93,14 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link doubter/plugin/object-essentials!}
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
     oxorKeys<K extends ReadonlyArray<keyof PropShapes>>(keys: K, options?: IssueOptions | Message): this;
   }
 }
 
 /**
- * Enhances {@link doubter/core!ObjectShape} with additional methods.
+ * Enhances {@link core!ObjectShape ObjectShape} with additional methods.
  */
 export default function enableObjectEssentials(prototype: ObjectShape<any, any>): void {
   prototype.plain = function (options) {

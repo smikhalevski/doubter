@@ -5,7 +5,7 @@
  * import * as d from 'doubter/core';
  * ```
  *
- * @module doubter/core
+ * @module core
  */
 
 import enableArrayEssentials from './plugin/array-essentials';
