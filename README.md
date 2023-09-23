@@ -1,10 +1,18 @@
 <p align="center">
-  <a href="#readme"><img src="./assets/logo.png" alt="Doubter" width="400"/></a>
+  <a href="#readme"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/logo-dark.png" />
+    <source media="(prefers-color-scheme: light)" srcset="./assets/logo-light.png" />
+    <img alt="Doubter" src="./assets/logo-light.png" width="400" />
+  </picture></a>
 </p>
 
 <p align="center">
   <a href="https://codesandbox.io/s/y5kec4"><img src="./assets/button-playground.png" alt="Playground" height="41"/></a>
-  <a href="https://smikhalevski.github.io/doubter/next/"><img src="./assets/button-api-docs.png" alt="API Docs" height="41"/></a>
+  <a href="https://smikhalevski.github.io/doubter/next/"><picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/button-api-docs-dark.png" />
+    <source media="(prefers-color-scheme: light)" srcset="./assets/button-api-docs-light.png" />
+    <img alt="API Docs" src="./assets/button-api-docs-light.png" height="41" />
+  </picture></a>
 </p>
 
 <br>
