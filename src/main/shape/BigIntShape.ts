@@ -1,5 +1,5 @@
+import { coerceToBigInt } from '../coerce';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -23,7 +23,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super();
+    super(coerceToBigInt);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.bigint'], options, TYPE_BIGINT);
   }
@@ -46,29 +46,5 @@ export class BigIntShape extends CoercibleShape<bigint> {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
-  }
-
-  /**
-   * Coerces a value to a bigint.
-   *
-   * @param value The non-bigint value to coerce.
-   * @returns A bigint value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: any): bigint {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {
-      return value;
-    }
-    if (value === null || value === undefined) {
-      return BigInt(0);
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
-      try {
-        return BigInt(value);
-      } catch {}
-    }
-    return NEVER;
   }
 }

@@ -1,5 +1,5 @@
+import { coerceToNumber } from '../coerce';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -23,7 +23,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super();
+    super(coerceToNumber);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.number'], options, TYPE_NUMBER);
   }
@@ -62,30 +62,5 @@ export class NumberShape extends CoercibleShape<number> {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
-  }
-
-  /**
-   * Coerces a value to a number (not `NaN`).
-   *
-   * @param value The non-number value to coerce.
-   * @returns A number value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: any): number {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number') {
-      return value === value ? value : NEVER;
-    }
-    if (value === null || value === undefined) {
-      return 0;
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if (
-      (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || value instanceof Date) &&
-      (value = +value) === value
-    ) {
-      return value;
-    }
-    return NEVER;
   }
 }

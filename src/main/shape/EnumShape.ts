@@ -1,5 +1,6 @@
+import { createCoerceToEnum } from '../coerce';
 import { CODE_TYPE_ENUM } from '../constants';
-import { getCanonicalValueOf, isArray, ReadonlyDict, unique } from '../internal';
+import { isArray, ReadonlyDict, unique } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -37,9 +38,11 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     readonly source: readonly Value[] | ReadonlyDict<Value>,
     options?: IssueOptions | Message
   ) {
-    super();
+    const values = (isArray(source) ? source : getEnumValues(source)).filter(unique);
 
-    this.values = (isArray(source) ? source : getEnumValues(source)).filter(unique);
+    super(createCoerceToEnum(source, values));
+
+    this.values = values;
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
   }
@@ -66,24 +69,6 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
-  }
-
-  /**
-   * Coerces a value to an enum value.
-   *
-   * @param value The non-enum value to coerce.
-   * @returns An enum value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: any): Value {
-    const { source } = this;
-
-    if (isArray(value) && value.length === 1 && this.values.includes((value = value[0]))) {
-      return value;
-    }
-    if (!isArray(source) && typeof (value = getCanonicalValueOf(value)) === 'string' && source.hasOwnProperty(value)) {
-      return (source as ReadonlyDict)[value];
-    }
-    return NEVER;
   }
 }
 

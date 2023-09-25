@@ -1,5 +1,5 @@
+import { coerceToBoolean } from '../coerce';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -23,7 +23,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super();
+    super(coerceToBoolean);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.boolean'], options, TYPE_BOOLEAN);
   }
@@ -46,30 +46,5 @@ export class BooleanShape extends CoercibleShape<boolean> {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
-  }
-
-  /**
-   * Coerces a value to a boolean.
-   *
-   * @param value The non-boolean value to coerce.
-   * @returns A boolean value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: unknown): boolean {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'boolean') {
-      return value;
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if (typeof value === 'boolean') {
-      return value;
-    }
-    if (value === null || value === undefined || value === false || value === 0 || value === 'false') {
-      return false;
-    }
-    if (value === true || value === 1 || value === 'true') {
-      return true;
-    }
-    return NEVER;
   }
 }

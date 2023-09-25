@@ -1,3 +1,4 @@
+import { coerceToPromise } from '../coerce';
 import { CODE_TYPE } from '../constants';
 import { applyShape, INPUT, isArray, OUTPUT, Promisify, toDeepPartialShape } from '../internal';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
@@ -45,7 +46,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super();
+    super(coerceToPromise);
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.promise'], options, TYPE_PROMISE);
@@ -114,9 +115,5 @@ export class PromiseShape<ValueShape extends AnyShape | null>
         return this._applyOperations(input, output, options, issues);
       })
     );
-  }
-
-  protected _coerce(value: unknown): Promise<any> {
-    return Promise.resolve(value);
   }
 }

@@ -1,12 +1,11 @@
+import { coerceToArray } from '../coerce';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
 import {
   applyShape,
   concatIssues,
-  getCanonicalValueOf,
   INPUT,
   isArray,
   isAsyncShapes,
-  isIterableObject,
   OUTPUT,
   toArrayIndex,
   toDeepPartialShape,
@@ -80,7 +79,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     readonly restShape: RestShape,
     options?: IssueOptions | Message
   ) {
-    super();
+    super(coerceToArray);
 
     this._options = options;
 
@@ -265,20 +264,5 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
       resolve(next());
     });
-  }
-
-  /**
-   * Coerces a value to an array.
-   *
-   * @param value The non-array value to coerce.
-   * @returns An array, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: unknown): unknown[] {
-    value = getCanonicalValueOf(value);
-
-    if (isIterableObject(value)) {
-      return Array.from(value);
-    }
-    return [value];
   }
 }

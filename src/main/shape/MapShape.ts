@@ -1,15 +1,6 @@
+import { coerceToMapEntries } from '../coerce';
 import { CODE_TYPE } from '../constants';
-import {
-  applyShape,
-  concatIssues,
-  getCanonicalValueOf,
-  isArray,
-  isIterableObject,
-  isMapEntry,
-  isObjectLike,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../internal';
+import { applyShape, concatIssues, isArray, toDeepPartialShape, unshiftIssuesPath } from '../internal';
 import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -70,7 +61,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super();
+    super(coerceToMapEntries);
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.map'], options, TYPE_MAP);
@@ -257,29 +248,5 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
       resolve(next());
     });
-  }
-
-  /**
-   * Coerces a value to an array of {@link !Map Map} entries.
-   *
-   * @param value A non-{@link !Map Map} value to coerce.
-   * @returns An array of entries, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: any): [unknown, unknown][] {
-    if (isArray(value)) {
-      return value.every(isMapEntry) ? value : NEVER;
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if (isIterableObject(value)) {
-      value = Array.from(value);
-
-      return value.every(isMapEntry) ? value : NEVER;
-    }
-    if (isObjectLike(value)) {
-      return Object.entries(value);
-    }
-    return NEVER;
   }
 }

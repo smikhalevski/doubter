@@ -1,5 +1,6 @@
+import { coerceToDate } from '../coerce';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray, isValidDate } from '../internal';
+import { isValidDate } from '../internal';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -22,7 +23,7 @@ export class DateShape extends CoercibleShape<Date> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super();
+    super(coerceToDate);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, TYPE_DATE);
   }
@@ -42,24 +43,5 @@ export class DateShape extends CoercibleShape<Date> {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
-  }
-
-  /**
-   * Coerces a value to a {@link !Date Date}.
-   *
-   * @param value The non-{@link !Date Date} value to coerce.
-   * @returns A {@link !Date Date} value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: unknown): Date {
-    if (isArray(value) && value.length === 1 && isValidDate((value = value[0]))) {
-      return value;
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if ((typeof value === 'string' || typeof value === 'number') && isValidDate((value = new Date(value)))) {
-      return value;
-    }
-    return NEVER;
   }
 }

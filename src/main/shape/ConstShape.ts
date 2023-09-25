@@ -1,7 +1,9 @@
+import { createCoerceToConst } from '../coerce/createCoerceToConst';
 import { CODE_TYPE_CONST } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { Shape } from './Shape';
+import { CoercibleShape } from './CoercibleShape';
+import { NEVER } from './Shape';
 
 /**
  * The shape of a constant value.
@@ -9,7 +11,7 @@ import { Shape } from './Shape';
  * @template Value The expected constant value.
  * @group Shapes
  */
-export class ConstShape<Value> extends Shape<Value> {
+export class ConstShape<Value> extends CoercibleShape<Value> {
   /**
    * Returns `true` if an input is equal to the const value, or `false` otherwise.
    */
@@ -34,20 +36,29 @@ export class ConstShape<Value> extends Shape<Value> {
     readonly value: Value,
     options?: IssueOptions | Message
   ) {
-    super();
+    super(createCoerceToConst(value));
 
     this._typePredicate = value !== value ? Number.isNaN : input => value === input;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages[CODE_TYPE_CONST], options, value);
   }
 
   protected _getInputs(): unknown[] {
-    return [this.value];
+    if (this.isCoercing) {
+      return [];
+    } else {
+      return [this.value];
+    }
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
-    if (!this._typePredicate(input)) {
+    let output = input;
+
+    if (
+      !this._typePredicate(input) &&
+      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
+    ) {
       return [this._typeIssueFactory(input, options)];
     }
-    return this._applyOperations(input, input, options, null);
+    return this._applyOperations(input, output, options, null);
   }
 }

@@ -1,13 +1,6 @@
+import { coerceToSetValues } from '../coerce';
 import { CODE_TYPE } from '../constants';
-import {
-  concatIssues,
-  getCanonicalValueOf,
-  isArray,
-  isIterableObject,
-  toArrayIndex,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../internal';
+import { concatIssues, isArray, toArrayIndex, toDeepPartialShape, unshiftIssuesPath } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -48,7 +41,7 @@ export class SetShape<ValueShape extends AnyShape>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super();
+    super(coerceToSetValues);
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.set'], options, TYPE_SET);
@@ -163,23 +156,5 @@ export class SetShape<ValueShape extends AnyShape>
 
       resolve(next());
     });
-  }
-
-  /**
-   * Coerces a value to an array of {@link !Set Set} values.
-   *
-   * @param value The non-{@link !Set Set} value to coerce.
-   * @returns An array, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: unknown): unknown[] {
-    value = getCanonicalValueOf(value);
-
-    if (isArray(value)) {
-      return value;
-    }
-    if (isIterableObject(value)) {
-      return Array.from(value);
-    }
-    return [value];
   }
 }
