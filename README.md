@@ -137,6 +137,7 @@ npm install --save-prod doubter
 - [Rename object keys](#rename-object-keys)
 - [Type-safe URL query params](#type-safe-url-query-params)
 - [Type-safe env variables](#type-safe-env-variables)
+- [Type-safe CLI arguments](#type-safe-cli-arguments)
 - [Conditionally applied shapes](#conditionally-applied-shapes)
 
 # Basics
@@ -2561,7 +2562,7 @@ shape.parse([1]);
 // ⮕ 1
 
 shape.parse([1, 2]);
-// ❌ ValidationError: enum at /: Must be equal to one of 0,1,2
+// ❌ ValidationError: type.enum at /: Must be equal to one of 0,1,2
 ```
 
 # `function`, `fn`
@@ -3988,6 +3989,49 @@ const env = envShape.parse(
 );
 // ⮕ { NODE_ENV: 'test' | 'production', HELLO_DATE?: Date }
 ```
+
+## Type-safe CLI arguments
+
+If you're developing a console app you may want to validate arguments passed via CLI. For example, lets write an app
+that processes the following CLI parameters:
+
+```shell
+node app.js --age 42
+```
+
+First, install [argcat](https://github.com/smikhalevski/argcat#readme), and use it to convert an array of CLI arguments
+to an object:
+
+```ts
+import { parseArgs } from 'argcat';
+
+const args = parseArgs(process.argv.slice(2));
+// ⮕ { age: ['42'] }
+```
+
+Now let's define the shape of the parsed object:
+
+```ts
+const optionsShape = d
+  .object({
+    age: d.number().int().min(18).max(100)
+  })
+  .strip();
+```
+
+[`strip`](https://smikhalevski.github.io/doubter/next/classes/core.ObjectShape.html#strip) removes all unknown keys from
+an object. Here It is used to prevent unexpected arguments to be accessible inside the app. You may want to throw an
+error if unknown keys are detected or ignore them. Refer to [Unknown keys](#unknown-keys) section to find out how this
+can be done.
+
+Parse CLI arguments using `optionsShape` with enabled [type coercion](#type-coercion): 
+
+```ts
+const options = optionsShape.parse(args, { coerce: true });
+// ⮕ { age: 42 }
+```
+
+`options.age` is now type-safe and is guaranteed to be a non-`NaN` number in range \[18, 100].
 
 ## Conditionally applied shapes
 
