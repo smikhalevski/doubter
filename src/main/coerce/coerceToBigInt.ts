@@ -8,7 +8,7 @@ import { NEVER } from '../shape';
  * @returns A bigint value, or {@link NEVER} if coercion isn't possible.
  */
 export function coerceToBigInt(value: any): bigint {
-  if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {
+  if (typeof value === 'bigint' && isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {
     return value;
   }
   if (value === null || value === undefined) {

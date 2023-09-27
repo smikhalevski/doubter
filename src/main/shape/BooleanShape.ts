@@ -1,6 +1,6 @@
 import { coerceToBoolean } from '../coerce';
 import { CODE_TYPE } from '../constants';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
+import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -23,14 +23,14 @@ export class BooleanShape extends CoercibleShape<boolean> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super(coerceToBoolean);
+    super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.boolean'], options, TYPE_BOOLEAN);
   }
 
   protected _getInputs(): unknown[] {
     if (this.isCoercing) {
-      return [TYPE_BOOLEAN, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, null, undefined];
+      return [TYPE_ARRAY, TYPE_OBJECT, TYPE_BOOLEAN, 'false', 'true', 0, 1, null, undefined];
     } else {
       return [TYPE_BOOLEAN];
     }
@@ -39,12 +39,11 @@ export class BooleanShape extends CoercibleShape<boolean> {
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<boolean> {
     let output = input;
 
-    if (
-      typeof output !== 'boolean' &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (typeof output !== 'boolean' && (output = this._applyCoercion(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
 }
+
+BooleanShape.prototype['_coerce'] = coerceToBoolean;

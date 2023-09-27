@@ -46,7 +46,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super(coerceToPromise);
+    super();
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.promise'], options, TYPE_PROMISE);
@@ -75,10 +75,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
     let output = input;
 
-    if (
-      !(input instanceof Promise) &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (!(input instanceof Promise) && (output = this._applyCoercion(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
@@ -91,10 +88,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   ): Promise<Result<InferPromise<ValueShape, OUTPUT>>> {
     let output = input;
 
-    if (
-      !(input instanceof Promise) &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (!(input instanceof Promise) && (output = this._applyCoercion(input)) === NEVER) {
       return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
 
@@ -117,3 +111,5 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     );
   }
 }
+
+PromiseShape.prototype['_coerce'] = coerceToPromise;

@@ -20,7 +20,7 @@ export function coerceToString(value: unknown): string {
   if (typeof value === 'string') {
     return value;
   }
-  if (Number.isFinite(value) || typeof value === 'boolean' || typeof value === 'bigint') {
+  if ((typeof value === 'number' && isFinite(value)) || typeof value === 'boolean' || typeof value === 'bigint') {
     return '' + value;
   }
   if (isValidDate(value)) {

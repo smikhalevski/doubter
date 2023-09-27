@@ -79,7 +79,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     readonly restShape: RestShape,
     options?: IssueOptions | Message
   ) {
-    super(coerceToArray);
+    super();
 
     this._options = options;
 
@@ -164,7 +164,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     if (
       // Not an array or not coercible
-      (!isArray(output) && (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)) ||
+      (!isArray(output) && (output = this._applyCoercion(input)) === NEVER) ||
       // Invalid tuple length
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
@@ -215,7 +215,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
       if (
         // Not an array or not coercible
-        (!isArray(output) && (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)) ||
+        (!isArray(output) && (output = this._applyCoercion(input)) === NEVER) ||
         // Invalid tuple length
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)
@@ -266,3 +266,5 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     });
   }
 }
+
+ArrayShape.prototype['_coerce'] = coerceToArray;

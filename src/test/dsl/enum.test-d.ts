@@ -22,3 +22,9 @@ expectType<33 | 42 | 0>(d.enum([33, 42]).replace(NaN, 0)[OUTPUT]);
 expectType<111 | 333>(d.enum([111, 222, 333]).deny(222)[OUTPUT]);
 
 expectType<222>(d.enum([111, 222, 333]).refine((value): value is 222 => true)[OUTPUT]);
+
+const enumValues = [111, 'aaa'] as const;
+
+expectType<111 | 'aaa'>(d.enum(enumValues)[INPUT]);
+
+expectType<111 | 'aaa'>(d.enum(enumValues)[OUTPUT]);

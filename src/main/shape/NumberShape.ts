@@ -1,6 +1,6 @@
 import { coerceToNumber } from '../coerce';
 import { CODE_TYPE } from '../constants';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -23,7 +23,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super(coerceToNumber);
+    super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.number'], options, TYPE_NUMBER);
   }
@@ -46,7 +46,7 @@ export class NumberShape extends CoercibleShape<number> {
 
   protected _getInputs(): unknown[] {
     if (this.isCoercing) {
-      return [TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, null, undefined];
+      return [TYPE_ARRAY, TYPE_OBJECT, TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_DATE, null, undefined];
     } else {
       return [TYPE_NUMBER];
     }
@@ -55,12 +55,11 @@ export class NumberShape extends CoercibleShape<number> {
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<number> {
     let output = input;
 
-    if (
-      (typeof output !== 'number' || output !== output) &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if ((typeof output !== 'number' || output !== output) && (output = this._applyCoercion(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
 }
+
+NumberShape.prototype['_coerce'] = coerceToNumber;

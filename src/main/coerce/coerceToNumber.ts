@@ -23,5 +23,8 @@ export function coerceToNumber(value: any): number {
   ) {
     return value;
   }
+  if (typeof value === 'bigint' && value >= -0x1fffffffffffff && value <= 0x1fffffffffffff) {
+    return Number(value);
+  }
   return NEVER;
 }

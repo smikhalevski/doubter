@@ -23,7 +23,7 @@ export class DateShape extends CoercibleShape<Date> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super(coerceToDate);
+    super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, TYPE_DATE);
   }
@@ -39,9 +39,11 @@ export class DateShape extends CoercibleShape<Date> {
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Date> {
     let output = input;
 
-    if (!isValidDate(input) && (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)) {
+    if (!isValidDate(input) && (output = this._applyCoercion(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
 }
+
+DateShape.prototype['_coerce'] = coerceToDate;

@@ -61,7 +61,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super(coerceToMapEntries);
+    super();
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.map'], options, TYPE_MAP);
@@ -103,7 +103,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerce || this.isCoercing) || !(changed = (entries = this._coerce(input)) !== NEVER))
+      !(changed = (entries = this._applyCoercion(input)) !== NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
@@ -173,7 +173,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerce || this.isCoercing) || !(changed = (entries = this._coerce(input)) !== NEVER))
+        !(changed = (entries = this._applyCoercion(input)) !== NEVER)
       ) {
         resolve([this._typeIssueFactory(input, options)]);
         return;
@@ -250,3 +250,5 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     });
   }
 }
+
+MapShape.prototype['_coerce'] = coerceToMapEntries;

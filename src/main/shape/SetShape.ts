@@ -41,7 +41,7 @@ export class SetShape<ValueShape extends AnyShape>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super(coerceToSetValues);
+    super();
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.set'], options, TYPE_SET);
@@ -76,7 +76,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerce || this.isCoercing) || !(changed = (values = this._coerce(input)) !== NEVER))
+      !(changed = (values = this._applyCoercion(input)) !== NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
@@ -116,7 +116,7 @@ export class SetShape<ValueShape extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerce || this.isCoercing) || !(changed = (values = this._coerce(input)) !== NEVER))
+        !(changed = (values = this._applyCoercion(input)) !== NEVER)
       ) {
         resolve([this._typeIssueFactory(input, options)]);
         return;
@@ -158,3 +158,5 @@ export class SetShape<ValueShape extends AnyShape>
     });
   }
 }
+
+SetShape.prototype['_coerce'] = coerceToSetValues;

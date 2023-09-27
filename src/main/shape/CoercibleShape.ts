@@ -1,4 +1,4 @@
-import { coerceToNever } from '../coerce/coerceToNever';
+import { coerceToNever } from '../coerce';
 import { NEVER, Shape } from './Shape';
 
 /**
@@ -14,30 +14,10 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
   OutputValue
 > {
   /**
-   * Coerces an input value to another type. This is only sed during construction of the new shape instance. Use
-   * {@link coerce} without arguments to revert {@link _coerce} to this value.
-   *
-   * @param value The value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _originalCoerce;
-
-  /**
-   * Coerces an input value to another type.
-   *
-   * @param value The value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce;
-
-  /**
    * `true` if this shapes coerces input values to the required type during parsing, or `false` otherwise.
    */
-  isCoercing = false;
-
-  constructor(coerce: (value: unknown) => CoercedValue) {
-    super();
-    this._originalCoerce = this._coerce = coerce;
+  get isCoercing() {
+    return this._applyCoercion === this._coerce;
   }
 
   /**
@@ -48,8 +28,7 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
   coerce(): this {
     const shape = this._clone();
 
-    shape.isCoercing = true;
-    shape._coerce = this._originalCoerce;
+    shape._applyCoercion = this._coerce;
 
     return shape;
   }
@@ -62,9 +41,31 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
   noCoerce(): this {
     const shape = this._clone();
 
-    shape.isCoercing = false;
-    shape._coerce = coerceToNever;
+    shape._applyCoercion = coerceToNever;
 
     return shape;
+  }
+
+  /**
+   * Coerces an input value to another type.
+   *
+   * Override this method along with {@link Shape._getInputs} to implement custom type coercion.
+   *
+   * @param value The value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _coerce(value: unknown): CoercedValue {
+    return NEVER;
+  }
+
+  /**
+   * Conditionally applies coercion to the given value. To implement coercion mechanism override {@link _coerce} method.
+   *
+   * @param value The value to coerce.
+   * @param force The flag {@link ApplyOptions.coerce}.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _applyCoercion(value: unknown, force?: boolean): CoercedValue {
+    return force !== true ? NEVER : this._coerce(value);
   }
 }
