@@ -96,7 +96,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
-      !(changed = (entries = this._applyCoercion(input)) !== NEVER)
+      !(changed = (entries = this._applyCoercion(input, options.coerce)) !== NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
@@ -166,7 +166,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        !(changed = (entries = this._applyCoercion(input)) !== NEVER)
+        !(changed = (entries = this._applyCoercion(input, options.coerce)) !== NEVER)
       ) {
         resolve([this._typeIssueFactory(input, options)]);
         return;

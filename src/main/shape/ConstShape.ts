@@ -52,7 +52,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
     let output = input;
 
-    if (!this._typePredicate(input) && (output = this._applyCoercion(input)) === NEVER) {
+    if (!this._typePredicate(input) && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

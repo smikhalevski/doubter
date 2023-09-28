@@ -56,7 +56,10 @@ export class NumberShape extends CoercibleShape<number> {
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<number> {
     let output = input;
 
-    if ((typeof output !== 'number' || output !== output) && (output = this._applyCoercion(input)) === NEVER) {
+    if (
+      (typeof output !== 'number' || output !== output) &&
+      (output = this._applyCoercion(input, options.coerce)) === NEVER
+    ) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

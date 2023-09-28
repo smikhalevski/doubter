@@ -77,7 +77,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
     let output = input;
 
-    if (!(input instanceof Promise) && (output = this._applyCoercion(input)) === NEVER) {
+    if (!(input instanceof Promise) && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
@@ -90,7 +90,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   ): Promise<Result<InferPromise<ValueShape, OUTPUT>>> {
     let output = input;
 
-    if (!(input instanceof Promise) && (output = this._applyCoercion(input)) === NEVER) {
+    if (!(input instanceof Promise) && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
       return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
 

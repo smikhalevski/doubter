@@ -1,6 +1,14 @@
-import { NEVER, NumberShape, Shape } from '../../main';
+import { NEVER, NumberShape } from '../../main';
 import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE } from '../../main/constants';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import {
+  TYPE_ARRAY,
+  TYPE_BIGINT,
+  TYPE_BOOLEAN,
+  TYPE_DATE,
+  TYPE_NUMBER,
+  TYPE_OBJECT,
+  TYPE_STRING,
+} from '../../main/Type';
 
 describe('NumberShape', () => {
   test('creates a NumberShape', () => {
@@ -85,11 +93,12 @@ describe('NumberShape', () => {
       const shape = new NumberShape().coerce();
 
       expect(shape.inputs).toEqual([
-        TYPE_NUMBER,
+        TYPE_ARRAY,
         TYPE_OBJECT,
+        TYPE_NUMBER,
         TYPE_STRING,
         TYPE_BOOLEAN,
-        TYPE_ARRAY,
+        TYPE_BIGINT,
         TYPE_DATE,
         null,
         undefined,

@@ -61,7 +61,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
     let output = input;
 
-    if (!this.values.includes(output) && (output = this._applyCoercion(input)) === NEVER) {
+    if (!this.values.includes(output) && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

@@ -79,7 +79,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      !(changed = (values = this._applyCoercion(input)) !== NEVER)
+      !(changed = (values = this._applyCoercion(input, options.coerce)) !== NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
@@ -119,7 +119,7 @@ export class SetShape<ValueShape extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        !(changed = (values = this._applyCoercion(input)) !== NEVER)
+        !(changed = (values = this._applyCoercion(input, options.coerce)) !== NEVER)
       ) {
         resolve([this._typeIssueFactory(input, options)]);
         return;

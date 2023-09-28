@@ -165,7 +165,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     if (
       // Not an array or not coercible
-      (!isArray(output) && (output = this._applyCoercion(input)) === NEVER) ||
+      (!isArray(output) && (output = this._applyCoercion(input, options.coerce)) === NEVER) ||
       // Invalid tuple length
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
@@ -216,7 +216,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
       if (
         // Not an array or not coercible
-        (!isArray(output) && (output = this._applyCoercion(input)) === NEVER) ||
+        (!isArray(output) && (output = this._applyCoercion(input, options.coerce)) === NEVER) ||
         // Invalid tuple length
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)

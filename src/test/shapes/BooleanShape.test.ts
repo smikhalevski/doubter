@@ -1,6 +1,6 @@
-import { BooleanShape, NEVER, Shape } from '../../main';
+import { BooleanShape, NEVER } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../../main/Type';
 
 describe('BooleanShape', () => {
   test('creates a BooleanShape', () => {
@@ -32,7 +32,7 @@ describe('BooleanShape', () => {
     test('extends shape inputs', () => {
       const shape = new BooleanShape().coerce();
 
-      expect(shape.inputs).toEqual([TYPE_BOOLEAN, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, null, undefined]);
+      expect(shape.inputs).toEqual([TYPE_ARRAY, TYPE_OBJECT, TYPE_BOOLEAN, 'false', 'true', 0, 1, null, undefined]);
     });
 
     test('coerces an input', () => {

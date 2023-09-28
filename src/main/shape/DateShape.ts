@@ -39,7 +39,7 @@ export class DateShape extends CoercibleShape<Date> {
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Date> {
     let output = input;
 
-    if (!isValidDate(input) && (output = this._applyCoercion(input)) === NEVER) {
+    if (!isValidDate(input) && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

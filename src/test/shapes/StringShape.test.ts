@@ -1,6 +1,14 @@
-import { NEVER, Shape, StringShape } from '../../main';
+import { NEVER, StringShape } from '../../main';
 import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE } from '../../main/constants';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import {
+  TYPE_ARRAY,
+  TYPE_BIGINT,
+  TYPE_BOOLEAN,
+  TYPE_DATE,
+  TYPE_NUMBER,
+  TYPE_OBJECT,
+  TYPE_STRING,
+} from '../../main/Type';
 
 describe('StringShape', () => {
   test('creates a string shape', () => {
@@ -60,12 +68,13 @@ describe('StringShape', () => {
     const shape = new StringShape().coerce();
 
     expect(shape.inputs).toEqual([
-      TYPE_STRING,
+      TYPE_ARRAY,
       TYPE_OBJECT,
+      TYPE_STRING,
       TYPE_NUMBER,
       TYPE_BOOLEAN,
       TYPE_BIGINT,
-      TYPE_ARRAY,
+      TYPE_DATE,
       null,
       undefined,
     ]);

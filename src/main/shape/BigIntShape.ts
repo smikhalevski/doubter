@@ -39,7 +39,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<bigint> {
     let output = input;
 
-    if (typeof output !== 'bigint' && (output = this._applyCoercion(input)) === NEVER) {
+    if (typeof output !== 'bigint' && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
