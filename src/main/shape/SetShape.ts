@@ -1,4 +1,4 @@
-import { coerceToSetValues } from '../coerce';
+import { coerceToUniqueArray } from '../coerce';
 import { CODE_TYPE } from '../constants';
 import { concatIssues, isArray, toArrayIndex, toDeepPartialShape, unshiftIssuesPath } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
@@ -159,4 +159,4 @@ export class SetShape<ValueShape extends AnyShape>
   }
 }
 
-SetShape.prototype['_coerce'] = coerceToSetValues;
+SetShape.prototype['_coerce'] = coerceToUniqueArray;

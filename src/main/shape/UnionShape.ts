@@ -56,7 +56,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 
   protected get _lookup(): LookupCallback {
-    const shapes = this.shapes.filter(unique);
+    const shapes = unique(this.shapes);
     const lookup = createLookupByDiscriminator(shapes) || createLookupByType(shapes);
 
     Object.defineProperty(this, '_lookup', { configurable: true, value: lookup });
@@ -212,7 +212,7 @@ export function createLookupByType(shapes: readonly AnyShape[]): LookupCallback 
 
   for (const shape of shapes) {
     const names =
-      shape.inputs[0] === TYPE_UNKNOWN ? bucketNames : shape.inputs.map(input => getTypeOf(input).name).filter(unique);
+      shape.inputs[0] === TYPE_UNKNOWN ? bucketNames : unique(shape.inputs.map(input => getTypeOf(input).name));
 
     for (const name of names) {
       buckets[name] = buckets[name].concat(shape);

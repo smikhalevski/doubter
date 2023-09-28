@@ -39,7 +39,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   ) {
     super();
 
-    this.values = (isArray(source) ? source : getEnumValues(source)).filter(unique);
+    this.values = getEnumValues(source);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
   }
@@ -71,6 +71,10 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
  * enum.
  */
 export function getEnumValues(source: ReadonlyDict): any[] {
+  if (isArray(source)) {
+    return unique(source);
+  }
+
   const values: number[] = [];
 
   for (const key in source) {
@@ -81,9 +85,9 @@ export function getEnumValues(source: ReadonlyDict): any[] {
     const bType = typeof b;
 
     if (((aType !== 'string' || bType !== 'number') && (aType !== 'number' || bType !== 'string')) || b != key) {
-      return Object.values(source);
+      return unique(Object.values(source));
     }
-    if (typeof a === 'number') {
+    if (typeof a === 'number' && values.indexOf(a) === -1) {
       values.push(a);
     }
   }

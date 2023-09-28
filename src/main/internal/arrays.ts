@@ -1,19 +1,24 @@
 /**
- * Array predicate that filters unique elements.
+ * Returns an array of unique values.
  */
-export function unique<T>(value: T, index: number, arr: readonly T[]): boolean {
-  return !arr.includes(value, index + 1);
-}
+export function unique<T>(values: T[]): T[];
 
 /**
- * Removes an element at index from an array.
- *
- * @param arr The array to modify.
- * @param index The index in the array.
+ * Returns an array of unique values.
  */
-export function deleteAt<T>(arr: T[], index: number): T[] {
-  if (index >= 0) {
-    arr.splice(index, 1);
+export function unique<T>(values: readonly T[]): readonly T[];
+
+export function unique<T>(values: readonly T[]): T[] {
+  let arr = values as T[];
+
+  for (let i = 0; i < values.length; ++i) {
+    if (arr !== values) {
+      if (!arr.includes(values[i])) {
+        arr.push(values[i]);
+      }
+    } else if (values.includes(values[i], i + 1)) {
+      arr = values.slice(0, i + 1);
+    }
   }
   return arr;
 }

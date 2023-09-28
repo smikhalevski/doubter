@@ -7,7 +7,7 @@ export * from './coerceToNever';
 export * from './coerceToNull';
 export * from './coerceToNumber';
 export * from './coerceToPromise';
-export * from './coerceToSetValues';
+export * from './coerceToUniqueArray';
 export * from './coerceToString';
 export * from './coerceToUndefined';
 export * from './createCoerceToEnum';
