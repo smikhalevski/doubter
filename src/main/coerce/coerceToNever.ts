@@ -1,4 +1,4 @@
-import { NEVER } from '../shape';
+import { NEVER } from './NEVER';
 
 export function coerceToNever() {
   return NEVER;

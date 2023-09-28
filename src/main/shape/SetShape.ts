@@ -1,11 +1,14 @@
-import { coerceToUniqueArray } from '../coerce';
+import { coerceToUniqueArray } from '../coerce/coerceToUniqueArray';
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
-import { concatIssues, isArray, toArrayIndex, toDeepPartialShape, unshiftIssuesPath } from '../internal';
+import { toArrayIndex } from '../internal/arrays';
+import { isArray } from '../internal/lang';
+import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output } from './Shape';
 
 /**
  * The shape of a {@link !Set Set} instance.

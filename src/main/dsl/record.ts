@@ -1,4 +1,5 @@
-import { AnyShape, RecordShape, Shape } from '../shape';
+import { RecordShape } from '../shape/RecordShape';
+import { AnyShape, Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 
 /**

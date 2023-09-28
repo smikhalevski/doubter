@@ -1,4 +1,4 @@
-import { ConstShape } from '../shape';
+import { ConstShape } from '../shape/ConstShape';
 import { IssueOptions, Message } from '../types';
 
 /**
@@ -7,9 +7,6 @@ import { IssueOptions, Message } from '../types';
  * @param options The issue options or the issue message.
  * @group DSL
  */
-function undefined_(options?: IssueOptions | Message): ConstShape<undefined> {
+export function undefined_(options?: IssueOptions | Message): ConstShape<undefined> {
   return new ConstShape(undefined, options);
 }
-
-// noinspection ReservedWordAsName
-export { undefined_ as undefined };

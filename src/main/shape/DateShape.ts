@@ -1,11 +1,11 @@
-import { coerceToDate } from '../coerce';
+import { coerceToDate } from '../coerce/coerceToDate';
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
-import { isValidDate } from '../internal';
+import { isValidDate } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Shape } from './Shape';
 
 /**
  * The shape of the {@link !Date Date} object.

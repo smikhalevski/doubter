@@ -1,10 +1,10 @@
-import { coerceToBoolean } from '../coerce';
+import { coerceToBoolean } from '../coerce/coerceToBoolean';
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Shape } from './Shape';
 
 /**
  * The shape of a boolean value.

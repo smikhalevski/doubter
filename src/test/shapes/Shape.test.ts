@@ -21,7 +21,7 @@ import {
   CODE_TYPE,
   ERR_SYNC_UNSUPPORTED,
 } from '../../main/constants';
-import { resetNonce } from '../../main/internal';
+import { resetNonce } from '../../main/internal/shapes';
 import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 import { AsyncMockShape, MockShape } from './mocks';
 

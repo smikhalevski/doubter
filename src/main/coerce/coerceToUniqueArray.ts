@@ -1,4 +1,5 @@
-import { getCanonicalValueOf, isArray, isIterableObject, unique } from '../internal';
+import { unique } from '../internal/arrays';
+import { getCanonicalValueOf, isArray, isIterableObject } from '../internal/lang';
 
 /**
  * Coerces a value to an array of {@link !Set Set} values.

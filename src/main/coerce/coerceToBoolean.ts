@@ -1,5 +1,5 @@
-import { getCanonicalValueOf, isArray } from '../internal';
-import { NEVER } from '../shape';
+import { getCanonicalValueOf, isArray } from '../internal/lang';
+import { NEVER } from './NEVER';
 
 /**
  * Coerces a value to a boolean.

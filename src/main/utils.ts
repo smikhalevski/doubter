@@ -9,7 +9,7 @@
  */
 
 import { ApplyOptions, Issue, IssueOptions, Message, MessageCallback } from './core';
-import { isObjectLike } from './internal';
+import { isObjectLike } from './internal/lang';
 
 /**
  * Extracts options from the given source.

@@ -1,11 +1,13 @@
-import { coerceToPromise } from '../coerce';
+import { coerceToPromise } from '../coerce/coerceToPromise';
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
-import { applyShape, INPUT, isArray, OUTPUT, Promisify, toDeepPartialShape } from '../internal';
+import { isArray } from '../internal/lang';
+import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape } from './Shape';
 
 type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
   ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any

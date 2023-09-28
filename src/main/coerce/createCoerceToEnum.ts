@@ -1,5 +1,6 @@
-import { getCanonicalValueOf, isArray, ReadonlyDict } from '../internal';
-import { NEVER } from '../shape';
+import { getCanonicalValueOf, isArray } from '../internal/lang';
+import { ReadonlyDict } from '../internal/objects';
+import { NEVER } from './NEVER';
 
 /**
  * Coerces a value to an enum value.

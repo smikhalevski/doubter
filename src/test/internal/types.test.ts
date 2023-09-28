@@ -1,4 +1,4 @@
-import { distributeTypes, unionTypes } from '../../main/internal';
+import { distributeTypes, unionTypes } from '../../main/internal/types';
 import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 
 test('unionTypes', () => {

@@ -1,4 +1,5 @@
-import { AnyShape, UnionShape } from '../shape';
+import { AnyShape } from '../shape/Shape';
+import { UnionShape } from '../shape/UnionShape';
 import { IssueOptions, Message } from '../types';
 
 /**
@@ -15,8 +16,3 @@ export function union<Shapes extends [AnyShape, ...AnyShape[]]>(
 ): UnionShape<Shapes> {
   return new UnionShape<Shapes>(shapes, options);
 }
-
-/**
- * @group DSL
- */
-export { union as or };

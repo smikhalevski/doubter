@@ -1,4 +1,4 @@
-import { DateShape } from '../shape';
+import { DateShape } from '../shape/DateShape';
 import { IssueOptions, Message } from '../types';
 
 /**

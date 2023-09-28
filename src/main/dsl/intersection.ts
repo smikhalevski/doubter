@@ -1,4 +1,5 @@
-import { AnyShape, IntersectionShape } from '../shape';
+import { IntersectionShape } from '../shape/IntersectionShape';
+import { AnyShape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 
 /**
@@ -15,8 +16,3 @@ export function intersection<Shapes extends [AnyShape, ...AnyShape[]]>(
 ): IntersectionShape<Shapes> {
   return new IntersectionShape<Shapes>(shapes, options);
 }
-
-/**
- * @group DSL
- */
-export { intersection as and };

@@ -1,4 +1,4 @@
-import { NeverShape } from '../shape';
+import { NeverShape } from '../shape/NeverShape';
 import { IssueOptions, Message } from '../types';
 
 /**

@@ -1,20 +1,13 @@
-import { coerceToMapEntries } from '../coerce';
+import { coerceToMapEntries } from '../coerce/coerceToMapEntries';
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
-import { applyShape, concatIssues, isArray, toDeepPartialShape, unshiftIssuesPath } from '../internal';
+import { isArray } from '../internal/lang';
+import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import {
-  AnyShape,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  Input,
-  NEVER,
-  OptionalDeepPartialShape,
-  Output,
-  Shape,
-} from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';
 
 /**
  * The shape of a {@link !Map Map} instance.

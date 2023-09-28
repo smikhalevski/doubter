@@ -1,16 +1,7 @@
 import { CODE_TYPE } from '../constants';
-import {
-  applyShape,
-  cloneDictHead,
-  concatIssues,
-  INPUT,
-  isArray,
-  isObject,
-  OUTPUT,
-  setObjectProperty,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../internal';
+import { isArray, isObject } from '../internal/lang';
+import { cloneDictHead, setObjectProperty } from '../internal/objects';
+import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';

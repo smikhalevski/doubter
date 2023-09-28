@@ -1,21 +1,22 @@
-import { coerceToArray } from '../coerce';
+import { coerceToArray } from '../coerce/coerceToArray';
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
+import { toArrayIndex } from '../internal/arrays';
+import { isArray } from '../internal/lang';
 import {
   applyShape,
   concatIssues,
   INPUT,
-  isArray,
   isAsyncShapes,
   OUTPUT,
-  toArrayIndex,
   toDeepPartialShape,
   unshiftIssuesPath,
-} from '../internal';
+} from '../internal/shapes';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, NEVER, OptionalDeepPartialShape, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],

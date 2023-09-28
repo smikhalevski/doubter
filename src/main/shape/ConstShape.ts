@@ -1,8 +1,8 @@
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE_CONST } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER } from './Shape';
 
 /**
  * The shape of a constant value.

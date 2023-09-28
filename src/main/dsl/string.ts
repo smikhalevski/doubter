@@ -1,4 +1,4 @@
-import { StringShape } from '../shape';
+import { StringShape } from '../shape/StringShape';
 import { IssueOptions, Message } from '../types';
 
 /**

@@ -1,4 +1,4 @@
-import { AnyShape, NotShape, Shape } from '../shape';
+import { AnyShape, NotShape, Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 
 /**

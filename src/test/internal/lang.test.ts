@@ -1,4 +1,10 @@
-import { getCanonicalValueOf, isEqual, isEqualOrSubclass, isIterableObject, isValidDate } from '../../main/internal';
+import {
+  getCanonicalValueOf,
+  isEqual,
+  isEqualOrSubclass,
+  isIterableObject,
+  isValidDate,
+} from '../../main/internal/lang';
 
 describe('isEqual', () => {
   test('checks equality', () => {

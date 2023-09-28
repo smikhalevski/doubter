@@ -1,4 +1,5 @@
-import { AnyShape, MapShape } from '../shape';
+import { MapShape } from '../shape/MapShape';
+import { AnyShape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 
 /**

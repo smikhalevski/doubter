@@ -1,6 +1,6 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { OUTPUT } from '../../main/internal';
+import { OUTPUT } from '../../main/internal/shapes';
 
 expectType<Map<string, number>>(d.map(d.string(), d.number())[OUTPUT]);
 

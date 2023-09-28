@@ -9,7 +9,7 @@ import {
   ValidationError,
 } from '../../main';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../../main/constants';
-import { resetNonce } from '../../main/internal';
+import { resetNonce } from '../../main/internal/shapes';
 import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
 import { AsyncMockShape, MockShape } from './mocks';
 

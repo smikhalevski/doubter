@@ -1,4 +1,4 @@
-import { ConstShape } from '../shape';
+import { ConstShape } from '../shape/ConstShape';
 import { IssueOptions, Message } from '../types';
 
 /**

@@ -1,4 +1,4 @@
-import { ConvertShape, Shape } from '../shape';
+import { ConvertShape, Shape } from '../shape/Shape';
 import { ApplyOptions } from '../types';
 
 /**

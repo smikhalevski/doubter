@@ -1,27 +1,21 @@
-import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED } from '../constants';
+import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED, } from '../constants';
+import { isArray, isEqual, isObjectLike, returnTrue } from '../internal/lang';
+import { Dict, ReadonlyDict } from '../internal/objects';
 import {
   applyShape,
   captureIssues,
   concatIssues,
   defaultApplyOptions,
-  Dict,
   getMessage,
   INPUT,
-  isArray,
-  isEqual,
-  isObjectLike,
-  isType,
   nextNonce,
   ok,
   OUTPUT,
   Promisify,
-  ReadonlyDict,
-  returnTrue,
   toDeepPartialShape,
-  unionTypes,
   universalApplyOperations,
-} from '../internal';
-import { Messages, messages } from '../messages';
+} from '../internal/shapes';
+import { isType, unionTypes } from '../internal/types';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   AlterCallback,
@@ -47,15 +41,6 @@ import {
 } from '../types';
 import { createIssueFactory, extractOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
-
-/**
- * The marker object that is used to denote an impossible value.
- *
- * For example, {@link NEVER} is returned from {@link CoercibleShape._coerce} method when coercion is not possible.
- *
- * @group Other
- */
-export const NEVER = Object.freeze({ never: true }) as never;
 
 /**
  * Extracts the shape input type.

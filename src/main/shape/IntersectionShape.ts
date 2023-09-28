@@ -1,18 +1,13 @@
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE_INTERSECTION } from '../constants';
-import {
-  applyShape,
-  concatIssues,
-  distributeTypes,
-  isArray,
-  isAsyncShapes,
-  isEqual,
-  setObjectProperty,
-  toDeepPartialShape,
-} from '../internal';
+import { isArray, isEqual } from '../internal/lang';
+import { setObjectProperty } from '../internal/objects';
+import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
+import { distributeTypes } from '../internal/types';
 import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
  * Converts union to intersection.

@@ -20,7 +20,7 @@ import {
   CODE_OBJECT_XOR_KEYS,
 } from '../constants';
 import { AnyShape, IssueOptions, Message, ObjectShape } from '../core';
-import { ReadonlyDict } from '../internal';
+import { ReadonlyDict } from '../internal/objects';
 import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 

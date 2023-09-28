@@ -8,7 +8,8 @@ import {
   ValidationError,
 } from '../../main';
 import { ERR_SHAPE_EXPECTED } from '../../main/constants';
-import { identity, nextNonce, resetNonce } from '../../main/internal';
+import { identity } from '../../main/internal/lang';
+import { nextNonce, resetNonce } from '../../main/internal/shapes';
 import { TYPE_OBJECT } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 

@@ -1,4 +1,5 @@
-import { AnyShape, ArrayShape, Shape } from '../shape';
+import { ArrayShape } from '../shape/ArrayShape';
+import { AnyShape, Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 
 /**

@@ -1,4 +1,4 @@
-import { SymbolShape } from '../shape';
+import { SymbolShape } from '../shape/SymbolShape';
 import { IssueOptions, Message } from '../types';
 
 /**

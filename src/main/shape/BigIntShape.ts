@@ -1,10 +1,10 @@
-import { coerceToBigInt } from '../coerce';
+import { coerceToBigInt } from '../coerce/coerceToBigInt';
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Shape } from './Shape';
 
 /**
  * The shape of a bigint value.

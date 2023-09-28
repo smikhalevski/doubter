@@ -1,4 +1,5 @@
 import { CODE_TYPE, ERR_ASYNC_FUNCTION } from '../constants';
+import { isArray } from '../internal/lang';
 import {
   applyShape,
   Awaitable,
@@ -6,13 +7,12 @@ import {
   defaultApplyOptions,
   getMessage,
   INPUT,
-  isArray,
   nextNonce,
   ok,
   OUTPUT,
   Promisify,
   unshiftIssuesPath,
-} from '../internal';
+} from '../internal/shapes';
 import { TYPE_FUNCTION } from '../Type';
 import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssueFactory } from '../utils';

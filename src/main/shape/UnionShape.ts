@@ -1,5 +1,9 @@
 import { CODE_TYPE_UNION } from '../constants';
-import { applyShape, Dict, isArray, isAsyncShapes, isObject, isType, toDeepPartialShape, unique } from '../internal';
+import { unique } from '../internal/arrays';
+import { isArray, isObject } from '../internal/lang';
+import { Dict } from '../internal/objects';
+import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
+import { isType } from '../internal/types';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';

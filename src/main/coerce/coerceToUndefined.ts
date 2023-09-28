@@ -1,5 +1,5 @@
-import { isArray } from '../internal';
-import { NEVER } from '../shape';
+import { isArray } from '../internal/lang';
+import { NEVER } from './NEVER';
 
 export function coerceToUndefined(value: any): undefined {
   if (

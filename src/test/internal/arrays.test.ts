@@ -1,4 +1,4 @@
-import { toArrayIndex, unique } from '../../main/internal';
+import { toArrayIndex, unique } from '../../main/internal/arrays';
 
 describe('unique', () => {
   test('returns an array as is', () => {

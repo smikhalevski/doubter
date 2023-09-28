@@ -1,4 +1,4 @@
-import { getCanonicalValueOf, isIterableObject } from '../internal';
+import { getCanonicalValueOf, isIterableObject } from '../internal/lang';
 
 /**
  * Coerces a value to an array.

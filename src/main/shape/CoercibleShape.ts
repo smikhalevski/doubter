@@ -1,5 +1,6 @@
-import { coerceToNever } from '../coerce';
-import { NEVER, Shape } from './Shape';
+import { coerceToNever } from '../coerce/coerceToNever';
+import { NEVER } from '../coerce/NEVER';
+import { Shape } from './Shape';
 
 /**
  * The shape can coerce input value type during parsing.

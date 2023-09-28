@@ -1,4 +1,4 @@
-import { NumberShape } from '../shape';
+import { NumberShape } from '../shape/NumberShape';
 import { IssueOptions, Message } from '../types';
 
 /**

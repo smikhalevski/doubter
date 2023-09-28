@@ -1,10 +1,12 @@
+import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE_ENUM } from '../constants';
-import { isArray, ReadonlyDict, unique } from '../internal';
+import { unique } from '../internal/arrays';
+import { isArray } from '../internal/lang';
+import { ReadonlyDict } from '../internal/objects';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Shape } from './Shape';
 
 /**
  * The shape of a value enumeration.

@@ -1,24 +1,17 @@
 import { CODE_OBJECT_EXACT, CODE_TYPE } from '../constants';
+import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
+import { isArray, isObject } from '../internal/lang';
+import { cloneDict, cloneDictKeys, Dict, ReadonlyDict, setObjectProperty } from '../internal/objects';
 import {
   applyShape,
-  Bitmask,
-  cloneDict,
-  cloneDictKeys,
   concatIssues,
   copyOperations,
-  Dict,
-  getBit,
   INPUT,
-  isArray,
   isAsyncShapes,
-  isObject,
   OUTPUT,
-  ReadonlyDict,
-  setObjectProperty,
   toDeepPartialShape,
-  toggleBit,
   unshiftIssuesPath,
-} from '../internal';
+} from '../internal/shapes';
 import { TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';

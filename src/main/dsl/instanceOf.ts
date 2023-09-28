@@ -1,4 +1,4 @@
-import { InstanceShape } from '../shape';
+import { InstanceShape } from '../shape/InstanceShape';
 import { IssueOptions, Message } from '../types';
 
 /**

@@ -1,5 +1,5 @@
-import { getCanonicalValueOf, isArray, isValidDate } from '../internal';
-import { NEVER } from '../shape';
+import { getCanonicalValueOf, isArray, isValidDate } from '../internal/lang';
+import { NEVER } from './NEVER';
 
 /**
  * Coerces a value to a {@link !Date Date}.
