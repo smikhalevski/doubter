@@ -1,6 +1,6 @@
 import { CODE_TYPE_UNION } from '../constants';
 import { unique } from '../internal/arrays';
-import { isArray, isObject } from '../internal/lang';
+import { defineProperty, isArray, isObject } from '../internal/lang';
 import { Dict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
@@ -61,11 +61,8 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 
   protected get _lookup(): LookupCallback {
     const shapes = unique(this.shapes);
-    const lookup = createLookupByDiscriminator(shapes) || createLookupByType(shapes);
 
-    Object.defineProperty(this, '_lookup', { configurable: true, value: lookup });
-
-    return lookup;
+    return defineProperty(this, '_lookup', createLookupByDiscriminator(shapes) || createLookupByType(shapes), true);
   }
 
   at(key: unknown): AnyShape | null {

@@ -1,5 +1,5 @@
 import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED, } from '../constants';
-import { isArray, isEqual, isObjectLike, returnTrue } from '../internal/lang';
+import { defineProperty, isArray, isEqual, isObjectLike, returnTrue } from '../internal/lang';
 import { Dict, ReadonlyDict } from '../internal/objects';
 import {
   applyShape,
@@ -835,21 +835,19 @@ export interface Shape<InputValue, OutputValue> {
 Object.defineProperties(Shape.prototype, {
   inputs: {
     configurable: true,
+
     get(this: Shape) {
-      Object.defineProperty(this, 'inputs', { configurable: true, value: [] });
+      defineProperty(this, 'inputs', []);
 
-      const inputs = Object.freeze(unionTypes(this._getInputs()));
-
-      Object.defineProperty(this, 'inputs', { configurable: true, value: inputs });
-
-      return inputs;
+      return defineProperty(this, 'inputs', Object.freeze(unionTypes(this._getInputs())), true);
     },
   },
 
   isAsync: {
     configurable: true,
+
     get(this: Shape) {
-      Object.defineProperty(this, 'isAsync', { configurable: true, value: false });
+      defineProperty(this, 'isAsync', false);
 
       const async = this._isAsync();
       const universalApplyAsync = Shape.prototype._applyAsync;
@@ -862,18 +860,17 @@ Object.defineProperties(Shape.prototype, {
         this._applyAsync = universalApplyAsync;
       }
 
-      Object.defineProperty(this, 'isAsync', { configurable: true, value: async });
-
-      return async;
+      return defineProperty(this, 'isAsync', async, true);
     },
   },
 
   try: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['try'] = (input, options) => {
+      return defineProperty<Shape['try']>(this, 'try', (input, options) => {
         const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
@@ -883,20 +880,17 @@ Object.defineProperties(Shape.prototype, {
           return { ok: false, issues: result };
         }
         return { ok: true, value: result.value };
-      };
-
-      Object.defineProperty(this, 'try', { writable: true, value: cb });
-
-      return cb;
+      });
     },
   },
 
   tryAsync: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['tryAsync'] = (input, options) => {
+      return defineProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return { ok: true, value: input };
@@ -906,20 +900,17 @@ Object.defineProperties(Shape.prototype, {
           }
           return { ok: true, value: result.value };
         });
-      };
-
-      Object.defineProperty(this, 'tryAsync', { writable: true, value: cb });
-
-      return cb;
+      });
     },
   },
 
   parse: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parse'] = (input, options) => {
+      return defineProperty<Shape['parse']>(this, 'parse', (input, options) => {
         const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
@@ -929,20 +920,17 @@ Object.defineProperties(Shape.prototype, {
           throw new ValidationError(result, getMessage(result, input, options));
         }
         return result.value;
-      };
-
-      Object.defineProperty(this, 'parse', { writable: true, value: cb });
-
-      return cb;
+      });
     },
   },
 
   parseAsync: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseAsync'] = (input, options) => {
+      return defineProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
@@ -952,44 +940,22 @@ Object.defineProperties(Shape.prototype, {
           }
           return result.value;
         });
-      };
-
-      Object.defineProperty(this, 'parseAsync', { writable: true, value: cb });
-
-      return cb;
+      });
     },
   },
 
   parseOrDefault: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+      return defineProperty(
+        this,
+        'parseOrDefault',
+        (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
+          const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
-        if (result === null) {
-          return input;
-        }
-        if (isArray(result)) {
-          return defaultValue;
-        }
-        return result.value;
-      };
-
-      Object.defineProperty(this, 'parseOrDefault', { writable: true, value: cb });
-
-      return cb;
-    },
-  },
-
-  parseOrDefaultAsync: {
-    configurable: true,
-    get(this: Shape) {
-      this.isAsync;
-
-      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
@@ -997,17 +963,38 @@ Object.defineProperties(Shape.prototype, {
             return defaultValue;
           }
           return result.value;
-        });
-      };
+        }
+      );
+    },
+  },
 
-      Object.defineProperty(this, 'parseOrDefaultAsync', { writable: true, value: cb });
+  parseOrDefaultAsync: {
+    configurable: true,
 
-      return cb;
+    get(this: Shape) {
+      this.isAsync;
+
+      return defineProperty(
+        this,
+        'parseOrDefaultAsync',
+        (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
+          return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
+            if (result === null) {
+              return input;
+            }
+            if (isArray(result)) {
+              return defaultValue;
+            }
+            return result.value;
+          });
+        }
+      );
     },
   },
 
   _applyOperations: {
     configurable: true,
+
     get(this: Shape) {
       let cb = universalApplyOperations;
 
@@ -1015,9 +1002,7 @@ Object.defineProperties(Shape.prototype, {
         cb = this.operations[i].factory(cb);
       }
 
-      Object.defineProperty(this, '_applyOperations', { writable: true, value: cb });
-
-      return cb;
+      return defineProperty(this, '_applyOperations', cb);
     },
   },
 });
