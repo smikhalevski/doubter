@@ -2,8 +2,6 @@ import { getCanonicalValueOf, isArray } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
-export const numberTypes: unknown[] = [TYPE_NUMBER];
-
 /**
  * The list of types that are coercible to number with {@link coerceToNumber}.
  */

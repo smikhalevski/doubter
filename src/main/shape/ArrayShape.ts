@@ -1,6 +1,5 @@
-import { arrayCoercibleTypes, arrayTypes, coerceToArray } from '../coerce/array';
+import { arrayCoercibleTypes, coerceToArray } from '../coerce/array';
 import { NEVER } from '../coerce/never';
-import { unknownTypes } from '../coerce/unknown';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
 import { isArray } from '../internal/lang';
@@ -13,7 +12,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -135,7 +134,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   }
 
   protected _getInputs(): readonly unknown[] {
-    return arrayTypes;
+    return [TYPE_ARRAY];
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {
@@ -150,7 +149,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     if (restShape !== null) {
       return restShape.inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
     }
-    return unknownTypes;
+    return [TYPE_UNKNOWN];
   }
 
   protected _apply(

@@ -1,5 +1,5 @@
 import { NEVER } from '../coerce/never';
-import { coerceToString, stringCoercibleTypes, stringTypes } from '../coerce/string';
+import { coerceToString, stringCoercibleTypes } from '../coerce/string';
 import { CODE_TYPE } from '../constants';
 import { TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -29,7 +29,7 @@ export class StringShape extends CoercibleShape<string> {
   }
 
   protected _getInputs(): readonly unknown[] {
-    return stringTypes;
+    return [TYPE_STRING];
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {

@@ -1,4 +1,4 @@
-import { coerceToDate, dateCoercibleTypes, dateTypes } from '../coerce/date';
+import { coerceToDate, dateCoercibleTypes } from '../coerce/date';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isValidDate } from '../internal/lang';
@@ -29,7 +29,7 @@ export class DateShape extends CoercibleShape<Date> {
   }
 
   protected _getInputs(): readonly unknown[] {
-    return dateTypes;
+    return [TYPE_DATE];
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {

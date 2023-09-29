@@ -1,8 +1,5 @@
 import { unique } from '../internal/arrays';
 import { getCanonicalValueOf, isArray, isIterableObject } from '../internal/lang';
-import { TYPE_SET } from '../Type';
-
-export const setTypes: unknown[] = [TYPE_SET];
 
 /**
  * Coerces a value to an array of unique {@link !Set Set} values.

@@ -1,4 +1,4 @@
-import { coerceToMapEntries, mapCoercibleTypes, mapTypes } from '../coerce/map';
+import { coerceToMapEntries, mapCoercibleTypes } from '../coerce/map';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
@@ -77,7 +77,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   }
 
   protected _getInputs(): readonly unknown[] {
-    return mapTypes;
+    return [TYPE_MAP];
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {

@@ -1,4 +1,4 @@
-import { booleanCoercibleTypes, booleanTypes, coerceToBoolean } from '../coerce/boolean';
+import { booleanCoercibleTypes, coerceToBoolean } from '../coerce/boolean';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { TYPE_BOOLEAN } from '../Type';
@@ -29,7 +29,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   }
 
   protected _getInputs(): readonly unknown[] {
-    return booleanTypes;
+    return [TYPE_BOOLEAN];
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {

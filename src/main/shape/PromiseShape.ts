@@ -1,10 +1,9 @@
-import { coerceToPromise, promiseTypes } from '../coerce/promise';
 import { NEVER } from '../coerce/never';
-import { unknownTypes } from '../coerce/unknown';
+import { coerceToPromise } from '../coerce/promise';
 import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
-import { TYPE_PROMISE } from '../Type';
+import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -66,12 +65,12 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   }
 
   protected _getInputs(): readonly unknown[] {
-    return promiseTypes;
+    return [TYPE_PROMISE];
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {
     if (this.valueShape === null) {
-      return unknownTypes;
+      return [TYPE_UNKNOWN];
     }
     return this.valueShape.inputs.concat(TYPE_PROMISE);
   }

@@ -2,8 +2,6 @@ import { getCanonicalValueOf, isArray } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
-export const bigintTypes: unknown[] = [TYPE_BIGINT];
-
 /**
  * The list of types that are coercible to bigint with {@link coerceToBigInt}.
  */

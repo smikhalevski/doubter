@@ -1,5 +1,5 @@
 import { NEVER } from '../coerce/never';
-import { coerceToUniqueValues, setTypes } from '../coerce/set';
+import { coerceToUniqueValues } from '../coerce/set';
 import { CODE_TYPE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
 import { isArray } from '../internal/lang';
@@ -63,7 +63,7 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   protected _getInputs(): readonly unknown[] {
-    return setTypes;
+    return [TYPE_SET];
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {

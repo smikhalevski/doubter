@@ -2,8 +2,6 @@ import { getCanonicalValueOf, isArray, isValidDate } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
-export const stringTypes: unknown[] = [TYPE_STRING];
-
 /**
  * The list of types that are coercible to string with {@link coerceToString}.
  */

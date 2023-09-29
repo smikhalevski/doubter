@@ -1,4 +1,4 @@
-import { bigintCoercibleTypes, bigintTypes, coerceToBigInt } from '../coerce/bigint';
+import { bigintCoercibleTypes, coerceToBigInt } from '../coerce/bigint';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { TYPE_BIGINT } from '../Type';
@@ -29,7 +29,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
   }
 
   protected _getInputs(): readonly unknown[] {
-    return bigintTypes;
+    return [TYPE_BIGINT];
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {

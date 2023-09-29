@@ -2,8 +2,6 @@ import { getCanonicalValueOf, isArray, isIterableObject, isMapEntry, isObjectLik
 import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { NEVER } from './never';
 
-export const mapTypes: unknown[] = [TYPE_MAP];
-
 /**
  * The list of types that are coercible to entries with {@link coerceToMapEntries}.
  */
