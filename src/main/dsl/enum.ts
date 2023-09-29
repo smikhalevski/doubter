@@ -1,6 +1,6 @@
 import { ReadonlyDict } from '../internal/objects';
 import { EnumShape } from '../shape/EnumShape';
-import { Any, IssueOptions, Message } from '../types';
+import { Any, IssueOptions, Message } from '../typings';
 
 /**
  * Creates the shape that constrains input with the array of values.

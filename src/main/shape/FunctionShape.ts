@@ -14,7 +14,7 @@ import {
   unshiftIssuesPath,
 } from '../internal/shapes';
 import { TYPE_FUNCTION } from '../Type';
-import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';

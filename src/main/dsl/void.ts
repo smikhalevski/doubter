@@ -1,5 +1,5 @@
 import { ConstShape } from '../shape/ConstShape';
-import { IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates a shape that requires an input to be `undefined` at runtime and typed as `void`.

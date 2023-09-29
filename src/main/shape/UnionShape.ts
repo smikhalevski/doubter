@@ -5,7 +5,7 @@ import { Dict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';

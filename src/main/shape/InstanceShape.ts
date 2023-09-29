@@ -1,7 +1,7 @@
 import { CODE_TYPE_INSTANCE_OF } from '../constants';
 import { isEqualOrSubclass } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
 

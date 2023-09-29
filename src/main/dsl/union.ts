@@ -1,6 +1,6 @@
 import { AnyShape } from '../shape/Shape';
 import { UnionShape } from '../shape/UnionShape';
-import { IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates a union shape that tries to parse the input with one of the provided shapes.

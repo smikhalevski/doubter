@@ -1,11 +1,11 @@
-import { getCanonicalValueOf, isArray } from '../internal/lang';
+import { freeze, getCanonicalValueOf, isArray } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
 /**
  * The list of types that are coercible to number with {@link coerceToNumber}.
  */
-export const numberCoercibleTypes: unknown[] = [
+export const numberCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,
   TYPE_OBJECT,
   TYPE_NUMBER,
@@ -15,32 +15,32 @@ export const numberCoercibleTypes: unknown[] = [
   TYPE_DATE,
   null,
   undefined,
-];
+]);
 
 /**
  * Coerces a value to a number (not `NaN`).
  *
- * @param value The value to coerce.
+ * @param input The value to coerce.
  * @returns A number value, or {@link NEVER} if coercion isn't possible.
  */
-export function coerceToNumber(value: any): number {
-  if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number') {
-    return value === value ? value : NEVER;
+export function coerceToNumber(input: unknown): number {
+  if (isArray(input) && input.length === 1 && typeof (input = input[0]) === 'number') {
+    return input === input ? input : NEVER;
   }
-  if (value === null || value === undefined) {
+  if (input === null || input === undefined) {
     return 0;
   }
 
-  value = getCanonicalValueOf(value);
+  input = getCanonicalValueOf(input);
 
   if (
-    (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || value instanceof Date) &&
-    (value = +value) === value
+    (typeof input === 'string' || typeof input === 'boolean' || typeof input === 'number' || input instanceof Date) &&
+    (input = +input) === input
   ) {
-    return value;
+    return input as number;
   }
-  if (typeof value === 'bigint' && value >= -0x1fffffffffffff && value <= 0x1fffffffffffff) {
-    return Number(value);
+  if (typeof input === 'bigint' && input >= -0x1fffffffffffff && input <= 0x1fffffffffffff) {
+    return Number(input);
   }
   return NEVER;
 }

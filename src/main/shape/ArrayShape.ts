@@ -13,7 +13,7 @@ import {
   unshiftIssuesPath,
 } from '../internal/shapes';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';

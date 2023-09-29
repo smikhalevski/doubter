@@ -1,5 +1,5 @@
 import { CODE_TYPE_NEVER } from '../constants';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
 

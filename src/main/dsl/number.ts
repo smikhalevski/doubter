@@ -1,5 +1,5 @@
 import { NumberShape } from '../shape/NumberShape';
-import { IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the number shape.

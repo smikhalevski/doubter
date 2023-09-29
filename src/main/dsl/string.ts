@@ -1,5 +1,5 @@
 import { StringShape } from '../shape/StringShape';
-import { IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the string shape.

@@ -5,7 +5,7 @@ import { setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { distributeTypes } from '../internal/types';
 import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 

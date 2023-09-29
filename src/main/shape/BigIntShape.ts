@@ -2,7 +2,7 @@ import { bigintCoercibleTypes, coerceToBigInt } from '../coerce/bigint';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { TYPE_BIGINT } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 

@@ -1,32 +1,30 @@
-import { getCanonicalValueOf, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
+import { freeze, getCanonicalValueOf, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to entries with {@link coerceToMapEntries}.
+ * The list of types that are coercible to `Map` entries with {@link coerceToMapEntries}.
  */
-export const mapCoercibleTypes: unknown[] = [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
+export const mapCoercibleTypes: readonly unknown[] = freeze([TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY]);
 
 /**
- * Coerces a value to an array of {@link !Map Map} entries.
+ * Coerces a value to an array of `Map` entries.
  *
- * @param value A non-{@link !Map Map} value to coerce.
+ * @param input A value to coerce.
  * @returns An array of entries, or {@link NEVER} if coercion isn't possible.
  */
-export function coerceToMapEntries(value: any): [unknown, unknown][] {
-  if (isArray(value)) {
-    return value.every(isMapEntry) ? value : NEVER;
+export function coerceToMapEntries(input: unknown): [unknown, unknown][] {
+  if (isArray(input)) {
+    return input.every(isMapEntry) ? input : NEVER;
   }
 
-  value = getCanonicalValueOf(value);
+  input = getCanonicalValueOf(input);
 
-  if (isIterableObject(value)) {
-    value = Array.from(value);
-
-    return value.every(isMapEntry) ? value : NEVER;
+  if (isIterableObject(input)) {
+    return (input = Array.from(input)).every(isMapEntry) ? input : NEVER;
   }
-  if (isObjectLike(value)) {
-    return Object.entries(value);
+  if (isObjectLike(input)) {
+    return Object.entries(input);
   }
   return NEVER;
 }

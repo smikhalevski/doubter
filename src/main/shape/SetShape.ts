@@ -5,7 +5,7 @@ import { toArrayIndex } from '../internal/arrays';
 import { isArray } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output } from './Shape';

@@ -5,7 +5,7 @@ import { unique } from '../internal/arrays';
 import { isArray } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 

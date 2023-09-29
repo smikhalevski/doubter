@@ -1,7 +1,7 @@
 import { createCoerceToConst, getConstCoercibleTypes } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST } from '../constants';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 

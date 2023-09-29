@@ -3,7 +3,7 @@ import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isValidDate } from '../internal/lang';
 import { TYPE_DATE } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 

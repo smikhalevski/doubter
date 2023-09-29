@@ -1,6 +1,6 @@
 import { PromiseShape } from '../shape/PromiseShape';
 import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the {@link !Promise Promise} instance shape.

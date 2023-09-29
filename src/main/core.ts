@@ -68,7 +68,7 @@ export { StringShape } from './shape/StringShape';
 export { SymbolShape } from './shape/SymbolShape';
 export { UnionShape } from './shape/UnionShape';
 
-export * from './types';
+export * from './typings';
 export * from './ValidationError';
 
 export { Messages } from './messages';

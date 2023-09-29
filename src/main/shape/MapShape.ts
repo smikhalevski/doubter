@@ -4,7 +4,7 @@ import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { TYPE_MAP } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';

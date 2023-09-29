@@ -2,7 +2,7 @@ import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleTypes } from '../coerce/number';
 import { CODE_TYPE, } from '../constants';
 import { TYPE_NUMBER } from '../Type';
-import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { Any, ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowShape, ReplaceShape } from './Shape';

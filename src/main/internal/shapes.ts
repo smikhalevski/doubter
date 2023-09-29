@@ -1,7 +1,7 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
-import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from '../types';
+import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from '../typings';
 import { ValidationError } from '../ValidationError';
-import { isArray, isEqual } from './lang';
+import { freeze, isArray, isEqual } from './lang';
 
 // Copied to support TS prior to v4.5
 // prettier-ignore
@@ -15,7 +15,7 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, coerce: false });
+export const defaultApplyOptions = freeze<ApplyOptions>({ earlyReturn: false, coerce: false });
 
 export const INPUT = Symbol();
 export const OUTPUT = Symbol();

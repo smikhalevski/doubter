@@ -1,5 +1,7 @@
 export const isArray = Array.isArray;
 
+export const freeze = Object.freeze;
+
 export function identity<T>(value: T): T {
   return value;
 }

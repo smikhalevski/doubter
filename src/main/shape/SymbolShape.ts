@@ -1,6 +1,6 @@
 import { CODE_TYPE } from '../constants';
 import { TYPE_SYMBOL } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
 

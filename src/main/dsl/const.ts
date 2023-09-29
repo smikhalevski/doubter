@@ -1,5 +1,5 @@
 import { ConstShape } from '../shape/ConstShape';
-import { Any, IssueOptions, Message } from '../types';
+import { Any, IssueOptions, Message } from '../typings';
 
 /**
  * Creates the constant value shape.

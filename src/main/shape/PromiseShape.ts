@@ -4,7 +4,7 @@ import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
 import { TYPE_PROMISE, TYPE_UNKNOWN } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape } from './Shape';

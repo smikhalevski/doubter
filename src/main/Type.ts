@@ -1,4 +1,4 @@
-import { isArray } from './internal/lang';
+import { freeze, isArray } from './internal/lang';
 
 /**
  * The name of the value type.
@@ -52,7 +52,7 @@ export class Type<T extends TypeName = TypeName> {
      */
     readonly name: T
   ) {
-    Object.freeze(this);
+    freeze(this);
   }
 
   /**
@@ -70,7 +70,7 @@ export class Type<T extends TypeName = TypeName> {
   }
 }
 
-Object.freeze(Type);
+freeze(Type);
 
 export const TYPE_ARRAY = Type.ARRAY;
 export const TYPE_BIGINT = Type.BIGINT;

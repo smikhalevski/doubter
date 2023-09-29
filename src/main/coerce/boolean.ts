@@ -1,11 +1,11 @@
-import { getCanonicalValueOf, isArray } from '../internal/lang';
+import { freeze, getCanonicalValueOf, isArray } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../Type';
 import { NEVER } from './never';
 
 /**
  * The list of types that are coercible to boolean with {@link coerceToBoolean}.
  */
-export const booleanCoercibleTypes: unknown[] = [
+export const booleanCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,
   TYPE_OBJECT,
   TYPE_BOOLEAN,
@@ -15,28 +15,28 @@ export const booleanCoercibleTypes: unknown[] = [
   1,
   null,
   undefined,
-];
+]);
 
 /**
  * Coerces a value to a boolean.
  *
- * @param value The non-boolean value to coerce.
+ * @param input The value to coerce.
  * @returns A boolean value, or {@link NEVER} if coercion isn't possible.
  */
-export function coerceToBoolean(value: unknown): boolean {
-  if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'boolean') {
-    return value;
+export function coerceToBoolean(input: unknown): boolean {
+  if (isArray(input) && input.length === 1 && typeof (input = input[0]) === 'boolean') {
+    return input;
   }
 
-  value = getCanonicalValueOf(value);
+  input = getCanonicalValueOf(input);
 
-  if (typeof value === 'boolean') {
-    return value;
+  if (typeof input === 'boolean') {
+    return input;
   }
-  if (value === null || value === undefined || value === false || value === 0 || value === 'false') {
+  if (input === null || input === undefined || input === false || input === 0 || input === 'false') {
     return false;
   }
-  if (value === true || value === 1 || value === 'true') {
+  if (input === true || input === 1 || input === 'true') {
     return true;
   }
   return NEVER;

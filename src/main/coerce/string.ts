@@ -1,11 +1,11 @@
-import { getCanonicalValueOf, isArray, isValidDate } from '../internal/lang';
+import { freeze, getCanonicalValueOf, isArray, isValidDate } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
 /**
  * The list of types that are coercible to string with {@link coerceToString}.
  */
-export const stringCoercibleTypes: unknown[] = [
+export const stringCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,
   TYPE_OBJECT,
   TYPE_STRING,
@@ -15,32 +15,32 @@ export const stringCoercibleTypes: unknown[] = [
   TYPE_DATE,
   null,
   undefined,
-];
+]);
 
 /**
  * Coerces a value to a string.
  *
- * @param value The value to coerce.
+ * @param input The value to coerce.
  * @returns A string value, or {@link NEVER} if coercion isn't possible.
  */
-export function coerceToString(value: unknown): string {
-  if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'string') {
-    return value;
+export function coerceToString(input: unknown): string {
+  if (isArray(input) && input.length === 1 && typeof (input = input[0]) === 'string') {
+    return input;
   }
-  if (value === null || value === undefined) {
+  if (input === null || input === undefined) {
     return '';
   }
 
-  value = getCanonicalValueOf(value);
+  input = getCanonicalValueOf(input);
 
-  if (typeof value === 'string') {
-    return value;
+  if (typeof input === 'string') {
+    return input;
   }
-  if ((typeof value === 'number' && isFinite(value)) || typeof value === 'boolean' || typeof value === 'bigint') {
-    return '' + value;
+  if ((typeof input === 'number' && isFinite(input)) || typeof input === 'boolean' || typeof input === 'bigint') {
+    return '' + input;
   }
-  if (isValidDate(value)) {
-    return value.toISOString();
+  if (isValidDate(input)) {
+    return input.toISOString();
   }
   return NEVER;
 }
