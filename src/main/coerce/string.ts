@@ -1,9 +1,9 @@
-import { freeze, getCanonicalValueOf, isArray, isValidDate } from '../internal/lang';
+import { freeze, getCanonicalValue, isArray, isValidDate } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to string with {@link coerceToString}.
+ * The list of types that are coercible to a string with {@link coerceToString}.
  */
 export const stringCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,
@@ -31,7 +31,7 @@ export function coerceToString(input: unknown): string {
     return '';
   }
 
-  input = getCanonicalValueOf(input);
+  input = getCanonicalValue(input);
 
   if (typeof input === 'string') {
     return input;

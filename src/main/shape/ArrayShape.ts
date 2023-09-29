@@ -1,8 +1,7 @@
-import { arrayCoercibleTypes, coerceToArray } from '../coerce/array';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
-import { isArray } from '../internal/lang';
+import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import {
   applyShape,
   concatIssues,
@@ -80,7 +79,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     readonly restShape: RestShape,
     options?: IssueOptions | Message
   ) {
-    super(coerceToArray);
+    super();
 
     this._options = options;
 
@@ -141,7 +140,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     const { headShapes, restShape } = this;
 
     if (headShapes.length > 1) {
-      return arrayCoercibleTypes;
+      return [TYPE_OBJECT, TYPE_ARRAY];
     }
     if (headShapes.length === 1) {
       return headShapes[0].inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
@@ -150,6 +149,19 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       return restShape.inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
     }
     return [TYPE_UNKNOWN];
+  }
+
+  /**
+   * Coerces a value to an array.
+   *
+   * @param input The value to coerce.
+   * @returns An array, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _coerce(input: unknown): unknown[] {
+    if (isIterableObject(getCanonicalValue(input))) {
+      return Array.from(input as Iterable<unknown>);
+    }
+    return [input];
   }
 
   protected _apply(

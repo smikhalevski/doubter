@@ -1,4 +1,4 @@
-import { getCanonicalValueOf, isArray } from '../internal/lang';
+import { getCanonicalValue, isArray } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
 import { NEVER } from './never';
 
@@ -13,7 +13,7 @@ export function createCoerceToEnum(
     if (isArray(input) && input.length === 1 && values.includes((input = input[0]))) {
       return input;
     }
-    if (!isArray(source) && typeof (input = getCanonicalValueOf(input)) === 'string' && source.hasOwnProperty(input)) {
+    if (!isArray(source) && typeof (input = getCanonicalValue(input)) === 'string' && source.hasOwnProperty(input)) {
       return (source as ReadonlyDict)[input];
     }
     return NEVER;

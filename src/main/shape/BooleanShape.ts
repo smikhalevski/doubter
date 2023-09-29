@@ -23,7 +23,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super(coerceToBoolean);
+    super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.boolean'], options, TYPE_BOOLEAN);
   }
@@ -45,3 +45,5 @@ export class BooleanShape extends CoercibleShape<boolean> {
     return this._applyOperations(input, output, options, null);
   }
 }
+
+BooleanShape.prototype['_coerce'] = coerceToBoolean;

@@ -1,8 +1,7 @@
 import { NEVER } from '../coerce/never';
-import { coerceToUniqueValues } from '../coerce/set';
 import { CODE_TYPE } from '../constants';
-import { toArrayIndex } from '../internal/arrays';
-import { isArray } from '../internal/lang';
+import { toArrayIndex, unique } from '../internal/arrays';
+import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
@@ -44,7 +43,7 @@ export class SetShape<ValueShape extends AnyShape>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super(coerceToUniqueValues);
+    super();
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.set'], options, TYPE_SET);
@@ -68,6 +67,22 @@ export class SetShape<ValueShape extends AnyShape>
 
   protected _getCoercibleInputs(): readonly unknown[] {
     return this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
+  }
+
+  /**
+   * Coerces a value to an array of unique values.
+   *
+   * @param input The value to coerce.
+   * @returns An array, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _coerce(input: unknown): unknown[] {
+    if (isArray(input)) {
+      return unique(input);
+    }
+    if (isIterableObject(getCanonicalValue(input))) {
+      return unique(Array.from(input as Iterable<unknown>));
+    }
+    return [input];
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Set<Output<ValueShape>>> {

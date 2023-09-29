@@ -23,7 +23,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super(coerceToBigInt);
+    super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.bigint'], options, TYPE_BIGINT);
   }
@@ -45,3 +45,5 @@ export class BigIntShape extends CoercibleShape<bigint> {
     return this._applyOperations(input, output, options, null);
   }
 }
+
+BigIntShape.prototype['_coerce'] = coerceToBigInt;

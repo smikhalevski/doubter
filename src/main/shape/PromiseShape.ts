@@ -1,5 +1,4 @@
 import { NEVER } from '../coerce/never';
-import { coerceToPromise } from '../coerce/promise';
 import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
@@ -48,7 +47,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super(coerceToPromise);
+    super();
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.promise'], options, TYPE_PROMISE);
@@ -73,6 +72,10 @@ export class PromiseShape<ValueShape extends AnyShape | null>
       return [TYPE_UNKNOWN];
     }
     return this.valueShape.inputs.concat(TYPE_PROMISE);
+  }
+
+  protected _coerce(input: unknown): Promise<any> {
+    return Promise.resolve(input);
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {

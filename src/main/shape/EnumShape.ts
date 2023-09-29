@@ -1,4 +1,3 @@
-import { createCoerceToEnum } from '../coerce/enum';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_ENUM } from '../constants';
 import { unique } from '../internal/arrays';
@@ -40,11 +39,9 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     readonly source: readonly Value[] | ReadonlyDict<Value>,
     options?: IssueOptions | Message
   ) {
-    const values = getEnumValues(source);
+    super();
 
-    super(createCoerceToEnum(source, values));
-
-    this.values = values;
+    this.values = getEnumValues(source);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
   }

@@ -1,9 +1,9 @@
-import { freeze, getCanonicalValueOf, isArray, isValidDate } from '../internal/lang';
+import { freeze, getCanonicalValue, isArray, isValidDate } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to `Date` with {@link coerceToDate}.
+ * The list of types that are coercible to a Date with {@link coerceToDate}.
  */
 export const dateCoercibleTypes: readonly unknown[] = freeze([
   TYPE_DATE,
@@ -14,7 +14,7 @@ export const dateCoercibleTypes: readonly unknown[] = freeze([
 ]);
 
 /**
- * Coerces a value to a `Date`.
+ * Coerces a value to a Date.
  *
  * @param input The value to coerce.
  * @returns A `Date` value, or {@link NEVER} if coercion isn't possible.
@@ -24,7 +24,7 @@ export function coerceToDate(input: unknown): Date {
     return input;
   }
 
-  input = getCanonicalValueOf(input);
+  input = getCanonicalValue(input);
 
   if ((typeof input === 'string' || typeof input === 'number') && isValidDate((input = new Date(input)))) {
     return input;

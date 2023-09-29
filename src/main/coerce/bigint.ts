@@ -1,9 +1,9 @@
-import { freeze, getCanonicalValueOf, isArray } from '../internal/lang';
+import { freeze, getCanonicalValue, isArray } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to bigint with {@link coerceToBigInt}.
+ * The list of types that are coercible to a bigint with {@link coerceToBigInt}.
  */
 export const bigintCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,
@@ -22,7 +22,7 @@ export const bigintCoercibleTypes: readonly unknown[] = freeze([
  * @param input The value to coerce.
  * @returns A bigint value, or {@link NEVER} if coercion isn't possible.
  */
-export function coerceToBigInt(input: any): bigint {
+export function coerceToBigInt(input: unknown): bigint {
   if (isArray(input) && input.length === 1 && typeof (input = input[0]) === 'bigint') {
     return input;
   }
@@ -30,7 +30,7 @@ export function coerceToBigInt(input: any): bigint {
     return BigInt(0);
   }
 
-  input = getCanonicalValueOf(input);
+  input = getCanonicalValue(input);
 
   if (
     typeof input === 'bigint' ||

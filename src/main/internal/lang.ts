@@ -38,10 +38,15 @@ export function isMapEntry(value: unknown): value is [unknown, unknown] {
 }
 
 /**
- * Returns primitive if an object is a wrapper, or returns value as is.
+ * Returns primitive if
+ * [an object is a wrapper](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#primitive_values),
+ * or returns value as is.
  */
-export function getCanonicalValueOf(value: unknown): unknown {
-  if (isObjectLike(value) && (value instanceof String || value instanceof Number || value instanceof Boolean)) {
+export function getCanonicalValue(value: unknown): unknown {
+  if (
+    isObjectLike(value) &&
+    (value instanceof String || value instanceof Number || value instanceof Boolean || value instanceof BigInt)
+  ) {
     return value.valueOf();
   }
   return value;

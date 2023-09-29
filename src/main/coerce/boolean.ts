@@ -1,9 +1,9 @@
-import { freeze, getCanonicalValueOf, isArray } from '../internal/lang';
+import { freeze, getCanonicalValue, isArray } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../Type';
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to boolean with {@link coerceToBoolean}.
+ * The list of types that are coercible to a boolean with {@link coerceToBoolean}.
  */
 export const booleanCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,
@@ -28,15 +28,12 @@ export function coerceToBoolean(input: unknown): boolean {
     return input;
   }
 
-  input = getCanonicalValueOf(input);
+  input = getCanonicalValue(input);
 
-  if (typeof input === 'boolean') {
-    return input;
-  }
-  if (input === null || input === undefined || input === false || input === 0 || input === 'false') {
+  if (input === 0 || input === 'false' || input === false || input === null || input === undefined) {
     return false;
   }
-  if (input === true || input === 1 || input === 'true') {
+  if (input === 1 || input === 'true' || input === true) {
     return true;
   }
   return NEVER;

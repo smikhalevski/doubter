@@ -24,7 +24,7 @@ export class NumberShape extends CoercibleShape<number> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super(coerceToNumber);
+    super();
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.number'], options, TYPE_NUMBER);
   }
@@ -65,3 +65,5 @@ export class NumberShape extends CoercibleShape<number> {
     return this._applyOperations(input, output, options, null);
   }
 }
+
+NumberShape.prototype['_coerce'] = coerceToNumber;
