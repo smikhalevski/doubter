@@ -1,5 +1,5 @@
 import { NEVER } from '../../main';
-import { coerceToBoolean } from '../../main/coerce/coerceToBoolean';
+import { coerceToBoolean } from '../../main/coerce/boolean';
 
 describe('coerceToBoolean', () => {
   test('coerces a Boolean object', () => {

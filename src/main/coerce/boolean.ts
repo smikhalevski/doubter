@@ -1,5 +1,23 @@
 import { getCanonicalValueOf, isArray } from '../internal/lang';
+import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../Type';
 import { NEVER } from './never';
+
+export const booleanTypes: unknown[] = [TYPE_BOOLEAN];
+
+/**
+ * The list of types that are coercible to boolean with {@link coerceToBoolean}.
+ */
+export const booleanCoercibleTypes: unknown[] = [
+  TYPE_ARRAY,
+  TYPE_OBJECT,
+  TYPE_BOOLEAN,
+  'false',
+  'true',
+  0,
+  1,
+  null,
+  undefined,
+];
 
 /**
  * Coerces a value to a boolean.

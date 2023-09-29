@@ -1,4 +1,12 @@
 import { getCanonicalValueOf, isIterableObject } from '../internal/lang';
+import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
+
+export const arrayTypes: unknown[] = [TYPE_ARRAY];
+
+/**
+ * The list of types that are coercible to array with {@link coerceToArray}.
+ */
+export const arrayCoercibleTypes: unknown[] = [TYPE_OBJECT, TYPE_ARRAY];
 
 /**
  * Coerces a value to an array.

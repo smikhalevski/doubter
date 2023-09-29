@@ -1,12 +1,16 @@
 import { getCanonicalValueOf } from '../internal/lang';
-import { coerceToBigInt } from './coerceToBigInt';
-import { coerceToBoolean } from './coerceToBoolean';
-import { coerceToDate } from './coerceToDate';
+import { coerceToBigInt } from './bigint';
+import { coerceToBoolean } from './boolean';
+import { coerceToDate } from './date';
 import { coerceToNever, NEVER } from './never';
-import { coerceToNull } from './coerceToNull';
-import { coerceToNumber } from './coerceToNumber';
+import { coerceToNull } from './null';
+import { coerceToNumber } from './number';
 import { coerceToString } from './string';
-import { coerceToUndefined } from './coerceToUndefined';
+import { coerceToUndefined } from './undefined';
+
+export function getConstCoercibleTypes(value: unknown): readonly unknown[] {
+  return [];
+}
 
 export function createCoerceToConst(value: unknown): (input: any) => any {
   if (value === null) {

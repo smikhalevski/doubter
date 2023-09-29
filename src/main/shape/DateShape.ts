@@ -1,8 +1,8 @@
-import { coerceToDate } from '../coerce/coerceToDate';
+import { coerceToDate, dateCoercibleTypes, dateTypes } from '../coerce/date';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isValidDate } from '../internal/lang';
-import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
+import { TYPE_DATE } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -23,27 +23,25 @@ export class DateShape extends CoercibleShape<Date> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super();
+    super(coerceToDate);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, TYPE_DATE);
   }
 
   protected _getInputs(): readonly unknown[] {
-    if (this.isCoercing) {
-      return [TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
-    } else {
-      return [TYPE_DATE];
-    }
+    return dateTypes;
+  }
+
+  protected _getCoercibleInputs(): readonly unknown[] {
+    return dateCoercibleTypes;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Date> {
     let output = input;
 
-    if (!isValidDate(input) && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
+    if (!isValidDate(input) && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
 }
-
-DateShape.prototype['_coerce'] = coerceToDate;

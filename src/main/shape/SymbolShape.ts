@@ -1,3 +1,4 @@
+import { symbolTypes } from '../coerce/symbol';
 import { CODE_TYPE } from '../constants';
 import { TYPE_SYMBOL } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -27,7 +28,7 @@ export class SymbolShape extends Shape<symbol> {
   }
 
   protected _getInputs(): readonly unknown[] {
-    return [TYPE_SYMBOL];
+    return symbolTypes;
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {

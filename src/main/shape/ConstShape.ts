@@ -1,3 +1,4 @@
+import { createCoerceToConst, getConstCoercibleTypes } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -35,24 +36,24 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     readonly value: Value,
     options?: IssueOptions | Message
   ) {
-    super();
+    super(createCoerceToConst(value));
 
     this._typePredicate = value !== value ? Number.isNaN : input => value === input;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages[CODE_TYPE_CONST], options, value);
   }
 
   protected _getInputs(): readonly unknown[] {
-    if (this.isCoercing) {
-      return [];
-    } else {
-      return [this.value];
-    }
+    return [this.value];
+  }
+
+  protected _getCoercibleInputs(): readonly unknown[] {
+    return getConstCoercibleTypes(this.value);
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
     let output = input;
 
-    if (!this._typePredicate(input) && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
+    if (!this._typePredicate(input) && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

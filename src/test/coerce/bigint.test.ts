@@ -1,5 +1,5 @@
 import { NEVER } from '../../main';
-import { coerceToBigInt } from '../../main/coerce/coerceToBigInt';
+import { coerceToBigInt } from '../../main/coerce/bigint';
 
 describe('coerceToBigInt', () => {
   test('coerces a String object', () => {

@@ -22,7 +22,7 @@ export const stringCoercibleTypes: unknown[] = [
 /**
  * Coerces a value to a string.
  *
- * @param value The non-string value to coerce.
+ * @param value The value to coerce.
  * @returns A string value, or {@link NEVER} if coercion isn't possible.
  */
 export function coerceToString(value: unknown): string {

@@ -1,5 +1,13 @@
 import { getCanonicalValueOf, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
+import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { NEVER } from './never';
+
+export const mapTypes: unknown[] = [TYPE_MAP];
+
+/**
+ * The list of types that are coercible to entries with {@link coerceToMapEntries}.
+ */
+export const mapCoercibleTypes: unknown[] = [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
 
 /**
  * Coerces a value to an array of {@link !Map Map} entries.

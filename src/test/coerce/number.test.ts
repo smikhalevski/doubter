@@ -1,5 +1,5 @@
 import { NEVER } from '../../main';
-import { coerceToNumber } from '../../main/coerce/coerceToNumber';
+import { coerceToNumber } from '../../main/coerce/number';
 
 describe('coerceToNumber', () => {
   test('coerces a Number object', () => {

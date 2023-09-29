@@ -4,7 +4,7 @@ import { CODE_TYPE } from '../constants';
 import { TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { CoercibleShape } from './CoercibleShape2';
+import { CoercibleShape } from './CoercibleShape';
 
 /**
  * The shape of a string value.

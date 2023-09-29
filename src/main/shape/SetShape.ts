@@ -1,5 +1,5 @@
 import { NEVER } from '../coerce/never';
-import { coerceToUniqueArray } from '../coerce/coerceToUniqueArray';
+import { coerceToUniqueValues, setTypes } from '../coerce/set';
 import { CODE_TYPE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
 import { isArray } from '../internal/lang';
@@ -44,7 +44,7 @@ export class SetShape<ValueShape extends AnyShape>
     readonly valueShape: ValueShape,
     options?: IssueOptions | Message
   ) {
-    super();
+    super(coerceToUniqueValues);
 
     this._options = options;
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.set'], options, TYPE_SET);
@@ -63,11 +63,11 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   protected _getInputs(): readonly unknown[] {
-    if (this.isCoercing) {
-      return this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
-    } else {
-      return [TYPE_SET];
-    }
+    return setTypes;
+  }
+
+  protected _getCoercibleInputs(): readonly unknown[] {
+    return this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Set<Output<ValueShape>>> {
@@ -79,7 +79,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      !(changed = (values = this._applyCoercion(input, options.coerce)) !== NEVER)
+      !(changed = (values = this._tryCoerce(input, options.coerce)) !== NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
@@ -119,7 +119,7 @@ export class SetShape<ValueShape extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        !(changed = (values = this._applyCoercion(input, options.coerce)) !== NEVER)
+        !(changed = (values = this._tryCoerce(input, options.coerce)) !== NEVER)
       ) {
         resolve([this._typeIssueFactory(input, options)]);
         return;
@@ -161,5 +161,3 @@ export class SetShape<ValueShape extends AnyShape>
     });
   }
 }
-
-SetShape.prototype['_coerce'] = coerceToUniqueArray;

@@ -1,5 +1,6 @@
-import { coerceToArray } from '../coerce/coerceToArray';
+import { arrayCoercibleTypes, arrayTypes, coerceToArray } from '../coerce/array';
 import { NEVER } from '../coerce/never';
+import { unknownTypes } from '../coerce/unknown';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
 import { isArray } from '../internal/lang';
@@ -12,7 +13,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { TYPE_ARRAY, TYPE_OBJECT, TYPE_UNKNOWN } from '../Type';
+import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -80,7 +81,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     readonly restShape: RestShape,
     options?: IssueOptions | Message
   ) {
-    super();
+    super(coerceToArray);
 
     this._options = options;
 
@@ -134,13 +135,14 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   }
 
   protected _getInputs(): readonly unknown[] {
+    return arrayTypes;
+  }
+
+  protected _getCoercibleInputs(): readonly unknown[] {
     const { headShapes, restShape } = this;
 
-    if (!this.isCoercing) {
-      return [TYPE_ARRAY];
-    }
     if (headShapes.length > 1) {
-      return [TYPE_OBJECT, TYPE_ARRAY];
+      return arrayCoercibleTypes;
     }
     if (headShapes.length === 1) {
       return headShapes[0].inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
@@ -148,7 +150,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     if (restShape !== null) {
       return restShape.inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
     }
-    return [TYPE_UNKNOWN];
+    return unknownTypes;
   }
 
   protected _apply(
@@ -165,7 +167,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     if (
       // Not an array or not coercible
-      (!isArray(output) && (output = this._applyCoercion(input, options.coerce)) === NEVER) ||
+      (!isArray(output) && (output = this._tryCoerce(input, options.coerce)) === NEVER) ||
       // Invalid tuple length
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
@@ -216,7 +218,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
       if (
         // Not an array or not coercible
-        (!isArray(output) && (output = this._applyCoercion(input, options.coerce)) === NEVER) ||
+        (!isArray(output) && (output = this._tryCoerce(input, options.coerce)) === NEVER) ||
         // Invalid tuple length
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)
@@ -267,5 +269,3 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     });
   }
 }
-
-ArrayShape.prototype['_coerce'] = coerceToArray;

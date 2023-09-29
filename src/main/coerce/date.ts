@@ -1,10 +1,18 @@
 import { getCanonicalValueOf, isArray, isValidDate } from '../internal/lang';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
+
+export const dateTypes: unknown[] = [TYPE_DATE];
+
+/**
+ * The list of types that are coercible to date with {@link coerceToDate}.
+ */
+export const dateCoercibleTypes: unknown[] = [TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
 
 /**
  * Coerces a value to a {@link !Date Date}.
  *
- * @param value The non-{@link !Date Date} value to coerce.
+ * @param value The value to coerce.
  * @returns A {@link !Date Date} value, or {@link NEVER} if coercion isn't possible.
  */
 export function coerceToDate(value: unknown): Date {
