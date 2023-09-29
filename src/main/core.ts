@@ -1,5 +1,3 @@
-export { NEVER } from './coerce/NEVER';
-
 export { any } from './dsl/any';
 export { array } from './dsl/array';
 export { bigint } from './dsl/bigint';
@@ -75,3 +73,4 @@ export * from './ValidationError';
 
 export { Messages } from './messages';
 export { Type, TypeName } from './Type';
+export { NEVER } from './coerce/never';

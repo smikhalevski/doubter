@@ -1,5 +1,5 @@
 import { coerceToMapEntries } from '../coerce/coerceToMapEntries';
-import { NEVER } from '../coerce/NEVER';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
@@ -76,7 +76,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     return this.keyShape.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     if (this.isCoercing) {
       return [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
     } else {

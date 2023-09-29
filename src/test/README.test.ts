@@ -1,6 +1,7 @@
 import qs from 'qs';
 import { Shape } from '../main';
 import * as d from '../main';
+import { NEVER } from '../main';
 import { CODE_TYPE_UNION } from '../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/Type';
 
@@ -181,7 +182,7 @@ test('Overriding type coercion', () => {
       return false;
     }
     // Coercion is not possible
-    return d.NEVER;
+    return NEVER;
   });
 
   expect(d.array(yesNoShape).parse(['yes', 'no'])).toEqual([true, false]);

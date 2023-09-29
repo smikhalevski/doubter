@@ -1,4 +1,4 @@
-import { NEVER } from '../coerce/NEVER';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
@@ -41,7 +41,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages[CODE_TYPE_CONST], options, value);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     if (this.isCoercing) {
       return [];
     } else {

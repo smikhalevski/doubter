@@ -1,4 +1,4 @@
-import { NEVER } from '../../main/coerce/NEVER';
+import { NEVER } from '../../main';
 import { coerceToNumber } from '../../main/coerce/coerceToNumber';
 
 describe('coerceToNumber', () => {

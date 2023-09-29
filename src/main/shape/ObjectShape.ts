@@ -50,6 +50,10 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
 /**
  * Defines how object keys are handled.
  *
+ * - If `preserved` then unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape};
+ * - If `stripped` then the input object is cloned and unknown keys are removed from it;
+ * - If `exact` then an issue is raised if an unknown key is met.
+ *
  * @see {@link ObjectShape.keysMode}
  * @group Other
  */
@@ -114,6 +118,8 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     /**
      * The shape that constrains values of
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
+     *
+     * @see {@link ObjectShape.rest}
      */
     readonly restShape: RestShape,
     options?: IssueOptions | Message,
@@ -343,7 +349,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     return this.restShape?.isAsync || isAsyncShapes(this.valueShapes);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return [TYPE_OBJECT];
   }
 

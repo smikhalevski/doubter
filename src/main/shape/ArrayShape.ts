@@ -1,5 +1,5 @@
 import { coerceToArray } from '../coerce/coerceToArray';
-import { NEVER } from '../coerce/NEVER';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
 import { isArray } from '../internal/lang';
@@ -133,7 +133,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     return isAsyncShapes(this.headShapes) || this.restShape?.isAsync || false;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     const { headShapes, restShape } = this;
 
     if (!this.isCoercing) {

@@ -102,7 +102,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     return this.providedShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return this.providedShape.inputs.slice(0);
   }
 

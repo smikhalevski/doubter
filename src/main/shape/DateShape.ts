@@ -1,5 +1,5 @@
 import { coerceToDate } from '../coerce/coerceToDate';
-import { NEVER } from '../coerce/NEVER';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isValidDate } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
@@ -28,7 +28,7 @@ export class DateShape extends CoercibleShape<Date> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, TYPE_DATE);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     if (this.isCoercing) {
       return [TYPE_DATE, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY];
     } else {

@@ -6,3 +6,7 @@
  * @group Other
  */
 export const NEVER = Object.freeze({ never: true }) as never;
+
+export function coerceToNever() {
+  return NEVER;
+}

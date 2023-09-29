@@ -1,5 +1,5 @@
+import { NEVER } from '../coerce/never';
 import { coerceToUniqueArray } from '../coerce/coerceToUniqueArray';
-import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
 import { isArray } from '../internal/lang';
@@ -62,7 +62,7 @@ export class SetShape<ValueShape extends AnyShape>
     return this.valueShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     if (this.isCoercing) {
       return this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
     } else {

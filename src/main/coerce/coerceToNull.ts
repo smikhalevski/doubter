@@ -1,5 +1,5 @@
 import { isArray } from '../internal/lang';
-import { NEVER } from './NEVER';
+import { NEVER } from './never';
 
 export function coerceToNull(value: any): null {
   if ((isArray(value) && value.length === 1 && (value = value[0]) === null) || value === null || value === undefined) {

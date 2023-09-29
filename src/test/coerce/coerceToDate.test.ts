@@ -1,5 +1,5 @@
+import { NEVER } from '../../main/coerce/never';
 import { coerceToDate } from '../../main/coerce/coerceToDate';
-import { NEVER } from '../../main/coerce/NEVER';
 
 describe('coerceToDate', () => {
   test('coerces a String object', () => {

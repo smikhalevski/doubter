@@ -1,4 +1,4 @@
-import { NEVER } from '../coerce/NEVER';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE_INTERSECTION } from '../constants';
 import { isArray, isEqual } from '../internal/lang';
 import { setObjectProperty } from '../internal/objects';
@@ -92,7 +92,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return isAsyncShapes(this.shapes);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     const inputs = [];
 
     for (const shape of this.shapes) {

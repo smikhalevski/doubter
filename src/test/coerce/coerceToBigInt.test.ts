@@ -1,4 +1,4 @@
-import { NEVER } from '../../main/coerce/NEVER';
+import { NEVER } from '../../main';
 import { coerceToBigInt } from '../../main/coerce/coerceToBigInt';
 
 describe('coerceToBigInt', () => {

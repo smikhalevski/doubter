@@ -1,5 +1,5 @@
 import { coerceToBoolean } from '../coerce/coerceToBoolean';
-import { NEVER } from '../coerce/NEVER';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -28,7 +28,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.boolean'], options, TYPE_BOOLEAN);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     if (this.isCoercing) {
       return [TYPE_ARRAY, TYPE_OBJECT, TYPE_BOOLEAN, 'false', 'true', 0, 1, null, undefined];
     } else {

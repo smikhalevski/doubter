@@ -1,5 +1,5 @@
+import { NEVER } from '../coerce/never';
 import { coerceToPromise } from '../coerce/coerceToPromise';
-import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
@@ -64,7 +64,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     return this.valueShape !== null;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     if (!this.isCoercing) {
       return [TYPE_PROMISE];
     }

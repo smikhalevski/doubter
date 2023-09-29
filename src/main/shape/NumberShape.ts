@@ -1,5 +1,5 @@
+import { NEVER } from '../coerce/never';
 import { coerceToNumber } from '../coerce/coerceToNumber';
-import { NEVER } from '../coerce/NEVER';
 import { CODE_TYPE } from '../constants';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -45,7 +45,7 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     if (this.isCoercing) {
       return [TYPE_ARRAY, TYPE_OBJECT, TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_DATE, null, undefined];
     } else {

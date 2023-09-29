@@ -1,7 +1,11 @@
-import { NEVER } from '../../main/coerce/NEVER';
-import { coerceToString } from '../../main/coerce/coerceToString';
+import { NEVER } from '../../main';
+import { coerceToString } from '../../main/coerce/string';
 
 describe('coerceToString', () => {
+  test('returns a string as is', () => {
+    expect(coerceToString('aaa')).toBe('aaa');
+  });
+
   test('coerces a String object', () => {
     expect(coerceToString(String('aaa'))).toBe('aaa');
     expect(coerceToString([String('aaa')])).toBe('aaa');
@@ -38,6 +42,7 @@ describe('coerceToString', () => {
   });
 
   test('does not coerce objects and functions', () => {
+    expect(coerceToString({ valueOf: () => 'aaa' })).toBe(NEVER);
     expect(coerceToString({ key1: 111 })).toBe(NEVER);
     expect(coerceToString(() => null)).toBe(NEVER);
   });

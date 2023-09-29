@@ -1,10 +1,10 @@
-import { coerceToString } from '../coerce/coerceToString';
-import { NEVER } from '../coerce/NEVER';
+import { NEVER } from '../coerce/never';
+import { coerceToString, stringCoercibleTypes, stringTypes } from '../coerce/string';
 import { CODE_TYPE } from '../constants';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
+import { TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { CoercibleShape } from './CoercibleShape2';
 
 /**
  * The shape of a string value.
@@ -23,27 +23,25 @@ export class StringShape extends CoercibleShape<string> {
    * @param options The issue options or the issue message.
    */
   constructor(options?: IssueOptions | Message) {
-    super();
+    super(coerceToString);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.string'], options, TYPE_STRING);
   }
 
-  protected _getInputs(): unknown[] {
-    if (this.isCoercing) {
-      return [TYPE_ARRAY, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_DATE, null, undefined];
-    } else {
-      return [TYPE_STRING];
-    }
+  protected _getInputs(): readonly unknown[] {
+    return stringTypes;
+  }
+
+  protected _getCoercibleInputs(): readonly unknown[] {
+    return stringCoercibleTypes;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<string> {
     let output = input;
 
-    if (typeof output !== 'string' && (output = this._applyCoercion(input, options.coerce)) === NEVER) {
+    if (typeof output !== 'string' && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
 }
-
-StringShape.prototype['_coerce'] = coerceToString;

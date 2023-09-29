@@ -248,7 +248,7 @@ export class FunctionShape<
     };
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return [TYPE_FUNCTION];
   }
 

@@ -1,4 +1,4 @@
-import { NEVER } from '../coerce/NEVER';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE_ENUM } from '../constants';
 import { unique } from '../internal/arrays';
 import { isArray } from '../internal/lang';
@@ -46,7 +46,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     const inputs: unknown[] = this.values.slice(0);
 
     if (!this.isCoercing || inputs.length === 0) {

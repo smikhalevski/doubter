@@ -38,7 +38,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
     );
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     const { ctor } = this;
 
     if (isEqualOrSubclass(ctor, Function)) {

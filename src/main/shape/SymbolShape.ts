@@ -26,7 +26,7 @@ export class SymbolShape extends Shape<symbol> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.symbol'], options, TYPE_SYMBOL);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return [TYPE_SYMBOL];
   }
 

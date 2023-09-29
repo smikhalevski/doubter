@@ -1,5 +1,5 @@
 import { getCanonicalValueOf, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
-import { NEVER } from './NEVER';
+import { NEVER } from './never';
 
 /**
  * Coerces a value to an array of {@link !Map Map} entries.

@@ -2,12 +2,11 @@ import { getCanonicalValueOf } from '../internal/lang';
 import { coerceToBigInt } from './coerceToBigInt';
 import { coerceToBoolean } from './coerceToBoolean';
 import { coerceToDate } from './coerceToDate';
-import { coerceToNever } from './coerceToNever';
+import { coerceToNever, NEVER } from './never';
 import { coerceToNull } from './coerceToNull';
 import { coerceToNumber } from './coerceToNumber';
-import { coerceToString } from './coerceToString';
+import { coerceToString } from './string';
 import { coerceToUndefined } from './coerceToUndefined';
-import { NEVER } from './NEVER';
 
 export function createCoerceToConst(value: unknown): (input: any) => any {
   if (value === null) {

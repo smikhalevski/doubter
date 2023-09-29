@@ -95,7 +95,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return isAsyncShapes(this.shapes);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     const inputs = [];
 
     for (const shape of this.shapes) {

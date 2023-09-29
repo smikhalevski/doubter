@@ -1,5 +1,4 @@
-import { coerceToNever } from '../coerce/coerceToNever';
-import { NEVER } from '../coerce/NEVER';
+import { coerceToNever, NEVER } from '../coerce/never';
 import { Shape } from './Shape';
 
 /**
