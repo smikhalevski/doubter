@@ -19,15 +19,8 @@ import {
   CODE_STRING_NON_BLANK,
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
-  MESSAGE_STRING_ENDS_WITH,
-  MESSAGE_STRING_INCLUDES,
-  MESSAGE_STRING_MAX,
-  MESSAGE_STRING_MIN,
-  MESSAGE_STRING_NON_BLANK,
-  MESSAGE_STRING_REGEX,
-  MESSAGE_STRING_STARTS_WITH,
 } from '../constants';
-import { IssueOptions, Message, StringShape } from '../core';
+import { IssueOptions, Message, Shape, StringShape } from '../core';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -165,7 +158,7 @@ export default function enableStringEssentials(prototype: StringShape): void {
   };
 
   prototype.min = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_MIN, MESSAGE_STRING_MIN, options, length);
+    const issueFactory = createIssueFactory(CODE_STRING_MIN, Shape.messages['string.min'], options, length);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -183,7 +176,7 @@ export default function enableStringEssentials(prototype: StringShape): void {
   };
 
   prototype.max = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_MAX, MESSAGE_STRING_MAX, options, length);
+    const issueFactory = createIssueFactory(CODE_STRING_MAX, Shape.messages['string.max'], options, length);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -201,7 +194,7 @@ export default function enableStringEssentials(prototype: StringShape): void {
   };
 
   prototype.regex = function (re, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_REGEX, MESSAGE_STRING_REGEX, options, re);
+    const issueFactory = createIssueFactory(CODE_STRING_REGEX, Shape.messages['string.regex'], options, re);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -219,7 +212,7 @@ export default function enableStringEssentials(prototype: StringShape): void {
   };
 
   prototype.includes = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, MESSAGE_STRING_INCLUDES, options, value);
+    const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, Shape.messages['string.includes'], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -237,7 +230,12 @@ export default function enableStringEssentials(prototype: StringShape): void {
   };
 
   prototype.startsWith = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_STARTS_WITH, MESSAGE_STRING_STARTS_WITH, options, value);
+    const issueFactory = createIssueFactory(
+      CODE_STRING_STARTS_WITH,
+      Shape.messages['string.startsWith'],
+      options,
+      value
+    );
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -255,7 +253,7 @@ export default function enableStringEssentials(prototype: StringShape): void {
   };
 
   prototype.endsWith = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, MESSAGE_STRING_ENDS_WITH, options, value);
+    const issueFactory = createIssueFactory(CODE_STRING_ENDS_WITH, Shape.messages['string.endsWith'], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -273,7 +271,12 @@ export default function enableStringEssentials(prototype: StringShape): void {
   };
 
   prototype.nonBlank = function (options) {
-    const issueFactory = createIssueFactory(CODE_STRING_NON_BLANK, MESSAGE_STRING_NON_BLANK, options, undefined);
+    const issueFactory = createIssueFactory(
+      CODE_STRING_NON_BLANK,
+      Shape.messages['string.nonBlank'],
+      options,
+      undefined
+    );
 
     return this.use(
       next => (input, output, options, issues) => {

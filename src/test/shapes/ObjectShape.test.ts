@@ -1,12 +1,5 @@
 import { ObjectShape, Ok, Shape, StringShape } from '../../main';
-import {
-  CODE_ANY_DENY,
-  CODE_OBJECT_EXACT,
-  CODE_TYPE,
-  CODE_TYPE_ENUM,
-  MESSAGE_TYPE_OBJECT,
-  MESSAGE_TYPE_STRING,
-} from '../../main/constants';
+import { CODE_ANY_DENY, CODE_OBJECT_EXACT, CODE_TYPE, CODE_TYPE_ENUM } from '../../main/constants';
 import { resetNonce } from '../../main/internal';
 import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 import { AsyncMockShape, MockShape } from './mocks';
@@ -37,7 +30,7 @@ describe('ObjectShape', () => {
 
     expect(shape.try('')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_TYPE_OBJECT, param: TYPE_OBJECT }],
+      issues: [{ code: CODE_TYPE, input: '', message: Shape.messages['type.object'], param: TYPE_OBJECT }],
     });
   });
 
@@ -207,7 +200,7 @@ describe('ObjectShape', () => {
 
       expect(shape.try(input, { earlyReturn: true })).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: ['key1'] }],
+        issues: [{ code: CODE_TYPE, message: Shape.messages['type.string'], param: TYPE_STRING, path: ['key1'] }],
       });
     });
   });
@@ -269,7 +262,13 @@ describe('ObjectShape', () => {
       expect(shape.try({ key1: { key2: 111 } })).toEqual({
         ok: false,
         issues: [
-          { code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: ['key1', 'key2'] },
+          {
+            code: CODE_TYPE,
+            input: 111,
+            message: Shape.messages['type.string'],
+            param: TYPE_STRING,
+            path: ['key1', 'key2'],
+          },
         ],
       });
     });
@@ -286,7 +285,13 @@ describe('ObjectShape', () => {
       expect(shape.try({ key1: { key2: 111 } })).toEqual({
         ok: false,
         issues: [
-          { code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: ['key1', 'key2'] },
+          {
+            code: CODE_TYPE,
+            input: 111,
+            message: Shape.messages['type.string'],
+            param: TYPE_STRING,
+            path: ['key1', 'key2'],
+          },
         ],
       });
     });
@@ -527,7 +532,7 @@ describe('ObjectShape', () => {
 
       await expect(shape.tryAsync('')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_TYPE_OBJECT, param: TYPE_OBJECT }],
+        issues: [{ code: CODE_TYPE, input: '', message: Shape.messages['type.object'], param: TYPE_OBJECT }],
       });
     });
 

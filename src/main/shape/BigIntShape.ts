@@ -1,10 +1,10 @@
-import { CODE_TYPE, MESSAGE_TYPE_BIGINT } from '../constants';
+import { CODE_TYPE } from '../constants';
 import { getCanonicalValueOf, isArray } from '../internal';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER } from './Shape';
+import { NEVER, Shape } from './Shape';
 
 /**
  * The shape of a bigint value.
@@ -25,7 +25,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_BIGINT, options, TYPE_BIGINT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.bigint'], options, TYPE_BIGINT);
   }
 
   protected _getInputs(): unknown[] {

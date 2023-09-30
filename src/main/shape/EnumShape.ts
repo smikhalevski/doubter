@@ -1,10 +1,10 @@
-import { CODE_TYPE_ENUM, MESSAGE_TYPE_ENUM } from '../constants';
+import { CODE_TYPE_ENUM } from '../constants';
 import { getCanonicalValueOf, isArray, ReadonlyDict, unique } from '../internal';
 import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER } from './Shape';
+import { NEVER, Shape } from './Shape';
 
 /**
  * The shape of a value enumeration.
@@ -41,7 +41,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
 
     this.values = (isArray(source) ? source : getEnumValues(source)).filter(unique);
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, MESSAGE_TYPE_ENUM, options, this.values);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages['type.enum'], options, this.values);
   }
 
   protected _getInputs(): unknown[] {

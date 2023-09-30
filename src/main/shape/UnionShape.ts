@@ -1,4 +1,4 @@
-import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants';
+import { CODE_TYPE_UNION } from '../constants';
 import { applyShape, Dict, isArray, isAsyncShapes, isObject, isType, toDeepPartialShape, unique } from '../internal';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
@@ -52,7 +52,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_UNION, MESSAGE_TYPE_UNION, options);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_UNION, Shape.messages['type.union'], options);
   }
 
   protected get _lookup(): LookupCallback {

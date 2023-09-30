@@ -1,5 +1,5 @@
-import { BigIntShape, NEVER } from '../../main';
-import { CODE_TYPE, MESSAGE_TYPE_BIGINT } from '../../main/constants';
+import { BigIntShape, NEVER, Shape } from '../../main';
+import { CODE_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('BigIntShape', () => {
@@ -57,7 +57,7 @@ describe('BigIntShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new BigIntShape().coerce().try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_TYPE_BIGINT, param: TYPE_BIGINT }],
+        issues: [{ code: CODE_TYPE, input: ['aaa'], message: Shape.messages['type.bigint'], param: TYPE_BIGINT }],
       });
     });
   });

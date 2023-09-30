@@ -11,7 +11,7 @@
  * @module plugin/date-essentials
  */
 
-import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
+import { CODE_DATE_MAX, CODE_DATE_MIN } from '../constants';
 import { DateShape, IssueOptions, Message, Shape } from '../core';
 import { createIssueFactory } from '../utils';
 
@@ -88,7 +88,7 @@ export default function enableDateEssentials(prototype: DateShape): void {
   prototype.min = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, param);
+    const issueFactory = createIssueFactory(CODE_DATE_MIN, Shape.messages['date.min'], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -108,7 +108,7 @@ export default function enableDateEssentials(prototype: DateShape): void {
   prototype.max = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, param);
+    const issueFactory = createIssueFactory(CODE_DATE_MAX, Shape.messages['date.max'], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {

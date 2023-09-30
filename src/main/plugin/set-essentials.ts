@@ -10,8 +10,8 @@
  *
  * @module plugin/set-essentials
  */
-import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
-import { AnyShape, IssueOptions, Message, SetShape } from '../core';
+import { CODE_SET_MAX, CODE_SET_MIN } from '../constants';
+import { AnyShape, IssueOptions, Message, SetShape, Shape } from '../core';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -70,7 +70,7 @@ export default function enableSetEssentials(prototype: SetShape<any>): void {
   };
 
   prototype.min = function (size, options) {
-    const issueFactory = createIssueFactory(CODE_SET_MIN, MESSAGE_SET_MIN, options, size);
+    const issueFactory = createIssueFactory(CODE_SET_MIN, Shape.messages['set.min'], options, size);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -88,7 +88,7 @@ export default function enableSetEssentials(prototype: SetShape<any>): void {
   };
 
   prototype.max = function (size, options) {
-    const issueFactory = createIssueFactory(CODE_SET_MAX, MESSAGE_SET_MAX, options, size);
+    const issueFactory = createIssueFactory(CODE_SET_MAX, Shape.messages['set.max'], options, size);
 
     return this.use(
       next => (input, output, options, issues) => {

@@ -1,5 +1,5 @@
-import { NEVER, NumberShape } from '../../main';
-import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE, MESSAGE_TYPE_NUMBER } from '../../main/constants';
+import { NEVER, NumberShape, Shape } from '../../main';
+import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
 describe('NumberShape', () => {
@@ -17,7 +17,7 @@ describe('NumberShape', () => {
   test('raises if value is not a number', () => {
     expect(new NumberShape().try('111')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '111', param: TYPE_NUMBER, message: MESSAGE_TYPE_NUMBER }],
+      issues: [{ code: CODE_TYPE, input: '111', param: TYPE_NUMBER, message: Shape.messages['type.number'] }],
     });
 
     expect(new NumberShape().try(NaN)).toEqual({
@@ -106,7 +106,7 @@ describe('NumberShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new NumberShape().coerce().try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: ['aaa'], message: MESSAGE_TYPE_NUMBER, param: TYPE_NUMBER }],
+        issues: [{ code: CODE_TYPE, input: ['aaa'], message: Shape.messages['type.number'], param: TYPE_NUMBER }],
       });
     });
   });

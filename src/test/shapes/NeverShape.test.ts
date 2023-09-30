@@ -1,5 +1,5 @@
-import { NeverShape } from '../../main';
-import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../../main/constants';
+import { NeverShape, Shape } from '../../main';
+import { CODE_TYPE_NEVER } from '../../main/constants';
 
 describe('NeverShape', () => {
   test('has empty inputs', () => {
@@ -9,7 +9,7 @@ describe('NeverShape', () => {
   test('always raises an issue', () => {
     expect(new NeverShape().try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE_NEVER, input: 111, message: MESSAGE_TYPE_NEVER, param: undefined }],
+      issues: [{ code: CODE_TYPE_NEVER, input: 111, message: Shape.messages['type.never'], param: undefined }],
     });
   });
 });

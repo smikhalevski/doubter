@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_TYPE_SET } from '../constants';
+import { CODE_TYPE } from '../constants';
 import {
   concatIssues,
   getCanonicalValueOf,
@@ -12,7 +12,7 @@ import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output } from './Shape';
+import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output, Shape } from './Shape';
 
 /**
  * The shape of a {@link !Set Set} instance.
@@ -51,7 +51,7 @@ export class SetShape<ValueShape extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_SET, options, TYPE_SET);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.set'], options, TYPE_SET);
   }
 
   at(key: unknown): AnyShape | null {

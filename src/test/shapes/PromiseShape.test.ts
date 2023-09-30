@@ -1,5 +1,5 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_TYPE_PROMISE, MESSAGE_TYPE_STRING } from '../../main/constants';
+import { CODE_TYPE } from '../../main/constants';
 import { TYPE_PROMISE, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 import { AsyncMockShape } from './mocks';
 
@@ -24,7 +24,7 @@ describe('PromiseShape', () => {
   test('raises an issue if value is not a Promise', () => {
     expect(new PromiseShape(null).try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_PROMISE, param: TYPE_PROMISE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.promise'], param: TYPE_PROMISE }],
     });
   });
 
@@ -81,7 +81,7 @@ describe('PromiseShape', () => {
 
       await expect(shape.tryAsync(Promise.resolve(111))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING }],
+        issues: [{ code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: TYPE_STRING }],
       });
     });
 
@@ -95,7 +95,9 @@ describe('PromiseShape', () => {
 
       await expect(shape.tryAsync(Promise.resolve({ key1: 111 }))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: ['key1'] }],
+        issues: [
+          { code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: TYPE_STRING, path: ['key1'] },
+        ],
       });
     });
   });
@@ -108,7 +110,7 @@ describe('PromiseShape', () => {
     test('raises an issue if value is not a Promise', async () => {
       await expect(new PromiseShape(new Shape()).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_PROMISE, param: TYPE_PROMISE }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.promise'], param: TYPE_PROMISE }],
       });
     });
 

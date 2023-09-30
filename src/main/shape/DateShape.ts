@@ -1,10 +1,10 @@
-import { CODE_TYPE, MESSAGE_TYPE_DATE } from '../constants';
+import { CODE_TYPE } from '../constants';
 import { getCanonicalValueOf, isArray, isValidDate } from '../internal';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER } from './Shape';
+import { NEVER, Shape } from './Shape';
 
 /**
  * The shape of the {@link !Date Date} object.
@@ -24,7 +24,7 @@ export class DateShape extends CoercibleShape<Date> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_DATE, options, TYPE_DATE);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, TYPE_DATE);
   }
 
   protected _getInputs(): unknown[] {

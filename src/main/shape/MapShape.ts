@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_TYPE_MAP } from '../constants';
+import { CODE_TYPE } from '../constants';
 import {
   applyShape,
   concatIssues,
@@ -22,6 +22,7 @@ import {
   NEVER,
   OptionalDeepPartialShape,
   Output,
+  Shape,
 } from './Shape';
 
 /**
@@ -72,7 +73,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_MAP, options, TYPE_MAP);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.map'], options, TYPE_MAP);
   }
 
   at(key: unknown): AnyShape | null {

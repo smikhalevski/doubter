@@ -1,4 +1,4 @@
-import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../constants';
+import { CODE_TYPE_NEVER } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
@@ -22,7 +22,7 @@ export class NeverShape extends Shape<never> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER, options, undefined);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_NEVER, Shape.messages['type.never'], options, undefined);
   }
 
   protected _getInputs(): unknown[] {

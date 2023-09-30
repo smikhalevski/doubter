@@ -1,4 +1,4 @@
-import { CODE_TYPE_CONST, MESSAGE_TYPE_CONST } from '../constants';
+import { CODE_TYPE_CONST } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
@@ -37,7 +37,7 @@ export class ConstShape<Value> extends Shape<Value> {
     super();
 
     this._typePredicate = value !== value ? Number.isNaN : input => value === input;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, MESSAGE_TYPE_CONST, options, value);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages['type.const'], options, value);
   }
 
   protected _getInputs(): unknown[] {

@@ -11,8 +11,8 @@
  * @module plugin/bigint-essentials
  */
 
-import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
-import { BigIntShape, IssueOptions, Message } from '../core';
+import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../constants';
+import { BigIntShape, IssueOptions, Message, Shape } from '../core';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -103,7 +103,7 @@ export default function enableBigIntEssentials(prototype: BigIntShape): void {
 
   prototype.min = function (value, options) {
     const param = BigInt(value);
-    const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, param);
+    const issueFactory = createIssueFactory(CODE_BIGINT_MIN, Shape.messages['bigint.min'], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -122,7 +122,7 @@ export default function enableBigIntEssentials(prototype: BigIntShape): void {
 
   prototype.max = function (value, options) {
     const param = BigInt(value);
-    const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, param);
+    const issueFactory = createIssueFactory(CODE_BIGINT_MAX, Shape.messages['bigint.max'], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {
