@@ -42,6 +42,16 @@ export interface MultipleOfOptions extends IssueOptions {
 }
 
 declare module '../core' {
+  export interface Messages {
+    'number.finite': any;
+    'number.int': any;
+    'number.gt': any;
+    'number.gte': any;
+    'number.lt': any;
+    'number.lte': any;
+    'number.multipleOf': any;
+  }
+
   export interface NumberShape {
     /**
      * Constrains the number to be a finite number.
@@ -197,7 +207,17 @@ declare module '../core' {
 /**
  * Enhances {@link core!NumberShape NumberShape} with additional methods.
  */
-export default function enableNumberEssentials(prototype: NumberShape): void {
+export default function enableNumberEssentials(ctor: typeof NumberShape): void {
+  const { prototype } = ctor;
+
+  ctor.messages['number.finite'] = 'Must be a finite number';
+  ctor.messages['number.int'] = 'Must be an integer';
+  ctor.messages['number.gt'] = 'Must be greater than %s';
+  ctor.messages['number.gte'] = 'Must be greater than or equal to %s';
+  ctor.messages['number.lt'] = 'Must be less than %s';
+  ctor.messages['number.lte'] = 'Must be less than or equal to %s';
+  ctor.messages['number.multipleOf'] = 'Must be a multiple of %s';
+
   prototype.finite = function (options) {
     const { isFinite } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, Shape.messages['number.finite'], options, undefined);

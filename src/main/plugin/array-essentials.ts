@@ -16,7 +16,13 @@ import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Shape } from
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
-  interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
+  export interface Messages {
+    'array.includes': any;
+    'array.max': any;
+    'array.min': any;
+  }
+
+  export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
     /**
      * Constrains the array length.
      *
@@ -77,7 +83,13 @@ declare module '../core' {
 /**
  * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
  */
-export default function enableArrayEssentials(prototype: ArrayShape<any, any>): void {
+export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>): void {
+  const { prototype } = ctor;
+
+  ctor.messages['array.includes'] = 'Must include a value';
+  ctor.messages['array.max'] = 'Must have the maximum length of %s';
+  ctor.messages['array.min'] = 'Must have the minimum length of %s';
+
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);
   };

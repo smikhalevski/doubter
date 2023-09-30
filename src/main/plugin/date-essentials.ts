@@ -16,6 +16,11 @@ import { DateShape, IssueOptions, Message, Shape } from '../core';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
+  export interface Messages {
+    'date.min': any;
+    'date.max': any;
+  }
+
   export interface DateShape {
     /**
      * Constrains the input date to be greater than or equal to another date.
@@ -84,7 +89,12 @@ declare module '../core' {
 /**
  * Enhances {@link core!DateShape DateShape} with additional methods.
  */
-export default function enableDateEssentials(prototype: DateShape): void {
+export default function enableDateEssentials(ctor: typeof DateShape): void {
+  const { prototype } = ctor;
+
+  ctor.messages['date.min'] = 'Must be after %s';
+  ctor.messages['date.max'] = 'Must be before %s';
+
   prototype.min = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();

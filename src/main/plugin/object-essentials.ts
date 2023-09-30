@@ -24,7 +24,16 @@ import { ReadonlyDict } from '../internal';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
-  interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
+  export interface Messages {
+    'object.allKeys': any;
+    'object.notAllKeys': any;
+    'object.orKeys': any;
+    'object.xorKeys': any;
+    'object.oxorKeys': any;
+    'object.plain': any;
+  }
+
+  export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
     /**
      * Constrains an object to have a `null` or {@link !Object Object} prototype.
      *
@@ -96,7 +105,16 @@ declare module '../core' {
 /**
  * Enhances {@link core!ObjectShape ObjectShape} with additional methods.
  */
-export default function enableObjectEssentials(prototype: ObjectShape<any, any>): void {
+export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any>): void {
+  const { prototype } = ctor;
+
+  ctor.messages['object.allKeys'] = 'Must contain all or no keys: %s';
+  ctor.messages['object.notAllKeys'] = 'Must contain not all or no keys: %s';
+  ctor.messages['object.orKeys'] = 'Must contain at least one key: %s';
+  ctor.messages['object.xorKeys'] = 'Must contain exactly one key: %s';
+  ctor.messages['object.oxorKeys'] = 'Must contain one or no keys: %s';
+  ctor.messages['object.plain'] = 'Must be a plain object';
+
   prototype.plain = function (options) {
     const { getPrototypeOf } = Object;
     const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, Shape.messages['object.plain'], options, undefined);

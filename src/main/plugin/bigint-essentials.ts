@@ -16,6 +16,11 @@ import { BigIntShape, IssueOptions, Message, Shape } from '../core';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
+  export interface Messages {
+    'bigint.min': any;
+    'bigint.max': any;
+  }
+
   export interface BigIntShape {
     /**
      * Constrains the bigint to be greater than zero.
@@ -84,7 +89,12 @@ declare module '../core' {
 /**
  * Enhances {@link core!BigIntShape BigIntShape} with additional methods.
  */
-export default function enableBigIntEssentials(prototype: BigIntShape): void {
+export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
+  const { prototype } = ctor;
+
+  ctor.messages['bigint.min'] = 'Must be greater than or equal to %s';
+  ctor.messages['bigint.max'] = 'Must be less than or equal to %s';
+
   prototype.positive = function (options) {
     return this.min(0, options);
   };

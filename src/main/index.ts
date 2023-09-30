@@ -27,10 +27,10 @@ export type * from './plugin/string-essentials';
 
 export * from './core';
 
-enableArrayEssentials(ArrayShape.prototype);
-enableBigIntEssentials(BigIntShape.prototype);
-enableDateEssentials(DateShape.prototype);
-enableNumberEssentials(NumberShape.prototype);
-enableObjectEssentials(ObjectShape.prototype);
-enableSetEssentials(SetShape.prototype);
-enableStringEssentials(StringShape.prototype);
+enableArrayEssentials(ArrayShape);
+enableBigIntEssentials(BigIntShape);
+enableDateEssentials(DateShape);
+enableNumberEssentials(NumberShape);
+enableObjectEssentials(ObjectShape);
+enableSetEssentials(SetShape);
+enableStringEssentials(StringShape);

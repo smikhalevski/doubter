@@ -21,7 +21,7 @@ import {
   unionTypes,
   universalApplyOperations,
 } from '../internal';
-import { messages } from '../messages';
+import { Messages, messages } from '../messages';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   AlterCallback,
@@ -191,7 +191,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Default messages used by shapes.
    */
-  static messages = messages;
+  static messages: Messages = messages as Messages;
 
   /**
    * The dictionary of shape annotations.

@@ -24,6 +24,16 @@ import { IssueOptions, Message, Shape, StringShape } from '../core';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
+  export interface Messages {
+    'string.nonBlank': any;
+    'string.min': any;
+    'string.max': any;
+    'string.regex': any;
+    'string.includes': any;
+    'string.startsWith': any;
+    'string.endsWith': any;
+  }
+
   export interface StringShape {
     /**
      * The shortcut to apply both {@link StringShape.min} and {@link StringShape.max} constraints.
@@ -152,7 +162,17 @@ declare module '../core' {
 /**
  * Enhances {@link core!StringShape StringShape} with additional methods.
  */
-export default function enableStringEssentials(prototype: StringShape): void {
+export default function enableStringEssentials(ctor: typeof StringShape): void {
+  const { prototype } = ctor;
+
+  ctor.messages['string.nonBlank'] = 'Must not be blank';
+  ctor.messages['string.min'] = 'Must have the minimum length of %s';
+  ctor.messages['string.max'] = 'Must have the maximum length of %s';
+  ctor.messages['string.regex'] = 'Must match the pattern %s';
+  ctor.messages['string.includes'] = 'Must include: %s';
+  ctor.messages['string.startsWith'] = 'Must start with: %s';
+  ctor.messages['string.endsWith'] = 'Must end with: %s';
+
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);
   };

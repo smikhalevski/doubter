@@ -15,6 +15,11 @@ import { AnyShape, IssueOptions, Message, SetShape, Shape } from '../core';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
+  export interface Messages {
+    'set.min': any;
+    'set.max': any;
+  }
+
   export interface SetShape<ValueShape extends AnyShape> {
     /**
      * Constrains the set size.
@@ -64,7 +69,12 @@ declare module '../core' {
 /**
  * Enhances {@link core!SetShape SetShape} with additional methods.
  */
-export default function enableSetEssentials(prototype: SetShape<any>): void {
+export default function enableSetEssentials(ctor: typeof SetShape<any>): void {
+  const { prototype } = ctor;
+
+  ctor.messages['set.min'] = 'Must have the minimum size of %s';
+  ctor.messages['set.max'] = 'Must have the maximum size of %s';
+
   prototype.size = function (size, options) {
     return this.min(size, options).max(size, options);
   };
