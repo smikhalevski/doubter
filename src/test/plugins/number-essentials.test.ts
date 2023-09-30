@@ -17,7 +17,7 @@ describe('finite', () => {
   test('raises if value is an infinity', () => {
     expect(new NumberShape().finite().try(Infinity)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_FINITE, input: Infinity, message: Shape.messages['number.finite'] }],
+      issues: [{ code: CODE_NUMBER_FINITE, input: Infinity, message: Shape.messages[CODE_NUMBER_FINITE] }],
     });
   });
 });
@@ -30,14 +30,14 @@ describe('int', () => {
   test('raises if value is an infinity', () => {
     expect(new NumberShape().int().try(Infinity)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_INT, input: Infinity, message: Shape.messages['number.int'] }],
+      issues: [{ code: CODE_NUMBER_INT, input: Infinity, message: Shape.messages[CODE_NUMBER_INT] }],
     });
   });
 
   test('raises if value is a real number', () => {
     expect(new NumberShape().int().try(111.222)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_INT, input: 111.222, message: Shape.messages['number.int'] }],
+      issues: [{ code: CODE_NUMBER_INT, input: 111.222, message: Shape.messages[CODE_NUMBER_INT] }],
     });
   });
 });

@@ -81,7 +81,7 @@ describe('UnionShape', () => {
         {
           code: CODE_TYPE_UNION,
           input: 'aaa',
-          message: Shape.messages['type.union'],
+          message: Shape.messages[CODE_TYPE_UNION],
           param: {
             inputs: [TYPE_UNKNOWN],
             issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
@@ -192,7 +192,7 @@ describe('UnionShape', () => {
         issues: [
           {
             code: CODE_TYPE_UNION,
-            message: Shape.messages['type.union'],
+            message: Shape.messages[CODE_TYPE_UNION],
             param: {
               inputs: [TYPE_NUMBER],
               issueGroups: null,
@@ -261,7 +261,7 @@ describe('UnionShape', () => {
           {
             code: CODE_TYPE_UNION,
             input: 'aaa',
-            message: Shape.messages['type.union'],
+            message: Shape.messages[CODE_TYPE_UNION],
             param: {
               inputs: [TYPE_UNKNOWN],
               issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],

@@ -59,7 +59,7 @@ describe('JSON shape', () => {
       issues: [
         {
           code: CODE_TYPE_UNION,
-          message: Shape.messages['type.union'],
+          message: Shape.messages[CODE_TYPE_UNION],
           input: value2,
           param: {
             inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
@@ -75,7 +75,7 @@ describe('JSON shape', () => {
         {
           code: CODE_TYPE_UNION,
           input: value3.aaa.bbb,
-          message: Shape.messages['type.union'],
+          message: Shape.messages[CODE_TYPE_UNION],
           param: {
             inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
             issueGroups: null,
@@ -106,7 +106,7 @@ describe('JSON shape', () => {
       issues: [
         {
           code: CODE_TYPE_UNION,
-          message: Shape.messages['type.union'],
+          message: Shape.messages[CODE_TYPE_UNION],
           input: value2,
           param: {
             inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],

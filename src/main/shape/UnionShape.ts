@@ -52,7 +52,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_UNION, Shape.messages['type.union'], options);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_UNION, Shape.messages[CODE_TYPE_UNION], options);
   }
 
   protected get _lookup(): LookupCallback {

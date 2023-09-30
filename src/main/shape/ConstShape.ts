@@ -37,7 +37,7 @@ export class ConstShape<Value> extends Shape<Value> {
     super();
 
     this._typePredicate = value !== value ? Number.isNaN : input => value === input;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages['type.const'], options, value);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages[CODE_TYPE_CONST], options, value);
   }
 
   protected _getInputs(): unknown[] {

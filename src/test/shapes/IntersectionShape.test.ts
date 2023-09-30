@@ -78,7 +78,7 @@ describe('IntersectionShape', () => {
 
     expect(shape.try('111.222')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE_INTERSECTION, input: '111.222', message: Shape.messages['type.intersection'] }],
+      issues: [{ code: CODE_TYPE_INTERSECTION, input: '111.222', message: Shape.messages[CODE_TYPE_INTERSECTION] }],
     });
   });
 
@@ -90,7 +90,7 @@ describe('IntersectionShape', () => {
 
     expect(shape.try(['111.222'])).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE_INTERSECTION, input: ['111.222'], message: Shape.messages['type.intersection'] }],
+      issues: [{ code: CODE_TYPE_INTERSECTION, input: ['111.222'], message: Shape.messages[CODE_TYPE_INTERSECTION] }],
     });
   });
 
@@ -227,7 +227,7 @@ describe('IntersectionShape', () => {
 
       await expect(shape.tryAsync(['111.222'])).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE_INTERSECTION, input: ['111.222'], message: Shape.messages['type.intersection'] }],
+        issues: [{ code: CODE_TYPE_INTERSECTION, input: ['111.222'], message: Shape.messages[CODE_TYPE_INTERSECTION] }],
       });
     });
 

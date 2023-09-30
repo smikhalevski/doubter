@@ -64,7 +64,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     this._options = options;
     this._typeIssueFactory = createIssueFactory(
       CODE_TYPE_INTERSECTION,
-      Shape.messages['type.intersection'],
+      Shape.messages[CODE_TYPE_INTERSECTION],
       options,
       undefined
     );

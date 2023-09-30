@@ -87,7 +87,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     if (headShapes.length !== 0 || restShape === null) {
       this._typeIssueFactory = createIssueFactory(
         CODE_TYPE_TUPLE,
-        Shape.messages['type.tuple'],
+        Shape.messages[CODE_TYPE_TUPLE],
         options,
         headShapes.length
       );

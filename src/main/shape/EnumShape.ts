@@ -41,7 +41,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
 
     this.values = (isArray(source) ? source : getEnumValues(source)).filter(unique);
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages['type.enum'], options, this.values);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
   }
 
   protected _getInputs(): unknown[] {

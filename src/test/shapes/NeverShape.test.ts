@@ -9,7 +9,7 @@ describe('NeverShape', () => {
   test('always raises an issue', () => {
     expect(new NeverShape().try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE_NEVER, input: 111, message: Shape.messages['type.never'], param: undefined }],
+      issues: [{ code: CODE_TYPE_NEVER, input: 111, message: Shape.messages[CODE_TYPE_NEVER], param: undefined }],
     });
   });
 });

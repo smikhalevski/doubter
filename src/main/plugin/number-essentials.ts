@@ -20,7 +20,7 @@ import {
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
 } from '../constants';
-import { IssueOptions, Message, NumberShape, Shape } from '../core';
+import { IssueOptions, Message, NumberShape } from '../core';
 import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
@@ -208,19 +208,19 @@ declare module '../core' {
  * Enhances {@link core!NumberShape NumberShape} with additional methods.
  */
 export default function enableNumberEssentials(ctor: typeof NumberShape): void {
-  const { prototype } = ctor;
+  const { messages, prototype } = ctor;
 
-  ctor.messages['number.finite'] = 'Must be a finite number';
-  ctor.messages['number.int'] = 'Must be an integer';
-  ctor.messages['number.gt'] = 'Must be greater than %s';
-  ctor.messages['number.gte'] = 'Must be greater than or equal to %s';
-  ctor.messages['number.lt'] = 'Must be less than %s';
-  ctor.messages['number.lte'] = 'Must be less than or equal to %s';
-  ctor.messages['number.multipleOf'] = 'Must be a multiple of %s';
+  messages[CODE_NUMBER_FINITE] = 'Must be a finite number';
+  messages[CODE_NUMBER_INT] = 'Must be an integer';
+  messages[CODE_NUMBER_GT] = 'Must be greater than %s';
+  messages[CODE_NUMBER_GTE] = 'Must be greater than or equal to %s';
+  messages[CODE_NUMBER_LT] = 'Must be less than %s';
+  messages[CODE_NUMBER_LTE] = 'Must be less than or equal to %s';
+  messages[CODE_NUMBER_MULTIPLE_OF] = 'Must be a multiple of %s';
 
   prototype.finite = function (options) {
     const { isFinite } = Number;
-    const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, Shape.messages['number.finite'], options, undefined);
+    const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, ctor.messages[CODE_NUMBER_FINITE], options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -239,7 +239,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
 
   prototype.int = function (options) {
     const { isInteger } = Number;
-    const issueFactory = createIssueFactory(CODE_NUMBER_INT, Shape.messages['number.int'], options, undefined);
+    const issueFactory = createIssueFactory(CODE_NUMBER_INT, ctor.messages[CODE_NUMBER_INT], options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -273,7 +273,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   };
 
   prototype.gt = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_GT, Shape.messages['number.gt'], options, value);
+    const issueFactory = createIssueFactory(CODE_NUMBER_GT, ctor.messages[CODE_NUMBER_GT], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -291,7 +291,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   };
 
   prototype.lt = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_LT, Shape.messages['number.lt'], options, value);
+    const issueFactory = createIssueFactory(CODE_NUMBER_LT, ctor.messages[CODE_NUMBER_LT], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -309,7 +309,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   };
 
   prototype.gte = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_GTE, Shape.messages['number.gte'], options, value);
+    const issueFactory = createIssueFactory(CODE_NUMBER_GTE, ctor.messages[CODE_NUMBER_GTE], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -327,7 +327,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   };
 
   prototype.lte = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_LTE, Shape.messages['number.lte'], options, value);
+    const issueFactory = createIssueFactory(CODE_NUMBER_LTE, ctor.messages[CODE_NUMBER_LTE], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -356,7 +356,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
 
     const issueFactory = createIssueFactory(
       CODE_NUMBER_MULTIPLE_OF,
-      Shape.messages['number.multipleOf'],
+      ctor.messages[CODE_NUMBER_MULTIPLE_OF],
       options,
       divisor
     );

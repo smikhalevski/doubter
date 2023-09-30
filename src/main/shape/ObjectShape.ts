@@ -310,7 +310,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   exact(options?: IssueOptions | Message): ObjectShape<PropShapes, null> {
     const shape = new ObjectShape(this.propShapes, null, this._options, 'exact');
 
-    shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_EXACT, Shape.messages['object.exact'], options);
+    shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_EXACT, Shape.messages[CODE_OBJECT_EXACT], options);
 
     return copyOperations(this, shape);
   }

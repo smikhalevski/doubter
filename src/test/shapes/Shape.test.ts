@@ -271,7 +271,7 @@ describe('Shape', () => {
 
       expect(new Shape().refine(cb).try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_ANY_REFINE, input: 'aaa', message: Shape.messages['any.refine'], param: cb }],
+        issues: [{ code: CODE_ANY_REFINE, input: 'aaa', message: Shape.messages[CODE_ANY_REFINE], param: cb }],
       });
     });
 
@@ -303,7 +303,7 @@ describe('Shape', () => {
       expect(new Shape().refine(cb, { meta: 'aaa' }).try('bbb')).toEqual({
         ok: false,
         issues: [
-          { code: CODE_ANY_REFINE, input: 'bbb', message: Shape.messages['any.refine'], meta: 'aaa', param: cb },
+          { code: CODE_ANY_REFINE, input: 'bbb', message: Shape.messages[CODE_ANY_REFINE], meta: 'aaa', param: cb },
         ],
       });
     });
@@ -1557,7 +1557,7 @@ describe('ExcludeShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_ANY_EXCLUDE, input: 111, message: Shape.messages['any.exclude'], param: excludedShape }],
+      issues: [{ code: CODE_ANY_EXCLUDE, input: 111, message: Shape.messages[CODE_ANY_EXCLUDE], param: excludedShape }],
     });
   });
 
@@ -1612,7 +1612,7 @@ describe('ExcludeShape', () => {
 
       await expect(new ExcludeShape(new Shape(), shape).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_ANY_EXCLUDE, input: 'aaa', message: Shape.messages['any.exclude'], param: shape }],
+        issues: [{ code: CODE_ANY_EXCLUDE, input: 'aaa', message: Shape.messages[CODE_ANY_EXCLUDE], param: shape }],
       });
     });
 

@@ -16,7 +16,7 @@ describe('plain', () => {
 
     expect(shape.try(new (class {})())).toEqual({
       ok: false,
-      issues: [{ code: CODE_OBJECT_PLAIN, input: {}, message: Shape.messages['object.plain'], param: undefined }],
+      issues: [{ code: CODE_OBJECT_PLAIN, input: {}, message: Shape.messages[CODE_OBJECT_PLAIN], param: undefined }],
     });
   });
 

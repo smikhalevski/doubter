@@ -19,7 +19,7 @@ import {
   CODE_OBJECT_PLAIN,
   CODE_OBJECT_XOR_KEYS,
 } from '../constants';
-import { AnyShape, IssueOptions, Message, ObjectShape, Shape } from '../core';
+import { AnyShape, IssueOptions, Message, ObjectShape } from '../core';
 import { ReadonlyDict } from '../internal';
 import { createIssueFactory } from '../utils';
 
@@ -106,18 +106,18 @@ declare module '../core' {
  * Enhances {@link core!ObjectShape ObjectShape} with additional methods.
  */
 export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any>): void {
-  const { prototype } = ctor;
+  const { messages, prototype } = ctor;
 
-  ctor.messages['object.allKeys'] = 'Must contain all or no keys: %s';
-  ctor.messages['object.notAllKeys'] = 'Must contain not all or no keys: %s';
-  ctor.messages['object.orKeys'] = 'Must contain at least one key: %s';
-  ctor.messages['object.xorKeys'] = 'Must contain exactly one key: %s';
-  ctor.messages['object.oxorKeys'] = 'Must contain one or no keys: %s';
-  ctor.messages['object.plain'] = 'Must be a plain object';
+  messages[CODE_OBJECT_ALL_KEYS] = 'Must contain all or no keys: %s';
+  messages[CODE_OBJECT_NOT_ALL_KEYS] = 'Must contain not all or no keys: %s';
+  messages[CODE_OBJECT_OR_KEYS] = 'Must contain at least one key: %s';
+  messages[CODE_OBJECT_XOR_KEYS] = 'Must contain exactly one key: %s';
+  messages[CODE_OBJECT_OXOR_KEYS] = 'Must contain one or no keys: %s';
+  messages[CODE_OBJECT_PLAIN] = 'Must be a plain object';
 
   prototype.plain = function (options) {
     const { getPrototypeOf } = Object;
-    const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, Shape.messages['object.plain'], options, undefined);
+    const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, ctor.messages[CODE_OBJECT_PLAIN], options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -137,7 +137,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   };
 
   prototype.allKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_ALL_KEYS, Shape.messages['object.allKeys'], options, keys);
+    const issueFactory = createIssueFactory(CODE_OBJECT_ALL_KEYS, ctor.messages[CODE_OBJECT_ALL_KEYS], options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -159,7 +159,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.notAllKeys = function (keys, options) {
     const issueFactory = createIssueFactory(
       CODE_OBJECT_NOT_ALL_KEYS,
-      Shape.messages['object.notAllKeys'],
+      ctor.messages[CODE_OBJECT_NOT_ALL_KEYS],
       options,
       keys
     );
@@ -182,7 +182,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   };
 
   prototype.orKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_OR_KEYS, Shape.messages['object.orKeys'], options, keys);
+    const issueFactory = createIssueFactory(CODE_OBJECT_OR_KEYS, ctor.messages[CODE_OBJECT_OR_KEYS], options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -200,7 +200,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   };
 
   prototype.xorKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_XOR_KEYS, Shape.messages['object.xorKeys'], options, keys);
+    const issueFactory = createIssueFactory(CODE_OBJECT_XOR_KEYS, ctor.messages[CODE_OBJECT_XOR_KEYS], options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -218,7 +218,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   };
 
   prototype.oxorKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_OXOR_KEYS, Shape.messages['object.oxorKeys'], options, keys);
+    const issueFactory = createIssueFactory(CODE_OBJECT_OXOR_KEYS, ctor.messages[CODE_OBJECT_OXOR_KEYS], options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {

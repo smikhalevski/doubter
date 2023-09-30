@@ -32,7 +32,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
 
     this._typeIssueFactory = createIssueFactory(
       CODE_TYPE_INSTANCE_OF,
-      Shape.messages['type.instanceOf'],
+      Shape.messages[CODE_TYPE_INSTANCE_OF],
       options,
       ctor
     );

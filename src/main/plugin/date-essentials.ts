@@ -90,15 +90,15 @@ declare module '../core' {
  * Enhances {@link core!DateShape DateShape} with additional methods.
  */
 export default function enableDateEssentials(ctor: typeof DateShape): void {
-  const { prototype } = ctor;
+  const { messages, prototype } = ctor;
 
-  ctor.messages['date.min'] = 'Must be after %s';
-  ctor.messages['date.max'] = 'Must be before %s';
+  messages[CODE_DATE_MIN] = 'Must be after %s';
+  messages[CODE_DATE_MAX] = 'Must be before %s';
 
   prototype.min = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MIN, Shape.messages['date.min'], options, param);
+    const issueFactory = createIssueFactory(CODE_DATE_MIN, ctor.messages[CODE_DATE_MIN], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -118,7 +118,7 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
   prototype.max = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MAX, Shape.messages['date.max'], options, param);
+    const issueFactory = createIssueFactory(CODE_DATE_MAX, ctor.messages[CODE_DATE_MAX], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {

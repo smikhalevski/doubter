@@ -84,18 +84,18 @@ declare module '../core' {
  * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
  */
 export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>): void {
-  const { prototype } = ctor;
+  const { messages, prototype } = ctor;
 
-  ctor.messages['array.includes'] = 'Must include a value';
-  ctor.messages['array.max'] = 'Must have the maximum length of %s';
-  ctor.messages['array.min'] = 'Must have the minimum length of %s';
+  messages[CODE_ARRAY_INCLUDES] = 'Must include a value';
+  messages[CODE_ARRAY_MAX] = 'Must have the maximum length of %s';
+  messages[CODE_ARRAY_MIN] = 'Must have the minimum length of %s';
 
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);
   };
 
   prototype.min = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, Shape.messages['array.min'], options, length);
+    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, ctor.messages[CODE_ARRAY_MIN], options, length);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -113,7 +113,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
   };
 
   prototype.max = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, Shape.messages['array.max'], options, length);
+    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, ctor.messages[CODE_ARRAY_MAX], options, length);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -136,7 +136,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
   };
 
   prototype.includes = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, Shape.messages['array.includes'], options, value);
+    const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, ctor.messages[CODE_ARRAY_INCLUDES], options, value);
 
     let lookup: (output: unknown[], options: ApplyOptions) => boolean;
 

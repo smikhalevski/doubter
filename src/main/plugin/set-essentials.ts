@@ -11,7 +11,7 @@
  * @module plugin/set-essentials
  */
 import { CODE_SET_MAX, CODE_SET_MIN } from '../constants';
-import { AnyShape, IssueOptions, Message, SetShape, Shape } from '../core';
+import { AnyShape, IssueOptions, Message, SetShape } from '../core';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
@@ -70,17 +70,17 @@ declare module '../core' {
  * Enhances {@link core!SetShape SetShape} with additional methods.
  */
 export default function enableSetEssentials(ctor: typeof SetShape<any>): void {
-  const { prototype } = ctor;
+  const { messages, prototype } = ctor;
 
-  ctor.messages['set.min'] = 'Must have the minimum size of %s';
-  ctor.messages['set.max'] = 'Must have the maximum size of %s';
+  messages[CODE_SET_MIN] = 'Must have the minimum size of %s';
+  messages[CODE_SET_MAX] = 'Must have the maximum size of %s';
 
   prototype.size = function (size, options) {
     return this.min(size, options).max(size, options);
   };
 
   prototype.min = function (size, options) {
-    const issueFactory = createIssueFactory(CODE_SET_MIN, Shape.messages['set.min'], options, size);
+    const issueFactory = createIssueFactory(CODE_SET_MIN, ctor.messages[CODE_SET_MIN], options, size);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -98,7 +98,7 @@ export default function enableSetEssentials(ctor: typeof SetShape<any>): void {
   };
 
   prototype.max = function (size, options) {
-    const issueFactory = createIssueFactory(CODE_SET_MAX, Shape.messages['set.max'], options, size);
+    const issueFactory = createIssueFactory(CODE_SET_MAX, ctor.messages[CODE_SET_MAX], options, size);
 
     return this.use(
       next => (input, output, options, issues) => {

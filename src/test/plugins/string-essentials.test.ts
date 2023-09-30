@@ -108,7 +108,7 @@ describe('nonBlank', () => {
   test('raises if string contains only spaces', () => {
     expect(new StringShape().nonBlank().try(' \t\n ')).toEqual({
       ok: false,
-      issues: [{ code: CODE_STRING_NON_BLANK, input: ' \t\n ', message: Shape.messages['string.nonBlank'] }],
+      issues: [{ code: CODE_STRING_NON_BLANK, input: ' \t\n ', message: Shape.messages[CODE_STRING_NON_BLANK] }],
     });
 
     expect(new StringShape().nonBlank().parse('aaa')).toBe('aaa');
