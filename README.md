@@ -134,11 +134,11 @@ npm install --save-prod doubter
 
 🍪&ensp;**Cookbook**
 
-- [Rename object keys](#rename-object-keys)
 - [Type-safe URL query params](#type-safe-url-query-params)
 - [Type-safe environment variables](#type-safe-environment-variables)
 - [Type-safe CLI arguments](#type-safe-cli-arguments)
 - [Type-safe `localStorage`](#type-safe-localstorage)
+- [Rename object keys](#rename-object-keys)
 - [Conditionally applied shapes](#conditionally-applied-shapes)
 
 # Basics
@@ -3883,32 +3883,6 @@ d.void();
 
 # Cookbook
 
-## Rename object keys
-
-First, create a shape that describes the key transformation. In this example we are going to
-[convert](#conversions) the [enumeration](#enum) of keys to an uppercase string:
-
-```ts
-const keyShape = d.enum(['foo', 'bar']).convert(
-  value => value.toUpperCase() as 'FOO' | 'BAR'
-);
-// ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
-```
-
-Then, create a [`d.record`](#record) shape that constrains keys and values or a dictionary-like object:
-
-```ts
-const shape = d.record(keyShape, d.number());
-// ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
-```
-
-Parse the input object, the output would be a new object with transformed keys:
-
-```ts
-shape.parse({ foo: 1, bar: 2 });
-// ⮕ { FOO: 1, BAR: 2 }
-```
-
 ## Type-safe URL query params
 
 Let's define a shape that describes the query with `name` and `age` params:
@@ -4110,6 +4084,32 @@ setItem('user', { name: 'Bill', age: -100 });
 
 getItem('account');
 // ❌ Error: Unknown key: account
+```
+
+## Rename object keys
+
+First, create a shape that describes the key transformation. In this example we are going to
+[convert](#conversions) the [enumeration](#enum) of keys to an uppercase string:
+
+```ts
+const keyShape = d.enum(['foo', 'bar']).convert(
+  value => value.toUpperCase() as 'FOO' | 'BAR'
+);
+// ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
+```
+
+Then, create a [`d.record`](#record) shape that constrains keys and values or a dictionary-like object:
+
+```ts
+const shape = d.record(keyShape, d.number());
+// ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
+```
+
+Parse the input object, the output would be a new object with transformed keys:
+
+```ts
+shape.parse({ foo: 1, bar: 2 });
+// ⮕ { FOO: 1, BAR: 2 }
 ```
 
 ## Conditionally applied shapes
