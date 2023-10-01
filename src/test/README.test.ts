@@ -37,6 +37,60 @@ describe('Cookbook', () => {
       NODE_ENV: 'test',
     });
   });
+
+  test('Type-safe localStorage', () => {
+    // Mock localStorage
+    const localStorageData: Record<string, string> = {};
+    const localStorage = {
+      getItem(key: string) {
+        return localStorageData[key] || null;
+      },
+      setItem(key: string, value: string) {
+        localStorageData[key] = value;
+      },
+    };
+
+    const userShape = d.object({
+      name: d.string(),
+      age: d.number().int().positive(),
+    });
+
+    const localStorageDataShape = d.object({
+      user: userShape,
+    });
+
+    type LocalStorageData = d.Input<typeof localStorageDataShape>;
+
+    function getItem<K extends keyof LocalStorageData>(key: K): LocalStorageData[K] | null {
+      const valueShape = localStorageDataShape.at(key);
+      const value = localStorage.getItem(key);
+
+      if (valueShape === null) {
+        throw new Error('Unknown key: ' + key);
+      }
+      if (value === null) {
+        return null;
+      }
+      return valueShape.parse(JSON.parse(value));
+    }
+
+    function setItem<K extends keyof LocalStorageData>(key: K, value: LocalStorageData[K]): void {
+      const valueShape = localStorageDataShape.at(key);
+
+      if (valueShape === null) {
+        throw new Error('Unknown key: ' + key);
+      }
+      localStorage.setItem(key, JSON.stringify(valueShape.parse(value)));
+    }
+
+    setItem('user', { name: 'John', age: 42 });
+
+    expect(localStorageData.user).toBe('{"name":"John","age":42}');
+
+    expect(getItem('user')).toEqual({ name: 'John', age: 42 });
+
+    expect(() => getItem('account' as any)).toThrow('Unknown key: account');
+  });
 });
 
 describe('JSON shape', () => {

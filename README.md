@@ -138,6 +138,7 @@ npm install --save-prod doubter
 - [Type-safe URL query params](#type-safe-url-query-params)
 - [Type-safe env variables](#type-safe-env-variables)
 - [Type-safe CLI arguments](#type-safe-cli-arguments)
+- [Type-safe `localStorage`](#type-safe-localstorage)
 - [Conditionally applied shapes](#conditionally-applied-shapes)
 
 # Basics
@@ -1828,7 +1829,7 @@ userOrNameShape.shapes[0];
 // ⮕ userShape
 ```
 
-[`at`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#at) method derives a sub-shape at the
+[`Shape.at`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#at) method derives a sub-shape at the
 given type, and if there's no such type then `null` is returned:
 
 ```ts
@@ -4032,6 +4033,84 @@ const options = optionsShape.parse(args, { coerce: true });
 ```
 
 `options.age` is now type-safe and is guaranteed to be a non-`NaN` number in range \[18, 100].
+
+## Type-safe `localStorage`
+
+[`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) is a key-value storage which
+allows persistence of string keys and string values on the client. Let's write two functions that can read and write
+JSON objects from and to `localStorage` in a type-safe manner.
+
+First lets define a shape of the data stored in the `localStorage`. In this example `localStorage` would allow only
+one key `'user'` that would correspond to an object with `name` and `age` properties:
+
+```ts
+import * as d from 'doubter';
+
+const userShape = d.object({
+  name: d.string(),
+  age: d.number().int().positive()
+});
+
+const localStorageItemsShape = d.object({
+  user: userShape
+});
+```
+
+Let's infer a type of the data in the `localStorage`:
+
+```ts
+type LocalStorageItems = d.Input<typeof localStorageItemsShape>;
+```
+
+You can read more about `d.Input` and `d.Output` in [Basics](#basics) section. In this example, we don't have any
+[alterations](#alterations) or [conversions](#conversions), so the `localStorageItemsShape` has the same input and
+output.
+
+Now it's time to create a function that reads items in a type-safe manner:
+
+```ts
+function getItem<K extends keyof LocalStorageItems>(key: K): LocalStorageItems[K] | null {
+  const valueShape = localStorageItemsShape.at(key);
+  const value = localStorage.getItem(key);
+  
+  if (valueShape === null) {
+    throw new Error('Unknown key: ' + key);
+  }
+  if (value === null) {
+    return null;
+  }
+  return valueShape.parse(JSON.parse(value));
+}
+```
+
+Read more about [`Shape.at`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#at) method in
+the [Nested shapes](#nested-shapes) section. The same approach can be taken to implement writes:
+
+```ts
+function setItem<K extends keyof LocalStorageItems>(key: K, value: LocalStorageItems[K]): void {
+  const valueShape = localStorageItemsShape.at(key);
+
+  if (valueShape === null) {
+    throw new Error('Unknown key: ' + key);
+  }
+  localStorage.setItem(key, JSON.stringify(valueShape.parse(value)));
+}
+```
+
+Note that we prevent writes of the unknown keys as well as reads. Now, let's use those functions:
+
+```ts
+setItem('user', { name: 'John', age: 42 });
+
+getItem('user');
+// ⮕ { name: 'John', age: 42 }
+
+setItem('user', { name: 'Bill', age: -100 });
+// ❌ ValidationError: number.gte at /: Must be greater than 0
+
+getItem('account');
+// ❌ Error: Unknown key: account
+```
 
 ## Conditionally applied shapes
 
