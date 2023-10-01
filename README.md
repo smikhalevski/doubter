@@ -136,7 +136,7 @@ npm install --save-prod doubter
 
 - [Rename object keys](#rename-object-keys)
 - [Type-safe URL query params](#type-safe-url-query-params)
-- [Type-safe env variables](#type-safe-env-variables)
+- [Type-safe environment variables](#type-safe-environment-variables)
 - [Type-safe CLI arguments](#type-safe-cli-arguments)
 - [Type-safe `localStorage`](#type-safe-localstorage)
 - [Conditionally applied shapes](#conditionally-applied-shapes)
@@ -3959,7 +3959,7 @@ queryShape.parse(
 // ⮕ { age: undefined }
 ```
 
-## Type-safe env variables
+## Type-safe environment variables
 
 If you're developing an app that consumes environment variables you most likely want to validate them.
 
@@ -4134,8 +4134,8 @@ const shape = d.convert(value => {
 [`parse`](#parse) would throw a `ValidationError` that is captured by the enclosing `convert`.
 
 ```ts
-shape.parse('Uranus');
-// ⮕ 'Mars'
+shape.parse('Pluto');
+// ⮕ 'Pluto'
 
 shape.parse('Mars');
 // ❌ ValidationError: string.min at /: Must have the minimum length of 5
