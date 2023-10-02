@@ -134,10 +134,11 @@ npm install --save-prod doubter
 
 🍪&ensp;**Cookbook**
 
-- [Rename object keys](#rename-object-keys)
 - [Type-safe URL query params](#type-safe-url-query-params)
-- [Type-safe env variables](#type-safe-env-variables)
+- [Type-safe environment variables](#type-safe-environment-variables)
 - [Type-safe CLI arguments](#type-safe-cli-arguments)
+- [Type-safe `localStorage`](#type-safe-localstorage)
+- [Rename object keys](#rename-object-keys)
 - [Conditionally applied shapes](#conditionally-applied-shapes)
 
 # Basics
@@ -1828,7 +1829,7 @@ userOrNameShape.shapes[0];
 // ⮕ userShape
 ```
 
-[`at`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#at) method derives a sub-shape at the
+[`Shape.at`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#at) method derives a sub-shape at the
 given type, and if there's no such type then `null` is returned:
 
 ```ts
@@ -3882,32 +3883,6 @@ d.void();
 
 # Cookbook
 
-## Rename object keys
-
-First, create a shape that describes the key transformation. In this example we are going to
-[convert](#conversions) the [enumeration](#enum) of keys to an uppercase string:
-
-```ts
-const keyShape = d.enum(['foo', 'bar']).convert(
-  value => value.toUpperCase() as 'FOO' | 'BAR'
-);
-// ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
-```
-
-Then, create a [`d.record`](#record) shape that constrains keys and values or a dictionary-like object:
-
-```ts
-const shape = d.record(keyShape, d.number());
-// ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
-```
-
-Parse the input object, the output would be a new object with transformed keys:
-
-```ts
-shape.parse({ foo: 1, bar: 2 });
-// ⮕ { FOO: 1, BAR: 2 }
-```
-
 ## Type-safe URL query params
 
 Let's define a shape that describes the query with `name` and `age` params:
@@ -3958,7 +3933,7 @@ queryShape.parse(
 // ⮕ { age: undefined }
 ```
 
-## Type-safe env variables
+## Type-safe environment variables
 
 If you're developing an app that consumes environment variables you most likely want to validate them.
 
@@ -4033,6 +4008,110 @@ const options = optionsShape.parse(args, { coerce: true });
 
 `options.age` is now type-safe and is guaranteed to be a non-`NaN` number in range \[18, 100].
 
+## Type-safe `localStorage`
+
+[`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage) is a key-value storage which
+allows persistence of string keys and string values on the client. Let's write two functions that can read and write
+JSON objects from and to `localStorage` in a type-safe manner.
+
+First lets define a shape of the data stored in the `localStorage`. In this example `localStorage` would allow only
+one key `'user'` that would correspond to an object with `name` and `age` properties:
+
+```ts
+import * as d from 'doubter';
+
+const userShape = d.object({
+  name: d.string(),
+  age: d.number().int().positive()
+});
+
+const localStorageItemsShape = d.object({
+  user: userShape
+});
+```
+
+Let's infer a type of the data in the `localStorage`:
+
+```ts
+type LocalStorageItems = d.Input<typeof localStorageItemsShape>;
+```
+
+You can read more about `d.Input` and `d.Output` in [Basics](#basics) section. In this example, we don't have any
+[alterations](#alterations) or [conversions](#conversions), so the `localStorageItemsShape` has the same input and
+output.
+
+Now it's time to create a function that reads items in a type-safe manner:
+
+```ts
+function getItem<K extends keyof LocalStorageItems>(key: K): LocalStorageItems[K] | null {
+  const valueShape = localStorageItemsShape.at(key);
+  const value = localStorage.getItem(key);
+  
+  if (valueShape === null) {
+    throw new Error('Unknown key: ' + key);
+  }
+  if (value === null) {
+    return null;
+  }
+  return valueShape.parse(JSON.parse(value));
+}
+```
+
+Read more about [`Shape.at`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#at) method in
+the [Nested shapes](#nested-shapes) section. The same approach can be taken to implement writes:
+
+```ts
+function setItem<K extends keyof LocalStorageItems>(key: K, value: LocalStorageItems[K]): void {
+  const valueShape = localStorageItemsShape.at(key);
+
+  if (valueShape === null) {
+    throw new Error('Unknown key: ' + key);
+  }
+  localStorage.setItem(key, JSON.stringify(valueShape.parse(value)));
+}
+```
+
+Note that we prevent writes of the unknown keys as well as reads. Now, let's use those functions:
+
+```ts
+setItem('user', { name: 'John', age: 42 });
+
+getItem('user');
+// ⮕ { name: 'John', age: 42 }
+
+setItem('user', { name: 'Bill', age: -100 });
+// ❌ ValidationError: number.gte at /: Must be greater than 0
+
+getItem('account');
+// ❌ Error: Unknown key: account
+```
+
+## Rename object keys
+
+First, create a shape that describes the key transformation. In this example we are going to
+[convert](#conversions) the [enumeration](#enum) of keys to an uppercase string:
+
+```ts
+const keyShape = d.enum(['foo', 'bar']).convert(
+  value => value.toUpperCase() as 'FOO' | 'BAR'
+);
+// ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
+```
+
+Then, create a [`d.record`](#record) shape that constrains keys and values or a dictionary-like object:
+
+```ts
+const shape = d.record(keyShape, d.number());
+// ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
+```
+
+Parse the input object, the output would be a new object with transformed keys:
+
+```ts
+shape.parse({ foo: 1, bar: 2 });
+// ⮕ { FOO: 1, BAR: 2 }
+```
+
 ## Conditionally applied shapes
 
 If you need to apply a different shape depending on an input value, you can use
@@ -4055,8 +4134,8 @@ const shape = d.convert(value => {
 [`parse`](#parse) would throw a `ValidationError` that is captured by the enclosing `convert`.
 
 ```ts
-shape.parse('Uranus');
-// ⮕ 'Mars'
+shape.parse('Pluto');
+// ⮕ 'Pluto'
 
 shape.parse('Mars');
 // ❌ ValidationError: string.min at /: Must have the minimum length of 5
