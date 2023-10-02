@@ -1,36 +1,79 @@
-import { getCanonicalValue } from '../internal/lang';
-import { coerceToBigInt } from './bigint';
-import { coerceToBoolean } from './boolean';
-import { coerceToDate } from './date';
-import { coerceToNever, NEVER } from './never';
-import { coerceToNumber } from './number';
-import { coerceToString } from './string';
+import { getCanonicalValue, isArray, isEqual } from '../internal/lang';
+import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
+import { bigintCoercibleTypes, coerceToBigInt } from './bigint';
+import { booleanCoercibleTypes, coerceToBoolean } from './boolean';
+import { coerceToDate, dateCoercibleTypes } from './date';
+import { NEVER } from './never';
+import { coerceToNumber, numberCoercibleTypes } from './number';
+import { coerceToString, stringCoercibleTypes } from './string';
 
-export function createCoerceToConst(value: unknown): (input: any) => any {
+export function getConstCoercibleInputs(value: unknown): readonly unknown[] {
   const canonicalValue = getCanonicalValue(value);
 
-  if (value instanceof Date) {
-    return input => {
-      if ((input instanceof Date || (input = coerceToDate(input)) !== NEVER) && input.getTime() === value.getTime()) {
-        return value;
-      }
-      return NEVER;
-    };
-  }
-  if (canonicalValue !== canonicalValue) {
-    return coerceToNever;
-  }
   if (typeof canonicalValue === 'bigint') {
-    return input => (coerceToBigInt(input) === canonicalValue ? value : NEVER);
+    return bigintCoercibleTypes;
   }
   if (typeof canonicalValue === 'number') {
-    return input => (coerceToNumber(input) === canonicalValue ? value : NEVER);
+    return canonicalValue !== canonicalValue ? [TYPE_ARRAY, TYPE_OBJECT, value] : numberCoercibleTypes;
   }
   if (typeof canonicalValue === 'string') {
-    return input => (coerceToString(input) === canonicalValue ? value : NEVER);
+    return stringCoercibleTypes;
   }
   if (typeof canonicalValue === 'boolean') {
-    return input => (coerceToBoolean(input) === canonicalValue ? value : NEVER);
+    return booleanCoercibleTypes;
   }
-  return coerceToNever;
+  if (value instanceof Date) {
+    return dateCoercibleTypes;
+  }
+  return [TYPE_ARRAY, value];
+}
+
+export function coerceToConst<T>(value: T, input: unknown): T {
+  if (isArray(input) && input.length === 1 && isEqual((input = input[0]), value)) {
+    return value;
+  }
+
+  const canonicalValue = getCanonicalValue(value);
+
+  let coercedInput;
+
+  switch (typeof canonicalValue) {
+    case 'bigint':
+      coercedInput = coerceToBigInt(input);
+      break;
+
+    case 'number':
+      coercedInput = (input = getCanonicalValue(input)) !== input ? input : coerceToNumber(input);
+      break;
+
+    case 'string':
+      coercedInput = coerceToString(input);
+      break;
+
+    case 'boolean':
+      coercedInput = coerceToBoolean(input);
+      break;
+
+    case 'object':
+      if (
+        value !== null &&
+        value instanceof Date &&
+        (input = coerceToDate(input)) !== NEVER &&
+        (input as Date).getTime() === value.getTime()
+      ) {
+        coercedInput = value;
+      } else {
+        coercedInput = input;
+      }
+      break;
+
+    default:
+      coercedInput = input;
+      break;
+  }
+
+  if (isEqual(coercedInput, canonicalValue)) {
+    return value;
+  }
+  return NEVER;
 }

@@ -1,9 +1,10 @@
+import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_ENUM } from '../constants';
 import { unique } from '../internal/arrays';
-import { isArray } from '../internal/lang';
+import { getCanonicalValue, isArray } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
-import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
+import { TYPE_ARRAY } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -59,7 +60,28 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     if (!isArray(this.source)) {
       inputs.push(...Object.keys(this.source));
     }
-    return inputs.concat(TYPE_ARRAY, TYPE_OBJECT);
+    for (const value of this.values) {
+      inputs.push(...getConstCoercibleInputs(value));
+    }
+    return unique(inputs.concat(TYPE_ARRAY));
+  }
+
+  protected _coerce(input: unknown): Value {
+    const { source, values } = this;
+
+    if (isArray(input) && input.length === 1 && values.includes((input = input[0]))) {
+      return input as Value;
+    }
+    if (!isArray(source) && typeof (input = getCanonicalValue(input)) === 'string' && source.hasOwnProperty(input)) {
+      return (source as ReadonlyDict)[input];
+    }
+
+    for (const value of values) {
+      if (coerceToConst(value, input) !== NEVER) {
+        return value;
+      }
+    }
+    return NEVER;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {

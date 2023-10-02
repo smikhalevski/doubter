@@ -2,6 +2,9 @@ import { freeze, getCanonicalValue, isArray } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
+const MAX_SAFE_INTEGER = 0x1fffffffffffff;
+const MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
+
 /**
  * The list of types that are coercible to a number with {@link coerceToNumber}.
  */
@@ -39,7 +42,7 @@ export function coerceToNumber(input: unknown): number {
   ) {
     return input as number;
   }
-  if (typeof input === 'bigint' && input >= -0x1fffffffffffff && input <= 0x1fffffffffffff) {
+  if (typeof input === 'bigint' && input >= MIN_SAFE_INTEGER && input <= MAX_SAFE_INTEGER) {
     return Number(input);
   }
   return NEVER;
