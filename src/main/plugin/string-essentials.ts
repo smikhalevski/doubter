@@ -21,17 +21,18 @@ import {
   CODE_STRING_STARTS_WITH,
 } from '../constants';
 import { IssueOptions, Message, StringShape } from '../core';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
-    'string.nonBlank': any;
-    'string.min': any;
-    'string.max': any;
-    'string.regex': any;
-    'string.includes': any;
-    'string.startsWith': any;
-    'string.endsWith': any;
+    'string.nonBlank': Message | Any;
+    'string.min': Message | Any;
+    'string.max': Message | Any;
+    'string.regex': Message | Any;
+    'string.includes': Message | Any;
+    'string.startsWith': Message | Any;
+    'string.endsWith': Message | Any;
   }
 
   export interface StringShape {

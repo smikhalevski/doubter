@@ -12,12 +12,13 @@
  */
 import { CODE_SET_MAX, CODE_SET_MIN } from '../constants';
 import { AnyShape, IssueOptions, Message, SetShape } from '../core';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
-    'set.min': any;
-    'set.max': any;
+    'set.min': Message | Any;
+    'set.max': Message | Any;
   }
 
   export interface SetShape<ValueShape extends AnyShape> {

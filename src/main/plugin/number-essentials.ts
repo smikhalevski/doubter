@@ -21,6 +21,7 @@ import {
   CODE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { IssueOptions, Message, NumberShape } from '../core';
+import { Any } from '../types';
 import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
@@ -43,13 +44,13 @@ export interface MultipleOfOptions extends IssueOptions {
 
 declare module '../core' {
   export interface Messages {
-    'number.finite': any;
-    'number.int': any;
-    'number.gt': any;
-    'number.gte': any;
-    'number.lt': any;
-    'number.lte': any;
-    'number.multipleOf': any;
+    'number.finite': Message | Any;
+    'number.int': Message | Any;
+    'number.gt': Message | Any;
+    'number.gte': Message | Any;
+    'number.lt': Message | Any;
+    'number.lte': Message | Any;
+    'number.multipleOf': Message | Any;
   }
 
   export interface NumberShape {

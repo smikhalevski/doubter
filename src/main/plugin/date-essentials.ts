@@ -13,12 +13,13 @@
 
 import { CODE_DATE_MAX, CODE_DATE_MIN } from '../constants';
 import { DateShape, IssueOptions, Message, Shape } from '../core';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
-    'date.min': any;
-    'date.max': any;
+    'date.min': Message | Any;
+    'date.max': Message | Any;
   }
 
   export interface DateShape {

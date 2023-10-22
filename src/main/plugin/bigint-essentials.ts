@@ -13,12 +13,13 @@
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../constants';
 import { BigIntShape, IssueOptions, Message } from '../core';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
-    'bigint.min': any;
-    'bigint.max': any;
+    'bigint.min': Message | Any;
+    'bigint.max': Message | Any;
   }
 
   export interface BigIntShape {

@@ -1,27 +1,29 @@
+import { Any, Message } from './types';
+
 export interface Messages {
-  'any.deny': any;
-  'any.exclude': any;
-  'any.refine': any;
-  'object.exact': any;
-  'type.array': any;
-  'type.bigint': any;
-  'type.boolean': any;
-  'type.const': any;
-  'type.date': any;
-  'type.enum': any;
-  'type.function': any;
-  'type.instanceOf': any;
-  'type.intersection': any;
-  'type.map': any;
-  'type.never': any;
-  'type.number': any;
-  'type.object': any;
-  'type.promise': any;
-  'type.tuple': any;
-  'type.set': any;
-  'type.string': any;
-  'type.symbol': any;
-  'type.union': any;
+  'any.deny': Message | Any;
+  'any.exclude': Message | Any;
+  'any.refine': Message | Any;
+  'object.exact': Message | Any;
+  'type.array': Message | Any;
+  'type.bigint': Message | Any;
+  'type.boolean': Message | Any;
+  'type.const': Message | Any;
+  'type.date': Message | Any;
+  'type.enum': Message | Any;
+  'type.function': Message | Any;
+  'type.instanceOf': Message | Any;
+  'type.intersection': Message | Any;
+  'type.map': Message | Any;
+  'type.never': Message | Any;
+  'type.number': Message | Any;
+  'type.object': Message | Any;
+  'type.promise': Message | Any;
+  'type.tuple': Message | Any;
+  'type.set': Message | Any;
+  'type.string': Message | Any;
+  'type.symbol': Message | Any;
+  'type.union': Message | Any;
 }
 
 export const messages: Partial<Messages> = {

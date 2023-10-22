@@ -13,13 +13,14 @@
 
 import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN, ERR_SYNC_REQUIRED } from '../constants';
 import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Shape } from '../core';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
-    'array.includes': any;
-    'array.max': any;
-    'array.min': any;
+    'array.includes': Message | Any;
+    'array.max': Message | Any;
+    'array.min': Message | Any;
   }
 
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {

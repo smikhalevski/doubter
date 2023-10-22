@@ -21,16 +21,17 @@ import {
 } from '../constants';
 import { AnyShape, IssueOptions, Message, ObjectShape } from '../core';
 import { ReadonlyDict } from '../internal';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
-    'object.allKeys': any;
-    'object.notAllKeys': any;
-    'object.orKeys': any;
-    'object.xorKeys': any;
-    'object.oxorKeys': any;
-    'object.plain': any;
+    'object.allKeys': Message | Any;
+    'object.notAllKeys': Message | Any;
+    'object.orKeys': Message | Any;
+    'object.xorKeys': Message | Any;
+    'object.oxorKeys': Message | Any;
+    'object.plain': Message | Any;
   }
 
   export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
