@@ -2,7 +2,7 @@ import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT, TypeArray } from '../Type';
+import { mapCoercibleTypes, mapTypes, TYPE_MAP, TypeArray } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -84,11 +84,11 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   }
 
   protected _getInputs(): TypeArray {
-    return [TYPE_MAP];
+    return mapTypes;
   }
 
   protected _getCoercibleInputs(): TypeArray {
-    return [TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY];
+    return mapCoercibleTypes;
   }
 
   /**

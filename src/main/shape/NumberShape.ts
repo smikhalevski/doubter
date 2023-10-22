@@ -1,7 +1,7 @@
 import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleTypes } from '../coerce/number';
 import { CODE_TYPE } from '../constants';
-import { TYPE_NUMBER, TypeArray } from '../Type';
+import { numberTypes, TYPE_NUMBER, TypeArray } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -46,7 +46,7 @@ export class NumberShape extends CoercibleShape<number> {
   }
 
   protected _getInputs(): TypeArray {
-    return [TYPE_NUMBER];
+    return numberTypes;
   }
 
   protected _getCoercibleInputs(): TypeArray {

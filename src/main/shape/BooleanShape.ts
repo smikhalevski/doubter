@@ -1,7 +1,7 @@
 import { booleanCoercibleTypes, coerceToBoolean } from '../coerce/boolean';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { TYPE_BOOLEAN, TypeArray } from '../Type';
+import { booleanTypes, TYPE_BOOLEAN, TypeArray } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -30,7 +30,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   }
 
   protected _getInputs(): TypeArray {
-    return [TYPE_BOOLEAN];
+    return booleanTypes;
   }
 
   protected _getCoercibleInputs(): TypeArray {

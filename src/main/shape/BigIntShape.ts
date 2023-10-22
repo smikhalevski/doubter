@@ -1,7 +1,7 @@
 import { bigintCoercibleTypes, coerceToBigInt } from '../coerce/bigint';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { TYPE_BIGINT, TypeArray } from '../Type';
+import { bigintTypes, TYPE_BIGINT, TypeArray } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -30,7 +30,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
   }
 
   protected _getInputs(): TypeArray {
-    return [TYPE_BIGINT];
+    return bigintTypes;
   }
 
   protected _getCoercibleInputs(): TypeArray {

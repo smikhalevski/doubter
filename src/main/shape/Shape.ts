@@ -17,7 +17,7 @@ import {
 } from '../internal/shapes';
 import { isType, unionTypes } from '../internal/types';
 import { Messages, messages } from '../messages';
-import { getTypeOf, TYPE_UNKNOWN, TypeArray } from '../Type';
+import { getTypeOf, TYPE_UNKNOWN, TypeArray, unknownTypes } from '../Type';
 import {
   AlterCallback,
   Any,
@@ -673,7 +673,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _getInputs(): TypeArray {
-    return [TYPE_UNKNOWN];
+    return unknownTypes;
   }
 
   /**
