@@ -189,7 +189,7 @@ export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
-   * Mapping from an issue type to a corresponding issue message.
+   * The mapping from an issue type to a corresponding issue message.
    */
   static readonly messages: Messages = messages as Messages;
 

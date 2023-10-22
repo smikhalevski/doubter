@@ -1,5 +1,8 @@
 import { Any, Message } from './types';
 
+/**
+ * The mapping from an issue type to a corresponding issue message.
+ */
 export interface Messages {
   'any.deny': Message | Any;
   'any.exclude': Message | Any;
