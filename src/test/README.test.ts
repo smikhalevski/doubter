@@ -1,6 +1,7 @@
 import qs from 'qs';
+import { Shape } from '../main';
 import * as d from '../main';
-import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../main/constants';
+import { CODE_TYPE_UNION } from '../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/Type';
 
 describe('Cookbook', () => {
@@ -112,7 +113,7 @@ describe('JSON shape', () => {
       issues: [
         {
           code: CODE_TYPE_UNION,
-          message: MESSAGE_TYPE_UNION,
+          message: Shape.messages[CODE_TYPE_UNION],
           input: value2,
           param: {
             inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
@@ -128,7 +129,7 @@ describe('JSON shape', () => {
         {
           code: CODE_TYPE_UNION,
           input: value3.aaa.bbb,
-          message: MESSAGE_TYPE_UNION,
+          message: Shape.messages[CODE_TYPE_UNION],
           param: {
             inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
             issueGroups: null,
@@ -159,7 +160,7 @@ describe('JSON shape', () => {
       issues: [
         {
           code: CODE_TYPE_UNION,
-          message: MESSAGE_TYPE_UNION,
+          message: Shape.messages[CODE_TYPE_UNION],
           input: value2,
           param: {
             inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],

@@ -11,20 +11,19 @@
  * @module plugin/array-essentials
  */
 
-import {
-  CODE_ARRAY_INCLUDES,
-  CODE_ARRAY_MAX,
-  CODE_ARRAY_MIN,
-  ERR_SYNC_REQUIRED,
-  MESSAGE_ARRAY_INCLUDES,
-  MESSAGE_ARRAY_MAX,
-  MESSAGE_ARRAY_MIN,
-} from '../constants';
+import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN, ERR_SYNC_REQUIRED } from '../constants';
 import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Shape } from '../core';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
-  interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
+  export interface Messages {
+    'array.includes': Message | Any;
+    'array.max': Message | Any;
+    'array.min': Message | Any;
+  }
+
+  export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
     /**
      * Constrains the array length.
      *
@@ -85,13 +84,19 @@ declare module '../core' {
 /**
  * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
  */
-export default function enableArrayEssentials(prototype: ArrayShape<any, any>): void {
+export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>): void {
+  const { messages, prototype } = ctor;
+
+  messages[CODE_ARRAY_INCLUDES] = 'Must include a value';
+  messages[CODE_ARRAY_MAX] = 'Must have the maximum length of %s';
+  messages[CODE_ARRAY_MIN] = 'Must have the minimum length of %s';
+
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);
   };
 
   prototype.min = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, MESSAGE_ARRAY_MIN, options, length);
+    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, ctor.messages[CODE_ARRAY_MIN], options, length);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -109,7 +114,7 @@ export default function enableArrayEssentials(prototype: ArrayShape<any, any>): 
   };
 
   prototype.max = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, MESSAGE_ARRAY_MAX, options, length);
+    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, ctor.messages[CODE_ARRAY_MAX], options, length);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -132,7 +137,7 @@ export default function enableArrayEssentials(prototype: ArrayShape<any, any>): 
   };
 
   prototype.includes = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, MESSAGE_ARRAY_INCLUDES, options, value);
+    const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, ctor.messages[CODE_ARRAY_INCLUDES], options, value);
 
     let lookup: (output: unknown[], options: ApplyOptions) => boolean;
 

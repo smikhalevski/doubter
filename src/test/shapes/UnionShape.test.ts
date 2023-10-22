@@ -12,7 +12,7 @@ import {
   StringShape,
   UnionShape,
 } from '../../main';
-import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../../main/constants';
+import { CODE_TYPE_UNION } from '../../main/constants';
 import { createLookupByDiscriminator, createLookupByType, getDiscriminator } from '../../main/shape/UnionShape';
 import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
@@ -81,7 +81,7 @@ describe('UnionShape', () => {
         {
           code: CODE_TYPE_UNION,
           input: 'aaa',
-          message: MESSAGE_TYPE_UNION,
+          message: Shape.messages[CODE_TYPE_UNION],
           param: {
             inputs: [TYPE_UNKNOWN],
             issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
@@ -192,7 +192,7 @@ describe('UnionShape', () => {
         issues: [
           {
             code: CODE_TYPE_UNION,
-            message: MESSAGE_TYPE_UNION,
+            message: Shape.messages[CODE_TYPE_UNION],
             param: {
               inputs: [TYPE_NUMBER],
               issueGroups: null,
@@ -261,7 +261,7 @@ describe('UnionShape', () => {
           {
             code: CODE_TYPE_UNION,
             input: 'aaa',
-            message: MESSAGE_TYPE_UNION,
+            message: Shape.messages[CODE_TYPE_UNION],
             param: {
               inputs: [TYPE_UNKNOWN],
               issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],

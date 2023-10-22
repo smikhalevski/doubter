@@ -1,4 +1,4 @@
-import { CODE_TYPE, ERR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants';
+import { CODE_TYPE, ERR_ASYNC_FUNCTION } from '../constants';
 import {
   applyShape,
   Awaitable,
@@ -91,7 +91,7 @@ export class FunctionShape<
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_FUNCTION, options, TYPE_FUNCTION);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.function'], options, TYPE_FUNCTION);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { NumberShape } from '../../main';
+import { NumberShape, Shape } from '../../main';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -7,8 +7,6 @@ import {
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
-  MESSAGE_NUMBER_FINITE,
-  MESSAGE_NUMBER_INT,
 } from '../../main/constants';
 
 describe('finite', () => {
@@ -19,7 +17,7 @@ describe('finite', () => {
   test('raises if value is an infinity', () => {
     expect(new NumberShape().finite().try(Infinity)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_FINITE, input: Infinity, message: MESSAGE_NUMBER_FINITE }],
+      issues: [{ code: CODE_NUMBER_FINITE, input: Infinity, message: Shape.messages[CODE_NUMBER_FINITE] }],
     });
   });
 });
@@ -32,14 +30,14 @@ describe('int', () => {
   test('raises if value is an infinity', () => {
     expect(new NumberShape().int().try(Infinity)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_INT, input: Infinity, message: MESSAGE_NUMBER_INT }],
+      issues: [{ code: CODE_NUMBER_INT, input: Infinity, message: Shape.messages[CODE_NUMBER_INT] }],
     });
   });
 
   test('raises if value is a real number', () => {
     expect(new NumberShape().int().try(111.222)).toEqual({
       ok: false,
-      issues: [{ code: CODE_NUMBER_INT, input: 111.222, message: MESSAGE_NUMBER_INT }],
+      issues: [{ code: CODE_NUMBER_INT, input: 111.222, message: Shape.messages[CODE_NUMBER_INT] }],
     });
   });
 });

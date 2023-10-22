@@ -1,5 +1,5 @@
-import { ArrayShape, Err, NumberShape, ObjectShape, Ok, StringShape } from '../../main';
-import { CODE_TYPE, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_NUMBER } from '../../main/constants';
+import { ArrayShape, Err, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
+import { CODE_TYPE, CODE_TYPE_TUPLE } from '../../main/constants';
 import { resetNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
@@ -28,7 +28,7 @@ describe('ArrayShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: TYPE_ARRAY }],
     });
   });
 
@@ -108,7 +108,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: TYPE_ARRAY }],
     });
   });
 
@@ -278,7 +278,9 @@ describe('ArrayShape', () => {
 
       expect(shape.try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, path: [0], input: 'aaa', message: MESSAGE_TYPE_NUMBER, param: TYPE_NUMBER }],
+        issues: [
+          { code: CODE_TYPE, path: [0], input: 'aaa', message: Shape.messages['type.number'], param: TYPE_NUMBER },
+        ],
       });
     });
 
@@ -419,7 +421,7 @@ describe('ArrayShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_ARRAY, param: TYPE_ARRAY }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: TYPE_ARRAY }],
       });
     });
 

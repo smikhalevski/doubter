@@ -1,4 +1,4 @@
-import { CODE_TYPE, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants';
+import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
 import {
   applyShape,
   concatIssues,
@@ -85,9 +85,14 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     this._options = options;
 
     if (headShapes.length !== 0 || restShape === null) {
-      this._typeIssueFactory = createIssueFactory(CODE_TYPE_TUPLE, MESSAGE_TYPE_TUPLE, options, headShapes.length);
+      this._typeIssueFactory = createIssueFactory(
+        CODE_TYPE_TUPLE,
+        Shape.messages[CODE_TYPE_TUPLE],
+        options,
+        headShapes.length
+      );
     } else {
-      this._typeIssueFactory = createIssueFactory(CODE_TYPE, MESSAGE_TYPE_ARRAY, options, TYPE_ARRAY);
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.array'], options, TYPE_ARRAY);
     }
   }
 

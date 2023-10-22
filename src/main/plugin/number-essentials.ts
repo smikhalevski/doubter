@@ -19,15 +19,9 @@ import {
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
-  MESSAGE_NUMBER_FINITE,
-  MESSAGE_NUMBER_GT,
-  MESSAGE_NUMBER_GTE,
-  MESSAGE_NUMBER_INT,
-  MESSAGE_NUMBER_LT,
-  MESSAGE_NUMBER_LTE,
-  MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { IssueOptions, Message, NumberShape } from '../core';
+import { Any } from '../types';
 import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
@@ -49,6 +43,16 @@ export interface MultipleOfOptions extends IssueOptions {
 }
 
 declare module '../core' {
+  export interface Messages {
+    'number.finite': Message | Any;
+    'number.int': Message | Any;
+    'number.gt': Message | Any;
+    'number.gte': Message | Any;
+    'number.lt': Message | Any;
+    'number.lte': Message | Any;
+    'number.multipleOf': Message | Any;
+  }
+
   export interface NumberShape {
     /**
      * Constrains the number to be a finite number.
@@ -204,10 +208,20 @@ declare module '../core' {
 /**
  * Enhances {@link core!NumberShape NumberShape} with additional methods.
  */
-export default function enableNumberEssentials(prototype: NumberShape): void {
+export default function enableNumberEssentials(ctor: typeof NumberShape): void {
+  const { messages, prototype } = ctor;
+
+  messages[CODE_NUMBER_FINITE] = 'Must be a finite number';
+  messages[CODE_NUMBER_INT] = 'Must be an integer';
+  messages[CODE_NUMBER_GT] = 'Must be greater than %s';
+  messages[CODE_NUMBER_GTE] = 'Must be greater than or equal to %s';
+  messages[CODE_NUMBER_LT] = 'Must be less than %s';
+  messages[CODE_NUMBER_LTE] = 'Must be less than or equal to %s';
+  messages[CODE_NUMBER_MULTIPLE_OF] = 'Must be a multiple of %s';
+
   prototype.finite = function (options) {
     const { isFinite } = Number;
-    const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, MESSAGE_NUMBER_FINITE, options, undefined);
+    const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, ctor.messages[CODE_NUMBER_FINITE], options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -226,7 +240,7 @@ export default function enableNumberEssentials(prototype: NumberShape): void {
 
   prototype.int = function (options) {
     const { isInteger } = Number;
-    const issueFactory = createIssueFactory(CODE_NUMBER_INT, MESSAGE_NUMBER_INT, options, undefined);
+    const issueFactory = createIssueFactory(CODE_NUMBER_INT, ctor.messages[CODE_NUMBER_INT], options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -260,7 +274,7 @@ export default function enableNumberEssentials(prototype: NumberShape): void {
   };
 
   prototype.gt = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_GT, MESSAGE_NUMBER_GT, options, value);
+    const issueFactory = createIssueFactory(CODE_NUMBER_GT, ctor.messages[CODE_NUMBER_GT], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -278,7 +292,7 @@ export default function enableNumberEssentials(prototype: NumberShape): void {
   };
 
   prototype.lt = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_LT, MESSAGE_NUMBER_LT, options, value);
+    const issueFactory = createIssueFactory(CODE_NUMBER_LT, ctor.messages[CODE_NUMBER_LT], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -296,7 +310,7 @@ export default function enableNumberEssentials(prototype: NumberShape): void {
   };
 
   prototype.gte = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_GTE, MESSAGE_NUMBER_GTE, options, value);
+    const issueFactory = createIssueFactory(CODE_NUMBER_GTE, ctor.messages[CODE_NUMBER_GTE], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -314,7 +328,7 @@ export default function enableNumberEssentials(prototype: NumberShape): void {
   };
 
   prototype.lte = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_LTE, MESSAGE_NUMBER_LTE, options, value);
+    const issueFactory = createIssueFactory(CODE_NUMBER_LTE, ctor.messages[CODE_NUMBER_LTE], options, value);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -341,7 +355,12 @@ export default function enableNumberEssentials(prototype: NumberShape): void {
 
     const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
 
-    const issueFactory = createIssueFactory(CODE_NUMBER_MULTIPLE_OF, MESSAGE_NUMBER_MULTIPLE_OF, options, divisor);
+    const issueFactory = createIssueFactory(
+      CODE_NUMBER_MULTIPLE_OF,
+      ctor.messages[CODE_NUMBER_MULTIPLE_OF],
+      options,
+      divisor
+    );
 
     return this.use(
       next => (input, output, options, issues) => {

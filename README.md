@@ -1867,8 +1867,9 @@ All shape factories and built-in checks support custom issue messages:
 d.string('Hey, string here').min(3, 'Too short');
 ```
 
-[Built-in checks that have a param](#validation-errors), such as `min` constraint in the example above, can use a `%s`
-placeholder that would be interpolated with the param value.
+[Built-in checks that have a param](#validation-errors), such as
+[`min`](https://smikhalevski.github.io/doubter/next/classes/core.StringShape.html#min) constraint in the example above,
+can use a `%s` placeholder that would be interpolated with the param value.
 
 ```ts
 d.string().min(3, 'Minimum length is %s');
@@ -1876,9 +1877,7 @@ d.string().min(3, 'Minimum length is %s');
 
 [Pass a function as a message](https://smikhalevski.github.io/doubter/next/types/core.MessageCallback.html), and
 it would receive an [issue](#validation-errors) that would be raised, and parsing options. You can assign
-`issue.message` or return a message.
-
-For example, when using with React you may return a JSX element:
+`issue.message` or return a message. For example, when using with React you may return a JSX element:
 
 ```tsx
 const message: d.Message = (issue, options) => (
@@ -1896,6 +1895,38 @@ as well:
 
 ```ts
 d.string().length(3, { message: 'Expected length is %s' })
+```
+
+## Override messages globally
+
+Default issue messages can be overridden globally:
+
+```ts
+import * as d from 'doubter';
+
+d.Shape.messages['type.string'] = 'Yo, not a string!';
+
+d.string().parse(42);
+// ❌ ValidationError: type at /: Yo, not a string!
+```
+
+Default issue messages can be callbacks and support `%s` placeholder. For example, you can implement a context-based
+message defaults using callbacks:
+
+```ts
+d.Shape.messages['type.boolean'] = (issue, options) => {
+  return options.context?.i18n?.bool || 'Must be a boolean';
+};
+
+d.boolean().parse(42);
+// ❌ ValidationError: type at /: Must be a boolean
+
+const greek = {
+  bool: 'Πρέπει να είναι boolean'
+};
+
+d.boolean({ context: { i18n: greek } }).parse(42);
+// ❌ ValidationError: type at /: Πρέπει να είναι boolean
 ```
 
 # Plugins

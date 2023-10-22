@@ -1,5 +1,5 @@
-import { SymbolShape } from '../../main';
-import { CODE_TYPE, MESSAGE_TYPE_SYMBOL } from '../../main/constants';
+import { Shape, SymbolShape } from '../../main';
+import { CODE_TYPE } from '../../main/constants';
 import { TYPE_SYMBOL } from '../../main/Type';
 
 describe('SymbolShape', () => {
@@ -19,7 +19,7 @@ describe('SymbolShape', () => {
   test('raises an issue if an input is not a symbol', () => {
     expect(new SymbolShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_SYMBOL, message: MESSAGE_TYPE_SYMBOL }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_SYMBOL, message: Shape.messages['type.symbol'] }],
     });
   });
 

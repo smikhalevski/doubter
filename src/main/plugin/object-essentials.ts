@@ -18,19 +18,23 @@ import {
   CODE_OBJECT_OXOR_KEYS,
   CODE_OBJECT_PLAIN,
   CODE_OBJECT_XOR_KEYS,
-  MESSAGE_OBJECT_ALL_KEYS,
-  MESSAGE_OBJECT_NOT_ALL_KEYS,
-  MESSAGE_OBJECT_OR_KEYS,
-  MESSAGE_OBJECT_OXOR_KEYS,
-  MESSAGE_OBJECT_PLAIN,
-  MESSAGE_OBJECT_XOR_KEYS,
 } from '../constants';
 import { AnyShape, IssueOptions, Message, ObjectShape } from '../core';
 import { ReadonlyDict } from '../internal';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
-  interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
+  export interface Messages {
+    'object.allKeys': Message | Any;
+    'object.notAllKeys': Message | Any;
+    'object.orKeys': Message | Any;
+    'object.xorKeys': Message | Any;
+    'object.oxorKeys': Message | Any;
+    'object.plain': Message | Any;
+  }
+
+  export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
     /**
      * Constrains an object to have a `null` or {@link !Object Object} prototype.
      *
@@ -102,10 +106,19 @@ declare module '../core' {
 /**
  * Enhances {@link core!ObjectShape ObjectShape} with additional methods.
  */
-export default function enableObjectEssentials(prototype: ObjectShape<any, any>): void {
+export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any>): void {
+  const { messages, prototype } = ctor;
+
+  messages[CODE_OBJECT_ALL_KEYS] = 'Must contain all or no keys: %s';
+  messages[CODE_OBJECT_NOT_ALL_KEYS] = 'Must contain not all or no keys: %s';
+  messages[CODE_OBJECT_OR_KEYS] = 'Must contain at least one key: %s';
+  messages[CODE_OBJECT_XOR_KEYS] = 'Must contain exactly one key: %s';
+  messages[CODE_OBJECT_OXOR_KEYS] = 'Must contain one or no keys: %s';
+  messages[CODE_OBJECT_PLAIN] = 'Must be a plain object';
+
   prototype.plain = function (options) {
     const { getPrototypeOf } = Object;
-    const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, MESSAGE_OBJECT_PLAIN, options, undefined);
+    const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, ctor.messages[CODE_OBJECT_PLAIN], options, undefined);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -125,7 +138,7 @@ export default function enableObjectEssentials(prototype: ObjectShape<any, any>)
   };
 
   prototype.allKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_ALL_KEYS, MESSAGE_OBJECT_ALL_KEYS, options, keys);
+    const issueFactory = createIssueFactory(CODE_OBJECT_ALL_KEYS, ctor.messages[CODE_OBJECT_ALL_KEYS], options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -145,7 +158,12 @@ export default function enableObjectEssentials(prototype: ObjectShape<any, any>)
   };
 
   prototype.notAllKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_NOT_ALL_KEYS, MESSAGE_OBJECT_NOT_ALL_KEYS, options, keys);
+    const issueFactory = createIssueFactory(
+      CODE_OBJECT_NOT_ALL_KEYS,
+      ctor.messages[CODE_OBJECT_NOT_ALL_KEYS],
+      options,
+      keys
+    );
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -165,7 +183,7 @@ export default function enableObjectEssentials(prototype: ObjectShape<any, any>)
   };
 
   prototype.orKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_OR_KEYS, MESSAGE_OBJECT_OR_KEYS, options, keys);
+    const issueFactory = createIssueFactory(CODE_OBJECT_OR_KEYS, ctor.messages[CODE_OBJECT_OR_KEYS], options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -183,7 +201,7 @@ export default function enableObjectEssentials(prototype: ObjectShape<any, any>)
   };
 
   prototype.xorKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_XOR_KEYS, MESSAGE_OBJECT_XOR_KEYS, options, keys);
+    const issueFactory = createIssueFactory(CODE_OBJECT_XOR_KEYS, ctor.messages[CODE_OBJECT_XOR_KEYS], options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -201,7 +219,7 @@ export default function enableObjectEssentials(prototype: ObjectShape<any, any>)
   };
 
   prototype.oxorKeys = function (keys, options) {
-    const issueFactory = createIssueFactory(CODE_OBJECT_OXOR_KEYS, MESSAGE_OBJECT_OXOR_KEYS, options, keys);
+    const issueFactory = createIssueFactory(CODE_OBJECT_OXOR_KEYS, ctor.messages[CODE_OBJECT_OXOR_KEYS], options, keys);
 
     return this.use(
       next => (input, output, options, issues) => {

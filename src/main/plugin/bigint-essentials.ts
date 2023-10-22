@@ -11,11 +11,17 @@
  * @module plugin/bigint-essentials
  */
 
-import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
+import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../constants';
 import { BigIntShape, IssueOptions, Message } from '../core';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
+  export interface Messages {
+    'bigint.min': Message | Any;
+    'bigint.max': Message | Any;
+  }
+
   export interface BigIntShape {
     /**
      * Constrains the bigint to be greater than zero.
@@ -84,7 +90,12 @@ declare module '../core' {
 /**
  * Enhances {@link core!BigIntShape BigIntShape} with additional methods.
  */
-export default function enableBigIntEssentials(prototype: BigIntShape): void {
+export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
+  const { messages, prototype } = ctor;
+
+  messages[CODE_BIGINT_MIN] = 'Must be greater than or equal to %s';
+  messages[CODE_BIGINT_MAX] = 'Must be less than or equal to %s';
+
   prototype.positive = function (options) {
     return this.min(0, options);
   };
@@ -103,7 +114,7 @@ export default function enableBigIntEssentials(prototype: BigIntShape): void {
 
   prototype.min = function (value, options) {
     const param = BigInt(value);
-    const issueFactory = createIssueFactory(CODE_BIGINT_MIN, MESSAGE_BIGINT_MIN, options, param);
+    const issueFactory = createIssueFactory(CODE_BIGINT_MIN, ctor.messages[CODE_BIGINT_MIN], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -122,7 +133,7 @@ export default function enableBigIntEssentials(prototype: BigIntShape): void {
 
   prototype.max = function (value, options) {
     const param = BigInt(value);
-    const issueFactory = createIssueFactory(CODE_BIGINT_MAX, MESSAGE_BIGINT_MAX, options, param);
+    const issueFactory = createIssueFactory(CODE_BIGINT_MAX, ctor.messages[CODE_BIGINT_MAX], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {

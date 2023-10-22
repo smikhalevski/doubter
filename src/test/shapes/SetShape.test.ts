@@ -1,5 +1,5 @@
 import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_TYPE_SET, MESSAGE_TYPE_STRING } from '../../main/constants';
+import { CODE_TYPE } from '../../main/constants';
 import { resetNonce } from '../../main/internal';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
@@ -25,7 +25,7 @@ describe('SetShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_SET, param: TYPE_SET }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: TYPE_SET }],
     });
   });
 
@@ -160,7 +160,15 @@ describe('SetShape', () => {
 
       expect(shape.try(new Set([{ key1: 111 }]))).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: [0, 'key1'] }],
+        issues: [
+          {
+            code: CODE_TYPE,
+            input: 111,
+            message: Shape.messages['type.string'],
+            param: TYPE_STRING,
+            path: [0, 'key1'],
+          },
+        ],
       });
     });
   });
@@ -173,7 +181,7 @@ describe('SetShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_SET, param: TYPE_SET }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: TYPE_SET }],
       });
     });
 

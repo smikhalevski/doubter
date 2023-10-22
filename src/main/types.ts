@@ -110,7 +110,7 @@ export interface IssueOptions {
    * @see {@link Message}
    * @see {@link core!Issue#message Issue.message}
    */
-  message?: Message | any;
+  message?: Message | Any;
 
   /**
    * An arbitrary metadata that is added to an issue.

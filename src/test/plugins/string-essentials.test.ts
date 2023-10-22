@@ -1,4 +1,4 @@
-import { StringShape } from '../../main';
+import { Shape, StringShape } from '../../main';
 import {
   CODE_STRING_ENDS_WITH,
   CODE_STRING_INCLUDES,
@@ -7,7 +7,6 @@ import {
   CODE_STRING_NON_BLANK,
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
-  MESSAGE_STRING_NON_BLANK,
 } from '../../main/constants';
 
 describe('length', () => {
@@ -109,7 +108,7 @@ describe('nonBlank', () => {
   test('raises if string contains only spaces', () => {
     expect(new StringShape().nonBlank().try(' \t\n ')).toEqual({
       ok: false,
-      issues: [{ code: CODE_STRING_NON_BLANK, input: ' \t\n ', message: MESSAGE_STRING_NON_BLANK }],
+      issues: [{ code: CODE_STRING_NON_BLANK, input: ' \t\n ', message: Shape.messages[CODE_STRING_NON_BLANK] }],
     });
 
     expect(new StringShape().nonBlank().parse('aaa')).toBe('aaa');

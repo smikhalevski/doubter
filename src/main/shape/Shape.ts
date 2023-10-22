@@ -1,12 +1,4 @@
-import {
-  CODE_ANY_DENY,
-  CODE_ANY_EXCLUDE,
-  CODE_ANY_REFINE,
-  ERR_SYNC_UNSUPPORTED,
-  MESSAGE_ANY_DENY,
-  MESSAGE_ANY_EXCLUDE,
-  MESSAGE_ANY_REFINE,
-} from '../constants';
+import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED } from '../constants';
 import {
   applyShape,
   captureIssues,
@@ -29,6 +21,7 @@ import {
   unionTypes,
   universalApplyOperations,
 } from '../internal';
+import { Messages, messages } from '../messages';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   AlterCallback,
@@ -195,6 +188,11 @@ export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
  * @group Shapes
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
+  /**
+   * The mapping from an issue type to a corresponding issue message.
+   */
+  static readonly messages: Messages = messages as Messages;
+
   /**
    * The dictionary of shape annotations.
    *
@@ -390,7 +388,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: RefineCallback, options?: RefineOptions | Message): Shape {
     const { type = cb, param, force = false, code = CODE_ANY_REFINE } = extractOptions(options);
 
-    const issueFactory = createIssueFactory(code, MESSAGE_ANY_REFINE, options, cb);
+    const issueFactory = createIssueFactory(code, Shape.messages[CODE_ANY_REFINE], options, cb);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -1321,7 +1319,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_ANY_DENY, MESSAGE_ANY_DENY, options, deniedValue);
+    this._typeIssueFactory = createIssueFactory(CODE_ANY_DENY, Shape.messages[CODE_ANY_DENY], options, deniedValue);
   }
 
   deepPartial(): DenyShape<DeepPartialShape<BaseShape>, DeniedValue> {
@@ -1515,7 +1513,12 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_ANY_EXCLUDE, MESSAGE_ANY_EXCLUDE, options, excludedShape);
+    this._typeIssueFactory = createIssueFactory(
+      CODE_ANY_EXCLUDE,
+      Shape.messages[CODE_ANY_EXCLUDE],
+      options,
+      excludedShape
+    );
   }
 
   deepPartial(): ExcludeShape<DeepPartialShape<BaseShape>, ExcludedShape> {

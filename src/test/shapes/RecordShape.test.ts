@@ -1,5 +1,5 @@
 import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_TYPE_OBJECT, MESSAGE_TYPE_STRING } from '../../main/constants';
+import { CODE_TYPE } from '../../main/constants';
 import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 import { AsyncMockShape } from './mocks';
 
@@ -11,7 +11,7 @@ describe('RecordShape', () => {
 
     expect(shape.try('')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_TYPE_OBJECT, param: TYPE_OBJECT }],
+      issues: [{ code: CODE_TYPE, input: '', message: Shape.messages['type.object'], param: TYPE_OBJECT }],
     });
   });
 
@@ -117,7 +117,9 @@ describe('RecordShape', () => {
 
       expect(shape.try({ key1: 111 })).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: ['key1'] }],
+        issues: [
+          { code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: TYPE_STRING, path: ['key1'] },
+        ],
       });
     });
 
@@ -134,7 +136,13 @@ describe('RecordShape', () => {
       expect(shape.try({ aaa: { key1: 111 } })).toEqual({
         ok: false,
         issues: [
-          { code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: TYPE_STRING, path: ['aaa', 'key1'] },
+          {
+            code: CODE_TYPE,
+            input: 111,
+            message: Shape.messages['type.string'],
+            param: TYPE_STRING,
+            path: ['aaa', 'key1'],
+          },
         ],
       });
     });
@@ -146,7 +154,7 @@ describe('RecordShape', () => {
 
       await expect(shape.tryAsync('')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: '', message: MESSAGE_TYPE_OBJECT, param: TYPE_OBJECT }],
+        issues: [{ code: CODE_TYPE, input: '', message: Shape.messages['type.object'], param: TYPE_OBJECT }],
       });
     });
 

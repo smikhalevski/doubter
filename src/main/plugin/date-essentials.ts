@@ -11,11 +11,17 @@
  * @module plugin/date-essentials
  */
 
-import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
+import { CODE_DATE_MAX, CODE_DATE_MIN } from '../constants';
 import { DateShape, IssueOptions, Message, Shape } from '../core';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
+  export interface Messages {
+    'date.min': Message | Any;
+    'date.max': Message | Any;
+  }
+
   export interface DateShape {
     /**
      * Constrains the input date to be greater than or equal to another date.
@@ -84,11 +90,16 @@ declare module '../core' {
 /**
  * Enhances {@link core!DateShape DateShape} with additional methods.
  */
-export default function enableDateEssentials(prototype: DateShape): void {
+export default function enableDateEssentials(ctor: typeof DateShape): void {
+  const { messages, prototype } = ctor;
+
+  messages[CODE_DATE_MIN] = 'Must be after %s';
+  messages[CODE_DATE_MAX] = 'Must be before %s';
+
   prototype.min = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MIN, MESSAGE_DATE_MIN, options, param);
+    const issueFactory = createIssueFactory(CODE_DATE_MIN, ctor.messages[CODE_DATE_MIN], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {
@@ -108,7 +119,7 @@ export default function enableDateEssentials(prototype: DateShape): void {
   prototype.max = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MAX, MESSAGE_DATE_MAX, options, param);
+    const issueFactory = createIssueFactory(CODE_DATE_MAX, ctor.messages[CODE_DATE_MAX], options, param);
 
     return this.use(
       next => (input, output, options, issues) => {
