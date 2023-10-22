@@ -12,7 +12,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { TYPE_OBJECT } from '../Type';
+import { TYPE_OBJECT, TypeArray } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
@@ -345,7 +345,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     return this.restShape?.isAsync || isAsyncShapes(this.valueShapes);
   }
 
-  protected _getInputs(): readonly unknown[] {
+  protected _getInputs(): TypeArray {
     return [TYPE_OBJECT];
   }
 

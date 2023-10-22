@@ -4,7 +4,7 @@ import { isArray, isEqual } from '../internal/lang';
 import { setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { distributeTypes } from '../internal/types';
-import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
+import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT, TypeArray } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
@@ -92,7 +92,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return isAsyncShapes(this.shapes);
   }
 
-  protected _getInputs(): readonly unknown[] {
+  protected _getInputs(): TypeArray {
     const inputs = [];
 
     for (const shape of this.shapes) {

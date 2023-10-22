@@ -1,4 +1,5 @@
 import { coerceToNever, NEVER } from '../coerce/never';
+import { TypeArray } from '../Type';
 import { Shape } from './Shape';
 
 /**
@@ -75,7 +76,7 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
   /**
    * Returns the inputs that this shape accepts when coercion is enabled.
    */
-  protected _getCoercibleInputs(): readonly unknown[] {
+  protected _getCoercibleInputs(): TypeArray {
     return this._getInputs();
   }
 

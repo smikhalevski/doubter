@@ -1,5 +1,7 @@
 import { freeze, isArray } from './internal/lang';
 
+export type TypeArray = readonly unknown[];
+
 /**
  * The name of the value type.
  *

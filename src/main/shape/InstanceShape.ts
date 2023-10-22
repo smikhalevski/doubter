@@ -1,6 +1,15 @@
 import { CODE_TYPE_INSTANCE_OF } from '../constants';
 import { isEqualOrSubclass } from '../internal/lang';
-import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../Type';
+import {
+  TYPE_ARRAY,
+  TYPE_DATE,
+  TYPE_FUNCTION,
+  TYPE_MAP,
+  TYPE_OBJECT,
+  TYPE_PROMISE,
+  TYPE_SET,
+  TypeArray,
+} from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
@@ -38,7 +47,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
     );
   }
 
-  protected _getInputs(): readonly unknown[] {
+  protected _getInputs(): TypeArray {
     const { ctor } = this;
 
     if (isEqualOrSubclass(ctor, Function)) {

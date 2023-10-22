@@ -1,5 +1,14 @@
 import { freeze, getCanonicalValue, isArray } from '../internal/lang';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
+import {
+  TYPE_ARRAY,
+  TYPE_BIGINT,
+  TYPE_BOOLEAN,
+  TYPE_DATE,
+  TYPE_NUMBER,
+  TYPE_OBJECT,
+  TYPE_STRING,
+  TypeArray,
+} from '../Type';
 import { NEVER } from './never';
 
 const MAX_SAFE_INTEGER = 0x1fffffffffffff;
@@ -8,7 +17,7 @@ const MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
 /**
  * The array of types that are coercible to a number with {@link coerceToNumber}.
  */
-export const numberCoercibleTypes: readonly unknown[] = freeze([
+export const numberCoercibleTypes = freeze<TypeArray>([
   TYPE_ARRAY,
   TYPE_OBJECT,
   TYPE_NUMBER,
@@ -23,7 +32,7 @@ export const numberCoercibleTypes: readonly unknown[] = freeze([
 /**
  * The array of types that are coercible to `NaN` with {@link coerceToNumber}.
  */
-export const nanCoercibleTypes: readonly unknown[] = freeze([
+export const nanCoercibleTypes = freeze<TypeArray>([
   TYPE_ARRAY,
   TYPE_OBJECT, // new Number(NaN)
   NaN,

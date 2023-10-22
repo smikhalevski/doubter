@@ -1,5 +1,5 @@
 import { getCanonicalValue, isArray, isEqual } from '../internal/lang';
-import { TYPE_ARRAY } from '../Type';
+import { TYPE_ARRAY, TypeArray } from '../Type';
 import { bigintCoercibleTypes, coerceToBigInt } from './bigint';
 import { booleanCoercibleTypes, coerceToBoolean } from './boolean';
 import { coerceToDate, dateCoercibleTypes } from './date';
@@ -10,7 +10,7 @@ import { coerceToString, stringCoercibleTypes } from './string';
 /**
  * Returns the array of types that are coercible to a constant value with {@link coerceToConst}.
  */
-export function getConstCoercibleTypes(value: unknown): readonly unknown[] {
+export function getConstCoercibleTypes(value: unknown): TypeArray {
   const canonicalValue = getCanonicalValue(value);
 
   if (typeof canonicalValue === 'bigint') {

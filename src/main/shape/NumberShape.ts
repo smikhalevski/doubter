@@ -1,7 +1,7 @@
 import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleTypes } from '../coerce/number';
 import { CODE_TYPE } from '../constants';
-import { TYPE_NUMBER } from '../Type';
+import { TYPE_NUMBER, TypeArray } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -45,11 +45,11 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
-  protected _getInputs(): readonly unknown[] {
+  protected _getInputs(): TypeArray {
     return [TYPE_NUMBER];
   }
 
-  protected _getCoercibleInputs(): readonly unknown[] {
+  protected _getCoercibleInputs(): TypeArray {
     return numberCoercibleTypes;
   }
 

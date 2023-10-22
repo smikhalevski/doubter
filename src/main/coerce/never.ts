@@ -7,7 +7,7 @@ import { freeze } from '../internal/lang';
  *
  * @group Other
  */
-export const NEVER = freeze({ never: true }) as never;
+export const NEVER = freeze({} as never);
 
 export function coerceToNever() {
   return NEVER;

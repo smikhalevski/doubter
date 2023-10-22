@@ -4,7 +4,7 @@ import { defineProperty, isArray, isObject } from '../internal/lang';
 import { Dict, ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
-import { getTypeOf, TYPE_UNKNOWN } from '../Type';
+import { getTypeOf, TYPE_UNKNOWN, TypeArray } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -93,7 +93,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return isAsyncShapes(this.shapes);
   }
 
-  protected _getInputs(): readonly unknown[] {
+  protected _getInputs(): TypeArray {
     const inputs = [];
 
     for (const shape of this.shapes) {

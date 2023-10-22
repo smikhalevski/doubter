@@ -4,7 +4,7 @@ import { CODE_TYPE_ENUM } from '../constants';
 import { unique } from '../internal/arrays';
 import { getCanonicalValue, isArray } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
-import { TYPE_ARRAY } from '../Type';
+import { TYPE_ARRAY, TypeArray } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -48,11 +48,11 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
   }
 
-  protected _getInputs(): readonly unknown[] {
+  protected _getInputs(): TypeArray {
     return this.values.slice(0);
   }
 
-  protected _getCoercibleInputs(): readonly unknown[] {
+  protected _getCoercibleInputs(): TypeArray {
     const inputs: unknown[] = this.values.slice(0);
 
     if (inputs.length === 0) {

@@ -13,7 +13,7 @@ import {
   Promisify,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { TYPE_FUNCTION } from '../Type';
+import { TYPE_FUNCTION, TypeArray } from '../Type';
 import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
@@ -248,7 +248,7 @@ export class FunctionShape<
     };
   }
 
-  protected _getInputs(): readonly unknown[] {
+  protected _getInputs(): TypeArray {
     return [TYPE_FUNCTION];
   }
 
