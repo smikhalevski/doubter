@@ -1,4 +1,4 @@
-import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED, } from '../constants';
+import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED } from '../constants';
 import { defineProperty, freeze, isArray, isEqual, isObjectLike, returnTrue } from '../internal/lang';
 import { Dict, ReadonlyDict } from '../internal/objects';
 import {
@@ -16,6 +16,7 @@ import {
   universalApplyOperations,
 } from '../internal/shapes';
 import { isType, unionTypes } from '../internal/types';
+import { Messages, messages } from '../messages';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import {
   AlterCallback,

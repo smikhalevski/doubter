@@ -4,6 +4,7 @@ import { CODE_TYPE_CONST } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a constant value.

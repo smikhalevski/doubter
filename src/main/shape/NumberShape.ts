@@ -1,11 +1,11 @@
 import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleTypes } from '../coerce/number';
-import { CODE_TYPE, } from '../constants';
+import { CODE_TYPE } from '../constants';
 import { TYPE_NUMBER } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AllowShape, ReplaceShape } from './Shape';
+import { AllowShape, ReplaceShape, Shape } from './Shape';
 
 /**
  * The shape of a number value.

@@ -1,4 +1,4 @@
-import { NumberShape } from '../../main';
+import { NumberShape, Shape } from '../../main';
 import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE } from '../../main/constants';
 import {
   TYPE_ARRAY,

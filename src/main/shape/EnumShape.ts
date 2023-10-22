@@ -8,6 +8,7 @@ import { TYPE_ARRAY } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a value enumeration.

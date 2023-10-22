@@ -21,7 +21,7 @@ import {
 } from '../constants';
 import { AnyShape, IssueOptions, Message, ObjectShape } from '../core';
 import { ReadonlyDict } from '../internal/objects';
-import { Any } from '../types';
+import { Any } from '../typings';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

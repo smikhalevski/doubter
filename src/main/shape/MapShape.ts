@@ -6,7 +6,15 @@ import { TYPE_ARRAY, TYPE_MAP, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';
+import {
+  AnyShape,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  Input,
+  OptionalDeepPartialShape,
+  Output,
+  Shape
+} from './Shape';
 
 /**
  * The shape of a {@link !Map Map} instance.

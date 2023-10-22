@@ -1,4 +1,4 @@
-import { BooleanShape } from '../../main';
+import { BooleanShape, Shape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../../main/Type';
 

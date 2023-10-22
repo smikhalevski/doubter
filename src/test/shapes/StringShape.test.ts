@@ -1,4 +1,4 @@
-import { StringShape } from '../../main';
+import { Shape, StringShape } from '../../main';
 import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE } from '../../main/constants';
 import {
   TYPE_ARRAY,

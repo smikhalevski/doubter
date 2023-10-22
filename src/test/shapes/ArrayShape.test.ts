@@ -1,4 +1,4 @@
-import { ArrayShape, Err, NumberShape, ObjectShape, Ok, StringShape } from '../../main';
+import { ArrayShape, Err, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
 import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';

@@ -13,7 +13,7 @@
 
 import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN, ERR_SYNC_REQUIRED } from '../constants';
 import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Shape } from '../core';
-import { Any } from '../types';
+import { Any } from '../typings';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

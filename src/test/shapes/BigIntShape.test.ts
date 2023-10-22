@@ -1,4 +1,4 @@
-import { BigIntShape } from '../../main';
+import { BigIntShape, Shape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 

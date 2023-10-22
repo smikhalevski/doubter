@@ -6,6 +6,7 @@ import { TYPE_DATE } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
 /**
  * The shape of the {@link !Date Date} object.

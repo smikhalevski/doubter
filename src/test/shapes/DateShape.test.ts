@@ -1,4 +1,4 @@
-import { DateShape } from '../../main';
+import { DateShape, Shape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
 import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
 
