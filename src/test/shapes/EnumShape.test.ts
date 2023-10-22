@@ -91,11 +91,11 @@ describe('EnumShape', () => {
     expect(new EnumShape(StringMockEnum).parse(StringMockEnum.AAA)).toBe(StringMockEnum.AAA);
   });
 
-  test('parses a value from the list', () => {
+  test('parses a value from the array', () => {
     expect(new EnumShape(['aaa', 'bbb']).parse('aaa')).toBe('aaa');
   });
 
-  test('raises an issue when an input is not one of values from the list', () => {
+  test('raises an issue when an input is not one of values from the array', () => {
     expect(new EnumShape(['aaa', 'bbb']).try('ccc')).toEqual({
       ok: false,
       issues: [

@@ -3,7 +3,7 @@ import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../Type';
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to a boolean with {@link coerceToBoolean}.
+ * The array of types that are coercible to a boolean with {@link coerceToBoolean}.
  */
 export const booleanCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,

@@ -1,4 +1,4 @@
-import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
+import { coerceToConst, getConstCoercibleTypes } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
@@ -48,7 +48,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
   }
 
   protected _getCoercibleInputs(): readonly unknown[] {
-    return getConstCoercibleInputs(this.value);
+    return getConstCoercibleTypes(this.value);
   }
 
   protected _coerce(input: unknown): Value {

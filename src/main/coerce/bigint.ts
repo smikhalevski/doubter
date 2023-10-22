@@ -3,7 +3,7 @@ import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_S
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to a bigint with {@link coerceToBigInt}.
+ * The array of types that are coercible to a bigint with {@link coerceToBigInt}.
  */
 export const bigintCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,

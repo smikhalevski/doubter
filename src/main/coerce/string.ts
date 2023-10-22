@@ -3,7 +3,7 @@ import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJ
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to a string with {@link coerceToString}.
+ * The array of types that are coercible to a string with {@link coerceToString}.
  */
 export const stringCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,

@@ -6,7 +6,7 @@ const MAX_SAFE_INTEGER = 0x1fffffffffffff;
 const MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
 
 /**
- * The list of types that are coercible to a number with {@link coerceToNumber}.
+ * The array of types that are coercible to a number with {@link coerceToNumber}.
  */
 export const numberCoercibleTypes: readonly unknown[] = freeze([
   TYPE_ARRAY,
@@ -18,6 +18,15 @@ export const numberCoercibleTypes: readonly unknown[] = freeze([
   TYPE_DATE,
   null,
   undefined,
+]);
+
+/**
+ * The array of types that are coercible to `NaN` with {@link coerceToNumber}.
+ */
+export const nanCoercibleTypes: readonly unknown[] = freeze([
+  TYPE_ARRAY,
+  TYPE_OBJECT, // new Number(NaN)
+  NaN,
 ]);
 
 /**

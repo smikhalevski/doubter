@@ -3,7 +3,7 @@ import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
 /**
- * The list of types that are coercible to a Date with {@link coerceToDate}.
+ * The array of types that are coercible to a Date with {@link coerceToDate}.
  */
 export const dateCoercibleTypes: readonly unknown[] = freeze([TYPE_ARRAY, TYPE_DATE, TYPE_STRING, TYPE_NUMBER]);
 

@@ -1,4 +1,4 @@
-import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
+import { coerceToConst, getConstCoercibleTypes } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_ENUM } from '../constants';
 import { unique } from '../internal/arrays';
@@ -62,7 +62,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
       inputs.push(...Object.keys(this.source));
     }
     for (const value of this.values) {
-      inputs.push(...getConstCoercibleInputs(value));
+      inputs.push(...getConstCoercibleTypes(value));
     }
     return unique(inputs.concat(TYPE_ARRAY));
   }
