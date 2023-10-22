@@ -1,12 +1,13 @@
 import { CODE_TYPE_UNION } from '../constants';
 import { unique } from '../internal/arrays';
 import { defineProperty, isArray, isObject } from '../internal/lang';
-import { Dict } from '../internal/objects';
+import { Dict, ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
 import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
+import { CoercibleShape } from './CoercibleShape';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
@@ -285,62 +286,47 @@ export interface Discriminator {
   key: string;
 
   /**
-   * The values for each shape.
+   * Values for each shape.
    */
-  valueGroups: Array<readonly unknown[]>;
+  valueGroups: Array<ReadonlyArray<unknown>>;
+}
+
+function isObjectShape(shape: AnyShape): shape is ObjectShape<Dict<AnyShape>, any> {
+  return shape instanceof ObjectShape;
 }
 
 /**
  * Returns a discriminator property description. Discriminator conforms the following rules:
  *
- * - has a key that is common for all provided object shapes;
- * - its values are discrete;
- * - its values uniquely identify each shape.
+ * - A key that is common for all provided object shapes;
+ * - Values that correspond to the key are discrete;
+ * - Values uniquely identify each shape.
  */
-export function getDiscriminator(shapes: readonly ObjectShape<Dict<AnyShape>, any>[]): Discriminator | null {
-  if (shapes.length < 2) {
-    // Discriminator may exist only among multiple objects
-    return null;
-  }
+export function getDiscriminator(
+  shapes: readonly ObjectShape<ReadonlyDict<AnyShape>, AnyShape | null>[]
+): Discriminator | null {
+  const valueGroups: Array<ReadonlyArray<unknown>> = [];
+  const seenValues: unknown[] = [];
+  const isSeen = seenValues.includes.bind(seenValues);
 
-  const { keys } = shapes[0];
-  const valueGroups: Array<readonly unknown[]> = [];
-  const valueSet = new Set();
-
-  nextKey: for (const key of keys) {
+  nextKey: for (const key of shapes[0].keys) {
     for (let i = 0; i < shapes.length; ++i) {
-      const shape = shapes[i];
+      const keyShape = shapes[i].propShapes[key];
 
-      if (!shape.keys.includes(key)) {
-        // Key doesn't exist on every shape
+      if (
+        keyShape === undefined ||
+        (keyShape instanceof CoercibleShape && keyShape.coercionMode === 'coerce') ||
+        keyShape.inputs.length === 0 ||
+        keyShape.inputs.some(isType) ||
+        keyShape.inputs.some(isSeen)
+      ) {
         continue nextKey;
       }
-
-      const { inputs } = shape.propShapes[key];
-
-      if (inputs.length === 0 || inputs.some(isType)) {
-        // Values aren't discrete
-        continue nextKey;
-      }
-      valueGroups[i] = inputs;
-    }
-
-    valueSet.clear();
-
-    for (let i = 0, valueCount = 0; i < valueGroups.length; ++i) {
-      for (const value of valueGroups[i]) {
-        if (++valueCount !== valueSet.add(value).size) {
-          // Values don't uniquely identify each shape
-          continue nextKey;
-        }
-      }
+      valueGroups[i] = keyShape.inputs;
+      seenValues.push(...keyShape.inputs);
     }
 
     return { key, valueGroups };
   }
   return null;
-}
-
-function isObjectShape(shape: AnyShape): shape is ObjectShape<Dict<AnyShape>, any> {
-  return shape instanceof ObjectShape;
 }

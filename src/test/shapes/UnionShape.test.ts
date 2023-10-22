@@ -383,11 +383,6 @@ describe('getDiscriminator', () => {
     ).toBeNull();
   });
 
-  test('returns null if there are not enough shapes', () => {
-    expect(getDiscriminator([])).toBeNull();
-    expect(getDiscriminator([new ObjectShape({ type: new ConstShape('aaa') }, null)])).toBeNull();
-  });
-
   test('works with composite shapes', () => {
     expect(
       getDiscriminator([
