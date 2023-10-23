@@ -20,7 +20,10 @@ export function coerceToDate(input: unknown): Date {
 
   input = getCanonicalValue(input);
 
-  if ((typeof input === 'string' || typeof input === 'number') && isValidDate((input = new Date(input)))) {
+  if (
+    (typeof input === 'string' || typeof input === 'number' || input instanceof Date) &&
+    isValidDate((input = new Date(input)))
+  ) {
     return input;
   }
   return NEVER;
