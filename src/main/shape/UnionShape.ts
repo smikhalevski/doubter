@@ -1,7 +1,7 @@
 import { CODE_TYPE_UNION } from '../constants';
 import { unique } from '../internal/arrays';
 import { defineProperty, isArray, isObject } from '../internal/lang';
-import { Dict, ReadonlyDict } from '../internal/objects';
+import { ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
 import { getTypeOf, TYPE_UNKNOWN, TypeArray } from '../Type';
@@ -10,11 +10,6 @@ import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
-
-/**
- * Returns the array of shapes that are applicable to the input.
- */
-type LookupCallback = (input: any) => readonly AnyShape[];
 
 type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;
@@ -60,12 +55,6 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_UNION, Shape.messages[CODE_TYPE_UNION], options);
   }
 
-  protected get _lookup(): LookupCallback {
-    const shapes = unique(this.shapes);
-
-    return defineProperty(this, '_lookup', createLookupByDiscriminator(shapes) || createLookupByType(shapes), true);
-  }
-
   at(key: unknown): AnyShape | null {
     const shapes = [];
 
@@ -89,6 +78,24 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
   }
 
+  private get _exactLookup(): LookupCallback {
+    return defineProperty(this, '_exactLookup', createLookup(unique(this.shapes), false));
+  }
+
+  private get _coercedLookup(): LookupCallback {
+    return defineProperty(this, '_coercedLookup', createLookup(unique(this.shapes), true));
+  }
+
+  /**
+   * Returns an array of shapes that should be applied to the input.
+   *
+   * @param input The shape input to parse.
+   * @param coerce If `true` then coercion is applied, comes from {@link ApplyOptions.coerce}.
+   */
+  protected _lookup(input: unknown, coerce: boolean | undefined): readonly AnyShape[] {
+    return coerce !== true ? this._exactLookup(input) : this._coercedLookup(input);
+  }
+
   protected _isAsync(): boolean {
     return isAsyncShapes(this.shapes);
   }
@@ -109,7 +116,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     let issueGroups: Issue[][] | null = null;
     let index = 0;
 
-    const shapes = this._lookup(input);
+    const shapes = this._lookup(input, options.coerce);
     const shapesLength = shapes.length;
 
     while (index < shapesLength) {
@@ -142,7 +149,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {
     return new Promise(resolve => {
-      const shapes = this._lookup(input);
+      const shapes = this._lookup(input, options.coerce);
       const shapesLength = shapes.length;
 
       let issues: Issue[] | null = null;
@@ -187,13 +194,25 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   }
 }
 
-/**
- * Creates a lookup that finds a shape using an input value type.
- */
-export function createLookupByType(shapes: readonly AnyShape[]): LookupCallback {
-  const emptyArray: AnyShape[] = [];
+type ObjectShapeLike = ObjectShape<ReadonlyDict<AnyShape>, AnyShape | null>;
 
-  const buckets: Record<string, AnyShape[]> = {
+export type LookupCallback = (input: any) => readonly AnyShape[];
+
+export interface Discriminator {
+  /**
+   * The discriminator property key.
+   */
+  key: string;
+
+  /**
+   * Values for each shape.
+   */
+  valueGroups: Array<ReadonlyArray<unknown>>;
+}
+
+export function createLookup(shapes: readonly AnyShape[], coerce: boolean): LookupCallback {
+  const emptyArray: AnyShape[] = [];
+  const buckets: { [type: string]: AnyShape[] } = {
     object: emptyArray,
     array: emptyArray,
     function: emptyArray,
@@ -210,123 +229,133 @@ export function createLookupByType(shapes: readonly AnyShape[]): LookupCallback 
     undefined: emptyArray,
   };
 
-  const bucketNames = Object.keys(buckets);
+  const objectShapes: ObjectShapeLike[] = [];
+  const bucketTypes = Object.keys(buckets);
 
   for (const shape of shapes) {
-    const names =
-      shape.inputs[0] === TYPE_UNKNOWN ? bucketNames : unique(shape.inputs.map(input => getTypeOf(input).name));
+    if (shape instanceof ObjectShape) {
+      objectShapes.push(shape);
+    }
 
-    for (const name of names) {
-      buckets[name] = buckets[name].concat(shape);
+    const inputs = getActiveInputs(shape, coerce);
+    const types = inputs[0] === TYPE_UNKNOWN ? bucketTypes : unique(inputs.map(input => getTypeOf(input).name));
+
+    for (const type of types) {
+      buckets[type] = buckets[type].concat(shape);
     }
   }
 
-  return input => buckets[getTypeOf(input).name];
+  let discriminator;
+
+  if (objectShapes.length !== shapes.length) {
+    // Mixed shape types in the union
+    return input => buckets[getTypeOf(input).name];
+  }
+  if (objectShapes.length > 1 && (discriminator = getDiscriminator(objectShapes, coerce)) !== null) {
+    // Discriminated object union
+    return createDiscriminatorLookup(objectShapes, discriminator);
+  }
+  // Non-discriminated object union
+  return input => (isObject(input) ? objectShapes : emptyArray);
 }
 
 /**
- * Creates a lookup that uses a discriminator property, or returns `null` if discriminator property cannot be detected.
+ * Creates a lookup that uses a discriminator to detect which shape to use.
  */
-export function createLookupByDiscriminator(shapes: readonly AnyShape[]): LookupCallback | null {
-  const discriminator = shapes.every(isObjectShape) ? getDiscriminator(shapes) : null;
-
-  if (discriminator === null) {
-    return null;
-  }
-
+export function createDiscriminatorLookup(shapes: ObjectShapeLike[], discriminator: Discriminator): LookupCallback {
   const { key, valueGroups } = discriminator;
-  const shapesLength = shapes.length;
-  const shapeGroups: [AnyShape][] = [];
+  const shapeGroups: [ObjectShapeLike][] = [];
   const emptyArray: AnyShape[] = [];
 
-  let monoValues: unknown[] | null = [];
-
-  for (let i = 0; i < shapesLength; ++i) {
-    shapeGroups.push([shapes[i]]);
-
-    const valueGroup = valueGroups[i];
-
-    if (monoValues === null || valueGroup.length !== 1 || valueGroup[0] !== valueGroup[0]) {
-      monoValues = null;
-    } else {
-      monoValues.push(valueGroup[0]);
-    }
+  for (const shape of shapes) {
+    shapeGroups.push([shape]);
   }
 
-  if (monoValues !== null) {
+  // If each shape has a single value associated with it then indexOf is used for lookup
+  let shapeValues: unknown[] | null = [];
+  for (const values of valueGroups) {
+    if (values.length !== 1 || values[0] !== values[0]) {
+      // NaN cannot be used with indexOf
+      shapeValues = null;
+      break;
+    }
+    shapeValues.push(values[0]);
+  }
+
+  if (shapeValues !== null) {
     return input => {
       let index;
-      if (!isObject(input) || (index = monoValues!.indexOf(input[key])) === -1) {
-        return emptyArray;
+      if (isObject(input) && (index = shapeValues!.indexOf(input[key])) !== -1) {
+        return shapeGroups[index];
       }
-      return shapeGroups[index];
+      return emptyArray;
     };
   }
 
   return input => {
-    if (!isObject(input)) {
-      return emptyArray;
-    }
+    if (isObject(input)) {
+      const value = input[key];
 
-    const value = input[key];
-
-    for (let i = 0; i < shapesLength; ++i) {
-      if (valueGroups[i].includes(value)) {
-        return shapeGroups[i];
+      for (let i = 0; i < valueGroups.length; ++i) {
+        if (valueGroups[i].includes(value)) {
+          return shapeGroups[i];
+        }
       }
     }
     return emptyArray;
   };
 }
 
-export interface Discriminator {
-  /**
-   * The discriminator property key.
-   */
-  key: string;
-
-  /**
-   * Values for each shape.
-   */
-  valueGroups: Array<ReadonlyArray<unknown>>;
-}
-
-function isObjectShape(shape: AnyShape): shape is ObjectShape<Dict<AnyShape>, any> {
-  return shape instanceof ObjectShape;
-}
-
 /**
- * Returns a discriminator property description. Discriminator conforms the following rules:
+ * Discriminator conforms the following rules:
  *
  * - A key that is common for all provided object shapes;
  * - Values that correspond to the key are discrete;
  * - Values uniquely identify each shape.
  */
-export function getDiscriminator(
-  shapes: readonly ObjectShape<ReadonlyDict<AnyShape>, AnyShape | null>[]
-): Discriminator | null {
-  const valueGroups: Array<ReadonlyArray<unknown>> = [];
-  const seenValues: unknown[] = [];
-  const isSeen = seenValues.includes.bind(seenValues);
+export function getDiscriminator(shapes: ObjectShapeLike[], coerce: boolean): Discriminator | null {
+  const seenValues = new Set();
+  const valueGroups = [];
 
-  nextKey: for (const key of shapes[0].keys) {
+  next: for (const key of shapes[0].keys) {
+    seenValues.clear();
+
     for (let i = 0; i < shapes.length; ++i) {
-      const keyShape = shapes[i].propShapes[key];
+      const shape = shapes[i];
+      const valueShape = shape.propShapes[key];
 
-      if (
-        keyShape === undefined ||
-        (keyShape instanceof CoercibleShape && keyShape.coercionMode === 'coerce') ||
-        keyShape.inputs.length === 0 ||
-        keyShape.inputs.some(isType) ||
-        keyShape.inputs.some(isSeen)
-      ) {
-        continue nextKey;
+      if (!(valueShape instanceof Shape)) {
+        // No such known key in an object
+        continue next;
       }
-      valueGroups[i] = keyShape.inputs;
-      seenValues.push(...keyShape.inputs);
-    }
 
+      const inputs = getActiveInputs(valueShape, coerce);
+
+      if (inputs.length === 0 || inputs.some(isType)) {
+        // Must be a literal
+        continue next;
+      }
+      for (const input of inputs) {
+        if (seenValues.has(input)) {
+          // Non-unique value
+          continue next;
+        }
+        seenValues.add(input);
+      }
+      valueGroups[i] = inputs;
+    }
     return { key, valueGroups };
   }
   return null;
+}
+
+function getActiveInputs(shape: AnyShape, coerce: boolean): TypeArray {
+  if (
+    shape instanceof CoercibleShape &&
+    (shape.coercionMode === 'coerce' || (shape.coercionMode === 'defer' && coerce))
+  ) {
+    return shape.coercibleInputs;
+  } else {
+    return shape.inputs;
+  }
 }
