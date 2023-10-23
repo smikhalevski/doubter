@@ -1,4 +1,6 @@
 import { coerceToNever, NEVER } from '../coerce/never';
+import { defineProperty, freeze } from '../internal/lang';
+import { unionTypes } from '../internal/types';
 import { TypeArray } from '../Type';
 import { Shape } from './Shape';
 
@@ -25,16 +27,6 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
   InputValue,
   OutputValue
 > {
-  /**
-   * The mode in which coercion is applied to input values.
-   *
-   * @see {@link coerce}
-   * @see {@link noCoerce}
-   */
-  get coercionMode(): CoercionMode {
-    return this._tryCoerce === this._coerce ? 'coerce' : this._tryCoerce === coerceToNever ? 'no-coerce' : 'defer';
-  }
-
   /**
    * Enables an input value coercion.
    *
@@ -94,3 +86,44 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
     return force !== true ? NEVER : this._coerce(value);
   }
 }
+
+export interface CoercibleShape<InputValue, OutputValue, CoercedValue> {
+  /**
+   * The mode in which coercion is applied to input values.
+   *
+   * @see {@link coerce}
+   * @see {@link noCoerce}
+   */
+  readonly coercionMode: CoercionMode;
+
+  /**
+   * The array of unique input types and values that are accepted by the shape when coercion is enabled via
+   * {@link coerce} or {@link ApplyOptions.coerce}.
+   *
+   * @see {@link inputs}
+   */
+  readonly coercibleInputs: TypeArray;
+}
+
+Object.defineProperties(CoercibleShape.prototype, {
+  coercionMode: {
+    configurable: true,
+
+    get(this: CoercibleShape) {
+      const coercionMode: CoercionMode =
+        this._tryCoerce === this._coerce ? 'coerce' : this._tryCoerce === coerceToNever ? 'no-coerce' : 'defer';
+
+      return defineProperty(this, 'coercionMode', coercionMode, true);
+    },
+  },
+
+  coercibleInputs: {
+    configurable: true,
+
+    get(this: CoercibleShape) {
+      defineProperty(this, 'coercibleInputs', []);
+
+      return defineProperty(this, 'coercibleInputs', freeze(unionTypes(this._getCoercibleInputs())), true);
+    },
+  },
+});

@@ -1,14 +1,7 @@
 import { Shape, StringShape } from '../../main';
+import { stringCoercibleTypes } from '../../main/coerce/string';
 import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE } from '../../main/constants';
-import {
-  TYPE_ARRAY,
-  TYPE_BIGINT,
-  TYPE_BOOLEAN,
-  TYPE_DATE,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../../main/Type';
+import { TYPE_STRING } from '../../main/Type';
 
 describe('StringShape', () => {
   test('creates a string shape', () => {
@@ -64,33 +57,25 @@ describe('StringShape', () => {
     });
   });
 
-  test('extends shape inputs', () => {
-    const shape = new StringShape().coerce();
-
-    expect(shape.inputs).toEqual([
-      TYPE_ARRAY,
-      TYPE_OBJECT,
-      TYPE_STRING,
-      TYPE_NUMBER,
-      TYPE_BOOLEAN,
-      TYPE_BIGINT,
-      TYPE_DATE,
-      null,
-      undefined,
-    ]);
+  describe('coercibleInputs', () => {
+    test('extends shape inputs', () => {
+      expect(new StringShape().coercibleInputs).toBe(stringCoercibleTypes);
+    });
   });
 
-  test('coerces an input', () => {
-    expect(new StringShape().coerce().parse(111)).toBe('111');
-    expect(new StringShape().coerce().parse(true)).toBe('true');
-    expect(new StringShape().coerce().parse(['aaa'])).toBe('aaa');
-    expect(new StringShape().parse(['aaa'], { coerce: true })).toBe('aaa');
-  });
+  describe('coerce', () => {
+    test('coerces an input', () => {
+      expect(new StringShape().coerce().parse(111)).toBe('111');
+      expect(new StringShape().coerce().parse(true)).toBe('true');
+      expect(new StringShape().coerce().parse(['aaa'])).toBe('aaa');
+      expect(new StringShape().parse(['aaa'], { coerce: true })).toBe('aaa');
+    });
 
-  test('raises an issue if coercion fails', () => {
-    expect(new StringShape().coerce().try([111, 222])).toEqual({
-      ok: false,
-      issues: [{ code: CODE_TYPE, input: [111, 222], message: Shape.messages['type.string'], param: TYPE_STRING }],
+    test('raises an issue if coercion fails', () => {
+      expect(new StringShape().coerce().try([111, 222])).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: [111, 222], message: Shape.messages['type.string'], param: TYPE_STRING }],
+      });
     });
   });
 });

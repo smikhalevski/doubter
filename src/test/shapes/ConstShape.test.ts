@@ -29,4 +29,21 @@ describe('ConstShape', () => {
       issues: [{ code: 'xxx' }],
     });
   });
+
+  describe('coerce', () => {
+    test('coerces an input', () => {
+      expect(new ConstShape('111').coerce().parse(111)).toBe('111');
+      expect(new ConstShape('111').coerce().parse(new Number(111))).toBe('111');
+      expect(new ConstShape('111').coerce().parse([new Number(111)])).toBe('111');
+      expect(new ConstShape(1).coerce().parse(true)).toBe(1);
+      expect(new ConstShape(1).parse(true, { coerce: true })).toBe(1);
+    });
+
+    test('raises an issue if coercion fails', () => {
+      expect(new ConstShape(111).coerce().try('aaa')).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE_CONST, input: 'aaa', message: 'Must be equal to 111', param: 111 }],
+      });
+    });
+  });
 });

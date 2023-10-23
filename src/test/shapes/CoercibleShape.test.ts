@@ -1,20 +1,35 @@
-import { StringShape } from '../../main';
+import { CoercibleShape } from '../../main';
 
 describe('CoercibleShape', () => {
-  test('does not coerce values of the expected type', () => {
-    const cbMock = jest.fn();
-    const shape = new StringShape().coerce(cbMock);
+  let shape: CoercibleShape;
 
-    expect(shape.parse('aaa')).toBe('aaa');
-    expect(cbMock).not.toHaveBeenCalled();
+  beforeEach(() => {
+    shape = new CoercibleShape();
+    shape['_coerce'] = jest.fn(shape['_coerce']);
   });
 
-  test('applies the coercion callback', () => {
-    const cbMock = jest.fn().mockReturnValue('aaa');
-    const shape = new StringShape().coerce(cbMock);
+  test('detects coercion mode', () => {
+    expect(new CoercibleShape().coercionMode).toBe('defer');
+    expect(new CoercibleShape().noCoerce().coercionMode).toBe('no-coerce');
+    expect(new CoercibleShape().coerce().coercionMode).toBe('coerce');
+  });
 
-    expect(shape.parse(111)).toBe('aaa');
-    expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 111);
+  test('does not try coerce by default', () => {
+    shape['_tryCoerce'](111, false);
+
+    expect(shape['_coerce']).toHaveBeenCalledTimes(0);
+  });
+
+  test('tries to coerce if forced', () => {
+    shape['_tryCoerce'](111, true);
+
+    expect(shape['_coerce']).toHaveBeenCalledTimes(1);
+  });
+
+  test('tries to coerce if coercion is enabled', () => {
+    shape = shape.coerce();
+    shape['_tryCoerce'](111, false);
+
+    expect(shape['_coerce']).toHaveBeenCalledTimes(1);
   });
 });

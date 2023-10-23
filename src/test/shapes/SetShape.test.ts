@@ -112,13 +112,15 @@ describe('SetShape', () => {
     });
   });
 
-  describe('coerce', () => {
+  describe('coercibleInputs', () => {
     test('extends shape inputs', () => {
-      const shape = new SetShape(new StringShape()).coerce();
+      const shape = new SetShape(new StringShape());
 
-      expect(shape.inputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
+      expect(shape.coercibleInputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
     });
+  });
 
+  describe('coerce', () => {
     test('coerces a string value', () => {
       const shape = new SetShape(new Shape()).coerce();
 
@@ -128,7 +130,7 @@ describe('SetShape', () => {
     test('coerces a String object', () => {
       const shape = new SetShape(new Shape()).coerce();
 
-      expect(shape.parse(new String('aaa'))).toEqual(new Set(['aaa']));
+      expect(shape.parse(new String('aaa'))).toEqual(new Set([new String('aaa')]));
     });
 
     test('coerces an array value', () => {

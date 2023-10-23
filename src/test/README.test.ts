@@ -172,21 +172,6 @@ describe('JSON shape', () => {
   });
 });
 
-// test('Overriding type coercion', () => {
-//   const yesNoShape = d.boolean().coerce(value => {
-//     if (value === 'yes') {
-//       return true;
-//     }
-//     if (value === 'no') {
-//       return false;
-//     }
-//     // Coercion is not possible
-//     return NEVER;
-//   });
-//
-//   expect(d.array(yesNoShape).parse(['yes', 'no'])).toEqual([true, false]);
-// });
-
 test('Circular object references', () => {
   interface User {
     friends: User[];

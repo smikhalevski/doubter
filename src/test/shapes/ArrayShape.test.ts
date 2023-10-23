@@ -308,25 +308,27 @@ describe('ArrayShape', () => {
     });
   });
 
-  describe('coerce', () => {
+  describe('coercibleInputs', () => {
     test('allow unknown input type when shape is coerced and elements are unconstrained', () => {
-      const shape = new ArrayShape([], null).coerce();
+      const shape = new ArrayShape([], null);
 
-      expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
+      expect(shape.coercibleInputs).toEqual([TYPE_UNKNOWN]);
     });
 
     test('allows only array-like types when tuple has two elements', () => {
-      const shape = new ArrayShape([new StringShape(), new NumberShape()], null).coerce();
+      const shape = new ArrayShape([new StringShape(), new NumberShape()], null);
 
-      expect(shape.inputs).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
+      expect(shape.coercibleInputs).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
     });
 
     test('allows inputs of a single tuple element', () => {
-      const shape = new ArrayShape([new StringShape()], null).coerce();
+      const shape = new ArrayShape([new StringShape()], null);
 
-      expect(shape.inputs).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
+      expect(shape.coercibleInputs).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
     });
+  });
 
+  describe('coerce', () => {
     test('does not coerce if an input tuple has no elements', () => {
       const shape = new ArrayShape([], null).coerce();
 
@@ -400,7 +402,7 @@ describe('ArrayShape', () => {
     test('coerces a String object', () => {
       const shape = new ArrayShape([], new MockShape()).coerce();
 
-      expect(shape.parse(new String('aaa'))).toEqual(['aaa']);
+      expect(shape.parse(new String('aaa'))).toEqual([new String('aaa')]);
     });
 
     test('does not coerce if a tuple has more than one element with rest elements', () => {

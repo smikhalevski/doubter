@@ -1,14 +1,7 @@
 import { NumberShape, Shape } from '../../main';
+import { numberCoercibleTypes } from '../../main/coerce/number';
 import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE } from '../../main/constants';
-import {
-  TYPE_ARRAY,
-  TYPE_BIGINT,
-  TYPE_BOOLEAN,
-  TYPE_DATE,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../../main/Type';
+import { TYPE_NUMBER } from '../../main/Type';
 
 describe('NumberShape', () => {
   test('creates a NumberShape', () => {
@@ -88,23 +81,15 @@ describe('NumberShape', () => {
     });
   });
 
-  describe('coerce', () => {
+  describe('coercibleInputs', () => {
     test('extends shape inputs', () => {
       const shape = new NumberShape().coerce();
 
-      expect(shape.inputs).toEqual([
-        TYPE_ARRAY,
-        TYPE_OBJECT,
-        TYPE_NUMBER,
-        TYPE_STRING,
-        TYPE_BOOLEAN,
-        TYPE_BIGINT,
-        TYPE_DATE,
-        null,
-        undefined,
-      ]);
+      expect(shape.coercibleInputs).toEqual(numberCoercibleTypes);
     });
+  });
 
+  describe('coerce', () => {
     test('coerces an input', () => {
       expect(new NumberShape().coerce().parse('111')).toBe(111);
       expect(new NumberShape().coerce().parse(true)).toBe(1);

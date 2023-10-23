@@ -1,6 +1,6 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_PROMISE, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { promiseTypes, TYPE_PROMISE, TYPE_STRING, unknownTypes } from '../../main/Type';
 import { AsyncMockShape } from './mocks';
 
 describe('PromiseShape', () => {
@@ -53,13 +53,15 @@ describe('PromiseShape', () => {
 
   describe('inputs', () => {
     test('infers the promise type', () => {
-      expect(new PromiseShape(null).inputs).toEqual([TYPE_PROMISE]);
-      expect(new PromiseShape(new Shape()).inputs).toEqual([TYPE_PROMISE]);
+      expect(new PromiseShape(null).inputs).toBe(promiseTypes);
+      expect(new PromiseShape(new Shape()).inputs).toBe(promiseTypes);
     });
+  });
 
+  describe('coercibleInputs', () => {
     test('infers the coerced promise type', () => {
-      expect(new PromiseShape(null).coerce().inputs).toEqual([TYPE_UNKNOWN]);
-      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
+      expect(new PromiseShape(null).coercibleInputs).toBe(unknownTypes);
+      expect(new PromiseShape(new StringShape()).coercibleInputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
     });
   });
 

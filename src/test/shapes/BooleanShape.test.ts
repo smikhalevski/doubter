@@ -1,6 +1,7 @@
 import { BooleanShape, Shape } from '../../main';
+import { booleanCoercibleTypes } from '../../main/coerce/boolean';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../../main/Type';
+import { TYPE_BOOLEAN } from '../../main/Type';
 
 describe('BooleanShape', () => {
   test('creates a BooleanShape', () => {
@@ -28,13 +29,13 @@ describe('BooleanShape', () => {
     });
   });
 
-  describe('coerce', () => {
+  describe('coercibleInputs', () => {
     test('extends shape inputs', () => {
-      const shape = new BooleanShape().coerce();
-
-      expect(shape.inputs).toEqual([TYPE_ARRAY, TYPE_OBJECT, TYPE_BOOLEAN, 'false', 'true', 0, 1, null, undefined]);
+      expect(new BooleanShape().coercibleInputs).toBe(booleanCoercibleTypes);
     });
+  });
 
+  describe('coerce', () => {
     test('coerces an input', () => {
       expect(new BooleanShape().coerce().parse(1)).toBe(true);
       expect(new BooleanShape().coerce().parse(new Boolean(true))).toBe(true);
