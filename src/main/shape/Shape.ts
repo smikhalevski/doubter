@@ -16,7 +16,7 @@ import {
   universalApplyOperations,
 } from '../internal/shapes';
 import { isType, unionTypes } from '../internal/types';
-import { Messages, messages } from '../messages';
+import { defaultMessages } from '../messages';
 import { getTypeOf, TYPE_UNKNOWN, TypeArray, unknownTypes } from '../Type';
 import {
   AlterCallback,
@@ -177,7 +177,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * The mapping from an issue type to a corresponding issue message.
    */
-  static readonly messages: Messages = messages as Messages;
+  static readonly messages = defaultMessages;
 
   /**
    * The dictionary of shape annotations.

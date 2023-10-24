@@ -29,7 +29,7 @@ export interface Messages {
   'type.union': Message | Any;
 }
 
-export const messages: Partial<Messages> = {
+export const defaultMessages = {
   'any.deny': 'Must not be equal to %s',
   'any.exclude': 'Must not conform the excluded shape',
   'any.refine': 'Must conform the predicate',
@@ -53,4 +53,4 @@ export const messages: Partial<Messages> = {
   'type.string': 'Must be a string',
   'type.symbol': 'Must be a symbol',
   'type.union': 'Must conform the union',
-};
+} satisfies Partial<Messages> as Messages;
