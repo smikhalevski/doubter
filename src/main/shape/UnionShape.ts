@@ -4,7 +4,7 @@ import { defineProperty, isArray, isObject } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
-import { getTypeOf, TYPE_UNKNOWN } from '../Type';
+import { getTypeOf, TYPE_UNKNOWN } from '../types';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
@@ -218,7 +218,7 @@ export function createLookup(shapes: readonly AnyShape[]): LookupCallback {
   };
 
   const objectShapes: ObjectShapeLike[] = [];
-  const bucketTypes = Object.keys(buckets);
+  const bucketInputs = Object.keys(buckets);
 
   for (const shape of shapes) {
     if (shape instanceof ObjectShape) {
@@ -226,7 +226,7 @@ export function createLookup(shapes: readonly AnyShape[]): LookupCallback {
     }
 
     const inputs = shape.inputs;
-    const types = inputs[0] === TYPE_UNKNOWN ? bucketTypes : unique(inputs.map(input => getTypeOf(input).name));
+    const types = inputs[0] === TYPE_UNKNOWN ? bucketInputs : unique(inputs.map(input => getTypeOf(input).name));
 
     for (const type of types) {
       buckets[type] = buckets[type].concat(shape);

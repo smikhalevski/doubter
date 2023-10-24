@@ -15,9 +15,9 @@ import {
   toDeepPartialShape,
   universalApplyOperations,
 } from '../internal/shapes';
-import { isType, unionTypes } from '../internal/types';
+import { isType, unionInputs } from '../internal/types';
 import { defaultMessages } from '../messages';
-import { getTypeOf, TYPE_UNKNOWN, unknownTypes } from '../Type';
+import { getTypeOf, TYPE_UNKNOWN, unknownInputs } from '../types';
 import {
   AlterCallback,
   Any,
@@ -673,7 +673,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
   protected _getInputs(): readonly unknown[] {
-    return unknownTypes;
+    return unknownInputs;
   }
 
   /**
@@ -840,7 +840,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       defineProperty(this, 'inputs', []);
 
-      return defineProperty(this, 'inputs', freeze(unionTypes(this._getInputs())), true);
+      return defineProperty(this, 'inputs', freeze(unionInputs(this._getInputs())), true);
     },
   },
 

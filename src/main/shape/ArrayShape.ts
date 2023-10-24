@@ -11,7 +11,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { arrayCoercibleTypes, arrayTypes, TYPE_ARRAY, TYPE_OBJECT, unknownTypes } from '../Type';
+import { arrayCoercibleInputs, arrayInputs, TYPE_ARRAY, TYPE_OBJECT, unknownInputs } from '../types';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -136,10 +136,10 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     const { headShapes, restShape } = this;
 
     if (!this.isCoercing) {
-      return arrayTypes;
+      return arrayInputs;
     }
     if (headShapes.length > 1) {
-      return arrayCoercibleTypes;
+      return arrayCoercibleInputs;
     }
     if (headShapes.length === 1) {
       return headShapes[0].inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
@@ -147,7 +147,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     if (restShape !== null) {
       return restShape.inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
     }
-    return unknownTypes;
+    return unknownInputs;
   }
 
   /**

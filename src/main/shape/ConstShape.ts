@@ -1,7 +1,7 @@
-import { coerceToConst, getConstCoercibleTypes } from '../coerce/const';
+import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST } from '../constants';
-import { nullTypes, undefinedTypes } from '../Type';
+import { nullInputs, undefinedInputs } from '../types';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -48,13 +48,13 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     const { value } = this;
 
     if (this.isCoercing) {
-      return getConstCoercibleTypes(value);
+      return getConstCoercibleInputs(value);
     }
     if (value === undefined) {
-      return undefinedTypes;
+      return undefinedInputs;
     }
     if (value === null) {
-      return nullTypes;
+      return nullInputs;
     }
     return [value];
   }

@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
+import { TYPE_NUMBER, TYPE_STRING } from '../../main/types';
 
 describe('union', () => {
   test('returns a union shape', () => {

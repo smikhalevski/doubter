@@ -2,7 +2,7 @@ import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
-import { promiseTypes, TYPE_PROMISE, unknownTypes } from '../Type';
+import { promiseInputs, TYPE_PROMISE, unknownInputs } from '../types';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -65,10 +65,10 @@ export class PromiseShape<ValueShape extends AnyShape | null>
 
   protected _getInputs(): readonly unknown[] {
     if (!this.isCoercing) {
-      return promiseTypes;
+      return promiseInputs;
     }
     if (this.valueShape === null) {
-      return unknownTypes;
+      return unknownInputs;
     }
     return this.valueShape.inputs.concat(TYPE_PROMISE);
   }

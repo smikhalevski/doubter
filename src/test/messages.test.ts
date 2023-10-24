@@ -1,5 +1,5 @@
 import { StringShape } from '../main';
-import { TYPE_STRING } from '../main/Type';
+import { TYPE_STRING } from '../main/types';
 
 test('overrides global message', () => {
   StringShape.messages['type.string'] = (issue, options) => 111;

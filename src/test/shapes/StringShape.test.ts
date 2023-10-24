@@ -1,7 +1,7 @@
 import { Shape, StringShape } from '../../main';
-import { stringCoercibleTypes } from '../../main/coerce/string';
+import { stringCoercibleInputs } from '../../main/coerce/string';
 import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE } from '../../main/constants';
-import { TYPE_STRING } from '../../main/Type';
+import { TYPE_STRING } from '../../main/types';
 
 describe('StringShape', () => {
   test('creates a string shape', () => {
@@ -59,7 +59,7 @@ describe('StringShape', () => {
 
   describe('coerce', () => {
     test('extends shape inputs', () => {
-      expect(new StringShape().coerce().inputs).toBe(stringCoercibleTypes);
+      expect(new StringShape().coerce().inputs).toBe(stringCoercibleInputs);
     });
 
     test('coerces an input', () => {

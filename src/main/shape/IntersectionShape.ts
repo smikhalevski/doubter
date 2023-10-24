@@ -3,8 +3,8 @@ import { CODE_TYPE_INTERSECTION } from '../constants';
 import { isArray, isEqual } from '../internal/lang';
 import { setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
-import { distributeTypes } from '../internal/types';
-import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
+import { distributeInputs } from '../internal/types';
+import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../types';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
@@ -98,7 +98,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     for (const shape of this.shapes) {
       inputs.push(shape.inputs);
     }
-    return distributeTypes(inputs);
+    return distributeInputs(inputs);
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Output<Intersect<Shapes[number]>>> {

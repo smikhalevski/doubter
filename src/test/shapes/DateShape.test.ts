@@ -1,7 +1,7 @@
 import { DateShape, Shape } from '../../main';
-import { dateCoercibleTypes } from '../../main/coerce/date';
+import { dateCoercibleInputs } from '../../main/coerce/date';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_DATE } from '../../main/Type';
+import { TYPE_DATE } from '../../main/types';
 
 describe('DateShape', () => {
   test('creates a DateShape', () => {
@@ -33,7 +33,7 @@ describe('DateShape', () => {
 
   describe('coerce', () => {
     test('extends shape inputs', () => {
-      expect(new DateShape().coerce().inputs).toBe(dateCoercibleTypes);
+      expect(new DateShape().coerce().inputs).toBe(dateCoercibleInputs);
     });
 
     test('coerces an input', () => {

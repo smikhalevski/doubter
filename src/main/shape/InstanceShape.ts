@@ -1,6 +1,6 @@
 import { CODE_TYPE_INSTANCE_OF } from '../constants';
 import { isEqualOrSubclass } from '../internal/lang';
-import { arrayTypes, dateTypes, functionTypes, mapTypes, objectTypes, promiseTypes, setTypes } from '../Type';
+import { arrayInputs, dateInputs, functionInputs, mapInputs, objectInputs, promiseInputs, setInputs } from '../types';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
@@ -42,24 +42,24 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
     const { ctor } = this;
 
     if (isEqualOrSubclass(ctor, Function)) {
-      return functionTypes;
+      return functionInputs;
     }
     if (isEqualOrSubclass(ctor, Promise)) {
-      return promiseTypes;
+      return promiseInputs;
     }
     if (isEqualOrSubclass(ctor, Array)) {
-      return arrayTypes;
+      return arrayInputs;
     }
     if (isEqualOrSubclass(ctor, Date)) {
-      return dateTypes;
+      return dateInputs;
     }
     if (isEqualOrSubclass(ctor, Set)) {
-      return setTypes;
+      return setInputs;
     }
     if (isEqualOrSubclass(ctor, Map)) {
-      return mapTypes;
+      return mapInputs;
     }
-    return objectTypes;
+    return objectInputs;
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<InstanceType<Ctor>> {

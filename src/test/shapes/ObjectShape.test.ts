@@ -1,7 +1,7 @@
 import { ObjectShape, Ok, Shape, StringShape } from '../../main';
 import { CODE_ANY_DENY, CODE_OBJECT_EXACT, CODE_TYPE, CODE_TYPE_ENUM } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
-import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import { TYPE_OBJECT, TYPE_STRING } from '../../main/types';
 import { AsyncMockShape, MockShape } from './mocks';
 
 describe('ObjectShape', () => {

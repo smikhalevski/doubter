@@ -1,6 +1,6 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { promiseTypes, TYPE_PROMISE, TYPE_STRING, unknownTypes } from '../../main/Type';
+import { promiseInputs, TYPE_PROMISE, TYPE_STRING, unknownInputs } from '../../main/types';
 import { AsyncMockShape } from './mocks';
 
 describe('PromiseShape', () => {
@@ -53,14 +53,14 @@ describe('PromiseShape', () => {
 
   describe('inputs', () => {
     test('infers the promise type', () => {
-      expect(new PromiseShape(null).inputs).toBe(promiseTypes);
-      expect(new PromiseShape(new Shape()).inputs).toBe(promiseTypes);
+      expect(new PromiseShape(null).inputs).toBe(promiseInputs);
+      expect(new PromiseShape(new Shape()).inputs).toBe(promiseInputs);
     });
   });
 
   describe('coerce', () => {
     test('infers the coerced promise type', () => {
-      expect(new PromiseShape(null).coerce().inputs).toBe(unknownTypes);
+      expect(new PromiseShape(null).coerce().inputs).toBe(unknownInputs);
       expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
     });
 

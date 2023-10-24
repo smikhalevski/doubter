@@ -10,7 +10,7 @@ import {
 import { ERR_SHAPE_EXPECTED } from '../../main/constants';
 import { identity } from '../../main/internal/lang';
 import { nextNonce, resetNonce } from '../../main/internal/shapes';
-import { TYPE_OBJECT } from '../../main/Type';
+import { TYPE_OBJECT } from '../../main/types';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('LazyShape', () => {

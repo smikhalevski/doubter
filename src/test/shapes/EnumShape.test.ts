@@ -9,7 +9,7 @@ import {
   TYPE_NUMBER,
   TYPE_OBJECT,
   TYPE_STRING,
-} from '../../main/Type';
+} from '../../main/types';
 
 enum NumberMockEnum {
   AAA,

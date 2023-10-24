@@ -1,7 +1,7 @@
 import { NEVER } from '../coerce/never';
-import { coerceToString, stringCoercibleTypes } from '../coerce/string';
+import { coerceToString, stringCoercibleInputs } from '../coerce/string';
 import { CODE_TYPE } from '../constants';
-import { stringTypes, TYPE_STRING } from '../Type';
+import { stringInputs, TYPE_STRING } from '../types';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -30,7 +30,7 @@ export class StringShape extends CoercibleShape<string> {
   }
 
   protected _getInputs(): readonly unknown[] {
-    return this.isCoercing ? stringCoercibleTypes : stringTypes;
+    return this.isCoercing ? stringCoercibleInputs : stringInputs;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<string> {

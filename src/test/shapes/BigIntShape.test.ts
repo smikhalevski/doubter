@@ -1,7 +1,7 @@
 import { BigIntShape, Shape } from '../../main';
-import { bigintCoercibleTypes } from '../../main/coerce/bigint';
+import { bigintCoercibleInputs } from '../../main/coerce/bigint';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_BIGINT } from '../../main/Type';
+import { TYPE_BIGINT } from '../../main/types';
 
 describe('BigIntShape', () => {
   test('creates a BigIntShape', () => {
@@ -33,7 +33,7 @@ describe('BigIntShape', () => {
 
   describe('coerce', () => {
     test('extends shape inputs', () => {
-      expect(new BigIntShape().coerce().inputs).toBe(bigintCoercibleTypes);
+      expect(new BigIntShape().coerce().inputs).toBe(bigintCoercibleInputs);
     });
 
     test('coerces an input', () => {

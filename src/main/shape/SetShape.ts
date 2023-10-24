@@ -3,7 +3,7 @@ import { CODE_TYPE } from '../constants';
 import { toArrayIndex, unique } from '../internal/arrays';
 import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { setTypes, TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
+import { setInputs, TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../types';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -62,7 +62,7 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   protected _getInputs(): readonly unknown[] {
-    return this.isCoercing ? this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY) : setTypes;
+    return this.isCoercing ? this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY) : setInputs;
   }
 
   /**

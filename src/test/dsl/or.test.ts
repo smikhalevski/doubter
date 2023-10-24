@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { TYPE_UNKNOWN } from '../../main/Type';
+import { TYPE_UNKNOWN } from '../../main/types';
 
 describe('or', () => {
   test('returns a union shape', () => {

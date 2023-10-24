@@ -1,11 +1,11 @@
 import { freeze, getCanonicalValue, isArray } from '../internal/lang';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../Type';
+import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_OBJECT } from '../types';
 import { NEVER } from './never';
 
 /**
- * The array of types that are coercible to a boolean with {@link coerceToBoolean}.
+ * The array of inputs that are coercible to a boolean with {@link coerceToBoolean}.
  */
-export const booleanCoercibleTypes = freeze<unknown[]>([
+export const booleanCoercibleInputs = freeze<unknown[]>([
   TYPE_ARRAY,
   TYPE_OBJECT,
   TYPE_BOOLEAN,

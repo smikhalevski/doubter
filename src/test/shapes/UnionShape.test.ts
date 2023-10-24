@@ -14,7 +14,7 @@ import {
 } from '../../main';
 import { CODE_TYPE_UNION } from '../../main/constants';
 import { createDiscriminatorLookup, createLookup, getDiscriminator } from '../../main/shape/UnionShape';
-import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/types';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('UnionShape', () => {

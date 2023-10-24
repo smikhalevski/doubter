@@ -1,32 +1,32 @@
 import { getCanonicalValue, isArray, isEqual } from '../internal/lang';
-import { TYPE_ARRAY } from '../Type';
-import { bigintCoercibleTypes, coerceToBigInt } from './bigint';
-import { booleanCoercibleTypes, coerceToBoolean } from './boolean';
-import { coerceToDate, dateCoercibleTypes } from './date';
+import { TYPE_ARRAY } from '../types';
+import { bigintCoercibleInputs, coerceToBigInt } from './bigint';
+import { booleanCoercibleInputs, coerceToBoolean } from './boolean';
+import { coerceToDate, dateCoercibleInputs } from './date';
 import { NEVER } from './never';
-import { coerceToNumber, nanCoercibleTypes, numberCoercibleTypes } from './number';
-import { coerceToString, stringCoercibleTypes } from './string';
+import { coerceToNumber, nanCoercibleInputs, numberCoercibleInputs } from './number';
+import { coerceToString, stringCoercibleInputs } from './string';
 
 /**
  * Returns the array of types that are coercible to a constant value with {@link coerceToConst}.
  */
-export function getConstCoercibleTypes(value: unknown): readonly unknown[] {
+export function getConstCoercibleInputs(value: unknown): readonly unknown[] {
   const canonicalValue = getCanonicalValue(value);
 
   if (typeof canonicalValue === 'bigint') {
-    return bigintCoercibleTypes;
+    return bigintCoercibleInputs;
   }
   if (typeof canonicalValue === 'number') {
-    return canonicalValue !== canonicalValue ? nanCoercibleTypes : numberCoercibleTypes;
+    return canonicalValue !== canonicalValue ? nanCoercibleInputs : numberCoercibleInputs;
   }
   if (typeof canonicalValue === 'string') {
-    return stringCoercibleTypes;
+    return stringCoercibleInputs;
   }
   if (typeof canonicalValue === 'boolean') {
-    return booleanCoercibleTypes;
+    return booleanCoercibleInputs;
   }
   if (value instanceof Date) {
-    return dateCoercibleTypes;
+    return dateCoercibleInputs;
   }
   return [TYPE_ARRAY, value];
 }

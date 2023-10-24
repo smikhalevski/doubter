@@ -10,7 +10,7 @@ import {
 } from '../../main';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
-import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
+import { TYPE_FUNCTION, TYPE_NUMBER, TYPE_STRING } from '../../main/types';
 import { AsyncMockShape, MockShape } from './mocks';
 
 describe('FunctionShape', () => {

@@ -72,5 +72,5 @@ export * from './typings';
 export * from './ValidationError';
 
 export { Messages } from './messages';
-export { Type, TypeName } from './Type';
+export { Type, TypeName } from './types';
 export { NEVER } from './coerce/never';

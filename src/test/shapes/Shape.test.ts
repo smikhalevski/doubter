@@ -22,7 +22,7 @@ import {
   ERR_SYNC_UNSUPPORTED,
 } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
-import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/types';
 import { AsyncMockShape, MockShape } from './mocks';
 
 beforeEach(() => {

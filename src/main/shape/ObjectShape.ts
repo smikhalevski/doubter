@@ -12,7 +12,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { objectTypes, TYPE_OBJECT } from '../Type';
+import { objectInputs, TYPE_OBJECT } from '../types';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
@@ -346,7 +346,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   protected _getInputs(): readonly unknown[] {
-    return objectTypes;
+    return objectInputs;
   }
 
   protected _apply(

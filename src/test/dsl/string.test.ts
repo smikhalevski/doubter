@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { TYPE_STRING } from '../../main/Type';
+import { TYPE_STRING } from '../../main/types';
 
 describe('string', () => {
   test('returns a string shape', () => {

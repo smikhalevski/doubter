@@ -13,7 +13,7 @@ import {
   Promisify,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { functionTypes, TYPE_FUNCTION } from '../Type';
+import { functionInputs, TYPE_FUNCTION } from '../types';
 import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
@@ -249,7 +249,7 @@ export class FunctionShape<
   }
 
   protected _getInputs(): readonly unknown[] {
-    return functionTypes;
+    return functionInputs;
   }
 
   protected _apply(

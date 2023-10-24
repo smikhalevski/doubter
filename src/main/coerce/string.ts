@@ -1,11 +1,11 @@
 import { freeze, getCanonicalValue, isArray, isValidDate } from '../internal/lang';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../types';
 import { NEVER } from './never';
 
 /**
- * The array of types that are coercible to a string with {@link coerceToString}.
+ * The array of inputs that are coercible to a string with {@link coerceToString}.
  */
-export const stringCoercibleTypes = freeze<unknown[]>([
+export const stringCoercibleInputs = freeze<unknown[]>([
   TYPE_ARRAY,
   TYPE_OBJECT,
   TYPE_STRING,

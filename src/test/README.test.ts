@@ -2,7 +2,7 @@ import qs from 'qs';
 import * as d from '../main';
 import { Shape } from '../main';
 import { CODE_TYPE_UNION } from '../main/constants';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/Type';
+import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/types';
 
 describe('Cookbook', () => {
   test('Rename object keys', () => {

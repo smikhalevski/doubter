@@ -32,9 +32,9 @@ export class ValidationError extends Error {
    * The global function that stringifies issues as an error message, if a message is omitted when
    * {@link ValidationError} is instantiated.
    */
-  static formatIssues = (issues: Issue[]): string => JSON.stringify(issues, stringifyES6Values, 2);
+  static formatIssues = (issues: Issue[]): string => JSON.stringify(issues, replacer, 2);
 }
 
-function stringifyES6Values(key: any, value: any): any {
-  return typeof value === 'symbol' || typeof value === 'bigint' ? String(value) : value;
+function replacer(key: any, v: any): any {
+  return typeof v === 'symbol' || typeof v === 'bigint' || v instanceof Symbol || v instanceof BigInt ? String(v) : v;
 }

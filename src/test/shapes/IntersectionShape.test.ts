@@ -14,7 +14,7 @@ import {
 } from '../../main';
 import { CODE_TYPE, CODE_TYPE_INTERSECTION } from '../../main/constants';
 import { mergeValues } from '../../main/shape/IntersectionShape';
-import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/Type';
+import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/types';
 import { AsyncMockShape } from './mocks';
 
 describe('IntersectionShape', () => {

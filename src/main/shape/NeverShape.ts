@@ -1,5 +1,5 @@
 import { CODE_TYPE_NEVER } from '../constants';
-import { neverTypes } from '../Type';
+import { neverInputs } from '../types';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
@@ -27,7 +27,7 @@ export class NeverShape extends Shape<never> {
   }
 
   protected _getInputs(): readonly unknown[] {
-    return neverTypes;
+    return neverInputs;
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<never> {

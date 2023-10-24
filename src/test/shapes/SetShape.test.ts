@@ -1,7 +1,7 @@
 import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
-import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/Type';
+import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/types';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('SetShape', () => {
