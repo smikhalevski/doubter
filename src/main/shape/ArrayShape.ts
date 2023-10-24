@@ -11,7 +11,7 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { arrayCoercibleTypes, arrayTypes, TYPE_ARRAY, TYPE_OBJECT, TypeArray, unknownTypes } from '../Type';
+import { arrayCoercibleTypes, arrayTypes, TYPE_ARRAY, TYPE_OBJECT, unknownTypes } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -132,13 +132,12 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     return isAsyncShapes(this.headShapes) || this.restShape?.isAsync || false;
   }
 
-  protected _getInputs(): TypeArray {
-    return arrayTypes;
-  }
-
-  protected _getCoercibleInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     const { headShapes, restShape } = this;
 
+    if (!this.isCoercing) {
+      return arrayTypes;
+    }
     if (headShapes.length > 1) {
       return arrayCoercibleTypes;
     }
@@ -178,7 +177,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     if (
       // Not an array or not coercible
-      (!isArray(output) && (output = this._tryCoerce(input, options.coerce)) === NEVER) ||
+      (!isArray(output) && (output = this._applyCoerce(input)) === NEVER) ||
       // Invalid tuple length
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
@@ -229,7 +228,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
       if (
         // Not an array or not coercible
-        (!isArray(output) && (output = this._tryCoerce(input, options.coerce)) === NEVER) ||
+        (!isArray(output) && (output = this._applyCoerce(input)) === NEVER) ||
         // Invalid tuple length
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)

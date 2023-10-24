@@ -40,7 +40,7 @@ describe('PromiseShape', () => {
     });
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false });
   });
 
   test('returns the same promise if the resolved value did not change', () => {
@@ -58,14 +58,12 @@ describe('PromiseShape', () => {
     });
   });
 
-  describe('coercibleInputs', () => {
-    test('infers the coerced promise type', () => {
-      expect(new PromiseShape(null).coercibleInputs).toBe(unknownTypes);
-      expect(new PromiseShape(new StringShape()).coercibleInputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
-    });
-  });
-
   describe('coerce', () => {
+    test('infers the coerced promise type', () => {
+      expect(new PromiseShape(null).coerce().inputs).toBe(unknownTypes);
+      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
+    });
+
     test('wraps an input value in a promise', async () => {
       const result = new PromiseShape(null).coerce().try('aaa') as Ok;
 
@@ -128,7 +126,7 @@ describe('PromiseShape', () => {
       });
 
       expect(checkMock).toHaveBeenCalledTimes(1);
-      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false, coerce: false });
+      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false });
     });
 
     test('applies forced operations if value shape raised issues', async () => {

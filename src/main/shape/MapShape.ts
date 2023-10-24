@@ -2,7 +2,7 @@ import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { mapCoercibleTypes, mapTypes, TYPE_MAP, TypeArray } from '../Type';
+import { mapCoercibleTypes, mapTypes, TYPE_MAP } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -83,12 +83,8 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     return this.keyShape.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
-    return mapTypes;
-  }
-
-  protected _getCoercibleInputs(): TypeArray {
-    return mapCoercibleTypes;
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? mapCoercibleTypes : mapTypes;
   }
 
   /**
@@ -125,7 +121,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
-      !(changed = (entries = this._tryCoerce(input, options.coerce)) !== NEVER)
+      !(changed = (entries = this._applyCoerce(input)) !== NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
@@ -195,7 +191,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        !(changed = (entries = this._tryCoerce(input, options.coerce)) !== NEVER)
+        !(changed = (entries = this._applyCoerce(input)) !== NEVER)
       ) {
         resolve([this._typeIssueFactory(input, options)]);
         return;

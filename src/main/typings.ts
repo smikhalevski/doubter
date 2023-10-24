@@ -369,13 +369,6 @@ export interface ApplyOptions {
   readonly earlyReturn?: boolean;
 
   /**
-   * If `true` then shapes that support input value type coercion, would try to coerce an input to a required type.
-   *
-   * @default false
-   */
-  readonly coerce?: boolean;
-
-  /**
    * The custom context.
    */
   readonly context?: any;

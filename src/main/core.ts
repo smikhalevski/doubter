@@ -31,7 +31,7 @@ export { void_ as void } from './dsl/void';
 export { ArrayShape } from './shape/ArrayShape';
 export { BigIntShape } from './shape/BigIntShape';
 export { BooleanShape } from './shape/BooleanShape';
-export { CoercibleShape, CoercionMode } from './shape/CoercibleShape';
+export { CoercibleShape } from './shape/CoercibleShape';
 export { ConstShape } from './shape/ConstShape';
 export { DateShape } from './shape/DateShape';
 export { EnumShape } from './shape/EnumShape';
@@ -72,5 +72,5 @@ export * from './typings';
 export * from './ValidationError';
 
 export { Messages } from './messages';
-export { Type, TypeName, TypeArray } from './Type';
+export { Type, TypeName } from './Type';
 export { NEVER } from './coerce/never';

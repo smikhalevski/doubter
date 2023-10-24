@@ -3,7 +3,7 @@ import { CODE_TYPE } from '../constants';
 import { toArrayIndex, unique } from '../internal/arrays';
 import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { setTypes, TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TypeArray } from '../Type';
+import { setTypes, TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -61,12 +61,8 @@ export class SetShape<ValueShape extends AnyShape>
     return this.valueShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
-    return setTypes;
-  }
-
-  protected _getCoercibleInputs(): TypeArray {
-    return this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY) : setTypes;
   }
 
   /**
@@ -94,7 +90,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      !(changed = (values = this._tryCoerce(input, options.coerce)) !== NEVER)
+      !(changed = (values = this._applyCoerce(input)) !== NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
@@ -134,7 +130,7 @@ export class SetShape<ValueShape extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        !(changed = (values = this._tryCoerce(input, options.coerce)) !== NEVER)
+        !(changed = (values = this._applyCoerce(input)) !== NEVER)
       ) {
         resolve([this._typeIssueFactory(input, options)]);
         return;

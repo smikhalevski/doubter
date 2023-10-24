@@ -1,7 +1,7 @@
 import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleTypes } from '../coerce/number';
 import { CODE_TYPE } from '../constants';
-import { numberTypes, TYPE_NUMBER, TypeArray } from '../Type';
+import { numberTypes, TYPE_NUMBER } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -45,21 +45,14 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
-  protected _getInputs(): TypeArray {
-    return numberTypes;
-  }
-
-  protected _getCoercibleInputs(): TypeArray {
-    return numberCoercibleTypes;
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? numberCoercibleTypes : numberTypes;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<number> {
     let output = input;
 
-    if (
-      (typeof output !== 'number' || output !== output) &&
-      (output = this._tryCoerce(input, options.coerce)) === NEVER
-    ) {
+    if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

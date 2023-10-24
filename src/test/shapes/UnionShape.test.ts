@@ -314,13 +314,10 @@ describe('UnionShape', () => {
 describe('getDiscriminator', () => {
   test('returns the discriminator key and corresponding values for each shape in the union', () => {
     expect(
-      getDiscriminator(
-        [
-          new ObjectShape({ type: new ConstShape('aaa') }, null),
-          new ObjectShape({ type: new ConstShape('bbb') }, null),
-        ],
-        false
-      )
+      getDiscriminator([
+        new ObjectShape({ type: new ConstShape('aaa') }, null),
+        new ObjectShape({ type: new ConstShape('bbb') }, null),
+      ])
     ).toEqual({
       key: 'type',
       valueGroups: [['aaa'], ['bbb']],
@@ -329,25 +326,22 @@ describe('getDiscriminator', () => {
 
   test('returns the discriminator key if there are multiple keys', () => {
     expect(
-      getDiscriminator(
-        [
-          new ObjectShape(
-            {
-              type1: new ConstShape('aaa'),
-              type2: new ConstShape('bbb'),
-            },
-            null
-          ),
-          new ObjectShape(
-            {
-              type1: new ConstShape('aaa'),
-              type2: new ConstShape('ccc'),
-            },
-            null
-          ),
-        ],
-        false
-      )
+      getDiscriminator([
+        new ObjectShape(
+          {
+            type1: new ConstShape('aaa'),
+            type2: new ConstShape('bbb'),
+          },
+          null
+        ),
+        new ObjectShape(
+          {
+            type1: new ConstShape('aaa'),
+            type2: new ConstShape('ccc'),
+          },
+          null
+        ),
+      ])
     ).toEqual({
       key: 'type2',
       valueGroups: [['bbb'], ['ccc']],
@@ -356,13 +350,10 @@ describe('getDiscriminator', () => {
 
   test('returns the discriminator for enum values', () => {
     expect(
-      getDiscriminator(
-        [
-          new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null),
-          new ObjectShape({ type: new ConstShape('ccc') }, null),
-        ],
-        false
-      )
+      getDiscriminator([
+        new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null),
+        new ObjectShape({ type: new ConstShape('ccc') }, null),
+      ])
     ).toEqual({
       key: 'type',
       valueGroups: [['aaa', 'bbb'], ['ccc']],
@@ -371,47 +362,41 @@ describe('getDiscriminator', () => {
 
   test('returns null if there is no property with distinct discrete properties', () => {
     expect(
-      getDiscriminator(
-        [
-          new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null),
-          new ObjectShape({ type: new ConstShape('bbb') }, null),
-        ],
-        false
-      )
+      getDiscriminator([
+        new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null),
+        new ObjectShape({ type: new ConstShape('bbb') }, null),
+      ])
     ).toBeNull();
 
     expect(
-      getDiscriminator(
-        [new ObjectShape({ type: new NumberShape() }, null), new ObjectShape({ type: new ConstShape(111) }, null)],
-        false
-      )
+      getDiscriminator([
+        new ObjectShape({ type: new NumberShape() }, null),
+        new ObjectShape({ type: new ConstShape(111) }, null),
+      ])
     ).toBeNull();
 
     expect(
-      getDiscriminator(
-        [new ObjectShape({ type: new NeverShape() }, null), new ObjectShape({ type: new ConstShape(111) }, null)],
-        false
-      )
+      getDiscriminator([
+        new ObjectShape({ type: new NeverShape() }, null),
+        new ObjectShape({ type: new ConstShape(111) }, null),
+      ])
     ).toBeNull();
   });
 
   test('works with composite shapes', () => {
     expect(
-      getDiscriminator(
-        [
-          new ObjectShape(
-            {
-              type: new UnionShape([
-                new IntersectionShape([new EnumShape(['aaa', 'bbb']), new ConstShape(['bbb', 'ccc'])]),
-                new EnumShape(['bbb', 'ddd']),
-              ]),
-            },
-            null
-          ),
-          new ObjectShape({ type: new ConstShape('aaa') }, null),
-        ],
-        false
-      )
+      getDiscriminator([
+        new ObjectShape(
+          {
+            type: new UnionShape([
+              new IntersectionShape([new EnumShape(['aaa', 'bbb']), new ConstShape(['bbb', 'ccc'])]),
+              new EnumShape(['bbb', 'ddd']),
+            ]),
+          },
+          null
+        ),
+        new ObjectShape({ type: new ConstShape('aaa') }, null),
+      ])
     ).toEqual({
       key: 'type',
       valueGroups: [['bbb', 'ddd'], ['aaa']],
@@ -424,7 +409,7 @@ describe('createDiscriminatorLookup', () => {
     const shape1 = new ObjectShape({ type: new EnumShape(['aaa', 'bbb']) }, null);
     const shape2 = new ObjectShape({ type: new EnumShape([111, 222]) }, null);
 
-    const lookup = createDiscriminatorLookup([shape1, shape2], getDiscriminator([shape1, shape2], false)!)!;
+    const lookup = createDiscriminatorLookup([shape1, shape2], getDiscriminator([shape1, shape2])!)!;
 
     expect(lookup({ type: 'xxx' }).length).toBe(0);
     expect(lookup({ type: 'aaa' })[0]).toBe(shape1);
@@ -437,7 +422,7 @@ describe('createDiscriminatorLookup', () => {
     const shape1 = new ObjectShape({ type: new ConstShape('aaa') }, null);
     const shape2 = new ObjectShape({ type: new ConstShape(111) }, null);
 
-    const lookup = createDiscriminatorLookup([shape1, shape2], getDiscriminator([shape1, shape2], false)!)!;
+    const lookup = createDiscriminatorLookup([shape1, shape2], getDiscriminator([shape1, shape2])!)!;
 
     expect(lookup({ type: 'xxx' }).length).toBe(0);
     expect(lookup({ type: 'aaa' })[0]).toBe(shape1);
@@ -450,7 +435,7 @@ describe('createLookup', () => {
     const shape1 = new StringShape();
     const shape2 = new NumberShape();
 
-    const lookup = createLookup([shape1, shape2], false);
+    const lookup = createLookup([shape1, shape2]);
 
     expect(lookup(true).length).toBe(0);
     expect(lookup('aaa')[0]).toBe(shape1);
@@ -461,7 +446,7 @@ describe('createLookup', () => {
     const shape1 = new Shape();
     const shape2 = new NumberShape();
 
-    const lookup = createLookup([shape1, shape2], false);
+    const lookup = createLookup([shape1, shape2]);
 
     expect(lookup(true).length).toBe(1);
     expect(lookup(true)[0]).toBe(shape1);
@@ -472,7 +457,7 @@ describe('createLookup', () => {
   });
 
   test('never shapes are ignored', () => {
-    const lookup = createLookup([new NeverShape()], false);
+    const lookup = createLookup([new NeverShape()]);
 
     expect(lookup(111).length).toBe(0);
   });

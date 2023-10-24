@@ -1,7 +1,7 @@
 import { bigintCoercibleTypes, coerceToBigInt } from '../coerce/bigint';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { bigintTypes, TYPE_BIGINT, TypeArray } from '../Type';
+import { bigintTypes, TYPE_BIGINT } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -29,18 +29,14 @@ export class BigIntShape extends CoercibleShape<bigint> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.bigint'], options, TYPE_BIGINT);
   }
 
-  protected _getInputs(): TypeArray {
-    return bigintTypes;
-  }
-
-  protected _getCoercibleInputs(): TypeArray {
-    return bigintCoercibleTypes;
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? bigintCoercibleTypes : bigintTypes;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<bigint> {
     let output = input;
 
-    if (typeof output !== 'bigint' && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
+    if (typeof output !== 'bigint' && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

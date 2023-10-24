@@ -57,18 +57,15 @@ describe('StringShape', () => {
     });
   });
 
-  describe('coercibleInputs', () => {
-    test('extends shape inputs', () => {
-      expect(new StringShape().coercibleInputs).toBe(stringCoercibleTypes);
-    });
-  });
-
   describe('coerce', () => {
+    test('extends shape inputs', () => {
+      expect(new StringShape().coerce().inputs).toBe(stringCoercibleTypes);
+    });
+
     test('coerces an input', () => {
       expect(new StringShape().coerce().parse(111)).toBe('111');
       expect(new StringShape().coerce().parse(true)).toBe('true');
       expect(new StringShape().coerce().parse(['aaa'])).toBe('aaa');
-      expect(new StringShape().parse(['aaa'], { coerce: true })).toBe('aaa');
     });
 
     test('raises an issue if coercion fails', () => {

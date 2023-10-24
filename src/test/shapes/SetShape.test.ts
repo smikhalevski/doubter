@@ -41,8 +41,8 @@ describe('SetShape', () => {
     expect(result).toEqual({ ok: true, value: input });
     expect(result.value).toBe(input);
     expect(valueShape._apply).toHaveBeenCalledTimes(2);
-    expect(valueShape._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
-    expect(valueShape._apply).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false, coerce: false }, 0);
+    expect(valueShape._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
+    expect(valueShape._apply).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false }, 0);
   });
 
   test('raises a single issue captured by the value shape in an early-return mode', () => {
@@ -112,15 +112,11 @@ describe('SetShape', () => {
     });
   });
 
-  describe('coercibleInputs', () => {
-    test('extends shape inputs', () => {
-      const shape = new SetShape(new StringShape());
-
-      expect(shape.coercibleInputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
-    });
-  });
-
   describe('coerce', () => {
+    test('extends shape inputs', () => {
+      expect(new SetShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
+    });
+
     test('coerces a string value', () => {
       const shape = new SetShape(new Shape()).coerce();
 
@@ -192,7 +188,7 @@ describe('SetShape', () => {
 
       await expect(shape.tryAsync(new Set())).resolves.toEqual({ ok: true, value: new Set() });
       expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, new Set(), { earlyReturn: false, coerce: false }, 0);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, new Set(), { earlyReturn: false }, 0);
     });
 
     test('parses values in a Set', async () => {
@@ -207,8 +203,8 @@ describe('SetShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape._applyAsync).toHaveBeenCalledTimes(2);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false, coerce: false }, 0);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false, coerce: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false }, 0);
     });
 
     test('does not apply value shape if the previous value raised an issue in an early-return mode', async () => {

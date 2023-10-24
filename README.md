@@ -246,7 +246,7 @@ parseOrDefault(42);
 Parsing methods accept options argument.
 
 ```ts
-d.number().parse('42', { coerce: true });
+d.number().parse('42', { earlyReturn: true });
 // ⮕ 42
 ```
 
@@ -258,13 +258,6 @@ Following options are available:
 
 If `true` then parsing is aborted after the first issue is encountered. Refer to [Early return](#early-return) section
 for more details.
-
-</dd>
-<dt><code>coerce</code></dt>
-<dd>
-
-If `true` then all shapes that support type coercion would try to coerce an input to a required type. Refer to
-[Type coercion](#type-coercion) section for more details.
 
 </dd>
 <dt><code>context</code></dt>
@@ -1548,25 +1541,6 @@ shape1.parse([8080]);
 
 shape1.parse(null);
 // ⮕ ''
-```
-
-Coercion can be enabled on shape-by-shape basis (as shown in the example above), or it can be enabled for all shapes
-when [`coerce` option](#parsing-and-trying) is passed to `parse*` or `try*` methods:
-
-```ts
-const shape2 = d.object({
-  name: d.string(),
-  birthday: d.date()
-});
-
-shape2.parse(
-  {
-    name: ['Jake'],
-    birthday: '1949-01-24'
-  },
-  { coerce: true }
-);
-// ⮕ { name: 'Jake', birthday: new Date(-660700800000) }
 ```
 
 Coercion rules differ from JavaScript so the behavior is more predictable and human-like. With Doubter, you can coerce
@@ -3922,7 +3896,7 @@ Let's define a shape that describes the query with `name` and `age` params:
 const queryShape = d
   .object({
     name: d.string(),
-    age: d.number().int().nonNegative().catch()
+    age: d.number().int().nonNegative().coerce().catch()
   })
   .partial();
 // ⮕ Shape<{ name?: string | undefined, age?: number | undefined }>
@@ -3934,10 +3908,8 @@ const queryShape = d
 raise a validation issue. You can mark individual params as optional and
 [provide a default value.](#optional-and-non-optional) 
 
-2. Query params are strings. So `name` doesn't require additional attention since it's constrained by
-[`d.string`](#string). On the other hand, `age` is an integer, so [type coercion](#type-coercion) must be enabled to
-coerce `age` to a number. To do this we're going to pass the [`coerce` option](#parsing-and-trying) to the `parse`
-method.
+2. Query params are strings. Since `name` is constrained by [`d.string`](#string) it doesn't require additional
+attention. On the other hand, `age` is an integer, so [type coercion](#type-coercion) must be enabled.
 
 3. We also added [`catch`](#fallback-value), so when `age` cannot be parsed as a positive integer, Doubter returns
 `undefined` instead of raising a validation issue.
@@ -3947,20 +3919,14 @@ Now, let's parse the query string with `qs` and then apply our shape:
 ```ts
 import qs from 'qs';
 
-const query = queryShape.parse(
-  qs.parse('name=Frodo&age=50'),
-  { coerce: true }
-);
+const query = queryShape.parse(qs.parse('name=Frodo&age=50'));
 // ⮕ { name: 'Frodo', age: 50 }
 ```
 
 `age` is set to `undefined` if it is invalid:
 
 ```ts
-queryShape.parse(
-  qs.parse('age=-33'),
-  { coerce: true }
-);
+queryShape.parse(qs.parse('age=-33'));
 // ⮕ { age: undefined }
 ```
 
@@ -3972,7 +3938,7 @@ If you're developing an app that consumes environment variables you most likely 
 const envShape = d
   .object({
     NODE_ENV: d.enum(['test', 'production']),
-    HELLO_DATE: d.date().optional(),
+    HELLO_DATE: d.date().coerce().optional(),
   })
   .strip();
 ```
@@ -3989,10 +3955,7 @@ coerced as a date, a validation error would be raised.
 accidental usage of an unvalidated env variable.
 
 ```ts
-const env = envShape.parse(
-  process.env,
-  { coerce: true }
-);
+const env = envShape.parse(process.env);
 // ⮕ { NODE_ENV: 'test' | 'production', HELLO_DATE?: Date }
 ```
 
@@ -4002,7 +3965,7 @@ If you're developing a console app you may want to validate arguments passed via
 that processes the following CLI parameters:
 
 ```shell
-node app.js --age 42
+node app.js --name Bill --age 42
 ```
 
 First, install [argcat](https://github.com/smikhalevski/argcat#readme), and use it to convert an array of CLI arguments
@@ -4012,7 +3975,7 @@ to an object:
 import { parseArgs } from 'argcat';
 
 const args = parseArgs(process.argv.slice(2));
-// ⮕ { age: ['42'] }
+// ⮕ { name: ['Bill'], age: ['42'] }
 ```
 
 Now let's define the shape of the parsed object:
@@ -4020,24 +3983,23 @@ Now let's define the shape of the parsed object:
 ```ts
 const optionsShape = d
   .object({
-    age: d.number().int().min(18).max(100)
+    name: d.string().coerce(),
+    age: d.number().int().min(18).max(100).coerce(),
   })
   .strip();
 ```
 
 [`strip`](https://smikhalevski.github.io/doubter/next/classes/core.ObjectShape.html#strip) removes all unknown keys from
-an object. Here It is used to prevent unexpected arguments to be accessible inside the app. You may want to throw an
+an object. It is used here to prevent unexpected arguments to be accessible inside the app. You may want to throw an
 error if unknown keys are detected or ignore them. Refer to [Unknown keys](#unknown-keys) section to find out how this
 can be done.
 
 Parse CLI arguments using `optionsShape` with enabled [type coercion](#type-coercion): 
 
 ```ts
-const options = optionsShape.parse(args, { coerce: true });
-// ⮕ { age: 42 }
+const options = optionsShape.parse(args);
+// ⮕ { name: 'Bill', age: 42 }
 ```
-
-`options.age` is now type-safe and is guaranteed to be a non-`NaN` number in range \[18, 100].
 
 ## Type-safe `localStorage`
 

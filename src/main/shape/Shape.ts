@@ -17,7 +17,7 @@ import {
 } from '../internal/shapes';
 import { isType, unionTypes } from '../internal/types';
 import { defaultMessages } from '../messages';
-import { getTypeOf, TYPE_UNKNOWN, TypeArray, unknownTypes } from '../Type';
+import { getTypeOf, TYPE_UNKNOWN, unknownTypes } from '../Type';
 import {
   AlterCallback,
   Any,
@@ -672,7 +672,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     return unknownTypes;
   }
 
@@ -736,7 +736,7 @@ export interface Shape<InputValue, OutputValue> {
   /**
    * The array of unique input types and values that are accepted by the shape.
    */
-  readonly inputs: TypeArray;
+  readonly inputs: readonly unknown[];
 
   /**
    * `true` if the shape allows only {@link Shape.parseAsync} and throws an error if {@link Shape.parse} is called, or
@@ -1098,7 +1098,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     return this.inputShape.isAsync || this.outputShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     return this.inputShape.inputs.slice(0);
   }
 
@@ -1202,7 +1202,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
     return this.baseShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     return this.baseShape.inputs.concat(this.inputValue);
   }
 
@@ -1301,7 +1301,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     return this.baseShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     return this.baseShape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
@@ -1401,7 +1401,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     return this.baseShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     return this.baseShape.inputs.slice(0);
   }
 
@@ -1500,7 +1500,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     return this.baseShape.isAsync || this.excludedShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     return this.baseShape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 

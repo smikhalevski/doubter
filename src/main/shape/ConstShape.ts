@@ -1,7 +1,7 @@
 import { coerceToConst, getConstCoercibleTypes } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST } from '../constants';
-import { TypeArray } from '../Type';
+import { nullTypes, undefinedTypes } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -44,12 +44,19 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages[CODE_TYPE_CONST], options, value);
   }
 
-  protected _getInputs(): TypeArray {
-    return [this.value];
-  }
+  protected _getInputs(): readonly unknown[] {
+    const { value } = this;
 
-  protected _getCoercibleInputs(): TypeArray {
-    return getConstCoercibleTypes(this.value);
+    if (this.isCoercing) {
+      return getConstCoercibleTypes(value);
+    }
+    if (value === undefined) {
+      return undefinedTypes;
+    }
+    if (value === null) {
+      return nullTypes;
+    }
+    return [value];
   }
 
   protected _coerce(input: unknown): Value {
@@ -59,7 +66,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
     let output = input;
 
-    if (!this._typePredicate(input) && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
+    if (!this._typePredicate(input) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

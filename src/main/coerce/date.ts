@@ -1,11 +1,11 @@
 import { freeze, getCanonicalValue, isArray, isValidDate } from '../internal/lang';
-import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING, TypeArray } from '../Type';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_NUMBER, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
 /**
  * The array of types that are coercible to a Date with {@link coerceToDate}.
  */
-export const dateCoercibleTypes = freeze<TypeArray>([TYPE_ARRAY, TYPE_DATE, TYPE_STRING, TYPE_NUMBER]);
+export const dateCoercibleTypes = freeze<unknown[]>([TYPE_ARRAY, TYPE_DATE, TYPE_STRING, TYPE_NUMBER]);
 
 /**
  * Coerces a value to a Date.

@@ -4,7 +4,7 @@ import { CODE_TYPE_ENUM } from '../constants';
 import { unique } from '../internal/arrays';
 import { getCanonicalValue, isArray } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
-import { TYPE_ARRAY, TypeArray } from '../Type';
+import { TYPE_ARRAY } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -48,14 +48,10 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
   }
 
-  protected _getInputs(): TypeArray {
-    return this.values.slice(0);
-  }
-
-  protected _getCoercibleInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     const inputs: unknown[] = this.values.slice(0);
 
-    if (inputs.length === 0) {
+    if (!this.isCoercing || inputs.length === 0) {
       return inputs;
     }
     if (!isArray(this.source)) {
@@ -88,7 +84,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
     let output = input;
 
-    if (!this.values.includes(output) && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
+    if (!this.values.includes(output) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

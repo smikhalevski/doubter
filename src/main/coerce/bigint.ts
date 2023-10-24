@@ -1,11 +1,11 @@
 import { freeze, getCanonicalValue, isArray } from '../internal/lang';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TypeArray } from '../Type';
+import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
 import { NEVER } from './never';
 
 /**
  * The array of types that are coercible to a bigint with {@link coerceToBigInt}.
  */
-export const bigintCoercibleTypes = freeze<TypeArray>([
+export const bigintCoercibleTypes = freeze<unknown[]>([
   TYPE_ARRAY,
   TYPE_BIGINT,
   TYPE_OBJECT,

@@ -81,20 +81,15 @@ describe('NumberShape', () => {
     });
   });
 
-  describe('coercibleInputs', () => {
-    test('extends shape inputs', () => {
-      const shape = new NumberShape().coerce();
-
-      expect(shape.coercibleInputs).toEqual(numberCoercibleTypes);
-    });
-  });
-
   describe('coerce', () => {
+    test('extends shape inputs', () => {
+      expect(new NumberShape().coerce().inputs).toEqual(numberCoercibleTypes);
+    });
+
     test('coerces an input', () => {
       expect(new NumberShape().coerce().parse('111')).toBe(111);
       expect(new NumberShape().coerce().parse(true)).toBe(1);
       expect(new NumberShape().coerce().parse([111])).toBe(111);
-      expect(new NumberShape().parse([111], { coerce: true })).toBe(111);
     });
 
     test('raises an issue if coercion fails', () => {

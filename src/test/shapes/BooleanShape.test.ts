@@ -29,19 +29,16 @@ describe('BooleanShape', () => {
     });
   });
 
-  describe('coercibleInputs', () => {
-    test('extends shape inputs', () => {
-      expect(new BooleanShape().coercibleInputs).toBe(booleanCoercibleTypes);
-    });
-  });
-
   describe('coerce', () => {
+    test('extends shape inputs', () => {
+      expect(new BooleanShape().coerce().inputs).toBe(booleanCoercibleTypes);
+    });
+
     test('coerces an input', () => {
       expect(new BooleanShape().coerce().parse(1)).toBe(true);
       expect(new BooleanShape().coerce().parse(new Boolean(true))).toBe(true);
       expect(new BooleanShape().coerce().parse([new Boolean(true)])).toBe(true);
       expect(new BooleanShape().coerce().parse('true')).toBe(true);
-      expect(new BooleanShape().parse('true', { coerce: true })).toBe(true);
     });
 
     test('raises an issue if coercion fails', () => {

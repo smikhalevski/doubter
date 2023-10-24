@@ -15,7 +15,7 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
-export const defaultApplyOptions = freeze<ApplyOptions>({ earlyReturn: false, coerce: false });
+export const defaultApplyOptions = freeze<ApplyOptions>({ earlyReturn: false });
 
 export const INPUT = Symbol();
 export const OUTPUT = Symbol();

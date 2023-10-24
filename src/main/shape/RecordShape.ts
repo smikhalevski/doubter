@@ -2,7 +2,7 @@ import { CODE_TYPE } from '../constants';
 import { isArray, isObject } from '../internal/lang';
 import { cloneDictHead, setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { objectTypes, TYPE_OBJECT, TypeArray } from '../Type';
+import { objectTypes, TYPE_OBJECT } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
@@ -75,7 +75,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     return this.keyShape?.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     return objectTypes;
   }
 

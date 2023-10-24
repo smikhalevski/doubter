@@ -4,10 +4,9 @@ import { defineProperty, isArray, isObject } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
-import { getTypeOf, TYPE_UNKNOWN, TypeArray } from '../Type';
+import { getTypeOf, TYPE_UNKNOWN } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
@@ -78,29 +77,18 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return new UnionShape<any>(this.shapes.map(toDeepPartialShape), this._options);
   }
 
-  private get _exactLookup(): LookupCallback {
-    return defineProperty(this, '_exactLookup', createLookup(unique(this.shapes), false));
-  }
-
-  private get _coercedLookup(): LookupCallback {
-    return defineProperty(this, '_coercedLookup', createLookup(unique(this.shapes), true));
-  }
-
   /**
    * Returns an array of shapes that should be applied to the input.
-   *
-   * @param input The shape input to parse.
-   * @param coerce If `true` then coercion is applied, comes from {@link ApplyOptions.coerce}.
    */
-  protected _lookup(input: unknown, coerce: boolean | undefined): readonly AnyShape[] {
-    return coerce !== true ? this._exactLookup(input) : this._coercedLookup(input);
+  private get _lookup(): LookupCallback {
+    return defineProperty(this, '_lookup', createLookup(unique(this.shapes)));
   }
 
   protected _isAsync(): boolean {
     return isAsyncShapes(this.shapes);
   }
 
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     const inputs = [];
 
     for (const shape of this.shapes) {
@@ -116,7 +104,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     let issueGroups: Issue[][] | null = null;
     let index = 0;
 
-    const shapes = this._lookup(input, options.coerce);
+    const shapes = this._lookup(input);
     const shapesLength = shapes.length;
 
     while (index < shapesLength) {
@@ -149,7 +137,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {
     return new Promise(resolve => {
-      const shapes = this._lookup(input, options.coerce);
+      const shapes = this._lookup(input);
       const shapesLength = shapes.length;
 
       let issues: Issue[] | null = null;
@@ -210,7 +198,7 @@ export interface Discriminator {
   valueGroups: Array<ReadonlyArray<unknown>>;
 }
 
-export function createLookup(shapes: readonly AnyShape[], coerce: boolean): LookupCallback {
+export function createLookup(shapes: readonly AnyShape[]): LookupCallback {
   const emptyArray: AnyShape[] = [];
   const buckets: { [type: string]: AnyShape[] } = {
     object: emptyArray,
@@ -237,7 +225,7 @@ export function createLookup(shapes: readonly AnyShape[], coerce: boolean): Look
       objectShapes.push(shape);
     }
 
-    const inputs = getActiveInputs(shape, coerce);
+    const inputs = shape.inputs;
     const types = inputs[0] === TYPE_UNKNOWN ? bucketTypes : unique(inputs.map(input => getTypeOf(input).name));
 
     for (const type of types) {
@@ -251,7 +239,7 @@ export function createLookup(shapes: readonly AnyShape[], coerce: boolean): Look
     // Mixed shape types in the union
     return input => buckets[getTypeOf(input).name];
   }
-  if (objectShapes.length > 1 && (discriminator = getDiscriminator(objectShapes, coerce)) !== null) {
+  if (objectShapes.length > 1 && (discriminator = getDiscriminator(objectShapes)) !== null) {
     // Discriminated object union
     return createDiscriminatorLookup(objectShapes, discriminator);
   }
@@ -313,7 +301,7 @@ export function createDiscriminatorLookup(shapes: ObjectShapeLike[], discriminat
  * - Values that correspond to the key are discrete;
  * - Values uniquely identify each shape.
  */
-export function getDiscriminator(shapes: ObjectShapeLike[], coerce: boolean): Discriminator | null {
+export function getDiscriminator(shapes: ObjectShapeLike[]): Discriminator | null {
   const seenValues = new Set();
   const valueGroups = [];
 
@@ -324,15 +312,10 @@ export function getDiscriminator(shapes: ObjectShapeLike[], coerce: boolean): Di
       const shape = shapes[i];
       const valueShape = shape.propShapes[key];
 
-      if (!(valueShape instanceof Shape)) {
-        // No such known key in an object
-        continue next;
-      }
+      let inputs;
 
-      const inputs = getActiveInputs(valueShape, coerce);
-
-      if (inputs.length === 0 || inputs.some(isType)) {
-        // Must be a literal
+      if (!(valueShape instanceof Shape) || (inputs = valueShape.inputs).length === 0 || inputs.some(isType)) {
+        // No such known key in an object, or not a literal
         continue next;
       }
       for (const input of inputs) {
@@ -347,15 +330,4 @@ export function getDiscriminator(shapes: ObjectShapeLike[], coerce: boolean): Di
     return { key, valueGroups };
   }
   return null;
-}
-
-function getActiveInputs(shape: AnyShape, coerce: boolean): TypeArray {
-  if (
-    shape instanceof CoercibleShape &&
-    (shape.coercionMode === 'coerce' || (shape.coercionMode === 'defer' && coerce))
-  ) {
-    return shape.coercibleInputs;
-  } else {
-    return shape.inputs;
-  }
 }

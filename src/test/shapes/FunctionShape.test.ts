@@ -99,10 +99,10 @@ describe('FunctionShape', () => {
     test('sets options', () => {
       const cbMock = jest.fn();
 
-      new FunctionShape(emptyArgsShape.check(cbMock), null, null).strict({ coerce: true }).ensure(() => null)();
+      new FunctionShape(emptyArgsShape.check(cbMock), null, null).strict({ earlyReturn: true }).ensure(() => null)();
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, [], undefined, { coerce: true });
+      expect(cbMock).toHaveBeenNthCalledWith(1, [], undefined, { earlyReturn: true });
     });
 
     test('ensures a function signature', () => {
@@ -148,7 +148,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(argShape._apply).toHaveBeenCalledTimes(1);
-      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
     });
 
     test('raises an issue if this is invalid', () => {
@@ -244,7 +244,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(argShape._apply).toHaveBeenCalledTimes(1);
-      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
     });
 
     test('raises an issue if this is invalid', async () => {

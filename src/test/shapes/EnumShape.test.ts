@@ -125,9 +125,9 @@ describe('EnumShape', () => {
     });
   });
 
-  describe('coercibleInputs', () => {
+  describe('coerce', () => {
     test('detects types coercible to numeric enum value', () => {
-      expect(new EnumShape(NumberMockEnum).coerce().coercibleInputs).toEqual([
+      expect(new EnumShape(NumberMockEnum).coerce().inputs).toEqual([
         TYPE_ARRAY,
         TYPE_OBJECT,
         TYPE_NUMBER,
@@ -144,15 +144,15 @@ describe('EnumShape', () => {
       const AAA = {};
       const BBB = {};
 
-      expect(new EnumShape({ AAA, BBB }).coerce().coercibleInputs).toEqual([AAA, BBB, 'AAA', 'BBB', TYPE_ARRAY]);
+      expect(new EnumShape({ AAA, BBB }).coerce().inputs).toEqual([AAA, BBB, 'AAA', 'BBB', TYPE_ARRAY]);
     });
 
     test('detects types coercible to a value in an array', () => {
       const AAA = {};
       const BBB = {};
 
-      expect(new EnumShape([AAA, BBB]).coerce().coercibleInputs).toEqual([AAA, BBB, TYPE_ARRAY]);
-      expect(new EnumShape(['aaa', 'bbb']).coerce().coercibleInputs).toEqual([
+      expect(new EnumShape([AAA, BBB]).coerce().inputs).toEqual([AAA, BBB, TYPE_ARRAY]);
+      expect(new EnumShape(['aaa', 'bbb']).coerce().inputs).toEqual([
         TYPE_ARRAY,
         TYPE_OBJECT,
         TYPE_STRING,
@@ -164,32 +164,27 @@ describe('EnumShape', () => {
         undefined,
       ]);
     });
-  });
 
-  describe('coerce', () => {
     test('coerces the key of a const object', () => {
       const shape = new EnumShape({
         AAA: 'aaa',
         BBB: 'bbb',
-      } as const);
+      } as const).coerce();
 
-      expect(shape.coerce().parse('AAA')).toEqual('aaa');
-      expect(shape.coerce().parse(['AAA'])).toEqual('aaa');
-      expect(shape.coerce().parse(new String('AAA'))).toEqual('aaa');
-      expect(shape.coerce().parse([new String('AAA')])).toEqual('aaa');
+      expect(shape.parse('AAA')).toEqual('aaa');
+      expect(shape.parse(['AAA'])).toEqual('aaa');
+      expect(shape.parse(new String('AAA'))).toEqual('aaa');
+      expect(shape.parse([new String('AAA')])).toEqual('aaa');
 
-      // expect(shape.coerce().parse(['aaa'])).toEqual('aaa');
-      expect(shape.coerce().parse(new String('aaa'))).toEqual('aaa');
-      expect(shape.coerce().parse([new String('aaa')])).toEqual('aaa');
-
-      expect(shape.parse('AAA', { coerce: true })).toEqual('aaa');
+      expect(shape.parse(['aaa'])).toEqual('aaa');
+      expect(shape.parse(new String('aaa'))).toEqual('aaa');
+      expect(shape.parse([new String('aaa')])).toEqual('aaa');
     });
 
     test('coerces to a value from an array', () => {
-      const shape = new EnumShape([111, 222]);
+      const shape = new EnumShape([111, 222]).coerce();
 
-      expect(shape.coerce().parse([111])).toBe(111);
-      expect(shape.parse(111, { coerce: true })).toBe(111);
+      expect(shape.parse([111])).toBe(111);
     });
   });
 });

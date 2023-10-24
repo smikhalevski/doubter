@@ -36,7 +36,6 @@ describe('ConstShape', () => {
       expect(new ConstShape('111').coerce().parse(new Number(111))).toBe('111');
       expect(new ConstShape('111').coerce().parse([new Number(111)])).toBe('111');
       expect(new ConstShape(1).coerce().parse(true)).toBe(1);
-      expect(new ConstShape(1).parse(true, { coerce: true })).toBe(1);
     });
 
     test('raises an issue if coercion fails', () => {

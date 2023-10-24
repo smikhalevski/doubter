@@ -2,7 +2,7 @@ import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
-import { promiseTypes, TYPE_PROMISE, TypeArray, unknownTypes } from '../Type';
+import { promiseTypes, TYPE_PROMISE, unknownTypes } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -63,11 +63,10 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     return this.valueShape !== null;
   }
 
-  protected _getInputs(): TypeArray {
-    return promiseTypes;
-  }
-
-  protected _getCoercibleInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
+    if (!this.isCoercing) {
+      return promiseTypes;
+    }
     if (this.valueShape === null) {
       return unknownTypes;
     }
@@ -81,7 +80,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
     let output = input;
 
-    if (!(input instanceof Promise) && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
+    if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
@@ -94,7 +93,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   ): Promise<Result<InferPromise<ValueShape, OUTPUT>>> {
     let output = input;
 
-    if (!(input instanceof Promise) && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
+    if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
       return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
 

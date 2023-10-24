@@ -2,7 +2,7 @@ import { coerceToDate, dateCoercibleTypes } from '../coerce/date';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { isValidDate } from '../internal/lang';
-import { dateTypes, TYPE_DATE, TypeArray } from '../Type';
+import { dateTypes, TYPE_DATE } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
@@ -29,18 +29,14 @@ export class DateShape extends CoercibleShape<Date> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, TYPE_DATE);
   }
 
-  protected _getInputs(): TypeArray {
-    return dateTypes;
-  }
-
-  protected _getCoercibleInputs(): TypeArray {
-    return dateCoercibleTypes;
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? dateCoercibleTypes : dateTypes;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Date> {
     let output = input;
 
-    if (!isValidDate(input) && (output = this._tryCoerce(input, options.coerce)) === NEVER) {
+    if (!isValidDate(input) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);

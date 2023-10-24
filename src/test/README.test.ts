@@ -17,24 +17,24 @@ describe('Cookbook', () => {
     const queryShape = d
       .object({
         name: d.string(),
-        age: d.number().int().nonNegative().catch(),
+        age: d.number().int().nonNegative().coerce().catch(),
       })
       .partial();
 
-    expect(queryShape.parse(qs.parse('name=Frodo&age=50'), { coerce: true })).toEqual({ name: 'Frodo', age: 50 });
+    expect(queryShape.parse(qs.parse('name=Frodo&age=50'))).toEqual({ name: 'Frodo', age: 50 });
 
-    expect(queryShape.parse(qs.parse('age=-33'), { coerce: true })).toStrictEqual({ age: undefined });
+    expect(queryShape.parse(qs.parse('age=-33'))).toStrictEqual({ age: undefined });
   });
 
   test('Type-safe env variables', () => {
     const envShape = d
       .object({
         NODE_ENV: d.enum(['test', 'production']),
-        HELLO_DATE: d.date().optional(),
+        HELLO_DATE: d.date().coerce().optional(),
       })
       .strip();
 
-    expect(envShape.parse(process.env, { coerce: true })).toEqual({
+    expect(envShape.parse(process.env)).toEqual({
       NODE_ENV: 'test',
     });
   });

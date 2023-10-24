@@ -1,7 +1,6 @@
 import { ERR_SHAPE_EXPECTED } from '../constants';
 import { defineProperty, identity, isArray } from '../internal/lang';
 import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes';
-import { TypeArray } from '../Type';
 import { Any, ApplyOptions, Result } from '../typings';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
@@ -99,7 +98,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     return this.providedShape.isAsync;
   }
 
-  protected _getInputs(): TypeArray {
+  protected _getInputs(): readonly unknown[] {
     return this.providedShape.inputs.slice(0);
   }
 

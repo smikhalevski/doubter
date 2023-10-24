@@ -1,17 +1,6 @@
 import { freeze, isArray } from './internal/lang';
 
 /**
- * The array of input types and literal values. For example, this type array defines any number and a literal string:
- *
- * ```ts
- * [Type.NUMBER, 'hello']
- * ```
- *
- * @see {@link Type}
- */
-export type TypeArray = readonly unknown[];
-
-/**
  * The name of the value type.
  *
  * @group Type Inference
@@ -99,26 +88,26 @@ export const TYPE_SYMBOL = Type.SYMBOL;
 export const TYPE_UNDEFINED = Type.UNDEFINED;
 export const TYPE_UNKNOWN = Type.UNKNOWN;
 
-export const arrayTypes = freeze<TypeArray>([TYPE_ARRAY]);
-export const bigintTypes = freeze<TypeArray>([TYPE_BIGINT]);
-export const booleanTypes = freeze<TypeArray>([TYPE_BOOLEAN]);
-export const dateTypes = freeze<TypeArray>([TYPE_DATE]);
-export const functionTypes = freeze<TypeArray>([TYPE_FUNCTION]);
-export const mapTypes = freeze<TypeArray>([TYPE_MAP]);
-export const nullTypes = freeze<TypeArray>([TYPE_NULL]);
-export const numberTypes = freeze<TypeArray>([TYPE_NUMBER]);
-export const objectTypes = freeze<TypeArray>([TYPE_OBJECT]);
-export const promiseTypes = freeze<TypeArray>([TYPE_PROMISE]);
-export const setTypes = freeze<TypeArray>([TYPE_SET]);
-export const stringTypes = freeze<TypeArray>([TYPE_STRING]);
-export const symbolTypes = freeze<TypeArray>([TYPE_SYMBOL]);
-export const undefinedTypes = freeze<TypeArray>([TYPE_UNDEFINED]);
-export const unknownTypes = freeze<TypeArray>([TYPE_UNKNOWN]);
+export const arrayTypes = freeze<unknown[]>([TYPE_ARRAY]);
+export const bigintTypes = freeze<unknown[]>([TYPE_BIGINT]);
+export const booleanTypes = freeze<unknown[]>([TYPE_BOOLEAN]);
+export const dateTypes = freeze<unknown[]>([TYPE_DATE]);
+export const functionTypes = freeze<unknown[]>([TYPE_FUNCTION]);
+export const mapTypes = freeze<unknown[]>([TYPE_MAP]);
+export const nullTypes = freeze<unknown[]>([null]);
+export const numberTypes = freeze<unknown[]>([TYPE_NUMBER]);
+export const objectTypes = freeze<unknown[]>([TYPE_OBJECT]);
+export const promiseTypes = freeze<unknown[]>([TYPE_PROMISE]);
+export const setTypes = freeze<unknown[]>([TYPE_SET]);
+export const stringTypes = freeze<unknown[]>([TYPE_STRING]);
+export const symbolTypes = freeze<unknown[]>([TYPE_SYMBOL]);
+export const undefinedTypes = freeze<unknown[]>([undefined]);
+export const unknownTypes = freeze<unknown[]>([TYPE_UNKNOWN]);
 
-export const arrayCoercibleTypes = freeze<TypeArray>([TYPE_OBJECT, TYPE_ARRAY]);
-export const mapCoercibleTypes = freeze<TypeArray>([TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY]);
+export const arrayCoercibleTypes = freeze<unknown[]>([TYPE_OBJECT, TYPE_ARRAY]);
+export const mapCoercibleTypes = freeze<unknown[]>([TYPE_MAP, TYPE_OBJECT, TYPE_ARRAY]);
 
-export const neverTypes = freeze<TypeArray>([]);
+export const neverTypes = freeze<unknown[]>([]);
 
 export function getTypeOf(value: unknown): Type {
   const type = typeof value;

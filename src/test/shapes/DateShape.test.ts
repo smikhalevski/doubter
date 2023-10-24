@@ -33,19 +33,14 @@ describe('DateShape', () => {
 
   describe('coerce', () => {
     test('extends shape inputs', () => {
-      const shape = new DateShape().coerce();
-
-      expect(shape.coercibleInputs).toBe(dateCoercibleTypes);
+      expect(new DateShape().coerce().inputs).toBe(dateCoercibleTypes);
     });
-  });
 
-  describe('coerce', () => {
     test('coerces an input', () => {
       expect(new DateShape().coerce().parse(111)).toEqual(new Date(111));
       expect(new DateShape().coerce().parse(new Number(111))).toEqual(new Date(111));
       expect(new DateShape().coerce().parse([new Number(111)])).toEqual(new Date(111));
       expect(new DateShape().coerce().parse('2020-02-02')).toEqual(new Date('2020-02-02'));
-      expect(new DateShape().parse('2020-02-02', { coerce: true })).toEqual(new Date('2020-02-02'));
     });
 
     test('raises an issue if coercion fails', () => {
