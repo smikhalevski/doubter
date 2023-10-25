@@ -15,7 +15,7 @@ import {
   toDeepPartialShape,
   universalApplyOperations,
 } from '../internal/shapes';
-import { isType, unionInputs } from '../internal/types';
+import { isType, unionTypes } from '../internal/types';
 import { defaultMessages } from '../messages';
 import { getTypeOf, TYPE_UNKNOWN, unknownInputs } from '../types';
 import {
@@ -840,7 +840,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       defineProperty(this, 'inputs', []);
 
-      return defineProperty(this, 'inputs', freeze(unionInputs(this._getInputs())), true);
+      return defineProperty(this, 'inputs', freeze(unionTypes(this._getInputs())), true);
     },
   },
 

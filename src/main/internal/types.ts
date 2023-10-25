@@ -15,7 +15,7 @@ export function isAssignable(a: unknown, b: unknown): boolean {
 /**
  * Returns an array of unique types and literals that comprise a union.
  */
-export function unionInputs(types: readonly unknown[]): readonly unknown[] {
+export function unionTypes(types: readonly unknown[]): readonly unknown[] {
   let t = types as unknown[];
 
   next: for (let i = 0; i < t.length; ++i) {
@@ -52,7 +52,7 @@ export function unionInputs(types: readonly unknown[]): readonly unknown[] {
  * (a | b) & (a | b | c) → a | b
  * ```
  */
-export function distributeInputs(types: ReadonlyArray<ReadonlyArray<unknown>>): unknown[] {
+export function distributeTypes(types: ReadonlyArray<ReadonlyArray<unknown>>): unknown[] {
   if (types.length === 0) {
     return [];
   }
