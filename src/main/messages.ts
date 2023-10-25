@@ -29,7 +29,7 @@ export interface Messages {
   'type.union': Message | Any;
 }
 
-export const defaultMessages = {
+export const globalMessages = {
   'any.deny': 'Must not be equal to %s',
   'any.exclude': 'Must not conform the excluded shape',
   'any.refine': 'Must conform the predicate',
