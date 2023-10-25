@@ -1,11 +1,20 @@
-import { getCanonicalValue, isArray, isEqual } from '../internal/lang';
-import { TYPE_ARRAY } from '../types';
+import { freeze, getCanonicalValue, isArray, isEqual } from '../internal/lang';
+import { TYPE_ARRAY, TYPE_OBJECT } from '../types';
 import { bigintCoercibleInputs, coerceToBigInt } from './bigint';
 import { booleanCoercibleInputs, coerceToBoolean } from './boolean';
 import { coerceToDate, dateCoercibleInputs } from './date';
 import { NEVER } from './never';
-import { coerceToNumber, nanCoercibleInputs, numberCoercibleInputs } from './number';
+import { coerceToNumber, numberCoercibleInputs } from './number';
 import { coerceToString, stringCoercibleInputs } from './string';
+
+/**
+ * The array of inputs that are coercible to `NaN` with {@link coerceToConst}.
+ */
+export const nanCoercibleInputs = freeze<unknown[]>([
+  TYPE_ARRAY,
+  TYPE_OBJECT, // new Number(NaN)
+  NaN,
+]);
 
 /**
  * Returns the array of types that are coercible to a constant value with {@link coerceToConst}.

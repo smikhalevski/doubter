@@ -21,15 +21,6 @@ export const numberCoercibleInputs = freeze<unknown[]>([
 ]);
 
 /**
- * The array of inputs that are coercible to `NaN` with {@link coerceToNumber}.
- */
-export const nanCoercibleInputs = freeze<unknown[]>([
-  TYPE_ARRAY,
-  TYPE_OBJECT, // new Number(NaN)
-  NaN,
-]);
-
-/**
  * Coerces a value to a number (not `NaN`).
  *
  * @param input The value to coerce.
