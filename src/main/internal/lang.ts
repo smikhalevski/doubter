@@ -45,7 +45,11 @@ export function isMapEntry(value: unknown): value is [unknown, unknown] {
 export function getCanonicalValue(value: unknown): unknown {
   if (
     isObjectLike(value) &&
-    (value instanceof String || value instanceof Number || value instanceof Boolean || value instanceof BigInt)
+    (value instanceof String ||
+      value instanceof Number ||
+      value instanceof Boolean ||
+      value instanceof BigInt ||
+      value instanceof Symbol)
   ) {
     return value.valueOf();
   }
