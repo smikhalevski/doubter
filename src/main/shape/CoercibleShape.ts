@@ -20,6 +20,15 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
     return this._applyCoerce !== coerceToNever;
   }
 
+  /**
+   * Applies coercion rules to the given value. Call this method in {@link Shape._apply} and {@link Shape._applyAsync}
+   * to coerce the input.
+   *
+   * Override {@link _coerce} and {@link _getInputs} methods to implement custom type coercion.
+   *
+   * @param input The input value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
   protected _applyCoerce: (input: unknown) => CoercedValue = coerceToNever;
 
   /**
