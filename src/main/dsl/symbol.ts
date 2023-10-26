@@ -1,5 +1,5 @@
-import { SymbolShape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { SymbolShape } from '../shape/SymbolShape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the symbol shape.

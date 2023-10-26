@@ -1,5 +1,5 @@
-import { NeverShape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { NeverShape } from '../shape/NeverShape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the shape that always raises an issue.

@@ -1,18 +1,13 @@
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import {
-  concatIssues,
-  getCanonicalValueOf,
-  isArray,
-  isIterableObject,
-  toArrayIndex,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../internal';
-import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { toArrayIndex, unique } from '../internal/arrays';
+import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
+import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
+import { setInputs, TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, Input, NEVER, OptionalDeepPartialShape, Output, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape';
 
 /**
  * The shape of a {@link !Set Set} instance.
@@ -66,12 +61,24 @@ export class SetShape<ValueShape extends AnyShape>
     return this.valueShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
-    if (this.isCoercing) {
-      return this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY);
-    } else {
-      return [TYPE_SET];
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY) : setInputs;
+  }
+
+  /**
+   * Coerces a value to an array of unique values.
+   *
+   * @param input The value to coerce.
+   * @returns An array, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _coerce(input: unknown): unknown[] {
+    if (isArray(input)) {
+      return unique(input);
     }
+    if (isIterableObject(getCanonicalValue(input))) {
+      return unique(Array.from(input as Iterable<unknown>));
+    }
+    return [input];
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Set<Output<ValueShape>>> {
@@ -83,7 +90,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      (!(options.coerce || this.isCoercing) || !(changed = (values = this._coerce(input)) !== NEVER))
+      !(changed = (values = this._applyCoerce(input)) !== NEVER)
     ) {
       return [this._typeIssueFactory(input, options)];
     }
@@ -123,7 +130,7 @@ export class SetShape<ValueShape extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        (!(options.coerce || this.isCoercing) || !(changed = (values = this._coerce(input)) !== NEVER))
+        !(changed = (values = this._applyCoerce(input)) !== NEVER)
       ) {
         resolve([this._typeIssueFactory(input, options)]);
         return;
@@ -163,23 +170,5 @@ export class SetShape<ValueShape extends AnyShape>
 
       resolve(next());
     });
-  }
-
-  /**
-   * Coerces a value to an array of {@link !Set Set} values.
-   *
-   * @param value The non-{@link !Set Set} value to coerce.
-   * @returns An array, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: unknown): unknown[] {
-    value = getCanonicalValueOf(value);
-
-    if (isArray(value)) {
-      return value;
-    }
-    if (isIterableObject(value)) {
-      return Array.from(value);
-    }
-    return [value];
   }
 }

@@ -1,6 +1,7 @@
-import { NEVER, Shape, StringShape } from '../../main';
+import { Shape, StringShape } from '../../main';
+import { stringCoercibleInputs } from '../../main/coerce/string';
 import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE } from '../../main/constants';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import { TYPE_STRING } from '../../main/types';
 
 describe('StringShape', () => {
   test('creates a string shape', () => {
@@ -56,77 +57,22 @@ describe('StringShape', () => {
     });
   });
 
-  test('extends shape inputs', () => {
-    const shape = new StringShape().coerce();
-
-    expect(shape.inputs).toEqual([
-      TYPE_STRING,
-      TYPE_OBJECT,
-      TYPE_NUMBER,
-      TYPE_BOOLEAN,
-      TYPE_BIGINT,
-      TYPE_ARRAY,
-      null,
-      undefined,
-    ]);
-  });
-
-  test('coerces an input', () => {
-    expect(new StringShape().coerce().parse(111)).toBe('111');
-    expect(new StringShape().coerce().parse(true)).toBe('true');
-    expect(new StringShape().coerce().parse(['aaa'])).toBe('aaa');
-    expect(new StringShape().parse(['aaa'], { coerce: true })).toBe('aaa');
-  });
-
-  test('raises an issue if coercion fails', () => {
-    expect(new StringShape().coerce().try([111, 222])).toEqual({
-      ok: false,
-      issues: [{ code: CODE_TYPE, input: [111, 222], message: Shape.messages['type.string'], param: TYPE_STRING }],
-    });
-  });
-
-  describe('coercion', () => {
-    test('coerces a String object', () => {
-      expect(new StringShape()['_coerce'](String('aaa'))).toBe('aaa');
-      expect(new StringShape()['_coerce']([String('aaa')])).toBe('aaa');
+  describe('coerce', () => {
+    test('extends shape inputs', () => {
+      expect(new StringShape().coerce().inputs).toBe(stringCoercibleInputs);
     });
 
-    test('coerces a number', () => {
-      expect(new StringShape()['_coerce'](111)).toBe('111');
-      expect(new StringShape()['_coerce'](111.222)).toBe('111.222');
-
-      expect(new StringShape()['_coerce'](NaN)).toBe(NEVER);
-      expect(new StringShape()['_coerce'](Infinity)).toBe(NEVER);
-      expect(new StringShape()['_coerce'](-Infinity)).toBe(NEVER);
+    test('coerces an input', () => {
+      expect(new StringShape().coerce().parse(111)).toBe('111');
+      expect(new StringShape().coerce().parse(true)).toBe('true');
+      expect(new StringShape().coerce().parse(['aaa'])).toBe('aaa');
     });
 
-    test('coerces a boolean', () => {
-      expect(new StringShape()['_coerce'](true)).toBe('true');
-      expect(new StringShape()['_coerce'](false)).toBe('false');
-    });
-
-    test('coerces null and undefined values', () => {
-      expect(new StringShape()['_coerce'](null)).toBe('');
-      expect(new StringShape()['_coerce'](undefined)).toBe('');
-    });
-
-    test('coerces an array with a single string element', () => {
-      expect(new StringShape()['_coerce'](['aaa'])).toBe('aaa');
-      expect(new StringShape()['_coerce']([111])).toBe('111');
-
-      expect(new StringShape()['_coerce']([['aaa']])).toBe(NEVER);
-      expect(new StringShape()['_coerce']([[111]])).toBe(NEVER);
-      expect(new StringShape()['_coerce'](['aaa', 'bbb'])).toBe(NEVER);
-      expect(new StringShape()['_coerce'](['aaa', 111])).toBe(NEVER);
-    });
-
-    test('does not coerce objects and functions', () => {
-      expect(new StringShape()['_coerce']({ key1: 111 })).toBe(NEVER);
-      expect(new StringShape()['_coerce'](() => null)).toBe(NEVER);
-    });
-
-    test('does not coerce a symbol', () => {
-      expect(new StringShape()['_coerce'](Symbol())).toBe(NEVER);
+    test('raises an issue if coercion fails', () => {
+      expect(new StringShape().coerce().try([111, 222])).toEqual({
+        ok: false,
+        issues: [{ code: CODE_TYPE, input: [111, 222], message: Shape.messages['type.string'], param: TYPE_STRING }],
+      });
     });
   });
 });

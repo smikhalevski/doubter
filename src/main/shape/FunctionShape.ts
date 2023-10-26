@@ -1,4 +1,5 @@
 import { CODE_TYPE, ERR_ASYNC_FUNCTION } from '../constants';
+import { isArray } from '../internal/lang';
 import {
   applyShape,
   Awaitable,
@@ -6,15 +7,14 @@ import {
   defaultApplyOptions,
   getMessage,
   INPUT,
-  isArray,
   nextNonce,
   ok,
   OUTPUT,
   Promisify,
   unshiftIssuesPath,
-} from '../internal';
-import { TYPE_FUNCTION } from '../Type';
-import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
+} from '../internal/shapes';
+import { functionInputs, TYPE_FUNCTION } from '../types';
+import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';
@@ -248,8 +248,8 @@ export class FunctionShape<
     };
   }
 
-  protected _getInputs(): unknown[] {
-    return [TYPE_FUNCTION];
+  protected _getInputs(): readonly unknown[] {
+    return functionInputs;
   }
 
   protected _apply(

@@ -8,8 +8,9 @@ import {
   ValidationError,
 } from '../../main';
 import { ERR_SHAPE_EXPECTED } from '../../main/constants';
-import { identity, nextNonce, resetNonce } from '../../main/internal';
-import { TYPE_OBJECT } from '../../main/Type';
+import { identity } from '../../main/internal/lang';
+import { nextNonce, resetNonce } from '../../main/internal/shapes';
+import { TYPE_OBJECT } from '../../main/types';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('LazyShape', () => {
@@ -24,7 +25,7 @@ describe('LazyShape', () => {
     expect(shape.isAsync).toBe(false);
     expect(shape.parse('aaa')).toBe('aaa');
     expect(providedShape._apply).toHaveBeenCalledTimes(1);
-    expect(providedShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+    expect(providedShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
   });
 
   test('applies operations to converted value', () => {
@@ -38,7 +39,7 @@ describe('LazyShape', () => {
       issues: [{ code: 'xxx' }],
     });
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { earlyReturn: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { earlyReturn: false });
   });
 
   test('does not apply operations if the provided shape raises an issue', () => {
@@ -234,8 +235,8 @@ describe('LazyShape', () => {
 
       expect(nextNonce()).toBe(2);
       expect(cbMock).toHaveBeenCalledTimes(2);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { earlyReturn: false, coerce: false });
-      expect(cbMock).toHaveBeenNthCalledWith(2, 111, undefined, { earlyReturn: false, coerce: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { earlyReturn: false });
+      expect(cbMock).toHaveBeenNthCalledWith(2, 111, undefined, { earlyReturn: false });
     });
   });
 
@@ -248,7 +249,7 @@ describe('LazyShape', () => {
       expect(shape.isAsync).toBe(true);
       await expect(shape.parseAsync('aaa')).resolves.toBe('aaa');
       expect(providedShape._applyAsync).toHaveBeenCalledTimes(1);
-      expect(providedShape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(providedShape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
     });
 
     test('clears stack if an error is thrown', async () => {
@@ -285,10 +286,10 @@ describe('LazyShape', () => {
       await Promise.all([shape.parseAsync(input1), shape.parseAsync(input2)]);
 
       expect(shapeSpy._applyAsync).toHaveBeenCalledTimes(4);
-      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(1, input1, { earlyReturn: false, coerce: false }, 0);
-      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(2, input2, { earlyReturn: false, coerce: false }, 1);
-      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(3, input1, { earlyReturn: false, coerce: false }, 0);
-      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(4, input2, { earlyReturn: false, coerce: false }, 1);
+      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(1, input1, { earlyReturn: false }, 0);
+      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(2, input2, { earlyReturn: false }, 1);
+      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(3, input1, { earlyReturn: false }, 0);
+      expect(shapeSpy._applyAsync).toHaveBeenNthCalledWith(4, input2, { earlyReturn: false }, 1);
     });
   });
 });

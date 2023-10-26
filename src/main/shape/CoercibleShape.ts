@@ -1,51 +1,56 @@
+import { coerceToNever, NEVER } from '../coerce/never';
 import { Shape } from './Shape';
 
 /**
- * The shape can coerce input value type during parsing.
+ * The shape that can coerce input value type during parsing.
  *
  * @template InputValue The input value.
  * @template OutputValue The output value.
  * @template CoercedValue The value to which an input is coerced.
  * @group Shapes
  */
-export abstract class CoercibleShape<
-  InputValue = any,
-  OutputValue = InputValue,
-  CoercedValue = InputValue,
-> extends Shape<InputValue, OutputValue> {
+export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedValue = InputValue> extends Shape<
+  InputValue,
+  OutputValue
+> {
   /**
    * `true` if this shapes coerces input values to the required type during parsing, or `false` otherwise.
    */
-  isCoercing = false;
+  get isCoercing() {
+    return this._applyCoerce !== coerceToNever;
+  }
+
+  /**
+   * Applies coercion rules to the given value. Call this method in {@link Shape._apply} and {@link Shape._applyAsync}
+   * to coerce the input.
+   *
+   * Override {@link _coerce} and {@link _getInputs} methods to implement custom type coercion.
+   *
+   * @param input The input value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _applyCoerce: (input: unknown) => CoercedValue = coerceToNever;
 
   /**
    * Enables an input value coercion.
    *
-   * @param cb The callback that overrides the built-in coercion.
    * @returns The clone of the shape.
    */
-  coerce(
-    /**
-     * @param value The value to coerce.
-     * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-     */
-    cb?: (value: unknown) => CoercedValue
-  ): this {
+  coerce(): this {
     const shape = this._clone();
-
-    shape.isCoercing = true;
-
-    if (cb !== undefined) {
-      shape._coerce = cb;
-    }
+    shape._applyCoerce = this._coerce;
     return shape;
   }
 
   /**
    * Coerces an input value to another type.
    *
-   * @param value The value to coerce.
+   * Override this method along with {@link _getInputs} to implement custom type coercion.
+   *
+   * @param input The input value to coerce.
    * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
    */
-  protected abstract _coerce(value: unknown): CoercedValue;
+  protected _coerce(input: unknown): CoercedValue {
+    return NEVER;
+  }
 }

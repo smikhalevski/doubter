@@ -1,5 +1,5 @@
-import { ConvertShape, Shape } from '../shape';
-import { ApplyOptions } from '../types';
+import { ConvertShape, Shape } from '../shape/Shape';
+import { ApplyOptions } from '../typings';
 
 /**
  * Creates the shape that synchronously converts the input value.

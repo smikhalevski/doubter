@@ -1,10 +1,11 @@
+import { NEVER } from '../coerce/never';
+import { coerceToNumber, numberCoercibleInputs } from '../coerce/number';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray } from '../internal';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { numberInputs, TYPE_NUMBER } from '../types';
+import { Any, ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AllowShape, NEVER, ReplaceShape, Shape } from './Shape';
+import { AllowShape, ReplaceShape, Shape } from './Shape';
 
 /**
  * The shape of a number value.
@@ -44,48 +45,18 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
-  protected _getInputs(): unknown[] {
-    if (this.isCoercing) {
-      return [TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_BOOLEAN, TYPE_ARRAY, TYPE_DATE, null, undefined];
-    } else {
-      return [TYPE_NUMBER];
-    }
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? numberCoercibleInputs : numberInputs;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<number> {
     let output = input;
 
-    if (
-      (typeof output !== 'number' || output !== output) &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
-
-  /**
-   * Coerces a value to a number (not `NaN`).
-   *
-   * @param value The non-number value to coerce.
-   * @returns A number value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: any): number {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'number') {
-      return value === value ? value : NEVER;
-    }
-    if (value === null || value === undefined) {
-      return 0;
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if (
-      (typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number' || value instanceof Date) &&
-      (value = +value) === value
-    ) {
-      return value;
-    }
-    return NEVER;
-  }
 }
+
+NumberShape.prototype['_coerce'] = coerceToNumber;

@@ -1,6 +1,6 @@
 import { InstanceShape } from '../../main';
 import { CODE_TYPE_INSTANCE_OF } from '../../main/constants';
-import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../../main/Type';
+import { TYPE_ARRAY, TYPE_DATE, TYPE_FUNCTION, TYPE_MAP, TYPE_OBJECT, TYPE_PROMISE, TYPE_SET } from '../../main/types';
 
 describe('InstanceShape', () => {
   class TestClass {}

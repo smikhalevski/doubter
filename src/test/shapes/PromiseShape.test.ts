@@ -1,6 +1,6 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_PROMISE, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { promiseInputs, TYPE_PROMISE, TYPE_STRING, unknownInputs } from '../../main/types';
 import { AsyncMockShape } from './mocks';
 
 describe('PromiseShape', () => {
@@ -40,7 +40,7 @@ describe('PromiseShape', () => {
     });
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false });
   });
 
   test('returns the same promise if the resolved value did not change', () => {
@@ -53,17 +53,17 @@ describe('PromiseShape', () => {
 
   describe('inputs', () => {
     test('infers the promise type', () => {
-      expect(new PromiseShape(null).inputs).toEqual([TYPE_PROMISE]);
-      expect(new PromiseShape(new Shape()).inputs).toEqual([TYPE_PROMISE]);
-    });
-
-    test('infers the coerced promise type', () => {
-      expect(new PromiseShape(null).coerce().inputs).toEqual([TYPE_UNKNOWN]);
-      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
+      expect(new PromiseShape(null).inputs).toBe(promiseInputs);
+      expect(new PromiseShape(new Shape()).inputs).toBe(promiseInputs);
     });
   });
 
   describe('coerce', () => {
+    test('infers the coerced promise type', () => {
+      expect(new PromiseShape(null).coerce().inputs).toBe(unknownInputs);
+      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
+    });
+
     test('wraps an input value in a promise', async () => {
       const result = new PromiseShape(null).coerce().try('aaa') as Ok;
 
@@ -126,7 +126,7 @@ describe('PromiseShape', () => {
       });
 
       expect(checkMock).toHaveBeenCalledTimes(1);
-      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false, coerce: false });
+      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false });
     });
 
     test('applies forced operations if value shape raised issues', async () => {

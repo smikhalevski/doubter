@@ -1,6 +1,6 @@
 import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_MAP, TYPE_STRING } from '../../main/Type';
+import { TYPE_MAP, TYPE_STRING } from '../../main/types';
 import { AsyncMockShape } from './mocks';
 
 describe('MapShape', () => {

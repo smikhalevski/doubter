@@ -1,6 +1,6 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { INPUT, OUTPUT } from '../../main/internal';
+import { INPUT, OUTPUT } from '../../main/internal/shapes';
 
 expectType<number | 'aaa'>(d.number().replace('aaa', true)[INPUT]);
 

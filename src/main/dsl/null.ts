@@ -1,5 +1,5 @@
-import { ConstShape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { ConstShape } from '../shape/ConstShape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the shape that requires an input to be equal to `null`.
@@ -7,9 +7,6 @@ import { IssueOptions, Message } from '../types';
  * @param options The issue options or the issue message.
  * @group DSL
  */
-function null_(options?: IssueOptions | Message): ConstShape<null> {
+export function null_(options?: IssueOptions | Message): ConstShape<null> {
   return new ConstShape(null, options);
 }
-
-// noinspection ReservedWordAsName
-export { null_ as null };

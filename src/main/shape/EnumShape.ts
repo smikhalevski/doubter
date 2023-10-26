@@ -1,10 +1,14 @@
+import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE_ENUM } from '../constants';
-import { getCanonicalValueOf, isArray, ReadonlyDict, unique } from '../internal';
-import { TYPE_ARRAY, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { unique } from '../internal/arrays';
+import { getCanonicalValue, isArray } from '../internal/lang';
+import { ReadonlyDict } from '../internal/objects';
+import { TYPE_ARRAY } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a value enumeration.
@@ -39,12 +43,12 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   ) {
     super();
 
-    this.values = (isArray(source) ? source : getEnumValues(source)).filter(unique);
+    this.values = getEnumValues(source);
 
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     const inputs: unknown[] = this.values.slice(0);
 
     if (!this.isCoercing || inputs.length === 0) {
@@ -53,37 +57,37 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     if (!isArray(this.source)) {
       inputs.push(...Object.keys(this.source));
     }
-    return inputs.concat(TYPE_ARRAY, TYPE_OBJECT);
+    for (const value of this.values) {
+      inputs.push(...getConstCoercibleInputs(value));
+    }
+    return unique(inputs.concat(TYPE_ARRAY));
+  }
+
+  protected _coerce(input: unknown): Value {
+    const { source, values } = this;
+
+    if (isArray(input) && input.length === 1 && values.includes((input = input[0]))) {
+      return input as Value;
+    }
+    if (!isArray(source) && typeof (input = getCanonicalValue(input)) === 'string' && source.hasOwnProperty(input)) {
+      return (source as ReadonlyDict)[input];
+    }
+
+    for (const value of values) {
+      if (coerceToConst(value, input) !== NEVER) {
+        return value;
+      }
+    }
+    return NEVER;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
     let output = input;
 
-    if (
-      !this.values.includes(output) &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (!this.values.includes(output) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
-  }
-
-  /**
-   * Coerces a value to an enum value.
-   *
-   * @param value The non-enum value to coerce.
-   * @returns An enum value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: any): Value {
-    const { source } = this;
-
-    if (isArray(value) && value.length === 1 && this.values.includes((value = value[0]))) {
-      return value;
-    }
-    if (!isArray(source) && typeof (value = getCanonicalValueOf(value)) === 'string' && source.hasOwnProperty(value)) {
-      return (source as ReadonlyDict)[value];
-    }
-    return NEVER;
   }
 }
 
@@ -92,6 +96,10 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
  * enum.
  */
 export function getEnumValues(source: ReadonlyDict): any[] {
+  if (isArray(source)) {
+    return unique(source);
+  }
+
   const values: number[] = [];
 
   for (const key in source) {
@@ -102,9 +110,9 @@ export function getEnumValues(source: ReadonlyDict): any[] {
     const bType = typeof b;
 
     if (((aType !== 'string' || bType !== 'number') && (aType !== 'number' || bType !== 'string')) || b != key) {
-      return Object.values(source);
+      return unique(Object.values(source));
     }
-    if (typeof a === 'number') {
+    if (typeof a === 'number' && values.indexOf(a) === -1) {
       values.push(a);
     }
   }

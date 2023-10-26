@@ -1,5 +1,7 @@
 export const isArray = Array.isArray;
 
+export const freeze = Object.freeze;
+
 export function identity<T>(value: T): T {
   return value;
 }
@@ -36,10 +38,19 @@ export function isMapEntry(value: unknown): value is [unknown, unknown] {
 }
 
 /**
- * Returns primitive if an object is a wrapper, or returns value as is.
+ * Returns primitive if
+ * [an object is a wrapper](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#primitive_values),
+ * or returns value as is.
  */
-export function getCanonicalValueOf(value: unknown): unknown {
-  if (isObjectLike(value) && (value instanceof String || value instanceof Number || value instanceof Boolean)) {
+export function getCanonicalValue(value: unknown): unknown {
+  if (
+    isObjectLike(value) &&
+    (value instanceof String ||
+      value instanceof Number ||
+      value instanceof Boolean ||
+      value instanceof BigInt ||
+      value instanceof Symbol)
+  ) {
     return value.valueOf();
   }
   return value;
@@ -47,4 +58,9 @@ export function getCanonicalValueOf(value: unknown): unknown {
 
 export function returnTrue(): boolean {
   return true;
+}
+
+export function defineProperty<T>(obj: object, key: PropertyKey, value: T, readOnly = false): T {
+  Object.defineProperty(obj, key, { configurable: true, writable: !readOnly, value });
+  return value;
 }

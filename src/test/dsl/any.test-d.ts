@@ -1,6 +1,6 @@
 import { expectNotType, expectType } from 'tsd';
 import * as d from '../../main';
-import { INPUT, OUTPUT } from '../../main/internal';
+import { INPUT, OUTPUT } from '../../main/internal/shapes';
 
 expectType<111>(d.any((value): value is 111 => true)[INPUT]);
 

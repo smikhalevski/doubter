@@ -1,6 +1,6 @@
-import { ReadonlyDict } from '../internal';
-import { EnumShape } from '../shape';
-import { Any, IssueOptions, Message } from '../types';
+import { ReadonlyDict } from '../internal/objects';
+import { EnumShape } from '../shape/EnumShape';
+import { Any, IssueOptions, Message } from '../typings';
 
 /**
  * Creates the shape that constrains input with the array of values.
@@ -11,7 +11,7 @@ import { Any, IssueOptions, Message } from '../types';
  * @template ValuesArray The array of allowed values.
  * @group DSL
  */
-function enum_<Value extends Any, ValuesArray extends readonly [Value, ...Value[]]>(
+export function enum_<Value extends Any, ValuesArray extends readonly [Value, ...Value[]]>(
   values: ValuesArray,
   options?: IssueOptions | Message
 ): EnumShape<ValuesArray[number]>;
@@ -26,14 +26,11 @@ function enum_<Value extends Any, ValuesArray extends readonly [Value, ...Value[
  * @template ValuesDict The object that maps from the key to an enum value.
  * @group DSL
  */
-function enum_<Value extends Any, ValuesDict extends ReadonlyDict<Value>>(
+export function enum_<Value extends Any, ValuesDict extends ReadonlyDict<Value>>(
   values: ValuesDict,
   options?: IssueOptions | Message
 ): EnumShape<ValuesDict[keyof ValuesDict]>;
 
-function enum_(source: any[] | ReadonlyDict, options?: IssueOptions | Message): EnumShape<any> {
+export function enum_(source: any[] | ReadonlyDict, options?: IssueOptions | Message): EnumShape<any> {
   return new EnumShape(source, options);
 }
-
-// noinspection ReservedWordAsName
-export { enum_ as enum };

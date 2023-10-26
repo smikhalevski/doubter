@@ -1,6 +1,6 @@
 import { CODE_TYPE } from '../constants';
-import { TYPE_SYMBOL } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { symbolInputs, TYPE_SYMBOL } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
 
@@ -26,8 +26,8 @@ export class SymbolShape extends Shape<symbol> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.symbol'], options, TYPE_SYMBOL);
   }
 
-  protected _getInputs(): unknown[] {
-    return [TYPE_SYMBOL];
+  protected _getInputs(): readonly unknown[] {
+    return symbolInputs;
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {

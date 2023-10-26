@@ -1,5 +1,6 @@
-import { AnyShape, MapShape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { MapShape } from '../shape/MapShape';
+import { AnyShape } from '../shape/Shape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the {@link !Map Map} instance shape.

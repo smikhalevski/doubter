@@ -1,5 +1,5 @@
-import { ConstShape } from '../shape';
-import { Any, IssueOptions, Message } from '../types';
+import { ConstShape } from '../shape/ConstShape';
+import { Any, IssueOptions, Message } from '../typings';
 
 /**
  * Creates the constant value shape.
@@ -9,9 +9,6 @@ import { Any, IssueOptions, Message } from '../types';
  * @template Value The expected value.
  * @group DSL
  */
-function const_<Value extends Any>(value: Value, options?: IssueOptions | Message): ConstShape<Value> {
+export function const_<Value extends Any>(value: Value, options?: IssueOptions | Message): ConstShape<Value> {
   return new ConstShape(value, options);
 }
-
-// noinspection ReservedWordAsName
-export { const_ as const };

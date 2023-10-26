@@ -1,18 +1,13 @@
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE_INTERSECTION } from '../constants';
-import {
-  applyShape,
-  concatIssues,
-  distributeTypes,
-  isArray,
-  isAsyncShapes,
-  isEqual,
-  setObjectProperty,
-  toDeepPartialShape,
-} from '../internal';
-import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { isArray, isEqual } from '../internal/lang';
+import { setObjectProperty } from '../internal/objects';
+import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
+import { distributeTypes } from '../internal/types';
+import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, NEVER, Output, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
  * Converts union to intersection.
@@ -97,7 +92,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return isAsyncShapes(this.shapes);
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     const inputs = [];
 
     for (const shape of this.shapes) {

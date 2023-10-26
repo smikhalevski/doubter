@@ -1,11 +1,29 @@
-import { deleteAt, toArrayIndex } from '../../main/internal';
+import { toArrayIndex, unique } from '../../main/internal/arrays';
 
-describe('deleteAt', () => {
-  test('deletes an element at index', () => {
-    const arr = [111, 222, 333];
+describe('unique', () => {
+  test('returns an array as is', () => {
+    const arr1 = [NaN];
+    const arr2 = [1, 2, 3];
 
-    expect(deleteAt(arr, 1)).toBe(arr);
-    expect(arr).toEqual([111, 333]);
+    expect(unique(arr1)).toBe(arr1);
+    expect(unique(arr2)).toBe(arr2);
+  });
+
+  test('returns an array of unique values', () => {
+    const arr = [1, 1, 1];
+    expect(unique(arr)).not.toBe(arr);
+    expect(unique(arr)).toEqual([1]);
+  });
+
+  test('preserves the first value entry', () => {
+    const arr1 = [NaN, 1, NaN, 2, NaN];
+    const arr2 = [1, 2, 1];
+
+    expect(unique(arr1)).not.toBe(arr1);
+    expect(unique(arr1)).toEqual([NaN, 1, 2]);
+
+    expect(unique(arr2)).not.toBe(arr2);
+    expect(unique(arr2)).toEqual([1, 2]);
   });
 });
 

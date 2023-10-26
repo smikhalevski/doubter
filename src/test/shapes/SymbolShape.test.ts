@@ -1,6 +1,6 @@
 import { Shape, SymbolShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_SYMBOL } from '../../main/Type';
+import { TYPE_SYMBOL } from '../../main/types';
 
 describe('SymbolShape', () => {
   test('creates a SymbolShape', () => {

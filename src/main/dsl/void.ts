@@ -1,5 +1,5 @@
-import { ConstShape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { ConstShape } from '../shape/ConstShape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates a shape that requires an input to be `undefined` at runtime and typed as `void`.
@@ -7,9 +7,6 @@ import { IssueOptions, Message } from '../types';
  * @param options The issue options or the issue message.
  * @group DSL
  */
-function void_(options?: IssueOptions | Message): ConstShape<void> {
+export function void_(options?: IssueOptions | Message): ConstShape<void> {
   return new ConstShape(undefined, options);
 }
-
-// noinspection ReservedWordAsName
-export { void_ as void };

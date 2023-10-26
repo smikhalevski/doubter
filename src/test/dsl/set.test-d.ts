@@ -1,6 +1,6 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { OUTPUT } from '../../main/internal';
+import { OUTPUT } from '../../main/internal/shapes';
 
 expectType<Set<string | number>>(d.set(d.or([d.string(), d.number()]))[OUTPUT]);
 

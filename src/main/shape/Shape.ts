@@ -1,28 +1,23 @@
 import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED } from '../constants';
+import { defineProperty, freeze, isArray, isEqual, isObjectLike, returnTrue } from '../internal/lang';
+import { Dict, ReadonlyDict } from '../internal/objects';
 import {
   applyShape,
   captureIssues,
   concatIssues,
   defaultApplyOptions,
-  Dict,
   getMessage,
   INPUT,
-  isArray,
-  isEqual,
-  isObjectLike,
-  isType,
   nextNonce,
   ok,
   OUTPUT,
   Promisify,
-  ReadonlyDict,
-  returnTrue,
   toDeepPartialShape,
-  unionTypes,
   universalApplyOperations,
-} from '../internal';
-import { Messages, messages } from '../messages';
-import { getTypeOf, TYPE_UNKNOWN } from '../Type';
+} from '../internal/shapes';
+import { isType, unionTypes } from '../internal/types';
+import { globalMessages } from '../messages';
+import { getTypeOf, TYPE_UNKNOWN, unknownInputs } from '../types';
 import {
   AlterCallback,
   Any,
@@ -44,18 +39,9 @@ import {
   RefineOptions,
   RefinePredicate,
   Result,
-} from '../types';
+} from '../typings';
 import { createIssueFactory, extractOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
-
-/**
- * The marker object that is used to denote an impossible value.
- *
- * For example, {@link NEVER} is returned from {@link CoercibleShape._coerce} method when coercion is not possible.
- *
- * @group Other
- */
-export const NEVER = Object.freeze({ never: true }) as never;
 
 /**
  * Extracts the shape input type.
@@ -191,7 +177,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * The mapping from an issue type to a corresponding issue message.
    */
-  static readonly messages: Messages = messages as Messages;
+  static readonly messages = globalMessages;
 
   /**
    * The dictionary of shape annotations.
@@ -686,8 +672,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
-  protected _getInputs(): unknown[] {
-    return [TYPE_UNKNOWN];
+  protected _getInputs(): readonly unknown[] {
+    return unknownInputs;
   }
 
   /**
@@ -850,21 +836,19 @@ export interface Shape<InputValue, OutputValue> {
 Object.defineProperties(Shape.prototype, {
   inputs: {
     configurable: true,
+
     get(this: Shape) {
-      Object.defineProperty(this, 'inputs', { configurable: true, value: [] });
+      defineProperty(this, 'inputs', []);
 
-      const inputs = Object.freeze(unionTypes(this._getInputs()));
-
-      Object.defineProperty(this, 'inputs', { configurable: true, value: inputs });
-
-      return inputs;
+      return defineProperty(this, 'inputs', freeze(unionTypes(this._getInputs())), true);
     },
   },
 
   isAsync: {
     configurable: true,
+
     get(this: Shape) {
-      Object.defineProperty(this, 'isAsync', { configurable: true, value: false });
+      defineProperty(this, 'isAsync', false);
 
       const async = this._isAsync();
       const universalApplyAsync = Shape.prototype._applyAsync;
@@ -877,18 +861,17 @@ Object.defineProperties(Shape.prototype, {
         this._applyAsync = universalApplyAsync;
       }
 
-      Object.defineProperty(this, 'isAsync', { configurable: true, value: async });
-
-      return async;
+      return defineProperty(this, 'isAsync', async, true);
     },
   },
 
   try: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['try'] = (input, options) => {
+      return defineProperty<Shape['try']>(this, 'try', (input, options) => {
         const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
@@ -898,20 +881,17 @@ Object.defineProperties(Shape.prototype, {
           return { ok: false, issues: result };
         }
         return { ok: true, value: result.value };
-      };
-
-      Object.defineProperty(this, 'try', { writable: true, value: cb });
-
-      return cb;
+      });
     },
   },
 
   tryAsync: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['tryAsync'] = (input, options) => {
+      return defineProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return { ok: true, value: input };
@@ -921,20 +901,17 @@ Object.defineProperties(Shape.prototype, {
           }
           return { ok: true, value: result.value };
         });
-      };
-
-      Object.defineProperty(this, 'tryAsync', { writable: true, value: cb });
-
-      return cb;
+      });
     },
   },
 
   parse: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parse'] = (input, options) => {
+      return defineProperty<Shape['parse']>(this, 'parse', (input, options) => {
         const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
@@ -944,20 +921,17 @@ Object.defineProperties(Shape.prototype, {
           throw new ValidationError(result, getMessage(result, input, options));
         }
         return result.value;
-      };
-
-      Object.defineProperty(this, 'parse', { writable: true, value: cb });
-
-      return cb;
+      });
     },
   },
 
   parseAsync: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseAsync'] = (input, options) => {
+      return defineProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
@@ -967,44 +941,22 @@ Object.defineProperties(Shape.prototype, {
           }
           return result.value;
         });
-      };
-
-      Object.defineProperty(this, 'parseAsync', { writable: true, value: cb });
-
-      return cb;
+      });
     },
   },
 
   parseOrDefault: {
     configurable: true,
+
     get(this: Shape) {
       this.isAsync;
 
-      const cb: Shape['parseOrDefault'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+      return defineProperty(
+        this,
+        'parseOrDefault',
+        (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
+          const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
-        if (result === null) {
-          return input;
-        }
-        if (isArray(result)) {
-          return defaultValue;
-        }
-        return result.value;
-      };
-
-      Object.defineProperty(this, 'parseOrDefault', { writable: true, value: cb });
-
-      return cb;
-    },
-  },
-
-  parseOrDefaultAsync: {
-    configurable: true,
-    get(this: Shape) {
-      this.isAsync;
-
-      const cb: Shape['parseOrDefaultAsync'] = (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
@@ -1012,17 +964,38 @@ Object.defineProperties(Shape.prototype, {
             return defaultValue;
           }
           return result.value;
-        });
-      };
+        }
+      );
+    },
+  },
 
-      Object.defineProperty(this, 'parseOrDefaultAsync', { writable: true, value: cb });
+  parseOrDefaultAsync: {
+    configurable: true,
 
-      return cb;
+    get(this: Shape) {
+      this.isAsync;
+
+      return defineProperty(
+        this,
+        'parseOrDefaultAsync',
+        (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
+          return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
+            if (result === null) {
+              return input;
+            }
+            if (isArray(result)) {
+              return defaultValue;
+            }
+            return result.value;
+          });
+        }
+      );
     },
   },
 
   _applyOperations: {
     configurable: true,
+
     get(this: Shape) {
       let cb = universalApplyOperations;
 
@@ -1030,9 +1003,7 @@ Object.defineProperties(Shape.prototype, {
         cb = this.operations[i].factory(cb);
       }
 
-      Object.defineProperty(this, '_applyOperations', { writable: true, value: cb });
-
-      return cb;
+      return defineProperty(this, '_applyOperations', cb);
     },
   },
 });
@@ -1127,7 +1098,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     return this.inputShape.isAsync || this.outputShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return this.inputShape.inputs.slice(0);
   }
 
@@ -1231,7 +1202,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
     return this.baseShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return this.baseShape.inputs.concat(this.inputValue);
   }
 
@@ -1330,7 +1301,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     return this.baseShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return this.baseShape.inputs.filter(input => !isEqual(this.deniedValue, input));
   }
 
@@ -1430,7 +1401,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     return this.baseShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return this.baseShape.inputs.slice(0);
   }
 
@@ -1529,7 +1500,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     return this.baseShape.isAsync || this.excludedShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
+  protected _getInputs(): readonly unknown[] {
     return this.baseShape.inputs.filter(input => isType(input) || !this.excludedShape.inputs.includes(input));
   }
 

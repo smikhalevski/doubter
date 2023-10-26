@@ -1,6 +1,7 @@
-import { ReadonlyDict } from '../internal';
-import { AnyShape, ObjectShape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { ReadonlyDict } from '../internal/objects';
+import { ObjectShape } from '../shape/ObjectShape';
+import { AnyShape } from '../shape/Shape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the object shape.

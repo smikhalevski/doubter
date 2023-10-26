@@ -1,5 +1,6 @@
-import { AnyShape, SetShape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { SetShape } from '../shape/SetShape';
+import { AnyShape } from '../shape/Shape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the {@link !Set Set} instance shape.

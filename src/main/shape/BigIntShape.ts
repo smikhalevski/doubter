@@ -1,10 +1,11 @@
+import { bigintCoercibleInputs, coerceToBigInt } from '../coerce/bigint';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray } from '../internal';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { bigintInputs, TYPE_BIGINT } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a bigint value.
@@ -28,47 +29,18 @@ export class BigIntShape extends CoercibleShape<bigint> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.bigint'], options, TYPE_BIGINT);
   }
 
-  protected _getInputs(): unknown[] {
-    if (this.isCoercing) {
-      return [TYPE_BIGINT, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_ARRAY, null, undefined];
-    } else {
-      return [TYPE_BIGINT];
-    }
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? bigintCoercibleInputs : bigintInputs;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<bigint> {
     let output = input;
 
-    if (
-      typeof output !== 'bigint' &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (typeof output !== 'bigint' && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
-
-  /**
-   * Coerces a value to a bigint.
-   *
-   * @param value The non-bigint value to coerce.
-   * @returns A bigint value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: any): bigint {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'bigint') {
-      return value;
-    }
-    if (value === null || value === undefined) {
-      return BigInt(0);
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if (typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean') {
-      try {
-        return BigInt(value);
-      } catch {}
-    }
-    return NEVER;
-  }
 }
+
+BigIntShape.prototype['_coerce'] = coerceToBigInt;

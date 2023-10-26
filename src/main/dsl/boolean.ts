@@ -1,5 +1,5 @@
-import { BooleanShape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { BooleanShape } from '../shape/BooleanShape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates the boolean shape.
@@ -10,8 +10,3 @@ import { IssueOptions, Message } from '../types';
 export function boolean(options?: IssueOptions | Message): BooleanShape {
   return new BooleanShape(options);
 }
-
-/**
- * @group DSL
- */
-export { boolean as bool };

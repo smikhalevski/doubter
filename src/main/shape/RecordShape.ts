@@ -1,18 +1,9 @@
 import { CODE_TYPE } from '../constants';
-import {
-  applyShape,
-  cloneDictHead,
-  concatIssues,
-  INPUT,
-  isArray,
-  isObject,
-  OUTPUT,
-  setObjectProperty,
-  toDeepPartialShape,
-  unshiftIssuesPath,
-} from '../internal';
-import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { isArray, isObject } from '../internal/lang';
+import { cloneDictHead, setObjectProperty } from '../internal/objects';
+import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
+import { objectInputs, TYPE_OBJECT } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
@@ -84,8 +75,8 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     return this.keyShape?.isAsync || this.valueShape.isAsync;
   }
 
-  protected _getInputs(): unknown[] {
-    return [TYPE_OBJECT];
+  protected _getInputs(): readonly unknown[] {
+    return objectInputs;
   }
 
   protected _apply(

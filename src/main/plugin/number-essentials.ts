@@ -21,7 +21,7 @@ import {
   CODE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { IssueOptions, Message, NumberShape } from '../core';
-import { Any } from '../types';
+import { Any } from '../typings';
 import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {

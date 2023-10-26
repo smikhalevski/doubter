@@ -13,7 +13,7 @@
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../constants';
 import { BigIntShape, IssueOptions, Message } from '../core';
-import { Any } from '../types';
+import { Any } from '../typings';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

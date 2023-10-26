@@ -21,8 +21,8 @@ import {
   CODE_TYPE,
   ERR_SYNC_UNSUPPORTED,
 } from '../../main/constants';
-import { resetNonce } from '../../main/internal';
-import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/Type';
+import { resetNonce } from '../../main/internal/shapes';
+import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/types';
 import { AsyncMockShape, MockShape } from './mocks';
 
 beforeEach(() => {
@@ -87,7 +87,7 @@ describe('Shape', () => {
       shape.parse('aaa');
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
     });
 
     test('added parameterized callback is applied', () => {
@@ -97,7 +97,7 @@ describe('Shape', () => {
       shape.parse('aaa');
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', 111, { earlyReturn: false, coerce: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', 111, { earlyReturn: false });
     });
 
     test('applies callbacks in the same order they were added', () => {
@@ -244,7 +244,7 @@ describe('Shape', () => {
       expect(new Shape().refine(cbMock).try('aaa')).toEqual({ ok: true, value: 'aaa' });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
     });
 
     test('uses callback as an operation type', () => {
@@ -383,7 +383,7 @@ describe('Shape', () => {
       expect(new Shape().alter(cbMock).try('aaa')).toEqual({ ok: true, value: 111 });
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
     });
 
     test('adds the same callback twice', () => {
@@ -804,12 +804,12 @@ describe('Shape', () => {
       shape.try('aaa');
 
       expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
       const shape = new MockShape();
-      const options = { coerce: true };
+      const options = { earlyReturn: true };
 
       shape.try('aaa', options);
 
@@ -883,7 +883,7 @@ describe('Shape', () => {
 
       expect(cbMock1).toHaveBeenCalledTimes(1);
       expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
+      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
     });
 
     test('collects all issues', () => {
@@ -899,7 +899,7 @@ describe('Shape', () => {
 
       expect(cbMock1).toHaveBeenCalledTimes(1);
       expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
+      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
     });
   });
 
@@ -910,12 +910,12 @@ describe('Shape', () => {
       shape.parse('aaa');
 
       expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
       const shape = new MockShape();
-      const options = { coerce: true };
+      const options = { earlyReturn: true };
 
       shape.parse('aaa', options);
 
@@ -956,12 +956,12 @@ describe('Shape', () => {
       shape.parseOrDefault('aaa');
 
       expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
     });
 
     test('invokes _apply with options', async () => {
       const shape = new MockShape();
-      const options = { coerce: true };
+      const options = { earlyReturn: true };
 
       shape.parseOrDefault('aaa', 'bbb', options);
 
@@ -993,13 +993,13 @@ describe('Shape', () => {
         await shape.tryAsync('aaa');
 
         expect(shape._applyAsync).toHaveBeenCalledTimes(1);
-        expect(shape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+        expect(shape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
         const shape = new AsyncMockShape();
 
-        const options = { coerce: true };
+        const options = { earlyReturn: true };
 
         await shape.tryAsync('aaa', options);
 
@@ -1019,13 +1019,13 @@ describe('Shape', () => {
         await shape.parseAsync('aaa');
 
         expect(shape._applyAsync).toHaveBeenCalledTimes(1);
-        expect(shape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+        expect(shape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
         const shape = new AsyncMockShape();
 
-        const options = { coerce: true };
+        const options = { earlyReturn: true };
 
         await shape.parseAsync('aaa', options);
 
@@ -1045,13 +1045,13 @@ describe('Shape', () => {
         await shape.parseOrDefaultAsync('aaa');
 
         expect(shape._applyAsync).toHaveBeenCalledTimes(1);
-        expect(shape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+        expect(shape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {
         const shape = new AsyncMockShape();
 
-        const options = { coerce: true };
+        const options = { earlyReturn: true };
 
         await shape.parseOrDefaultAsync('aaa', 'bbb', options);
 
@@ -1077,7 +1077,7 @@ describe('ConvertShape', () => {
     expect(shape.parse('aaa')).toBe(111);
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false });
   });
 
   test('callback can throw a ValidationError', () => {
@@ -1105,7 +1105,7 @@ describe('ConvertShape', () => {
     new ConvertShape(() => 111).check(cbMock).parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { earlyReturn: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 111, undefined, { earlyReturn: false });
   });
 
   describe('async', () => {
@@ -1117,7 +1117,7 @@ describe('ConvertShape', () => {
       await expect(shape.parseAsync('aaa')).resolves.toBe(111);
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false });
     });
 
     test('convert callback can reject with ValidationError instances', async () => {
@@ -1147,10 +1147,10 @@ describe('PipeShape', () => {
     expect(shape.parse('aaa')).toBe('aaa');
 
     expect(inputShape._apply).toHaveBeenCalledTimes(1);
-    expect(inputShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+    expect(inputShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
 
     expect(outputShape._apply).toHaveBeenCalledTimes(1);
-    expect(outputShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+    expect(outputShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
   });
 
   test('does not apply the output shape if the input shape parsing failed', () => {
@@ -1179,7 +1179,7 @@ describe('PipeShape', () => {
     new PipeShape(new Shape(), new Shape()).check(cbMock).parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
   });
 
   describe('deepPartial', () => {
@@ -1211,10 +1211,10 @@ describe('PipeShape', () => {
       await expect(shape.parseAsync('aaa')).resolves.toBe('aaa');
 
       expect(inputShape._applyAsync).toHaveBeenCalledTimes(1);
-      expect(inputShape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(inputShape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
 
       expect(outputShape._apply).toHaveBeenCalledTimes(1);
-      expect(outputShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(outputShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
     });
 
     test('does not apply the output shape if the input shape parsing failed', async () => {
@@ -1243,7 +1243,7 @@ describe('PipeShape', () => {
       await new PipeShape(new AsyncMockShape(), new Shape()).check(cbMock).parseAsync('aaa');
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
     });
   });
 });
@@ -1289,7 +1289,7 @@ describe('ReplaceShape', () => {
     new ReplaceShape(new Shape(), 111, 222).check(cbMock).try(111);
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { earlyReturn: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { earlyReturn: false });
   });
 
   describe('inputs', () => {
@@ -1343,7 +1343,7 @@ describe('ReplaceShape', () => {
       await new ReplaceShape(new AsyncMockShape(), 111, 222).check(cbMock).tryAsync(111);
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { earlyReturn: false, coerce: false });
+      expect(cbMock).toHaveBeenNthCalledWith(1, 222, undefined, { earlyReturn: false });
     });
   });
 });
@@ -1391,7 +1391,7 @@ describe('DenyShape', () => {
     new DenyShape(new Shape(), 111).check(cbMock).parse('aaa');
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false, coerce: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
   });
 
   test('does not apply operations if shape raises an issue', () => {
@@ -1482,7 +1482,7 @@ describe('CatchShape', () => {
       1,
       111,
       [{ code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: TYPE_STRING }],
-      { earlyReturn: false, coerce: false }
+      { earlyReturn: false }
     );
   });
 

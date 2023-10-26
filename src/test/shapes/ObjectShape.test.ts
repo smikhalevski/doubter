@@ -1,7 +1,7 @@
 import { ObjectShape, Ok, Shape, StringShape } from '../../main';
 import { CODE_ANY_DENY, CODE_OBJECT_EXACT, CODE_TYPE, CODE_TYPE_ENUM } from '../../main/constants';
-import { resetNonce } from '../../main/internal';
-import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import { resetNonce } from '../../main/internal/shapes';
+import { TYPE_OBJECT, TYPE_STRING } from '../../main/types';
 import { AsyncMockShape, MockShape } from './mocks';
 
 describe('ObjectShape', () => {
@@ -310,7 +310,7 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape1._apply).toHaveBeenCalledTimes(1);
-      expect(valueShape1._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(valueShape1._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
     });
 
     test('raises the first issue only in an early-return mode', () => {
@@ -402,11 +402,11 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape1._apply).toHaveBeenCalledTimes(1);
-      expect(valueShape1._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(valueShape1._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
       expect(valueShape2._apply).toHaveBeenCalledTimes(1);
-      expect(valueShape2._apply).toHaveBeenNthCalledWith(1, undefined, { earlyReturn: false, coerce: false }, 0);
+      expect(valueShape2._apply).toHaveBeenNthCalledWith(1, undefined, { earlyReturn: false }, 0);
       expect(restShape._apply).toHaveBeenCalledTimes(1);
-      expect(restShape._apply).toHaveBeenNthCalledWith(1, 'bbb', { earlyReturn: false, coerce: false }, 0);
+      expect(restShape._apply).toHaveBeenNthCalledWith(1, 'bbb', { earlyReturn: false }, 0);
     });
 
     test('raises multiple issues', () => {
@@ -550,11 +550,11 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape1._applyAsync).toHaveBeenCalledTimes(1);
-      expect(valueShape1._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false, coerce: false }, 0);
+      expect(valueShape1._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
       expect(valueShape2._apply).toHaveBeenCalledTimes(1);
-      expect(valueShape2._apply).toHaveBeenNthCalledWith(1, undefined, { earlyReturn: false, coerce: false }, 0);
+      expect(valueShape2._apply).toHaveBeenNthCalledWith(1, undefined, { earlyReturn: false }, 0);
       expect(restShape._apply).toHaveBeenCalledTimes(1);
-      expect(restShape._apply).toHaveBeenNthCalledWith(1, 'bbb', { earlyReturn: false, coerce: false }, 0);
+      expect(restShape._apply).toHaveBeenNthCalledWith(1, 'bbb', { earlyReturn: false }, 0);
     });
 
     test('raises multiple issues', async () => {

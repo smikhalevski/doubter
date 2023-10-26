@@ -1,10 +1,11 @@
+import { NEVER } from '../coerce/never';
+import { coerceToString, stringCoercibleInputs } from '../coerce/string';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray, isValidDate } from '../internal';
-import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { stringInputs, TYPE_STRING } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a string value.
@@ -28,51 +29,18 @@ export class StringShape extends CoercibleShape<string> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.string'], options, TYPE_STRING);
   }
 
-  protected _getInputs(): unknown[] {
-    if (this.isCoercing) {
-      return [TYPE_STRING, TYPE_OBJECT, TYPE_NUMBER, TYPE_BOOLEAN, TYPE_BIGINT, TYPE_ARRAY, null, undefined];
-    } else {
-      return [TYPE_STRING];
-    }
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? stringCoercibleInputs : stringInputs;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<string> {
     let output = input;
 
-    if (
-      typeof output !== 'string' &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (typeof output !== 'string' && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
-
-  /**
-   * Coerces a value to a string.
-   *
-   * @param value The non-string value to coerce.
-   * @returns A string value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: unknown): string {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'string') {
-      return value;
-    }
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if (typeof value === 'string') {
-      return value;
-    }
-    if (Number.isFinite(value) || typeof value === 'boolean' || typeof value === 'bigint') {
-      return '' + value;
-    }
-    if (isValidDate(value)) {
-      return value.toISOString();
-    }
-    return NEVER;
-  }
 }
+
+StringShape.prototype['_coerce'] = coerceToString;

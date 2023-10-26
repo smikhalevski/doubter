@@ -1,6 +1,10 @@
+import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST } from '../constants';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { nullInputs, undefinedInputs } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
+import { CoercibleShape } from './CoercibleShape';
 import { Shape } from './Shape';
 
 /**
@@ -9,7 +13,7 @@ import { Shape } from './Shape';
  * @template Value The expected constant value.
  * @group Shapes
  */
-export class ConstShape<Value> extends Shape<Value> {
+export class ConstShape<Value> extends CoercibleShape<Value> {
   /**
    * Returns `true` if an input is equal to the const value, or `false` otherwise.
    */
@@ -40,14 +44,31 @@ export class ConstShape<Value> extends Shape<Value> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages[CODE_TYPE_CONST], options, value);
   }
 
-  protected _getInputs(): unknown[] {
-    return [this.value];
+  protected _getInputs(): readonly unknown[] {
+    const { value } = this;
+
+    if (this.isCoercing) {
+      return getConstCoercibleInputs(value);
+    }
+    if (value === undefined) {
+      return undefinedInputs;
+    }
+    if (value === null) {
+      return nullInputs;
+    }
+    return [value];
+  }
+
+  protected _coerce(input: unknown): Value {
+    return coerceToConst(this.value, input);
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
-    if (!this._typePredicate(input)) {
+    let output = input;
+
+    if (!this._typePredicate(input) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
-    return this._applyOperations(input, input, options, null);
+    return this._applyOperations(input, output, options, null);
   }
 }

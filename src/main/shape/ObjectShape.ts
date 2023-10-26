@@ -1,26 +1,19 @@
 import { CODE_OBJECT_EXACT, CODE_TYPE } from '../constants';
+import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
+import { defineProperty, isArray, isObject } from '../internal/lang';
+import { cloneDict, cloneDictKeys, Dict, ReadonlyDict, setObjectProperty } from '../internal/objects';
 import {
   applyShape,
-  Bitmask,
-  cloneDict,
-  cloneDictKeys,
   concatIssues,
   copyOperations,
-  Dict,
-  getBit,
   INPUT,
-  isArray,
   isAsyncShapes,
-  isObject,
   OUTPUT,
-  ReadonlyDict,
-  setObjectProperty,
   toDeepPartialShape,
-  toggleBit,
   unshiftIssuesPath,
-} from '../internal';
-import { TYPE_OBJECT } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+} from '../internal/shapes';
+import { objectInputs, TYPE_OBJECT } from '../types';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
@@ -55,7 +48,11 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
 >;
 
 /**
- * Defines how object keys are handled.
+ * Defines how unknown object keys are handled.
+ *
+ * - If `preserved` then unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape};
+ * - If `stripped` then the input object is cloned and unknown keys are removed from it;
+ * - If `exact` then an issue is raised if an unknown key is met.
  *
  * @see {@link ObjectShape.keysMode}
  * @group Other
@@ -121,11 +118,13 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     /**
      * The shape that constrains values of
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
+     *
+     * @see {@link ObjectShape.rest}
      */
     readonly restShape: RestShape,
     options?: IssueOptions | Message,
     /**
-     * The mode of keys handling.
+     * The mode of unknown keys handling.
      */
     readonly keysMode: ObjectKeysMode = 'preserved'
   ) {
@@ -142,11 +141,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * The enum shape that describes object keys.
    */
   get keysShape(): EnumShape<keyof PropShapes> {
-    const keysShape = new EnumShape(this.keys);
-
-    Object.defineProperty(this, 'keysShape', { writable: true, value: keysShape });
-
-    return keysShape;
+    return defineProperty(this, 'keysShape', new EnumShape(this.keys), true);
   }
 
   at(key: any): AnyShape | null {
@@ -350,8 +345,8 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     return this.restShape?.isAsync || isAsyncShapes(this.valueShapes);
   }
 
-  protected _getInputs(): unknown[] {
-    return [TYPE_OBJECT];
+  protected _getInputs(): readonly unknown[] {
+    return objectInputs;
   }
 
   protected _apply(

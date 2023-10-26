@@ -1,10 +1,11 @@
+import { booleanCoercibleInputs, coerceToBoolean } from '../coerce/boolean';
+import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValueOf, isArray } from '../internal';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { booleanInputs, TYPE_BOOLEAN } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { NEVER, Shape } from './Shape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a boolean value.
@@ -28,48 +29,18 @@ export class BooleanShape extends CoercibleShape<boolean> {
     this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.boolean'], options, TYPE_BOOLEAN);
   }
 
-  protected _getInputs(): unknown[] {
-    if (this.isCoercing) {
-      return [TYPE_BOOLEAN, TYPE_OBJECT, TYPE_STRING, TYPE_NUMBER, TYPE_ARRAY, null, undefined];
-    } else {
-      return [TYPE_BOOLEAN];
-    }
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? booleanCoercibleInputs : booleanInputs;
   }
 
   protected _apply(input: any, options: ApplyOptions, nonce: number): Result<boolean> {
     let output = input;
 
-    if (
-      typeof output !== 'boolean' &&
-      (!(options.coerce || this.isCoercing) || (output = this._coerce(input)) === NEVER)
-    ) {
+    if (typeof output !== 'boolean' && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
     return this._applyOperations(input, output, options, null);
   }
-
-  /**
-   * Coerces a value to a boolean.
-   *
-   * @param value The non-boolean value to coerce.
-   * @returns A boolean value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(value: unknown): boolean {
-    if (isArray(value) && value.length === 1 && typeof (value = value[0]) === 'boolean') {
-      return value;
-    }
-
-    value = getCanonicalValueOf(value);
-
-    if (typeof value === 'boolean') {
-      return value;
-    }
-    if (value === null || value === undefined || value === false || value === 0 || value === 'false') {
-      return false;
-    }
-    if (value === true || value === 1 || value === 'true') {
-      return true;
-    }
-    return NEVER;
-  }
 }
+
+BooleanShape.prototype['_coerce'] = coerceToBoolean;

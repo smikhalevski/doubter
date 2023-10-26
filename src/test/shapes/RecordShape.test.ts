@@ -1,6 +1,6 @@
 import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_OBJECT, TYPE_STRING } from '../../main/Type';
+import { TYPE_OBJECT, TYPE_STRING } from '../../main/types';
 import { AsyncMockShape } from './mocks';
 
 describe('RecordShape', () => {

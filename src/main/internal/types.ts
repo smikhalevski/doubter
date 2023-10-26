@@ -1,4 +1,4 @@
-import { getTypeOf, Type, TYPE_UNKNOWN } from '../Type';
+import { getTypeOf, Type, TYPE_UNKNOWN } from '../types';
 import { isEqual } from './lang';
 
 export function isType(value: unknown): value is Type {
@@ -15,8 +15,8 @@ export function isAssignable(a: unknown, b: unknown): boolean {
 /**
  * Returns an array of unique types and literals that comprise a union.
  */
-export function unionTypes(types: unknown[]): unknown[] {
-  let t = types;
+export function unionTypes(types: readonly unknown[]): readonly unknown[] {
+  let t = types as unknown[];
 
   next: for (let i = 0; i < t.length; ++i) {
     const ti = t[i];

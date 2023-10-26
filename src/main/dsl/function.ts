@@ -1,6 +1,8 @@
-import { isArray } from '../internal';
-import { AnyShape, ArrayShape, FunctionShape, Shape } from '../shape';
-import { IssueOptions, Message } from '../types';
+import { isArray } from '../internal/lang';
+import { ArrayShape } from '../shape/ArrayShape';
+import { FunctionShape } from '../shape/FunctionShape';
+import { AnyShape, Shape } from '../shape/Shape';
+import { IssueOptions, Message } from '../typings';
 
 /**
  * Creates a shape of a function that has no arguments.
@@ -8,7 +10,7 @@ import { IssueOptions, Message } from '../types';
  * @param options The issue options or the issue message.
  * @group DSL
  */
-function function_(options?: IssueOptions | Message): FunctionShape<ArrayShape<[], null>, null, null>;
+export function function_(options?: IssueOptions | Message): FunctionShape<ArrayShape<[], null>, null, null>;
 
 /**
  * Creates a shape of a function with arguments parsed by corresponding shapes in the `argShapes` array.
@@ -18,7 +20,7 @@ function function_(options?: IssueOptions | Message): FunctionShape<ArrayShape<[
  * @template ArgShapes The array of argument shapes.
  * @group DSL
  */
-function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
+export function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
   argShapes: ArgShapes,
   options?: IssueOptions | Message
 ): FunctionShape<ArrayShape<ArgShapes, null>, null, null>;
@@ -33,13 +35,13 @@ function function_<ArgShapes extends readonly [AnyShape, ...AnyShape[]] | []>(
  * @template ArgsShape The shape of the array of arguments.
  * @group DSL
  */
-function function_<
+export function function_<
   InputArgs extends readonly any[],
   OutputArgs extends readonly any[],
   ArgsShape extends Shape<InputArgs, OutputArgs>,
 >(argsShape: ArgsShape, options?: IssueOptions | Message): FunctionShape<ArgsShape, null, null>;
 
-function function_(argShapes?: Shape | AnyShape[] | IssueOptions | Message, options?: IssueOptions | Message) {
+export function function_(argShapes?: Shape | AnyShape[] | IssueOptions | Message, options?: IssueOptions | Message) {
   if (isArray(argShapes)) {
     argShapes = new ArrayShape(argShapes, null);
   }
@@ -49,9 +51,3 @@ function function_(argShapes?: Shape | AnyShape[] | IssueOptions | Message, opti
   }
   return new FunctionShape(argShapes as Shape, null, null, options);
 }
-
-/**
- * @group DSL
- */
-// noinspection ReservedWordAsName
-export { function_ as function, function_ as fn };
