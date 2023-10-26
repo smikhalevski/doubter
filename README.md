@@ -2453,10 +2453,10 @@ types. For example, if a given constant value is a string then [the string coerc
 applied:
 
 ```ts
-const shape1 = d.const('1970').coerce();
+const shape1 = d.const(BigInt(42)).coerce();
 
-shape1.parse([new Number(1970)]);
-// ⮕ '1970'
+shape1.parse([new String('42')]);
+// ⮕ BigInt(42)
 ```
 
 Constant values of other types aren't coerced, but `d.const` would try to unwrap arrays with a single element to check
