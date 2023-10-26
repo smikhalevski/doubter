@@ -5,14 +5,6 @@ import { CODE_TYPE_UNION } from '../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/types';
 
 describe('Cookbook', () => {
-  test('Rename object keys', () => {
-    const keyShape = d.enum(['foo', 'bar']).convert(value => value.toUpperCase() as 'FOO' | 'BAR');
-
-    const shape = d.record(keyShape, d.number());
-
-    expect(shape.parse({ foo: 1, bar: 2 })).toStrictEqual({ FOO: 1, BAR: 2 });
-  });
-
   test('Type-safe URL query params', () => {
     const queryShape = d
       .object({
@@ -36,6 +28,11 @@ describe('Cookbook', () => {
 
     expect(envShape.parse(process.env)).toEqual({
       NODE_ENV: 'test',
+    });
+
+    expect(envShape.parse({ NODE_ENV: 'test', HELLO_DATE: '1980-12-09' })).toEqual({
+      NODE_ENV: 'test',
+      HELLO_DATE: new Date('1980-12-09'),
     });
   });
 
@@ -91,6 +88,14 @@ describe('Cookbook', () => {
     expect(getItem('user')).toEqual({ name: 'John', age: 42 });
 
     expect(() => getItem('account' as any)).toThrow('Unknown key: account');
+  });
+
+  test('Rename object keys', () => {
+    const keyShape = d.enum(['foo', 'bar']).convert(value => value.toUpperCase() as 'FOO' | 'BAR');
+
+    const shape = d.record(keyShape, d.number());
+
+    expect(shape.parse({ foo: 1, bar: 2 })).toStrictEqual({ FOO: 1, BAR: 2 });
   });
 });
 
