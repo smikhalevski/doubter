@@ -458,8 +458,8 @@ indices), symbols, and any other values since they can be [`Map` keys.](#map)
 <dt><code>input</code></dt>
 <dd>
 
-The input value that caused a validation issue. Note that if [coercion](#type-coercion) is enabled this contains a
-coerced value.
+The input value that caused a validation issue. Note that if [coercion](#type-coercion) is enabled this may contain an
+already coerced value.
 
 </dd>
 <dt><code>message</code></dt>
@@ -1525,22 +1525,23 @@ bookTicket('Bill');
 
 # Type coercion
 
-Type coercion is the process of converting value from one type to another (such as string to number, array to `Set`,
-and so on).
+Type coercion is the process of converting value from one type to another (such as a string to a number, an array to
+a `Set`, and so on).
 
 When coercion is enabled, input values are implicitly converted to the required input type whenever possible. For
-example, you can coerce input values to string type:
+example, you can coerce input values to a number type:
 
 ```ts
-const shape1 = d.string().coerce();
+const shape = d.number().coerce();
+// ⮕ NumberShape
 
-shape1.isCoercing // ⮕ true
+shape.isCoercing // ⮕ true
 
-shape1.parse([8080]);
-// ⮕ '8080'
+shape.parse([new String('8080')]);
+// ⮕ 8080
 
-shape1.parse(null);
-// ⮕ ''
+shape.parse(null);
+// ⮕ 0
 ```
 
 Coercion rules differ from JavaScript so the behavior is more predictable and human-like. With Doubter, you can coerce
@@ -1550,6 +1551,7 @@ input to the following types:
 - [number](#coerce-to-a-number)
 - [boolean](#coerce-to-a-boolean)
 - [bigint](#coerce-to-a-bigint)
+- [const](#coerce-to-a-const)
 - [enum](#coerce-to-an-enum)
 - [array](#coerce-to-an-array)
 - [`Date`](#coerce-to-a-date)
@@ -1557,32 +1559,53 @@ input to the following types:
 - [`Map`](#coerce-to-a-map)
 - [`Set`](#coerce-to-a-set)
 
-## Overriding type coercion
+## Custom type coercion
 
-You can override the build-in type coercion with a custom callback:
+If you want to implement a custom coercion, you can use [`catch`](#fallback-value) to handle invalid input values:
 
 ```ts
-const yesNoShape = d.boolean().coerce(value => {
+const yesNoShape = d.boolean().catch((value, issues) => {
   if (value === 'yes') {
     return true;
   }
   if (value === 'no') {
     return false;
   }
-  // Coercion is not possible
-  return d.NEVER;
+  throw new ValidationError(issues);
 });
 
-d.array(yesNoShape).parse(['yes', 'no'])
+yesNoShape.parse('yes');
+// ⮕ true
+
+d.array(yesNoShape).parse([true, 'no']);
 // ⮕ [true, false]
 
-yesNoShape.parse('true')
+yesNoShape.parse('true');
 // ❌ ValidationError: type at /: Must be a boolean
 ```
 
-The callback passed to the
-[`corce`](https://smikhalevski.github.io/doubter/next/classes/core.CoercibleShape.html#coerce) method is called
-only if the input value doesn't conform the requested type. If coercion isn't possible, return `d.NEVER`.
+Or you can use [`d.convert`](#convert-convertasync) to preprocess all input values:
+
+```ts
+const yesNoShape = d
+  .convert(value => {
+    if (value === 'yes') {
+      return true;
+    }
+    if (value === 'no') {
+      return false;
+    }
+    // Let the consequent shape handle this value
+    return value;
+  })
+  .to(d.boolean());
+
+yesNoShape.parse('yes');
+// ⮕ true
+
+yesNoShape.parse('true');
+// ❌ ValidationError: type at /: Must be a boolean
+```
 
 # Introspection
 
@@ -2421,6 +2444,36 @@ There are shortcuts for [`null`](#null), [`undefined`](#undefined) and [`nan`](#
 
 Consider using [`enum`](#enum) if you want to check that an input is one of multiple values.
 
+## Coerce to a const
+
+`d.const` coerces an input depending on the type of the given constant value. `const` uses
+[bigint](#coerce-to-a-bigint), [number](#coerce-to-a-number), [string](#coerce-to-a-string),
+[boolean](#coerce-to-a-boolean), or [`Date`](#coerce-to-a-date) coercion rules if given constant matches one of these
+types. For example, if a given constant value is a string then [the string coercion rules](#coerce-to-a-string) are
+applied:
+
+```ts
+const shape1 = d.const('1970').coerce();
+
+shape1.parse([new Number(1970)]);
+// ⮕ '1970'
+```
+
+Constant values of other types aren't coerced, but `d.const` would try to unwrap arrays with a single element to check
+the element equals to the given constant:
+
+```ts
+const users = new Set(['Bill']);
+
+const shape2 = d.const(users).coerce();
+
+shape1.parse([users]);
+// ⮕ users
+
+shape1.parse(new Set(['Bill']));
+// ❌ ValidationError: type at /: Must be equal to [object Set]
+```
+
 # `convert`, `convertAsync`
 
 Both [`d.convert`](https://smikhalevski.github.io/doubter/next/functions/core.convert.html) and
@@ -2552,23 +2605,35 @@ enum Users {
   JAMES
 }
 
-const shape = d.enum(Users).coerce();
+const shape1 = d.enum(Users).coerce();
 
-shape.parse('SARAH');
+shape1.parse('SARAH');
 // ⮕ 1
 ```
 
 Arrays with a single element are unwrapped and the value is coerced:
 
 ```ts
-shape.parse(['JAMES']);
+shape1.parse(['JAMES']);
 // ⮕ 2
 
-shape.parse([1]);
+shape1.parse([1]);
 // ⮕ 1
 
-shape.parse([1, 2]);
+shape1.parse([1, 2]);
 // ❌ ValidationError: type.enum at /: Must be equal to one of 0,1,2
+```
+
+Other values follow [`const` coercion rules](#coerce-to-a-const):
+
+```ts
+const shape2 = d.enum([1970, new Date(0)]).coerce();
+
+shape2.parse(new String('1970'));
+// ⮕ 1970
+
+shape2.parse(0);
+// ⮕ Date { Jan 1, 1970 }
 ```
 
 # `function`, `fn`
@@ -2738,9 +2803,7 @@ Function shapes go well with [type coercion](#type-coercion):
 const plus2Shape = d.fn([d.number().coerce()]).return(d.number());
 // ⮕ Shape<(arg: number) => number>
 
-const plus2 = plus2Shape.ensure(
-  arg => arg + 2
-);
+const plus2 = plus2Shape.ensure(arg => arg + 2);
 // ⮕ (arg: number) => number
 ```
 
@@ -3904,17 +3967,17 @@ const queryShape = d
 
 🎯&ensp;**Key takeaways**
 
-1. The object shape is marked as [partial](#making-objects-partial-and-required), so absence of any query param won't
+1. Query params are strings. Since `name` is constrained by [`d.string`](#string) it doesn't require additional
+attention. On the other hand, `age` is an integer, so [type coercion](#type-coercion) must be enabled.
+
+2. We also added [`catch`](#fallback-value), so when `age` cannot be parsed as a positive integer, Doubter returns
+`undefined` instead of raising a validation issue.
+
+3. The object shape is marked as [partial](#making-objects-partial-and-required), so absence of any query param won't
 raise a validation issue. You can mark individual params as optional and
 [provide a default value.](#optional-and-non-optional) 
 
-2. Query params are strings. Since `name` is constrained by [`d.string`](#string) it doesn't require additional
-attention. On the other hand, `age` is an integer, so [type coercion](#type-coercion) must be enabled.
-
-3. We also added [`catch`](#fallback-value), so when `age` cannot be parsed as a positive integer, Doubter returns
-`undefined` instead of raising a validation issue.
-
-Now, let's parse the query string with `qs` and then apply our shape:
+Now, let's parse the query string with [qs](https://www.npmjs.com/package/qs) and then apply our shape:
 
 ```ts
 import qs from 'qs';
@@ -3949,7 +4012,7 @@ const envShape = d
 `HELLO_DATE` to a `Date` instance.
 
 2. `NODE_ENV` is the required env variable, while `HELLO_DATE` is optional. If `HELLO_DATE` is provided and cannot be
-coerced as a date, a validation error would be raised.
+[coerced to a date](#coerce-to-a-date), a validation error would be raised.
 
 3. Unknown env variables are [stripped](#unknown-keys), so they won't be visible inside the app. This prevents an
 accidental usage of an unvalidated env variable.
@@ -3975,7 +4038,7 @@ to an object:
 import { parseArgs } from 'argcat';
 
 const args = parseArgs(process.argv.slice(2));
-// ⮕ { name: ['Bill'], age: ['42'] }
+// ⮕ { '': [], name: ['Bill'], age: ['42'] }
 ```
 
 Now let's define the shape of the parsed object:
@@ -3984,7 +4047,7 @@ Now let's define the shape of the parsed object:
 const optionsShape = d
   .object({
     name: d.string().coerce(),
-    age: d.number().int().min(18).max(100).coerce(),
+    age: d.number().int().nonNegative().coerce(),
   })
   .strip();
 ```
