@@ -11,8 +11,8 @@
  * @module plugin/array-essentials
  */
 
-import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN, ERR_SYNC_REQUIRED } from '../constants';
-import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Shape } from '../core';
+import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN } from '../constants';
+import { AnyShape, ArrayShape, IssueOptions, Message, Shape } from '../core';
 import { Any } from '../typings';
 import { createIssueFactory } from '../utils';
 
@@ -98,17 +98,8 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
   prototype.min = function (length, options) {
     const issueFactory = createIssueFactory(CODE_ARRAY_MIN, ctor.messages[CODE_ARRAY_MIN], options, length);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.length < length) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
+    return this.withOperation(
+      (value, param, options) => (value.length < length ? [issueFactory(value, options)] : null),
       { type: CODE_ARRAY_MIN, param: length }
     );
   };
@@ -116,18 +107,8 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
   prototype.max = function (length, options) {
     const issueFactory = createIssueFactory(CODE_ARRAY_MAX, ctor.messages[CODE_ARRAY_MAX], options, length);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.length > length) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-
+    return this.withOperation(
+      (value, param, options) => (value.length > length ? [issueFactory(value, options)] : null),
       { type: CODE_ARRAY_MAX, param: length }
     );
   };
@@ -139,35 +120,31 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
   prototype.includes = function (value, options) {
     const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, ctor.messages[CODE_ARRAY_INCLUDES], options, value);
 
-    let lookup: (output: unknown[], options: ApplyOptions) => boolean;
-
-    if (value instanceof Shape) {
-      if (value.isAsync) {
-        throw new Error(ERR_SYNC_REQUIRED);
-      }
-
-      lookup = (output, options) => {
-        for (const outputValue of output) {
-          if (value.try(outputValue, options).ok) {
-            return true;
-          }
-        }
-        return false;
-      };
-    } else {
-      lookup = (output, options) => output.includes(value);
+    if (!(value instanceof Shape)) {
+      return this.withOperation(
+        (value, param, options) => (value.includes(param) ? null : [issueFactory(value, options)]),
+        { type: CODE_ARRAY_INCLUDES, param: value }
+      );
     }
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (!lookup(output, options)) {
-          (issues ||= []).push(issueFactory(output, options));
+    if (value.isAsync) {
+      return this.withAsyncOperation(
+        (value, param, options) => {
+          // TODO Implement me
+          return Promise.resolve(null);
+        },
+        { type: CODE_ARRAY_INCLUDES, param: value }
+      );
+    }
 
-          if (options.earlyReturn) {
-            return issues;
+    return this.withOperation(
+      (value, param, options) => {
+        for (const item of value) {
+          if (param.try(item, options).ok) {
+            return null;
           }
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_ARRAY_INCLUDES, param: value }
     );

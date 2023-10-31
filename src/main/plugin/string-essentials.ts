@@ -181,17 +181,8 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
   prototype.min = function (length, options) {
     const issueFactory = createIssueFactory(CODE_STRING_MIN, ctor.messages[CODE_STRING_MIN], options, length);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.length < length) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
+    return this.withOperation(
+      (value, param, options) => (value.length < param ? [issueFactory(value, options)] : null),
       { type: CODE_STRING_MIN, param: length }
     );
   };
@@ -199,17 +190,8 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
   prototype.max = function (length, options) {
     const issueFactory = createIssueFactory(CODE_STRING_MAX, ctor.messages[CODE_STRING_MAX], options, length);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.length > length) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
+    return this.withOperation(
+      (value, param, options) => (value.length > param ? [issueFactory(value, options)] : null),
       { type: CODE_STRING_MAX, param: length }
     );
   };
@@ -217,35 +199,17 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
   prototype.regex = function (re, options) {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, ctor.messages[CODE_STRING_REGEX], options, re);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (!re.test(output)) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_STRING_REGEX, param: re }
-    );
+    return this.withOperation((value, param, options) => (!re.test(value) ? [issueFactory(value, options)] : null), {
+      type: CODE_STRING_REGEX,
+      param: re,
+    });
   };
 
   prototype.includes = function (value, options) {
     const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, ctor.messages[CODE_STRING_INCLUDES], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.indexOf(value) === -1) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
+    return this.withOperation(
+      (value, param, options) => (value.indexOf(param) === -1 ? [issueFactory(value, options)] : null),
       { type: CODE_STRING_INCLUDES, param: value }
     );
   };
@@ -258,17 +222,8 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
       value
     );
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (!output.startsWith(value)) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
+    return this.withOperation(
+      (value, param, options) => (!value.startsWith(param) ? [issueFactory(value, options)] : null),
       { type: CODE_STRING_STARTS_WITH, param: value }
     );
   };
@@ -281,17 +236,8 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
       value
     );
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (!output.endsWith(value)) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
+    return this.withOperation(
+      (value, param, options) => (!value.endsWith(param) ? [issueFactory(value, options)] : null),
       { type: CODE_STRING_ENDS_WITH, param: value }
     );
   };
@@ -304,17 +250,8 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
       undefined
     );
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.trim().length === 0) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
+    return this.withOperation(
+      (value, param, options) => (value.trim().length === 0 ? [issueFactory(value, options)] : null),
       { type: CODE_STRING_NON_BLANK }
     );
   };
@@ -324,19 +261,19 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
   };
 
   prototype.trim = function () {
-    return this.use(next => (input, output, options, issues) => next(input, output.trim(), options, issues), {
+    return this.withOperation((value, param, options) => ({ ok: true, value: value.trim() }), {
       type: 'string.trim',
     });
   };
 
   prototype.toLowerCase = function () {
-    return this.use(next => (input, output, options, issues) => next(input, output.toLowerCase(), options, issues), {
+    return this.withOperation((value, param, options) => ({ ok: true, value: value.toLowerCase() }), {
       type: 'string.toLowerCase',
     });
   };
 
   prototype.toUpperCase = function () {
-    return this.use(next => (input, output, options, issues) => next(input, output.toUpperCase(), options, issues), {
+    return this.withOperation((value, param, options) => ({ ok: true, value: value.toUpperCase() }), {
       type: 'string.toUpperCase',
     });
   };

@@ -1,5 +1,5 @@
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
-import { ApplyOptions, Issue, Ok, OperationCallback, ParseOptions, Result } from '../typings';
+import { ApplyOperationsCallback, ApplyOptions, Issue, Ok, Operation, ParseOptions, Result } from '../typings';
 import { ValidationError } from '../ValidationError';
 import { freeze, isArray, isEqual } from './lang';
 
@@ -38,7 +38,7 @@ export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
 }
 
-export const universalApplyOperations: OperationCallback = (input, output, options, issues) => {
+export const universalApplyOperations: ApplyOperationsCallback<Result> = (input, output, options, issues) => {
   if (issues !== null) {
     return issues;
   }
@@ -47,6 +47,54 @@ export const universalApplyOperations: OperationCallback = (input, output, optio
   }
   return ok(output);
 };
+
+export function chainOperations(
+  operation: Operation<Result | Promise<Result>>,
+  next: ApplyOperationsCallback<Result | Promise<Result>>,
+  async: boolean
+): ApplyOperationsCallback<Result | Promise<Result>> {
+  const { param, isRequired, callback } = operation;
+
+  if (async) {
+    return (input, output, options, issues) =>
+      new Promise<Result>(resolve => resolve(callback(output, param, options))).catch(captureIssues).then(result => {
+        if (result !== null) {
+          if (isArray(result)) {
+            issues = concatIssues(issues, result);
+
+            if (isRequired || options.earlyReturn) {
+              return issues;
+            }
+          } else {
+            output = result.value;
+          }
+        }
+        return next(input, output, options, issues);
+      });
+  }
+
+  return (input, output, options, issues) => {
+    let result;
+
+    try {
+      result = callback(output, param, options);
+    } catch (error) {
+      result = captureIssues(error);
+    }
+    if (result !== null) {
+      if (isArray(result)) {
+        issues = concatIssues(issues, result);
+
+        if (isRequired || options.earlyReturn) {
+          return issues;
+        }
+      } else {
+        output = result.value;
+      }
+    }
+    return next(input, output, options, issues);
+  };
+}
 
 export function isAsyncShapes(shapes: readonly AnyShape[] | null | undefined): boolean {
   if (shapes !== null && shapes !== undefined) {

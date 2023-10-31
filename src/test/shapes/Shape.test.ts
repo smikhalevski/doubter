@@ -37,22 +37,28 @@ describe('Shape', () => {
     expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
   });
 
-  describe('use', () => {
+  describe('withOperation', () => {
     test('clones the shape', () => {
       const shape1 = new Shape();
-      const shape2 = shape1.use(next => (input, output, options, issues) => next(input, output, options, issues), {
-        type: 'aaa',
-        param: undefined,
-      });
+      const shape2 = shape1.withOperation(
+        next => (input, output, options, issues) => next(input, output, options, issues),
+        {
+          type: 'aaa',
+          param: undefined,
+        }
+      );
 
       expect(shape1).not.toBe(shape2);
     });
 
     test('returns the shape clone', () => {
-      const shape = new Shape().use(next => (input, output, options, issues) => next(input, output, options, issues), {
-        type: 'aaa',
-        param: undefined,
-      });
+      const shape = new Shape().withOperation(
+        next => (input, output, options, issues) => next(input, output, options, issues),
+        {
+          type: 'aaa',
+          param: undefined,
+        }
+      );
 
       expect(shape.operations.length).toBe(1);
     });

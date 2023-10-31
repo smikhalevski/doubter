@@ -220,41 +220,20 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   messages[CODE_NUMBER_MULTIPLE_OF] = 'Must be a multiple of %s';
 
   prototype.finite = function (options) {
-    const { isFinite } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, ctor.messages[CODE_NUMBER_FINITE], options, undefined);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (!isFinite(output)) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_NUMBER_FINITE }
-    );
+    return this.withOperation((value, param, options) => (!isFinite(value) ? [issueFactory(value, options)] : null), {
+      type: CODE_NUMBER_FINITE,
+    });
   };
 
   prototype.int = function (options) {
     const { isInteger } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_INT, ctor.messages[CODE_NUMBER_INT], options, undefined);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (!isInteger(output)) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_NUMBER_INT }
-    );
+    return this.withOperation((value, param, options) => (!isInteger(value) ? [issueFactory(value, options)] : null), {
+      type: CODE_NUMBER_INT,
+    });
   };
 
   prototype.positive = function (options) {
@@ -276,73 +255,37 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.gt = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, ctor.messages[CODE_NUMBER_GT], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output <= value) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_NUMBER_GT, param: value }
-    );
+    return this.withOperation((value, param, options) => (value <= param ? [issueFactory(value, options)] : null), {
+      type: CODE_NUMBER_GT,
+      param: value,
+    });
   };
 
   prototype.lt = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, ctor.messages[CODE_NUMBER_LT], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output >= value) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_NUMBER_LT, param: value }
-    );
+    return this.withOperation((value, param, options) => (value >= param ? [issueFactory(value, options)] : null), {
+      type: CODE_NUMBER_LT,
+      param: value,
+    });
   };
 
   prototype.gte = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, ctor.messages[CODE_NUMBER_GTE], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output < value) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_NUMBER_GTE, param: value }
-    );
+    return this.withOperation((value, param, options) => (value < param ? [issueFactory(value, options)] : null), {
+      type: CODE_NUMBER_GTE,
+      param: value,
+    });
   };
 
   prototype.lte = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, ctor.messages[CODE_NUMBER_LTE], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output > value) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_NUMBER_LTE, param: value }
-    );
+    return this.withOperation((value, param, options) => (value > param ? [issueFactory(value, options)] : null), {
+      type: CODE_NUMBER_LTE,
+      param: value,
+    });
   };
 
   prototype.min = prototype.gte;
@@ -362,17 +305,11 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
       divisor
     );
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) > epsilon : output % divisor !== 0) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
+    return this.withOperation(
+      (value, param, options) =>
+        (epsilon !== -1 ? abs(round(value / param) - value / param) > epsilon : value % param !== 0)
+          ? [issueFactory(value, options)]
+          : null,
       { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
     );
   };

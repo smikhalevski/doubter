@@ -116,37 +116,19 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
     const param = BigInt(value);
     const issueFactory = createIssueFactory(CODE_BIGINT_MIN, ctor.messages[CODE_BIGINT_MIN], options, param);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output < param) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_BIGINT_MIN, param }
-    );
+    return this.withOperation((value, param, options) => (value < param ? [issueFactory(value, options)] : null), {
+      type: CODE_BIGINT_MIN,
+      param,
+    });
   };
 
   prototype.max = function (value, options) {
     const param = BigInt(value);
     const issueFactory = createIssueFactory(CODE_BIGINT_MAX, ctor.messages[CODE_BIGINT_MAX], options, param);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output > param) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_BIGINT_MAX, param }
-    );
+    return this.withOperation((value, param, options) => (value > param ? [issueFactory(value, options)] : null), {
+      type: CODE_BIGINT_MAX,
+      param,
+    });
   };
 }

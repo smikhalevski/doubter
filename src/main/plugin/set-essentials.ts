@@ -83,37 +83,19 @@ export default function enableSetEssentials(ctor: typeof SetShape<any>): void {
   prototype.min = function (size, options) {
     const issueFactory = createIssueFactory(CODE_SET_MIN, ctor.messages[CODE_SET_MIN], options, size);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.size < size) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_SET_MIN, param: size }
-    );
+    return this.withOperation((value, param, options) => (value.size < param ? [issueFactory(value, options)] : null), {
+      type: CODE_SET_MIN,
+      param: size,
+    });
   };
 
   prototype.max = function (size, options) {
     const issueFactory = createIssueFactory(CODE_SET_MAX, ctor.messages[CODE_SET_MAX], options, size);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.size > size) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
-        }
-        return next(input, output, options, issues);
-      },
-      { type: CODE_SET_MAX, param: size }
-    );
+    return this.withOperation((value, param, options) => (value.size > param ? [issueFactory(value, options)] : null), {
+      type: CODE_SET_MAX,
+      param: size,
+    });
   };
 
   prototype.nonEmpty = function (options) {
