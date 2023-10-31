@@ -272,7 +272,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
           );
         }
 
-        return this._applyOperations(input, output, options, issues);
+        return this._applyOperationsAsync(input, output, options, issues);
       };
 
       resolve(next());

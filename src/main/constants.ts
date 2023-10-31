@@ -1,5 +1,4 @@
 export const ERR_SYNC_UNSUPPORTED = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
-export const ERR_SYNC_REQUIRED = 'Shape cannot be used because it is async.';
 export const ERR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';
 export const ERR_ASYNC_FUNCTION = 'The function signature is constrained by async shapes, use ensureAsync.';
 

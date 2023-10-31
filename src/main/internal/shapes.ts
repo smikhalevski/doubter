@@ -1,7 +1,7 @@
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
-import { ApplyOperationsCallback, ApplyOptions, Issue, Ok, Operation, ParseOptions, Result } from '../typings';
+import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
+import { ApplyOptions, CheckResult, Issue, Ok, Operation, OperationCallback, ParseOptions, Result } from '../typings';
 import { ValidationError } from '../ValidationError';
-import { freeze, isArray, isEqual } from './lang';
+import { freeze, isArray, isEqual, isObjectLike } from './lang';
 
 // Copied to support TS prior to v4.5
 // prettier-ignore
@@ -15,10 +15,28 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
+/**
+ * A callback that applies operations to the shape output.
+ *
+ * @param input The input value to which the shape was applied.
+ * @param output The shape output value to which the operation must be applied.
+ * @param options Parsing options.
+ * @param issues The mutable array of issues captured by a shape, or `null` if there were no issues raised yet.
+ * @returns The result of the operation.
+ * @template ReturnValue The cumulative result of applied operations.
+ * @group Operations
+ */
+export type ApplyOperationsCallback<ReturnValue = Result | Promise<Result>> = (
+  input: unknown,
+  output: unknown,
+  options: ApplyOptions,
+  issues: Issue[] | null
+) => ReturnValue;
+
 export const defaultApplyOptions = freeze<ApplyOptions>({ earlyReturn: false });
 
-export const INPUT = Symbol();
-export const OUTPUT = Symbol();
+export declare const INPUT: unique symbol;
+export declare const OUTPUT: unique symbol;
 
 export type INPUT = typeof INPUT;
 export type OUTPUT = typeof OUTPUT;
@@ -36,64 +54,6 @@ export function resetNonce(): void {
 
 export function ok<T>(value: T): Ok<T> {
   return { ok: true, value };
-}
-
-export const universalApplyOperations: ApplyOperationsCallback<Result> = (input, output, options, issues) => {
-  if (issues !== null) {
-    return issues;
-  }
-  if (isEqual(input, output)) {
-    return null;
-  }
-  return ok(output);
-};
-
-export function chainOperations(
-  operation: Operation<Result | Promise<Result>>,
-  next: ApplyOperationsCallback<Result | Promise<Result>>,
-  async: boolean
-): ApplyOperationsCallback<Result | Promise<Result>> {
-  const { param, isRequired, callback } = operation;
-
-  if (async) {
-    return (input, output, options, issues) =>
-      new Promise<Result>(resolve => resolve(callback(output, param, options))).catch(captureIssues).then(result => {
-        if (result !== null) {
-          if (isArray(result)) {
-            issues = concatIssues(issues, result);
-
-            if (isRequired || options.earlyReturn) {
-              return issues;
-            }
-          } else {
-            output = result.value;
-          }
-        }
-        return next(input, output, options, issues);
-      });
-  }
-
-  return (input, output, options, issues) => {
-    let result;
-
-    try {
-      result = callback(output, param, options);
-    } catch (error) {
-      result = captureIssues(error);
-    }
-    if (result !== null) {
-      if (isArray(result)) {
-        issues = concatIssues(issues, result);
-
-        if (isRequired || options.earlyReturn) {
-          return issues;
-        }
-      } else {
-        output = result.value;
-      }
-    }
-    return next(input, output, options, issues);
-  };
 }
 
 export function isAsyncShapes(shapes: readonly AnyShape[] | null | undefined): boolean {
@@ -118,15 +78,7 @@ export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProto
 }
 
 /**
- * Copies checks from `baseShape` to `shape`.
- */
-export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
-  shape.operations = baseShape.operations;
-  return shape;
-}
-
-/**
- * Calls `Shape._apply` or `Shape._applyAsync` depending on `Shape._isAsync`, and passes the result to `cb` after it
+ * Calls `Shape._apply` or `Shape._applyAsync` depending on `Shape.isAsync`, and passes the result to `cb` after it
  * becomes available.
  */
 export function applyShape<T>(
@@ -183,4 +135,92 @@ export function getMessage(issues: Issue[], input: unknown, options: ParseOption
   if (message !== undefined) {
     return String(message);
   }
+}
+
+/**
+ * Copies operations from `baseShape` to `shape`.
+ */
+export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
+  shape.operations = baseShape.operations;
+  return shape;
+}
+
+export const universalApplyOperations: ApplyOperationsCallback = (input, output, options, issues) => {
+  if (issues !== null) {
+    return issues;
+  }
+  if (isEqual(input, output)) {
+    return null;
+  }
+  return ok(output);
+};
+
+/**
+ * Creates the callback that applies the operation and passes control to the next operation.
+ *
+ * @param operation The operation to apply.
+ * @param next The callback that applies the next operation.
+ * @param async If `true` then both operation and next operation are called asynchronously.
+ * @returns The callback that applies the operation.
+ */
+export function createApplyOperations(
+  operation: Operation,
+  next: ApplyOperationsCallback,
+  async: boolean
+): ApplyOperationsCallback {
+  const { param, isRequired, callback } = operation;
+
+  if (async) {
+    return (input, output, options, issues) =>
+      new Promise<Result>(resolve => {
+        resolve(callback(output, param, options));
+      })
+        .catch(captureIssues)
+        .then(result => {
+          if (result !== null) {
+            if (isArray(result)) {
+              issues = concatIssues(issues, result);
+
+              if (isRequired || options.earlyReturn) {
+                return issues;
+              }
+            } else {
+              output = result.value;
+            }
+          }
+          return next(input, output, options, issues);
+        });
+  }
+
+  return (input, output, options, issues) => {
+    let result;
+
+    try {
+      result = (callback as OperationCallback<Result>)(output, param, options);
+    } catch (error) {
+      result = captureIssues(error);
+    }
+    if (result !== null) {
+      if (isArray(result)) {
+        issues = concatIssues(issues, result);
+
+        if (isRequired || options.earlyReturn) {
+          return issues;
+        }
+      } else {
+        output = result.value;
+      }
+    }
+    return next(input, output, options, issues);
+  };
+}
+
+export function adoptCheckResult(result: CheckResult): Result {
+  if (!isObjectLike(result)) {
+    return null;
+  }
+  if (isArray(result)) {
+    return result.length === 0 ? null : result;
+  }
+  return [result];
 }

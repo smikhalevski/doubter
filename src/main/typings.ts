@@ -150,9 +150,13 @@ export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
  * @see {@link Shape.alter}
  * @see {@link Shape.refine}
  * @see {@link Shape.withOperation}
+ * @see {@link Shape.checkAsync}
+ * @see {@link Shape.alterAsync}
+ * @see {@link Shape.refineAsync}
+ * @see {@link Shape.withAsyncOperation}
  * @group Operations
  */
-export interface Operation<Value = any> {
+export interface Operation {
   /**
    * The type of the operation such as {@link StringShape#regex "string.regex"} or
    * {@link ArrayShape#includes "array.includes"}.
@@ -180,7 +184,7 @@ export interface Operation<Value = any> {
   /**
    * The callback that applies the logic of the operation to the shape output.
    */
-  readonly callback: OperationCallback<Value, Result<Value>> | OperationCallback<Value, Promise<Result<Value>>>;
+  readonly callback: OperationCallback<Result> | OperationCallback<PromiseLike<Result>>;
 }
 
 /**
@@ -191,25 +195,25 @@ export interface Operation<Value = any> {
  * @param value The shape output value to which the operation must be applied.
  * @param param The {@link Operation.param additional param} that was associated with the operation.
  * @param options Parsing options.
+ * @template ReturnValue The value returned by the operation.
  * @template Value The shape output value to which the operation must be applied.
  * @template Param The {@link Operation.param additional param} that was associated with the operation.
- * @template ReturnValue The value returned by the operation.
  * @group Operations
  */
-export type OperationCallback<Value = any, Param = any, ReturnValue = any> = (
+export type OperationCallback<ReturnValue = any, Value = any, Param = any> = (
   value: Value,
   param: Param,
   options: ApplyOptions
 ) => ReturnValue;
 
 /**
- * Options of a generic {@link Operation operation}.
+ * Options of an {@link Operation operation}.
  *
  * @group Operations
  */
 export interface OperationOptions {
   /**
-   * The type of the operation.
+   * The type of the operation. If omitted then operation callback is used as its type.
    *
    * @see {@link Operation.type}
    */
@@ -226,28 +230,11 @@ export interface OperationOptions {
   /**
    * If `true` then consequent operations are omitted if this operation raises issues.
    *
+   * @see {@link Operation.isRequired}
    * @default false
    */
   required?: boolean;
 }
-
-/**
- * A callback that synchronously applies an operation to the shape output.
- *
- * @param input The input value to which the shape was applied.
- * @param output The shape output value to which the operation must be applied.
- * @param options Parsing options.
- * @param issues The mutable array of issues captured by a shape, or `null` if there were no issues raised yet.
- * @returns The result of the operation.
- * @template ReturnValue The cumulative result of applied operations.
- * @group Operations
- */
-export type ApplyOperationsCallback<ReturnValue extends Result | Promise<Result>> = (
-  input: any,
-  output: any,
-  options: ApplyOptions,
-  issues: Issue[] | null
-) => ReturnValue;
 
 /**
  * @inheritDoc
@@ -267,7 +254,7 @@ export interface ParameterizedOperationOptions<Param> extends OperationOptions {
  * @param value The value to refine.
  * @param param The additional param that was associated with the operation.
  * @param options Parsing options.
- * @return `true` if value matches the predicate, or `false` otherwise.
+ * @returns `true` if value matches the predicate, or `false` otherwise.
  * @template Value The value to refine.
  * @template RefinedValue The refined value.
  * @template Param The additional param that was associated with the operation.
@@ -353,3 +340,5 @@ export interface ParseOptions extends ApplyOptions {
  * @group Other
  */
 export type Any = object | string | number | bigint | boolean | symbol | null | undefined;
+
+export type CheckResult = Issue[] | Issue | null | undefined | void;

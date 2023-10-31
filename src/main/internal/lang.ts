@@ -59,8 +59,3 @@ export function getCanonicalValue(value: unknown): unknown {
 export function returnTrue(): boolean {
   return true;
 }
-
-export function defineProperty<T>(obj: object, key: PropertyKey, value: T, readOnly = false): T {
-  Object.defineProperty(obj, key, { configurable: true, writable: !readOnly, value });
-  return value;
-}

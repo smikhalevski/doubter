@@ -1,16 +1,17 @@
 import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED } from '../constants';
-import { defineProperty, freeze, isArray, isEqual, isObjectLike, returnTrue } from '../internal/lang';
-import { Dict, ReadonlyDict } from '../internal/objects';
+import { freeze, isArray, isEqual, returnTrue } from '../internal/lang';
+import { defineObjectProperty, Dict, ReadonlyDict } from '../internal/objects';
+import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
+  adoptCheckResult,
+  ApplyOperationsCallback,
   applyShape,
   captureIssues,
-  chainOperations,
+  createApplyOperations,
   defaultApplyOptions,
   getMessage,
-  INPUT,
   nextNonce,
   ok,
-  OUTPUT,
   Promisify,
   toDeepPartialShape,
   universalApplyOperations,
@@ -20,8 +21,8 @@ import { globalMessages } from '../messages';
 import { getTypeOf, TYPE_UNKNOWN, unknownInputs } from '../types';
 import {
   Any,
-  ApplyOperationsCallback,
   ApplyOptions,
+  CheckResult,
   Err,
   Issue,
   IssueOptions,
@@ -193,13 +194,18 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * The callback that synchronously applies {@link Shape.operations} to the shape output value.
+   *
+   * @throws {@link !Error Error} if operations cannot be applied synchronously.
+   * @see {@link Shape._apply}
    */
   protected declare _applyOperations: ApplyOperationsCallback<Result>;
 
   /**
    * The callback that asynchronously applies {@link Shape.operations} to the shape output value.
+   *
+   * @see {@link Shape._applyAsync}
    */
-  protected declare _applyOperationsAsync: ApplyOperationsCallback<Result | Promise<Result>>;
+  protected declare _applyOperationsAsync: ApplyOperationsCallback;
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -243,8 +249,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
-  withOperation(cb: OperationCallback<OutputValue, any, Result<OutputValue>>, options: OperationOptions = {}): this {
+  withOperation(cb: OperationCallback<Result<OutputValue>, OutputValue>, options: OperationOptions = {}): this {
     const { type = cb, param, required = false } = options;
+
     const shape = this._clone();
     shape.operations = this.operations.concat({ type, param, isAsync: false, isRequired: required, callback: cb });
     return shape;
@@ -259,68 +266,125 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
   withAsyncOperation(
-    cb: OperationCallback<OutputValue, any, Promise<Result<OutputValue>>>,
+    cb: OperationCallback<PromiseLike<Result<OutputValue>>, OutputValue>,
     options: OperationOptions = {}
   ): this {
     const { type = cb, param, required = false } = options;
+
     const shape = this._clone();
     shape.operations = this.operations.concat({ type, param, isAsync: true, isRequired: required, callback: cb });
     return shape;
   }
 
   /**
-   * Adds the check {@link withOperation operation} that is applied to the shape output.
+   * Adds a {@link withOperation synchronous operation} that checks that the shape output satisfies a requirement.
    *
-   * If check callback returns an empty array, it is considered that no issues have occurred.
+   * The callback must return `null` or `undefined` if value is valid, or an {@link Issue issue} or an array of issues
+   * if value is invalid. If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks that a value satisfies a requirement and returns issues if it doesn't.
    * @param options The operation options.
    * @returns The clone of the shape.
-   * @template Param The param that is passed to the {@link CheckCallback} when a check operation is applied.
+   * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.refine}
+   * @see {@link Shape.checkAsync}
+   * @see [Checks](https://github.com/smikhalevski/doubter#checks)
    */
   check<Param>(
-    cb: OperationCallback<OutputValue, Param, Issue[] | Issue | null | undefined | void>,
+    cb: OperationCallback<CheckResult, OutputValue, Param>,
     options: ParameterizedOperationOptions<Param>
   ): this;
 
   /**
-   * Adds the check {@link withOperation operation} that is applied to the shape output.
+   * Adds a {@link withOperation synchronous operation} that checks that the shape output satisfies a requirement.
    *
-   * If check callback returns an empty array, it is considered that no issues have occurred.
+   * The callback must return `null` or `undefined` if value is valid, or an {@link Issue issue} or an array of issues
+   * if value is invalid. If check callback returns an empty array, it is considered that no issues have occurred.
    *
    * @param cb The callback that checks that a value satisfies a requirement and returns issues if it doesn't.
    * @param options The operation options.
    * @returns The clone of the shape.
    * @see {@link Shape.refine}
+   * @see {@link Shape.checkAsync}
+   * @see [Checks](https://github.com/smikhalevski/doubter#checks)
    */
-  check(
-    cb: OperationCallback<OutputValue, any, Issue[] | Issue | null | undefined | void>,
-    options?: OperationOptions
-  ): this;
+  check(cb: OperationCallback<CheckResult, OutputValue>, options?: OperationOptions): this;
 
-  check(cb: OperationCallback, options: OperationOptions = {}): this {
+  check(cb: OperationCallback<CheckResult>, options: OperationOptions = {}): this {
     const { type = cb, param, required = false } = options;
 
+    // prettier-ignore
     return this.withOperation(
+      (value, param, options) => adoptCheckResult(cb(value, param, options)),
+      { type, param, required }
+    );
+  }
+
+  /**
+   * Adds an {@link withAsyncOperation asynchronous operation} that checks that the shape output satisfies a
+   * requirement.
+   *
+   * The callback must return a promise that is resolved with `null` or `undefined` if value is valid, or an
+   * {@link Issue issue} or an array of issues if value is invalid. If promise resolves with an empty array, it is
+   * considered that no issues have occurred.
+   *
+   * @param cb The callback that checks that a value satisfies a requirement and returns issues if it doesn't.
+   * @param options The operation options.
+   * @returns The clone of the shape.
+   * @template Param The param that is passed to the operation when it is applied.
+   * @see {@link Shape.check}
+   * @see {@link Shape.refineAsync}
+   * @see [Checks](https://github.com/smikhalevski/doubter#checks)
+   */
+  checkAsync<Param>(
+    cb: OperationCallback<PromiseLike<CheckResult>, OutputValue, Param>,
+    options: ParameterizedOperationOptions<Param>
+  ): this;
+
+  /**
+   * Adds an {@link withAsyncOperation asynchronous operation} that checks that the shape output satisfies a
+   * requirement.
+   *
+   * The callback must return a promise that is resolved with `null` or `undefined` if value is valid, or an
+   * {@link Issue issue} or an array of issues if value is invalid. If promise resolves with an empty array, it is
+   * considered that no issues have occurred.
+   *
+   * @param cb The callback that checks that a value satisfies a requirement and returns issues if it doesn't.
+   * @param options The operation options.
+   * @returns The clone of the shape.
+   * @see {@link Shape.check}
+   * @see {@link Shape.refineAsync}
+   * @see [Checks](https://github.com/smikhalevski/doubter#checks)
+   */
+  checkAsync(cb: OperationCallback<PromiseLike<CheckResult>, OutputValue>, options?: OperationOptions): this;
+
+  checkAsync(cb: OperationCallback<PromiseLike<CheckResult>>, options: OperationOptions = {}): this {
+    const { type = cb, param, required = false } = options;
+
+    return this.withAsyncOperation(
       (value, param, options) => {
-        const issues = cb(value, param, options);
-        return !isObjectLike(issues) ? null : isArray(issues) ? (issues.length === 0 ? null : issues) : [issues];
+        try {
+          return Promise.resolve(cb(value, param, options)).then(adoptCheckResult);
+        } catch (error) {
+          return Promise.reject(error);
+        }
       },
       { type, param, required }
     );
   }
 
   /**
-   * Adds an {@link withOperation operation} that refines the shape output type with the
+   * Adds a {@link withOperation synchronous operation} that refines the shape output type with the
    * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
    *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
    * @param options The operation options or the issue message.
    * @returns The shape with the narrowed output.
    * @template RefinedValue The narrowed output value.
-   * @template Param The param that is passed to the {@link RefinePredicate} when a refinement operation is applied.
+   * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.check}
+   * @see {@link Shape.refineAsync}
+   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
    */
   refine<RefinedValue extends OutputValue, Param>(
     cb: RefinePredicate<OutputValue, RefinedValue, Param>,
@@ -328,7 +392,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   ): RefineShape<this, RefinedValue>;
 
   /**
-   * Adds an {@link withOperation operation} that refines the shape output type with the
+   * Adds a {@link withOperation synchronous operation} that refines the shape output type with the
    * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
    *
    * @param cb The predicate that returns `true` if value conforms the required type, or `false` otherwise.
@@ -336,6 +400,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The shape with the narrowed output.
    * @template RefinedValue The narrowed output value.
    * @see {@link Shape.check}
+   * @see {@link Shape.refineAsync}
+   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
    */
   refine<RefinedValue extends OutputValue>(
     cb: RefinePredicate<OutputValue, RefinedValue>,
@@ -343,39 +409,100 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   ): RefineShape<this, RefinedValue>;
 
   /**
-   * Adds an {@link withOperation operation} that checks that the output value conforms the predicate.
+   * Adds a {@link withOperation synchronous operation} that checks that the output value conforms the predicate.
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The operation options or the issue message.
    * @returns The clone of the shape.
    * @template Param The param that is passed to the {@link RefineCallback} when a refinement operation is applied.
    * @see {@link Shape.check}
+   * @see {@link Shape.refineAsync}
+   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
    */
-  refine<Param>(cb: OperationCallback<OutputValue, Param>, options?: ParameterizedRefineOptions<Param> | Message): this;
+  refine<Param>(
+    cb: OperationCallback<unknown, OutputValue, Param>,
+    options?: ParameterizedRefineOptions<Param> | Message
+  ): this;
 
   /**
-   * Adds an {@link withOperation operation} that checks that the output value conforms the predicate.
+   * Adds a {@link withOperation synchronous operation} that checks that the output value conforms the predicate.
    *
    * @param cb The predicate that returns truthy result if value is valid, or returns falsy result otherwise.
    * @param options The operation options or the issue message.
    * @returns The clone of the shape.
    * @see {@link Shape.check}
+   * @see {@link Shape.refineAsync}
+   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
    */
-  refine(cb: OperationCallback<OutputValue>, options?: RefineOptions | Message): this;
+  refine(cb: OperationCallback<unknown, OutputValue>, options?: RefineOptions | Message): this;
 
-  refine(cb: OperationCallback, options?: RefineOptions | Message): Shape {
+  refine(cb: OperationCallback<unknown>, options?: RefineOptions | Message): Shape {
     const { type = cb, param, required = false, code = CODE_ANY_REFINE } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, Shape.messages[CODE_ANY_REFINE], options, cb);
 
     return this.withOperation(
-      (value, param, options) => (cb(value, param, options) ? null : [issueFactory(value, options)]),
+      (value, param, options) => {
+        if (cb(value, param, options)) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type, param, required }
     );
   }
 
   /**
-   * Adds an {@link withOperation operation} that alters the output value without changing its type.
+   * Adds an {@link withAsyncOperation asynchronous operation} that checks that the output value conforms the predicate.
+   *
+   * @param cb The predicate that returns a promise that resolves with a truthy result if value is valid, or a falsy
+   * result otherwise.
+   * @param options The operation options or the issue message.
+   * @returns The clone of the shape.
+   * @template Param The param that is passed to the {@link RefineCallback} when a refinement operation is applied.
+   * @see {@link Shape.checkAsync}
+   * @see {@link Shape.refine}
+   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
+   */
+  refineAsync<Param>(
+    cb: OperationCallback<PromiseLike<unknown>, OutputValue, Param>,
+    options?: ParameterizedRefineOptions<Param> | Message
+  ): this;
+
+  /**
+   * Adds an asynchronous {@link withAsyncOperation operation} that checks that the output value conforms the predicate.
+   *
+   * @param cb The predicate that returns a promise that resolves with a truthy result if value is valid, or a falsy
+   * result otherwise.
+   * @param options The operation options or the issue message.
+   * @returns The clone of the shape.
+   * @see {@link Shape.checkAsync}
+   * @see {@link Shape.refine}
+   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
+   */
+  refineAsync(cb: OperationCallback<PromiseLike<unknown>, OutputValue>, options?: RefineOptions | Message): this;
+
+  refineAsync(cb: OperationCallback<PromiseLike<unknown>>, options?: RefineOptions | Message): Shape {
+    const { type = cb, param, required = false, code = CODE_ANY_REFINE } = extractOptions(options);
+
+    const issueFactory = createIssueFactory(code, Shape.messages[CODE_ANY_REFINE], options, cb);
+
+    return this.withAsyncOperation(
+      (value, param, options) => {
+        try {
+          return Promise.resolve(cb(value, param, options)).then(result =>
+            result ? null : [issueFactory(value, options)]
+          );
+        } catch (error) {
+          return Promise.reject(error);
+        }
+      },
+      { type, param, required }
+    );
+  }
+
+  /**
+   * Adds a {@link withOperation synchronous operation} that alters the output value without changing its type.
    *
    * If you want to change the base type, consider using {@link Shape.convert}.
    *
@@ -384,14 +511,16 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @template Param The param that is passed to the {@link AlterCallback} when an alteration operation is applied.
    * @see {@link Shape.convert}
+   * @see {@link Shape.alterAsync}
+   * @see [Alterations](https://github.com/smikhalevski/doubter#alterations)
    */
   alter<Param>(
-    cb: OperationCallback<OutputValue, Param, OutputValue>,
+    cb: OperationCallback<OutputValue, OutputValue, Param>,
     options: ParameterizedOperationOptions<Param>
   ): this;
 
   /**
-   * Adds an {@link withOperation operation} that alters the output value without changing its type.
+   * Adds a {@link withOperation synchronous operation} that alters the output value without changing its type.
    *
    * If you want to change the base type, consider using {@link Shape.convert}.
    *
@@ -399,13 +528,62 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options The operation options.
    * @returns The clone of the shape.
    * @see {@link Shape.convert}
+   * @see {@link Shape.alterAsync}
+   * @see [Alterations](https://github.com/smikhalevski/doubter#alterations)
    */
-  alter(cb: OperationCallback<OutputValue, any, OutputValue>, options?: OperationOptions): this;
+  alter(cb: OperationCallback<OutputValue, OutputValue>, options?: OperationOptions): this;
 
-  alter(cb: OperationCallback, options: OperationOptions = {}): Shape {
+  alter(cb: OperationCallback<OutputValue>, options: OperationOptions = {}): Shape {
     const { type = cb, param, required = false } = options;
 
     return this.withOperation((value, param, options) => ok(cb(value, param, options)), { type, param, required });
+  }
+
+  /**
+   * Adds an {@link withAsyncOperation asynchronous operation} that alters the output value without changing its type.
+   *
+   * If you want to change the base type, consider using {@link Shape.convertAsync}.
+   *
+   * @param cb The callback that alters the shape output.
+   * @param options The operation options.
+   * @returns The clone of the shape.
+   * @template Param The param that is passed to the {@link AlterCallback} when an alteration operation is applied.
+   * @see {@link Shape.convertAsync}
+   * @see {@link Shape.alter}
+   * @see [Alterations](https://github.com/smikhalevski/doubter#alterations)
+   */
+  alterAsync<Param>(
+    cb: OperationCallback<PromiseLike<OutputValue>, OutputValue, Param>,
+    options: ParameterizedOperationOptions<Param>
+  ): this;
+
+  /**
+   * Adds an {@link withAsyncOperation asynchronous operation} that alters the output value without changing its type.
+   *
+   * If you want to change the base type, consider using {@link Shape.convertAsync}.
+   *
+   * @param cb The callback that alters the shape output.
+   * @param options The operation options.
+   * @returns The clone of the shape.
+   * @see {@link Shape.convertAsync}
+   * @see {@link Shape.alter}
+   * @see [Alterations](https://github.com/smikhalevski/doubter#alterations)
+   */
+  alterAsync(cb: OperationCallback<PromiseLike<OutputValue>, OutputValue>, options?: OperationOptions): this;
+
+  alterAsync(cb: OperationCallback<PromiseLike<OutputValue>>, options: OperationOptions = {}): Shape {
+    const { type = cb, param, required = false } = options;
+
+    return this.withAsyncOperation(
+      (value, param, options) => {
+        try {
+          return Promise.resolve(cb(value, param, options)).then(ok);
+        } catch (error) {
+          return Promise.reject(error);
+        }
+      },
+      { type, param, required }
+    );
   }
 
   /**
@@ -649,8 +827,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Synchronously parses the input.
    *
-   * **Note:** Don't store or update returned instances of {@link Ok} since they can be reused.
-   *
    * @param input The shape input to parse.
    * @param options Parsing options.
    * @param nonce The globally unique number that identifies the parsing process.
@@ -663,8 +839,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Asynchronously parses the input.
-   *
-   * **Note:** Don't store or update returned instances of {@link Ok} since they can be reused.
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
@@ -795,13 +969,52 @@ export interface Shape<InputValue, OutputValue> {
 }
 
 Object.defineProperties(Shape.prototype, {
+  _applyOperations: {
+    configurable: true,
+
+    get(this: Shape) {
+      let cb = universalApplyOperations;
+
+      for (let i = this.operations.length - 1; i >= 0; --i) {
+        const operation = this.operations[i];
+
+        if (operation.isAsync) {
+          cb = () => {
+            throw new Error(ERR_SYNC_UNSUPPORTED);
+          };
+          break;
+        }
+        cb = createApplyOperations(operation, cb, false);
+      }
+
+      return defineObjectProperty(this, '_applyOperations', cb);
+    },
+  },
+
+  _applyOperationsAsync: {
+    configurable: true,
+
+    get(this: Shape) {
+      let cb = universalApplyOperations;
+
+      for (let i = this.operations.length - 1, async = false; i >= 0; --i) {
+        const operation = this.operations[i];
+
+        async ||= operation.isAsync;
+        cb = createApplyOperations(operation, cb, async);
+      }
+
+      return defineObjectProperty(this, '_applyOperationsAsync', cb);
+    },
+  },
+
   inputs: {
     configurable: true,
 
     get(this: Shape) {
-      defineProperty(this, 'inputs', []);
+      defineObjectProperty(this, 'inputs', []);
 
-      return defineProperty(this, 'inputs', freeze(unionTypes(this._getInputs())), true);
+      return defineObjectProperty(this, 'inputs', freeze(unionTypes(this._getInputs())), true);
     },
   },
 
@@ -809,7 +1022,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      defineProperty(this, 'isAsync', false);
+      defineObjectProperty(this, 'isAsync', false);
 
       let async = false;
 
@@ -829,7 +1042,7 @@ Object.defineProperties(Shape.prototype, {
         this._applyAsync = prototypeApplyAsync;
       }
 
-      return defineProperty(this, 'isAsync', async, true);
+      return defineObjectProperty(this, 'isAsync', async, true);
     },
   },
 
@@ -839,16 +1052,16 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      return defineProperty<Shape['try']>(this, 'try', (input, options) => {
+      return defineObjectProperty<Shape['try']>(this, 'try', (input, options) => {
         const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
-          return { ok: true, value: input };
+          return ok(input);
         }
         if (isArray(result)) {
           return { ok: false, issues: result };
         }
-        return { ok: true, value: result.value };
+        return result;
       });
     },
   },
@@ -859,15 +1072,15 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      return defineProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
+      return defineObjectProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
-            return { ok: true, value: input };
+            return ok(input);
           }
           if (isArray(result)) {
             return { ok: false, issues: result };
           }
-          return { ok: true, value: result.value };
+          return result;
         });
       });
     },
@@ -879,7 +1092,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      return defineProperty<Shape['parse']>(this, 'parse', (input, options) => {
+      return defineObjectProperty<Shape['parse']>(this, 'parse', (input, options) => {
         const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
         if (result === null) {
@@ -899,7 +1112,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      return defineProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
+      return defineObjectProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
@@ -919,7 +1132,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      return defineProperty(
+      return defineObjectProperty(
         this,
         'parseOrDefault',
         (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
@@ -943,7 +1156,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      return defineProperty(
+      return defineObjectProperty(
         this,
         'parseOrDefaultAsync',
         (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
@@ -958,41 +1171,6 @@ Object.defineProperties(Shape.prototype, {
           });
         }
       );
-    },
-  },
-
-  _applyOperations: {
-    configurable: true,
-
-    get(this: Shape) {
-      let cb;
-
-      cb = universalApplyOperations;
-
-      for (let i = this.operations.length - 1; i >= 0; --i) {
-        if (this.operations[i].isAsync) {
-          cb = () => {
-            throw new Error(ERR_SYNC_UNSUPPORTED);
-          };
-          break;
-        }
-        cb = chainOperations(this.operations[i], cb, false);
-      }
-      return defineProperty(this, '_applyOperations', cb);
-    },
-  },
-
-  _applyOperationsAsync: {
-    configurable: true,
-
-    get(this: Shape) {
-      let cb: ApplyOperationsCallback<Result | Promise<Result>> = universalApplyOperations;
-
-      for (let i = this.operations.length - 1, async = false; i >= 0; --i) {
-        async ||= this.operations[i].isAsync;
-        cb = chainOperations(this.operations[i], cb, async);
-      }
-      return defineProperty(this, '_applyOperationsAsync', cb);
     },
   },
 });
@@ -1200,9 +1378,9 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
     options: ApplyOptions,
     nonce: number
   ): Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue> {
-    const result = isEqual(input, this.inputValue) ? this._result : this.baseShape['_apply'](input, options, nonce);
-
     let output = input;
+
+    const result = isEqual(input, this.inputValue) ? this._result : this.baseShape['_apply'](input, options, nonce);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1305,9 +1483,9 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
       return [this._typeIssueFactory(input, options)];
     }
 
-    const result = this.baseShape['_apply'](input, options, nonce);
-
     let output = input;
+
+    const result = this.baseShape['_apply'](input, options, nonce);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1330,6 +1508,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     if (isEqual(input, this.deniedValue)) {
       return Promise.resolve([this._typeIssueFactory(input, options)]);
     }
+
     return this.baseShape['_applyAsync'](input, options, nonce).then(result => {
       let output = input;
 
@@ -1386,7 +1565,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     if (typeof fallback === 'function') {
       this._resultProvider = (input, issues, options) => ok((fallback as Function)(input, issues, options));
     } else {
-      const result: Ok<FallbackValue> = { ok: true, value: fallback };
+      const result = ok(fallback);
       this._resultProvider = () => result;
     }
   }
@@ -1404,8 +1583,8 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<BaseShape> | FallbackValue> {
-    let result = this.baseShape['_apply'](input, options, nonce);
     let output = input;
+    let result = this.baseShape['_apply'](input, options, nonce);
 
     if (result !== null) {
       if (isArray(result)) {
@@ -1487,6 +1666,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     super();
 
     this._options = options;
+
     this._typeIssueFactory = createIssueFactory(
       CODE_ANY_EXCLUDE,
       Shape.messages[CODE_ANY_EXCLUDE],
@@ -1515,7 +1695,6 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     const { baseShape, excludedShape } = this;
 
     let output = input;
-
     let result = baseShape['_apply'](input, options, nonce);
 
     if (result !== null) {

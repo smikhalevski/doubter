@@ -6,10 +6,15 @@ export interface Dict<T = any> {
   [key: string]: T;
 }
 
+export function defineObjectProperty<T>(obj: object, key: PropertyKey, value: T, readOnly = false): T {
+  Object.defineProperty(obj, key, { configurable: true, writable: !readOnly, value });
+  return value;
+}
+
 /**
  * Updates object property value, prevents prototype pollution.
  */
-export function setObjectProperty<T>(obj: any, key: any, value: T): T {
+export function setObjectProperty<T>(obj: any, key: PropertyKey, value: T): T {
   if (key === '__proto__') {
     Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
   } else {
@@ -51,7 +56,7 @@ export function cloneDictHead(dict: ReadonlyDict, count: number): Dict {
 /**
  * Clones known keys of a dictionary-like object.
  */
-export function cloneDictKeys(dict: ReadonlyDict, keys: readonly any[]): Dict {
+export function cloneDictKeys(dict: ReadonlyDict, keys: readonly string[]): Dict {
   const obj = {};
 
   for (const key of keys) {

@@ -1,7 +1,14 @@
 import { CODE_OBJECT_EXACT, CODE_TYPE } from '../constants';
 import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
-import { defineProperty, isArray, isObject } from '../internal/lang';
-import { cloneDict, cloneDictKeys, Dict, ReadonlyDict, setObjectProperty } from '../internal/objects';
+import { isArray, isObject } from '../internal/lang';
+import {
+  cloneDict,
+  cloneDictKeys,
+  defineObjectProperty,
+  Dict,
+  ReadonlyDict,
+  setObjectProperty,
+} from '../internal/objects';
 import {
   applyShape,
   concatIssues,
@@ -141,7 +148,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * The enum shape that describes object keys.
    */
   get keysShape(): EnumShape<keyof PropShapes> {
-    return defineProperty(this, 'keysShape', new EnumShape(this.keys), true);
+    return defineObjectProperty(this, 'keysShape', new EnumShape(this.keys), true);
   }
 
   at(key: any): AnyShape | null {

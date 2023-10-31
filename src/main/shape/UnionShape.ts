@@ -1,7 +1,7 @@
 import { CODE_TYPE_UNION } from '../constants';
 import { unique } from '../internal/arrays';
-import { defineProperty, isArray, isObject } from '../internal/lang';
-import { ReadonlyDict } from '../internal/objects';
+import { isArray, isObject } from '../internal/lang';
+import { defineObjectProperty, ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
 import { getTypeOf, TYPE_UNKNOWN } from '../types';
@@ -81,7 +81,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
    * Returns an array of shapes that should be applied to the input.
    */
   private get _lookup(): LookupCallback {
-    return defineProperty(this, '_lookup', createLookup(unique(this.shapes)));
+    return defineObjectProperty(this, '_lookup', createLookup(unique(this.shapes)));
   }
 
   protected _isAsync(): boolean {
