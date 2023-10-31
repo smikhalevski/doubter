@@ -273,7 +273,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
-   * @param cb The callback that checks the shape output.
+   * @param cb The callback that checks that a value satisfies a requirement and returns issues if it doesn't.
    * @param options The operation options.
    * @returns The clone of the shape.
    * @template Param The param that is passed to the {@link CheckCallback} when a check operation is applied.
@@ -289,7 +289,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * If check callback returns an empty array, it is considered that no issues have occurred.
    *
-   * @param cb The callback that checks the shape output.
+   * @param cb The callback that checks that a value satisfies a requirement and returns issues if it doesn't.
    * @param options The operation options.
    * @returns The clone of the shape.
    * @see {@link Shape.refine}
@@ -305,7 +305,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
     return this.withOperation(
       (value, param, options) => {
         const issues = cb(value, param, options);
-        return !isObjectLike(issues) ? null : isArray(issues) ? issues : [issues];
+        return !isObjectLike(issues) ? null : isArray(issues) ? (issues.length === 0 ? null : issues) : [issues];
       },
       { type, param, required }
     );
@@ -377,6 +377,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Adds an {@link withOperation operation} that alters the output value without changing its type.
    *
+   * If you want to change the base type, consider using {@link Shape.convert}.
+   *
    * @param cb The callback that alters the shape output.
    * @param options The operation options.
    * @returns The clone of the shape.
@@ -390,6 +392,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
   /**
    * Adds an {@link withOperation operation} that alters the output value without changing its type.
+   *
+   * If you want to change the base type, consider using {@link Shape.convert}.
    *
    * @param cb The callback that alters the shape output.
    * @param options The operation options.
@@ -963,16 +967,16 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       let cb;
 
-      if (this.isAsync) {
-        cb = () => {
-          throw new Error(ERR_SYNC_UNSUPPORTED);
-        };
-      } else {
-        cb = universalApplyOperations;
+      cb = universalApplyOperations;
 
-        for (let i = this.operations.length - 1; i >= 0; --i) {
-          cb = chainOperations(this.operations[i], cb, false);
+      for (let i = this.operations.length - 1; i >= 0; --i) {
+        if (this.operations[i].isAsync) {
+          cb = () => {
+            throw new Error(ERR_SYNC_UNSUPPORTED);
+          };
+          break;
         }
+        cb = chainOperations(this.operations[i], cb, false);
       }
       return defineProperty(this, '_applyOperations', cb);
     },
@@ -1039,7 +1043,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ConvertedValue>> {
     return new Promise(resolve => {
       resolve(this.converter(input, options));
-    }).then(output => this._applyOperations(input, output, options, null), captureIssues);
+    }).then(output => this._applyOperationsAsync(input, output, options, null), captureIssues);
   }
 }
 
@@ -1130,7 +1134,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
           }
           output = outputResult.value;
         }
-        return this._applyOperations(input, output, options, null);
+        return this._applyOperationsAsync(input, output, options, null);
       });
     });
   }
@@ -1198,27 +1202,6 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
   ): Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue> {
     const result = isEqual(input, this.inputValue) ? this._result : this.baseShape['_apply'](input, options, nonce);
 
-    return this._handleResult(result, input, options);
-  }
-
-  protected _applyAsync(
-    input: unknown,
-    options: ApplyOptions,
-    nonce: number
-  ): Promise<Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue>> {
-    if (isEqual(input, this.inputValue)) {
-      return Promise.resolve(this._handleResult(this._result, input, options));
-    }
-    return this.baseShape['_applyAsync'](input, options, nonce).then(result =>
-      this._handleResult(result, input, options)
-    );
-  }
-
-  private _handleResult(
-    result: Result,
-    input: unknown,
-    options: ApplyOptions
-  ): Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue> {
     let output = input;
 
     if (result !== null) {
@@ -1228,6 +1211,29 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
       output = result.value;
     }
     return this._applyOperations(input, output, options, null);
+  }
+
+  protected _applyAsync(
+    input: unknown,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue>> {
+    const handleResult = (result: Result) => {
+      let output = input;
+
+      if (result !== null) {
+        if (isArray(result)) {
+          return result;
+        }
+        output = result.value;
+      }
+      return this._applyOperationsAsync(input, output, options, null);
+    };
+
+    if (isEqual(input, this.inputValue)) {
+      return Promise.resolve(handleResult(this._result));
+    }
+    return this.baseShape['_applyAsync'](input, options, nonce).then(handleResult);
   }
 }
 
@@ -1298,27 +1304,9 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     if (isEqual(input, this.deniedValue)) {
       return [this._typeIssueFactory(input, options)];
     }
-    return this._handleResult(this.baseShape['_apply'](input, options, nonce), input, options);
-  }
 
-  protected _applyAsync(
-    input: unknown,
-    options: ApplyOptions,
-    nonce: number
-  ): Promise<Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>>> {
-    if (isEqual(input, this.deniedValue)) {
-      return Promise.resolve([this._typeIssueFactory(input, options)]);
-    }
-    return this.baseShape['_applyAsync'](input, options, nonce).then(result =>
-      this._handleResult(result, input, options)
-    );
-  }
+    const result = this.baseShape['_apply'](input, options, nonce);
 
-  private _handleResult(
-    result: Result,
-    input: unknown,
-    options: ApplyOptions
-  ): Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>> {
     let output = input;
 
     if (result !== null) {
@@ -1332,6 +1320,31 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
       }
     }
     return this._applyOperations(input, output, options, null);
+  }
+
+  protected _applyAsync(
+    input: unknown,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>>> {
+    if (isEqual(input, this.deniedValue)) {
+      return Promise.resolve([this._typeIssueFactory(input, options)]);
+    }
+    return this.baseShape['_applyAsync'](input, options, nonce).then(result => {
+      let output = input;
+
+      if (result !== null) {
+        if (isArray(result)) {
+          return result;
+        }
+        output = result.value;
+
+        if (isEqual(output, this.deniedValue)) {
+          return [this._typeIssueFactory(input, options)];
+        }
+      }
+      return this._applyOperationsAsync(input, output, options, null);
+    });
   }
 }
 
@@ -1391,24 +1404,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<BaseShape> | FallbackValue> {
-    return this._handleResult(this.baseShape['_apply'](input, options, nonce), input, options);
-  }
-
-  protected _applyAsync(
-    input: unknown,
-    options: ApplyOptions,
-    nonce: number
-  ): Promise<Result<Output<BaseShape> | FallbackValue>> {
-    return this.baseShape['_applyAsync'](input, options, nonce).then(result =>
-      this._handleResult(result, input, options)
-    );
-  }
-
-  private _handleResult(
-    result: Result,
-    input: unknown,
-    options: ApplyOptions
-  ): Result<Output<BaseShape> | FallbackValue> {
+    let result = this.baseShape['_apply'](input, options, nonce);
     let output = input;
 
     if (result !== null) {
@@ -1422,6 +1418,28 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
       output = result.value;
     }
     return this._applyOperations(input, output, options, null);
+  }
+
+  protected _applyAsync(
+    input: unknown,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<Result<Output<BaseShape> | FallbackValue>> {
+    return this.baseShape['_applyAsync'](input, options, nonce).then(result => {
+      let output = input;
+
+      if (result !== null) {
+        if (isArray(result)) {
+          try {
+            result = this._resultProvider(input, result, options);
+          } catch (error) {
+            return captureIssues(error);
+          }
+        }
+        output = result.value;
+      }
+      return this._applyOperationsAsync(input, output, options, null);
+    });
   }
 }
 
@@ -1534,7 +1552,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
         if (!isArray(outputResult)) {
           return [this._typeIssueFactory(input, options)];
         }
-        return this._applyOperations(input, output, options, null);
+        return this._applyOperationsAsync(input, output, options, null);
       });
     });
   }

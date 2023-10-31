@@ -186,6 +186,8 @@ export interface Operation<Value = any> {
 /**
  * A callback that applies an operation to the shape output value.
  *
+ * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result.
+ *
  * @param value The shape output value to which the operation must be applied.
  * @param param The {@link Operation.param additional param} that was associated with the operation.
  * @param options Parsing options.
@@ -256,44 +258,6 @@ export interface ParameterizedOperationOptions<Param> extends OperationOptions {
   param: Param;
 }
 
-// /**
-//  * Checks that a value satisfies a requirement and returns issues if it doesn't.
-//  *
-//  * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result.
-//  *
-//  * @param value The value to check.
-//  * @param param The additional param that was associated with the operation.
-//  * @param options Parsing options.
-//  * @returns `null` or `undefined` if the value satisfies a requirement; an issue or an array of issues if a value
-//  * doesn't satisfy a requirement.
-//  * @template Value The value to check.
-//  * @template Param The additional param that was associated with the check operation.
-//  * @see {@link Shape.check}
-//  * @group Operations
-//  */
-// export type CheckCallback<Value = any, Param = any> = (
-//   value: Value,
-//   param: Param,
-//   options: ApplyOptions
-// ) => Issue[] | Issue | null | undefined | void;
-//
-// /**
-//  * Checks that a value matches a predicate.
-//  *
-//  * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
-//  * refinement cannot be performed, and you want to abort the operation.
-//  *
-//  * @param value The value to refine.
-//  * @param param The additional param that was associated with the operation.
-//  * @param options Parsing options.
-//  * @return Truthy if value matches the predicate, or falsy if it doesn't.
-//  * @template Value The value to refine.
-//  * @template Param The additional param that was associated with the operation.
-//  * @see {@link Shape.refine}
-//  * @group Operations
-//  */
-// export type RefineCallback<Value = any, Param = any> = (value: Value, param: Param, options: ApplyOptions) => any;
-
 /**
  * A [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html) that refines the value type.
  *
@@ -339,26 +303,6 @@ export interface RefineOptions extends OperationOptions, IssueOptions {
 export interface ParameterizedRefineOptions<Param> extends RefineOptions {
   param: Param;
 }
-
-// /**
-//  * Alters the value without changing its base type.
-//  *
-//  * If you want to change the base type, consider using {@link Shape.convert}.
-//  *
-//  * If a {@link ValidationError} is thrown, its issues are captured and incorporated into a parsing result. Throw if
-//  * alteration cannot be performed, and you want to abort the operation.
-//  *
-//  * @param value The value to alter.
-//  * @param param The additional param that was associated with the operation.
-//  * @param options Parsing options.
-//  * @returns The altered value.
-//  * @template Value The value to alter.
-//  * @template Param The additional param that was associated with the operation.
-//  * @see {@link Shape.alter}
-//  * @see {@link Shape.convert}
-//  * @group Operations
-//  */
-// export type AlterCallback<Value = any, Param = any> = (value: Value, param: Param, options: ApplyOptions) => Value;
 
 /**
  * Options used when a shape is applied to an input value.
@@ -408,4 +352,4 @@ export interface ParseOptions extends ApplyOptions {
  *
  * @group Other
  */
-export type Any = {} | null | undefined;
+export type Any = object | string | number | bigint | boolean | symbol | null | undefined;

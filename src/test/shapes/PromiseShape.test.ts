@@ -132,7 +132,7 @@ describe('PromiseShape', () => {
     test('applies forced operations if value shape raised issues', async () => {
       const valueShape = new Shape().check(() => [{ code: 'xxx' }]);
 
-      const shape = new PromiseShape(valueShape).check(() => [{ code: 'yyy' }], { force: true });
+      const shape = new PromiseShape(valueShape).check(() => [{ code: 'yyy' }]);
 
       await expect(shape.tryAsync(Promise.resolve(111))).resolves.toEqual({
         ok: false,

@@ -17,7 +17,9 @@ describe('any', () => {
     expect(d.any(cb).operations[0]).toEqual({
       type: cb,
       param: undefined,
-      factory: expect.any(Function),
+      isAsync: false,
+      isRequired: false,
+      callback: expect.any(Function),
     });
   });
 });

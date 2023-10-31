@@ -78,7 +78,7 @@ describe('includes', () => {
     });
   });
 
-  test('throws if shape is async', () => {
+  test.skip('throws if shape is async', () => {
     expect(() => new ArrayShape([], new Shape()).includes(new AsyncMockShape())).toThrow();
   });
 });

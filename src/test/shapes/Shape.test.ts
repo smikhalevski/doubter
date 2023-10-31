@@ -40,27 +40,11 @@ describe('Shape', () => {
   describe('withOperation', () => {
     test('clones the shape', () => {
       const shape1 = new Shape();
-      const shape2 = shape1.withOperation(
-        next => (input, output, options, issues) => next(input, output, options, issues),
-        {
-          type: 'aaa',
-          param: undefined,
-        }
-      );
+      const shape2 = shape1.withOperation(() => null, { type: 'aaa', param: undefined });
 
       expect(shape1).not.toBe(shape2);
-    });
-
-    test('returns the shape clone', () => {
-      const shape = new Shape().withOperation(
-        next => (input, output, options, issues) => next(input, output, options, issues),
-        {
-          type: 'aaa',
-          param: undefined,
-        }
-      );
-
-      expect(shape.operations.length).toBe(1);
+      expect(shape1.operations.length).toBe(0);
+      expect(shape2.operations.length).toBe(1);
     });
   });
 
@@ -218,7 +202,7 @@ describe('Shape', () => {
       const cbMock1 = () => [{ code: 'xxx' }];
       const cbMock2 = jest.fn();
 
-      const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
+      const shape = new Shape().check(cbMock1).check(cbMock2);
 
       expect(shape.try(111)).toEqual({
         ok: false,
@@ -232,13 +216,13 @@ describe('Shape', () => {
       const cbMock2 = jest.fn();
       const cbMock3 = jest.fn();
 
-      const shape = new Shape().check(cbMock1).check(cbMock2).check(cbMock3, { force: true });
+      const shape = new Shape().check(cbMock1).check(cbMock2).check(cbMock3);
 
       expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
-      expect(cbMock2).not.toHaveBeenCalled();
+      expect(cbMock2).toHaveBeenCalledTimes(1);
       expect(cbMock3).toHaveBeenCalledTimes(1);
     });
   });
@@ -357,7 +341,7 @@ describe('Shape', () => {
       const cbMock1 = () => false;
       const cbMock2 = jest.fn(() => true);
 
-      const shape = new Shape().refine(cbMock1).refine(cbMock2, { force: true });
+      const shape = new Shape().refine(cbMock1).refine(cbMock2);
 
       expect(shape.try(111)).toEqual({
         ok: false,
@@ -371,13 +355,13 @@ describe('Shape', () => {
       const cbMock2 = jest.fn(() => true);
       const cbMock3 = jest.fn(() => true);
 
-      const shape = new Shape().refine(cbMock1).refine(cbMock2).refine(cbMock3, { force: true });
+      const shape = new Shape().refine(cbMock1).refine(cbMock2).refine(cbMock3);
 
       expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: CODE_ANY_REFINE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
       });
-      expect(cbMock2).not.toHaveBeenCalled();
+      expect(cbMock2).toHaveBeenCalledTimes(1);
       expect(cbMock3).toHaveBeenCalledTimes(1);
     });
   });
@@ -442,7 +426,7 @@ describe('Shape', () => {
       const cbMock1 = () => [{ code: 'xxx' }];
       const cbMock2 = jest.fn(() => 'aaa');
 
-      const shape = new Shape().check(cbMock1).alter(cbMock2, { force: true });
+      const shape = new Shape().check(cbMock1).alter(cbMock2);
 
       expect(shape.try(111)).toEqual({
         ok: false,
@@ -456,13 +440,13 @@ describe('Shape', () => {
       const cbMock2 = jest.fn(() => 'aaa');
       const cbMock3 = jest.fn(() => true);
 
-      const shape = new Shape().check(cbMock1).alter(cbMock2).refine(cbMock3, { force: true });
+      const shape = new Shape().check(cbMock1).alter(cbMock2).refine(cbMock3);
 
       expect(shape.try(111)).toEqual({
         ok: false,
         issues: [{ code: 'xxx' }],
       });
-      expect(cbMock2).not.toHaveBeenCalled();
+      expect(cbMock2).toHaveBeenCalledTimes(1);
       expect(cbMock3).toHaveBeenCalledTimes(1);
     });
   });
@@ -861,11 +845,11 @@ describe('Shape', () => {
       expect(() => shape.try('aaa')).toThrow(new Error('expected'));
     });
 
-    test('check is not called if the preceding operation failed', () => {
+    test('check is not called if the preceding required operation has failed', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn();
 
-      const shape = new Shape().check(cbMock1).check(cbMock2);
+      const shape = new Shape().check(cbMock1, { required: true }).check(cbMock2);
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
@@ -880,7 +864,7 @@ describe('Shape', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn();
 
-      const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
+      const shape = new Shape().check(cbMock1).check(cbMock2);
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
@@ -896,7 +880,7 @@ describe('Shape', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn(() => [{ code: 'yyy' }]);
 
-      const shape = new Shape().check(cbMock1).check(cbMock2, { force: true });
+      const shape = new Shape().check(cbMock1).check(cbMock2);
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
@@ -1281,7 +1265,7 @@ describe('ReplaceShape', () => {
       new Shape().check(() => [{ code: 'xxx' }]),
       111,
       222
-    ).check(() => [{ code: 'yyy' }], { force: true });
+    ).check(() => [{ code: 'yyy' }]);
 
     expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,
@@ -1335,7 +1319,7 @@ describe('ReplaceShape', () => {
         new AsyncMockShape().check(() => [{ code: 'xxx' }]),
         111,
         222
-      ).check(() => [{ code: 'yyy' }], { force: true });
+      ).check(() => [{ code: 'yyy' }]);
 
       await expect(shape.tryAsync('aaa', { earlyReturn: true })).resolves.toEqual({
         ok: false,
@@ -1404,7 +1388,7 @@ describe('DenyShape', () => {
     const shape = new DenyShape(
       new Shape().check(() => [{ code: 'xxx' }]),
       undefined
-    ).check(() => [{ code: 'yyy' }], { force: true });
+    ).check(() => [{ code: 'yyy' }]);
 
     expect(shape.try(111, { earlyReturn: true })).toEqual({
       ok: false,
