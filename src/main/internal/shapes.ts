@@ -1,3 +1,4 @@
+import { ERR_SYNC_UNSUPPORTED } from '../constants';
 import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
 import { ApplyOptions, CheckResult, Issue, Ok, Operation, OperationCallback, ParseOptions, Result } from '../typings';
 import { ValidationError } from '../ValidationError';
@@ -26,12 +27,12 @@ export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
  * @template ReturnValue The cumulative result of applied operations.
  * @group Operations
  */
-export type ApplyOperationsCallback<ReturnValue = Result | Promise<Result>> = (
+type ApplyOperationsCallback = (
   input: unknown,
   output: unknown,
   options: ApplyOptions,
   issues: Issue[] | null
-) => ReturnValue;
+) => Result | Promise<Result>;
 
 export const defaultApplyOptions = freeze<ApplyOptions>({ earlyReturn: false });
 
@@ -223,4 +224,8 @@ export function adoptCheckResult(result: CheckResult): Result {
     return result.length === 0 ? null : result;
   }
   return [result];
+}
+
+export function dieAsync(): never {
+  throw new Error(ERR_SYNC_UNSUPPORTED);
 }

@@ -5,7 +5,6 @@ import { booleanInputs, TYPE_BOOLEAN } from '../types';
 import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { Shape } from './Shape';
 
 /**
  * The shape of a boolean value.
@@ -26,7 +25,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.boolean'], options, TYPE_BOOLEAN);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, new.target.messages['type.boolean'], options, TYPE_BOOLEAN);
   }
 
   protected _getInputs(): readonly unknown[] {

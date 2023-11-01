@@ -263,7 +263,7 @@ export class FunctionShape<
       return [this._typeIssueFactory(input, options)];
     }
 
-    const result = this._applyOperations(input, input, options, null);
+    const result = this._applyOperations(input, input, options, null) as Result;
 
     if (isArray(result) || !this.isStrict) {
       return result;
@@ -272,6 +272,33 @@ export class FunctionShape<
     const output = result === null ? input : result.value;
 
     return ok<any>(this.isAsyncFunction ? this.ensureAsync(output) : this.ensure(output));
+  }
+
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<
+    Result<(this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>>
+  > {
+    return new Promise(resolve => {
+      if (typeof input !== 'function') {
+        resolve([this._typeIssueFactory(input, options)]);
+        return;
+      }
+
+      resolve(
+        Promise.resolve(this._applyOperations(input, input, options, null)).then(result => {
+          if (isArray(result) || !this.isStrict) {
+            return result;
+          }
+
+          const output = result === null ? input : result.value;
+
+          return ok<any>(this.isAsyncFunction ? this.ensureAsync(output) : this.ensure(output));
+        })
+      );
+    });
   }
 }
 

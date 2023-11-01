@@ -1,14 +1,14 @@
-import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE, ERR_SYNC_UNSUPPORTED } from '../constants';
+import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE } from '../constants';
 import { freeze, isArray, isEqual, returnTrue } from '../internal/lang';
 import { defineObjectProperty, Dict, ReadonlyDict } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
   adoptCheckResult,
-  ApplyOperationsCallback,
   applyShape,
   captureIssues,
   createApplyOperations,
   defaultApplyOptions,
+  dieAsync,
   getMessage,
   nextNonce,
   ok,
@@ -193,19 +193,14 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   operations: readonly Operation[] = [];
 
   /**
-   * The callback that synchronously applies {@link Shape.operations} to the shape output value.
-   *
-   * @throws {@link !Error Error} if operations cannot be applied synchronously.
-   * @see {@link Shape._apply}
+   * The callback that applies {@link Shape.operations} to the shape output value.
    */
-  protected declare _applyOperations: ApplyOperationsCallback<Result>;
-
-  /**
-   * The callback that asynchronously applies {@link Shape.operations} to the shape output value.
-   *
-   * @see {@link Shape._applyAsync}
-   */
-  protected declare _applyOperationsAsync: ApplyOperationsCallback;
+  protected declare _applyOperations: <T extends Result | Promise<Result>>(
+    input: unknown,
+    output: unknown,
+    options: ApplyOptions,
+    issues: Issue[] | null
+  ) => T;
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -975,28 +970,6 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       let cb = universalApplyOperations;
 
-      for (let i = this.operations.length - 1; i >= 0; --i) {
-        const operation = this.operations[i];
-
-        if (operation.isAsync) {
-          cb = () => {
-            throw new Error(ERR_SYNC_UNSUPPORTED);
-          };
-          break;
-        }
-        cb = createApplyOperations(operation, cb, false);
-      }
-
-      return defineObjectProperty(this, '_applyOperations', cb);
-    },
-  },
-
-  _applyOperationsAsync: {
-    configurable: true,
-
-    get(this: Shape) {
-      let cb = universalApplyOperations;
-
       for (let i = this.operations.length - 1, async = false; i >= 0; --i) {
         const operation = this.operations[i];
 
@@ -1004,7 +977,7 @@ Object.defineProperties(Shape.prototype, {
         cb = createApplyOperations(operation, cb, async);
       }
 
-      return defineObjectProperty(this, '_applyOperationsAsync', cb);
+      return defineObjectProperty(this, '_applyOperations', cb);
     },
   },
 
@@ -1026,20 +999,14 @@ Object.defineProperties(Shape.prototype, {
 
       let async = false;
 
-      for (let i = 0; async || i < this.operations.length; ++i) {
+      for (let i = 0; !async && i < this.operations.length; ++i) {
         async ||= this.operations[i].isAsync;
       }
 
       async ||= this._isAsync();
 
-      const prototypeApplyAsync = Shape.prototype._applyAsync;
-
-      if (async) {
-        this._apply = () => {
-          throw new Error(ERR_SYNC_UNSUPPORTED);
-        };
-      } else if (this._applyAsync !== prototypeApplyAsync) {
-        this._applyAsync = prototypeApplyAsync;
+      if (!async && this._applyAsync !== Shape.prototype._applyAsync) {
+        this._applyAsync = Shape.prototype._applyAsync;
       }
 
       return defineObjectProperty(this, 'isAsync', async, true);
@@ -1050,19 +1017,23 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      this.isAsync;
+      return defineObjectProperty<Shape['try']>(
+        this,
+        'try',
+        this.isAsync
+          ? dieAsync
+          : (input, options) => {
+              const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
-      return defineObjectProperty<Shape['try']>(this, 'try', (input, options) => {
-        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
-
-        if (result === null) {
-          return ok(input);
-        }
-        if (isArray(result)) {
-          return { ok: false, issues: result };
-        }
-        return result;
-      });
+              if (result === null) {
+                return ok(input);
+              }
+              if (isArray(result)) {
+                return { ok: false, issues: result };
+              }
+              return result;
+            }
+      );
     },
   },
 
@@ -1092,17 +1063,23 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       this.isAsync;
 
-      return defineObjectProperty<Shape['parse']>(this, 'parse', (input, options) => {
-        const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+      return defineObjectProperty<Shape['parse']>(
+        this,
+        'parse',
+        this.isAsync
+          ? dieAsync
+          : (input, options) => {
+              const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
-        if (result === null) {
-          return input;
-        }
-        if (isArray(result)) {
-          throw new ValidationError(result, getMessage(result, input, options));
-        }
-        return result.value;
-      });
+              if (result === null) {
+                return input;
+              }
+              if (isArray(result)) {
+                throw new ValidationError(result, getMessage(result, input, options));
+              }
+              return result.value;
+            }
+      );
     },
   },
 
@@ -1135,17 +1112,19 @@ Object.defineProperties(Shape.prototype, {
       return defineObjectProperty(
         this,
         'parseOrDefault',
-        (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-          const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+        this.isAsync
+          ? dieAsync
+          : (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
+              const result = this._apply(input, options || defaultApplyOptions, nextNonce());
 
-          if (result === null) {
-            return input;
-          }
-          if (isArray(result)) {
-            return defaultValue;
-          }
-          return result.value;
-        }
+              if (result === null) {
+                return input;
+              }
+              if (isArray(result)) {
+                return defaultValue;
+              }
+              return result.value;
+            }
       );
     },
   },
@@ -1221,7 +1200,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ConvertedValue>> {
     return new Promise(resolve => {
       resolve(this.converter(input, options));
-    }).then(output => this._applyOperationsAsync(input, output, options, null), captureIssues);
+    }).then(output => this._applyOperations(input, output, options, null), captureIssues);
   }
 }
 
@@ -1312,7 +1291,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
           }
           output = outputResult.value;
         }
-        return this._applyOperationsAsync(input, output, options, null);
+        return this._applyOperations(input, output, options, null);
       });
     });
   }
@@ -1405,7 +1384,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
         }
         output = result.value;
       }
-      return this._applyOperationsAsync(input, output, options, null);
+      return this._applyOperations(input, output, options, null);
     };
 
     if (isEqual(input, this.inputValue)) {
@@ -1522,7 +1501,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
           return [this._typeIssueFactory(input, options)];
         }
       }
-      return this._applyOperationsAsync(input, output, options, null);
+      return this._applyOperations(input, output, options, null);
     });
   }
 }
@@ -1617,7 +1596,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
         }
         output = result.value;
       }
-      return this._applyOperationsAsync(input, output, options, null);
+      return this._applyOperations(input, output, options, null);
     });
   }
 }
@@ -1731,7 +1710,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
         if (!isArray(outputResult)) {
           return [this._typeIssueFactory(input, options)];
         }
-        return this._applyOperationsAsync(input, output, options, null);
+        return this._applyOperations(input, output, options, null);
       });
     });
   }
