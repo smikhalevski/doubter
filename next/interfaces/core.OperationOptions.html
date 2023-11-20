@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>OperationOptions | Doubter - v3.0.3-next.0f8cde8</title><meta name="description" content="Documentation for Doubter"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>OperationOptions | Doubter - v3.0.3-next.44cc1b7</title><meta name="description" content="Documentation for Doubter"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base="..">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -6,7 +6,7 @@
 <div id="tsd-toolbar-links"></div></div>
 <ul class="results">
 <li class="state loading">Preparing search index...</li>
-<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Doubter - v3.0.3-next.0f8cde8</a></div>
+<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Doubter - v3.0.3-next.44cc1b7</a></div>
 <div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-menu"></use></svg></a></div></div></header>
 <div class="container container-main">
 <div class="col-content">
@@ -17,7 +17,7 @@
 <li><a href="core.OperationOptions.html">OperationOptions</a></li></ul>
 <h1>Interface OperationOptions</h1></div>
 <section class="tsd-panel tsd-comment">
-<div class="tsd-comment tsd-typography"><p>Options of a generic <a href="core.Operation.html" class="tsd-kind-interface">operation</a>.</p>
+<div class="tsd-comment tsd-typography"><p>Options of an <a href="core.Operation.html" class="tsd-kind-interface">operation</a>.</p>
 </div>
 <div class="tsd-comment tsd-typography"></div></section>
 <section class="tsd-panel tsd-hierarchy">
@@ -25,7 +25,8 @@
 <ul class="tsd-hierarchy">
 <li><span class="target">OperationOptions</span>
 <ul class="tsd-hierarchy">
-<li><a href="core.CustomOperationOptions.html" class="tsd-signature-type tsd-kind-interface">CustomOperationOptions</a></li></ul></li></ul></section>
+<li><a href="core.ParameterizedOperationOptions.html" class="tsd-signature-type tsd-kind-interface">ParameterizedOperationOptions</a></li>
+<li><a href="core.RefineOptions.html" class="tsd-signature-type tsd-kind-interface">RefineOptions</a></li></ul></li></ul></section>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -34,6 +35,7 @@
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
 <div class="tsd-index-list"><a href="core.OperationOptions.html#param" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>param?</span></a>
+<a href="core.OperationOptions.html#required" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>required?</span></a>
 <a href="core.OperationOptions.html#type" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>type?</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
@@ -45,11 +47,25 @@
 </div>
 <div class="tsd-comment tsd-typography">
 <h4>See</h4><p><a href="core.Operation.html#param" class="tsd-kind-property">Operation.param</a></p>
+
+<h4>Default</h4><pre><code class="language-ts"><span class="hl-2">undefined</span>
+</code><button>Copy</button></pre>
+</div></section>
+<section class="tsd-panel tsd-member"><a id="required" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>required</span><a href="#required" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">required</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
+<div class="tsd-comment tsd-typography"><p>If <code>true</code> then consequent operations are omitted if this operation raises issues.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<h4>See</h4><p><a href="core.Operation.html#isRequired" class="tsd-kind-property">Operation.isRequired</a></p>
+
+<h4>Default</h4><pre><code class="language-ts"><span class="hl-2">false</span>
+</code><button>Copy</button></pre>
 </div></section>
 <section class="tsd-panel tsd-member"><a id="type" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>type</span><a href="#type" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">type</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">any</span></div>
-<div class="tsd-comment tsd-typography"><p>The type of the operation.</p>
+<div class="tsd-comment tsd-typography"><p>The type of the operation. If omitted then operation callback is used as its type.</p>
 </div>
 <div class="tsd-comment tsd-typography">
 <h4>See</h4><p><a href="core.Operation.html#type" class="tsd-kind-property">Operation.type</a></p>
@@ -72,9 +88,10 @@
 <div class="tsd-accordion-details">
 <ul>
 <li><a href="#param" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>param</span></a></li>
+<li><a href="#required" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>required</span></a></li>
 <li><a href="#type" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>type</span></a></li></ul></div></details></div>
 <div class="site-menu">
-<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Doubter - v3.0.3-next.0f8cde8</span></a>
+<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Doubter - v3.0.3-next.44cc1b7</span></a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="..">
 <li><a href="../modules/core.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2"></use></svg>core</a></li>
 <li><a href="../modules/plugin_array_essentials.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2"></use></svg>plugin/array-essentials</a></li>

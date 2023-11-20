@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>RefineOptions | Doubter - v3.0.3-next.0f8cde8</title><meta name="description" content="Documentation for Doubter"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>RefineOptions | Doubter - v3.0.3-next.44cc1b7</title><meta name="description" content="Documentation for Doubter"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base="..">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -6,7 +6,7 @@
 <div id="tsd-toolbar-links"></div></div>
 <ul class="results">
 <li class="state loading">Preparing search index...</li>
-<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Doubter - v3.0.3-next.0f8cde8</a></div>
+<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Doubter - v3.0.3-next.44cc1b7</a></div>
 <div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-menu"></use></svg></a></div></div></header>
 <div class="container container-main">
 <div class="col-content">
@@ -23,7 +23,7 @@
 <section class="tsd-panel tsd-hierarchy">
 <h4>Hierarchy</h4>
 <ul class="tsd-hierarchy">
-<li><a href="core.CustomOperationOptions.html" class="tsd-signature-type tsd-kind-interface">CustomOperationOptions</a></li>
+<li><a href="core.OperationOptions.html" class="tsd-signature-type tsd-kind-interface">OperationOptions</a></li>
 <li><a href="core.IssueOptions.html" class="tsd-signature-type tsd-kind-interface">IssueOptions</a>
 <ul class="tsd-hierarchy">
 <li><span class="target">RefineOptions</span>
@@ -37,10 +37,10 @@
 <section class="tsd-index-section">
 <h3 class="tsd-index-heading">Properties</h3>
 <div class="tsd-index-list"><a href="core.RefineOptions.html#code" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>code?</span></a>
-<a href="core.RefineOptions.html#force" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>force?</span></a>
 <a href="core.RefineOptions.html#message" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>message?</span></a>
 <a href="core.RefineOptions.html#meta" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>meta?</span></a>
 <a href="core.RefineOptions.html#param" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>param?</span></a>
+<a href="core.RefineOptions.html#required" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>required?</span></a>
 <a href="core.RefineOptions.html#type" class="tsd-index-link tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>type?</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
@@ -56,16 +56,6 @@
 
 <h4>See</h4><p><a href="core.Issue.html#code" class="tsd-kind-property">Issue.code</a></p>
 </div></section>
-<section class="tsd-panel tsd-member tsd-is-inherited"><a id="force" class="tsd-anchor"></a>
-<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>force</span><a href="#force" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
-<div class="tsd-signature"><span class="tsd-kind-property">force</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
-<div class="tsd-comment tsd-typography"><p>If <code>true</code> then the operation is applied even if some of the preceding operations have failed.</p>
-</div>
-<div class="tsd-comment tsd-typography">
-<h4>Default</h4><pre><code class="language-ts"><span class="hl-2">false</span>
-</code><button>Copy</button></pre>
-</div><aside class="tsd-sources">
-<p>Inherited from <a href="core.CustomOperationOptions.html">CustomOperationOptions</a>.<a href="core.CustomOperationOptions.html#force">force</a></p></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="message" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>message</span><a href="#message" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">message</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">bigint</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">object</span><span class="tsd-signature-symbol"> | </span><a href="../types/core.MessageCallback.html" class="tsd-signature-type tsd-kind-type-alias">MessageCallback</a></div>
@@ -94,17 +84,32 @@
 </div>
 <div class="tsd-comment tsd-typography">
 <h4>See</h4><p><a href="core.Operation.html#param" class="tsd-kind-property">Operation.param</a></p>
+
+<h4>Default</h4><pre><code class="language-ts"><span class="hl-2">undefined</span>
+</code><button>Copy</button></pre>
 </div><aside class="tsd-sources">
-<p>Inherited from <a href="core.CustomOperationOptions.html">CustomOperationOptions</a>.<a href="core.CustomOperationOptions.html#param">param</a></p></aside></section>
+<p>Inherited from <a href="core.OperationOptions.html">OperationOptions</a>.<a href="core.OperationOptions.html#param">param</a></p></aside></section>
+<section class="tsd-panel tsd-member tsd-is-inherited"><a id="required" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>required</span><a href="#required" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">required</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div>
+<div class="tsd-comment tsd-typography"><p>If <code>true</code> then consequent operations are omitted if this operation raises issues.</p>
+</div>
+<div class="tsd-comment tsd-typography">
+<h4>See</h4><p><a href="core.Operation.html#isRequired" class="tsd-kind-property">Operation.isRequired</a></p>
+
+<h4>Default</h4><pre><code class="language-ts"><span class="hl-2">false</span>
+</code><button>Copy</button></pre>
+</div><aside class="tsd-sources">
+<p>Inherited from <a href="core.OperationOptions.html">OperationOptions</a>.<a href="core.OperationOptions.html#required">required</a></p></aside></section>
 <section class="tsd-panel tsd-member tsd-is-inherited"><a id="type" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <span>type</span><a href="#type" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">type</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">any</span></div>
-<div class="tsd-comment tsd-typography"><p>The type of the operation.</p>
+<div class="tsd-comment tsd-typography"><p>The type of the operation. If omitted then operation callback is used as its type.</p>
 </div>
 <div class="tsd-comment tsd-typography">
 <h4>See</h4><p><a href="core.Operation.html#type" class="tsd-kind-property">Operation.type</a></p>
 </div><aside class="tsd-sources">
-<p>Inherited from <a href="core.CustomOperationOptions.html">CustomOperationOptions</a>.<a href="core.CustomOperationOptions.html#type">type</a></p></aside></section></section></div>
+<p>Inherited from <a href="core.OperationOptions.html">OperationOptions</a>.<a href="core.OperationOptions.html#type">type</a></p></aside></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -123,13 +128,13 @@
 <div class="tsd-accordion-details">
 <ul>
 <li><a href="#code" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>code</span></a></li>
-<li><a href="#force" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>force</span></a></li>
 <li><a href="#message" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>message</span></a></li>
 <li><a href="#meta" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>meta</span></a></li>
 <li><a href="#param" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>param</span></a></li>
+<li><a href="#required" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>required</span></a></li>
 <li><a href="#type" class="tsd-is-inherited"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>type</span></a></li></ul></div></details></div>
 <div class="site-menu">
-<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Doubter - v3.0.3-next.0f8cde8</span></a>
+<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Doubter - v3.0.3-next.44cc1b7</span></a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="..">
 <li><a href="../modules/core.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2"></use></svg>core</a></li>
 <li><a href="../modules/plugin_array_essentials.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2"></use></svg>plugin/array-essentials</a></li>

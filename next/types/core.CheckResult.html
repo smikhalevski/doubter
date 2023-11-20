@@ -1,4 +1,4 @@
-<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>CheckCallback | Doubter - v3.0.3-next.0f8cde8</title><meta name="description" content="Documentation for Doubter"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
+<!DOCTYPE html><html class="default" lang="en"><head><meta charSet="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>CheckResult | Doubter - v3.0.3-next.44cc1b7</title><meta name="description" content="Documentation for Doubter"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><link rel="stylesheet" href="../assets/custom.css"/><script defer src="../assets/main.js"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os"</script><header class="tsd-page-toolbar">
 <div class="tsd-toolbar-contents container">
 <div class="table-cell" id="tsd-search" data-base="..">
 <div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div>
@@ -6,7 +6,7 @@
 <div id="tsd-toolbar-links"></div></div>
 <ul class="results">
 <li class="state loading">Preparing search index...</li>
-<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Doubter - v3.0.3-next.0f8cde8</a></div>
+<li class="state failure">The search index is not available</li></ul><a href="../index.html" class="title">Doubter - v3.0.3-next.44cc1b7</a></div>
 <div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><use href="#icon-menu"></use></svg></a></div></div></header>
 <div class="container container-main">
 <div class="col-content">
@@ -14,56 +14,12 @@
 <ul class="tsd-breadcrumb">
 <li><a href="../index.html">Doubter</a></li>
 <li><a href="../modules/core.html">core</a></li>
-<li><a href="core.CheckCallback.html">CheckCallback</a></li></ul>
-<h1>Type alias CheckCallback&lt;Value, Param&gt;</h1></div>
-<div class="tsd-signature"><span class="tsd-kind-type-alias">Check<wbr/>Callback</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type tsd-kind-type-parameter">Value</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type tsd-kind-type-parameter">Param</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">value</span>, <span class="tsd-kind-parameter">param</span>, <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="../interfaces/core.Issue.html" class="tsd-signature-type tsd-kind-interface">Issue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/core.Issue.html" class="tsd-signature-type tsd-kind-interface">Issue</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">)</span></div>
-<section class="tsd-panel">
-<h4>Type Parameters</h4>
-<ul class="tsd-type-parameter-list">
-<li>
-<h4><span class="tsd-kind-type-parameter">Value</span> = <span class="tsd-signature-type">any</span></h4>
-<div class="tsd-comment tsd-typography"><p>The value to check.</p>
+<li><a href="core.CheckResult.html">CheckResult</a></li></ul>
+<h1>Type alias CheckResult</h1></div>
+<div class="tsd-signature"><span class="tsd-kind-type-alias">Check<wbr/>Result</span><span class="tsd-signature-symbol">:</span> <a href="../interfaces/core.Issue.html" class="tsd-signature-type tsd-kind-interface">Issue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/core.Issue.html" class="tsd-signature-type tsd-kind-interface">Issue</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></div>
+<div class="tsd-comment tsd-typography"><p>The result returned by a <a href="../classes/core.Shape.html#check" class="tsd-kind-method">check operation</a>.</p>
 </div>
-<div class="tsd-comment tsd-typography"></div></li>
-<li>
-<h4><span class="tsd-kind-type-parameter">Param</span> = <span class="tsd-signature-type">any</span></h4>
-<div class="tsd-comment tsd-typography"><p>The additional param that was associated with the check operation.</p>
-</div>
-<div class="tsd-comment tsd-typography"></div></li></ul></section>
-<div class="tsd-type-declaration">
-<h4>Type declaration</h4>
-<ul class="tsd-parameters">
-<li class="tsd-parameter-signature">
-<ul class="tsd-signatures">
-<li class="tsd-signature" id="__type.__type-1"><span class="tsd-signature-symbol">(</span><span class="tsd-kind-parameter">value</span>, <span class="tsd-kind-parameter">param</span>, <span class="tsd-kind-parameter">options</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../interfaces/core.Issue.html" class="tsd-signature-type tsd-kind-interface">Issue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/core.Issue.html" class="tsd-signature-type tsd-kind-interface">Issue</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></li>
-<li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p>Checks that a value satisfies a requirement and returns issues if it doesn&#39;t.</p>
-<p>If a <a href="../classes/core.ValidationError.html" class="tsd-kind-class">ValidationError</a> is thrown, its issues are captured and incorporated into a parsing result.</p>
-</div>
-<div class="tsd-parameters">
-<h4 class="tsd-parameters-title">Parameters</h4>
-<ul class="tsd-parameter-list">
-<li>
-<h5><span class="tsd-kind-parameter">value</span>: <span class="tsd-signature-type tsd-kind-type-parameter">Value</span></h5>
-<div class="tsd-comment tsd-typography"><p>The value to check.</p>
-</div>
-<div class="tsd-comment tsd-typography"></div></li>
-<li>
-<h5><span class="tsd-kind-parameter">param</span>: <span class="tsd-signature-type tsd-kind-type-parameter">Param</span></h5>
-<div class="tsd-comment tsd-typography"><p>The additional param that was associated with the operation.</p>
-</div>
-<div class="tsd-comment tsd-typography"></div></li>
-<li>
-<h5><span class="tsd-kind-parameter">options</span>: <a href="../interfaces/core.ApplyOptions.html" class="tsd-signature-type tsd-kind-interface">ApplyOptions</a></h5>
-<div class="tsd-comment tsd-typography"><p>Parsing options.</p>
-</div>
-<div class="tsd-comment tsd-typography"></div></li></ul></div>
-<h4 class="tsd-returns-title">Returns <a href="../interfaces/core.Issue.html" class="tsd-signature-type tsd-kind-interface">Issue</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol"> | </span><a href="../interfaces/core.Issue.html" class="tsd-signature-type tsd-kind-interface">Issue</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">void</span></h4><p><code>null</code> or <code>undefined</code> if the value satisfies a requirement; an issue or an array of issues if a value
-doesn&#39;t satisfy a requirement.</p>
-
-<div class="tsd-comment tsd-typography">
-<h4>See</h4><p><a href="../classes/core.Shape.html#check" class="tsd-kind-method">Shape.check</a></p>
-</div></li></ul></li></ul></div></div>
+<div class="tsd-comment tsd-typography"></div></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -78,7 +34,7 @@ doesn&#39;t satisfy a requirement.</p>
 <div class="tsd-theme-toggle">
 <h4 class="uppercase">Theme</h4><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div></div>
 <div class="site-menu">
-<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Doubter - v3.0.3-next.0f8cde8</span></a>
+<nav class="tsd-navigation"><a href="../index.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1"></use></svg><span>Doubter - v3.0.3-next.44cc1b7</span></a>
 <ul class="tsd-small-nested-navigation" id="tsd-nav-container" data-base="..">
 <li><a href="../modules/core.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2"></use></svg>core</a></li>
 <li><a href="../modules/plugin_array_essentials.html"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-2"></use></svg>plugin/array-essentials</a></li>
