@@ -182,7 +182,12 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     const issueFactory = createIssueFactory(CODE_STRING_MIN, ctor.messages[CODE_STRING_MIN], options, length);
 
     return this.addOperation(
-      (value, param, options) => (value.length < param ? [issueFactory(value, options)] : null),
+      (value, param, options) => {
+        if (value.length >= param) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_STRING_MIN, param: length }
     );
   };
@@ -191,7 +196,12 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     const issueFactory = createIssueFactory(CODE_STRING_MAX, ctor.messages[CODE_STRING_MAX], options, length);
 
     return this.addOperation(
-      (value, param, options) => (value.length > param ? [issueFactory(value, options)] : null),
+      (value, param, options) => {
+        if (value.length <= param) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_STRING_MAX, param: length }
     );
   };
@@ -199,17 +209,27 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
   prototype.regex = function (re, options) {
     const issueFactory = createIssueFactory(CODE_STRING_REGEX, ctor.messages[CODE_STRING_REGEX], options, re);
 
-    return this.addOperation((value, param, options) => (!re.test(value) ? [issueFactory(value, options)] : null), {
-      type: CODE_STRING_REGEX,
-      param: re,
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        if (param.test(value)) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
+      { type: CODE_STRING_REGEX, param: re }
+    );
   };
 
   prototype.includes = function (value, options) {
     const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, ctor.messages[CODE_STRING_INCLUDES], options, value);
 
     return this.addOperation(
-      (value, param, options) => (value.indexOf(param) === -1 ? [issueFactory(value, options)] : null),
+      (value, param, options) => {
+        if (value.includes(param)) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_STRING_INCLUDES, param: value }
     );
   };
@@ -223,7 +243,12 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
 
     return this.addOperation(
-      (value, param, options) => (!value.startsWith(param) ? [issueFactory(value, options)] : null),
+      (value, param, options) => {
+        if (value.startsWith(param)) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_STRING_STARTS_WITH, param: value }
     );
   };
@@ -237,7 +262,12 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
 
     return this.addOperation(
-      (value, param, options) => (!value.endsWith(param) ? [issueFactory(value, options)] : null),
+      (value, param, options) => {
+        if (value.endsWith(param)) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_STRING_ENDS_WITH, param: value }
     );
   };
@@ -251,7 +281,12 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
 
     return this.addOperation(
-      (value, param, options) => (value.trim().length === 0 ? [issueFactory(value, options)] : null),
+      (value, param, options) => {
+        if (value.trim().length !== 0) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_STRING_NON_BLANK }
     );
   };
@@ -261,20 +296,29 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
   };
 
   prototype.trim = function () {
-    return this.addOperation((value, param, options) => ({ ok: true, value: value.trim() }), {
-      type: 'string.trim',
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        return { ok: true, value: value.trim() };
+      },
+      { type: 'string.trim' }
+    );
   };
 
   prototype.toLowerCase = function () {
-    return this.addOperation((value, param, options) => ({ ok: true, value: value.toLowerCase() }), {
-      type: 'string.toLowerCase',
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        return { ok: true, value: value.toLowerCase() };
+      },
+      { type: 'string.toLowerCase' }
+    );
   };
 
   prototype.toUpperCase = function () {
-    return this.addOperation((value, param, options) => ({ ok: true, value: value.toUpperCase() }), {
-      type: 'string.toUpperCase',
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        return { ok: true, value: value.toUpperCase() };
+      },
+      { type: 'string.toUpperCase' }
+    );
   };
 }

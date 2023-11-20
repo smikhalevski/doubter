@@ -12,7 +12,7 @@
  */
 
 import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN } from '../constants';
-import { AnyShape, ArrayShape, IssueOptions, Message, Shape } from '../core';
+import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Result, Shape } from '../core';
 import { Any } from '../typings';
 import { createIssueFactory } from '../utils';
 
@@ -70,8 +70,7 @@ declare module '../core' {
     /**
      * Requires an array to contain at least one element that conforms the given shape.
      *
-     * @param value The shape of the required element or its literal value. If a shape is provided, then it _must_
-     * support {@link Shape.isAsync the synchronous parsing}.
+     * @param value The shape of the required element or its literal value.
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
@@ -99,7 +98,12 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
     const issueFactory = createIssueFactory(CODE_ARRAY_MIN, ctor.messages[CODE_ARRAY_MIN], options, length);
 
     return this.addOperation(
-      (value, param, options) => (value.length < length ? [issueFactory(value, options)] : null),
+      (value, param, options) => {
+        if (value.length >= length) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_ARRAY_MIN, param: length }
     );
   };
@@ -108,7 +112,12 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
     const issueFactory = createIssueFactory(CODE_ARRAY_MAX, ctor.messages[CODE_ARRAY_MAX], options, length);
 
     return this.addOperation(
-      (value, param, options) => (value.length > length ? [issueFactory(value, options)] : null),
+      (value, param, options) => {
+        if (value.length <= length) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_ARRAY_MAX, param: length }
     );
   };
@@ -122,19 +131,34 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
 
     if (!(value instanceof Shape)) {
       return this.addOperation(
-        (value, param, options) => (value.includes(param) ? null : [issueFactory(value, options)]),
+        (value, param, options) => {
+          if (value.includes(param)) {
+            return null;
+          }
+          return [issueFactory(value, options)];
+        },
         { type: CODE_ARRAY_INCLUDES, param: value }
       );
     }
 
     if (value.isAsync) {
-      return this.addAsyncOperation(
-        (value, param, options) => {
-          // TODO Implement me
-          return Promise.resolve(null);
-        },
-        { type: CODE_ARRAY_INCLUDES, param: value }
-      );
+      const next = (value: unknown[], shape: Shape, options: ApplyOptions, index: number): Promise<Result> => {
+        if (index === value.length) {
+          return Promise.resolve([issueFactory(value, options)]);
+        }
+
+        return shape.tryAsync(value[index]).then(result => {
+          if (result.ok) {
+            return null;
+          }
+          return next(value, shape, options, index + 1);
+        });
+      };
+
+      return this.addAsyncOperation((value, param, options) => next(value, param, options, 0), {
+        type: CODE_ARRAY_INCLUDES,
+        param: value,
+      });
     }
 
     return this.addOperation(

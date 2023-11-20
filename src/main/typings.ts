@@ -108,14 +108,14 @@ export interface IssueOptions {
    * The custom issue message.
    *
    * @see {@link Message}
-   * @see {@link core!Issue#message Issue.message}
+   * @see {@link Issue.message}
    */
   message?: Message | Any;
 
   /**
    * An arbitrary metadata that is added to an issue.
    *
-   * @see {@link core!Issue#meta Issue.meta}
+   * @see {@link Issue.meta}
    */
   meta?: any;
 }

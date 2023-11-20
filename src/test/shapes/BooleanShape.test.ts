@@ -48,4 +48,19 @@ describe('BooleanShape', () => {
       });
     });
   });
+
+  describe('async', () => {
+    test('invokes async check', async () => {
+      const checkMock = jest.fn(() => Promise.resolve([{ code: 'xxx' }]));
+
+      const shape = new BooleanShape().checkAsync(checkMock);
+
+      expect(shape.isAsync).toBe(true);
+
+      await expect(shape.tryAsync(true)).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+    });
+  });
 });

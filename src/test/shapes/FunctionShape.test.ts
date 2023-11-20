@@ -316,4 +316,19 @@ describe('FunctionShape', () => {
       );
     });
   });
+
+  describe('async', () => {
+    test('invokes async check', async () => {
+      const checkMock = jest.fn(() => Promise.resolve([{ code: 'xxx' }]));
+
+      const shape = new FunctionShape(new ArrayShape([], null), new StringShape(), null).checkAsync(checkMock);
+
+      expect(shape.isAsync).toBe(true);
+
+      await expect(shape.tryAsync(() => undefined)).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+    });
+  });
 });

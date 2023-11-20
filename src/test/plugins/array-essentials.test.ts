@@ -1,6 +1,5 @@
 import { ArrayShape, ConstShape, Shape } from '../../main';
 import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN } from '../../main/constants';
-import { AsyncMockShape } from '../shapes/mocks';
 
 describe('length', () => {
   test('checks length', () => {
@@ -64,6 +63,7 @@ describe('includes', () => {
   test('checks that an array includes an element that conforms the shape', () => {
     const shape = new ArrayShape([], new Shape()).includes(new ConstShape(111));
 
+    expect(shape.isAsync).toBe(false);
     expect(shape.try([111])).toEqual({ ok: true, value: [111] });
     expect(shape.try([222])).toEqual({
       ok: false,
@@ -78,7 +78,22 @@ describe('includes', () => {
     });
   });
 
-  test.skip('throws if shape is async', () => {
-    expect(() => new ArrayShape([], new Shape()).includes(new AsyncMockShape())).toThrow();
+  test('checks that an array includes an element that conforms the async shape', async () => {
+    const shape = new ArrayShape([], new Shape()).includes(new ConstShape(222).checkAsync(() => Promise.resolve()));
+
+    expect(shape.isAsync).toBe(true);
+
+    await expect(shape.tryAsync([111, 222, 333])).resolves.toEqual({ ok: true, value: [111, 222, 333] });
+    await expect(shape.tryAsync([111, 333])).resolves.toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_ARRAY_INCLUDES,
+          input: [111, 333],
+          message: Shape.messages[CODE_ARRAY_INCLUDES],
+          param: expect.any(ConstShape),
+        },
+      ],
+    });
   });
 });

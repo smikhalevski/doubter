@@ -17,7 +17,7 @@ import {
   toDeepPartialShape,
 } from '../internal/shapes';
 import { isType, unionTypes } from '../internal/types';
-import { globalMessages } from '../messages';
+import { defaultMessages } from '../messages';
 import { getTypeOf, TYPE_UNKNOWN, unknownInputs } from '../types';
 import {
   Any,
@@ -176,7 +176,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * The mapping from an issue type to a corresponding issue message.
    */
-  static readonly messages = globalMessages;
+  static readonly messages = defaultMessages;
 
   /**
    * The dictionary of shape annotations.
@@ -198,8 +198,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * This method returns a promise if there are async {@link Shape.operations}.
    *
-   * It's only safe to call this method _as the last statement_ in {@link Shape._apply}, otherwise it may return an
-   * unexpected promise.
+   * If the shape overrides only {@link Shape._apply} and doesn't override {@link Shape._applyAsync} then it's only safe
+   * to call this method _as the last statement_ in {@link Shape._apply}. Otherwise, it may return unexpected promise.
+   *
+   * If the shape overrides both {@link Shape._apply} and {@link Shape._applyAsync} then this method would always
+   * synchronously return a {@link Result} inside {@link Shape._apply}.
    */
   protected declare _applyOperations: ApplyOperationsCallback;
 
@@ -242,9 +245,25 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that synchronously applies an operation to the shape output value.
    * @param options The operation options.
    * @returns The clone of the shape.
+   * @template Param The param that is passed to the operation when it is applied.
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
-  addOperation(cb: OperationCallback<Result<OutputValue>, OutputValue>, options: OperationOptions = {}): this {
+  addOperation<Param>(
+    cb: OperationCallback<Result<OutputValue>, OutputValue, Param>,
+    options?: ParameterizedOperationOptions<Param>
+  ): this;
+
+  /**
+   * Adds a synchronous operation to the shape.
+   *
+   * @param cb The callback that synchronously applies an operation to the shape output value.
+   * @param options The operation options.
+   * @returns The clone of the shape.
+   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   */
+  addOperation(cb: OperationCallback<Result<OutputValue>, OutputValue>, options?: OperationOptions): this;
+
+  addOperation(cb: OperationCallback, options: OperationOptions = {}): this {
     const { type = cb, param, required = false } = options;
 
     const shape = this._clone();
@@ -258,12 +277,34 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that asynchronously applies an operation to the shape output value.
    * @param options The operation options.
    * @returns The clone of the shape.
+   * @template Param The param that is passed to the operation when it is applied.
+   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   */
+  addAsyncOperation<Param>(
+    cb: OperationCallback<PromiseLike<Result<OutputValue>>, OutputValue, Param>,
+    options?: ParameterizedOperationOptions<Param>
+  ): this;
+  /**
+   * Adds an asynchronous operation to the shape.
+   *
+   * @param cb The callback that asynchronously applies an operation to the shape output value.
+   * @param options The operation options.
+   * @returns The clone of the shape.
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
   addAsyncOperation(
     cb: OperationCallback<PromiseLike<Result<OutputValue>>, OutputValue>,
-    options: OperationOptions = {}
-  ): this {
+    options?: OperationOptions
+  ): this;
+  /**
+   * Adds an asynchronous operation to the shape.
+   *
+   * @param cb The callback that asynchronously applies an operation to the shape output value.
+   * @param options The operation options.
+   * @returns The clone of the shape.
+   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   */
+  addAsyncOperation(cb: OperationCallback, options: OperationOptions = {}): this {
     const { type = cb, param, required = false } = options;
 
     const shape = this._clone();

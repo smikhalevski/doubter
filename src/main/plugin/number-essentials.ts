@@ -26,7 +26,7 @@ import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**
-   * By default, {@link core!NumberShape#multipleOf NumberShape.multipleOf} uses
+   * By default, {@link core!NumberShape.multipleOf NumberShape.multipleOf} uses
    * [the modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
    * may produce unexpected results when used with floating point numbers. This happens because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
@@ -222,18 +222,30 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.finite = function (options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, ctor.messages[CODE_NUMBER_FINITE], options, undefined);
 
-    return this.addOperation((value, param, options) => (!isFinite(value) ? [issueFactory(value, options)] : null), {
-      type: CODE_NUMBER_FINITE,
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        if (isFinite(value)) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
+      { type: CODE_NUMBER_FINITE }
+    );
   };
 
   prototype.int = function (options) {
     const { isInteger } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_INT, ctor.messages[CODE_NUMBER_INT], options, undefined);
 
-    return this.addOperation((value, param, options) => (!isInteger(value) ? [issueFactory(value, options)] : null), {
-      type: CODE_NUMBER_INT,
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        if (isInteger(value)) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
+      { type: CODE_NUMBER_INT }
+    );
   };
 
   prototype.positive = function (options) {
@@ -255,37 +267,57 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.gt = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, ctor.messages[CODE_NUMBER_GT], options, value);
 
-    return this.addOperation((value, param, options) => (value <= param ? [issueFactory(value, options)] : null), {
-      type: CODE_NUMBER_GT,
-      param: value,
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        if (value > param) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
+      { type: CODE_NUMBER_GT, param: value }
+    );
   };
 
   prototype.lt = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, ctor.messages[CODE_NUMBER_LT], options, value);
 
-    return this.addOperation((value, param, options) => (value >= param ? [issueFactory(value, options)] : null), {
-      type: CODE_NUMBER_LT,
-      param: value,
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        if (value < param) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
+      { type: CODE_NUMBER_LT, param: value }
+    );
   };
 
   prototype.gte = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, ctor.messages[CODE_NUMBER_GTE], options, value);
 
-    return this.addOperation((value, param, options) => (value < param ? [issueFactory(value, options)] : null), {
-      type: CODE_NUMBER_GTE,
-      param: value,
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        if (value >= param) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
+      { type: CODE_NUMBER_GTE, param: value }
+    );
   };
 
   prototype.lte = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, ctor.messages[CODE_NUMBER_LTE], options, value);
 
-    return this.addOperation((value, param, options) => (value > param ? [issueFactory(value, options)] : null), {
-      type: CODE_NUMBER_LTE,
-      param: value,
-    });
+    return this.addOperation(
+      (value, param, options) => {
+        if (value <= param) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
+      { type: CODE_NUMBER_LTE, param: value }
+    );
   };
 
   prototype.min = prototype.gte;
@@ -306,10 +338,12 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
 
     return this.addOperation(
-      (value, param, options) =>
-        (epsilon !== -1 ? abs(round(value / param) - value / param) > epsilon : value % param !== 0)
-          ? [issueFactory(value, options)]
-          : null,
+      (value, param, options) => {
+        if (epsilon !== -1 ? abs(round(value / param) - value / param) <= epsilon : value % param === 0) {
+          return null;
+        }
+        return [issueFactory(value, options)];
+      },
       { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
     );
   };
