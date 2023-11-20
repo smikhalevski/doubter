@@ -1,6 +1,16 @@
 import { ERR_SYNC_UNSUPPORTED } from '../constants';
 import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
-import { ApplyOptions, CheckResult, Issue, Ok, Operation, OperationCallback, ParseOptions, Result } from '../typings';
+import {
+  ApplyOperationsCallback,
+  ApplyOptions,
+  CheckResult,
+  Issue,
+  Ok,
+  Operation,
+  OperationCallback,
+  ParseOptions,
+  Result,
+} from '../typings';
 import { ValidationError } from '../ValidationError';
 import { freeze, isArray, isEqual, isObjectLike } from './lang';
 
@@ -15,24 +25,6 @@ type Awaited<T> =
 export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
-
-/**
- * A callback that applies operations to the shape output.
- *
- * @param input The input value to which the shape was applied.
- * @param output The shape output value to which the operation must be applied.
- * @param options Parsing options.
- * @param issues The mutable array of issues captured by a shape, or `null` if there were no issues raised yet.
- * @returns The result of the operation.
- * @template ReturnValue The cumulative result of applied operations.
- * @group Operations
- */
-type ApplyOperationsCallback = (
-  input: unknown,
-  output: unknown,
-  options: ApplyOptions,
-  issues: Issue[] | null
-) => Result | Promise<Result>;
 
 export const defaultApplyOptions = freeze<ApplyOptions>({ earlyReturn: false });
 
@@ -155,7 +147,10 @@ export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
   return shape;
 }
 
-export const universalApplyOperations: ApplyOperationsCallback = (input, output, options, issues) => {
+/**
+ * The callback that converts output and issues to a {@link Result}.
+ */
+export const applyOperations: ApplyOperationsCallback = (input, output, options, issues) => {
   if (issues !== null) {
     return issues;
   }

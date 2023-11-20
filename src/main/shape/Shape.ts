@@ -3,6 +3,7 @@ import { freeze, isArray, isEqual, returnTrue } from '../internal/lang';
 import { Dict, overrideProperty, ReadonlyDict } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
+  applyOperations,
   applyShape,
   captureIssues,
   createApplyOperations,
@@ -14,13 +15,13 @@ import {
   Promisify,
   throwSyncUnsupported,
   toDeepPartialShape,
-  universalApplyOperations,
 } from '../internal/shapes';
 import { isType, unionTypes } from '../internal/types';
 import { globalMessages } from '../messages';
 import { getTypeOf, TYPE_UNKNOWN, unknownInputs } from '../types';
 import {
   Any,
+  ApplyOperationsCallback,
   ApplyOptions,
   CheckResult,
   Err,
@@ -200,12 +201,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * It's only safe to call this method _as the last statement_ in {@link Shape._apply}, otherwise it may return an
    * unexpected promise.
    */
-  protected declare _applyOperations: (
-    input: unknown,
-    output: unknown,
-    options: ApplyOptions,
-    issues: Issue[] | null
-  ) => Result | Promise<Result>;
+  protected declare _applyOperations: ApplyOperationsCallback;
 
   /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
@@ -974,7 +970,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      let cb = universalApplyOperations;
+      let cb = applyOperations;
 
       for (let i = this.operations.length - 1, async = false; i >= 0; --i) {
         const operation = this.operations[i];
