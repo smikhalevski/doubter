@@ -199,7 +199,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * This method returns a promise if there are async {@link Shape.operations}.
    *
    * If the shape overrides only {@link Shape._apply} and doesn't override {@link Shape._applyAsync} then it's only safe
-   * to call this method _as the last statement_ in {@link Shape._apply}. Otherwise, it may return unexpected promise.
+   * to call this method _as the last statement_ in {@link Shape._apply}. Otherwise, it may return an unexpected
+   * promise.
    *
    * If the shape overrides both {@link Shape._apply} and {@link Shape._applyAsync} then this method would always
    * synchronously return a {@link Result} inside {@link Shape._apply}.

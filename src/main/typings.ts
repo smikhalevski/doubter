@@ -359,4 +359,9 @@ export interface ParseOptions extends ApplyOptions {
  */
 export type Any = object | string | number | bigint | boolean | symbol | null | undefined;
 
+/**
+ * The result returned by a {@link Shape.check check operation}.
+ *
+ * @group Other
+ */
 export type CheckResult = Issue[] | Issue | null | undefined | void;
