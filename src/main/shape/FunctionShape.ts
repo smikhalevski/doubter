@@ -5,7 +5,7 @@ import {
   Awaitable,
   copyOperations,
   defaultApplyOptions,
-  getMessage,
+  getErrorMessage,
   INPUT,
   nextNonce,
   ok,
@@ -308,7 +308,7 @@ function getValue(key: string, result: Result, input: unknown, options: ParseOpt
   }
   if (isArray(result)) {
     unshiftIssuesPath(result, key);
-    throw new ValidationError(result, getMessage(result, input, options));
+    throw new ValidationError(result, getErrorMessage(result, input, options));
   }
   return result.value;
 }

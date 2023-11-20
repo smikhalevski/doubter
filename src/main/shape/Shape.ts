@@ -8,7 +8,7 @@ import {
   createApplyOperations,
   defaultApplyOptions,
   extractCheckResult,
-  getMessage,
+  getErrorMessage,
   nextNonce,
   ok,
   Promisify,
@@ -1071,7 +1071,7 @@ Object.defineProperties(Shape.prototype, {
                 return input;
               }
               if (isArray(result)) {
-                throw new ValidationError(result, getMessage(result, input, options));
+                throw new ValidationError(result, getErrorMessage(result, input, options));
               }
               return result.value;
             }
@@ -1089,7 +1089,7 @@ Object.defineProperties(Shape.prototype, {
             return input;
           }
           if (isArray(result)) {
-            throw new ValidationError(result, getMessage(result, input, options));
+            throw new ValidationError(result, getErrorMessage(result, input, options));
           }
           return result.value;
         });

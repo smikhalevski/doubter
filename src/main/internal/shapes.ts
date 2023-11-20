@@ -42,6 +42,9 @@ export declare const OUTPUT: unique symbol;
 export type INPUT = typeof INPUT;
 export type OUTPUT = typeof OUTPUT;
 
+/**
+ * Nonce is required to distinguish parallel invocations of async parsing.
+ */
 let nonce = -1;
 
 export function nextNonce(): number {
@@ -50,7 +53,6 @@ export function nextNonce(): number {
 
 /**
  * For test purposes only!
- * @internal
  */
 export function resetNonce(): void {
   nonce = -1;
@@ -130,7 +132,11 @@ export function captureIssues(error: unknown): Issue[] {
 /**
  * Returns an error message that is composed of the captured issues and parsing options.
  */
-export function getMessage(issues: Issue[], input: unknown, options: ParseOptions | undefined): string | undefined {
+export function getErrorMessage(
+  issues: Issue[],
+  input: unknown,
+  options: ParseOptions | undefined
+): string | undefined {
   const message = options?.errorMessage;
 
   if (typeof message === 'function') {
