@@ -219,7 +219,7 @@ export function createApplyOperations(
   };
 }
 
-export function adoptCheckResult(result: CheckResult): Result {
+export function extractCheckResult(result: CheckResult): Result {
   if (!isObjectLike(result)) {
     return null;
   }
@@ -229,6 +229,6 @@ export function adoptCheckResult(result: CheckResult): Result {
   return [result];
 }
 
-export function dieAsync(): never {
+export function throwSyncUnsupported(): never {
   throw new Error(ERR_SYNC_UNSUPPORTED);
 }

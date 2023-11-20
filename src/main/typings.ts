@@ -149,11 +149,11 @@ export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
  * @see {@link Shape.check}
  * @see {@link Shape.alter}
  * @see {@link Shape.refine}
- * @see {@link Shape.withOperation}
+ * @see {@link Shape.addOperation}
  * @see {@link Shape.checkAsync}
  * @see {@link Shape.alterAsync}
  * @see {@link Shape.refineAsync}
- * @see {@link Shape.withAsyncOperation}
+ * @see {@link Shape.addAsyncOperation}
  * @group Operations
  */
 export interface Operation {

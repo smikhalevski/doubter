@@ -120,7 +120,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
     const { getPrototypeOf } = Object;
     const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, ctor.messages[CODE_OBJECT_PLAIN], options, undefined);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => {
         const prototype = getPrototypeOf(value);
         return prototype !== null && prototype.constructor !== Object ? [issueFactory(value, options)] : null;
@@ -132,7 +132,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.allKeys = function (keys, options) {
     const issueFactory = createIssueFactory(CODE_OBJECT_ALL_KEYS, ctor.messages[CODE_OBJECT_ALL_KEYS], options, keys);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => {
         const keyCount = getKeyCount(value, keys, keys.length);
         return keyCount > 0 && keyCount < keys.length ? [issueFactory(value, options)] : null;
@@ -149,7 +149,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
       keys
     );
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => {
         const keyCount = getKeyCount(value, keys, keys.length);
         return keyCount > 0 && keyCount <= keys.length ? [issueFactory(value, options)] : null;
@@ -161,7 +161,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.orKeys = function (keys, options) {
     const issueFactory = createIssueFactory(CODE_OBJECT_OR_KEYS, ctor.messages[CODE_OBJECT_OR_KEYS], options, keys);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => (getKeyCount(value, keys, 1) === 0 ? [issueFactory(value, options)] : null),
       { type: CODE_OBJECT_OR_KEYS, param: keys }
     );
@@ -170,7 +170,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.xorKeys = function (keys, options) {
     const issueFactory = createIssueFactory(CODE_OBJECT_XOR_KEYS, ctor.messages[CODE_OBJECT_XOR_KEYS], options, keys);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => (getKeyCount(value, keys, 2) !== 1 ? [issueFactory(value, options)] : null),
       { type: CODE_OBJECT_XOR_KEYS, param: keys }
     );
@@ -179,7 +179,7 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.oxorKeys = function (keys, options) {
     const issueFactory = createIssueFactory(CODE_OBJECT_OXOR_KEYS, ctor.messages[CODE_OBJECT_OXOR_KEYS], options, keys);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => (getKeyCount(value, keys, 2) > 1 ? [issueFactory(value, options)] : null),
       { type: CODE_OBJECT_OXOR_KEYS, param: keys }
     );

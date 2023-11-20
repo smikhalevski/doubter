@@ -101,7 +101,7 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
     const timestamp = param.getTime();
     const issueFactory = createIssueFactory(CODE_DATE_MIN, ctor.messages[CODE_DATE_MIN], options, param);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => (value.getTime() < timestamp ? [issueFactory(value, options)] : null),
       { type: CODE_DATE_MIN, param }
     );
@@ -112,7 +112,7 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
     const timestamp = param.getTime();
     const issueFactory = createIssueFactory(CODE_DATE_MAX, ctor.messages[CODE_DATE_MAX], options, param);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => (value.getTime() > timestamp ? [issueFactory(value, options)] : null),
       { type: CODE_DATE_MAX, param }
     );

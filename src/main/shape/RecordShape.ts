@@ -141,7 +141,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         setObjectProperty(output, key, value);
       }
     }
-    return this._applyOperations(input, output, options, issues);
+    return this._applyOperations(input, output, options, issues) as Result;
   }
 
   protected _applyAsync(

@@ -132,7 +132,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
       }
       return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
     }
-    return this._applyOperations(input, output, options, null);
+    return this._applyOperations(input, output, options, null) as Result;
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {

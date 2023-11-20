@@ -98,7 +98,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
   prototype.min = function (length, options) {
     const issueFactory = createIssueFactory(CODE_ARRAY_MIN, ctor.messages[CODE_ARRAY_MIN], options, length);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => (value.length < length ? [issueFactory(value, options)] : null),
       { type: CODE_ARRAY_MIN, param: length }
     );
@@ -107,7 +107,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
   prototype.max = function (length, options) {
     const issueFactory = createIssueFactory(CODE_ARRAY_MAX, ctor.messages[CODE_ARRAY_MAX], options, length);
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => (value.length > length ? [issueFactory(value, options)] : null),
       { type: CODE_ARRAY_MAX, param: length }
     );
@@ -121,14 +121,14 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
     const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, ctor.messages[CODE_ARRAY_INCLUDES], options, value);
 
     if (!(value instanceof Shape)) {
-      return this.withOperation(
+      return this.addOperation(
         (value, param, options) => (value.includes(param) ? null : [issueFactory(value, options)]),
         { type: CODE_ARRAY_INCLUDES, param: value }
       );
     }
 
     if (value.isAsync) {
-      return this.withAsyncOperation(
+      return this.addAsyncOperation(
         (value, param, options) => {
           // TODO Implement me
           return Promise.resolve(null);
@@ -137,7 +137,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>)
       );
     }
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) => {
         for (const item of value) {
           if (param.try(item, options).ok) {

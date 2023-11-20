@@ -214,7 +214,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         return [this._typeIssueFactory(input, options)];
       }
     }
-    return this._applyOperations(input, output, options, null);
+    return this._applyOperations(input, output, options, null) as Result;
   }
 }
 

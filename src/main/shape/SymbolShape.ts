@@ -34,6 +34,6 @@ export class SymbolShape extends Shape<symbol> {
     if (typeof input !== 'symbol') {
       return [this._typeIssueFactory(input, options)];
     }
-    return this._applyOperations(input, input, options, null);
+    return this._applyOperations(input, input, options, null) as Result;
   }
 }

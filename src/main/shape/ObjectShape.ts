@@ -525,7 +525,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         setObjectProperty(output, key, result.value);
       }
     }
-    return this._applyOperations(input, output, options, issues);
+    return this._applyOperations(input, output, options, issues) as Result;
   }
 
   /**
@@ -645,6 +645,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         }
       }
     }
-    return this._applyOperations(input, output, options, issues);
+    return this._applyOperations(input, output, options, issues) as Result;
   }
 }

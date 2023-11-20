@@ -222,7 +222,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.finite = function (options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, ctor.messages[CODE_NUMBER_FINITE], options, undefined);
 
-    return this.withOperation((value, param, options) => (!isFinite(value) ? [issueFactory(value, options)] : null), {
+    return this.addOperation((value, param, options) => (!isFinite(value) ? [issueFactory(value, options)] : null), {
       type: CODE_NUMBER_FINITE,
     });
   };
@@ -231,7 +231,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     const { isInteger } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_INT, ctor.messages[CODE_NUMBER_INT], options, undefined);
 
-    return this.withOperation((value, param, options) => (!isInteger(value) ? [issueFactory(value, options)] : null), {
+    return this.addOperation((value, param, options) => (!isInteger(value) ? [issueFactory(value, options)] : null), {
       type: CODE_NUMBER_INT,
     });
   };
@@ -255,7 +255,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.gt = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, ctor.messages[CODE_NUMBER_GT], options, value);
 
-    return this.withOperation((value, param, options) => (value <= param ? [issueFactory(value, options)] : null), {
+    return this.addOperation((value, param, options) => (value <= param ? [issueFactory(value, options)] : null), {
       type: CODE_NUMBER_GT,
       param: value,
     });
@@ -264,7 +264,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.lt = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, ctor.messages[CODE_NUMBER_LT], options, value);
 
-    return this.withOperation((value, param, options) => (value >= param ? [issueFactory(value, options)] : null), {
+    return this.addOperation((value, param, options) => (value >= param ? [issueFactory(value, options)] : null), {
       type: CODE_NUMBER_LT,
       param: value,
     });
@@ -273,7 +273,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.gte = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, ctor.messages[CODE_NUMBER_GTE], options, value);
 
-    return this.withOperation((value, param, options) => (value < param ? [issueFactory(value, options)] : null), {
+    return this.addOperation((value, param, options) => (value < param ? [issueFactory(value, options)] : null), {
       type: CODE_NUMBER_GTE,
       param: value,
     });
@@ -282,7 +282,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.lte = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, ctor.messages[CODE_NUMBER_LTE], options, value);
 
-    return this.withOperation((value, param, options) => (value > param ? [issueFactory(value, options)] : null), {
+    return this.addOperation((value, param, options) => (value > param ? [issueFactory(value, options)] : null), {
       type: CODE_NUMBER_LTE,
       param: value,
     });
@@ -305,7 +305,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
       divisor
     );
 
-    return this.withOperation(
+    return this.addOperation(
       (value, param, options) =>
         (epsilon !== -1 ? abs(round(value / param) - value / param) > epsilon : value % param !== 0)
           ? [issueFactory(value, options)]

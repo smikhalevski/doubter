@@ -37,10 +37,10 @@ describe('Shape', () => {
     expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
   });
 
-  describe('withOperation', () => {
+  describe('addOperation', () => {
     test('clones the shape', () => {
       const shape1 = new Shape();
-      const shape2 = shape1.withOperation(() => null, { type: 'aaa', param: undefined });
+      const shape2 = shape1.addOperation(() => null, { type: 'aaa', param: undefined });
 
       expect(shape1).not.toBe(shape2);
       expect(shape1.operations.length).toBe(0);

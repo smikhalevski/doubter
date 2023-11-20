@@ -118,7 +118,7 @@ export class SetShape<ValueShape extends AnyShape>
       values[i] = result.value;
     }
 
-    return this._applyOperations(input, changed ? new Set(values) : input, options, issues);
+    return this._applyOperations(input, changed ? new Set(values) : input, options, issues) as Result;
   }
 
   protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Set<Output<ValueShape>>>> {

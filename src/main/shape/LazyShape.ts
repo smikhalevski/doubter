@@ -198,6 +198,6 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
       }
       output = result.value;
     }
-    return this._applyOperations(input, output, options, null);
+    return this._applyOperations(input, output, options, null) as Result;
   }
 }

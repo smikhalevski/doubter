@@ -343,7 +343,7 @@ Use [`tryAsync`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.
 At the final stage of the parsing process, a shape applies operations that were added to it.
 
 ```ts
-const shape = d.string().withOperation(
+const shape = d.string().addOperation(
   next => (input, output, options, issues) => {
     return next(input, output.trim(), options, issues);
   }
@@ -2199,7 +2199,7 @@ class NumberLikeShape extends d.Shape<string, number> {
     }
 
     // 2️⃣ Apply operations to the output value
-    return this._applyOperations(input, parseFloat(input), options, null);
+    return this._applyOperations(input, parseFloat(input), options, null) as d.Result;
   }
 }
 ```
