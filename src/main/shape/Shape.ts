@@ -1,18 +1,18 @@
 import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE } from '../constants';
 import { freeze, isArray, isEqual, returnTrue } from '../internal/lang';
-import { defineObjectProperty, Dict, ReadonlyDict } from '../internal/objects';
+import { Dict, overrideProperty, ReadonlyDict } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
-  extractCheckResult,
   applyShape,
   captureIssues,
   createApplyOperations,
   defaultApplyOptions,
-  throwSyncUnsupported,
+  extractCheckResult,
   getMessage,
   nextNonce,
   ok,
   Promisify,
+  throwSyncUnsupported,
   toDeepPartialShape,
   universalApplyOperations,
 } from '../internal/shapes';
@@ -983,7 +983,7 @@ Object.defineProperties(Shape.prototype, {
         cb = createApplyOperations(operation, cb, async);
       }
 
-      return defineObjectProperty(this, '_applyOperations', cb);
+      return overrideProperty(this, '_applyOperations', cb);
     },
   },
 
@@ -991,9 +991,9 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      defineObjectProperty(this, 'inputs', []);
+      overrideProperty(this, 'inputs', []);
 
-      return defineObjectProperty(this, 'inputs', freeze(unionTypes(this._getInputs())), true);
+      return overrideProperty(this, 'inputs', freeze(unionTypes(this._getInputs())));
     },
   },
 
@@ -1001,7 +1001,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      defineObjectProperty(this, 'isAsync', false);
+      overrideProperty(this, 'isAsync', false);
 
       let async = this._isAsync();
 
@@ -1009,7 +1009,7 @@ Object.defineProperties(Shape.prototype, {
         async ||= this.operations[i].isAsync;
       }
 
-      return defineObjectProperty(this, 'isAsync', async, true);
+      return overrideProperty(this, 'isAsync', async);
     },
   },
 
@@ -1017,7 +1017,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineObjectProperty<Shape['try']>(
+      return overrideProperty<Shape['try']>(
         this,
         'try',
         this.isAsync
@@ -1041,7 +1041,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineObjectProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
+      return overrideProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return ok(input);
@@ -1059,7 +1059,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineObjectProperty<Shape['parse']>(
+      return overrideProperty<Shape['parse']>(
         this,
         'parse',
         this.isAsync
@@ -1083,7 +1083,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineObjectProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
+      return overrideProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
             return input;
@@ -1101,7 +1101,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineObjectProperty(
+      return overrideProperty(
         this,
         'parseOrDefault',
         this.isAsync
@@ -1125,7 +1125,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineObjectProperty(
+      return overrideProperty(
         this,
         'parseOrDefaultAsync',
         (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
