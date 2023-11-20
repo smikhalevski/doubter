@@ -1003,16 +1003,10 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       defineObjectProperty(this, 'isAsync', false);
 
-      let async = false;
+      let async = this._isAsync();
 
       for (let i = 0; !async && i < this.operations.length; ++i) {
         async ||= this.operations[i].isAsync;
-      }
-
-      async ||= this._isAsync();
-
-      if (!async && this._applyAsync !== Shape.prototype._applyAsync) {
-        this._applyAsync = Shape.prototype._applyAsync;
       }
 
       return defineObjectProperty(this, 'isAsync', async, true);
@@ -1047,9 +1041,6 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      // Ensure _applyAsync is configured
-      this.isAsync;
-
       return defineObjectProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
@@ -1092,9 +1083,6 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      // Ensure _applyAsync is configured
-      this.isAsync;
-
       return defineObjectProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
         return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
           if (result === null) {
@@ -1137,9 +1125,6 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      // Ensure _applyAsync is configured
-      this.isAsync;
-
       return defineObjectProperty(
         this,
         'parseOrDefaultAsync',

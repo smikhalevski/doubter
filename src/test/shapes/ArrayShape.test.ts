@@ -2,7 +2,7 @@ import { ArrayShape, Err, NumberShape, ObjectShape, Ok, Shape, StringShape } fro
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
 import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/types';
-import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
+import { AsyncMockShape, MockShape } from './mocks';
 
 describe('ArrayShape', () => {
   beforeEach(() => {
@@ -423,14 +423,6 @@ describe('ArrayShape', () => {
         ok: false,
         issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: TYPE_ARRAY }],
       });
-    });
-
-    test('downgrades to sync implementation if there are no async element shapes', async () => {
-      const shape = spyOnShape(new ArrayShape([], new MockShape()));
-
-      await expect(shape.tryAsync([])).resolves.toEqual({ ok: true, value: [] });
-      expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, [], { earlyReturn: false }, 0);
     });
 
     test('parses head elements', async () => {
