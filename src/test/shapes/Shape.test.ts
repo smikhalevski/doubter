@@ -37,17 +37,6 @@ describe('Shape', () => {
     expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
   });
 
-  describe('addOperation', () => {
-    test('clones the shape', () => {
-      const shape1 = new Shape();
-      const shape2 = shape1.addOperation(() => null, { type: 'aaa', param: undefined });
-
-      expect(shape1).not.toBe(shape2);
-      expect(shape1.operations.length).toBe(0);
-      expect(shape2.operations.length).toBe(1);
-    });
-  });
-
   describe('annotate', () => {
     test('updates annotations', () => {
       const shape1 = new Shape();
@@ -57,6 +46,236 @@ describe('Shape', () => {
       expect(shape2).not.toBe(shape1);
       expect(shape2.annotations).toEqual({ key1: 111 });
       expect(shape2.annotate({ key2: 222 }).annotations).toEqual({ key1: 111, key2: 222 });
+    });
+  });
+
+  describe('addOperation', () => {
+    test('clones the shape', () => {
+      const cb = () => null;
+
+      const shape1 = new Shape();
+      const shape2 = shape1.addOperation(cb, { type: 'aaa', param: 111 });
+
+      expect(shape1).not.toBe(shape2);
+      expect(shape1.operations.length).toBe(0);
+      expect(shape2.operations).toEqual([
+        {
+          type: 'aaa',
+          callback: cb,
+          isAsync: false,
+          isRequired: false,
+          param: 111,
+        },
+      ]);
+    });
+
+    test('adds a required operation', () => {
+      const cb = () => null;
+
+      const shape = new Shape().addOperation(cb, { required: true });
+
+      expect(shape.operations).toEqual([
+        {
+          type: cb,
+          callback: cb,
+          isAsync: false,
+          isRequired: true,
+        },
+      ]);
+    });
+
+    test('operations are applied sequentially', () => {
+      const cb1 = jest.fn().mockReturnValue({ ok: true, value: 'bbb' });
+      const cb2 = jest.fn().mockReturnValue(null);
+
+      const shape = new Shape().addOperation(cb1, { param: 111 }).addOperation(cb2, { param: 222 });
+
+      shape.parse('aaa');
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(1);
+      expect(cb1).toHaveBeenNthCalledWith(1, 'aaa', 111, { earlyReturn: false });
+      expect(cb2).toHaveBeenNthCalledWith(1, 'bbb', 222, { earlyReturn: false });
+    });
+
+    test('applies an operation even if the preceding operation has failed', () => {
+      const cb1 = jest.fn().mockReturnValue([{ code: 'xxx' }]);
+      const cb2 = jest.fn().mockReturnValue([{ code: 'yyy' }]);
+
+      const shape = new Shape().addOperation(cb1).addOperation(cb2);
+
+      expect(shape.try('aaa')).toEqual({
+        issues: [{ code: 'xxx' }, { code: 'yyy' }],
+        ok: false,
+      });
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(1);
+    });
+
+    test('if required operation fails then consequent operations are skipped', () => {
+      const cb1 = jest.fn().mockReturnValue([{ code: 'xxx' }]);
+      const cb2 = jest.fn().mockReturnValue(null);
+
+      const shape = new Shape().addOperation(cb1, { required: true }).addOperation(cb2);
+
+      expect(shape.try('aaa')).toEqual({
+        issues: [{ code: 'xxx' }],
+        ok: false,
+      });
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(0);
+    });
+
+    test('operation callback can safely throw ValidationError instances', () => {
+      const shape = new Shape().addOperation(() => {
+        throw new ValidationError([{ code: 'xxx' }]);
+      });
+
+      expect(shape.try('aaa')).toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+    });
+
+    test('operation callback does not swallow thrown error', () => {
+      const shape = new Shape().addOperation(() => {
+        throw new Error('expected');
+      });
+
+      expect(() => shape.try(111)).toThrow(new Error('expected'));
+    });
+  });
+
+  describe('addAsyncOperation', () => {
+    test('clones the shape', () => {
+      const cb = () => Promise.resolve(null);
+
+      const shape1 = new Shape();
+      const shape2 = shape1.addAsyncOperation(cb, { type: 'aaa', param: 111 });
+
+      expect(shape1).not.toBe(shape2);
+      expect(shape1.operations.length).toBe(0);
+      expect(shape2.operations).toEqual([
+        {
+          type: 'aaa',
+          callback: cb,
+          isAsync: true,
+          isRequired: false,
+          param: 111,
+        },
+      ]);
+    });
+
+    test('adds a required operation', () => {
+      const cb = () => Promise.resolve(null);
+
+      const shape = new Shape().addAsyncOperation(cb, { required: true });
+
+      expect(shape.operations).toEqual([
+        {
+          type: cb,
+          callback: cb,
+          isAsync: true,
+          isRequired: true,
+        },
+      ]);
+    });
+
+    test('operations are applied sequentially', async () => {
+      const cb1 = jest.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'bbb' }));
+      const cb2 = jest.fn().mockReturnValue(Promise.resolve(null));
+
+      const shape = new Shape().addAsyncOperation(cb1, { param: 111 }).addAsyncOperation(cb2, { param: 222 });
+
+      await shape.parseAsync('aaa');
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(1);
+      expect(cb1).toHaveBeenNthCalledWith(1, 'aaa', 111, { earlyReturn: false });
+      expect(cb2).toHaveBeenNthCalledWith(1, 'bbb', 222, { earlyReturn: false });
+    });
+
+    test('applies an operation even if the preceding operation has failed', async () => {
+      const cb1 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
+      const cb2 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'yyy' }]));
+
+      const shape = new Shape().addAsyncOperation(cb1).addAsyncOperation(cb2);
+
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
+        issues: [{ code: 'xxx' }, { code: 'yyy' }],
+        ok: false,
+      });
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(1);
+    });
+
+    test('if required operation fails then consequent operations are skipped', async () => {
+      const cb1 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
+      const cb2 = jest.fn().mockReturnValue(Promise.resolve(null));
+
+      const shape = new Shape().addAsyncOperation(cb1, { required: true }).addAsyncOperation(cb2);
+
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
+        issues: [{ code: 'xxx' }],
+        ok: false,
+      });
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(0);
+    });
+
+    test('operation callback can safely throw ValidationError instances', async () => {
+      const shape = new Shape().addAsyncOperation(() => {
+        throw new ValidationError([{ code: 'xxx' }]);
+      });
+
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+    });
+
+    test('operation callback can safely reject with ValidationError instances', async () => {
+      const shape = new Shape().addAsyncOperation(() => Promise.reject(new ValidationError([{ code: 'xxx' }])));
+
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
+        ok: false,
+        issues: [{ code: 'xxx' }],
+      });
+    });
+
+    test('operation callback does not swallow thrown error', async () => {
+      const shape = new Shape().addAsyncOperation(() => {
+        throw new Error('expected');
+      });
+
+      await expect(shape.tryAsync(111)).rejects.toEqual(new Error('expected'));
+    });
+
+    test('operation callback does not swallow rejected error', async () => {
+      const shape = new Shape().addAsyncOperation(() => Promise.reject(new Error('expected')));
+
+      await expect(shape.tryAsync(111)).rejects.toEqual(new Error('expected'));
+    });
+
+    test('sync and async operations can be mixed', async () => {
+      const cb1 = jest.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'aaa' }));
+      const cb2 = jest.fn().mockReturnValue({ ok: true, value: 'bbb' });
+      const cb3 = jest.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'ccc' }));
+
+      const shape = new Shape().addAsyncOperation(cb1).addAsyncOperation(cb2).addAsyncOperation(cb3);
+
+      await expect(shape.parseAsync('ddd')).resolves.toBe('ccc');
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(1);
+      expect(cb3).toHaveBeenCalledTimes(1);
+      expect(cb1).toHaveBeenNthCalledWith(1, 'ddd', undefined, { earlyReturn: false });
+      expect(cb2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
+      expect(cb3).toHaveBeenNthCalledWith(1, 'bbb', undefined, { earlyReturn: false });
     });
   });
 
@@ -90,26 +309,6 @@ describe('Shape', () => {
       expect(cbMock).toHaveBeenNthCalledWith(1, 'aaa', 111, { earlyReturn: false });
     });
 
-    test('applies callbacks in the same order they were added', () => {
-      const cbMock = jest.fn();
-      const shape = new Shape().check(() => cbMock(111)).check(() => cbMock(222));
-
-      shape.parse('aaa');
-
-      expect(cbMock).toHaveBeenCalledTimes(2);
-      expect(cbMock).toHaveBeenNthCalledWith(1, 111);
-      expect(cbMock).toHaveBeenNthCalledWith(2, 222);
-    });
-
-    test('adds the same callback twice', () => {
-      const cbMock = jest.fn();
-      const shape = new Shape().check(cbMock).check(cbMock);
-
-      shape.parse(111);
-
-      expect(cbMock).toHaveBeenCalledTimes(2);
-    });
-
     test('uses callback as an operation type', () => {
       const cb = () => null;
       const shape = new Shape().check(cb);
@@ -141,7 +340,7 @@ describe('Shape', () => {
       expect(shape.try(111)).toEqual({ ok: true, value: 111 });
     });
 
-    test('callback can return an unexpected value which is ignored', () => {
+    test('unexpected callback results are ignored', () => {
       const shape = new Shape().check(() => 222 as any);
 
       expect(shape.try(111)).toEqual({ ok: true, value: 111 });
@@ -196,34 +395,6 @@ describe('Shape', () => {
         ok: false,
         issues: [{ code: 'xxx' }],
       });
-    });
-
-    test('applies forced callback even if the preceding operation has failed', () => {
-      const cbMock1 = () => [{ code: 'xxx' }];
-      const cbMock2 = jest.fn();
-
-      const shape = new Shape().check(cbMock1).check(cbMock2);
-
-      expect(shape.try(111)).toEqual({
-        ok: false,
-        issues: [{ code: 'xxx' }],
-      });
-      expect(cbMock2).toHaveBeenCalledTimes(1);
-    });
-
-    test('delegates to the next operation if the preceding operation has failed', () => {
-      const cbMock1 = () => [{ code: 'xxx' }];
-      const cbMock2 = jest.fn();
-      const cbMock3 = jest.fn();
-
-      const shape = new Shape().check(cbMock1).check(cbMock2).check(cbMock3);
-
-      expect(shape.try(111)).toEqual({
-        ok: false,
-        issues: [{ code: 'xxx' }],
-      });
-      expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock3).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -337,19 +508,6 @@ describe('Shape', () => {
       });
     });
 
-    test('applies forced callback even if the preceding operation has failed', () => {
-      const cbMock1 = () => false;
-      const cbMock2 = jest.fn(() => true);
-
-      const shape = new Shape().refine(cbMock1).refine(cbMock2);
-
-      expect(shape.try(111)).toEqual({
-        ok: false,
-        issues: [{ code: CODE_ANY_REFINE, input: 111, message: 'Must conform the predicate', param: cbMock1 }],
-      });
-      expect(cbMock2).toHaveBeenCalledTimes(1);
-    });
-
     test('delegates to the next operation if the preceding operation has failed', () => {
       const cbMock1 = () => false;
       const cbMock2 = jest.fn(() => true);
@@ -420,34 +578,6 @@ describe('Shape', () => {
         ok: false,
         issues: [{ code: 'xxx' }],
       });
-    });
-
-    test('applies forced callback even if the preceding operation has failed', () => {
-      const cbMock1 = () => [{ code: 'xxx' }];
-      const cbMock2 = jest.fn(() => 'aaa');
-
-      const shape = new Shape().check(cbMock1).alter(cbMock2);
-
-      expect(shape.try(111)).toEqual({
-        ok: false,
-        issues: [{ code: 'xxx' }],
-      });
-      expect(cbMock2).toHaveBeenCalledTimes(1);
-    });
-
-    test('delegates to the next operation if the preceding operation has failed', () => {
-      const cbMock1 = () => [{ code: 'xxx' }];
-      const cbMock2 = jest.fn(() => 'aaa');
-      const cbMock3 = jest.fn(() => true);
-
-      const shape = new Shape().check(cbMock1).alter(cbMock2).refine(cbMock3);
-
-      expect(shape.try(111)).toEqual({
-        ok: false,
-        issues: [{ code: 'xxx' }],
-      });
-      expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock3).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -858,22 +988,6 @@ describe('Shape', () => {
 
       expect(cbMock1).toHaveBeenCalledTimes(1);
       expect(cbMock2).not.toHaveBeenCalled();
-    });
-
-    test('forced operations are called even if the preceding operation failed', () => {
-      const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
-      const cbMock2 = jest.fn();
-
-      const shape = new Shape().check(cbMock1).check(cbMock2);
-
-      expect(shape.try('aaa')).toEqual({
-        ok: false,
-        issues: [{ code: 'xxx' }],
-      });
-
-      expect(cbMock1).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenCalledTimes(1);
-      expect(cbMock2).toHaveBeenNthCalledWith(1, 'aaa', undefined, { earlyReturn: false });
     });
 
     test('collects all issues', () => {
