@@ -44,7 +44,7 @@ describe('LazyShape', () => {
 
   test('does not apply operations if the provided shape raises an issue', () => {
     const providedShape = new Shape().check(() => [{ code: 'xxx' }]);
-    const shape = new LazyShape(() => providedShape, identity).check(() => [{ code: 'yyy' }], { force: true });
+    const shape = new LazyShape(() => providedShape, identity).check(() => [{ code: 'yyy' }]);
 
     expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,

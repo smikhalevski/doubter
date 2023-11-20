@@ -39,7 +39,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     if (typeof output !== 'bigint' && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
-    return this._applyOperations(input, output, options, null);
+    return this._applyOperations(input, output, options, null) as Result;
   }
 }
 

@@ -2199,7 +2199,7 @@ class NumberLikeShape extends d.Shape<string, number> {
     }
 
     // 2️⃣ Apply operations to the output value
-    return this._applyOperations(input, parseFloat(input), options, null);
+    return this._applyOperations(input, parseFloat(input), options, null) as d.Result;
   }
 }
 ```

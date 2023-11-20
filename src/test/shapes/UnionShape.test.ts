@@ -279,7 +279,7 @@ describe('UnionShape', () => {
           key1: new AsyncMockShape().check(() => [{ code: 'zzz' }]),
         },
         null
-      ).check(() => [{ code: 'yyy' }], { force: true });
+      ).check(() => [{ code: 'yyy' }]);
 
       const shape = new UnionShape([shape1, shape2]);
 

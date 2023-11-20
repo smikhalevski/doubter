@@ -1,11 +1,5 @@
-/**
- * Returns an array of unique values.
- */
 export function unique<T>(values: T[]): T[];
 
-/**
- * Returns an array of unique values.
- */
 export function unique<T>(values: readonly T[]): readonly T[];
 
 export function unique<T>(values: readonly T[]): T[] {

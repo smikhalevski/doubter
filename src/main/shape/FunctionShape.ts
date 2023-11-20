@@ -5,7 +5,7 @@ import {
   Awaitable,
   copyOperations,
   defaultApplyOptions,
-  getMessage,
+  getErrorMessage,
   INPUT,
   nextNonce,
   ok,
@@ -95,7 +95,7 @@ export class FunctionShape<
   }
 
   /**
-   * `true` if some shapes that describe the function signature are {@link Shape#isAsync async}, or `false` otherwise.
+   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, or `false` otherwise.
    */
   get isAsyncFunction(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
@@ -191,8 +191,8 @@ export class FunctionShape<
    * {@linkcode FunctionShape.argsShape} and the {@linkcode FunctionShape.thisShape} respectively, and _asynchronously_
    * returns the value that conforms the {@linkcode FunctionShape.returnShape}.
    *
-   * Use this method if {@link FunctionShape#isAsyncFunction some shapes that describe the function signature} are
-   * {@link Shape#isAsync async}.
+   * Use this method if {@link FunctionShape.isAsyncFunction some shapes that describe the function signature} are
+   * {@link Shape.isAsync async}.
    *
    * @param fn The underlying function.
    * @param options Parsing options. By default, options provided to {@linkcode FunctionShape.strict} are used.
@@ -263,7 +263,7 @@ export class FunctionShape<
       return [this._typeIssueFactory(input, options)];
     }
 
-    const result = this._applyOperations(input, input, options, null);
+    const result = this._applyOperations(input, input, options, null) as Result;
 
     if (isArray(result) || !this.isStrict) {
       return result;
@@ -273,6 +273,33 @@ export class FunctionShape<
 
     return ok<any>(this.isAsyncFunction ? this.ensureAsync(output) : this.ensure(output));
   }
+
+  protected _applyAsync(
+    input: any,
+    options: ApplyOptions,
+    nonce: number
+  ): Promise<
+    Result<(this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>>
+  > {
+    return new Promise(resolve => {
+      if (typeof input !== 'function') {
+        resolve([this._typeIssueFactory(input, options)]);
+        return;
+      }
+
+      resolve(
+        Promise.resolve(this._applyOperations(input, input, options, null)).then(result => {
+          if (isArray(result) || !this.isStrict) {
+            return result;
+          }
+
+          const output = result === null ? input : result.value;
+
+          return ok<any>(this.isAsyncFunction ? this.ensureAsync(output) : this.ensure(output));
+        })
+      );
+    });
+  }
 }
 
 function getValue(key: string, result: Result, input: unknown, options: ParseOptions): unknown {
@@ -281,7 +308,7 @@ function getValue(key: string, result: Result, input: unknown, options: ParseOpt
   }
   if (isArray(result)) {
     unshiftIssuesPath(result, key);
-    throw new ValidationError(result, getMessage(result, input, options));
+    throw new ValidationError(result, getErrorMessage(result, input, options));
   }
   return result.value;
 }

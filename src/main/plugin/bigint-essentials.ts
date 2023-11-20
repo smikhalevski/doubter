@@ -72,7 +72,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link plugin/bigint-essentials! plugin/bigint-essentials}
      */
-    min(value: bigint | number, options?: IssueOptions | Message): this;
+    min(value: bigint | number | string, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be less than or equal to the value.
@@ -83,7 +83,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link plugin/bigint-essentials! plugin/bigint-essentials}
      */
-    max(value: bigint | number, options?: IssueOptions | Message): this;
+    max(value: bigint | number | string, options?: IssueOptions | Message): this;
   }
 }
 
@@ -116,16 +116,12 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
     const param = BigInt(value);
     const issueFactory = createIssueFactory(CODE_BIGINT_MIN, ctor.messages[CODE_BIGINT_MIN], options, param);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output < param) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (value >= param) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_BIGINT_MIN, param }
     );
@@ -135,16 +131,12 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
     const param = BigInt(value);
     const issueFactory = createIssueFactory(CODE_BIGINT_MAX, ctor.messages[CODE_BIGINT_MAX], options, param);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output > param) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (value <= param) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_BIGINT_MAX, param }
     );

@@ -120,18 +120,14 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
     const { getPrototypeOf } = Object;
     const issueFactory = createIssueFactory(CODE_OBJECT_PLAIN, ctor.messages[CODE_OBJECT_PLAIN], options, undefined);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        const prototype = getPrototypeOf(output);
+    return this.addOperation(
+      (value, param, options) => {
+        const prototype = getPrototypeOf(value);
 
-        if (prototype !== null && prototype.constructor !== Object) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+        if (prototype === null || prototype.constructor === Object) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_OBJECT_PLAIN }
     );
@@ -140,18 +136,14 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.allKeys = function (keys, options) {
     const issueFactory = createIssueFactory(CODE_OBJECT_ALL_KEYS, ctor.messages[CODE_OBJECT_ALL_KEYS], options, keys);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        const keyCount = getKeyCount(output, keys, keys.length);
+    return this.addOperation(
+      (value, param, options) => {
+        const keyCount = getKeyCount(value, keys, keys.length);
 
-        if (keyCount > 0 && keyCount < keys.length) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+        if (keyCount === 0 || keyCount === keys.length) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_OBJECT_ALL_KEYS, param: keys }
     );
@@ -165,18 +157,12 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
       keys
     );
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        const keyCount = getKeyCount(output, keys, keys.length);
-
-        if (keyCount > 0 && keyCount <= keys.length) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (getKeyCount(value, keys, keys.length) !== keys.length) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_OBJECT_NOT_ALL_KEYS, param: keys }
     );
@@ -185,16 +171,12 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.orKeys = function (keys, options) {
     const issueFactory = createIssueFactory(CODE_OBJECT_OR_KEYS, ctor.messages[CODE_OBJECT_OR_KEYS], options, keys);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (getKeyCount(output, keys, 1) === 0) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (getKeyCount(value, keys, 1) !== 0) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_OBJECT_OR_KEYS, param: keys }
     );
@@ -203,16 +185,12 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.xorKeys = function (keys, options) {
     const issueFactory = createIssueFactory(CODE_OBJECT_XOR_KEYS, ctor.messages[CODE_OBJECT_XOR_KEYS], options, keys);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (getKeyCount(output, keys, 2) !== 1) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (getKeyCount(value, keys, 2) === 1) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_OBJECT_XOR_KEYS, param: keys }
     );
@@ -221,16 +199,12 @@ export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any
   prototype.oxorKeys = function (keys, options) {
     const issueFactory = createIssueFactory(CODE_OBJECT_OXOR_KEYS, ctor.messages[CODE_OBJECT_OXOR_KEYS], options, keys);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (getKeyCount(output, keys, 2) > 1) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (getKeyCount(value, keys, 2) <= 1) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_OBJECT_OXOR_KEYS, param: keys }
     );

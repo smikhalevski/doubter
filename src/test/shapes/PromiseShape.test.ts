@@ -129,17 +129,6 @@ describe('PromiseShape', () => {
       expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false });
     });
 
-    test('applies forced operations if value shape raised issues', async () => {
-      const valueShape = new Shape().check(() => [{ code: 'xxx' }]);
-
-      const shape = new PromiseShape(valueShape).check(() => [{ code: 'yyy' }], { force: true });
-
-      await expect(shape.tryAsync(Promise.resolve(111))).resolves.toEqual({
-        ok: false,
-        issues: [{ code: 'xxx' }, { code: 'yyy' }],
-      });
-    });
-
     test('returns the same promise if the resolved value did not change', async () => {
       const input = Promise.resolve('aaa');
 

@@ -1,7 +1,7 @@
 import { CODE_OBJECT_EXACT, CODE_TYPE } from '../constants';
 import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
-import { defineProperty, isArray, isObject } from '../internal/lang';
-import { cloneDict, cloneDictKeys, Dict, ReadonlyDict, setObjectProperty } from '../internal/objects';
+import { isArray, isObject } from '../internal/lang';
+import { cloneDict, cloneDictKeys, Dict, overrideProperty, ReadonlyDict, setObjectProperty } from '../internal/objects';
 import {
   applyShape,
   concatIssues,
@@ -141,7 +141,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * The enum shape that describes object keys.
    */
   get keysShape(): EnumShape<keyof PropShapes> {
-    return defineProperty(this, 'keysShape', new EnumShape(this.keys), true);
+    return overrideProperty(this, 'keysShape', new EnumShape(this.keys));
   }
 
   at(key: any): AnyShape | null {
@@ -518,7 +518,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         setObjectProperty(output, key, result.value);
       }
     }
-    return this._applyOperations(input, output, options, issues);
+    return this._applyOperations(input, output, options, issues) as Result;
   }
 
   /**
@@ -638,6 +638,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         }
       }
     }
-    return this._applyOperations(input, output, options, issues);
+    return this._applyOperations(input, output, options, issues) as Result;
   }
 }

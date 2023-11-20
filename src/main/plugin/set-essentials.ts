@@ -83,16 +83,12 @@ export default function enableSetEssentials(ctor: typeof SetShape<any>): void {
   prototype.min = function (size, options) {
     const issueFactory = createIssueFactory(CODE_SET_MIN, ctor.messages[CODE_SET_MIN], options, size);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.size < size) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (value.size >= param) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_SET_MIN, param: size }
     );
@@ -101,16 +97,12 @@ export default function enableSetEssentials(ctor: typeof SetShape<any>): void {
   prototype.max = function (size, options) {
     const issueFactory = createIssueFactory(CODE_SET_MAX, ctor.messages[CODE_SET_MAX], options, size);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output.size > size) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (value.size <= param) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_SET_MAX, param: size }
     );

@@ -26,7 +26,7 @@ import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**
-   * By default, {@link core!NumberShape#multipleOf NumberShape.multipleOf} uses
+   * By default, {@link core!NumberShape.multipleOf NumberShape.multipleOf} uses
    * [the modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
    * may produce unexpected results when used with floating point numbers. This happens because of
    * [the way numbers are represented by IEEE 754](https://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
@@ -220,19 +220,14 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   messages[CODE_NUMBER_MULTIPLE_OF] = 'Must be a multiple of %s';
 
   prototype.finite = function (options) {
-    const { isFinite } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, ctor.messages[CODE_NUMBER_FINITE], options, undefined);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (!isFinite(output)) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (isFinite(value)) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_NUMBER_FINITE }
     );
@@ -242,16 +237,12 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     const { isInteger } = Number;
     const issueFactory = createIssueFactory(CODE_NUMBER_INT, ctor.messages[CODE_NUMBER_INT], options, undefined);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (!isInteger(output)) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (isInteger(value)) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_NUMBER_INT }
     );
@@ -276,16 +267,12 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.gt = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_GT, ctor.messages[CODE_NUMBER_GT], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output <= value) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (value > param) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_NUMBER_GT, param: value }
     );
@@ -294,16 +281,12 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.lt = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_LT, ctor.messages[CODE_NUMBER_LT], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output >= value) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (value < param) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_NUMBER_LT, param: value }
     );
@@ -312,16 +295,12 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.gte = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_GTE, ctor.messages[CODE_NUMBER_GTE], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output < value) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (value >= param) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_NUMBER_GTE, param: value }
     );
@@ -330,16 +309,12 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.lte = function (value, options) {
     const issueFactory = createIssueFactory(CODE_NUMBER_LTE, ctor.messages[CODE_NUMBER_LTE], options, value);
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (output > value) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (value <= param) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_NUMBER_LTE, param: value }
     );
@@ -362,16 +337,12 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
       divisor
     );
 
-    return this.use(
-      next => (input, output, options, issues) => {
-        if (epsilon !== -1 ? abs(round(output / divisor) - output / divisor) > epsilon : output % divisor !== 0) {
-          (issues ||= []).push(issueFactory(output, options));
-
-          if (options.earlyReturn) {
-            return issues;
-          }
+    return this.addOperation(
+      (value, param, options) => {
+        if (epsilon !== -1 ? abs(round(value / param) - value / param) <= epsilon : value % param === 0) {
+          return null;
         }
-        return next(input, output, options, issues);
+        return [issueFactory(value, options)];
       },
       { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
     );

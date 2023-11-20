@@ -1,7 +1,7 @@
 import { CODE_TYPE_UNION } from '../constants';
 import { unique } from '../internal/arrays';
-import { defineProperty, isArray, isObject } from '../internal/lang';
-import { ReadonlyDict } from '../internal/objects';
+import { isArray, isObject } from '../internal/lang';
+import { overrideProperty, ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
 import { getTypeOf, TYPE_UNKNOWN } from '../types';
@@ -81,7 +81,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
    * Returns an array of shapes that should be applied to the input.
    */
   private get _lookup(): LookupCallback {
-    return defineProperty(this, '_lookup', createLookup(unique(this.shapes)));
+    return overrideProperty(this, '_lookup', createLookup(unique(this.shapes)));
   }
 
   protected _isAsync(): boolean {
@@ -132,7 +132,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
       }
       return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
     }
-    return this._applyOperations(input, output, options, null);
+    return this._applyOperations(input, output, options, null) as Result;
   }
 
   protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {

@@ -62,7 +62,6 @@
     "InferPromise",
     "InferRecord",
     "Intersect",
-    "LookupCallback",
     "OptionalDeepPartialShape",
     "OptionalKeys",
     "OptionalPropShapes",

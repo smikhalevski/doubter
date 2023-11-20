@@ -116,7 +116,7 @@ describe('IntersectionShape', () => {
     const shape1 = new Shape();
     const shape2 = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const shape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }], { force: true });
+    const shape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }]);
 
     expect(shape.try({}, { earlyReturn: true })).toEqual({
       ok: false,

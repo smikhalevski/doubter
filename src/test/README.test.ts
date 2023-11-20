@@ -1,6 +1,6 @@
 import qs from 'qs';
 import * as d from '../main';
-import { Shape } from '../main';
+import { Result, Shape } from '../main';
 import { CODE_TYPE_UNION } from '../main/constants';
 import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/types';
 
@@ -215,7 +215,7 @@ describe('Advanced shapes', () => {
         }
 
         // 2️⃣ Apply operations to the output value
-        return this._applyOperations(input, parseFloat(input), options, null);
+        return this._applyOperations(input, parseFloat(input), options, null) as Result;
       }
     }
 

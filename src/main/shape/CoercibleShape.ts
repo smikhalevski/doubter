@@ -24,7 +24,7 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
    * Applies coercion rules to the given value. Call this method in {@link Shape._apply} and {@link Shape._applyAsync}
    * to coerce the input.
    *
-   * Override {@link _coerce} and {@link _getInputs} methods to implement custom type coercion.
+   * Override {@link CoercibleShape._coerce} and {@link Shape._getInputs} methods to implement custom type coercion.
    *
    * @param input The input value to coerce.
    * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
@@ -45,7 +45,7 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
   /**
    * Coerces an input value to another type.
    *
-   * Override this method along with {@link _getInputs} to implement custom type coercion.
+   * Override this method along with {@link Shape._getInputs} to implement custom type coercion.
    *
    * @param input The input value to coerce.
    * @returns The coerced value, or {@link NEVER} if coercion isn't possible.

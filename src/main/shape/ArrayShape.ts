@@ -211,7 +211,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         }
       }
     }
-    return this._applyOperations(input, output, options, issues);
+    return this._applyOperations(input, output, options, issues) as Result;
   }
 
   protected _applyAsync(

@@ -55,7 +55,7 @@ export class NumberShape extends CoercibleShape<number> {
     if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {
       return [this._typeIssueFactory(input, options)];
     }
-    return this._applyOperations(input, output, options, null);
+    return this._applyOperations(input, output, options, null) as Result;
   }
 }
 

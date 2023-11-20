@@ -175,7 +175,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       }
     }
 
-    return this._applyOperations(input, changed ? new Map(entries) : input, options, issues);
+    return this._applyOperations(input, changed ? new Map(entries) : input, options, issues) as Result;
   }
 
   protected _applyAsync(

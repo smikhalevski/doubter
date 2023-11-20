@@ -2,7 +2,7 @@ import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
 import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/types';
-import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
+import { AsyncMockShape, MockShape } from './mocks';
 
 describe('SetShape', () => {
   beforeEach(() => {
@@ -181,14 +181,6 @@ describe('SetShape', () => {
         ok: false,
         issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: TYPE_SET }],
       });
-    });
-
-    test('downgrades to sync implementation if value shape is sync', async () => {
-      const shape = spyOnShape(new SetShape(new Shape()));
-
-      await expect(shape.tryAsync(new Set())).resolves.toEqual({ ok: true, value: new Set() });
-      expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, new Set(), { earlyReturn: false }, 0);
     });
 
     test('parses values in a Set', async () => {
