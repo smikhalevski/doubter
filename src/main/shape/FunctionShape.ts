@@ -95,7 +95,7 @@ export class FunctionShape<
   }
 
   /**
-   * `true` if some shapes that describe the function signature are {@link Shape#isAsync async}, or `false` otherwise.
+   * `true` if some shapes that describe the function signature are {@link Shape.isAsync async}, or `false` otherwise.
    */
   get isAsyncFunction(): boolean {
     return this.returnShape?.isAsync || this.thisShape?.isAsync || this.argsShape.isAsync;
@@ -191,8 +191,8 @@ export class FunctionShape<
    * {@linkcode FunctionShape.argsShape} and the {@linkcode FunctionShape.thisShape} respectively, and _asynchronously_
    * returns the value that conforms the {@linkcode FunctionShape.returnShape}.
    *
-   * Use this method if {@link FunctionShape#isAsyncFunction some shapes that describe the function signature} are
-   * {@link Shape#isAsync async}.
+   * Use this method if {@link FunctionShape.isAsyncFunction some shapes that describe the function signature} are
+   * {@link Shape.isAsync async}.
    *
    * @param fn The underlying function.
    * @param options Parsing options. By default, options provided to {@linkcode FunctionShape.strict} are used.

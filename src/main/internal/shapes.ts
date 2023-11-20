@@ -48,7 +48,10 @@ export function nextNonce(): number {
   return ++nonce;
 }
 
-// For test purposes only
+/**
+ * For test purposes only!
+ * @internal
+ */
 export function resetNonce(): void {
   nonce = -1;
 }

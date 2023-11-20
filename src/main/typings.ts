@@ -158,8 +158,8 @@ export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
  */
 export interface Operation {
   /**
-   * The type of the operation such as {@link StringShape#regex "string.regex"} or
-   * {@link ArrayShape#includes "array.includes"}.
+   * The type of the operation such as {@link StringShape.regex "string.regex"} or
+   * {@link ArrayShape.includes "array.includes"}.
    */
   readonly type: any;
 

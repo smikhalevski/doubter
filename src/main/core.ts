@@ -67,10 +67,9 @@ export {
 export { StringShape } from './shape/StringShape';
 export { SymbolShape } from './shape/SymbolShape';
 export { UnionShape } from './shape/UnionShape';
-
-export * from './typings';
-export * from './ValidationError';
-
+export { ValidationError } from './ValidationError';
 export { Messages } from './messages';
 export { Type, TypeName } from './types';
 export { NEVER } from './coerce/never';
+
+export type * from './typings';
