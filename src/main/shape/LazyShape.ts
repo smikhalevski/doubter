@@ -112,6 +112,8 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<ProvidedShape> | Pointer> {
     const { _stackMap } = this;
 
+    let output = input;
+    let result;
     let stack = _stackMap.get(nonce);
 
     const leading = stack === undefined;
@@ -120,7 +122,6 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
       stack = [input];
       _stackMap.set(nonce, stack);
     } else if (stack.includes(input)) {
-      let output;
       try {
         output = this.pointerProvider(input, options);
       } catch (error) {
@@ -132,12 +133,20 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     }
 
     try {
-      return this._handleResult(this.providedShape['_apply'](input, options, nonce), input, options);
+      result = this.providedShape['_apply'](input, options, nonce);
     } finally {
       if (leading) {
         _stackMap.delete(nonce);
       }
     }
+
+    if (result !== null) {
+      if (isArray(result)) {
+        return result;
+      }
+      output = result.value;
+    }
+    return this._applyOperations(input, output, options, null) as Result;
   }
 
   protected _applyAsync(
@@ -147,6 +156,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   ): Promise<Result<Output<ProvidedShape> | Pointer>> {
     const { _stackMap } = this;
 
+    let output = input;
     let stack = _stackMap.get(nonce);
 
     const leading = stack === undefined;
@@ -156,7 +166,6 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
       _stackMap.set(nonce, stack);
     } else if (stack.includes(input)) {
       return new Promise(resolve => {
-        let output;
         try {
           output = this.pointerProvider(input, options);
         } catch (error) {
@@ -174,7 +183,13 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
         if (leading) {
           _stackMap.delete(nonce);
         }
-        return this._handleResult(result, input, options);
+        if (result !== null) {
+          if (isArray(result)) {
+            return result;
+          }
+          output = result.value;
+        }
+        return this._applyOperations(input, output, options, null);
       },
       error => {
         if (leading) {
@@ -183,21 +198,5 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
         throw error;
       }
     );
-  }
-
-  private _handleResult(
-    result: Result,
-    input: unknown,
-    options: ApplyOptions
-  ): Result<Output<ProvidedShape> | Pointer> {
-    let output = input;
-
-    if (result !== null) {
-      if (isArray(result)) {
-        return result;
-      }
-      output = result.value;
-    }
-    return this._applyOperations(input, output, options, null) as Result;
   }
 }
