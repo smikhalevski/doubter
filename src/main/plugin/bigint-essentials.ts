@@ -97,19 +97,19 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
   messages[CODE_BIGINT_MAX] = 'Must be less than or equal to %s';
 
   prototype.positive = function (options) {
-    return this.min(0, options);
+    return this.min(1, options);
   };
 
   prototype.negative = function (options) {
-    return this.max(0, options);
+    return this.max(-1, options);
   };
 
   prototype.nonPositive = function (options) {
-    return this.max(1, options);
+    return this.max(0, options);
   };
 
   prototype.nonNegative = function (options) {
-    return this.min(-1, options);
+    return this.min(0, options);
   };
 
   prototype.min = function (value, options) {
