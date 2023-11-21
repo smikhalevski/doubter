@@ -5,7 +5,7 @@
  * import { ObjectShape } from 'doubter/core';
  * import enableObjectEssentials from 'doubter/plugin/object-essentials';
  *
- * enableObjectEssentials(ObjectShape.prototype);
+ * enableObjectEssentials(ObjectShape);
  * ```
  *
  * @module plugin/object-essentials

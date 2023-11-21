@@ -5,7 +5,7 @@
  * import { DateShape } from 'doubter/core';
  * import enableDateEssentials from 'doubter/plugin/date-essentials';
  *
- * enableDateEssentials(DateShape.prototype);
+ * enableDateEssentials(DateShape);
  * ```
  *
  * @module plugin/date-essentials

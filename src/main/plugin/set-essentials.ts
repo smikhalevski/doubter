@@ -5,7 +5,7 @@
  * import { SetShape } from 'doubter/core';
  * import enableSetEssentials from 'doubter/plugin/set-essentials';
  *
- * enableSetEssentials(SetShape.prototype);
+ * enableSetEssentials(SetShape);
  * ```
  *
  * @module plugin/set-essentials

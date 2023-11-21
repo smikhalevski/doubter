@@ -5,7 +5,7 @@
  * import { ArrayShape } from 'doubter/core';
  * import enableArrayEssentials from 'doubter/plugin/array-essentials';
  *
- * enableArrayEssentials(ArrayShape.prototype);
+ * enableArrayEssentials(ArrayShape);
  * ```
  *
  * @module plugin/array-essentials

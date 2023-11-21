@@ -5,7 +5,7 @@
  * import { NumberShape } from 'doubter/core';
  * import enableNumberEssentials from 'doubter/plugin/number-essentials';
  *
- * enableNumberEssentials(NumberShape.prototype);
+ * enableNumberEssentials(NumberShape);
  * ```
  *
  * @module plugin/number-essentials

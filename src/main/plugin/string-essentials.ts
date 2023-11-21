@@ -5,7 +5,7 @@
  * import { StringShape } from 'doubter/core';
  * import enableStringEssentials from 'doubter/plugin/string-essentials';
  *
- * enableStringEssentials(StringShape.prototype);
+ * enableStringEssentials(StringShape);
  * ```
  *
  * @module plugin/string-essentials

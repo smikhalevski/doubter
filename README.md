@@ -49,10 +49,9 @@ npm install --save-prod doubter
 - [Basics](#basics)
 - [Shapes](#shapes)
 - [Validation errors](#validation-errors)
-- [Checks](#checks)
-- [Refinements](#refinements)
-- [Alterations](#alterations)
+- [Operations](#operations)
 - [Conversions](#conversions)
+- [Early return](#early-return)
 - [Metadata](#metadata)
 - [Parsing context](#parsing-context)
 - [Shape piping](#shape-piping)
@@ -338,29 +337,6 @@ shape.try('Mars');
 Use [`tryAsync`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#tryAsync) method with
 [async shapes.](#async-shapes) It has the same semantics and returns a promise.
 
-## Operations
-
-At the final stage of the parsing process, a shape applies operations that were added to it.
-
-```ts
-const shape = d.string().use(
-  next => (input, output, options, issues) => {
-    return next(input, output.trim(), options, issues);
-  }
-);
-
-shape.parse('  Space  ');
-// ⮕ 'Space'
-```
-
-> [!IMPORTANT]\
-> Most of the time you don't need to add operations directly. Instead, you can use the higher-level API:
-> [checks](#checks), [refinements](#refinements), and [alterations](#alterations).
-
-Operations can alter the shape output, populate issues, and delegate parsing to the next operation. They are
-executed in the same order they were added. You can access all operations that were added to the shape using the
-[`operations`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#operations) property.
-
 ## Async shapes
  
 What can make a shape asynchronous:
@@ -552,7 +528,289 @@ new d.ValidationError([], 'Kaputs').message;
 [`message` constructor argument](https://smikhalevski.github.io/doubter/next/classes/core.ValidationError.html#constructor)
 is omitted. 
 
-# Checks
+# Operations
+
+Operations can check and transform the shape output, without the changing the base shape. You can add multiple
+operations to the shape, they are executed in the same order they were added. You can access all operations that were
+added to the shape using the
+[`operations`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#operations) property.
+
+> [!IMPORTANT]\
+> While operations are a powerful tool, most of the time you don't need to add operations directly. Instead, you can use
+> the higher-level API: [checks](#checks), [refinements](#refinements), and [alterations](#alterations).
+
+Let's add an operations that trims an input string:
+
+```ts
+const shape1 = d.string().addOperation(value => {
+  return { ok: true, value: value.trim() };
+});
+// ⮕ StringShape
+
+shape1.parse('  Space  ');
+// ⮕ 'Space'
+```
+
+Operations must return [`Ok`](https://smikhalevski.github.io/doubter/next/interfaces/core.Ok.html) if the value has
+changed, [an array of issues](https://smikhalevski.github.io/doubter/next/interfaces/core.Issue.html) if the value is
+invalid, or `null` if the value is unchanged.
+
+```ts
+const ageShape = d.number().addOperation(value => {
+  if (value > 5) {
+    return null;
+  }
+  return [{ code: 'too_young' }];
+});
+// ⮕ NumberShape
+
+ageShape.parse(42);
+// ⮕ 42
+
+ageShape.parse(3);
+// ❌ ValidationError: too_young at /
+```
+
+Since operations doesn't change the base shape, you can mix them with other operations that belong to the prototype of
+the base shape:
+
+```ts
+const shape2 = d
+  .string()
+  .addOperation(value => {
+    return { ok: true, value: value.trim() };
+  })
+  .min(6); // 🟡 Method from the StringShape prototype
+
+shape2.parse('  Planet  ');
+// ⮕ 'Planet'
+
+shape2.parse('  Space  ');
+// ❌ ValidationError: string.min at /: Must have the minimum length of 6
+```
+
+Operations can be parameterized. This is useful if you want to reuse the same operation multiple times.
+
+```ts
+const includesOperation: d.Operation<d.Result> = (value, param) => {
+  if (value.includes(param)) {
+    return null;
+  }
+  return [{ message: 'Must include ' + param }];
+};
+
+const shape3 = d.array().addOperation(includesOperation, { param: 'Mars' });
+// ⮕ ArrayShape
+
+shape3.parse(['Mars', 'Pluto']);
+// ⮕ ['Mars', 'Pluto']
+
+shape3.parse(['Venus']);
+// ❌ ValidationError: unknown at /: Must include Mars
+```
+
+Operations have access to parsing options, so you can provide [a custom context](#parsing-context) to change the
+operation behaviour:
+
+```ts
+const shape4 = d.string().addOperation((value, param, options) => {
+  return {
+    ok: true,
+    value: value.substring(options.context.substringStart)
+  };
+});
+// ⮕ StringShape
+
+shape4.parse(
+  'Hello, Bill',
+  {
+    // 🟡 Provide the context
+    context: { substringStart: 7 }
+  }
+);
+// ⮕ 'Bill'
+```
+
+Operations can throw a [`ValidationError`](https://smikhalevski.github.io/doubter/next/classes/core.ValidationError.html)
+to notify Doubter that parsing issues occurred. While this has the same effect as returning an array of issues, it is
+recommended to throw a `ValidationError` as the last resort since catching errors has a high performance penalty.
+
+```ts
+const shape5 = d.number().addOperation(value => {
+  if (value > 32) {
+    throw new ValidationError([{ code: 'too_large' }]);
+  }
+  return null;
+});
+
+shape5.try(64);
+// ⮕ { ok: false, issues: [{ code: 'too_large' }] }
+```
+
+### Operation type-safety
+
+Operations are executed only if the base shape type requirements are satisfied:
+
+```ts
+const shape = d.string().addOperation(value => {
+  return { ok: true, value: value.trim() };
+});
+
+// 🟡 Operation isn't executed
+shape.parse(42);
+// ❌ ValidationError: type at /: Must be a string
+```
+
+For composite shapes, operations may become non-type-safe. Let's consider an object shape with an operation:
+
+```ts
+const userShape = d
+  .object({
+    age: d.number(),
+    yearsOfExperience: d.number()
+  })
+  .addOperation(user => {
+    if (user.age > user.yearsOfExperience) {
+      return null;
+    }
+    return [{ code: 'too_young' }];
+  });
+// ⮕ Shape<{ age: number, yearsOfExperience: number }>
+```
+
+The operation relies on `user` to be an object with the valid set of properties. So if any issues are detected in the input
+object the check won't be called:
+
+```ts
+// 🟡 Check isn't applied
+nameShape.parse({ age: 18 });
+// ❌ ValidationError: type at /yearsOfExperience: Must be a number
+```
+
+Adding the `force` option to the `check` call, in this case would cause the check to be applied even if _object
+properties have invalid types_.
+
+Some shapes cannot guarantee that the input value is of the required type. For example, if any of the underlying shapes
+in an intersection have raised issues, an intersection itself cannot guarantee that its checks would receive the value
+of the expected type, so it won't apply its forced checks.
+
+These shapes won't apply forced checks if an underlying shape has raised an issue:
+
+- [`DenyShape`](#deny-a-value)
+- [`IntersectionShape`](#intersection-and)
+- [`LazyShape`](#lazy)
+- [`PipeShape`](#shape-piping)
+- [`ReplaceShape`](#replace-a-value)
+- [`ConvertShape`](#conversions)
+- [`UnionShape`](#union-or)
+
+## Required operations
+
+By default, shapes execute all operations that were added:
+
+```ts
+const minLengthOperation: d.Operation<d.Result> = value => {
+  if (value.length > 5) {
+    return null;
+  }
+  return [{ code: 'too_short' }];
+};
+
+const regexOperation: d.Operation<d.Result> = value => {
+  if (/a/.test(value)) {
+    return null;
+  }
+  return [{ code: 'no_match' }];
+};
+
+const shape1 = d
+  .string()
+  .addOperation(minLengthOperation)
+  .addOperation(regexOperation);
+
+shape1.try('Pluto');
+```
+
+The last statement returns an [`Err`](https://smikhalevski.github.io/doubter/next/interfaces/core.Err.html) object:
+
+```json5
+{
+  ok: false,
+  issues: [
+    { code: 'too_short' },
+    { code: 'no_match' }
+  ]
+}
+```
+
+In some cases, when operation fails, you may want to abort consequent operation. To achieve that, mark an operation as
+[required](https://smikhalevski.github.io/doubter/next/interfaces/core.OperationOptions.html#required):
+
+```ts
+const shape1 = d
+  .string()
+  .addOperation(minLengthOperation, { required: true })
+  .addOperation(regexOperation);
+
+shape1.try('Pluto');
+```
+
+The result would now contain only the one issue:
+
+```json5
+{
+  ok: false,
+  issues: [
+    { code: 'too_short' }
+  ]
+}
+```
+
+## Async operations
+
+Operations callbacks can be asynchronous. They have the same set of arguments as synchronous alternative, by must return
+a promise. Consequent operations after the asynchronous operation would wait for its result:
+
+```ts
+const shape = d
+  .string()
+  .addAsyncOperation(async value => {
+    if (await doSomething(value)) {
+      return null;
+    }
+    return [{ code: 'kaputs' }];
+  });
+
+shape.isAsync;
+// ⮕ true
+
+shape.parseAsync('Hello');
+```
+
+Adding an async operation to the shape, makes shape itself async, so use
+[`parseAsync`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#parseAsync),
+[`parseOrDefaultAsync`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#parseOrDefaultAsync), or
+[`tryAsync`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#tryAsync) with such shapes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Checks
 
 Checks are the most common [operations](#operations) that allow constraining the input value beyond type assertions. For
 example, if you want to constrain a numeric input to be greater than 5:
@@ -564,7 +822,7 @@ const shape = d.number().check(value => {
     return { code: 'kaputs' };
   }
 });
-// ⮕ Shape<number>
+// ⮕ NumberShape
 
 shape.parse(10);
 // ⮕ 10
@@ -574,13 +832,7 @@ shape.parse(3);
 ```
 
 A check callback receives the shape output value and must return an issue or an array of issues if the value is invalid.
-
-> [!NOTE]\
-> Check callbacks can throw a [`ValidationError`](#validation-errors) to notify Doubter that parsing
-> issues occurred. While this has the same effect as returning an array of issues, it is recommended to throw a
-> `ValidationError` as the last resort since catching errors has a high performance penalty.
-
-If value is valid, a check callback must return `null`, `undefined`, or an empty array.
+If the value is valid, a check callback must return `null`, `undefined`, or an empty array.
 
 Most shapes have a set of built-in checks. The check we've just implemented above is called `gt` (greater than):
 
@@ -625,60 +877,6 @@ returned:
 > [!NOTE]\
 > You can find the list of issue codes and corresponding param values in [Validation errors](#validation-errors)
 > section.
-
-## Parameterized checks
-
-You can pass an additional parameter when adding a check:
-
-```ts
-const includesCheck: d.CheckCallback<string[], string> = (value, param) => {
-  if (!value.includes(param)) {
-    return { message: 'Must include ' + param };
-  }
-};
-
-const shape = d.array(d.string()).check(includesCheck, { param: 'Mars' });
-// ⮕ Shape<any[]>
-
-shape.parse(['Mars', 'Pluto']);
-// ⮕ ['Mars', 'Pluto']
-
-shape.parse(['Venus']);
-// ❌ ValidationError: unknown at /: Must include Mars
-```
-
-## Early return
-
-By default, Doubter collects all issues during parsing. In some cases, you may want to halt parsing and raise a
-validation error as soon as the first issue was encountered. To do this, pass the
-[`earlyReturn`](https://smikhalevski.github.io/doubter/next/interfaces/core.ApplyOptions.html#earlyReturn)
-option to the [`parse*` method.](#parsing-and-trying)
-
-```ts
-d.string()
-  .max(4)
-  .regex(/a/)
-  .try('Pluto', { earlyReturn: true });
-```
-
-This would return the [`Err`](https://smikhalevski.github.io/doubter/next/interfaces/core.Err.html) object with
-only one issue:
-
-```json5
-{
-  ok: false,
-  issues: [
-    {
-      code: 'string.max',
-      path: undefied,
-      input: 'Pluto',
-      message: 'Must have the maximum length of 4',
-      param: 4,
-      meta: undefied
-    }
-  ]
-}
-```
 
 ## Forced checks
 
@@ -746,82 +944,6 @@ two issues produced by the `lengthCheck` and `contentsCheck`:
   ]
 }
 ```
-
-### Respecting the shape type
-
-Both forced and non-forced checks are applied only if the type of the input is valid.
-
-```ts
-d.string()
-  .check(lengthCheck)
-  .check(contentsCheck, { force: true })
-  // 🟡 Parsing a non-string value
-  .try(42);
-```
-
-Neither `lengthCheck` nor `contentsCheck` are applied (and even marking `contentsCheck` as forced didn't help):
-
-```json5
-{
-  ok: false,
-  issues: [
-    {
-      code: 'type',
-      path: undefied,
-      input: 42,
-      message: 'Must be a string',
-      param: Type.STRING,
-      meta: undefied,
-    },
-  ]
-}
-```
-
-This happens because the input value 42 has a number type which is invalid since [`d.string`](#string) shape was used.
-
-### Loosing type-safety
-
-For composite shapes, forced checks may become non-type-safe. Let's consider an object with a custom check:
-
-```ts
-const userShape = d
-  .object({
-    age: d.number(),
-    yearsOfExperience: d.number()
-  })
-  .check(user => {
-    if (user.age < user.yearsOfExperience) {
-      return { code: 'age' };
-    }
-  });
-// ⮕ Shape<{ age: number, yearsOfExperience: number }>
-```
-
-The check relies on `user` to be an object with the valid set of properties. So if any issues are detected in the input
-object the check won't be called:
-
-```ts
-// 🟡 Check isn't applied
-nameShape.parse({ age: 18 });
-// ❌ ValidationError: type at /yearsOfExperience: Must be a number
-```
-
-Adding the `force` option to the `check` call, in this case would cause the check to be applied even if _object
-properties have invalid types_.
-
-Some shapes cannot guarantee that the input value is of the required type. For example, if any of the underlying shapes
-in an intersection have raised issues, an intersection itself cannot guarantee that its checks would receive the value
-of the expected type, so it won't apply its forced checks.
-
-These shapes won't apply forced checks if an underlying shape has raised an issue:
-
-- [`DenyShape`](#deny-a-value)
-- [`IntersectionShape`](#intersection-and)
-- [`LazyShape`](#lazy)
-- [`PipeShape`](#shape-piping)
-- [`ReplaceShape`](#replace-a-value)
-- [`ConvertShape`](#conversions)
-- [`UnionShape`](#union-or)
 
 # Refinements
 
@@ -1016,6 +1138,47 @@ asyncShape2.isAsync // ⮕ true
 > 
 > shape.isAsync // ⮕ true
 > ```
+
+
+
+
+# Early return
+
+By default, Doubter collects all issues during parsing. In some cases, you may want to halt parsing and raise a
+validation error as soon as the first issue was encountered. To do this, pass the
+[`earlyReturn`](https://smikhalevski.github.io/doubter/next/interfaces/core.ApplyOptions.html#earlyReturn)
+option to the [`parse*` method.](#parsing-and-trying)
+
+```ts
+d.string()
+  .max(4)
+  .regex(/a/)
+  .try('Pluto', { earlyReturn: true });
+```
+
+This would return the [`Err`](https://smikhalevski.github.io/doubter/next/interfaces/core.Err.html) object with
+only one issue:
+
+```json5
+{
+  ok: false,
+  issues: [
+    {
+      code: 'string.max',
+      path: undefied,
+      input: 'Pluto',
+      message: 'Must have the maximum length of 4',
+      param: 4,
+      meta: undefied
+    }
+  ]
+}
+```
+
+
+
+
+
 
 # Metadata
 

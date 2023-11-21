@@ -5,7 +5,7 @@
  * import { BigIntShape } from 'doubter/core';
  * import enableBigIntEssentials from 'doubter/plugin/bigint-essentials';
  *
- * enableBigIntEssentials(BigIntShape.prototype);
+ * enableBigIntEssentials(BigIntShape);
  * ```
  *
  * @module plugin/bigint-essentials
