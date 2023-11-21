@@ -26,6 +26,9 @@ import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**
+   * The non-negative integer, the number of decimal digits that are considered significant for floating number
+   * comparison.
+   *
    * By default, {@link core!NumberShape.multipleOf NumberShape.multipleOf} uses
    * [the modulo operator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Remainder) which
    * may produce unexpected results when used with floating point numbers. This happens because of
@@ -36,7 +39,7 @@ export interface MultipleOfOptions extends IssueOptions {
    * validated using this formula:
    *
    * ```
-   * Math.abs(Math.round(value / divisor) - value / divisor) < Math.pow(10, -precision)
+   * Math.abs(Math.round(value / divisor) - value / divisor) <= Math.pow(10, -precision)
    * ```
    */
   precision?: number;
