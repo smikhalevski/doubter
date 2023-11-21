@@ -50,8 +50,8 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
 /**
  * Defines how unknown object keys are handled.
  *
- * - If `preserved` then unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape};
- * - If `stripped` then the input object is cloned and unknown keys are removed from it;
+ * - If `preserved` then unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape}.
+ * - If `stripped` then the input object is cloned and unknown keys are removed from it.
  * - If `exact` then an issue is raised if an unknown key is met.
  *
  * @see {@link ObjectShape.keysMode}

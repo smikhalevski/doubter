@@ -182,10 +182,8 @@ export interface Operation {
   readonly type: any;
 
   /**
-   * The additional param associated with the operation. Usually contains a {@link type}-specific data is used in the
-   * {@link callback}.
-   *
-   * @see {@link Issue.param}
+   * The additional param associated with the operation. Usually contains a {@link Operation.type}-specific data is used
+   * in the {@link callback}.
    */
   readonly param: any;
 
@@ -195,15 +193,29 @@ export interface Operation {
   readonly isAsync: boolean;
 
   /**
-   * `true` if consequent operations must be omitted if this operation raises issues, of `false` otherwise.
+   * The operation tolerance for issues that are raised during validation.
    */
-  readonly isRequired: boolean;
+  readonly tolerance: OperationTolerance;
 
   /**
    * The callback that applies the logic of the operation to the shape output.
    */
   readonly callback: OperationCallback<Result> | OperationCallback<PromiseLike<Result>>;
 }
+
+/**
+ * Defines the operation tolerance for issues that are raised during validation.
+ *
+ * - If `skip` then if preceding operations have raised issues, then this operation is skipped but consequent operations
+ * are still applied.
+ * - If `abort` then if preceding operations have raised issues, then this operation is skipped and consequent operations
+ * aren't applied. Also, if this operation itself raises issues then consequent operations aren't applied.
+ * - If `auto` then the operation is applied regardless of previously raised issues.
+ *
+ * @see {@link Operation.tolerance}
+ * @group Operations
+ */
+export type OperationTolerance = 'skip' | 'abort' | 'auto';
 
 /**
  * A callback that applies an operation to the shape output value.
@@ -231,14 +243,16 @@ export type OperationCallback<ReturnValue = any, Value = any, Param = any> = (
  */
 export interface OperationOptions {
   /**
-   * The type of the operation. If omitted then operation callback is used as its type.
+   * The type of the operation such as {@link StringShape.regex "string.regex"} or
+   * {@link ArrayShape.includes "array.includes"}.  If omitted then operation callback is used as its type.
    *
    * @see {@link Operation.type}
    */
   type?: any;
 
   /**
-   * The additional param associated with the operation.
+   * The additional param associated with the operation. Usually contains a {@link OperationOptions.type type}-specific
+   * data is used in the {@link callback}.
    *
    * @see {@link Operation.param}
    * @default undefined
@@ -246,12 +260,12 @@ export interface OperationOptions {
   param?: any;
 
   /**
-   * If `true` then consequent operations are omitted if this operation raises issues.
+   * The operation tolerance for issues that are raised during validation.
    *
-   * @see {@link Operation.isRequired}
-   * @default false
+   * @see {@link Operation.tolerance}
+   * @default 'auto'
    */
-  required?: boolean;
+  tolerance?: OperationTolerance;
 }
 
 /**

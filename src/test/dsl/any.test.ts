@@ -18,7 +18,7 @@ describe('any', () => {
       type: cb,
       param: undefined,
       isAsync: false,
-      isRequired: false,
+      tolerance: 'auto',
       callback: expect.any(Function),
     });
   });

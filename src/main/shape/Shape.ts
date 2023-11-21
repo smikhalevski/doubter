@@ -6,7 +6,7 @@ import {
   applyOperations,
   applyShape,
   captureIssues,
-  createApplyOperations,
+  composeApplyOperations,
   defaultApplyOptions,
   extractCheckResult,
   getErrorMessage,
@@ -265,10 +265,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   addOperation(cb: OperationCallback<Result<OutputValue>, OutputValue>, options?: OperationOptions): this;
 
   addOperation(cb: OperationCallback, options: OperationOptions = {}): this {
-    const { type = cb, param, required = false } = options;
+    const { type = cb, param, tolerance = 'auto' } = options;
 
     const shape = this._clone();
-    shape.operations = this.operations.concat({ type, param, isAsync: false, isRequired: required, callback: cb });
+    shape.operations = this.operations.concat({ type, param, isAsync: false, tolerance, callback: cb });
     return shape;
   }
 
@@ -306,10 +306,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @see [Operations](https://github.com/smikhalevski/doubter#operations)
    */
   addAsyncOperation(cb: OperationCallback, options: OperationOptions = {}): this {
-    const { type = cb, param, required = false } = options;
+    const { type = cb, param, tolerance = 'auto' } = options;
 
     const shape = this._clone();
-    shape.operations = this.operations.concat({ type, param, isAsync: true, isRequired: required, callback: cb });
+    shape.operations = this.operations.concat({ type, param, isAsync: true, tolerance, callback: cb });
     return shape;
   }
 
@@ -348,12 +348,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: OperationCallback<CheckResult, OutputValue>, options?: OperationOptions): this;
 
   check(cb: OperationCallback<CheckResult>, options: OperationOptions = {}): this {
-    const { type = cb, param, required = false } = options;
+    const { type = cb, param, tolerance = 'auto' } = options;
 
     return this.addOperation((value, param, options) => extractCheckResult(cb(value, param, options)), {
       type,
       param,
-      required,
+      tolerance,
     });
   }
 
@@ -396,12 +396,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   checkAsync(cb: OperationCallback<PromiseLike<CheckResult>, OutputValue>, options?: OperationOptions): this;
 
   checkAsync(cb: OperationCallback<PromiseLike<CheckResult>>, options: OperationOptions = {}): this {
-    const { type = cb, param, required = false } = options;
+    const { type = cb, param, tolerance = 'auto' } = options;
 
     return this.addAsyncOperation((value, param, options) => cb(value, param, options).then(extractCheckResult), {
       type,
       param,
-      required,
+      tolerance,
     });
   }
 
@@ -469,7 +469,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: OperationCallback<unknown, OutputValue>, options?: RefineOptions | Message): this;
 
   refine(cb: OperationCallback<unknown>, options?: RefineOptions | Message): Shape {
-    const { type = cb, param, required = false, code = CODE_ANY_REFINE } = extractOptions(options);
+    const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, Shape.messages[CODE_ANY_REFINE], options, cb);
 
@@ -480,7 +480,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
         }
         return [issueFactory(value, options)];
       },
-      { type, param, required }
+      { type, param, tolerance }
     );
   }
 
@@ -517,7 +517,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refineAsync(cb: OperationCallback<PromiseLike<unknown>, OutputValue>, options?: RefineOptions | Message): this;
 
   refineAsync(cb: OperationCallback<PromiseLike<unknown>>, options?: RefineOptions | Message): Shape {
-    const { type = cb, param, required = false, code = CODE_ANY_REFINE } = extractOptions(options);
+    const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = extractOptions(options);
 
     const issueFactory = createIssueFactory(code, Shape.messages[CODE_ANY_REFINE], options, cb);
 
@@ -529,7 +529,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
           }
           return [issueFactory(value, options)];
         }),
-      { type, param, required }
+      { type, param, tolerance }
     );
   }
 
@@ -568,9 +568,9 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter(cb: OperationCallback<OutputValue, OutputValue>, options?: OperationOptions): this;
 
   alter(cb: OperationCallback<OutputValue>, options: OperationOptions = {}): Shape {
-    const { type = cb, param, required = false } = options;
+    const { type = cb, param, tolerance = 'auto' } = options;
 
-    return this.addOperation((value, param, options) => ok(cb(value, param, options)), { type, param, required });
+    return this.addOperation((value, param, options) => ok(cb(value, param, options)), { type, param, tolerance });
   }
 
   /**
@@ -610,12 +610,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alterAsync(cb: OperationCallback<PromiseLike<OutputValue>, OutputValue>, options?: OperationOptions): this;
 
   alterAsync(cb: OperationCallback<PromiseLike<OutputValue>>, options: OperationOptions = {}): Shape {
-    const { type = cb, param, required = false } = options;
+    const { type = cb, param, tolerance = 'auto' } = options;
 
     return this.addAsyncOperation((value, param, options) => cb(value, param, options).then(ok), {
       type,
       param,
-      required,
+      tolerance,
     });
   }
 
@@ -1018,7 +1018,7 @@ Object.defineProperties(Shape.prototype, {
         const operation = this.operations[i];
 
         async ||= operation.isAsync;
-        cb = createApplyOperations(operation, cb, async);
+        cb = composeApplyOperations(operation, cb, async);
       }
 
       return overrideProperty(this, '_applyOperations', cb);

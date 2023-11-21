@@ -63,23 +63,23 @@ describe('Shape', () => {
           type: 'aaa',
           callback: cb,
           isAsync: false,
-          isRequired: false,
+          tolerance: 'auto',
           param: 111,
         },
       ]);
     });
 
-    test('adds a required operation', () => {
+    test('adds a non-tolerant operation', () => {
       const cb = () => null;
 
-      const shape = new Shape().addOperation(cb, { required: true });
+      const shape = new Shape().addOperation(cb, { tolerance: 'abort' });
 
       expect(shape.operations).toEqual([
         {
           type: cb,
           callback: cb,
           isAsync: false,
-          isRequired: true,
+          tolerance: 'abort',
         },
       ]);
     });
@@ -113,11 +113,11 @@ describe('Shape', () => {
       expect(cb2).toHaveBeenCalledTimes(1);
     });
 
-    test('if required operation fails then consequent operations are skipped', () => {
+    test('if a non-tolerant operation fails then consequent operations are skipped', () => {
       const cb1 = jest.fn().mockReturnValue([{ code: 'xxx' }]);
       const cb2 = jest.fn().mockReturnValue(null);
 
-      const shape = new Shape().addOperation(cb1, { required: true }).addOperation(cb2);
+      const shape = new Shape().addOperation(cb1, { tolerance: 'abort' }).addOperation(cb2);
 
       expect(shape.try('aaa')).toEqual({
         issues: [{ code: 'xxx' }],
@@ -162,23 +162,23 @@ describe('Shape', () => {
           type: 'aaa',
           callback: cb,
           isAsync: true,
-          isRequired: false,
+          tolerance: 'auto',
           param: 111,
         },
       ]);
     });
 
-    test('adds a required operation', () => {
+    test('adds a non-tolerant operation', () => {
       const cb = () => Promise.resolve(null);
 
-      const shape = new Shape().addAsyncOperation(cb, { required: true });
+      const shape = new Shape().addAsyncOperation(cb, { tolerance: 'abort' });
 
       expect(shape.operations).toEqual([
         {
           type: cb,
           callback: cb,
           isAsync: true,
-          isRequired: true,
+          tolerance: 'abort',
         },
       ]);
     });
@@ -212,11 +212,11 @@ describe('Shape', () => {
       expect(cb2).toHaveBeenCalledTimes(1);
     });
 
-    test('if required operation fails then consequent operations are skipped', async () => {
+    test('if a non-tolerant operation fails then consequent operations are skipped', async () => {
       const cb1 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
       const cb2 = jest.fn().mockReturnValue(Promise.resolve(null));
 
-      const shape = new Shape().addAsyncOperation(cb1, { required: true }).addAsyncOperation(cb2);
+      const shape = new Shape().addAsyncOperation(cb1, { tolerance: 'abort' }).addAsyncOperation(cb2);
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         issues: [{ code: 'xxx' }],
@@ -975,11 +975,11 @@ describe('Shape', () => {
       expect(() => shape.try('aaa')).toThrow(new Error('expected'));
     });
 
-    test('check is not called if the preceding required operation has failed', () => {
+    test('check is not called if the preceding non-tolerant operation has failed', () => {
       const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
       const cbMock2 = jest.fn();
 
-      const shape = new Shape().check(cbMock1, { required: true }).check(cbMock2);
+      const shape = new Shape().check(cbMock1, { tolerance: 'abort' }).check(cbMock2);
 
       expect(shape.try('aaa')).toEqual({
         ok: false,
