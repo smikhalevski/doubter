@@ -128,6 +128,23 @@ describe('Shape', () => {
       expect(cb2).toHaveBeenCalledTimes(0);
     });
 
+    test('skips an operation if preceding operation has failed', () => {
+      const cb1 = jest.fn().mockReturnValue([{ code: 'xxx' }]);
+      const cb2 = jest.fn().mockReturnValue(null);
+      const cb3 = jest.fn().mockReturnValue(null);
+
+      const shape = new Shape().addOperation(cb1).addOperation(cb2, { tolerance: 'skip' }).addOperation(cb3);
+
+      expect(shape.try('aaa')).toEqual({
+        issues: [{ code: 'xxx' }],
+        ok: false,
+      });
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(0);
+      expect(cb3).toHaveBeenCalledTimes(1);
+    });
+
     test('operation callback can safely throw ValidationError instances', () => {
       const shape = new Shape().addOperation(() => {
         throw new ValidationError([{ code: 'xxx' }]);
@@ -225,6 +242,26 @@ describe('Shape', () => {
 
       expect(cb1).toHaveBeenCalledTimes(1);
       expect(cb2).toHaveBeenCalledTimes(0);
+    });
+
+    test('skips an operation if preceding operation has failed', async () => {
+      const cb1 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
+      const cb2 = jest.fn().mockReturnValue(Promise.resolve(null));
+      const cb3 = jest.fn().mockReturnValue(Promise.resolve(null));
+
+      const shape = new Shape()
+        .addAsyncOperation(cb1)
+        .addAsyncOperation(cb2, { tolerance: 'skip' })
+        .addAsyncOperation(cb3);
+
+      await expect(shape.tryAsync('aaa')).resolves.toEqual({
+        issues: [{ code: 'xxx' }],
+        ok: false,
+      });
+
+      expect(cb1).toHaveBeenCalledTimes(1);
+      expect(cb2).toHaveBeenCalledTimes(0);
+      expect(cb3).toHaveBeenCalledTimes(1);
     });
 
     test('operation callback can safely throw ValidationError instances', async () => {
