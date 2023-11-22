@@ -2,8 +2,7 @@ import { freeze, getCanonicalValue, isArray } from '../internal/lang';
 import { TYPE_ARRAY, TYPE_BIGINT, TYPE_BOOLEAN, TYPE_DATE, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../types';
 import { NEVER } from './never';
 
-const MAX_SAFE_INTEGER = 0x1fffffffffffff;
-const MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
+const { MIN_SAFE_INTEGER, MAX_SAFE_INTEGER } = Number;
 
 /**
  * The array of inputs that are coercible to a number with {@link coerceToNumber}.
