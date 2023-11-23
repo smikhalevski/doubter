@@ -21,14 +21,14 @@ Runtime validation and transformation library.
 
 - TypeScript first;
 - Sync and async validation and transformation flows;
-- [Circular object references support;](#circular-object-references)
-- Collect all validation issues, or [exit early;](#early-return)
-- [Runtime type introspection;](#introspection)
-- [Human-oriented type coercion;](#type-coercion)
-- [High performance and low memory consumption;](#performance)
+- [Circular object references support](#circular-object-references);
+- Collect all validation issues, or [exit early](#early-return);
+- [Runtime type introspection](#introspection);
+- [Human-oriented type coercion](#type-coercion);
+- [High performance and low memory consumption](#performance);
 - No dynamic code evaluation;
 - Zero dependencies;
-- [Pluggable architecture;](#plugins)
+- [Pluggable architecture](#plugins);
 - [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
@@ -3858,7 +3858,7 @@ d.tuple([d.string(), d.number()]).rest(d.boolean());
 // ⮕ Shape<[string, number, ...boolean]>
 ```
 
-Tuples follow [array type coercion rules.](#coerce-to-an-array)
+Tuples follow [array type coercion rules](#coerce-to-an-array).
 
 # `undefined`
 
@@ -4004,7 +4004,7 @@ The result of `try` would contain a grouping issue:
 <dt><code>inputs</code></dt>
 <dd>
 
-An array of all input types and literal values that the union [accepts.](#check-that-an-input-is-accepted)
+An array of all input types and literal values that the union [accepts](#check-that-an-input-is-accepted).
 
 </dd>
 <dt><code>issueGroups</code></dt>
@@ -4094,7 +4094,7 @@ const queryShape = d
 
 3. The object shape is marked as [partial](#making-objects-partial-and-required), so absence of any query param won't
    raise a validation issue. You can mark individual params as optional and
-   [provide a default value.](#optional-and-non-optional)
+   [provide a default value](#optional-and-non-optional).
 
 Now, let's parse the query string with [qs](https://www.npmjs.com/package/qs) and then apply our shape:
 
