@@ -115,6 +115,18 @@ declare module '../core' {
     nonNegative(options?: IssueOptions | Message): this;
 
     /**
+     * Constrains the number to be between the inclusive minimum and maximum.
+     *
+     * @param minValue The inclusive minimum value.
+     * @param maxValue The inclusive maximum value.
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
+     */
+    between(minValue: number, maxValue: number, options?: IssueOptions | Message): this;
+
+    /**
      * Constrains the number to be greater than the value.
      *
      * @param value The exclusive minimum value.
@@ -262,6 +274,10 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
 
   prototype.nonNegative = function (options) {
     return this.gte(0, options);
+  };
+
+  prototype.between = function (minValue, maxValue, options) {
+    return this.gte(minValue, options).lte(maxValue, options);
   };
 
   prototype.gt = function (value, options) {
