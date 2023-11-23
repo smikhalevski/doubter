@@ -44,12 +44,39 @@ export interface MultipleOfOptions extends IssueOptions {
 
 declare module '../core' {
   export interface Messages {
+    /**
+     * @default "Must be a finite number"
+     */
     'number.finite': Message | Any;
+
+    /**
+     * @default "Must be an integer"
+     */
     'number.int': Message | Any;
+
+    /**
+     * @default "Must be greater than %s"
+     */
     'number.gt': Message | Any;
+
+    /**
+     * @default "Must be greater than or equal to %s"
+     */
     'number.gte': Message | Any;
+
+    /**
+     * @default "Must be less than %s"
+     */
     'number.lt': Message | Any;
+
+    /**
+     * @default "Must be less than or equal to %s"
+     */
     'number.lte': Message | Any;
+
+    /**
+     * @default "Must be a multiple of %s"
+     */
     'number.multipleOf': Message | Any;
   }
 

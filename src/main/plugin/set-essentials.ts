@@ -17,7 +17,14 @@ import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
+    /**
+     * @default "Must have the minimum size of %s"
+     */
     'set.min': Message | Any;
+
+    /**
+     * @default "Must have the maximum size of %s"
+     */
     'set.max': Message | Any;
   }
 

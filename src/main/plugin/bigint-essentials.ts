@@ -18,7 +18,14 @@ import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
+    /**
+     * @default "Must be greater than or equal to %s"
+     */
     'bigint.min': Message | Any;
+
+    /**
+     * @default "Must be less than or equal to %s"
+     */
     'bigint.max': Message | Any;
   }
 
