@@ -28,6 +28,8 @@ export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
 export const defaultApplyOptions = freeze<ApplyOptions>({ earlyReturn: false });
 
+export const defaultEarlyReturnApplyOptions = freeze<ApplyOptions>({ earlyReturn: true });
+
 export declare const INPUT: unique symbol;
 export declare const OUTPUT: unique symbol;
 
