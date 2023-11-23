@@ -46,13 +46,12 @@ npm install --save-prod doubter
 
 🚀&ensp;**Features**
 
-- [Basics](#basics)
-- [Shapes](#shapes)
+- [Introduction](#introduction)
 - [Validation errors](#validation-errors)
 - [Operations](#operations)
 - [Conversions](#conversions)
 - [Early return](#early-return)
-- [Metadata](#metadata)
+- [Annotations and metadata](#annotations-and-metadata)
 - [Parsing context](#parsing-context)
 - [Shape piping](#shape-piping)
 - [Replace, allow, and deny a value](#replace-allow-and-deny-a-value)
