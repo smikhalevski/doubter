@@ -1,8 +1,10 @@
 import { CODE_TYPE_NEVER } from '../constants';
-import { neverInputs } from '../types';
-import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
+import { freeze } from '../internal/lang';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
+
+const neverInputs = freeze([]);
 
 /**
  * The shape that doesn't match any input.

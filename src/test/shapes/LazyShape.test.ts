@@ -10,7 +10,7 @@ import {
 import { ERR_SHAPE_EXPECTED } from '../../main/constants';
 import { identity } from '../../main/internal/lang';
 import { nextNonce, resetNonce } from '../../main/internal/shapes';
-import { TYPE_OBJECT } from '../../main/types';
+import { Type } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('LazyShape', () => {
@@ -97,7 +97,7 @@ describe('LazyShape', () => {
     test('prevents infinite loop', () => {
       const shape: LazyShape<any, any> = new LazyShape(() => new ObjectShape({ key1: shape }, null), identity);
 
-      expect(shape.inputs).toEqual([TYPE_OBJECT]);
+      expect(shape.inputs).toEqual([Type.OBJECT]);
     });
   });
 

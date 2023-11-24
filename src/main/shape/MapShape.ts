@@ -1,9 +1,9 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
+import { freeze, getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { mapCoercibleInputs, mapInputs, TYPE_MAP } from '../types';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import {
@@ -15,6 +15,9 @@ import {
   Output,
   Shape,
 } from './Shape';
+
+const mapInputs = freeze([Type.MAP]);
+const mapCoercibleInputs = freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
 
 /**
  * The shape of a {@link !Map Map} instance.
@@ -64,7 +67,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.map'], options, TYPE_MAP);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.map'], options, Type.MAP);
   }
 
   at(key: unknown): AnyShape | null {

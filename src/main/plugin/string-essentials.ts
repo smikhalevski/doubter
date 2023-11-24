@@ -21,7 +21,7 @@ import {
   CODE_STRING_STARTS_WITH,
 } from '../constants';
 import { IssueOptions, Message, StringShape } from '../core';
-import { Any } from '../typings';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

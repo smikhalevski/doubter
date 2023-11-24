@@ -1,14 +1,14 @@
 import { DateShape, Shape } from '../../main';
 import { dateCoercibleInputs } from '../../main/coerce/date';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_DATE } from '../../main/types';
+import { Type } from '../../main/Type';
 
 describe('DateShape', () => {
   test('creates a DateShape', () => {
     const shape = new DateShape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputs).toEqual([TYPE_DATE]);
+    expect(shape.inputs).toEqual([Type.DATE]);
   });
 
   test('parses date values', () => {
@@ -20,14 +20,14 @@ describe('DateShape', () => {
   test('raises an issue if an input is not a Date instance', () => {
     expect(new DateShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_DATE, message: Shape.messages['type.date'] }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: Type.DATE, message: Shape.messages['type.date'] }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new DateShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, param: TYPE_DATE, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 111, param: Type.DATE, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -46,7 +46,7 @@ describe('DateShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new DateShape().coerce().try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.date'], param: TYPE_DATE }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.date'], param: Type.DATE }],
       });
     });
   });

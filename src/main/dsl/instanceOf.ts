@@ -1,5 +1,5 @@
 import { InstanceShape } from '../shape/InstanceShape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the class instance shape.

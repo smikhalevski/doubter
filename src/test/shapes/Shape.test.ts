@@ -22,7 +22,7 @@ import {
   ERR_SYNC_UNSUPPORTED,
 } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
-import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/types';
+import { Type } from '../../main/Type';
 import { AsyncMockShape, MockShape } from './mocks';
 
 beforeEach(() => {
@@ -34,7 +34,7 @@ describe('Shape', () => {
     const shape = new Shape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
+    expect(shape.inputs).toEqual([Type.UNKNOWN]);
   });
 
   describe('annotate', () => {
@@ -905,11 +905,11 @@ describe('Shape', () => {
     test('returns unique types', () => {
       class TestShape extends Shape {
         protected _getInputs() {
-          return [TYPE_STRING, TYPE_STRING, TYPE_NUMBER];
+          return [Type.STRING, Type.STRING, Type.NUMBER];
         }
       }
 
-      expect(new TestShape().inputs).toEqual([TYPE_STRING, TYPE_NUMBER]);
+      expect(new TestShape().inputs).toEqual([Type.STRING, Type.NUMBER]);
     });
   });
 
@@ -917,12 +917,12 @@ describe('Shape', () => {
     test('returns true if shape accepts an input type', () => {
       class TestShape extends Shape {
         protected _getInputs() {
-          return [TYPE_STRING];
+          return [Type.STRING];
         }
       }
 
-      expect(new TestShape().accepts(TYPE_STRING)).toBe(true);
-      expect(new TestShape().accepts(TYPE_NUMBER)).toBe(false);
+      expect(new TestShape().accepts(Type.STRING)).toBe(true);
+      expect(new TestShape().accepts(Type.NUMBER)).toBe(false);
       expect(new TestShape().accepts('aaa')).toBe(true);
       expect(new TestShape().accepts(111)).toBe(false);
     });
@@ -934,8 +934,8 @@ describe('Shape', () => {
         }
       }
 
-      expect(new TestShape().accepts(TYPE_STRING)).toBe(false);
-      expect(new TestShape().accepts(TYPE_NUMBER)).toBe(false);
+      expect(new TestShape().accepts(Type.STRING)).toBe(false);
+      expect(new TestShape().accepts(Type.NUMBER)).toBe(false);
       expect(new TestShape().accepts('aaa')).toBe(true);
       expect(new TestShape().accepts(111)).toBe(false);
     });
@@ -943,12 +943,12 @@ describe('Shape', () => {
     test('returns true if shape accepts unknown type', () => {
       class TestShape extends Shape {
         protected _getInputs() {
-          return [TYPE_UNKNOWN];
+          return [Type.UNKNOWN];
         }
       }
 
-      expect(new TestShape().accepts(TYPE_STRING)).toBe(true);
-      expect(new TestShape().accepts(TYPE_NUMBER)).toBe(true);
+      expect(new TestShape().accepts(Type.STRING)).toBe(true);
+      expect(new TestShape().accepts(Type.NUMBER)).toBe(true);
       expect(new TestShape().accepts('aaa')).toBe(true);
       expect(new TestShape().accepts(111)).toBe(true);
     });
@@ -1102,12 +1102,11 @@ describe('Shape', () => {
 
     test('invokes _apply with options', async () => {
       const shape = new MockShape();
-      const options = { earlyReturn: true };
 
-      shape.parseOrDefault('aaa', 'bbb', options);
+      shape.parseOrDefault('aaa', 'bbb', { context: 111 });
 
       expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', options, 0);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { context: 111 }, 0);
     });
 
     test('returns a value when an input was parsed', () => {
@@ -1338,7 +1337,7 @@ describe('PipeShape', () => {
 
   describe('inputs', () => {
     test('returns inputs of the input shape', () => {
-      expect(new PipeShape(new StringShape(), new Shape()).inputs).toEqual([TYPE_STRING]);
+      expect(new PipeShape(new StringShape(), new Shape()).inputs).toEqual([Type.STRING]);
     });
   });
 
@@ -1435,7 +1434,7 @@ describe('ReplaceShape', () => {
 
   describe('inputs', () => {
     test('concatenates inputs of the underlying shape with the replaced value', () => {
-      expect(new ReplaceShape(new NumberShape(), 'aaa', 111).inputs).toEqual([TYPE_NUMBER, 'aaa']);
+      expect(new ReplaceShape(new NumberShape(), 'aaa', 111).inputs).toEqual([Type.NUMBER, 'aaa']);
     });
 
     test('erases never', () => {
@@ -1549,7 +1548,7 @@ describe('DenyShape', () => {
 
   describe('inputs', () => {
     test('returns inputs of the underlying shape', () => {
-      expect(new DenyShape(new StringShape(), 111).inputs).toEqual([TYPE_STRING]);
+      expect(new DenyShape(new StringShape(), 111).inputs).toEqual([Type.STRING]);
     });
 
     test('returns an empty array if an underlying shape is NeverShape', () => {
@@ -1622,7 +1621,7 @@ describe('CatchShape', () => {
     expect(cbMock).toHaveBeenNthCalledWith(
       1,
       111,
-      [{ code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: TYPE_STRING }],
+      [{ code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: Type.STRING }],
       { earlyReturn: false }
     );
   });
@@ -1648,7 +1647,7 @@ describe('CatchShape', () => {
 
   describe('inputs', () => {
     test('returns inputs of the underlying shape', () => {
-      expect(new CatchShape(new StringShape(), 'aaa').inputs).toEqual([TYPE_STRING]);
+      expect(new CatchShape(new StringShape(), 'aaa').inputs).toEqual([Type.STRING]);
     });
 
     test('returns inputs of the underlying shape', () => {

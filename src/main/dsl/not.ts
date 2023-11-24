@@ -1,5 +1,5 @@
 import { AnyShape, NotShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the shape that only allows values that don't conform the shape.

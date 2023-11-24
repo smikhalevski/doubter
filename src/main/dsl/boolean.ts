@@ -1,5 +1,5 @@
 import { BooleanShape } from '../shape/BooleanShape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the boolean shape.

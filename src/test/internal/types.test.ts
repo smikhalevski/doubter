@@ -1,31 +1,31 @@
 import { distributeTypes, unionTypes } from '../../main/internal/types';
-import { TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/types';
+import { Type } from '../../main/Type';
 
 test('unionTypes', () => {
   expect(unionTypes([])).toEqual([]);
-  expect(unionTypes([TYPE_UNKNOWN])).toEqual([TYPE_UNKNOWN]);
-  expect(unionTypes([TYPE_UNKNOWN, TYPE_UNKNOWN])).toEqual([TYPE_UNKNOWN]);
+  expect(unionTypes([Type.UNKNOWN])).toEqual([Type.UNKNOWN]);
+  expect(unionTypes([Type.UNKNOWN, Type.UNKNOWN])).toEqual([Type.UNKNOWN]);
   expect(unionTypes([111])).toEqual([111]);
   expect(unionTypes([111, 111])).toEqual([111]);
-  expect(unionTypes([111, TYPE_NUMBER])).toEqual([TYPE_NUMBER]);
-  expect(unionTypes([TYPE_NUMBER, 111])).toEqual([TYPE_NUMBER]);
-  expect(unionTypes([TYPE_NUMBER, TYPE_STRING])).toEqual([TYPE_NUMBER, TYPE_STRING]);
-  expect(unionTypes([TYPE_NUMBER, TYPE_NUMBER])).toEqual([TYPE_NUMBER]);
+  expect(unionTypes([111, Type.NUMBER])).toEqual([Type.NUMBER]);
+  expect(unionTypes([Type.NUMBER, 111])).toEqual([Type.NUMBER]);
+  expect(unionTypes([Type.NUMBER, Type.STRING])).toEqual([Type.NUMBER, Type.STRING]);
+  expect(unionTypes([Type.NUMBER, Type.NUMBER])).toEqual([Type.NUMBER]);
   expect(unionTypes([111, 'aaa'])).toEqual([111, 'aaa']);
-  expect(unionTypes([111, 'aaa', TYPE_UNKNOWN])).toEqual([TYPE_UNKNOWN]);
-  expect(unionTypes([TYPE_STRING, TYPE_UNKNOWN])).toEqual([TYPE_UNKNOWN]);
+  expect(unionTypes([111, 'aaa', Type.UNKNOWN])).toEqual([Type.UNKNOWN]);
+  expect(unionTypes([Type.STRING, Type.UNKNOWN])).toEqual([Type.UNKNOWN]);
 });
 
 test('distributeTypes', () => {
   expect(distributeTypes([])).toEqual([]);
   expect(distributeTypes([[], []])).toEqual([]);
-  expect(distributeTypes([[TYPE_STRING], []])).toEqual([]);
-  expect(distributeTypes([[], [TYPE_STRING]])).toEqual([]);
-  expect(distributeTypes([[TYPE_STRING], [TYPE_STRING]])).toEqual([TYPE_STRING]);
-  expect(distributeTypes([[TYPE_STRING], [TYPE_NUMBER]])).toEqual([]);
-  expect(distributeTypes([[TYPE_STRING], ['aaa']])).toEqual(['aaa']);
-  expect(distributeTypes([[TYPE_STRING], ['aaa', TYPE_NUMBER]])).toEqual(['aaa']);
-  expect(distributeTypes([['aaa'], [TYPE_STRING, TYPE_NUMBER]])).toEqual(['aaa']);
+  expect(distributeTypes([[Type.STRING], []])).toEqual([]);
+  expect(distributeTypes([[], [Type.STRING]])).toEqual([]);
+  expect(distributeTypes([[Type.STRING], [Type.STRING]])).toEqual([Type.STRING]);
+  expect(distributeTypes([[Type.STRING], [Type.NUMBER]])).toEqual([]);
+  expect(distributeTypes([[Type.STRING], ['aaa']])).toEqual(['aaa']);
+  expect(distributeTypes([[Type.STRING], ['aaa', Type.NUMBER]])).toEqual(['aaa']);
+  expect(distributeTypes([['aaa'], [Type.STRING, Type.NUMBER]])).toEqual(['aaa']);
   expect(
     distributeTypes([
       [111, 'aaa'],
@@ -36,7 +36,7 @@ test('distributeTypes', () => {
   expect(
     distributeTypes([
       [111, 'aaa'],
-      [TYPE_NUMBER, TYPE_STRING],
+      [Type.NUMBER, Type.STRING],
     ])
   ).toEqual([111, 'aaa']);
 });

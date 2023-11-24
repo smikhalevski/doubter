@@ -10,7 +10,7 @@ import {
   OperationCallback,
   ParseOptions,
   Result,
-} from '../typings';
+} from '../types';
 import { ValidationError } from '../ValidationError';
 import { freeze, isArray, isEqual, isObjectLike } from './lang';
 

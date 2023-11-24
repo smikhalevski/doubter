@@ -1,5 +1,5 @@
 import { ConstShape } from '../shape/ConstShape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the shape that requires an input to be equal to `NaN`.

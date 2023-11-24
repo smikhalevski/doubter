@@ -4,8 +4,8 @@ import { isArray, isEqual } from '../internal/lang';
 import { setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { distributeTypes } from '../internal/types';
-import { getTypeOf, TYPE_ARRAY, TYPE_DATE, TYPE_OBJECT } from '../types';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
@@ -226,8 +226,8 @@ export function mergeValues(a: any, b: any): any {
     return a;
   }
 
-  const aType = getTypeOf(a);
-  const bType = getTypeOf(b);
+  const aType = Type.of(a);
+  const bType = Type.of(b);
 
   let output: any;
 
@@ -235,7 +235,7 @@ export function mergeValues(a: any, b: any): any {
     return NEVER;
   }
 
-  if (aType === TYPE_OBJECT) {
+  if (aType === Type.OBJECT) {
     output = Object.assign({}, a);
 
     for (const key in b) {
@@ -248,7 +248,7 @@ export function mergeValues(a: any, b: any): any {
     return output;
   }
 
-  if (aType === TYPE_ARRAY) {
+  if (aType === Type.ARRAY) {
     if (a.length !== b.length) {
       return NEVER;
     }
@@ -263,7 +263,7 @@ export function mergeValues(a: any, b: any): any {
     return output;
   }
 
-  if (aType === TYPE_DATE) {
+  if (aType === Type.DATE) {
     return a.getTime() === b.getTime() ? a : NEVER;
   }
 

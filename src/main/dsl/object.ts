@@ -1,7 +1,7 @@
 import { ReadonlyDict } from '../internal/objects';
 import { ObjectShape } from '../shape/ObjectShape';
 import { AnyShape } from '../shape/Shape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the object shape.

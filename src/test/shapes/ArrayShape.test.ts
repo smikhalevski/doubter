@@ -1,7 +1,7 @@
 import { ArrayShape, Err, NumberShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
-import { TYPE_ARRAY, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING, TYPE_UNKNOWN } from '../../main/types';
+import { Type } from '../../main/Type';
 import { AsyncMockShape, MockShape } from './mocks';
 
 describe('ArrayShape', () => {
@@ -17,7 +17,7 @@ describe('ArrayShape', () => {
 
     expect(shape.headShapes).toEqual([headShape1]);
     expect(shape.restShape).toBe(restShape);
-    expect(shape.inputs).toEqual([TYPE_ARRAY]);
+    expect(shape.inputs).toEqual([Type.ARRAY]);
     expect(shape.isAsync).toBe(false);
   });
 
@@ -28,7 +28,7 @@ describe('ArrayShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: TYPE_ARRAY }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: Type.ARRAY }],
     });
   });
 
@@ -108,7 +108,7 @@ describe('ArrayShape', () => {
 
     expect(shape.try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: TYPE_ARRAY }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: Type.ARRAY }],
     });
   });
 
@@ -279,7 +279,7 @@ describe('ArrayShape', () => {
       expect(shape.try(['aaa'])).toEqual({
         ok: false,
         issues: [
-          { code: CODE_TYPE, path: [0], input: 'aaa', message: Shape.messages['type.number'], param: TYPE_NUMBER },
+          { code: CODE_TYPE, path: [0], input: 'aaa', message: Shape.messages['type.number'], param: Type.NUMBER },
         ],
       });
     });
@@ -312,19 +312,19 @@ describe('ArrayShape', () => {
     test('allow unknown input type when shape is coerced and elements are unconstrained', () => {
       const shape = new ArrayShape([], null).coerce();
 
-      expect(shape.inputs).toEqual([TYPE_UNKNOWN]);
+      expect(shape.inputs).toEqual([Type.UNKNOWN]);
     });
 
     test('allows only array-like types when tuple has two elements', () => {
       const shape = new ArrayShape([new StringShape(), new NumberShape()], null).coerce();
 
-      expect(shape.inputs).toEqual([TYPE_OBJECT, TYPE_ARRAY]);
+      expect(shape.inputs).toEqual([Type.OBJECT, Type.ARRAY]);
     });
 
     test('allows inputs of a single tuple element', () => {
       const shape = new ArrayShape([new StringShape()], null).coerce();
 
-      expect(shape.inputs).toEqual([TYPE_STRING, TYPE_OBJECT, TYPE_ARRAY]);
+      expect(shape.inputs).toEqual([Type.STRING, Type.OBJECT, Type.ARRAY]);
     });
 
     test('does not coerce if an input tuple has no elements', () => {
@@ -421,7 +421,7 @@ describe('ArrayShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: TYPE_ARRAY }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.array'], param: Type.ARRAY }],
       });
     });
 

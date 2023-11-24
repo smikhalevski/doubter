@@ -13,7 +13,7 @@
 
 import { CODE_DATE_MAX, CODE_DATE_MIN } from '../constants';
 import { DateShape, IssueOptions, Message, Shape } from '../core';
-import { Any } from '../typings';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

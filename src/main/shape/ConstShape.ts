@@ -1,11 +1,14 @@
 import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST } from '../constants';
-import { nullInputs, undefinedInputs } from '../types';
-import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
+import { freeze } from '../internal/lang';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { Shape } from './Shape';
+
+const nullInputs = freeze([null]);
+const undefinedInputs = freeze([undefined]);
 
 /**
  * The shape of a constant value.

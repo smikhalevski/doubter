@@ -19,7 +19,7 @@ import {
 } from '../internal/shapes';
 import { isType, unionTypes } from '../internal/types';
 import { defaultMessages } from '../messages';
-import { getTypeOf, TYPE_UNKNOWN, unknownInputs } from '../types';
+import { Type } from '../Type';
 import {
   Any,
   ApplyOperationsCallback,
@@ -39,9 +39,11 @@ import {
   RefineOptions,
   RefinePredicate,
   Result,
-} from '../typings';
+} from '../types';
 import { createIssueFactory, extractOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
+
+export const unknownInputs = freeze([Type.UNKNOWN]);
 
 /**
  * Extracts the shape input type.
@@ -225,7 +227,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param input The type or value that must be checked.
    */
   accepts(input: unknown): boolean {
-    return this.inputs.includes(TYPE_UNKNOWN) || this.inputs.includes(input) || this.inputs.includes(getTypeOf(input));
+    return this.inputs.includes(Type.UNKNOWN) || this.inputs.includes(input) || this.inputs.includes(Type.of(input));
   }
 
   /**

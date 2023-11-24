@@ -1,6 +1,6 @@
 import { RecordShape } from '../shape/RecordShape';
 import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the shape that describes an object with string keys and values that conform the given shape.

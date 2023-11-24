@@ -1,4 +1,4 @@
-import { Issue } from './typings';
+import { Issue } from './types';
 
 /**
  * An error thrown if parsing failed. Custom check callbacks, refinement predicates, converters, and fallback

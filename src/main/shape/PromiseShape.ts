@@ -1,12 +1,14 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { isArray } from '../internal/lang';
+import { freeze, isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
-import { promiseInputs, TYPE_PROMISE, unknownInputs } from '../types';
-import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
+
+const promiseInputs = freeze([Type.PROMISE]);
 
 type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
   ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any
@@ -50,7 +52,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.promise'], options, TYPE_PROMISE);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.promise'], options, Type.PROMISE);
   }
 
   deepPartial(): DeepPartialPromiseShape<ValueShape> {
@@ -70,7 +72,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     if (this.valueShape === null) {
       return unknownInputs;
     }
-    return this.valueShape.inputs.concat(TYPE_PROMISE);
+    return this.valueShape.inputs.concat(Type.PROMISE);
   }
 
   protected _coerce(input: unknown): Promise<any> {

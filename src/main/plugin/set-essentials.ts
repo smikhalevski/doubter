@@ -12,7 +12,7 @@
  */
 import { CODE_SET_MAX, CODE_SET_MIN } from '../constants';
 import { AnyShape, IssueOptions, Message, SetShape } from '../core';
-import { Any } from '../typings';
+import { Any } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

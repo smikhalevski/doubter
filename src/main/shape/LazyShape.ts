@@ -2,7 +2,7 @@ import { ERR_SHAPE_EXPECTED } from '../constants';
 import { identity, isArray } from '../internal/lang';
 import { overrideProperty } from '../internal/objects';
 import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes';
-import { Any, ApplyOptions, Result } from '../typings';
+import { Any, ApplyOptions, Result } from '../types';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**

@@ -1,5 +1,5 @@
 import { CODE_TYPE, ERR_ASYNC_FUNCTION } from '../constants';
-import { isArray } from '../internal/lang';
+import { freeze, isArray } from '../internal/lang';
 import {
   applyShape,
   Awaitable,
@@ -13,11 +13,13 @@ import {
   Promisify,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { functionInputs, TYPE_FUNCTION } from '../types';
-import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';
+
+const functionInputs = freeze([Type.FUNCTION]);
 
 const KEY_THIS = 'this';
 const KEY_ARGS = 'arguments';
@@ -91,7 +93,7 @@ export class FunctionShape<
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.function'], options, TYPE_FUNCTION);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.function'], options, Type.FUNCTION);
   }
 
   /**

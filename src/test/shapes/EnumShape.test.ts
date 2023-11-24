@@ -1,15 +1,7 @@
 import { EnumShape } from '../../main';
 import { CODE_TYPE_ENUM } from '../../main/constants';
 import { getEnumValues } from '../../main/shape/EnumShape';
-import {
-  TYPE_ARRAY,
-  TYPE_BIGINT,
-  TYPE_BOOLEAN,
-  TYPE_DATE,
-  TYPE_NUMBER,
-  TYPE_OBJECT,
-  TYPE_STRING,
-} from '../../main/types';
+import { Type } from '../../main/Type';
 
 enum NumberMockEnum {
   AAA,
@@ -128,13 +120,13 @@ describe('EnumShape', () => {
   describe('coerce', () => {
     test('detects types coercible to numeric enum value', () => {
       expect(new EnumShape(NumberMockEnum).coerce().inputs).toEqual([
-        TYPE_ARRAY,
-        TYPE_OBJECT,
-        TYPE_NUMBER,
-        TYPE_STRING,
-        TYPE_BOOLEAN,
-        TYPE_BIGINT,
-        TYPE_DATE,
+        Type.ARRAY,
+        Type.OBJECT,
+        Type.NUMBER,
+        Type.STRING,
+        Type.BOOLEAN,
+        Type.BIGINT,
+        Type.DATE,
         null,
         undefined,
       ]);
@@ -144,22 +136,22 @@ describe('EnumShape', () => {
       const AAA = {};
       const BBB = {};
 
-      expect(new EnumShape({ AAA, BBB }).coerce().inputs).toEqual([AAA, BBB, 'AAA', 'BBB', TYPE_ARRAY]);
+      expect(new EnumShape({ AAA, BBB }).coerce().inputs).toEqual([AAA, BBB, 'AAA', 'BBB', Type.ARRAY]);
     });
 
     test('detects types coercible to a value in an array', () => {
       const AAA = {};
       const BBB = {};
 
-      expect(new EnumShape([AAA, BBB]).coerce().inputs).toEqual([AAA, BBB, TYPE_ARRAY]);
+      expect(new EnumShape([AAA, BBB]).coerce().inputs).toEqual([AAA, BBB, Type.ARRAY]);
       expect(new EnumShape(['aaa', 'bbb']).coerce().inputs).toEqual([
-        TYPE_ARRAY,
-        TYPE_OBJECT,
-        TYPE_STRING,
-        TYPE_NUMBER,
-        TYPE_BOOLEAN,
-        TYPE_BIGINT,
-        TYPE_DATE,
+        Type.ARRAY,
+        Type.OBJECT,
+        Type.STRING,
+        Type.NUMBER,
+        Type.BOOLEAN,
+        Type.BIGINT,
+        Type.DATE,
         null,
         undefined,
       ]);

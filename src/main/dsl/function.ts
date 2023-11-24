@@ -2,7 +2,7 @@ import { isArray } from '../internal/lang';
 import { ArrayShape } from '../shape/ArrayShape';
 import { FunctionShape } from '../shape/FunctionShape';
 import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates a shape of a function that has no arguments.

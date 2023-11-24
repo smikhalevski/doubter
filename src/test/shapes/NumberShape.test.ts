@@ -1,14 +1,14 @@
 import { NumberShape, Shape } from '../../main';
 import { numberCoercibleInputs } from '../../main/coerce/number';
 import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE } from '../../main/constants';
-import { TYPE_NUMBER } from '../../main/types';
+import { Type } from '../../main/Type';
 
 describe('NumberShape', () => {
   test('creates a NumberShape', () => {
     const shape = new NumberShape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputs).toEqual([TYPE_NUMBER]);
+    expect(shape.inputs).toEqual([Type.NUMBER]);
   });
 
   test('parses a number', () => {
@@ -18,12 +18,12 @@ describe('NumberShape', () => {
   test('raises if value is not a number', () => {
     expect(new NumberShape().try('111')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '111', param: TYPE_NUMBER, message: Shape.messages['type.number'] }],
+      issues: [{ code: CODE_TYPE, input: '111', param: Type.NUMBER, message: Shape.messages['type.number'] }],
     });
 
     expect(new NumberShape().try(NaN)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: NaN, param: TYPE_NUMBER, message: expect.any(String) }],
+      issues: [{ code: CODE_TYPE, input: NaN, param: Type.NUMBER, message: expect.any(String) }],
     });
 
     expect(new NumberShape().gt(2).parse(3)).toBe(3);
@@ -36,7 +36,7 @@ describe('NumberShape', () => {
   test('overrides message for type issue', () => {
     expect(new NumberShape({ message: 'aaa', meta: 'bbb' }).try('ccc')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'ccc', param: TYPE_NUMBER, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 'ccc', param: Type.NUMBER, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -95,7 +95,7 @@ describe('NumberShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new NumberShape().coerce().try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: ['aaa'], message: Shape.messages['type.number'], param: TYPE_NUMBER }],
+        issues: [{ code: CODE_TYPE, input: ['aaa'], message: Shape.messages['type.number'], param: Type.NUMBER }],
       });
     });
   });

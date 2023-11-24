@@ -1,6 +1,6 @@
 import { ArrayShape } from '../shape/ArrayShape';
 import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the tuple shape.

@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { TYPE_STRING } from '../../main/types';
+import { Type } from '../../main/Type';
 
 describe('any', () => {
   test('returns a shape', () => {
@@ -7,7 +7,7 @@ describe('any', () => {
   });
 
   test('unknown is erased in an intersection', () => {
-    expect(d.and([d.string(), d.any()]).inputs).toEqual([TYPE_STRING]);
+    expect(d.and([d.string(), d.any()]).inputs).toEqual([Type.STRING]);
     expect(d.and([d.never(), d.any()]).inputs).toEqual([]);
   });
 

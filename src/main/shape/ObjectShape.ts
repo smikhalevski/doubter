@@ -1,6 +1,6 @@
 import { CODE_OBJECT_EXACT, CODE_TYPE } from '../constants';
 import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
-import { isArray, isObject } from '../internal/lang';
+import { freeze, isArray, isObject } from '../internal/lang';
 import { cloneDict, cloneDictKeys, Dict, overrideProperty, ReadonlyDict, setObjectProperty } from '../internal/objects';
 import {
   applyShape,
@@ -12,11 +12,13 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { objectInputs, TYPE_OBJECT } from '../types';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
+
+const objectInputs = freeze([Type.OBJECT]);
 
 type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,
@@ -134,7 +136,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     this.valueShapes = Object.values(propShapes);
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.object'], options, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.object'], options, Type.OBJECT);
   }
 
   /**

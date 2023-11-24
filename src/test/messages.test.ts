@@ -1,5 +1,5 @@
 import { StringShape } from '../main';
-import { TYPE_STRING } from '../main/types';
+import { Type } from '../main/Type';
 
 test('overrides global message', () => {
   StringShape.messages['type.string'] = (issue, options) => 111;
@@ -11,7 +11,7 @@ test('overrides global message', () => {
         code: 'type',
         input: 222,
         message: 111,
-        param: TYPE_STRING,
+        param: Type.STRING,
       },
     ],
   });

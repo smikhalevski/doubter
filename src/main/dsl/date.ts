@@ -1,5 +1,5 @@
 import { DateShape } from '../shape/DateShape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the {@link !Date Date} shape.
