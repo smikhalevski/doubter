@@ -11,8 +11,9 @@
  * @module plugin/set-essentials
  */
 import { CODE_SET_MAX, CODE_SET_MIN } from '../constants';
-import { AnyShape, IssueOptions, Message, SetShape } from '../core';
-import { Any } from '../types';
+import { SetShape } from '../shape/SetShape';
+import { AnyShape } from '../shape/Shape';
+import { Any, IssueOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

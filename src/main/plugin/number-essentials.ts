@@ -20,8 +20,8 @@ import {
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
 } from '../constants';
-import { IssueOptions, Message, NumberShape } from '../core';
-import { Any } from '../types';
+import { NumberShape } from '../shape/NumberShape';
+import { Any, IssueOptions, Message } from '../types';
 import { createIssueFactory, extractOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {

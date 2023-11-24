@@ -58,12 +58,8 @@
     },
     "./package.json": "./package.json"
   },
-  "sideEffects": [
-    "./index.mjs",
-    "./index.js"
-  ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
+    "build": "rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
     "clean": "rimraf gen lib docs coverage",
     "test": "jest",
     "test:definitions": "ln -nsf ../lib node_modules/doubter && tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",
@@ -91,7 +87,7 @@
   "devDependencies": {
     "@badrap/valita": "^0.3.0",
     "@rollup/plugin-alias": "^5.0.0",
-    "@rollup/plugin-node-resolve": "^15.2.1",
+    "@rollup/plugin-typescript": "^11.1.5",
     "@types/jest": "^29.5.5",
     "@types/qs": "^6.9.8",
     "ajv": "^8.12.0",
@@ -100,8 +96,7 @@
     "prettier": "^3.0.3",
     "qs": "^6.11.2",
     "rimraf": "^5.0.1",
-    "rollup": "^3.29.2",
-    "rollup-plugin-dts": "^6.0.2",
+    "rollup": "^4.5.2",
     "toofast": "^2.0.0",
     "ts-jest": "^29.1.1",
     "tsd": "^0.29.0",

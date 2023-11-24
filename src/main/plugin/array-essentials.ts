@@ -12,8 +12,9 @@
  */
 
 import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN } from '../constants';
-import { AnyShape, ApplyOptions, ArrayShape, IssueOptions, Message, Result, Shape } from '../core';
-import { Any } from '../types';
+import { ArrayShape } from '../shape/ArrayShape';
+import { AnyShape, Shape } from '../shape/Shape';
+import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

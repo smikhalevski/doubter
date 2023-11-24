@@ -12,8 +12,9 @@
  */
 
 import { CODE_DATE_MAX, CODE_DATE_MIN } from '../constants';
-import { DateShape, IssueOptions, Message, Shape } from '../core';
-import { Any } from '../types';
+import { DateShape } from '../shape/DateShape';
+import { Shape } from '../shape/Shape';
+import { Any, IssueOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {
