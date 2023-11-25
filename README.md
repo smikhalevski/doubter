@@ -398,6 +398,10 @@ This option is for `parse` and `parseAsync` methods.
 
 ## Static type inference
 
+> [!IMPORTANT]\
+> Static type inference feature requires TypeScript >=4.1 with enabled
+> [`strictNullChecks`](https://www.typescriptlang.org/tsconfig#strictNullChecks).
+
 Since shapes can transform values, they can have different input and output types. For example, this string shape has
 the same input an output:
 
