@@ -5,7 +5,7 @@
  * import { NumberShape } from 'doubter/core';
  * import enableNumberEssentials from 'doubter/plugin/number-essentials';
  *
- * enableNumberEssentials(NumberShape.prototype);
+ * enableNumberEssentials(NumberShape);
  * ```
  *
  * @module plugin/number-essentials
@@ -47,12 +47,39 @@ export interface MultipleOfOptions extends IssueOptions {
 
 declare module '../core' {
   export interface Messages {
+    /**
+     * @default "Must be a finite number"
+     */
     'number.finite': Message | Any;
+
+    /**
+     * @default "Must be an integer"
+     */
     'number.int': Message | Any;
+
+    /**
+     * @default "Must be greater than %s"
+     */
     'number.gt': Message | Any;
+
+    /**
+     * @default "Must be greater than or equal to %s"
+     */
     'number.gte': Message | Any;
+
+    /**
+     * @default "Must be less than %s"
+     */
     'number.lt': Message | Any;
+
+    /**
+     * @default "Must be less than or equal to %s"
+     */
     'number.lte': Message | Any;
+
+    /**
+     * @default "Must be a multiple of %s"
+     */
     'number.multipleOf': Message | Any;
   }
 
@@ -116,6 +143,18 @@ declare module '../core' {
      * @plugin {@link plugin/number-essentials! plugin/number-essentials}
      */
     nonNegative(options?: IssueOptions | Message): this;
+
+    /**
+     * Constrains the number to be between the inclusive minimum and maximum.
+     *
+     * @param minValue The inclusive minimum value.
+     * @param maxValue The inclusive maximum value.
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link plugin/number-essentials! plugin/number-essentials}
+     */
+    between(minValue: number, maxValue: number, options?: IssueOptions | Message): this;
 
     /**
      * Constrains the number to be greater than the value.
@@ -265,6 +304,10 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
 
   prototype.nonNegative = function (options) {
     return this.gte(0, options);
+  };
+
+  prototype.between = function (minValue, maxValue, options) {
+    return this.gte(minValue, options).lte(maxValue, options);
   };
 
   prototype.gt = function (value, options) {

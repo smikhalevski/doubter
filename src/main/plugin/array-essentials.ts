@@ -5,7 +5,7 @@
  * import { ArrayShape } from 'doubter/core';
  * import enableArrayEssentials from 'doubter/plugin/array-essentials';
  *
- * enableArrayEssentials(ArrayShape.prototype);
+ * enableArrayEssentials(ArrayShape);
  * ```
  *
  * @module plugin/array-essentials
@@ -18,8 +18,19 @@ import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
+    /**
+     * @default "Must include a value"
+     */
     'array.includes': Message | Any;
+
+    /**
+     * @default "Must have the maximum length of %s"
+     */
     'array.max': Message | Any;
+
+    /**
+     * @default "Must have the minimum length of %s"
+     */
     'array.min': Message | Any;
   }
 

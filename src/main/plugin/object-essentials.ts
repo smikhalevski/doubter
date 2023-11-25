@@ -5,7 +5,7 @@
  * import { ObjectShape } from 'doubter/core';
  * import enableObjectEssentials from 'doubter/plugin/object-essentials';
  *
- * enableObjectEssentials(ObjectShape.prototype);
+ * enableObjectEssentials(ObjectShape);
  * ```
  *
  * @module plugin/object-essentials
@@ -26,11 +26,34 @@ import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
+    /**
+     * @default "Must contain all or no keys: %s"
+     */
     'object.allKeys': Message | Any;
+
+    /**
+     * @default "Must contain not all or no keys: %s"
+     */
     'object.notAllKeys': Message | Any;
+
+    /**
+     * @default "Must contain at least one key: %s"
+     */
     'object.orKeys': Message | Any;
+
+    /**
+     * @default "Must contain exactly one key: %s"
+     */
     'object.xorKeys': Message | Any;
+
+    /**
+     * @default "Must contain one or no keys: %s"
+     */
     'object.oxorKeys': Message | Any;
+
+    /**
+     * @default "Must be a plain object"
+     */
     'object.plain': Message | Any;
   }
 

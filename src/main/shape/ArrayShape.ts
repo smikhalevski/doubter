@@ -34,12 +34,12 @@ type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape ext
 /**
  * The shape of an array or a tuple value.
  *
- * | Shape | Type |
- * | :-- | :-- |
- * | `ArrayShape<[], null>` | `[]` |
- * | `ArrayShape<[], Shape<B>>` | `B[]` |
- * | `ArrayShape<[Shape<A>, Shape<B>], null>` | `[A, B]` |
- * | `ArrayShape<[Shape<A>], Shape<B>>` | `[A, ...B[]]` |
+ * | Shape | Input Type | Output Type |
+ * | :-- | :-- | :-- |
+ * | `ArrayShape<[], null>` | `[]` | `[]` |
+ * | `ArrayShape<[], Shape<A, B>>` | `A[]` | `B[]` |
+ * | `ArrayShape<​[Shape<A, B>, Shape<X, Y>], null>` | `[A, X]` | `[B, Y]` |
+ * | `ArrayShape<​[Shape<A, B>], Shape<X, Y>>` | `[A, ...X[]]` | `[B, ...Y[]]` |
  *
  * @template HeadShapes The array of positioned element shapes.
  * @template RestShape The shape of rest elements, or `null` if there are no rest elements.

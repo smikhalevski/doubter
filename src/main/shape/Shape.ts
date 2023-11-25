@@ -8,6 +8,7 @@ import {
   captureIssues,
   composeApplyOperations,
   defaultApplyOptions,
+  defaultEarlyReturnApplyOptions,
   extractCheckResult,
   getErrorMessage,
   nextNonce,
@@ -1145,7 +1146,7 @@ Object.defineProperties(Shape.prototype, {
         this.isAsync
           ? throwSyncUnsupported
           : (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-              const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+              const result = this._apply(input, options || defaultEarlyReturnApplyOptions, nextNonce());
 
               if (result === null) {
                 return input;
@@ -1167,7 +1168,7 @@ Object.defineProperties(Shape.prototype, {
         this,
         'parseOrDefaultAsync',
         (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-          return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
+          return this._applyAsync(input, options || defaultEarlyReturnApplyOptions, nextNonce()).then(result => {
             if (result === null) {
               return input;
             }

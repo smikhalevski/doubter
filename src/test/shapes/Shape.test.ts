@@ -1097,7 +1097,7 @@ describe('Shape', () => {
       shape.parseOrDefault('aaa');
 
       expect(shape._apply).toHaveBeenCalledTimes(1);
-      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
+      expect(shape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: true }, 0);
     });
 
     test('invokes _apply with options', async () => {
@@ -1186,7 +1186,7 @@ describe('Shape', () => {
         await shape.parseOrDefaultAsync('aaa');
 
         expect(shape._applyAsync).toHaveBeenCalledTimes(1);
-        expect(shape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
+        expect(shape._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: true }, 0);
       });
 
       test('invokes _applyAsync with options', async () => {

@@ -5,7 +5,7 @@
  * import { StringShape } from 'doubter/core';
  * import enableStringEssentials from 'doubter/plugin/string-essentials';
  *
- * enableStringEssentials(StringShape.prototype);
+ * enableStringEssentials(StringShape);
  * ```
  *
  * @module plugin/string-essentials
@@ -26,12 +26,39 @@ import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
+    /**
+     * @default "Must not be blank"
+     */
     'string.nonBlank': Message | Any;
+
+    /**
+     * @default "Must have the minimum length of %s"
+     */
     'string.min': Message | Any;
+
+    /**
+     * @default "Must have the maximum length of %s"
+     */
     'string.max': Message | Any;
+
+    /**
+     * @default "Must match the pattern %s"
+     */
     'string.regex': Message | Any;
+
+    /**
+     * @default "Must include: %s"
+     */
     'string.includes': Message | Any;
+
+    /**
+     * @default "Must start with: %s"
+     */
     'string.startsWith': Message | Any;
+
+    /**
+     * @default "Must end with: %s"
+     */
     'string.endsWith': Message | Any;
   }
 

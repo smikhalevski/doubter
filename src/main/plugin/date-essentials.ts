@@ -5,7 +5,7 @@
  * import { DateShape } from 'doubter/core';
  * import enableDateEssentials from 'doubter/plugin/date-essentials';
  *
- * enableDateEssentials(DateShape.prototype);
+ * enableDateEssentials(DateShape);
  * ```
  *
  * @module plugin/date-essentials
@@ -18,7 +18,14 @@ import { createIssueFactory } from '../utils';
 
 declare module '../core' {
   export interface Messages {
+    /**
+     * @default "Must be after %s"
+     */
     'date.min': Message | Any;
+
+    /**
+     * @default "Must be before %s"
+     */
     'date.max': Message | Any;
   }
 
