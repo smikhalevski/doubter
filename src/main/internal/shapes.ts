@@ -168,16 +168,25 @@ export const applyOperations: ApplyOperationsCallback = (input, output, options,
  * @param async If `true` then both operation and next operation are called asynchronously.
  * @returns The callback that applies the operation.
  */
-export function createApplyOperations(
+export function composeApplyOperations(
   operation: Operation,
   next: ApplyOperationsCallback,
   async: boolean
 ): ApplyOperationsCallback {
-  const { param, isRequired, callback } = operation;
+  const { param, callback, tolerance } = operation;
 
   if (async) {
-    return (input, output, options, issues) =>
-      new Promise<Result>(resolve => {
+    return (input, output, options, issues) => {
+      if (issues !== null) {
+        switch (tolerance) {
+          case 'abort':
+            return issues;
+          case 'skip':
+            return next(input, output, options, issues);
+        }
+      }
+
+      return new Promise<Result>(resolve => {
         resolve(callback(output, param, options));
       })
         .catch(captureIssues)
@@ -186,7 +195,7 @@ export function createApplyOperations(
             if (isArray(result)) {
               issues = concatIssues(issues, result);
 
-              if (isRequired || options.earlyReturn) {
+              if (tolerance === 'abort' || options.earlyReturn) {
                 return issues;
               }
             } else {
@@ -195,9 +204,19 @@ export function createApplyOperations(
           }
           return next(input, output, options, issues);
         });
+    };
   }
 
   return (input, output, options, issues) => {
+    if (issues !== null) {
+      switch (tolerance) {
+        case 'abort':
+          return issues;
+        case 'skip':
+          return next(input, output, options, issues);
+      }
+    }
+
     let result;
 
     try {
@@ -209,13 +228,14 @@ export function createApplyOperations(
       if (isArray(result)) {
         issues = concatIssues(issues, result);
 
-        if (isRequired || options.earlyReturn) {
+        if (tolerance === 'abort' || options.earlyReturn) {
           return issues;
         }
       } else {
         output = result.value;
       }
     }
+
     return next(input, output, options, issues);
   };
 }
