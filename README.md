@@ -69,6 +69,8 @@ npm install --save-prod doubter
 
 ⏱&ensp;[**Performance**](#performance)
 
+🍿&ensp;[**Comparison with peers**](#comparison-with-peers)
+
 🎯&ensp;**Data types**
 
 - Strings<br>
@@ -1544,6 +1546,9 @@ const shape2 = d
 In the example above, array elements don't allow `undefined` even after `deepPartial` was applied, this happened because
 array is converted during parsing.
 
+> [!NOTE]\
+> You can also implement [deep partial protocol](#implementing-deep-partial-support) in your custom shapes.
+
 # Fallback value
 
 If issues were detected during parsing a shape can return a fallback value.
@@ -2371,6 +2376,77 @@ npm ci
 npm run build
 npm run perf -- -t overall
 ```
+
+# Comparison with peers
+
+The table below highlights features that are unique to Doubter and its peers.
+
+<table>
+<thead>
+<tr><th></th><th width="100">Doubter</th><th width="100">Zod</th><th width="100">Valita</th></tr>
+</thead>
+<tbody>
+<!--                                                                                 Doubter    Zod        Valita    -->
+
+<tr><td colspan="4"><br><b>Shapes and parsing</b></td></tr>
+<tr><td><a href="#static-type-inference">Static type inference</a>          </td><th>🟢</th><th>🟢</th><th>🟢</th></tr>
+<tr><td><a href="#early-return">Early return</a>                            </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#validation-errors">Custom issue codes</a>                 </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#replace-allow-and-deny-a-value">Replace/allow/deny</a>    </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#exclude-a-shape">Exclude/not</a>                          </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#discriminated-unions">Discriminated unions</a>            </td><th>🟢</th><th>&ensp;🌕 <sup>1</sup></th><th>🟢</th></tr>
+<tr><td><a href="#introspection">Introspection at runtime</a>               </td><th>🟢</th><th>&ensp;🌕 <sup>2</sup></th><th>🔴</th></tr>
+<tr><td><a href="#annotations-and-metadata">Annotations/metadata</a>        </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#making-objects-partial-and-required">Partial objects</a>  </td><th>🟢</th><th>🟢</th><th>🟢</th></tr>
+<tr><td><a href="#deep-partial">Deep partial</a>                            </td><th>🟢</th><th>&ensp;🌕 <sup>3</sup></th><th>🔴</th></tr>
+<tr><td><a href="#circular-object-references">Circular objects</a>          </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#nested-shapes">Derive sub-shapes</a>                      </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#key-relationships">Object key relationships</a>           </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#global-error-message-formatter">Error formatter</a>       </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#parsing-context">Parsing context</a>                      </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+
+<tr><td colspan="4"><br><b>Async flow</b></td></tr>
+<tr><td><a href="#async-shapes">Async shapes</a>                            </td><th>🟢</th><th>🟢</th><th>🔴</th></tr>
+<tr><td><a href="#refinements">Async refinements</a>                        </td><th>🟢</th><th>🟢</th><th>🔴</th></tr>
+<tr><td><a href="#async-conversions">Async conversions</a>                  </td><th>🟢</th><th>🟢</th><th>🔴</th></tr>
+<tr><td><a href="#checks">Async checks</a>                                  </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#alterations">Async alterations</a>                        </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#async-shapes">Check that shape is async</a>               </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+
+<tr><td colspan="4"><br><b>Type coercion</b></td></tr>
+<tr><td><a href="#coerce-to-a-string">String</a>                            </td><th>🟢</th><th>&ensp;🌕 <sup>4</sup></th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-a-number">Number</a>                            </td><th>🟢</th><th>&ensp;🌕 <sup>4</sup></th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-a-boolean">Boolean</a>                          </td><th>🟢</th><th>&ensp;🌕 <sup>4</sup></th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-a-bigint">BigInt</a>                            </td><th>🟢</th><th>&ensp;🌕 <sup>4</sup></th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-a-date">Date</a>                                </td><th>🟢</th><th>&ensp;🌕 <sup>4</sup></th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-a-set">Set</a>                                  </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-a-map">Map</a>                                  </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-an-array">Array</a>                             </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-an-enum">Enum</a>                               </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td><a href="#coerce-to-a-const">Const</a>                              </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+
+<tr><td colspan="4"><br><b>Other</b></td></tr>
+<tr><td><a href="#plugins">Plugin-centric</a>                               </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
+<tr><td>Tree-shakeable                                                      </td><th>🟢</th><th>🔴</th><th>🟢</th></tr>
+
+</tbody>
+</table>
+
+1. Zod uses [`z.union`](https://zod.dev/?id=unions) for regular unions and
+   [`z.discriminatedUnion`](https://zod.dev/?id=discriminated-unions) for discriminated unions, and discriminator key
+   must be supplied manually as an argument. Doubter uses `d.union` to describe both regular unions and discriminated
+   unions, and discriminator key is
+   [detected automatically](https://github.com/smikhalevski/doubter/tree/operations-docs#discriminated-unions).
+
+2. Zod schemas are class instances so introspection is possible, but there's no way to get
+   [a list of types accepted by a schema](#introspection).
+
+3. Zod supports only deep partial on objects. Doubter allows any shape to implement
+   [`DeepPartialProtocol`](#implementing-deep-partial-support) and all shapes (except for primitives) support it
+   out-of-the-box.
+
+4. Zod coerces input values using wrapper constructors. Doubter uses custom converters for type coercion. For example,
+   with Zod `null` is coerced to `"null"`, while with Doubter `null` is coerced to an empty string.
 
 # `any`
 
