@@ -1,7 +1,7 @@
 import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
-import { TYPE_ARRAY, TYPE_OBJECT, TYPE_SET, TYPE_STRING } from '../../main/types';
+import { Type } from '../../main/Type';
 import { AsyncMockShape, MockShape } from './mocks';
 
 describe('SetShape', () => {
@@ -15,7 +15,7 @@ describe('SetShape', () => {
     const shape = new SetShape(valueShape);
 
     expect(shape.valueShape).toEqual(valueShape);
-    expect(shape.inputs).toEqual([TYPE_SET]);
+    expect(shape.inputs).toEqual([Type.SET]);
   });
 
   test('raises an issue if an input is not a Set', () => {
@@ -25,7 +25,7 @@ describe('SetShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: TYPE_SET }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: Type.SET }],
     });
   });
 
@@ -114,7 +114,7 @@ describe('SetShape', () => {
 
   describe('coerce', () => {
     test('extends shape inputs', () => {
-      expect(new SetShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_SET, TYPE_OBJECT, TYPE_ARRAY]);
+      expect(new SetShape(new StringShape()).coerce().inputs).toEqual([Type.STRING, Type.SET, Type.OBJECT, Type.ARRAY]);
     });
 
     test('coerces a string value', () => {
@@ -163,7 +163,7 @@ describe('SetShape', () => {
             code: CODE_TYPE,
             input: 111,
             message: Shape.messages['type.string'],
-            param: TYPE_STRING,
+            param: Type.STRING,
             path: [0, 'key1'],
           },
         ],
@@ -179,7 +179,7 @@ describe('SetShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: TYPE_SET }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: Type.SET }],
       });
     });
 

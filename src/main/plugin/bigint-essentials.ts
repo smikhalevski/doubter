@@ -12,8 +12,8 @@
  */
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../constants';
-import { BigIntShape, IssueOptions, Message } from '../core';
-import { Any } from '../typings';
+import { BigIntShape } from '../shape/BigIntShape';
+import { Any, IssueOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

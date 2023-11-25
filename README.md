@@ -29,7 +29,7 @@ Runtime validation and transformation library.
 - No dynamic code evaluation;
 - Zero dependencies;
 - [Pluggable architecture](#plugins);
-- [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- Tree-shakable: [3 — 12 kB gzipped](https://bundlephobia.com/result?p=doubter) depending on what features you use;
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
 ```shell
@@ -397,6 +397,10 @@ This option is for `parse` and `parseAsync` methods.
 </dl>
 
 ## Static type inference
+
+> [!IMPORTANT]\
+> Static type inference feature requires TypeScript >=4.1 with enabled
+> [`strictNullChecks`](https://www.typescriptlang.org/tsconfig#strictNullChecks).
 
 Since shapes can transform values, they can have different input and output types. For example, this string shape has
 the same input an output:

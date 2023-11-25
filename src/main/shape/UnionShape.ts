@@ -4,8 +4,8 @@ import { isArray, isObject } from '../internal/lang';
 import { overrideProperty, ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
-import { getTypeOf, TYPE_UNKNOWN } from '../types';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
@@ -226,7 +226,7 @@ export function createLookup(shapes: readonly AnyShape[]): LookupCallback {
     }
 
     const inputs = shape.inputs;
-    const types = inputs[0] === TYPE_UNKNOWN ? bucketInputs : unique(inputs.map(input => getTypeOf(input).name));
+    const types = inputs[0] === Type.UNKNOWN ? bucketInputs : unique(inputs.map(input => Type.of(input).name));
 
     for (const type of types) {
       buckets[type] = buckets[type].concat(shape);
@@ -237,7 +237,7 @@ export function createLookup(shapes: readonly AnyShape[]): LookupCallback {
 
   if (objectShapes.length !== shapes.length) {
     // Mixed shape types in the union
-    return input => buckets[getTypeOf(input).name];
+    return input => buckets[Type.of(input).name];
   }
   if (objectShapes.length > 1 && (discriminator = getDiscriminator(objectShapes)) !== null) {
     // Discriminated object union

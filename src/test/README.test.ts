@@ -2,7 +2,7 @@ import qs from 'qs';
 import * as d from '../main';
 import { Result, Shape } from '../main';
 import { CODE_TYPE_UNION } from '../main/constants';
-import { TYPE_ARRAY, TYPE_BOOLEAN, TYPE_NUMBER, TYPE_OBJECT, TYPE_STRING } from '../main/types';
+import { Type } from '../main/Type';
 
 describe('Cookbook', () => {
   test('Type-safe URL query params', () => {
@@ -121,7 +121,7 @@ describe('JSON shape', () => {
           message: Shape.messages[CODE_TYPE_UNION],
           input: value2,
           param: {
-            inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
+            inputs: [Type.NUMBER, Type.STRING, Type.BOOLEAN, null, Type.ARRAY, Type.OBJECT],
             issueGroups: null,
           },
         },
@@ -136,7 +136,7 @@ describe('JSON shape', () => {
           input: value3.aaa.bbb,
           message: Shape.messages[CODE_TYPE_UNION],
           param: {
-            inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
+            inputs: [Type.NUMBER, Type.STRING, Type.BOOLEAN, null, Type.ARRAY, Type.OBJECT],
             issueGroups: null,
           },
           path: ['aaa', 'bbb'],
@@ -168,7 +168,7 @@ describe('JSON shape', () => {
           message: Shape.messages[CODE_TYPE_UNION],
           input: value2,
           param: {
-            inputs: [TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN, null, TYPE_ARRAY, TYPE_OBJECT],
+            inputs: [Type.NUMBER, Type.STRING, Type.BOOLEAN, null, Type.ARRAY, Type.OBJECT],
             issueGroups: null,
           },
         },

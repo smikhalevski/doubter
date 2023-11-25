@@ -1,13 +1,15 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { toArrayIndex, unique } from '../internal/arrays';
-import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
+import { freeze, getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { setInputs, TYPE_ARRAY, TYPE_OBJECT, TYPE_SET } from '../types';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape';
+
+const setInputs = freeze([Type.SET]);
 
 /**
  * The shape of a {@link !Set Set} instance.
@@ -46,7 +48,7 @@ export class SetShape<ValueShape extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.set'], options, TYPE_SET);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.set'], options, Type.SET);
   }
 
   at(key: unknown): AnyShape | null {
@@ -62,7 +64,7 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   protected _getInputs(): readonly unknown[] {
-    return this.isCoercing ? this.valueShape.inputs.concat(TYPE_SET, TYPE_OBJECT, TYPE_ARRAY) : setInputs;
+    return this.isCoercing ? this.valueShape.inputs.concat(Type.SET, Type.OBJECT, Type.ARRAY) : setInputs;
   }
 
   /**

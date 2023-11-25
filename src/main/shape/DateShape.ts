@@ -1,12 +1,14 @@
 import { coerceToDate, dateCoercibleInputs } from '../coerce/date';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { isValidDate } from '../internal/lang';
-import { dateInputs, TYPE_DATE } from '../types';
-import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
+import { freeze, isValidDate } from '../internal/lang';
+import { Type } from '../Type';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { Shape } from './Shape';
+
+const dateInputs = freeze([Type.DATE]);
 
 /**
  * The shape of the {@link !Date Date} object.
@@ -26,7 +28,7 @@ export class DateShape extends CoercibleShape<Date> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, TYPE_DATE);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, Type.DATE);
   }
 
   protected _getInputs(): readonly unknown[] {

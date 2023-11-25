@@ -1,11 +1,14 @@
 import { NEVER } from '../coerce/never';
 import { coerceToString, stringCoercibleInputs } from '../coerce/string';
 import { CODE_TYPE } from '../constants';
-import { stringInputs, TYPE_STRING } from '../types';
-import { ApplyOptions, IssueOptions, Message, Result } from '../typings';
+import { freeze } from '../internal/lang';
+import { Type } from '../Type';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { Shape } from './Shape';
+
+const stringInputs = freeze([Type.STRING]);
 
 /**
  * The shape of a string value.
@@ -26,7 +29,7 @@ export class StringShape extends CoercibleShape<string> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.string'], options, TYPE_STRING);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.string'], options, Type.STRING);
   }
 
   protected _getInputs(): readonly unknown[] {

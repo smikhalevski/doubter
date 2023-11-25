@@ -14,7 +14,7 @@ import {
 } from '../../main';
 import { CODE_TYPE_UNION } from '../../main/constants';
 import { createDiscriminatorLookup, createLookup, getDiscriminator } from '../../main/shape/UnionShape';
-import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING, TYPE_UNKNOWN } from '../../main/types';
+import { Type } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
 
 describe('UnionShape', () => {
@@ -25,7 +25,7 @@ describe('UnionShape', () => {
 
     const shape = new UnionShape([shape1, shape2, shape3]);
 
-    expect(shape.inputs).toEqual([TYPE_NUMBER, TYPE_STRING, TYPE_BOOLEAN]);
+    expect(shape.inputs).toEqual([Type.NUMBER, Type.STRING, Type.BOOLEAN]);
     expect(shape.parse('aaa')).toBe('aaa');
     expect(shape1._apply).not.toHaveBeenCalled();
     expect(shape2._apply).toHaveBeenCalledTimes(1);
@@ -83,7 +83,7 @@ describe('UnionShape', () => {
           input: 'aaa',
           message: Shape.messages[CODE_TYPE_UNION],
           param: {
-            inputs: [TYPE_UNKNOWN],
+            inputs: [Type.UNKNOWN],
             issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
           },
         },
@@ -117,12 +117,12 @@ describe('UnionShape', () => {
 
   describe('inputs', () => {
     test('never is erased', () => {
-      expect(new UnionShape([new StringShape(), new NeverShape()]).inputs).toEqual([TYPE_STRING]);
+      expect(new UnionShape([new StringShape(), new NeverShape()]).inputs).toEqual([Type.STRING]);
     });
 
     test('unknown absorbs other types', () => {
-      expect(new UnionShape([new StringShape(), new Shape()]).inputs).toEqual([TYPE_UNKNOWN]);
-      expect(new UnionShape([new NeverShape(), new Shape()]).inputs).toEqual([TYPE_UNKNOWN]);
+      expect(new UnionShape([new StringShape(), new Shape()]).inputs).toEqual([Type.UNKNOWN]);
+      expect(new UnionShape([new NeverShape(), new Shape()]).inputs).toEqual([Type.UNKNOWN]);
     });
 
     test('the array of unique values', () => {
@@ -194,7 +194,7 @@ describe('UnionShape', () => {
             code: CODE_TYPE_UNION,
             message: Shape.messages[CODE_TYPE_UNION],
             param: {
-              inputs: [TYPE_NUMBER],
+              inputs: [Type.NUMBER],
               issueGroups: null,
             },
           },
@@ -263,7 +263,7 @@ describe('UnionShape', () => {
             input: 'aaa',
             message: Shape.messages[CODE_TYPE_UNION],
             param: {
-              inputs: [TYPE_UNKNOWN],
+              inputs: [Type.UNKNOWN],
               issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
             },
           },

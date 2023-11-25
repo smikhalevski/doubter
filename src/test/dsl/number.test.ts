@@ -1,6 +1,6 @@
 import * as d from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_NUMBER } from '../../main/types';
+import { Type } from '../../main/Type';
 
 describe('number', () => {
   test('returns a number shape', () => {
@@ -10,7 +10,7 @@ describe('number', () => {
   test('raises an issue if value is not a number', () => {
     expect(d.number().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: d.Shape.messages['type.number'], param: TYPE_NUMBER }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: d.Shape.messages['type.number'], param: Type.NUMBER }],
     });
   });
 });

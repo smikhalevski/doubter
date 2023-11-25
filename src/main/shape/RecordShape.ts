@@ -1,11 +1,13 @@
 import { CODE_TYPE } from '../constants';
-import { isArray, isObject } from '../internal/lang';
+import { freeze, isArray, isObject } from '../internal/lang';
 import { cloneDictHead, setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { objectInputs, TYPE_OBJECT } from '../types';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
+
+const recordInputs = freeze([Type.OBJECT]);
 
 type InferRecord<
   KeyShape extends Shape<string, PropertyKey> | null,
@@ -60,7 +62,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.object'], options, TYPE_OBJECT);
+    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.object'], options, Type.OBJECT);
   }
 
   at(key: unknown): AnyShape | null {
@@ -76,7 +78,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   }
 
   protected _getInputs(): readonly unknown[] {
-    return objectInputs;
+    return recordInputs;
   }
 
   protected _apply(

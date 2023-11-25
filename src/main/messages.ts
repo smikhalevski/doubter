@@ -1,4 +1,4 @@
-import { Any, Message } from './typings';
+import { Any, Message } from './types';
 
 /**
  * The mapping from an issue type to a corresponding issue message.

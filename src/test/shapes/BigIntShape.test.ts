@@ -1,14 +1,14 @@
 import { BigIntShape, Shape } from '../../main';
 import { bigintCoercibleInputs } from '../../main/coerce/bigint';
 import { CODE_TYPE } from '../../main/constants';
-import { TYPE_BIGINT } from '../../main/types';
+import { Type } from '../../main/Type';
 
 describe('BigIntShape', () => {
   test('creates a BigIntShape', () => {
     const shape = new BigIntShape();
 
     expect(shape.isAsync).toBe(false);
-    expect(shape.inputs).toEqual([TYPE_BIGINT]);
+    expect(shape.inputs).toEqual([Type.BIGINT]);
   });
 
   test('parses bigint values', () => {
@@ -20,14 +20,14 @@ describe('BigIntShape', () => {
   test('raises an issue if an input is not a bigint', () => {
     expect(new BigIntShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: TYPE_BIGINT, message: 'Must be a bigint' }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: Type.BIGINT, message: 'Must be a bigint' }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new BigIntShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, param: TYPE_BIGINT, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE, input: 111, param: Type.BIGINT, message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -46,7 +46,7 @@ describe('BigIntShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new BigIntShape().coerce().try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: ['aaa'], message: Shape.messages['type.bigint'], param: TYPE_BIGINT }],
+        issues: [{ code: CODE_TYPE, input: ['aaa'], message: Shape.messages['type.bigint'], param: Type.BIGINT }],
       });
     });
   });

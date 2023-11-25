@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { TYPE_STRING } from '../../main/types';
+import { Type } from '../../main/Type';
 
 describe('never', () => {
   test('returns a never shape', () => {
@@ -7,7 +7,7 @@ describe('never', () => {
   });
 
   test('never is erased in unions', () => {
-    expect(d.or([d.string(), d.never()]).inputs).toEqual([TYPE_STRING]);
+    expect(d.or([d.string(), d.never()]).inputs).toEqual([Type.STRING]);
   });
 
   test('never absorbs other types in intersections', () => {

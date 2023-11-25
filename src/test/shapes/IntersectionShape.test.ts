@@ -14,7 +14,7 @@ import {
 } from '../../main';
 import { CODE_TYPE, CODE_TYPE_INTERSECTION } from '../../main/constants';
 import { mergeValues } from '../../main/shape/IntersectionShape';
-import { TYPE_BOOLEAN, TYPE_NUMBER, TYPE_STRING } from '../../main/types';
+import { Type } from '../../main/Type';
 import { AsyncMockShape } from './mocks';
 
 describe('IntersectionShape', () => {
@@ -57,7 +57,7 @@ describe('IntersectionShape', () => {
 
     expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.number'], param: TYPE_NUMBER }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.number'], param: Type.NUMBER }],
     });
   });
 
@@ -67,8 +67,8 @@ describe('IntersectionShape', () => {
     expect(shape.try('aaa')).toEqual({
       ok: false,
       issues: [
-        { code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.number'], param: TYPE_NUMBER },
-        { code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.boolean'], param: TYPE_BOOLEAN },
+        { code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.number'], param: Type.NUMBER },
+        { code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.boolean'], param: Type.BOOLEAN },
       ],
     });
   });
@@ -165,7 +165,7 @@ describe('IntersectionShape', () => {
       expect(shape.parse(111)).toBe(111);
       expect(shape.try(undefined)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, message: Shape.messages['type.number'], param: TYPE_NUMBER }],
+        issues: [{ code: CODE_TYPE, message: Shape.messages['type.number'], param: Type.NUMBER }],
       });
     });
   });
@@ -202,7 +202,7 @@ describe('IntersectionShape', () => {
     });
 
     test('unknown is erased', () => {
-      expect(new IntersectionShape([new StringShape(), new Shape()]).inputs).toEqual([TYPE_STRING]);
+      expect(new IntersectionShape([new StringShape(), new Shape()]).inputs).toEqual([Type.STRING]);
       expect(new IntersectionShape([new NeverShape(), new Shape()]).inputs).toEqual([]);
     });
   });

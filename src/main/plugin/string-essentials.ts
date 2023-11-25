@@ -20,8 +20,8 @@ import {
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
 } from '../constants';
-import { IssueOptions, Message, StringShape } from '../core';
-import { Any } from '../typings';
+import { StringShape } from '../shape/StringShape';
+import { Any, IssueOptions, Message } from '../types';
 import { createIssueFactory } from '../utils';
 
 declare module '../core' {

@@ -1,5 +1,5 @@
 import { BigIntShape } from '../shape/BigIntShape';
-import { IssueOptions, Message } from '../typings';
+import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the bigint shape.

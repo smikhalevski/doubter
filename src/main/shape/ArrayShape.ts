@@ -1,7 +1,7 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
-import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
+import { freeze, getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import {
   applyShape,
   concatIssues,
@@ -11,11 +11,14 @@ import {
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
-import { arrayCoercibleInputs, arrayInputs, TYPE_ARRAY, TYPE_OBJECT, unknownInputs } from '../types';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../typings';
+import { Type } from '../Type';
+import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
+
+const arrayInputs = freeze([Type.ARRAY]);
+const arrayCoercibleInputs = freeze([Type.OBJECT, Type.ARRAY]);
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],
@@ -91,7 +94,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         headShapes.length
       );
     } else {
-      this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.array'], options, TYPE_ARRAY);
+      this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.array'], options, Type.ARRAY);
     }
   }
 
@@ -142,10 +145,10 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       return arrayCoercibleInputs;
     }
     if (headShapes.length === 1) {
-      return headShapes[0].inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
+      return headShapes[0].inputs.concat(Type.OBJECT, Type.ARRAY);
     }
     if (restShape !== null) {
-      return restShape.inputs.concat(TYPE_OBJECT, TYPE_ARRAY);
+      return restShape.inputs.concat(Type.OBJECT, Type.ARRAY);
     }
     return unknownInputs;
   }

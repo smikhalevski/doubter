@@ -1,6 +1,6 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE } from '../../main/constants';
-import { promiseInputs, TYPE_PROMISE, TYPE_STRING, unknownInputs } from '../../main/types';
+import { Type } from '../../main/Type';
 import { AsyncMockShape } from './mocks';
 
 describe('PromiseShape', () => {
@@ -10,7 +10,7 @@ describe('PromiseShape', () => {
 
     expect(shape.isAsync).toBe(true);
     expect(shape.valueShape).toBe(valueShape);
-    expect(shape.inputs).toEqual([TYPE_PROMISE]);
+    expect(shape.inputs).toEqual([Type.PROMISE]);
   });
 
   test('creates a non-async PromiseShape', () => {
@@ -18,13 +18,13 @@ describe('PromiseShape', () => {
 
     expect(shape.isAsync).toBe(false);
     expect(shape.valueShape).toBe(null);
-    expect(shape.inputs).toEqual([TYPE_PROMISE]);
+    expect(shape.inputs).toEqual([Type.PROMISE]);
   });
 
   test('raises an issue if value is not a Promise', () => {
     expect(new PromiseShape(null).try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.promise'], param: TYPE_PROMISE }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.promise'], param: Type.PROMISE }],
     });
   });
 
@@ -53,15 +53,15 @@ describe('PromiseShape', () => {
 
   describe('inputs', () => {
     test('infers the promise type', () => {
-      expect(new PromiseShape(null).inputs).toBe(promiseInputs);
-      expect(new PromiseShape(new Shape()).inputs).toBe(promiseInputs);
+      expect(new PromiseShape(null).inputs).toEqual([Type.PROMISE]);
+      expect(new PromiseShape(new Shape()).inputs).toEqual([Type.PROMISE]);
     });
   });
 
   describe('coerce', () => {
     test('infers the coerced promise type', () => {
-      expect(new PromiseShape(null).coerce().inputs).toBe(unknownInputs);
-      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([TYPE_STRING, TYPE_PROMISE]);
+      expect(new PromiseShape(null).coerce().inputs).toEqual([Type.UNKNOWN]);
+      expect(new PromiseShape(new StringShape()).coerce().inputs).toEqual([Type.STRING, Type.PROMISE]);
     });
 
     test('wraps an input value in a promise', async () => {
@@ -81,7 +81,7 @@ describe('PromiseShape', () => {
 
       await expect(shape.tryAsync(Promise.resolve(111))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: TYPE_STRING }],
+        issues: [{ code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: Type.STRING }],
       });
     });
 
@@ -96,7 +96,7 @@ describe('PromiseShape', () => {
       await expect(shape.tryAsync(Promise.resolve({ key1: 111 }))).resolves.toEqual({
         ok: false,
         issues: [
-          { code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: TYPE_STRING, path: ['key1'] },
+          { code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: Type.STRING, path: ['key1'] },
         ],
       });
     });
@@ -110,7 +110,7 @@ describe('PromiseShape', () => {
     test('raises an issue if value is not a Promise', async () => {
       await expect(new PromiseShape(new Shape()).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.promise'], param: TYPE_PROMISE }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.promise'], param: Type.PROMISE }],
       });
     });
 
