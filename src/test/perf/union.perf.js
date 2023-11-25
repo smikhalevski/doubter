@@ -7,7 +7,7 @@ const doubter = require('../../../lib');
 describe('or([string(), number(), boolean()])', () => {
   const createTests = value => {
     test('Ajv', measure => {
-      const ajv = new Ajv({ allowUnionInputs: true });
+      const ajv = new Ajv({ allowUnionTypes: true });
 
       const schema = {
         $id: 'test',
@@ -65,7 +65,7 @@ describe('or([string(), number(), boolean()])', () => {
 describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
   const createTests = value => {
     test('Ajv', measure => {
-      const ajv = new Ajv({ allowUnionInputs: true });
+      const ajv = new Ajv({ allowUnionTypes: true });
 
       const schema = {
         $id: 'test',
@@ -143,7 +143,7 @@ describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
 describe('or([object({ foo: string() }), array(number())])', () => {
   const createTests = value => {
     test('Ajv', measure => {
-      const ajv = new Ajv({ allowUnionInputs: true });
+      const ajv = new Ajv({ allowUnionTypes: true });
 
       const schema = {
         $id: 'test',
@@ -217,7 +217,7 @@ describe('or([object({ foo: string() }), array(number())])', () => {
 describe('or([object({ type: const("foo") }), object({ type: const("bar") })])', () => {
   const createTests = value => {
     test('Ajv', measure => {
-      const ajv = new Ajv({ allowUnionInputs: true });
+      const ajv = new Ajv({ allowUnionTypes: true });
 
       const schema = {
         $id: 'test',
