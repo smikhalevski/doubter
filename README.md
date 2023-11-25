@@ -29,7 +29,7 @@ Runtime validation and transformation library.
 - No dynamic code evaluation;
 - Zero dependencies;
 - [Pluggable architecture](#plugins);
-- [Just 12 kB gzipped](https://bundlephobia.com/result?p=doubter) and tree-shakable;
+- Tree-shakable: [3 — 12 kB gzipped](https://bundlephobia.com/result?p=doubter) depending on what features you use;
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
 ```shell
