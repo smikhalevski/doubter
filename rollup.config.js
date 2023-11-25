@@ -2,14 +2,14 @@ const alias = require('@rollup/plugin-alias');
 const typescript = require('@rollup/plugin-typescript');
 
 module.exports = {
-  input: ['./src/main/index.ts', './src/main/core.ts'],
+  input: ['./lib/index.ts', './lib/core.ts'],
   output: [
-    { format: 'cjs', entryFileNames: '[name].js', dir: './lib', preserveModules: true },
-    { format: 'es', entryFileNames: '[name].mjs', dir: './lib', preserveModules: true },
+    { format: 'cjs', entryFileNames: '[name].js', dir: './lib', preserveModules: true, sourcemap: 'inline' },
+    { format: 'es', entryFileNames: '[name].mjs', dir: './lib', preserveModules: true, sourcemap: 'inline' },
   ],
   plugins: [
     alias({
-      entries: { tslib: require.resolve('./src/main/tslib.js') },
+      entries: { tslib: require.resolve('./lib/tslib.mjs') },
     }),
     typescript({ tsconfig: './tsconfig.build.json' }),
   ],
