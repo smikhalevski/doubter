@@ -607,7 +607,7 @@ code.tsd-tag {
 }
 
 .tsd-index-accordion {
-    margin: var(--menu-spacing-vertical) 0 0 0;
+    margin: var(--menu-spacing-vertical) 0;
 }
 
 /* --------------------------------------------------- SETTINGS ---------------------------------------------------- */
