@@ -183,7 +183,7 @@ export interface Operation {
 
   /**
    * The additional param associated with the operation. Usually contains a {@link Operation.type}-specific data is used
-   * in the {@link callback}.
+   * in the {@link Operation.callback}.
    */
   readonly param: any;
 
@@ -252,7 +252,7 @@ export interface OperationOptions {
 
   /**
    * The additional param associated with the operation. Usually contains a {@link OperationOptions.type type}-specific
-   * data is used in the {@link callback}.
+   * data is used in the {@link Operation.callback}.
    *
    * @see {@link Operation.param}
    * @default undefined

@@ -7,7 +7,7 @@
   "disableSources": true,
   "hideGenerator": true,
   "readme": "none",
-  "tsconfig": "./tsconfig.build.json",
+  "tsconfig": "./tsconfig.json",
   "customCss": "./node_modules/typedoc-custom-css/custom.css",
   "groupOrder": [
     "DSL",
