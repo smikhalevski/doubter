@@ -92,7 +92,7 @@ export interface Issue {
   /**
    * The optional metadata associated with the issue.
    *
-   * @see [Metadata](https://github.com/smikhalevski/doubter#metadata)
+   * @see [Annotations and metadata](https://github.com/smikhalevski/doubter#annotations-and-metadata)
    */
   meta?: any;
 }

@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://codesandbox.io/s/y5kec4"><img src="./assets/button-playground.png" alt="Playground" height="41"/></a>
-  <a href="https://smikhalevski.github.io/doubter/next/"><picture>
+  <a href="https://smikhalevski.github.io/doubter/next/modules/core.html"><picture>
     <source media="(prefers-color-scheme: dark)" srcset="./assets/button-api-docs-dark.png" />
     <source media="(prefers-color-scheme: light)" srcset="./assets/button-api-docs-light.png" />
     <img alt="API Docs" src="./assets/button-api-docs-light.png" height="41" />
@@ -29,7 +29,7 @@ Runtime validation and transformation library.
 - No dynamic code evaluation;
 - Zero dependencies;
 - [Pluggable architecture](#plugins);
-- Tree-shakable: [3 — 12 kB gzipped](https://bundlephobia.com/result?p=doubter) depending on what features you use;
+- Tree-shakable: [3 — 12 kB gzipped](https://bundlephobia.com/result?p=doubter) depending on what features you use;
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
 ```shell
@@ -399,7 +399,7 @@ This option is for `parse` and `parseAsync` methods.
 ## Static type inference
 
 > [!IMPORTANT]\
-> Static type inference feature requires TypeScript >=4.1 with enabled
+> Static type inference feature requires TypeScript 4.1 + with enabled
 > [`strictNullChecks`](https://www.typescriptlang.org/tsconfig#strictNullChecks).
 
 Since shapes can transform values, they can have different input and output types. For example, this string shape has

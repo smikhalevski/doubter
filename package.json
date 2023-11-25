@@ -64,11 +64,11 @@
   ],
   "scripts": {
     "build": "cp -R src/main lib && rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
-    "clean": "rimraf gen lib docs coverage",
+    "clean": "rimraf lib docs coverage",
     "test": "jest",
     "test:definitions": "tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",
     "perf": "toofast",
-    "docs": "typedoc src/main/index.ts src/main/utils.ts src/main/plugin/*"
+    "docs": "typedoc"
   },
   "repository": {
     "type": "git",

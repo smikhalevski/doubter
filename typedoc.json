@@ -9,6 +9,11 @@
   "readme": "none",
   "tsconfig": "./tsconfig.json",
   "customCss": "./node_modules/typedoc-custom-css/custom.css",
+  "entryPoints": [
+    "src/main/index.ts",
+    "src/main/utils.ts",
+    "src/main/plugin/*.ts"
+  ],
   "groupOrder": [
     "DSL",
     "Shapes",
