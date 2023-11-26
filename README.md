@@ -2367,9 +2367,11 @@ This is sufficient to enable type inference and runtime support for `deepPartial
 The chart below showcases the performance comparison of Doubter and its peers, in terms of millions of operations per
 second (greater is better).
 
-<p align="center">
-  <img src="./assets/perf.svg" alt="Performance comparison chart"/>
-</p>
+<p align="center"><picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./assets/perf-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="./assets/perf.svg" />
+  <img alt="Performance comparison chart" src="./assets/perf.svg" />
+</picture></p>
 
 Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast#readme) on Apple M1 with Node.js v20.4.0.
 
