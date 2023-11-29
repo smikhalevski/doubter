@@ -108,6 +108,7 @@
     "typedoc": "^0.25.1",
     "typedoc-custom-css": "github:smikhalevski/typedoc-custom-css#master",
     "typescript": "^5.2.2",
+    "valibot": "^0.21.0",
     "zod": "^3.22.4"
   }
 }
