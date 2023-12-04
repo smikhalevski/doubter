@@ -42,34 +42,29 @@ export { LazyShape } from './shape/LazyShape';
 export { MapShape } from './shape/MapShape';
 export { NeverShape } from './shape/NeverShape';
 export { NumberShape } from './shape/NumberShape';
-export { ObjectShape, ObjectKeysMode } from './shape/ObjectShape';
+export { ObjectShape } from './shape/ObjectShape';
 export { PromiseShape } from './shape/PromiseShape';
 export { RecordShape } from './shape/RecordShape';
 export { SetShape } from './shape/SetShape';
-export {
-  AllowShape,
-  AnyShape,
-  Branded,
-  CatchShape,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  DenyShape,
-  ExcludeShape,
-  Input,
-  NotShape,
-  Output,
-  PipeShape,
-  RefineShape,
-  ReplaceShape,
-  Shape,
-  ConvertShape,
-} from './shape/Shape';
+export { CatchShape, DenyShape, ExcludeShape, PipeShape, ReplaceShape, Shape, ConvertShape } from './shape/Shape';
 export { StringShape } from './shape/StringShape';
 export { SymbolShape } from './shape/SymbolShape';
 export { UnionShape } from './shape/UnionShape';
 export { ValidationError } from './ValidationError';
 export { Type } from './Type';
-export { Messages } from './messages';
 export { NEVER } from './coerce/never';
 
+export type { ObjectKeysMode } from './shape/ObjectShape';
+export type {
+  AllowShape,
+  AnyShape,
+  Branded,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  Input,
+  NotShape,
+  Output,
+  RefineShape,
+} from './shape/Shape';
+export type { Messages } from './messages';
 export type * from './types';
