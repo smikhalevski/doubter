@@ -1,6 +1,6 @@
 {
   "name": "doubter",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Runtime validation and transformation library.",
   "main": "./index.js",
   "module": "./index.mjs",
