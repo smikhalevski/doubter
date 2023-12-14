@@ -4,7 +4,6 @@
     "<rootDir>/src/test/**/*.test.ts"
   ],
   "modulePathIgnorePatterns": [
-    "<rootDir>/gen",
     "<rootDir>/lib"
   ]
 }

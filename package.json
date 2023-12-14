@@ -63,7 +63,7 @@
     "./index.js"
   ],
   "scripts": {
-    "build": "cp -R src/main lib && rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
+    "build": "rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
     "clean": "rimraf lib docs coverage",
     "test": "jest",
     "test:definitions": "tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",
