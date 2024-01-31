@@ -4,6 +4,7 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "noUnusedLocals": true,
+    "isolatedModules": true,
     "strict": true,
     "target": "ES5",
     "module": "ES6",
