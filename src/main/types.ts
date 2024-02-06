@@ -52,7 +52,7 @@ export interface Issue {
    *
    * For all built-in shape operations, a code can be used to infer the type of the {@link Issue.param}.
    *
-   * @see [Validation errors](https://github.com/smikhalevski/doubter#validation-errors)
+   * @see [Validation errors](https://github.com/smikhalevski/doubter/tree/latest#validation-errors)
    */
   code?: any;
 
@@ -69,7 +69,7 @@ export interface Issue {
    * The input value that caused a validation issue. Note that if coercion or alteration were applied then this contains
    * a transformed value.
    *
-   * @see [Type coercion](https://github.com/smikhalevski/doubter#type-coercion)
+   * @see [Type coercion](https://github.com/smikhalevski/doubter/tree/latest#type-coercion)
    */
   input?: any;
 
@@ -78,21 +78,21 @@ export interface Issue {
    *
    * Messages produced by built-in operations are strings but custom messages can have an arbitrary type.
    *
-   * @see [Localization](https://github.com/smikhalevski/doubter#localization)
+   * @see [Localization](https://github.com/smikhalevski/doubter/tree/latest#localization)
    */
   message?: any;
 
   /**
    * The parameter value associated with the issue.
    *
-   * @see [Validation errors](https://github.com/smikhalevski/doubter#validation-errors)
+   * @see [Validation errors](https://github.com/smikhalevski/doubter/tree/latest#validation-errors)
    */
   param?: any;
 
   /**
    * The optional metadata associated with the issue.
    *
-   * @see [Annotations and metadata](https://github.com/smikhalevski/doubter#annotations-and-metadata)
+   * @see [Annotations and metadata](https://github.com/smikhalevski/doubter/tree/latest#annotations-and-metadata)
    */
   meta?: any;
 }
