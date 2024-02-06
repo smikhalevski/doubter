@@ -95,7 +95,7 @@ declare module '../core' {
 /**
  * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
  */
-export default function enableArrayEssentials(ctor: typeof ArrayShape<any, any>): void {
+export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
   const { messages, prototype } = ctor;
 
   messages[CODE_ARRAY_INCLUDES] = 'Must include a value';

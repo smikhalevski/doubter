@@ -194,6 +194,12 @@ export interface Operation {
 
   /**
    * The operation tolerance for issues that are raised during validation.
+   *
+   * - If `skip` then if preceding operations have raised issues, then this operation is skipped but consequent
+   * operations are still applied.
+   * - If `abort` then if preceding operations have raised issues, then this operation is skipped and consequent
+   * operations aren't applied. Also, if this operation itself raises issues then consequent operations aren't applied.
+   * - If `auto` then the operation is applied regardless of previously raised issues.
    */
   readonly tolerance: OperationTolerance;
 
@@ -244,7 +250,7 @@ export type OperationCallback<ReturnValue = any, Value = any, Param = any> = (
 export interface OperationOptions {
   /**
    * The type of the operation such as {@link StringShape.regex "string.regex"} or
-   * {@link ArrayShape.includes "array.includes"}.  If omitted then operation callback is used as its type.
+   * {@link ArrayShape.includes "array.includes"}. If omitted then operation callback is used as its type.
    *
    * @see {@link Operation.type}
    */
@@ -261,6 +267,12 @@ export interface OperationOptions {
 
   /**
    * The operation tolerance for issues that are raised during validation.
+   *
+   * - If `skip` then if preceding operations have raised issues, then this operation is skipped but consequent
+   * operations are still applied.
+   * - If `abort` then if preceding operations have raised issues, then this operation is skipped and consequent
+   * operations aren't applied. Also, if this operation itself raises issues then consequent operations aren't applied.
+   * - If `auto` then the operation is applied regardless of previously raised issues.
    *
    * @see {@link Operation.tolerance}
    * @default 'auto'

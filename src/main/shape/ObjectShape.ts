@@ -127,6 +127,12 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     options?: IssueOptions | Message,
     /**
      * The mode of unknown keys handling.
+     *
+     * - If `preserved` then unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape}.
+     * - If `stripped` then the input object is cloned and unknown keys are removed from it.
+     * - If `exact` then an issue is raised if an unknown key is met.
+     *
+     * @default 'preserved'
      */
     readonly keysMode: ObjectKeysMode = 'preserved'
   ) {

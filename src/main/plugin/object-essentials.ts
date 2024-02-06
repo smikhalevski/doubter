@@ -130,7 +130,7 @@ declare module '../core' {
 /**
  * Enhances {@link core!ObjectShape ObjectShape} with additional methods.
  */
-export default function enableObjectEssentials(ctor: typeof ObjectShape<any, any>): void {
+export default function enableObjectEssentials(ctor: typeof ObjectShape): void {
   const { messages, prototype } = ctor;
 
   messages[CODE_OBJECT_ALL_KEYS] = 'Must contain all or no keys: %s';

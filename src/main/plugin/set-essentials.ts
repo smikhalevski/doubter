@@ -78,7 +78,7 @@ declare module '../core' {
 /**
  * Enhances {@link core!SetShape SetShape} with additional methods.
  */
-export default function enableSetEssentials(ctor: typeof SetShape<any>): void {
+export default function enableSetEssentials(ctor: typeof SetShape): void {
   const { messages, prototype } = ctor;
 
   messages[CODE_SET_MIN] = 'Must have the minimum size of %s';
