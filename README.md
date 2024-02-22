@@ -2442,7 +2442,7 @@ The table below highlights features that are unique to Doubter and its peers.
    [`z.discriminatedUnion`](https://zod.dev/?id=discriminated-unions) for discriminated unions, and discriminator key
    must be supplied manually as an argument. Doubter uses `d.union` to describe both regular unions and discriminated
    unions, and discriminator key is
-   [detected automatically](https://github.com/smikhalevski/doubter/tree/operations-docs#discriminated-unions).
+   [detected automatically](#discriminated-unions).
 
 2. Zod schemas are class instances so introspection is possible, but there's no way to get
    [a list of types accepted by a schema](#introspection).
