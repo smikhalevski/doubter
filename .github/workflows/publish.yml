@@ -4,6 +4,8 @@ on:
   push:
     tags: [ "v[0-9]+.[0-9]+.[0-9]+" ]
     branches: [ "next" ]
+    paths:
+      - "src/**"
 
 env:
   NPM_TAG: ${{ github.ref_type == 'tag' && 'latest' || 'next' }}
