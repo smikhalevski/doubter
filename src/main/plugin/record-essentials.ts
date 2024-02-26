@@ -1,31 +1,30 @@
 /**
- * The plugin that enhances {@link core!ObjectShape ObjectShape} with additional methods.
+ * The plugin that enhances {@link core!RecordShape RecordShape} with additional methods.
  *
  * ```ts
- * import { ObjectShape } from 'doubter/core';
- * import enableObjectEssentials from 'doubter/plugin/object-essentials';
+ * import { RecordShape } from 'doubter/core';
+ * import enableRecordEssentials from 'doubter/plugin/record-essentials';
  *
- * enableObjectEssentials(ObjectShape);
+ * enableRecordEssentials(RecordShape);
  * ```
  *
- * @module plugin/object-essentials
+ * @module plugin/record-essentials
  */
 
-import { ReadonlyDict } from '../internal/objects';
-import { ObjectShape } from '../shape/ObjectShape';
-import { AnyShape } from '../shape/Shape';
+import { RecordShape } from '../shape/RecordShape';
+import { AnyShape, Input, Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 import { enableObjectLikeEssentials } from './object-utils';
 
 declare module '../core' {
-  export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
+  export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, ValueShape extends AnyShape> {
     /**
      * Constrains an object to have a `null` or {@link !Object Object} prototype.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
     plain(options?: IssueOptions | Message): this;
 
@@ -37,9 +36,9 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    allKeys(keys: ReadonlyArray<keyof PropShapes>, options?: IssueOptions | Message): this;
+    allKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where not all peers can be present at the same time.
@@ -48,9 +47,9 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    notAllKeys(keys: ReadonlyArray<keyof PropShapes>, options?: IssueOptions | Message): this;
+    notAllKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where at least one of the keys is required (and more than one is allowed).
@@ -59,9 +58,9 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    orKeys(keys: ReadonlyArray<keyof PropShapes>, options?: IssueOptions | Message): this;
+    orKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where one of them is required but not at the same time.
@@ -70,9 +69,9 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    xorKeys(keys: ReadonlyArray<keyof PropShapes>, options?: IssueOptions | Message): this;
+    xorKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where only one is allowed but none are required.
@@ -81,15 +80,15 @@ declare module '../core' {
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
      * @group Plugin Methods
-     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    oxorKeys(keys: ReadonlyArray<keyof PropShapes>, options?: IssueOptions | Message): this;
+    oxorKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
   }
 }
 
 /**
- * Enhances {@link core!ObjectShape ObjectShape} with additional methods.
+ * Enhances {@link core!RecordShape RecordShape} with additional methods.
  */
-export default function enableObjectEssentials(ctor: typeof ObjectShape): void {
+export default function enableRecordEssentials(ctor: typeof RecordShape): void {
   enableObjectLikeEssentials(ctor);
 }
