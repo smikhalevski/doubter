@@ -12,14 +12,20 @@
  */
 
 import { RecordShape } from '../shape/RecordShape';
-import { AnyShape, Input, Shape } from '../shape/Shape';
+import { AnyShape, Output, Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 import { enableObjectLikeEssentials } from './object-utils';
+
+// prettier-ignore
+type InferKeys<KeyShape> =
+  KeyShape extends null | undefined ? readonly PropertyKey[] :
+  KeyShape extends Shape ? ReadonlyArray<Output<KeyShape>> :
+  readonly PropertyKey[];
 
 declare module '../core' {
   export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, ValueShape extends AnyShape> {
     /**
-     * Constrains an object to have a `null` or {@link !Object Object} prototype.
+     * Constrains a record to have a `null` or {@link !Object Object} prototype.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.
@@ -38,7 +44,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    allKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
+    allKeys(keys: InferKeys<KeyShape>, options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where not all peers can be present at the same time.
@@ -49,7 +55,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    notAllKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
+    notAllKeys(keys: InferKeys<KeyShape>, options?: IssueOptions | Message): this;
 
     /**
      * Defines a relationship between keys where at least one of the keys is required (and more than one is allowed).
@@ -60,7 +66,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    orKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
+    orKeys(keys: InferKeys<KeyShape>, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where one of them is required but not at the same time.
@@ -71,7 +77,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    xorKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
+    xorKeys(keys: InferKeys<KeyShape>, options?: IssueOptions | Message): this;
 
     /**
      * Defines an exclusive relationship between a set of keys where only one is allowed but none are required.
@@ -82,7 +88,7 @@ declare module '../core' {
      * @group Plugin Methods
      * @plugin {@link plugin/record-essentials! plugin/record-essentials}
      */
-    oxorKeys(keys: ReadonlyArray<Input<NonNullable<KeyShape>>>, options?: IssueOptions | Message): this;
+    oxorKeys(keys: InferKeys<KeyShape>, options?: IssueOptions | Message): this;
   }
 }
 

@@ -32,6 +32,7 @@ export type * from './plugin/bigint-essentials';
 export type * from './plugin/date-essentials';
 export type * from './plugin/number-essentials';
 export type * from './plugin/object-essentials';
+export type * from './plugin/record-essentials';
 export type * from './plugin/set-essentials';
 export type * from './plugin/string-essentials';
 

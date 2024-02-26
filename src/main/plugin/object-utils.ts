@@ -46,7 +46,7 @@ declare module '../core' {
   }
 }
 
-interface ObjectLike extends Shape<any, any> {
+interface ObjectLikeShape extends Shape<any, any> {
   plain(options?: IssueOptions | Message): this;
 
   allKeys(keys: string[], options?: IssueOptions | Message): this;
@@ -60,7 +60,7 @@ interface ObjectLike extends Shape<any, any> {
   oxorKeys(keys: string[], options?: IssueOptions | Message): this;
 }
 
-export function enableObjectLikeEssentials(ctor: { messages: Messages; prototype: ObjectLike }): void {
+export function enableObjectLikeEssentials(ctor: { messages: Messages; prototype: ObjectLikeShape }): void {
   const { messages, prototype } = ctor;
 
   messages[CODE_OBJECT_ALL_KEYS] = 'Must contain all or no keys: %s';
