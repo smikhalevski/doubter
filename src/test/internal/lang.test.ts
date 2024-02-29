@@ -52,6 +52,8 @@ describe('getCanonicalValue', () => {
     expect(getCanonicalValue(new String('aaa'))).toBe('aaa');
     expect(getCanonicalValue(new Number(111))).toBe(111);
     expect(getCanonicalValue(new Boolean(true))).toBe(true);
+    expect(getCanonicalValue(Object(BigInt(111)))).toBe(BigInt(111));
+    expect(getCanonicalValue(Object(Symbol.for('aaa')))).toBe(Symbol.for('aaa'));
   });
 
   test('preserves objects as is', () => {

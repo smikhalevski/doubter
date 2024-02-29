@@ -90,7 +90,6 @@
   "homepage": "https://github.com/smikhalevski/doubter#readme",
   "devDependencies": {
     "@badrap/valita": "^0.3.0",
-    "@rollup/plugin-alias": "^5.0.1",
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/jest": "^29.5.10",
     "@types/qs": "^6.9.10",
