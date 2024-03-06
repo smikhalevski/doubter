@@ -1,7 +1,7 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
 import { toArrayIndex, unique } from '../internal/arrays';
-import { freeze, getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
+import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
@@ -9,7 +9,7 @@ import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape';
 
-const setInputs = freeze([Type.SET]);
+const setInputs = Object.freeze([Type.SET]);
 
 /**
  * The shape of a {@link !Set Set} instance.

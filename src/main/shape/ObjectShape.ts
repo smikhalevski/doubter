@@ -1,6 +1,6 @@
 import { CODE_OBJECT_EXACT, CODE_TYPE } from '../constants';
 import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
-import { freeze, isArray, isObject } from '../internal/lang';
+import { isArray, isObject } from '../internal/lang';
 import { cloneDict, cloneDictKeys, Dict, overrideProperty, ReadonlyDict, setObjectProperty } from '../internal/objects';
 import {
   applyShape,
@@ -18,7 +18,7 @@ import { createIssueFactory } from '../utils';
 import { EnumShape } from './EnumShape';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
 
-const objectInputs = freeze([Type.OBJECT]);
+const objectInputs = Object.freeze([Type.OBJECT]);
 
 type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,

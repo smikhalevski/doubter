@@ -1,14 +1,13 @@
 import { booleanCoercibleInputs, coerceToBoolean } from '../coerce/boolean';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { freeze } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { Shape } from './Shape';
 
-const booleanInputs = freeze([Type.BOOLEAN]);
+const booleanInputs = Object.freeze([Type.BOOLEAN]);
 
 /**
  * The shape of a boolean value.

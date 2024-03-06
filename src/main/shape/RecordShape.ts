@@ -1,5 +1,5 @@
 import { CODE_TYPE } from '../constants';
-import { freeze, isArray, isObject } from '../internal/lang';
+import { isArray, isObject } from '../internal/lang';
 import { cloneDictHead, setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
@@ -7,7 +7,7 @@ import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
-const recordInputs = freeze([Type.OBJECT]);
+const recordInputs = Object.freeze([Type.OBJECT]);
 
 export const defaultKeyShape = new Shape();
 
