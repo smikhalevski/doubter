@@ -9,25 +9,18 @@ import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from '
 
 const recordInputs = freeze([Type.OBJECT]);
 
-type InferRecord<
-  KeyShape extends Shape<string, PropertyKey> | null,
-  ValueShape extends AnyShape,
-  Leg extends INPUT | OUTPUT,
-> = Record<
-  KeyShape extends null | undefined ? string : KeyShape extends Shape ? KeyShape[Leg] : string,
-  ValueShape[Leg]
->;
+export const defaultKeyShape = new Shape();
 
 /**
  * The shape that describes an object with string keys and values that conform the given shape.
  *
- * @template KeyShape The key shape.
- * @template ValueShape The value shape.
+ * @template KeysShape The shape of record keys.
+ * @template ValuesShape The shape of record values.
  * @group Shapes
  */
-export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, ValueShape extends AnyShape>
-  extends Shape<InferRecord<KeyShape, ValueShape, INPUT>, InferRecord<KeyShape, ValueShape, OUTPUT>>
-  implements DeepPartialProtocol<RecordShape<KeyShape, OptionalDeepPartialShape<ValueShape>>>
+export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesShape extends AnyShape>
+  extends Shape<Record<KeysShape[INPUT], ValuesShape[INPUT]>, Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>
+  implements DeepPartialProtocol<RecordShape<KeysShape, OptionalDeepPartialShape<ValuesShape>>>
 {
   /**
    * The issue options or the issue message.
@@ -42,21 +35,21 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   /**
    * Creates a new {@link RecordShape} instance.
    *
-   * @param keyShape The key shape, or `null` if keys should be preserved intact.
-   * @param valueShape The value shape.
+   * @param keysShape The shape of record keys.
+   * @param valuesShape The shape of record values.
    * @param options The issue options or the issue message.
-   * @template KeyShape The key shape.
-   * @template ValueShape The value shape.
+   * @template KeysShape The shape of record keys.
+   * @template ValuesShape The shape of record values.
    */
   constructor(
     /**
-     * The key shape or `null` if keys are preserved intact.
+     * The shape of record keys.
      */
-    readonly keyShape: KeyShape,
+    readonly keysShape: KeysShape,
     /**
-     * The value shape.
+     * The shape of record values.
      */
-    readonly valueShape: ValueShape,
+    readonly valuesShape: ValuesShape,
     options?: IssueOptions | Message
   ) {
     super();
@@ -66,15 +59,15 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
   }
 
   at(key: unknown): AnyShape | null {
-    return typeof key === 'string' || typeof key === 'number' ? this.valueShape : null;
+    return typeof key === 'string' || typeof key === 'number' ? this.valuesShape : null;
   }
 
-  deepPartial(): RecordShape<KeyShape, OptionalDeepPartialShape<ValueShape>> {
-    return new RecordShape<any, any>(this.keyShape, toDeepPartialShape(this.valueShape).optional(), this._options);
+  deepPartial(): RecordShape<KeysShape, OptionalDeepPartialShape<ValuesShape>> {
+    return new RecordShape<any, any>(this.keysShape, toDeepPartialShape(this.valuesShape).optional(), this._options);
   }
 
   protected _isAsync(): boolean {
-    return this.keyShape?.isAsync || this.valueShape.isAsync;
+    return this.keysShape?.isAsync || this.valuesShape.isAsync;
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -85,12 +78,12 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Result<InferRecord<KeyShape, ValueShape, OUTPUT>> {
+  ): Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>> {
     if (!isObject(input)) {
       return [this._typeIssueFactory(input, options)];
     }
 
-    const { keyShape, valueShape, operations } = this;
+    const { keysShape, valuesShape, operations } = this;
 
     let output = input;
     let issues = null;
@@ -102,8 +95,8 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
 
       index++;
 
-      if (keyShape !== null) {
-        keyResult = keyShape['_apply'](key, options, nonce);
+      if (keysShape !== defaultKeyShape) {
+        keyResult = keysShape['_apply'](key, options, nonce);
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
@@ -120,7 +113,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
         }
       }
 
-      let valueResult = valueShape['_apply'](value, options, nonce);
+      let valueResult = valuesShape['_apply'](value, options, nonce);
 
       if (valueResult !== null) {
         if (isArray(valueResult)) {
@@ -150,14 +143,14 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
     input: any,
     options: ApplyOptions,
     nonce: number
-  ): Promise<Result<InferRecord<KeyShape, ValueShape, OUTPUT>>> {
+  ): Promise<Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
         resolve([this._typeIssueFactory(input, options)]);
         return;
       }
 
-      const { keyShape, valueShape, operations } = this;
+      const { keysShape, valuesShape, operations } = this;
 
       const keys = Object.keys(input);
       const keysLength = keys.length;
@@ -186,7 +179,7 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
             keyChanged = true;
           }
         }
-        return applyShape(valueShape, value, options, nonce, handleValueResult);
+        return applyShape(valuesShape, value, options, nonce, handleValueResult);
       };
 
       const handleValueResult = (valueResult: Result) => {
@@ -221,10 +214,10 @@ export class RecordShape<KeyShape extends Shape<string, PropertyKey> | null, Val
           key = keys[index];
           value = input[key];
 
-          if (keyShape !== null) {
-            return applyShape(keyShape, key, options, nonce, handleKeyResult);
+          if (keysShape !== null) {
+            return applyShape(keysShape, key, options, nonce, handleKeyResult);
           } else {
-            return valueShape['_applyAsync'](value, options, nonce).then(handleValueResult);
+            return valuesShape['_applyAsync'](value, options, nonce).then(handleValueResult);
           }
         }
         return this._applyOperations(input, output, options, issues);

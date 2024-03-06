@@ -3762,10 +3762,10 @@ d.record(d.string(), d.number())
 Pass any shape that extends `Shape<string>` as a key constraint:
 
 ```ts
-const keyShape = d.enum(['foo', 'bar']);
+const keysShape = d.enum(['foo', 'bar']);
 // ⮕ Shape<'foo' | 'bar'>
 
-d.record(keyShape, d.number());
+d.record(keysShape, d.number());
 // ⮕ Shape<Record<'foo' | 'bar', number>>
 ```
 
@@ -4348,7 +4348,7 @@ First, create a shape that describes the key transformation. In this example we 
 [convert](#conversions) the [enumeration](#enum) of keys to an uppercase string:
 
 ```ts
-const keyShape = d.enum(['foo', 'bar']).convert(
+const keysShape = d.enum(['foo', 'bar']).convert(
   value => value.toUpperCase() as 'FOO' | 'BAR'
 );
 // ⮕ Shape<'foo' | 'bar', 'FOO' | 'BAR'>
@@ -4357,7 +4357,7 @@ const keyShape = d.enum(['foo', 'bar']).convert(
 Then, create a [`d.record`](#record) shape that constrains keys and values or a dictionary-like object:
 
 ```ts
-const shape = d.record(keyShape, d.number());
+const shape = d.record(keysShape, d.number());
 // ⮕ Shape<Record<'foo' | 'bar', number>, Record<'FOO' | 'BAR', number>>
 ```
 

@@ -1,44 +1,44 @@
-import { RecordShape } from '../shape/RecordShape';
+import { defaultKeyShape, RecordShape } from '../shape/RecordShape';
 import { AnyShape, Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 
 /**
  * Creates the shape that describes an object with string keys and values that conform the given shape.
  *
- * @param valueShape The shape of the record values.
+ * @param valuesShape The shape of record values.
  * @param options The issue options or the issue message.
- * @template ValueShape The value shape.
+ * @template ValuesShape The shape of record values.
  * @group DSL
  */
-export function record<ValueShape extends AnyShape>(
-  valueShape: ValueShape,
+export function record<ValuesShape extends AnyShape>(
+  valuesShape: ValuesShape,
   options?: IssueOptions | Message
-): RecordShape<null, ValueShape>;
+): RecordShape<Shape, ValuesShape>;
 
 /**
  * Creates the shape that describes an object with string keys and values that conform the given shape.
  *
- * @param keyShape The shape of record keys.
- * @param valueShape The shape of the record values.
+ * @param keysShape The shape of record keys.
+ * @param valuesShape The shape of record values.
  * @param options The issue options or the issue message.
- * @template KeyShape The key shape.
- * @template ValueShape The value shape.
+ * @template KeysShape The shape of record keys.
+ * @template ValuesShape The shape of record values.
  * @group DSL
  */
-export function record<KeyShape extends Shape<string, PropertyKey>, ValueShape extends AnyShape>(
-  keyShape: KeyShape,
-  valueShape: ValueShape,
+export function record<KeysShape extends Shape<string, PropertyKey>, ValuesShape extends AnyShape>(
+  keysShape: KeysShape,
+  valuesShape: ValuesShape,
   options?: IssueOptions | Message
-): RecordShape<KeyShape, ValueShape>;
+): RecordShape<KeysShape, ValuesShape>;
 
 export function record(
-  keyShape: AnyShape,
-  valueShape?: AnyShape | IssueOptions | Message,
+  keysShape: AnyShape,
+  valuesShape?: AnyShape | IssueOptions | Message,
   options?: IssueOptions | Message
 ) {
-  if (valueShape instanceof Shape) {
-    return new RecordShape(keyShape, valueShape, options);
+  if (valuesShape instanceof Shape) {
+    return new RecordShape(keysShape, valuesShape, options);
   } else {
-    return new RecordShape(null, keyShape, options);
+    return new RecordShape(defaultKeyShape, keysShape, options);
   }
 }
