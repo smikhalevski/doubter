@@ -1,14 +1,14 @@
 import { coerceToDate, dateCoercibleInputs } from '../coerce/date';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { freeze, isValidDate } from '../internal/lang';
+import { isValidDate } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { Shape } from './Shape';
 
-const dateInputs = freeze([Type.DATE]);
+const dateInputs = Object.freeze([Type.DATE]);
 
 /**
  * The shape of the {@link !Date Date} object.

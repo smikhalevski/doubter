@@ -102,3 +102,5 @@ expectType<{ aaa: string; bbb: number }>(
     })
     .required(keys)[OUTPUT]
 );
+
+d.object({ aaa: d.string(), bbb: d.number() }).notAllKeys(['bbb']);

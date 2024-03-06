@@ -1,6 +1,6 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { freeze, getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
+import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
@@ -16,8 +16,8 @@ import {
   Shape,
 } from './Shape';
 
-const mapInputs = freeze([Type.MAP]);
-const mapCoercibleInputs = freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
+const mapInputs = Object.freeze([Type.MAP]);
+const mapCoercibleInputs = Object.freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
 
 /**
  * The shape of a {@link !Map Map} instance.

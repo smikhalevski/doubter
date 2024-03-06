@@ -1,5 +1,5 @@
 import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE } from '../constants';
-import { freeze, isArray, isEqual, returnTrue } from '../internal/lang';
+import { isArray, isEqual, returnTrue } from '../internal/lang';
 import { Dict, overrideProperty, ReadonlyDict } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
@@ -43,7 +43,7 @@ import {
 import { createIssueFactory, extractOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
 
-export const unknownInputs = freeze([Type.UNKNOWN]);
+export const unknownInputs = Object.freeze([Type.UNKNOWN]);
 
 /**
  * Extracts the shape input type.
@@ -1034,7 +1034,7 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       overrideProperty(this, 'inputs', []);
 
-      return overrideProperty(this, 'inputs', freeze(unionTypes(this._getInputs())));
+      return overrideProperty(this, 'inputs', Object.freeze(unionTypes(this._getInputs())));
     },
   },
 

@@ -1,5 +1,3 @@
-import { freeze } from '../internal/lang';
-
 /**
  * The marker object that is used to denote an impossible value.
  *
@@ -7,7 +5,7 @@ import { freeze } from '../internal/lang';
  *
  * @group Other
  */
-export const NEVER = freeze({} as never);
+export const NEVER = Object.freeze({} as never);
 
 export function coerceToNever() {
   return NEVER;

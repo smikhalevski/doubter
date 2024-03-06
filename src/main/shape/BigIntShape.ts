@@ -1,14 +1,13 @@
 import { bigintCoercibleInputs, coerceToBigInt } from '../coerce/bigint';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { freeze } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { Shape } from './Shape';
 
-const bigintInputs = freeze([Type.BIGINT]);
+const bigintInputs = Object.freeze([Type.BIGINT]);
 
 /**
  * The shape of a bigint value.

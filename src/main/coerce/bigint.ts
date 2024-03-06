@@ -1,11 +1,11 @@
-import { freeze, getCanonicalValue, isArray } from '../internal/lang';
+import { getCanonicalValue, isArray } from '../internal/lang';
 import { Type } from '../Type';
 import { NEVER } from './never';
 
 /**
  * The array of inputs that are coercible to a bigint with {@link coerceToBigInt}.
  */
-export const bigintCoercibleInputs = freeze([
+export const bigintCoercibleInputs = Object.freeze([
   Type.ARRAY,
   Type.BIGINT,
   Type.OBJECT,

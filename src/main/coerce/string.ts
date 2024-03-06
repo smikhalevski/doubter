@@ -1,11 +1,11 @@
-import { freeze, getCanonicalValue, isArray, isValidDate } from '../internal/lang';
+import { getCanonicalValue, isArray, isValidDate } from '../internal/lang';
 import { Type } from '../Type';
 import { NEVER } from './never';
 
 /**
  * The array of inputs that are coercible to a string with {@link coerceToString}.
  */
-export const stringCoercibleInputs = freeze([
+export const stringCoercibleInputs = Object.freeze([
   Type.ARRAY,
   Type.OBJECT,
   Type.STRING,

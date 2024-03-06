@@ -1,14 +1,13 @@
 import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleInputs } from '../coerce/number';
 import { CODE_TYPE } from '../constants';
-import { freeze } from '../internal/lang';
 import { Type } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowShape, ReplaceShape, Shape } from './Shape';
 
-const numberInputs = freeze([Type.NUMBER]);
+const numberInputs = Object.freeze([Type.NUMBER]);
 
 /**
  * The shape of a number value.

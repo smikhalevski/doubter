@@ -1,11 +1,10 @@
 import { CODE_TYPE } from '../constants';
-import { freeze } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
 
-const symbolInputs = freeze([Type.SYMBOL]);
+const symbolInputs = Object.freeze([Type.SYMBOL]);
 
 /**
  * The shape of an arbitrary symbol value.

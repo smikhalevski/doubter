@@ -12,3 +12,12 @@ expectType<{ bbb: number }>(
 );
 
 expectType<Record<string, boolean | undefined>>(d.record(d.string(), d.boolean().optional())[OUTPUT]);
+
+d.record(d.number()).notAllKeys(['bbb']);
+
+d.record(d.enum(['aaa', 'bbb']), d.number()).notAllKeys(['bbb']);
+
+d.record(
+  d.string().convert(x => x as 'aaa' | 'bbb'),
+  d.number()
+).notAllKeys(['bbb']);

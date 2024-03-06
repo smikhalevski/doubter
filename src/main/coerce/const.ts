@@ -1,4 +1,4 @@
-import { freeze, getCanonicalValue, isArray, isEqual } from '../internal/lang';
+import { getCanonicalValue, isArray, isEqual } from '../internal/lang';
 import { Type } from '../Type';
 import { bigintCoercibleInputs, coerceToBigInt } from './bigint';
 import { booleanCoercibleInputs, coerceToBoolean } from './boolean';
@@ -10,7 +10,7 @@ import { coerceToString, stringCoercibleInputs } from './string';
 /**
  * The array of inputs that are coercible to `NaN` with {@link coerceToConst}.
  */
-const nanCoercibleInputs = freeze([
+const nanCoercibleInputs = Object.freeze([
   Type.ARRAY,
   Type.OBJECT, // new Number(NaN)
   NaN,

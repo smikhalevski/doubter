@@ -1,4 +1,4 @@
-import { freeze, getCanonicalValue, isArray } from '../internal/lang';
+import { getCanonicalValue, isArray } from '../internal/lang';
 import { Type } from '../Type';
 import { NEVER } from './never';
 
@@ -7,7 +7,7 @@ const { MIN_SAFE_INTEGER, MAX_SAFE_INTEGER } = Number;
 /**
  * The array of inputs that are coercible to a number with {@link coerceToNumber}.
  */
-export const numberCoercibleInputs = freeze([
+export const numberCoercibleInputs = Object.freeze([
   Type.ARRAY,
   Type.OBJECT,
   Type.NUMBER,

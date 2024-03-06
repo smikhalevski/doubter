@@ -1,17 +1,17 @@
 import { CODE_TYPE_INSTANCE_OF } from '../constants';
-import { freeze, isEqualOrSubclass } from '../internal/lang';
+import { isEqualOrSubclass } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { Shape } from './Shape';
 
-const arrayInputs = freeze([Type.ARRAY]);
-const dateInputs = freeze([Type.DATE]);
-const functionInputs = freeze([Type.FUNCTION]);
-const mapInputs = freeze([Type.MAP]);
-const objectInputs = freeze([Type.OBJECT]);
-const promiseInputs = freeze([Type.PROMISE]);
-const setInputs = freeze([Type.SET]);
+const arrayInputs = Object.freeze([Type.ARRAY]);
+const dateInputs = Object.freeze([Type.DATE]);
+const functionInputs = Object.freeze([Type.FUNCTION]);
+const mapInputs = Object.freeze([Type.MAP]);
+const objectInputs = Object.freeze([Type.OBJECT]);
+const promiseInputs = Object.freeze([Type.PROMISE]);
+const setInputs = Object.freeze([Type.SET]);
 
 /**
  * The shape of the class instance.
