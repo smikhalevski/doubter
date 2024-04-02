@@ -9,11 +9,17 @@
   "readme": "none",
   "tsconfig": "./tsconfig.json",
   "customCss": "./node_modules/typedoc-custom-css/custom.css",
+  "navigation": {
+    "includeFolders": false
+  },
   "entryPoints": [
     "./src/main/index.ts",
     "./src/main/utils.ts",
     "./src/main/plugin/*.ts"
   ],
+  "compilerOptions": {
+    "skipLibCheck": true
+  },
   "groupOrder": [
     "DSL",
     "Shapes",
@@ -64,9 +70,7 @@
     "DeepPartialUnionShape",
     "Dict",
     "ExcludeLiteral",
-    "InferKeys",
     "InferPromise",
-    "InferRecord",
     "Intersect",
     "ObjectLikeShape",
     "OptionalDeepPartialShape",
