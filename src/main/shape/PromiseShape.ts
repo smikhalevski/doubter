@@ -1,6 +1,6 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE } from '../constants';
-import { freeze, isArray } from '../internal/lang';
+import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -8,7 +8,7 @@ import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
 
-const promiseInputs = freeze([Type.PROMISE]);
+const promiseInputs = Object.freeze([Type.PROMISE]);
 
 type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
   ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any

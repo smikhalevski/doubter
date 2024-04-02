@@ -1,7 +1,7 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
-import { freeze, getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
+import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import {
   applyShape,
   concatIssues,
@@ -17,8 +17,8 @@ import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
 
-const arrayInputs = freeze([Type.ARRAY]);
-const arrayCoercibleInputs = freeze([Type.OBJECT, Type.ARRAY]);
+const arrayInputs = Object.freeze([Type.ARRAY]);
+const arrayCoercibleInputs = Object.freeze([Type.OBJECT, Type.ARRAY]);
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],

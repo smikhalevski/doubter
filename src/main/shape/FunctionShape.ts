@@ -1,5 +1,5 @@
 import { CODE_TYPE, ERR_ASYNC_FUNCTION } from '../constants';
-import { freeze, isArray } from '../internal/lang';
+import { isArray } from '../internal/lang';
 import {
   applyShape,
   Awaitable,
@@ -19,7 +19,7 @@ import { createIssueFactory } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';
 
-const functionInputs = freeze([Type.FUNCTION]);
+const functionInputs = Object.freeze([Type.FUNCTION]);
 
 const KEY_THIS = 'this';
 const KEY_ARGS = 'arguments';

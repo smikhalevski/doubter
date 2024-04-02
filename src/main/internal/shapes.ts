@@ -12,7 +12,7 @@ import {
   Result,
 } from '../types';
 import { ValidationError } from '../ValidationError';
-import { freeze, isArray, isEqual, isObjectLike } from './lang';
+import { isArray, isEqual, isObjectLike } from './lang';
 
 // Copied to support TS prior to v4.5
 // prettier-ignore
@@ -26,9 +26,9 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
-export const defaultApplyOptions = freeze<ApplyOptions>({ earlyReturn: false });
+export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false });
 
-export const defaultEarlyReturnApplyOptions = freeze<ApplyOptions>({ earlyReturn: true });
+export const defaultEarlyReturnApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: true });
 
 export declare const INPUT: unique symbol;
 export declare const OUTPUT: unique symbol;

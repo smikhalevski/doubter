@@ -1,14 +1,13 @@
 import { NEVER } from '../coerce/never';
 import { coerceToString, stringCoercibleInputs } from '../coerce/string';
 import { CODE_TYPE } from '../constants';
-import { freeze } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssueFactory } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { Shape } from './Shape';
 
-const stringInputs = freeze([Type.STRING]);
+const stringInputs = Object.freeze([Type.STRING]);
 
 /**
  * The shape of a string value.
