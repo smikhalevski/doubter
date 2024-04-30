@@ -1,8 +1,8 @@
-import { CODE_TYPE_INSTANCE_OF } from '../constants';
+import { CODE_TYPE_INSTANCE_OF, MESSAGE_TYPE_INSTANCE_OF } from '../constants';
 import { isEqualOrSubclass } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { Shape } from './Shape';
 
 const arrayInputs = Object.freeze([Type.ARRAY]);
@@ -23,7 +23,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates a new {@link InstanceShape} instance.
@@ -38,12 +38,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(
-      CODE_TYPE_INSTANCE_OF,
-      Shape.messages[CODE_TYPE_INSTANCE_OF],
-      options,
-      ctor
-    );
+    this._options = toIssueOptions(options);
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -72,7 +67,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<InstanceType<Ctor>> {
     if (!(input instanceof this.ctor)) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_INSTANCE_OF, input, MESSAGE_TYPE_INSTANCE_OF, this.ctor, options, this._options)];
     }
     return this._applyOperations(input, input, options, null) as Result;
   }

@@ -1,10 +1,10 @@
-import { CODE_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_OBJECT } from '../constants';
 import { isArray, isObject } from '../internal/lang';
 import { cloneDictHead, setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
 const recordInputs = Object.freeze([Type.OBJECT]);
@@ -28,11 +28,6 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates a new {@link RecordShape} instance.
    *
    * @param keysShape The shape of record keys.
@@ -54,8 +49,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
   ) {
     super();
 
-    this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.object'], options, Type.OBJECT);
+    this._options = toIssueOptions(options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -80,7 +74,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
     nonce: number
   ): Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>> {
     if (!isObject(input)) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_OBJECT, Type.OBJECT, options, this._options)];
     }
 
     const { keysShape, valuesShape, operations } = this;
@@ -146,7 +140,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
   ): Promise<Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve([createIssue(CODE_TYPE, input, MESSAGE_TYPE_OBJECT, Type.OBJECT, options, this._options)]);
         return;
       }
 

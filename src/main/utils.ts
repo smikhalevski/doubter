@@ -8,7 +8,7 @@
  * @module utils
  */
 
-import { ApplyOptions, Issue, IssueOptions, Message, MessageCallback } from './core';
+import { ApplyOptions, Issue, IssueOptions, Message } from './core';
 import { isObjectLike } from './internal/lang';
 
 /**
@@ -16,87 +16,36 @@ import { isObjectLike } from './internal/lang';
  *
  * @param source Options or message to extract from.
  */
-export function extractOptions<T extends IssueOptions>(source: T | Message | undefined): Partial<T> {
+export function toIssueOptions<T extends IssueOptions>(source: T | Message | undefined): Partial<T> {
   if (typeof source === 'function' || typeof source === 'string') {
-    return { message: source } as T;
+    return { message: source, meta: undefined } as T;
   }
   if (isObjectLike(source)) {
     return source;
   }
-  return {};
+  return { message: undefined, meta: undefined } as T;
 }
 
-/**
- * Returns a function that creates an issue.
- *
- * @param code The code of the issue.
- * @param defaultMessage The default message that is used if message isn't provided through options.
- * @param options The issue options or the issue message.
- * @param param The param that is added to the issue.
- * @returns The callback that takes an input and options, and returns an issue.
- */
-export function createIssueFactory(
-  code: unknown,
-  defaultMessage: unknown,
-  options: IssueOptions | Message | undefined,
-  param: unknown
-): (input: unknown, options: ApplyOptions) => Issue;
+export function createIssue(
+  code: string,
+  input: unknown,
+  defaultMessage: Message,
+  param: unknown,
+  options: ApplyOptions,
+  issueOptions: IssueOptions
+): Issue {
+  const issue: Issue = { code, path: undefined, input, message: undefined, param, meta: issueOptions.meta };
 
-/**
- * Returns a function that creates an issue.
- *
- * @param code The code of the issue.
- * @param defaultMessage The default message that is used if message isn't provided through options.
- * @param options The issue options or the issue message.
- * @returns The callback that takes an input, options, and a param, and returns an issue.
- */
-export function createIssueFactory(
-  code: unknown,
-  defaultMessage: unknown,
-  options: IssueOptions | Message | undefined
-): (input: unknown, options: ApplyOptions, param: unknown) => Issue;
+  let message = issueOptions.message;
 
-export function createIssueFactory(
-  code: unknown,
-  defaultMessage: any,
-  options: IssueOptions | Message | undefined,
-  param?: unknown
-): (input: unknown, options: ApplyOptions, param: unknown) => Issue {
-  const parameterized = arguments.length <= 3;
-
-  let { message = defaultMessage, meta } = extractOptions(options);
-
-  if (typeof message === 'function') {
-    return (input, options, param0) => {
-      const issue = { code, path: undefined, input, message: undefined, param: parameterized ? param0 : param, meta };
-      const value = (message as MessageCallback)(issue, options);
-
-      if (issue.message === undefined) {
-        issue.message = value;
-      }
-      return issue;
-    };
+  if (message === undefined) {
+    message = defaultMessage;
   }
 
-  if (typeof message === 'string') {
-    if (parameterized) {
-      if (message.indexOf('%s') !== -1) {
-        return (input, options, param0) => {
-          return { code, path: undefined, input, message: message.replace('%s', String(param0)), param: param0, meta };
-        };
-      }
-    } else {
-      message = message.replace('%s', String(param));
-    }
-  }
+  message = typeof message === 'function' ? message(issue, options) : message;
 
-  if (parameterized) {
-    return (input, options, param0) => {
-      return { code, path: undefined, input, message, param: param0, meta };
-    };
+  if (issue.message === undefined) {
+    issue.message = message;
   }
-
-  return (input, options) => {
-    return { code, path: undefined, input, message, param, meta };
-  };
+  return issue;
 }

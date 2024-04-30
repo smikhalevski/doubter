@@ -10,11 +10,11 @@
  *
  * @module plugin/set-essentials
  */
-import { CODE_SET_MAX, CODE_SET_MIN } from '../constants';
+import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
 import { SetShape } from '../shape/SetShape';
 import { AnyShape } from '../shape/Shape';
 import { Any, IssueOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
   export interface Messages {
@@ -89,28 +89,28 @@ export default function enableSetEssentials(ctor: typeof SetShape): void {
   };
 
   prototype.min = function (size, options) {
-    const issueFactory = createIssueFactory(CODE_SET_MIN, ctor.messages[CODE_SET_MIN], options, size);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.size >= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_SET_MIN, value, MESSAGE_SET_MIN, param, options, issueOptions)];
       },
       { type: CODE_SET_MIN, param: size }
     );
   };
 
   prototype.max = function (size, options) {
-    const issueFactory = createIssueFactory(CODE_SET_MAX, ctor.messages[CODE_SET_MAX], options, size);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.size <= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_SET_MAX, value, MESSAGE_SET_MAX, param, options, issueOptions)];
       },
       { type: CODE_SET_MAX, param: size }
     );

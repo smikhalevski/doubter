@@ -11,10 +11,10 @@
  * @module plugin/bigint-essentials
  */
 
-import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../constants';
+import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
 import { BigIntShape } from '../shape/BigIntShape';
 import { Any, IssueOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
   export interface Messages {
@@ -121,14 +121,14 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
 
   prototype.min = function (value, options) {
     const param = BigInt(value);
-    const issueFactory = createIssueFactory(CODE_BIGINT_MIN, ctor.messages[CODE_BIGINT_MIN], options, param);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value >= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_BIGINT_MIN, value, MESSAGE_BIGINT_MIN, param, options, issueOptions)];
       },
       { type: CODE_BIGINT_MIN, param }
     );
@@ -136,14 +136,14 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
 
   prototype.max = function (value, options) {
     const param = BigInt(value);
-    const issueFactory = createIssueFactory(CODE_BIGINT_MAX, ctor.messages[CODE_BIGINT_MAX], options, param);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value <= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_BIGINT_MAX, value, MESSAGE_BIGINT_MAX, param, options, issueOptions)];
       },
       { type: CODE_BIGINT_MAX, param }
     );

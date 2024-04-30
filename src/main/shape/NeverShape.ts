@@ -1,6 +1,6 @@
-import { CODE_TYPE_NEVER } from '../constants';
+import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { Shape } from './Shape';
 
 const neverInputs = Object.freeze([]);
@@ -14,7 +14,7 @@ export class NeverShape extends Shape<never> {
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates a new {@link NeverShape} instance.
@@ -24,7 +24,7 @@ export class NeverShape extends Shape<never> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_NEVER, Shape.messages[CODE_TYPE_NEVER], options, undefined);
+    this._options = toIssueOptions(options);
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -32,6 +32,6 @@ export class NeverShape extends Shape<never> {
   }
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<never> {
-    return [this._typeIssueFactory(input, options)];
+    return [createIssue(CODE_TYPE_NEVER, input, MESSAGE_TYPE_NEVER, undefined, options, this._options)];
   }
 }

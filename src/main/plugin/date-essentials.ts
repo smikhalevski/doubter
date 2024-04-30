@@ -11,11 +11,11 @@
  * @module plugin/date-essentials
  */
 
-import { CODE_DATE_MAX, CODE_DATE_MIN } from '../constants';
+import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
 import { DateShape } from '../shape/DateShape';
 import { Shape } from '../shape/Shape';
 import { Any, IssueOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
   export interface Messages {
@@ -107,14 +107,14 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
   prototype.min = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MIN, ctor.messages[CODE_DATE_MIN], options, param);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.getTime() >= timestamp) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_DATE_MIN, value, MESSAGE_DATE_MIN, param, options, issueOptions)];
       },
       { type: CODE_DATE_MIN, param }
     );
@@ -123,14 +123,14 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
   prototype.max = function (value, options) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MAX, ctor.messages[CODE_DATE_MAX], options, param);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.getTime() <= timestamp) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_DATE_MAX, value, MESSAGE_DATE_MAX, param, options, issueOptions)];
       },
       { type: CODE_DATE_MAX, param }
     );

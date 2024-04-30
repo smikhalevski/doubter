@@ -1,12 +1,12 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE_INTERSECTION } from '../constants';
+import { CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION } from '../constants';
 import { isArray, isEqual } from '../internal/lang';
 import { setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { distributeTypes } from '../internal/types';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
@@ -36,11 +36,6 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates a new {@link IntersectionShape} instance.
    *
    * @param shapes The array of shapes that comprise an intersection.
@@ -56,13 +51,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   ) {
     super();
 
-    this._options = options;
-    this._typeIssueFactory = createIssueFactory(
-      CODE_TYPE_INTERSECTION,
-      Shape.messages[CODE_TYPE_INTERSECTION],
-      options,
-      undefined
-    );
+    this._options = toIssueOptions(options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -211,7 +200,9 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
         output = mergeValues(output, outputs[i]);
       }
       if (output === NEVER) {
-        return [this._typeIssueFactory(input, options)];
+        return [
+          createIssue(CODE_TYPE_INTERSECTION, input, MESSAGE_TYPE_INTERSECTION, undefined, options, this._options),
+        ];
       }
     }
     return this._applyOperations(input, output, options, null) as Result;

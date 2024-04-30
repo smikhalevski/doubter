@@ -1,10 +1,9 @@
 import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE_CONST } from '../constants';
+import { CODE_TYPE_CONST, MESSAGE_TYPE_CONST } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { Shape } from './Shape';
 
 const nullInputs = Object.freeze([null]);
 const undefinedInputs = Object.freeze([undefined]);
@@ -24,7 +23,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates a new {@link ConstShape} instance.
@@ -42,8 +41,8 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
   ) {
     super();
 
+    this._options = toIssueOptions(options);
     this._typePredicate = value !== value ? Number.isNaN : input => value === input;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_CONST, Shape.messages[CODE_TYPE_CONST], options, value);
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -69,7 +68,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     let output = input;
 
     if (!this._typePredicate(input) && (output = this._applyCoerce(input)) === NEVER) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_CONST, input, MESSAGE_TYPE_CONST, this.value, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }

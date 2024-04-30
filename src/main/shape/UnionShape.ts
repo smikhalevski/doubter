@@ -1,4 +1,4 @@
-import { CODE_TYPE_UNION } from '../constants';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants';
 import { unique } from '../internal/arrays';
 import { isArray, isObject } from '../internal/lang';
 import { overrideProperty, ReadonlyDict } from '../internal/objects';
@@ -6,7 +6,7 @@ import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shape
 import { isType } from '../internal/types';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
@@ -30,11 +30,6 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates a new {@link UnionShape} instance.
    *
    * @param shapes The array of shapes that comprise a union.
@@ -50,8 +45,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   ) {
     super();
 
-    this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_UNION, Shape.messages[CODE_TYPE_UNION], options);
+    this._options = toIssueOptions(options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -130,7 +124,16 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
       if (shapesLength === 1) {
         return issues;
       }
-      return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
+      return [
+        createIssue(
+          CODE_TYPE_UNION,
+          input,
+          MESSAGE_TYPE_UNION,
+          { inputs: this.inputs, issueGroups },
+          options,
+          this._options
+        ),
+      ];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }
@@ -174,7 +177,16 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
         if (shapesLength === 1) {
           return issues;
         }
-        return [this._typeIssueFactory(input, options, { inputs: this.inputs, issueGroups })];
+        return [
+          createIssue(
+            CODE_TYPE_UNION,
+            input,
+            MESSAGE_TYPE_UNION,
+            { inputs: this.inputs, issueGroups },
+            options,
+            this._options
+          ),
+        ];
       };
 
       resolve(next());

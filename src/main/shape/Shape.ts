@@ -1,4 +1,11 @@
-import { CODE_ANY_DENY, CODE_ANY_EXCLUDE, CODE_ANY_REFINE } from '../constants';
+import {
+  CODE_ANY_DENY,
+  CODE_ANY_EXCLUDE,
+  CODE_ANY_REFINE,
+  MESSAGE_ANY_DENY,
+  MESSAGE_ANY_EXCLUDE,
+  MESSAGE_ANY_REFINE,
+} from '../constants';
 import { isArray, isEqual, returnTrue } from '../internal/lang';
 import { Dict, overrideProperty, ReadonlyDict } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
@@ -40,7 +47,7 @@ import {
   RefinePredicate,
   Result,
 } from '../types';
-import { createIssueFactory, extractOptions } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export const unknownInputs = Object.freeze([Type.UNKNOWN]);
@@ -472,16 +479,15 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: OperationCallback<unknown, OutputValue>, options?: RefineOptions | Message): this;
 
   refine(cb: OperationCallback<unknown>, options?: RefineOptions | Message): Shape {
-    const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = extractOptions(options);
-
-    const issueFactory = createIssueFactory(code, Shape.messages[CODE_ANY_REFINE], options, cb);
+    const issueOptions = toIssueOptions(options);
+    const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = issueOptions;
 
     return this.addOperation(
       (value, param, options) => {
         if (cb(value, param, options)) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(code, value, MESSAGE_ANY_REFINE, param, options, issueOptions)];
       },
       { type, param, tolerance }
     );
@@ -520,9 +526,8 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refineAsync(cb: OperationCallback<PromiseLike<unknown>, OutputValue>, options?: RefineOptions | Message): this;
 
   refineAsync(cb: OperationCallback<PromiseLike<unknown>>, options?: RefineOptions | Message): Shape {
-    const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = extractOptions(options);
-
-    const issueFactory = createIssueFactory(code, Shape.messages[CODE_ANY_REFINE], options, cb);
+    const issueOptions = toIssueOptions(options);
+    const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = issueOptions;
 
     return this.addAsyncOperation(
       (value, param, options) =>
@@ -530,7 +535,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
           if (result) {
             return null;
           }
-          return [issueFactory(value, options)];
+          return [createIssue(code, value, MESSAGE_ANY_REFINE, param, options, issueOptions)];
         }),
       { type, param, tolerance }
     );
@@ -1442,11 +1447,6 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates the new {@link DenyShape} instance.
    *
    * @param baseShape The shape that parses the input without the denied value.
@@ -1468,8 +1468,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
   ) {
     super();
 
-    this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_ANY_DENY, Shape.messages[CODE_ANY_DENY], options, deniedValue);
+    this._options = toIssueOptions(options);
   }
 
   deepPartial(): DenyShape<DeepPartialShape<BaseShape>, DeniedValue> {
@@ -1489,8 +1488,10 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     options: ApplyOptions,
     nonce: number
   ): Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>> {
-    if (isEqual(input, this.deniedValue)) {
-      return [this._typeIssueFactory(input, options)];
+    const { deniedValue } = this;
+
+    if (isEqual(input, deniedValue)) {
+      return [createIssue(CODE_ANY_DENY, input, MESSAGE_ANY_DENY, deniedValue, options, this._options)];
     }
 
     let output = input;
@@ -1503,8 +1504,8 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
       }
       output = result.value;
 
-      if (isEqual(output, this.deniedValue)) {
-        return [this._typeIssueFactory(input, options)];
+      if (isEqual(output, deniedValue)) {
+        return [createIssue(CODE_ANY_DENY, input, MESSAGE_ANY_DENY, deniedValue, options, this._options)];
       }
     }
     return this._applyOperations(input, output, options, null) as Result;
@@ -1515,8 +1516,12 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
     options: ApplyOptions,
     nonce: number
   ): Promise<Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>>> {
-    if (isEqual(input, this.deniedValue)) {
-      return Promise.resolve([this._typeIssueFactory(input, options)]);
+    const { deniedValue } = this;
+
+    if (isEqual(input, deniedValue)) {
+      return Promise.resolve([
+        createIssue(CODE_ANY_DENY, input, MESSAGE_ANY_DENY, deniedValue, options, this._options),
+      ]);
     }
 
     return this.baseShape['_applyAsync'](input, options, nonce).then(result => {
@@ -1528,8 +1533,8 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
         }
         output = result.value;
 
-        if (isEqual(output, this.deniedValue)) {
-          return [this._typeIssueFactory(input, options)];
+        if (isEqual(output, deniedValue)) {
+          return [createIssue(CODE_ANY_DENY, input, MESSAGE_ANY_DENY, deniedValue, options, this._options)];
         }
       }
       return this._applyOperations(input, output, options, null);
@@ -1649,11 +1654,6 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates the new {@link ExcludeShape} instance.
    *
    * @param baseShape The shape that parses the input.
@@ -1675,14 +1675,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
   ) {
     super();
 
-    this._options = options;
-
-    this._typeIssueFactory = createIssueFactory(
-      CODE_ANY_EXCLUDE,
-      Shape.messages[CODE_ANY_EXCLUDE],
-      options,
-      excludedShape
-    );
+    this._options = toIssueOptions(options);
   }
 
   deepPartial(): ExcludeShape<DeepPartialShape<BaseShape>, ExcludedShape> {
@@ -1715,7 +1708,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
     }
 
     if (!isArray(excludedShape['_apply'](output, options, nonce))) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_ANY_EXCLUDE, input, MESSAGE_ANY_EXCLUDE, excludedShape, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }
@@ -1739,7 +1732,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
 
       return applyShape(excludedShape, output, options, nonce, outputResult => {
         if (!isArray(outputResult)) {
-          return [this._typeIssueFactory(input, options)];
+          return [createIssue(CODE_ANY_EXCLUDE, input, MESSAGE_ANY_EXCLUDE, excludedShape, options, this._options)];
         }
         return this._applyOperations(input, output, options, null);
       });

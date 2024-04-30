@@ -11,11 +11,18 @@
  * @module plugin/array-essentials
  */
 
-import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN } from '../constants';
+import {
+  CODE_ARRAY_INCLUDES,
+  CODE_ARRAY_MAX,
+  CODE_ARRAY_MIN,
+  MESSAGE_ARRAY_INCLUDES,
+  MESSAGE_ARRAY_MAX,
+  MESSAGE_ARRAY_MIN,
+} from '../constants';
 import { ArrayShape } from '../shape/ArrayShape';
 import { AnyShape, Shape } from '../shape/Shape';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
   export interface Messages {
@@ -107,28 +114,28 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
   };
 
   prototype.min = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, ctor.messages[CODE_ARRAY_MIN], options, length);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.length >= length) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_ARRAY_MIN, value, MESSAGE_ARRAY_MIN, param, options, issueOptions)];
       },
       { type: CODE_ARRAY_MIN, param: length }
     );
   };
 
   prototype.max = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, ctor.messages[CODE_ARRAY_MAX], options, length);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.length <= length) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_ARRAY_MAX, value, MESSAGE_ARRAY_MAX, param, options, issueOptions)];
       },
       { type: CODE_ARRAY_MAX, param: length }
     );
@@ -139,7 +146,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
   };
 
   prototype.includes = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, ctor.messages[CODE_ARRAY_INCLUDES], options, value);
+    const issueOptions = toIssueOptions(options);
 
     if (!(value instanceof Shape)) {
       return this.addOperation(
@@ -147,7 +154,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
           if (value.includes(param)) {
             return null;
           }
-          return [issueFactory(value, options)];
+          return [createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, param, options, issueOptions)];
         },
         { type: CODE_ARRAY_INCLUDES, param: value }
       );
@@ -156,7 +163,9 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     if (value.isAsync) {
       const next = (value: unknown[], shape: Shape, options: ApplyOptions, index: number): Promise<Result> => {
         if (index === value.length) {
-          return Promise.resolve([issueFactory(value, options)]);
+          return Promise.resolve([
+            createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, shape, options, issueOptions),
+          ]);
         }
 
         return shape.tryAsync(value[index]).then(result => {
@@ -180,7 +189,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
             return null;
           }
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, param, options, issueOptions)];
       },
       { type: CODE_ARRAY_INCLUDES, param: value }
     );

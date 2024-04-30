@@ -19,10 +19,17 @@ import {
   CODE_STRING_NON_BLANK,
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
+  MESSAGE_STRING_ENDS_WITH,
+  MESSAGE_STRING_INCLUDES,
+  MESSAGE_STRING_MAX,
+  MESSAGE_STRING_MIN,
+  MESSAGE_STRING_NON_BLANK,
+  MESSAGE_STRING_REGEX,
+  MESSAGE_STRING_STARTS_WITH,
 } from '../constants';
 import { StringShape } from '../shape/StringShape';
 import { Any, IssueOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
   export interface Messages {
@@ -206,113 +213,98 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
   };
 
   prototype.min = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_MIN, ctor.messages[CODE_STRING_MIN], options, length);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.length >= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_STRING_MIN, value, MESSAGE_STRING_MIN, param, options, issueOptions)];
       },
       { type: CODE_STRING_MIN, param: length }
     );
   };
 
   prototype.max = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_MAX, ctor.messages[CODE_STRING_MAX], options, length);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.length <= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_STRING_MAX, value, MESSAGE_STRING_MAX, param, options, issueOptions)];
       },
       { type: CODE_STRING_MAX, param: length }
     );
   };
 
   prototype.regex = function (re, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_REGEX, ctor.messages[CODE_STRING_REGEX], options, re);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (param.test(value)) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_STRING_REGEX, value, MESSAGE_STRING_REGEX, param, options, issueOptions)];
       },
       { type: CODE_STRING_REGEX, param: re }
     );
   };
 
   prototype.includes = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_STRING_INCLUDES, ctor.messages[CODE_STRING_INCLUDES], options, value);
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.includes(param)) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_STRING_INCLUDES, value, MESSAGE_STRING_INCLUDES, param, options, issueOptions)];
       },
       { type: CODE_STRING_INCLUDES, param: value }
     );
   };
 
   prototype.startsWith = function (value, options) {
-    const issueFactory = createIssueFactory(
-      CODE_STRING_STARTS_WITH,
-      ctor.messages[CODE_STRING_STARTS_WITH],
-      options,
-      value
-    );
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.startsWith(param)) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_STRING_STARTS_WITH, value, MESSAGE_STRING_STARTS_WITH, param, options, issueOptions)];
       },
       { type: CODE_STRING_STARTS_WITH, param: value }
     );
   };
 
   prototype.endsWith = function (value, options) {
-    const issueFactory = createIssueFactory(
-      CODE_STRING_ENDS_WITH,
-      ctor.messages[CODE_STRING_ENDS_WITH],
-      options,
-      value
-    );
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.endsWith(param)) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_STRING_ENDS_WITH, value, MESSAGE_STRING_ENDS_WITH, param, options, issueOptions)];
       },
       { type: CODE_STRING_ENDS_WITH, param: value }
     );
   };
 
   prototype.nonBlank = function (options) {
-    const issueFactory = createIssueFactory(
-      CODE_STRING_NON_BLANK,
-      ctor.messages[CODE_STRING_NON_BLANK],
-      options,
-      undefined
-    );
+    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.trim().length !== 0) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_STRING_NON_BLANK, value, MESSAGE_STRING_NON_BLANK, param, options, issueOptions)];
       },
       { type: CODE_STRING_NON_BLANK }
     );

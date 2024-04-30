@@ -1,5 +1,5 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE, CODE_TYPE_TUPLE } from '../constants';
+import { CODE_TYPE, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
 import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import {
@@ -13,7 +13,7 @@ import {
 } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
 
@@ -58,11 +58,6 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates a new {@link ArrayShape} instance.
    *
    * @param headShapes The array of positioned element shapes.
@@ -84,18 +79,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   ) {
     super();
 
-    this._options = options;
-
-    if (headShapes.length !== 0 || restShape === null) {
-      this._typeIssueFactory = createIssueFactory(
-        CODE_TYPE_TUPLE,
-        Shape.messages[CODE_TYPE_TUPLE],
-        options,
-        headShapes.length
-      );
-    } else {
-      this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.array'], options, Type.ARRAY);
-    }
+    this._options = toIssueOptions(options);
   }
 
   at(key: unknown): AnyShape | null {
@@ -185,7 +169,11 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
     ) {
-      return [this._typeIssueFactory(input, options)];
+      return [
+        headShapes.length !== 0 || restShape === null
+          ? createIssue(CODE_TYPE_TUPLE, input, MESSAGE_TYPE_TUPLE, headShapes.length, options, this._options)
+          : createIssue(CODE_TYPE, input, MESSAGE_TYPE_ARRAY, Type.ARRAY, options, this._options),
+      ];
     }
 
     if (headShapesLength !== 0 || restShape !== null) {
@@ -236,7 +224,11 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)
       ) {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve([
+          headShapes.length !== 0 || restShape === null
+            ? createIssue(CODE_TYPE_TUPLE, input, MESSAGE_TYPE_TUPLE, headShapes.length, options, this._options)
+            : createIssue(CODE_TYPE, input, MESSAGE_TYPE_ARRAY, Type.ARRAY, options, this._options),
+        ]);
         return;
       }
 

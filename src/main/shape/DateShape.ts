@@ -1,12 +1,11 @@
 import { coerceToDate, dateCoercibleInputs } from '../coerce/date';
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_DATE } from '../constants';
 import { isValidDate } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { Shape } from './Shape';
 
 const dateInputs = Object.freeze([Type.DATE]);
 
@@ -18,7 +17,7 @@ export class DateShape extends CoercibleShape<Date> {
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates a new {@link DateShape} instance.
@@ -28,7 +27,7 @@ export class DateShape extends CoercibleShape<Date> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.date'], options, Type.DATE);
+    this._options = toIssueOptions(options);
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -39,7 +38,7 @@ export class DateShape extends CoercibleShape<Date> {
     let output = input;
 
     if (!isValidDate(input) && (output = this._applyCoerce(input)) === NEVER) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_DATE, Type.DATE, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }

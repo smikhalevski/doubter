@@ -1,11 +1,10 @@
 import { booleanCoercibleInputs, coerceToBoolean } from '../coerce/boolean';
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE } from '../constants';
+import { CODE_TYPE, MESSAGE_TYPE_BOOLEAN } from '../constants';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { Shape } from './Shape';
 
 const booleanInputs = Object.freeze([Type.BOOLEAN]);
 
@@ -18,7 +17,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates a new {@link BooleanShape} instance.
@@ -28,7 +27,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.boolean'], options, Type.BOOLEAN);
+    this._options = toIssueOptions(options);
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -39,7 +38,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     let output = input;
 
     if (typeof output !== 'boolean' && (output = this._applyCoerce(input)) === NEVER) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_BOOLEAN, Type.BOOLEAN, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }

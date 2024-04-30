@@ -1,4 +1,4 @@
-import { CODE_TYPE, ERR_ASYNC_FUNCTION } from '../constants';
+import { CODE_TYPE, ERR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants';
 import { isArray } from '../internal/lang';
 import {
   applyShape,
@@ -15,7 +15,7 @@ import {
 } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';
 
@@ -58,7 +58,7 @@ export class FunctionShape<
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Parsing options that are used by a wrapper.
@@ -93,7 +93,7 @@ export class FunctionShape<
   ) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.function'], options, Type.FUNCTION);
+    this._options = toIssueOptions(options);
   }
 
   /**
@@ -262,7 +262,7 @@ export class FunctionShape<
     (this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>
   > {
     if (typeof input !== 'function') {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_FUNCTION, Type.FUNCTION, options, this._options)];
     }
 
     const result = this._applyOperations(input, input, options, null) as Result;
@@ -285,7 +285,7 @@ export class FunctionShape<
   > {
     return new Promise(resolve => {
       if (typeof input !== 'function') {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve([createIssue(CODE_TYPE, input, MESSAGE_TYPE_FUNCTION, Type.FUNCTION, options, this._options)]);
         return;
       }
 
