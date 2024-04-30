@@ -2377,8 +2377,8 @@ second (greater is better).
 
 <p align="center"><picture>
   <source media="(prefers-color-scheme: dark)" srcset="./assets/perf-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="./assets/perf.svg" />
-  <img alt="Performance comparison chart" src="./assets/perf.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="./assets/perf-light.svg" />
+  <img alt="Performance comparison chart" src="./assets/perf-light.svg" />
 </picture></p>
 
 Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast#readme) on Apple M1 with Node.js v20.4.0.
