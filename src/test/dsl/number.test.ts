@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { CODE_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_TYPE_NUMBER } from '../../main/constants';
 import { Type } from '../../main/Type';
 
 describe('number', () => {
@@ -10,7 +10,7 @@ describe('number', () => {
   test('raises an issue if value is not a number', () => {
     expect(d.number().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: d.Shape.messages['type.number'], param: Type.NUMBER }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_NUMBER, param: Type.NUMBER }],
     });
   });
 });

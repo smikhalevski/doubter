@@ -8,7 +8,7 @@ import {
   StringShape,
   ValidationError,
 } from '../../main';
-import { CODE_TYPE, CODE_TYPE_TUPLE } from '../../main/constants';
+import { CODE_TYPE, CODE_TYPE_TUPLE, MESSAGE_TYPE_NUMBER, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
 import { Type } from '../../main/Type';
 import { AsyncMockShape, MockShape } from './mocks';
@@ -164,7 +164,7 @@ describe('FunctionShape', () => {
             code: CODE_TYPE,
             path: ['this', 'key1'],
             input: 111,
-            message: Shape.messages['type.string'],
+            message: MESSAGE_TYPE_STRING,
             param: Type.STRING,
           },
         ])
@@ -180,7 +180,7 @@ describe('FunctionShape', () => {
             code: CODE_TYPE,
             path: ['arguments', 0],
             input: 111,
-            message: Shape.messages['type.string'],
+            message: MESSAGE_TYPE_STRING,
             param: Type.STRING,
           },
         ])
@@ -196,14 +196,14 @@ describe('FunctionShape', () => {
             code: CODE_TYPE,
             path: ['arguments', 0],
             input: 111,
-            message: Shape.messages['type.string'],
+            message: MESSAGE_TYPE_STRING,
             param: Type.STRING,
           },
           {
             code: CODE_TYPE,
             path: ['arguments', 1],
             input: 'aaa',
-            message: Shape.messages['type.number'],
+            message: MESSAGE_TYPE_NUMBER,
             param: Type.NUMBER,
           },
         ])
@@ -215,7 +215,7 @@ describe('FunctionShape', () => {
 
       expect(() => shape.ensure(() => 111 as any)()).toThrow(
         new ValidationError([
-          { code: CODE_TYPE, path: ['return'], input: 111, message: Shape.messages['type.string'], param: Type.STRING },
+          { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_TYPE_STRING, param: Type.STRING },
         ])
       );
     });
@@ -260,7 +260,7 @@ describe('FunctionShape', () => {
             code: CODE_TYPE,
             path: ['this', 'key1'],
             input: 111,
-            message: Shape.messages['type.string'],
+            message: MESSAGE_TYPE_STRING,
             param: Type.STRING,
           },
         ])
@@ -276,7 +276,7 @@ describe('FunctionShape', () => {
             code: CODE_TYPE,
             path: ['arguments', 0],
             input: 111,
-            message: Shape.messages['type.string'],
+            message: MESSAGE_TYPE_STRING,
             param: Type.STRING,
           },
         ])
@@ -292,14 +292,14 @@ describe('FunctionShape', () => {
             code: CODE_TYPE,
             path: ['arguments', 0],
             input: 111,
-            message: Shape.messages['type.string'],
+            message: MESSAGE_TYPE_STRING,
             param: Type.STRING,
           },
           {
             code: CODE_TYPE,
             path: ['arguments', 1],
             input: 'aaa',
-            message: Shape.messages['type.number'],
+            message: MESSAGE_TYPE_NUMBER,
             param: Type.NUMBER,
           },
         ])
@@ -311,7 +311,7 @@ describe('FunctionShape', () => {
 
       await expect(shape.ensureAsync(() => 111 as any)()).rejects.toEqual(
         new ValidationError([
-          { code: CODE_TYPE, path: ['return'], input: 111, message: Shape.messages['type.string'], param: Type.STRING },
+          { code: CODE_TYPE, path: ['return'], input: 111, message: MESSAGE_TYPE_STRING, param: Type.STRING },
         ])
       );
     });

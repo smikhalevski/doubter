@@ -21,27 +21,10 @@ import {
 } from '../constants';
 import { ArrayShape } from '../shape/ArrayShape';
 import { AnyShape, Shape } from '../shape/Shape';
-import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must include a value"
-     */
-    'array.includes': Message | Any;
-
-    /**
-     * @default "Must have the maximum length of %s"
-     */
-    'array.max': Message | Any;
-
-    /**
-     * @default "Must have the minimum length of %s"
-     */
-    'array.min': Message | Any;
-  }
-
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
     /**
      * Constrains the array length.
@@ -103,11 +86,7 @@ declare module '../core' {
  * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
  */
 export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
-  const { messages, prototype } = ctor;
-
-  messages[CODE_ARRAY_INCLUDES] = 'Must include a value';
-  messages[CODE_ARRAY_MAX] = 'Must have the maximum length of %s';
-  messages[CODE_ARRAY_MIN] = 'Must have the minimum length of %s';
+  const { prototype } = ctor;
 
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);

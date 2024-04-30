@@ -20,6 +20,9 @@ import {
   CODE_ANY_REFINE,
   CODE_TYPE,
   ERR_SYNC_UNSUPPORTED,
+  MESSAGE_ANY_EXCLUDE,
+  MESSAGE_ANY_REFINE,
+  MESSAGE_TYPE_STRING,
 } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
 import { Type } from '../../main/Type';
@@ -469,7 +472,7 @@ describe('Shape', () => {
 
       expect(new Shape().refine(cb).try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_ANY_REFINE, input: 'aaa', message: Shape.messages[CODE_ANY_REFINE], param: cb }],
+        issues: [{ code: CODE_ANY_REFINE, input: 'aaa', message: MESSAGE_ANY_REFINE, param: cb }],
       });
     });
 
@@ -500,9 +503,7 @@ describe('Shape', () => {
 
       expect(new Shape().refine(cb, { meta: 'aaa' }).try('bbb')).toEqual({
         ok: false,
-        issues: [
-          { code: CODE_ANY_REFINE, input: 'bbb', message: Shape.messages[CODE_ANY_REFINE], meta: 'aaa', param: cb },
-        ],
+        issues: [{ code: CODE_ANY_REFINE, input: 'bbb', message: MESSAGE_ANY_REFINE, meta: 'aaa', param: cb }],
       });
     });
 
@@ -1621,7 +1622,7 @@ describe('CatchShape', () => {
     expect(cbMock).toHaveBeenNthCalledWith(
       1,
       111,
-      [{ code: CODE_TYPE, input: 111, message: Shape.messages['type.string'], param: Type.STRING }],
+      [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: Type.STRING }],
       { earlyReturn: false }
     );
   });
@@ -1697,7 +1698,7 @@ describe('ExcludeShape', () => {
 
     expect(shape.try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_ANY_EXCLUDE, input: 111, message: Shape.messages[CODE_ANY_EXCLUDE], param: excludedShape }],
+      issues: [{ code: CODE_ANY_EXCLUDE, input: 111, message: MESSAGE_ANY_EXCLUDE, param: excludedShape }],
     });
   });
 
@@ -1752,7 +1753,7 @@ describe('ExcludeShape', () => {
 
       await expect(new ExcludeShape(new Shape(), shape).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_ANY_EXCLUDE, input: 'aaa', message: Shape.messages[CODE_ANY_EXCLUDE], param: shape }],
+        issues: [{ code: CODE_ANY_EXCLUDE, input: 'aaa', message: MESSAGE_ANY_EXCLUDE, param: shape }],
       });
     });
 

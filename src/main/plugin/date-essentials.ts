@@ -14,22 +14,10 @@
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
 import { DateShape } from '../shape/DateShape';
 import { Shape } from '../shape/Shape';
-import { Any, IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must be after %s"
-     */
-    'date.min': Message | Any;
-
-    /**
-     * @default "Must be before %s"
-     */
-    'date.max': Message | Any;
-  }
-
   export interface DateShape {
     /**
      * Constrains the input date to be greater than or equal to another date.
@@ -99,10 +87,7 @@ declare module '../core' {
  * Enhances {@link core!DateShape DateShape} with additional methods.
  */
 export default function enableDateEssentials(ctor: typeof DateShape): void {
-  const { messages, prototype } = ctor;
-
-  messages[CODE_DATE_MIN] = 'Must be after %s';
-  messages[CODE_DATE_MAX] = 'Must be before %s';
+  const { prototype } = ctor;
 
   prototype.min = function (value, options) {
     const param = new Date(value);

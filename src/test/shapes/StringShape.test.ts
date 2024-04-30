@@ -1,6 +1,6 @@
-import { Shape, StringShape } from '../../main';
+import { StringShape } from '../../main';
 import { stringCoercibleInputs } from '../../main/coerce/string';
-import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE } from '../../main/constants';
+import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { Type } from '../../main/Type';
 
 describe('StringShape', () => {
@@ -71,7 +71,7 @@ describe('StringShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new StringShape().coerce().try([111, 222])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: [111, 222], message: Shape.messages['type.string'], param: Type.STRING }],
+        issues: [{ code: CODE_TYPE, input: [111, 222], message: MESSAGE_TYPE_STRING, param: Type.STRING }],
       });
     });
   });

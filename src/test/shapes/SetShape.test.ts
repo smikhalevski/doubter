@@ -1,5 +1,5 @@
 import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_TYPE_SET, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
 import { Type } from '../../main/Type';
 import { AsyncMockShape, MockShape } from './mocks';
@@ -25,7 +25,7 @@ describe('SetShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: Type.SET }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_SET, param: Type.SET }],
     });
   });
 
@@ -162,7 +162,7 @@ describe('SetShape', () => {
           {
             code: CODE_TYPE,
             input: 111,
-            message: Shape.messages['type.string'],
+            message: MESSAGE_TYPE_STRING,
             param: Type.STRING,
             path: [0, 'key1'],
           },
@@ -179,7 +179,7 @@ describe('SetShape', () => {
 
       expect(result).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.set'], param: Type.SET }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_SET, param: Type.SET }],
       });
     });
 

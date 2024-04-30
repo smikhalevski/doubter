@@ -13,22 +13,10 @@
 
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
 import { BigIntShape } from '../shape/BigIntShape';
-import { Any, IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must be greater than or equal to %s"
-     */
-    'bigint.min': Message | Any;
-
-    /**
-     * @default "Must be less than or equal to %s"
-     */
-    'bigint.max': Message | Any;
-  }
-
   export interface BigIntShape {
     /**
      * Constrains the bigint to be greater than zero.
@@ -98,10 +86,7 @@ declare module '../core' {
  * Enhances {@link core!BigIntShape BigIntShape} with additional methods.
  */
 export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
-  const { messages, prototype } = ctor;
-
-  messages[CODE_BIGINT_MIN] = 'Must be greater than or equal to %s';
-  messages[CODE_BIGINT_MAX] = 'Must be less than or equal to %s';
+  const { prototype } = ctor;
 
   prototype.positive = function (options) {
     return this.min(1, options);

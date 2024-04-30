@@ -1,6 +1,6 @@
-import { BooleanShape, Shape } from '../../main';
+import { BooleanShape } from '../../main';
 import { booleanCoercibleInputs } from '../../main/coerce/boolean';
-import { CODE_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_TYPE_BOOLEAN } from '../../main/constants';
 import { Type } from '../../main/Type';
 
 describe('BooleanShape', () => {
@@ -18,7 +18,7 @@ describe('BooleanShape', () => {
   test('raises an issue if an input is not a boolean', () => {
     expect(new BooleanShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: Type.BOOLEAN, message: Shape.messages['type.boolean'] }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: Type.BOOLEAN, message: MESSAGE_TYPE_BOOLEAN }],
     });
   });
 
@@ -44,7 +44,7 @@ describe('BooleanShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new BooleanShape().coerce().try(222)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 222, message: Shape.messages['type.boolean'], param: Type.BOOLEAN }],
+        issues: [{ code: CODE_TYPE, input: 222, message: MESSAGE_TYPE_BOOLEAN, param: Type.BOOLEAN }],
       });
     });
   });

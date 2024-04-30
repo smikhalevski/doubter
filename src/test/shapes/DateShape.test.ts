@@ -1,6 +1,6 @@
-import { DateShape, Shape } from '../../main';
+import { DateShape } from '../../main';
 import { dateCoercibleInputs } from '../../main/coerce/date';
-import { CODE_TYPE } from '../../main/constants';
+import { CODE_TYPE, MESSAGE_TYPE_DATE } from '../../main/constants';
 import { Type } from '../../main/Type';
 
 describe('DateShape', () => {
@@ -20,7 +20,7 @@ describe('DateShape', () => {
   test('raises an issue if an input is not a Date instance', () => {
     expect(new DateShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: Type.DATE, message: Shape.messages['type.date'] }],
+      issues: [{ code: CODE_TYPE, input: 'aaa', param: Type.DATE, message: MESSAGE_TYPE_DATE }],
     });
   });
 
@@ -46,7 +46,7 @@ describe('DateShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new DateShape().coerce().try('aaa')).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: Shape.messages['type.date'], param: Type.DATE }],
+        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_DATE, param: Type.DATE }],
       });
     });
   });

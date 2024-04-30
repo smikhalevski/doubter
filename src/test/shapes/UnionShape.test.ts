@@ -12,7 +12,7 @@ import {
   StringShape,
   UnionShape,
 } from '../../main';
-import { CODE_TYPE_UNION } from '../../main/constants';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../../main/constants';
 import { createDiscriminatorLookup, createLookup, getDiscriminator } from '../../main/shape/UnionShape';
 import { Type } from '../../main/Type';
 import { AsyncMockShape, MockShape, spyOnShape } from './mocks';
@@ -81,7 +81,7 @@ describe('UnionShape', () => {
         {
           code: CODE_TYPE_UNION,
           input: 'aaa',
-          message: Shape.messages[CODE_TYPE_UNION],
+          message: MESSAGE_TYPE_UNION,
           param: {
             inputs: [Type.UNKNOWN],
             issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],
@@ -192,7 +192,7 @@ describe('UnionShape', () => {
         issues: [
           {
             code: CODE_TYPE_UNION,
-            message: Shape.messages[CODE_TYPE_UNION],
+            message: MESSAGE_TYPE_UNION,
             param: {
               inputs: [Type.NUMBER],
               issueGroups: null,
@@ -261,7 +261,7 @@ describe('UnionShape', () => {
           {
             code: CODE_TYPE_UNION,
             input: 'aaa',
-            message: Shape.messages[CODE_TYPE_UNION],
+            message: MESSAGE_TYPE_UNION,
             param: {
               inputs: [Type.UNKNOWN],
               issueGroups: [[{ code: 'xxx' }], [{ code: 'yyy' }]],

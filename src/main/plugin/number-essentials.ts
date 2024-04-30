@@ -28,7 +28,7 @@ import {
   MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { NumberShape } from '../shape/NumberShape';
-import { Any, IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 import { createIssue, toIssueOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
@@ -53,43 +53,6 @@ export interface MultipleOfOptions extends IssueOptions {
 }
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must be a finite number"
-     */
-    'number.finite': Message | Any;
-
-    /**
-     * @default "Must be an integer"
-     */
-    'number.int': Message | Any;
-
-    /**
-     * @default "Must be greater than %s"
-     */
-    'number.gt': Message | Any;
-
-    /**
-     * @default "Must be greater than or equal to %s"
-     */
-    'number.gte': Message | Any;
-
-    /**
-     * @default "Must be less than %s"
-     */
-    'number.lt': Message | Any;
-
-    /**
-     * @default "Must be less than or equal to %s"
-     */
-    'number.lte': Message | Any;
-
-    /**
-     * @default "Must be a multiple of %s"
-     */
-    'number.multipleOf': Message | Any;
-  }
-
   export interface NumberShape {
     /**
      * Constrains the number to be a finite number.
@@ -258,15 +221,7 @@ declare module '../core' {
  * Enhances {@link core!NumberShape NumberShape} with additional methods.
  */
 export default function enableNumberEssentials(ctor: typeof NumberShape): void {
-  const { messages, prototype } = ctor;
-
-  messages[CODE_NUMBER_FINITE] = 'Must be a finite number';
-  messages[CODE_NUMBER_INT] = 'Must be an integer';
-  messages[CODE_NUMBER_GT] = 'Must be greater than %s';
-  messages[CODE_NUMBER_GTE] = 'Must be greater than or equal to %s';
-  messages[CODE_NUMBER_LT] = 'Must be less than %s';
-  messages[CODE_NUMBER_LTE] = 'Must be less than or equal to %s';
-  messages[CODE_NUMBER_MULTIPLE_OF] = 'Must be a multiple of %s';
+  const { prototype } = ctor;
 
   prototype.finite = function (options) {
     const issueOptions = toIssueOptions(options);

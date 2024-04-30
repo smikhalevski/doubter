@@ -25,7 +25,6 @@ import {
   toDeepPartialShape,
 } from '../internal/shapes';
 import { isType, unionTypes } from '../internal/types';
-import { defaultMessages } from '../messages';
 import { Type } from '../Type';
 import {
   Any,
@@ -183,11 +182,6 @@ export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
  * @group Shapes
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
-  /**
-   * The mapping from an issue type to a corresponding issue message.
-   */
-  static readonly messages = defaultMessages;
-
   /**
    * The dictionary of shape annotations.
    *
@@ -487,7 +481,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
         if (cb(value, param, options)) {
           return null;
         }
-        return [createIssue(code, value, MESSAGE_ANY_REFINE, param, options, issueOptions)];
+        return [createIssue(code, value, MESSAGE_ANY_REFINE, cb, options, issueOptions)];
       },
       { type, param, tolerance }
     );
@@ -535,7 +529,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
           if (result) {
             return null;
           }
-          return [createIssue(code, value, MESSAGE_ANY_REFINE, param, options, issueOptions)];
+          return [createIssue(code, value, MESSAGE_ANY_REFINE, cb, options, issueOptions)];
         }),
       { type, param, tolerance }
     );

@@ -28,47 +28,10 @@ import {
   MESSAGE_STRING_STARTS_WITH,
 } from '../constants';
 import { StringShape } from '../shape/StringShape';
-import { Any, IssueOptions, Message } from '../types';
+import { IssueOptions, Message } from '../types';
 import { createIssue, toIssueOptions } from '../utils';
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must not be blank"
-     */
-    'string.nonBlank': Message | Any;
-
-    /**
-     * @default "Must have the minimum length of %s"
-     */
-    'string.min': Message | Any;
-
-    /**
-     * @default "Must have the maximum length of %s"
-     */
-    'string.max': Message | Any;
-
-    /**
-     * @default "Must match the pattern %s"
-     */
-    'string.regex': Message | Any;
-
-    /**
-     * @default "Must include: %s"
-     */
-    'string.includes': Message | Any;
-
-    /**
-     * @default "Must start with: %s"
-     */
-    'string.startsWith': Message | Any;
-
-    /**
-     * @default "Must end with: %s"
-     */
-    'string.endsWith': Message | Any;
-  }
-
   export interface StringShape {
     /**
      * The shortcut to apply both {@link StringShape.min} and {@link StringShape.max} constraints.
@@ -198,15 +161,7 @@ declare module '../core' {
  * Enhances {@link core!StringShape StringShape} with additional methods.
  */
 export default function enableStringEssentials(ctor: typeof StringShape): void {
-  const { messages, prototype } = ctor;
-
-  messages[CODE_STRING_NON_BLANK] = 'Must not be blank';
-  messages[CODE_STRING_MIN] = 'Must have the minimum length of %s';
-  messages[CODE_STRING_MAX] = 'Must have the maximum length of %s';
-  messages[CODE_STRING_REGEX] = 'Must match the pattern %s';
-  messages[CODE_STRING_INCLUDES] = 'Must include: %s';
-  messages[CODE_STRING_STARTS_WITH] = 'Must start with: %s';
-  messages[CODE_STRING_ENDS_WITH] = 'Must end with: %s';
+  const { prototype } = ctor;
 
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);
