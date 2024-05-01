@@ -334,15 +334,15 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
 
   prototype.multipleOf = function (divisor, options) {
     const { abs, round } = Math;
-    const issueOptions = toIssueOptions(options);
-    const epsilon = issueOptions.precision !== undefined ? Math.pow(10, -issueOptions.precision) : -1;
+    options = toIssueOptions(options);
+    const epsilon = options !== undefined && options.precision !== undefined ? Math.pow(10, -options.precision) : -1;
 
     return this.addOperation(
-      (value, param, options) => {
+      (value, param, _options) => {
         if (epsilon !== -1 ? abs(round(value / param) - value / param) <= epsilon : value % param === 0) {
           return null;
         }
-        return [createIssue(CODE_NUMBER_MULTIPLE_OF, value, MESSAGE_NUMBER_MULTIPLE_OF, param, options, issueOptions)];
+        return [createIssue(CODE_NUMBER_MULTIPLE_OF, value, MESSAGE_NUMBER_MULTIPLE_OF, param, _options, options)];
       },
       { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
     );

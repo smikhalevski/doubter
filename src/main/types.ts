@@ -354,6 +354,8 @@ export interface ApplyOptions {
    * The custom context.
    */
   readonly context?: any;
+
+  readonly messages?: { [code: string | number]: Message | Any };
 }
 
 /**

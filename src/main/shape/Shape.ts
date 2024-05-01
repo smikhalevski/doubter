@@ -472,7 +472,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   refine(cb: OperationCallback<unknown, OutputValue>, options?: RefineOptions | Message): this;
 
-  refine(cb: OperationCallback<unknown>, options?: RefineOptions | Message): Shape {
+  refine(cb: OperationCallback<unknown>, options: RefineOptions | Message = {}): Shape {
     const issueOptions = toIssueOptions(options);
     const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = issueOptions;
 
@@ -519,7 +519,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   refineAsync(cb: OperationCallback<PromiseLike<unknown>, OutputValue>, options?: RefineOptions | Message): this;
 
-  refineAsync(cb: OperationCallback<PromiseLike<unknown>>, options?: RefineOptions | Message): Shape {
+  refineAsync(cb: OperationCallback<PromiseLike<unknown>>, options: RefineOptions | Message = {}): Shape {
     const issueOptions = toIssueOptions(options);
     const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = issueOptions;
 

@@ -92,7 +92,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns issues which describe that an object has unknown properties.
    */
-  protected _exactOptions: IssueOptions = {};
+  protected _exactOptions: IssueOptions | undefined;
 
   /**
    * Creates a new {@link ObjectShape} instance.
