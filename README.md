@@ -2041,7 +2041,7 @@ d.string().parse(42, {
 // ❌ ValidationError: type at /: Yo, not a string!
 ```
 
-[Issue messages](https://smikhalevski.github.io/doubter/next/interfaces/core.Messages.html) can be callbacks.
+Issue messages can be callbacks.
 
 # Plugins
 
