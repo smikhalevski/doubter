@@ -2017,35 +2017,20 @@ d.string().length(3, { message: 'Expected length is %s' })
 
 ## Override default messages
 
-Default issue messages can be overridden globally:
+Default issue messages can be overridden:
 
 ```ts
 import * as d from 'doubter';
 
-d.Shape.messages['type.string'] = 'Yo, not a string!';
-
-d.string().parse(42);
+d.string().parse(42, {
+  messages: {
+    'type.string': 'Yo, not a string!'
+  }
+});
 // ❌ ValidationError: type at /: Yo, not a string!
 ```
 
-[Default issue messages](https://smikhalevski.github.io/doubter/next/interfaces/core.Messages.html) can be callbacks and
-support `%s` placeholder. For example, you can implement a context-based message defaults using callbacks:
-
-```ts
-d.Shape.messages['type.boolean'] = (issue, options) => {
-  return options.context?.i18n?.bool || 'Must be a boolean';
-};
-
-d.boolean().parse(42);
-// ❌ ValidationError: type at /: Must be a boolean
-
-const greek = {
-  bool: 'Πρέπει να είναι boolean'
-};
-
-d.boolean({ context: { i18n: greek } }).parse(42);
-// ❌ ValidationError: type at /: Πρέπει να είναι boolean
-```
+[Issue messages](https://smikhalevski.github.io/doubter/next/interfaces/core.Messages.html) can be callbacks.
 
 # Plugins
 
