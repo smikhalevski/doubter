@@ -31,7 +31,7 @@ export function createIssue(
   defaultMessage: Message,
   param: unknown,
   parseOptions: ParseOptions,
-  issueOptions?: IssueOptions | Message
+  issueOptions: IssueOptions | Message | undefined
 ): Issue {
   const issue: Issue = { code, path: undefined, input, message: undefined, param, meta: undefined };
 

@@ -383,6 +383,13 @@ The custom context that can be accessed from custom check callbacks, refinement 
 converters, and fallback functions. Refer to [Parsing context](#parsing-context) section for more details.
 
 </dd>
+<dt><code>messages</code></dt>
+<dd>
+
+An object that maps an issue code to a default message. Refer to [Override default messages](#override-default-messages)
+section for more details.
+
+</dd>
 </dl>
 
 ## Static type inference
@@ -473,7 +480,7 @@ with the array of issues:
       input: 'seventeen',
       message: 'Must be a number',
       param: undefined,
-      meta: undefied
+      meta: undefined
     }
   ]
 }
@@ -578,7 +585,7 @@ for more details.
 | `type.number`       | [`d.number()`](#number)                             | —                                                     |
 | `type.object`       | [`d.object()`](#object)                             | —                                                     |
 | `type.promise`      | [`d.promise()`](#promise)                           | —                                                     |
-| `type.tuple`        | [`d.tuple([…])`](#tuple)                            | The expected tuple length                             |
+| `type.tuple`        | [`d.tuple(…)`](#tuple)                              | The expected tuple length                             |
 | `type.set`          | [`d.set()`](#set)                                   | —                                                     |
 | `type.string`       | [`d.string()`](#string)                             | —                                                     |
 | `type.symbol`       | [`d.symbol()`](#symbol)                             | —                                                     |
@@ -868,7 +875,7 @@ returned:
       input: 'Pluto',
       message: 'Must have the maximum length of 4',
       param: 4,
-      meta: undefied
+      meta: undefined
     },
     {
       code: 'string.regex',
@@ -876,7 +883,7 @@ returned:
       input: 'Pluto',
       message: 'Must match the pattern /a/',
       param: /a/,
-      meta: undefied
+      meta: undefined
     }
   ]
 }
@@ -1082,7 +1089,7 @@ Refer to [Async shapes](#async-shapes) section for more details on when shapes c
 
 By default, Doubter collects all issues during parsing. In some cases, you may want to halt parsing and raise a
 validation error as soon as the first issue was encountered. To do this, pass the
-[`earlyReturn`](https://smikhalevski.github.io/doubter/next/interfaces/core.ApplyOptions.html#earlyReturn)
+[`earlyReturn`](https://smikhalevski.github.io/doubter/next/interfaces/core.ParseOptions.html#earlyReturn)
 option to the [parsing methods](#parsing-and-trying).
 
 ```ts
@@ -1101,11 +1108,11 @@ only one issue:
   issues: [
     {
       code: 'string.max',
-      path: undefied,
+      path: undefined,
       input: 'Pluto',
       message: 'Must have the maximum length of 4',
       param: 4,
-      meta: undefied
+      meta: undefined
     }
   ]
 }
@@ -1159,7 +1166,7 @@ processing. For example, during [localization](#localization).
 Inside [operation](#operations) callbacks, [check](#checks) callbacks, [refinement predicates](#refinements),
 [alteration](#alterations) callbacks, [converters](#conversions), [fallback](#fallback-value) functions, and
 [message](#localization) callbacks you can access options passed to the parser. The
-[`context`](https://smikhalevski.github.io/doubter/next/interfaces/core.ApplyOptions.html#context) option may
+[`context`](https://smikhalevski.github.io/doubter/next/interfaces/core.ParseOptions.html#context) option may
 store an arbitrary data, which is `undefined` by default.
 
 For example, here's how you can use context to convert numbers to formatted strings:
@@ -1560,7 +1567,7 @@ shape2.parse('Mars');
 ```
 
 Fallback functions receive an input value, an array of issues and
-[parsing options](https://smikhalevski.github.io/doubter/next/interfaces/core.ApplyOptions.html) (so you can
+[parsing options](https://smikhalevski.github.io/doubter/next/interfaces/core.ParseOptions.html) (so you can
 access your [custom context](#parsing-context) if needed).
 
 ```ts
@@ -1967,17 +1974,17 @@ it would receive an [issue](#validation-errors) that would be raised, and parsin
 `issue.message` or return a message. For example, when using with React you may return a JSX element:
 
 ```tsx
-const message: d.Message = (issue, options) => (
+const reactMessage: d.Message = (issue, options) => (
   <span style={{ color: 'red' }}>
-    Minimum length is {issue.param}
+    The minimum length is {issue.param}
   </span>
 );
 
-d.number().min(5, message);
+d.number().min(5, reactMessage);
 ```
 
 Semantics described above are applied to the
-[`message`](https://smikhalevski.github.io/doubter/next/interfaces/core.ConstraintOptions.html#message) option as well:
+[`message`](https://smikhalevski.github.io/doubter/next/interfaces/core.IssueOptions.html#message) option as well:
 
 ```ts
 d.string().length(3, { message: 'Invalid length' })
@@ -1985,7 +1992,8 @@ d.string().length(3, { message: 'Invalid length' })
 
 ## Override default messages
 
-Default issue messages can be overridden:
+Default issue messages can be overridden by
+[`messages`](https://smikhalevski.github.io/doubter/next/interfaces/core.ParseOptions.html#messages) option:
 
 ```ts
 import * as d from 'doubter';
@@ -1997,6 +2005,8 @@ d.string().parse(42, {
 });
 // ❌ ValidationError: type at /: Yo, not a string!
 ```
+
+The full list of issue codes can be found in [Validation errors](#validation-errors) section.
 
 # Plugins
 
