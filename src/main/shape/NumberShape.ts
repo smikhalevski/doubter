@@ -3,7 +3,7 @@ import { coerceToNumber, numberCoercibleInputs } from '../coerce/number';
 import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants';
 import { Type } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowShape, ReplaceShape } from './Shape';
 
@@ -28,7 +28,7 @@ export class NumberShape extends CoercibleShape<number> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   /**

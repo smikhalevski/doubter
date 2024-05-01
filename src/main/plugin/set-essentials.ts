@@ -14,7 +14,7 @@ import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '..
 import { SetShape } from '../shape/SetShape';
 import { AnyShape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 
 declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {
@@ -73,9 +73,7 @@ export default function enableSetEssentials(ctor: typeof SetShape): void {
     return this.min(size, options).max(size, options);
   };
 
-  prototype.min = function (size, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.min = function (size, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.size >= param) {
@@ -87,9 +85,7 @@ export default function enableSetEssentials(ctor: typeof SetShape): void {
     );
   };
 
-  prototype.max = function (size, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.max = function (size, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.size <= param) {

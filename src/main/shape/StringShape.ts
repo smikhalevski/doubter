@@ -3,7 +3,7 @@ import { coerceToString, stringCoercibleInputs } from '../coerce/string';
 import { CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../constants';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
 const stringInputs = Object.freeze([Type.STRING]);
@@ -27,7 +27,7 @@ export class StringShape extends CoercibleShape<string> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {

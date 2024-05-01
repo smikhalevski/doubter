@@ -4,7 +4,7 @@ import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike 
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';
 
@@ -53,7 +53,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   ) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   at(key: unknown): AnyShape | null {

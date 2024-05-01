@@ -14,7 +14,7 @@ import {
 } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { EnumShape } from './EnumShape';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
 
@@ -92,7 +92,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Returns issues which describe that an object has unknown properties.
    */
-  protected _exactOptions: IssueOptions | undefined;
+  protected _exactOptions: IssueOptions | Message | undefined = undefined;
 
   /**
    * Creates a new {@link ObjectShape} instance.
@@ -136,7 +136,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     this.keys = Object.keys(propShapes);
     this.valueShapes = Object.values(propShapes);
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   /**
@@ -307,7 +307,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   exact(options?: IssueOptions | Message): ObjectShape<PropShapes, null> {
     const shape = new ObjectShape(this.propShapes, null, this._options, 'exact');
 
-    shape._exactOptions = toIssueOptions(options);
+    shape._exactOptions = options;
 
     return copyOperations(this, shape);
   }

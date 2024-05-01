@@ -6,7 +6,7 @@ import { getCanonicalValue, isArray } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
 /**
@@ -44,7 +44,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
 
     this.values = getEnumValues(source);
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {

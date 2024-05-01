@@ -8,20 +8,7 @@
  * @module utils
  */
 
-import { ApplyOptions, Issue, IssueOptions, Message } from './core';
-
-/**
- * Extracts options from the given source.
- *
- * @param options Options or message to extract from.
- */
-export function toIssueOptions<T extends IssueOptions>(options: T | Message): Partial<T>;
-
-export function toIssueOptions<T extends IssueOptions>(options: T | Message | undefined): Partial<T> | undefined;
-
-export function toIssueOptions(options: IssueOptions | Message | undefined) {
-  return typeof options === 'function' || typeof options === 'string' ? { message: options, meta: undefined } : options;
-}
+import type { ApplyOptions, Issue, IssueOptions, Message } from './core';
 
 /**
  * Creates a new issue.
@@ -39,7 +26,7 @@ export function createIssue(
   defaultMessage: Message,
   param: unknown,
   applyOptions: ApplyOptions,
-  issueOptions: IssueOptions | Message | undefined
+  issueOptions?: IssueOptions | Message
 ): Issue {
   const issue: Issue = { code, path: undefined, input, message: undefined, param, meta: undefined };
 
@@ -51,7 +38,9 @@ export function createIssue(
       typeof issueOptions === 'function' ||
         typeof issueOptions === 'string' ||
         ((issue.meta = issueOptions.meta), (message = issueOptions.message)) !== undefined)) ||
-    (applyOptions.messages !== undefined && (message = applyOptions.messages[code]) !== undefined)
+    (applyOptions !== undefined &&
+      applyOptions.messages !== undefined &&
+      (message = applyOptions.messages[code]) !== undefined)
       ? message
       : defaultMessage;
 

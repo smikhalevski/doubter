@@ -15,7 +15,7 @@ import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from
 import { DateShape } from '../shape/DateShape';
 import { Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 
 declare module '../core' {
   export interface DateShape {
@@ -89,10 +89,9 @@ declare module '../core' {
 export default function enableDateEssentials(ctor: typeof DateShape): void {
   const { prototype } = ctor;
 
-  prototype.min = function (value, options) {
+  prototype.min = function (value, issueOptions) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
@@ -105,10 +104,9 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
     );
   };
 
-  prototype.max = function (value, options) {
+  prototype.max = function (value, issueOptions) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {

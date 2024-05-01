@@ -6,7 +6,7 @@ import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shape
 import { isType } from '../internal/types';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
@@ -45,7 +45,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
   ) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   at(key: unknown): AnyShape | null {

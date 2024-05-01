@@ -2,8 +2,6 @@ import { getCanonicalValue, isArray } from '../internal/lang';
 import { Type } from '../Type';
 import { NEVER } from './never';
 
-const { MIN_SAFE_INTEGER, MAX_SAFE_INTEGER } = Number;
-
 /**
  * The array of inputs that are coercible to a number with {@link coerceToNumber}.
  */
@@ -41,7 +39,7 @@ export function coerceToNumber(input: unknown): number {
   ) {
     return input as number;
   }
-  if (typeof input === 'bigint' && input >= MIN_SAFE_INTEGER && input <= MAX_SAFE_INTEGER) {
+  if (typeof input === 'bigint' && input >= Number.MIN_SAFE_INTEGER && input <= Number.MAX_SAFE_INTEGER) {
     return Number(input);
   }
   return NEVER;

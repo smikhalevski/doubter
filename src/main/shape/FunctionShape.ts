@@ -15,7 +15,7 @@ import {
 } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';
 
@@ -93,7 +93,7 @@ export class FunctionShape<
   ) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   /**

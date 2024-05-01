@@ -26,17 +26,9 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({
-  earlyReturn: false,
-  context: undefined,
-  messages: undefined,
-});
+export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, messages: undefined });
 
-export const defaultEarlyReturnApplyOptions = Object.freeze<ApplyOptions>({
-  earlyReturn: true,
-  context: undefined,
-  messages: undefined,
-});
+export const defaultEarlyReturnApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: true, messages: undefined });
 
 export declare const INPUT: unique symbol;
 export declare const OUTPUT: unique symbol;

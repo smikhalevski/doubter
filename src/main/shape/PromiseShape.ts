@@ -4,7 +4,7 @@ import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, unknownInputs } from './Shape';
 
@@ -46,7 +46,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   ) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   deepPartial(): DeepPartialPromiseShape<ValueShape> {

@@ -1,7 +1,7 @@
 import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../constants';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
 const symbolInputs = Object.freeze([Type.SYMBOL]);
@@ -25,7 +25,7 @@ export class SymbolShape extends Shape<symbol> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {

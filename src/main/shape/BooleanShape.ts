@@ -3,7 +3,7 @@ import { NEVER } from '../coerce/never';
 import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../constants';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
 const booleanInputs = Object.freeze([Type.BOOLEAN]);
@@ -27,7 +27,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {

@@ -29,7 +29,7 @@ import {
 } from '../constants';
 import { StringShape } from '../shape/StringShape';
 import { IssueOptions, Message } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 
 declare module '../core' {
   export interface StringShape {
@@ -167,9 +167,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     return this.min(length, options).max(length, options);
   };
 
-  prototype.min = function (length, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.min = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length >= param) {
@@ -181,9 +179,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.max = function (length, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.max = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length <= param) {
@@ -195,9 +191,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.regex = function (re, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.regex = function (re, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (param.test(value)) {
@@ -209,9 +203,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.includes = function (value, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.includes = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.includes(param)) {
@@ -223,9 +215,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.startsWith = function (value, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.startsWith = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.startsWith(param)) {
@@ -237,9 +227,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.endsWith = function (value, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.endsWith = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.endsWith(param)) {
@@ -251,9 +239,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.nonBlank = function (options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.nonBlank = function (issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.trim().length !== 0) {

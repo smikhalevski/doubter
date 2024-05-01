@@ -46,7 +46,7 @@ import {
   RefinePredicate,
   Result,
 } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export const unknownInputs = Object.freeze([Type.UNKNOWN]);
@@ -472,9 +472,13 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   refine(cb: OperationCallback<unknown, OutputValue>, options?: RefineOptions | Message): this;
 
-  refine(cb: OperationCallback<unknown>, options: RefineOptions | Message = {}): Shape {
-    const issueOptions = toIssueOptions(options);
-    const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = issueOptions;
+  refine(cb: OperationCallback<unknown>, issueOptions?: RefineOptions | Message): Shape {
+    const {
+      type = cb,
+      param,
+      tolerance = 'auto',
+      code = CODE_ANY_REFINE,
+    } = issueOptions !== undefined && typeof issueOptions === 'object' ? issueOptions : ({} as RefineOptions);
 
     return this.addOperation(
       (value, param, options) => {
@@ -519,9 +523,13 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   refineAsync(cb: OperationCallback<PromiseLike<unknown>, OutputValue>, options?: RefineOptions | Message): this;
 
-  refineAsync(cb: OperationCallback<PromiseLike<unknown>>, options: RefineOptions | Message = {}): Shape {
-    const issueOptions = toIssueOptions(options);
-    const { type = cb, param, tolerance = 'auto', code = CODE_ANY_REFINE } = issueOptions;
+  refineAsync(cb: OperationCallback<PromiseLike<unknown>>, issueOptions: RefineOptions | Message = {}): Shape {
+    const {
+      type = cb,
+      param,
+      tolerance = 'auto',
+      code = CODE_ANY_REFINE,
+    } = issueOptions !== undefined && typeof issueOptions === 'object' ? issueOptions : ({} as RefineOptions);
 
     return this.addAsyncOperation(
       (value, param, options) =>
@@ -1462,7 +1470,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
   ) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   deepPartial(): DenyShape<DeepPartialShape<BaseShape>, DeniedValue> {
@@ -1669,7 +1677,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
   ) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   deepPartial(): ExcludeShape<DeepPartialShape<BaseShape>, ExcludedShape> {

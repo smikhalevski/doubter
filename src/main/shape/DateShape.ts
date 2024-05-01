@@ -4,7 +4,7 @@ import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../constants';
 import { isValidDate } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
 const dateInputs = Object.freeze([Type.DATE]);
@@ -27,7 +27,7 @@ export class DateShape extends CoercibleShape<Date> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {

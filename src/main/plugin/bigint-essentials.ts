@@ -14,7 +14,7 @@
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
 import { BigIntShape } from '../shape/BigIntShape';
 import { IssueOptions, Message } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 
 declare module '../core' {
   export interface BigIntShape {
@@ -104,9 +104,8 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
     return this.min(0, options);
   };
 
-  prototype.min = function (value, options) {
+  prototype.min = function (value, issueOptions) {
     const param = BigInt(value);
-    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {
@@ -119,9 +118,8 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
     );
   };
 
-  prototype.max = function (value, options) {
+  prototype.max = function (value, issueOptions) {
     const param = BigInt(value);
-    const issueOptions = toIssueOptions(options);
 
     return this.addOperation(
       (value, param, options) => {

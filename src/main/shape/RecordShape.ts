@@ -4,7 +4,7 @@ import { cloneDictHead, setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
 const recordInputs = Object.freeze([Type.OBJECT]);
@@ -49,7 +49,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
   ) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   at(key: unknown): AnyShape | null {

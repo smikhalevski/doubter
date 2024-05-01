@@ -22,7 +22,7 @@ import {
 import { ArrayShape } from '../shape/ArrayShape';
 import { AnyShape, Shape } from '../shape/Shape';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 
 declare module '../core' {
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
@@ -92,9 +92,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     return this.min(length, options).max(length, options);
   };
 
-  prototype.min = function (length, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.min = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length >= length) {
@@ -106,9 +104,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     );
   };
 
-  prototype.max = function (length, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.max = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length <= length) {
@@ -124,9 +120,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     return this.min(1, options);
   };
 
-  prototype.includes = function (value, options) {
-    const issueOptions = toIssueOptions(options);
-
+  prototype.includes = function (value, issueOptions) {
     if (!(value instanceof Shape)) {
       return this.addOperation(
         (value, param, options) => {

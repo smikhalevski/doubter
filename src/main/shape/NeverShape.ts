@@ -1,6 +1,6 @@
 import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../constants';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
 const neverInputs = Object.freeze([]);
@@ -24,7 +24,7 @@ export class NeverShape extends Shape<never> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {

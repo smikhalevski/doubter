@@ -2,7 +2,7 @@ import { CODE_TYPE_INSTANCE_OF, MESSAGE_TYPE_INSTANCE_OF } from '../constants';
 import { isEqualOrSubclass } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
 const arrayInputs = Object.freeze([Type.ARRAY]);
@@ -38,7 +38,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
   ) {
     super();
 
-    this._options = toIssueOptions(options);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {
