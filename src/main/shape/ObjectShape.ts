@@ -1,4 +1,4 @@
-import { CODE_OBJECT_EXACT, CODE_TYPE, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants';
+import { CODE_OBJECT_EXACT, CODE_TYPE_OBJECT, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants';
 import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
 import { isArray, isObject } from '../internal/lang';
 import { cloneDict, cloneDictKeys, Dict, overrideProperty, ReadonlyDict, setObjectProperty } from '../internal/objects';
@@ -357,7 +357,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     nonce: number
   ): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
     if (!isObject(input)) {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_OBJECT, Type.OBJECT, options, this._options)];
+      return [createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
       return this._applyRestUnchecked(input, options, nonce);
@@ -373,7 +373,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): Promise<Result<InferObject<PropShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
-        resolve([createIssue(CODE_TYPE, input, MESSAGE_TYPE_OBJECT, Type.OBJECT, options, this._options)]);
+        resolve([createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)]);
         return;
       }
 

@@ -1,6 +1,6 @@
 import { StringShape } from '../../main';
 import { stringCoercibleInputs } from '../../main/coerce/string';
-import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE, MESSAGE_TYPE_STRING } from '../../main/constants';
+import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { Type } from '../../main/Type';
 
 describe('StringShape', () => {
@@ -18,7 +18,7 @@ describe('StringShape', () => {
   test('raises if value is not a string', () => {
     expect(new StringShape().try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, param: Type.STRING, message: 'Must be a string' }],
+      issues: [{ code: CODE_TYPE_STRING, input: 111, message: MESSAGE_TYPE_STRING }],
     });
 
     expect(new StringShape().parse('aaa')).toBe('aaa');
@@ -27,7 +27,7 @@ describe('StringShape', () => {
   test('overrides message for type issue', () => {
     expect(new StringShape({ message: 'xxx', meta: 'yyy' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, param: Type.STRING, message: 'xxx', meta: 'yyy' }],
+      issues: [{ code: CODE_TYPE_STRING, input: 111, message: 'xxx', meta: 'yyy' }],
     });
   });
 
@@ -71,7 +71,7 @@ describe('StringShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new StringShape().coerce().try([111, 222])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: [111, 222], message: MESSAGE_TYPE_STRING, param: Type.STRING }],
+        issues: [{ code: CODE_TYPE_STRING, input: [111, 222], message: MESSAGE_TYPE_STRING }],
       });
     });
   });

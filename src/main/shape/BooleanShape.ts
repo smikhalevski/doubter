@@ -1,6 +1,6 @@
 import { booleanCoercibleInputs, coerceToBoolean } from '../coerce/boolean';
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE, MESSAGE_TYPE_BOOLEAN } from '../constants';
+import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../constants';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssue, toIssueOptions } from '../utils';
@@ -38,7 +38,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     let output = input;
 
     if (typeof output !== 'boolean' && (output = this._applyCoerce(input)) === NEVER) {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_BOOLEAN, Type.BOOLEAN, options, this._options)];
+      return [createIssue(CODE_TYPE_BOOLEAN, input, MESSAGE_TYPE_BOOLEAN, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }

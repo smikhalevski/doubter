@@ -1,5 +1,5 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE, MESSAGE_TYPE_PROMISE } from '../constants';
+import { CODE_TYPE_PROMISE, MESSAGE_TYPE_PROMISE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
 import { Type } from '../Type';
@@ -77,7 +77,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     let output = input;
 
     if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_PROMISE, Type.PROMISE, options, this._options)];
+      return [createIssue(CODE_TYPE_PROMISE, input, MESSAGE_TYPE_PROMISE, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }
@@ -91,7 +91,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
 
     if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
       return Promise.resolve([
-        createIssue(CODE_TYPE, input, MESSAGE_TYPE_PROMISE, Type.PROMISE, options, this._options),
+        createIssue(CODE_TYPE_PROMISE, input, MESSAGE_TYPE_PROMISE, undefined, options, this._options),
       ]);
     }
 

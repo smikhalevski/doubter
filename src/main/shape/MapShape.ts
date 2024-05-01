@@ -1,5 +1,5 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE, MESSAGE_TYPE_MAP } from '../constants';
+import { CODE_TYPE_MAP, MESSAGE_TYPE_MAP } from '../constants';
 import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
@@ -112,7 +112,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // No coercion or not coercible
       !(changed = (entries = this._applyCoerce(input)) !== NEVER)
     ) {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_MAP, Type.MAP, options, this._options)];
+      return [createIssue(CODE_TYPE_MAP, input, MESSAGE_TYPE_MAP, undefined, options, this._options)];
     }
 
     const { keyShape, valueShape, operations } = this;
@@ -182,7 +182,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // No coercion or not coercible
         !(changed = (entries = this._applyCoerce(input)) !== NEVER)
       ) {
-        resolve([createIssue(CODE_TYPE, input, MESSAGE_TYPE_MAP, Type.MAP, options, this._options)]);
+        resolve([createIssue(CODE_TYPE_MAP, input, MESSAGE_TYPE_MAP, undefined, options, this._options)]);
         return;
       }
 

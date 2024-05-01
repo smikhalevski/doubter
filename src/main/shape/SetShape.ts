@@ -1,5 +1,5 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE, MESSAGE_TYPE_SET } from '../constants';
+import { CODE_TYPE_SET, MESSAGE_TYPE_SET } from '../constants';
 import { toArrayIndex, unique } from '../internal/arrays';
 import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
@@ -88,7 +88,7 @@ export class SetShape<ValueShape extends AnyShape>
       // No coercion or not coercible
       !(changed = (values = this._applyCoerce(input)) !== NEVER)
     ) {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_SET, Type.SET, options, this._options)];
+      return [createIssue(CODE_TYPE_SET, input, MESSAGE_TYPE_SET, undefined, options, this._options)];
     }
 
     const { valueShape } = this;
@@ -128,7 +128,7 @@ export class SetShape<ValueShape extends AnyShape>
         // No coercion or not coercible
         !(changed = (values = this._applyCoerce(input)) !== NEVER)
       ) {
-        resolve([createIssue(CODE_TYPE, input, MESSAGE_TYPE_SET, Type.SET, options, this._options)]);
+        resolve([createIssue(CODE_TYPE_SET, input, MESSAGE_TYPE_SET, undefined, options, this._options)]);
         return;
       }
 

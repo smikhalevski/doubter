@@ -1,4 +1,4 @@
-import { ERR_SHAPE_EXPECTED } from '../constants';
+import { ERROR_SHAPE_EXPECTED } from '../constants';
 import { identity, isArray } from '../internal/lang';
 import { overrideProperty } from '../internal/objects';
 import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes';
@@ -57,7 +57,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
         return shape;
       }
       shape = 0;
-      throw new Error(ERR_SHAPE_EXPECTED);
+      throw new Error(ERROR_SHAPE_EXPECTED);
     };
   }
 

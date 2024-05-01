@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_TYPE_SYMBOL } from '../constants';
+import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../constants';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssue, toIssueOptions } from '../utils';
@@ -34,7 +34,7 @@ export class SymbolShape extends Shape<symbol> {
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {
     if (typeof input !== 'symbol') {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_SYMBOL, Type.SYMBOL, options, this._options)];
+      return [createIssue(CODE_TYPE_SYMBOL, input, MESSAGE_TYPE_SYMBOL, undefined, options, this._options)];
     }
     return this._applyOperations(input, input, options, null) as Result;
   }

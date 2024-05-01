@@ -1,6 +1,6 @@
 import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleInputs } from '../coerce/number';
-import { CODE_TYPE, MESSAGE_TYPE_NUMBER } from '../constants';
+import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants';
 import { Type } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
 import { createIssue, toIssueOptions } from '../utils';
@@ -55,7 +55,7 @@ export class NumberShape extends CoercibleShape<number> {
     let output = input;
 
     if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_NUMBER, Type.NUMBER, options, this._options)];
+      return [createIssue(CODE_TYPE_NUMBER, input, MESSAGE_TYPE_NUMBER, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }

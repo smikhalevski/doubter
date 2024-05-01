@@ -1,6 +1,6 @@
 import { coerceToDate, dateCoercibleInputs } from '../coerce/date';
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE, MESSAGE_TYPE_DATE } from '../constants';
+import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../constants';
 import { isValidDate } from '../internal/lang';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
@@ -38,7 +38,7 @@ export class DateShape extends CoercibleShape<Date> {
     let output = input;
 
     if (!isValidDate(input) && (output = this._applyCoerce(input)) === NEVER) {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_DATE, Type.DATE, options, this._options)];
+      return [createIssue(CODE_TYPE_DATE, input, MESSAGE_TYPE_DATE, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }

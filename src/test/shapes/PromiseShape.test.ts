@@ -1,5 +1,5 @@
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_TYPE_PROMISE, MESSAGE_TYPE_STRING } from '../../main/constants';
+import { CODE_TYPE_PROMISE, CODE_TYPE_STRING, MESSAGE_TYPE_PROMISE, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { Type } from '../../main/Type';
 import { AsyncMockShape } from './mocks';
 
@@ -24,7 +24,7 @@ describe('PromiseShape', () => {
   test('raises an issue if value is not a Promise', () => {
     expect(new PromiseShape(null).try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_PROMISE, param: Type.PROMISE }],
+      issues: [{ code: CODE_TYPE_PROMISE, input: 'aaa', message: MESSAGE_TYPE_PROMISE }],
     });
   });
 
@@ -81,7 +81,7 @@ describe('PromiseShape', () => {
 
       await expect(shape.tryAsync(Promise.resolve(111))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: Type.STRING }],
+        issues: [{ code: CODE_TYPE_STRING, input: 111, message: MESSAGE_TYPE_STRING }],
       });
     });
 
@@ -95,7 +95,7 @@ describe('PromiseShape', () => {
 
       await expect(shape.tryAsync(Promise.resolve({ key1: 111 }))).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: Type.STRING, path: ['key1'] }],
+        issues: [{ code: CODE_TYPE_STRING, input: 111, message: MESSAGE_TYPE_STRING, path: ['key1'] }],
       });
     });
   });
@@ -108,7 +108,7 @@ describe('PromiseShape', () => {
     test('raises an issue if value is not a Promise', async () => {
       await expect(new PromiseShape(new Shape()).tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_PROMISE, param: Type.PROMISE }],
+        issues: [{ code: CODE_TYPE_PROMISE, input: 'aaa', message: MESSAGE_TYPE_PROMISE }],
       });
     });
 

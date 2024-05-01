@@ -479,11 +479,11 @@ with the array of issues:
   ok: false,
   issues: [
     {
-      code: 'type',
+      code: 'type.number',
       path: ['age'],
       input: 'seventeen',
       message: 'Must be a number',
-      param: Type.NUMBER,
+      param: undefined,
       meta: undefied
     }
   ]
@@ -4068,20 +4068,18 @@ The result of `try` would contain a grouping issue:
     issueGroups: [
       [
         {
-          code: 'type',
+          code: 'type.string',
           path: ['name'],
           input: 47,
-          message: 'Must be a string',
-          param: Type.STRING
+          message: 'Must be a string'
         }
       ],
       [
         {
-          code: 'type',
+          code: 'type.number',
           path: ['age'],
           input: null,
-          message: 'Must be a number',
-          param: Type.NUMBER
+          message: 'Must be a number'
         }
       ]
     ]

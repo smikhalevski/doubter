@@ -1,4 +1,4 @@
-import { ERR_SYNC_UNSUPPORTED } from '../constants';
+import { ERROR_SYNC_UNSUPPORTED } from '../constants';
 import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
 import {
   ApplyOperationsCallback,
@@ -253,5 +253,5 @@ export function extractCheckResult(result: CheckResult): Result {
 }
 
 export function throwSyncUnsupported(): never {
-  throw new Error(ERR_SYNC_UNSUPPORTED);
+  throw new Error(ERROR_SYNC_UNSUPPORTED);
 }

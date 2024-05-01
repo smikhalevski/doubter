@@ -1,5 +1,5 @@
 import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
-import { CODE_TYPE, MESSAGE_TYPE_MAP, MESSAGE_TYPE_STRING } from '../../main/constants';
+import { CODE_TYPE_MAP, CODE_TYPE_STRING, MESSAGE_TYPE_MAP, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { Type } from '../../main/Type';
 import { AsyncMockShape } from './mocks';
 
@@ -22,7 +22,7 @@ describe('MapShape', () => {
 
     expect(result).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_MAP, param: Type.MAP }],
+      issues: [{ code: CODE_TYPE_MAP, input: 'aaa', message: MESSAGE_TYPE_MAP }],
     });
   });
 
@@ -159,7 +159,7 @@ describe('MapShape', () => {
 
       expect(shape.try([['key1', 'aaa'], ['key2']])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: [['key1', 'aaa'], ['key2']], message: MESSAGE_TYPE_MAP, param: Type.MAP }],
+        issues: [{ code: CODE_TYPE_MAP, input: [['key1', 'aaa'], ['key2']], message: MESSAGE_TYPE_MAP }],
       });
     });
 
@@ -169,7 +169,7 @@ describe('MapShape', () => {
 
       expect(shape.try(input)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input, message: MESSAGE_TYPE_MAP, param: Type.MAP }],
+        issues: [{ code: CODE_TYPE_MAP, input, message: MESSAGE_TYPE_MAP }],
       });
     });
   });
@@ -194,7 +194,7 @@ describe('MapShape', () => {
 
       expect(shape.try(new Map([[undefined, 'bbb']]))).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, path: [undefined], message: MESSAGE_TYPE_STRING, param: Type.STRING }],
+        issues: [{ code: CODE_TYPE_STRING, path: [undefined], message: MESSAGE_TYPE_STRING }],
       });
 
       expect(shape.parse(new Map([['aaa', 'bbb']]))).toEqual(new Map([['aaa', 'bbb']]));
@@ -216,10 +216,9 @@ describe('MapShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_TYPE,
+            code: CODE_TYPE_STRING,
             input: 111,
             message: MESSAGE_TYPE_STRING,
-            param: Type.STRING,
             path: [{ key1: 111 }, 'key1'],
           },
         ],
@@ -236,10 +235,9 @@ describe('MapShape', () => {
         ok: false,
         issues: [
           {
-            code: CODE_TYPE,
+            code: CODE_TYPE_STRING,
             input: 111,
             message: MESSAGE_TYPE_STRING,
-            param: Type.STRING,
             path: ['aaa', 'key1'],
           },
         ],
@@ -253,7 +251,7 @@ describe('MapShape', () => {
 
       await expect(shape.tryAsync('aaa')).resolves.toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_MAP, param: Type.MAP }],
+        issues: [{ code: CODE_TYPE_MAP, input: 'aaa', message: MESSAGE_TYPE_MAP }],
       });
     });
 
@@ -463,10 +461,9 @@ describe('MapShape', () => {
           ok: false,
           issues: [
             {
-              code: CODE_TYPE,
+              code: CODE_TYPE_MAP,
               input: [['key1', 'aaa'], ['key2']],
               message: MESSAGE_TYPE_MAP,
-              param: Type.MAP,
             },
           ],
         });

@@ -18,8 +18,8 @@ import {
   CODE_ANY_DENY,
   CODE_ANY_EXCLUDE,
   CODE_ANY_REFINE,
-  CODE_TYPE,
-  ERR_SYNC_UNSUPPORTED,
+  CODE_TYPE_STRING,
+  ERROR_SYNC_UNSUPPORTED,
   MESSAGE_ANY_EXCLUDE,
   MESSAGE_ANY_REFINE,
   MESSAGE_TYPE_STRING,
@@ -1123,8 +1123,8 @@ describe('Shape', () => {
 
   describe('async', () => {
     test('throws if sync methods are invoked', () => {
-      expect(() => new AsyncMockShape().parse('')).toThrow(new Error(ERR_SYNC_UNSUPPORTED));
-      expect(() => new AsyncMockShape().try('')).toThrow(new Error(ERR_SYNC_UNSUPPORTED));
+      expect(() => new AsyncMockShape().parse('')).toThrow(new Error(ERROR_SYNC_UNSUPPORTED));
+      expect(() => new AsyncMockShape().try('')).toThrow(new Error(ERROR_SYNC_UNSUPPORTED));
     });
 
     describe('tryAsync', () => {
@@ -1622,7 +1622,7 @@ describe('CatchShape', () => {
     expect(cbMock).toHaveBeenNthCalledWith(
       1,
       111,
-      [{ code: CODE_TYPE, input: 111, message: MESSAGE_TYPE_STRING, param: Type.STRING }],
+      [{ code: CODE_TYPE_STRING, input: 111, message: MESSAGE_TYPE_STRING }],
       { earlyReturn: false }
     );
   });

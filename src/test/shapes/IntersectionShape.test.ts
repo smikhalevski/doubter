@@ -13,8 +13,9 @@ import {
   UnionShape,
 } from '../../main';
 import {
-  CODE_TYPE,
+  CODE_TYPE_BOOLEAN,
   CODE_TYPE_INTERSECTION,
+  CODE_TYPE_NUMBER,
   MESSAGE_TYPE_BOOLEAN,
   MESSAGE_TYPE_INTERSECTION,
   MESSAGE_TYPE_NUMBER,
@@ -63,7 +64,7 @@ describe('IntersectionShape', () => {
 
     expect(shape.try('aaa', { earlyReturn: true })).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_NUMBER, param: Type.NUMBER }],
+      issues: [{ code: CODE_TYPE_NUMBER, input: 'aaa', message: MESSAGE_TYPE_NUMBER }],
     });
   });
 
@@ -73,8 +74,8 @@ describe('IntersectionShape', () => {
     expect(shape.try('aaa')).toEqual({
       ok: false,
       issues: [
-        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_NUMBER, param: Type.NUMBER },
-        { code: CODE_TYPE, input: 'aaa', message: MESSAGE_TYPE_BOOLEAN, param: Type.BOOLEAN },
+        { code: CODE_TYPE_NUMBER, input: 'aaa', message: MESSAGE_TYPE_NUMBER },
+        { code: CODE_TYPE_BOOLEAN, input: 'aaa', message: MESSAGE_TYPE_BOOLEAN },
       ],
     });
   });
@@ -171,7 +172,7 @@ describe('IntersectionShape', () => {
       expect(shape.parse(111)).toBe(111);
       expect(shape.try(undefined)).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, message: MESSAGE_TYPE_NUMBER, param: Type.NUMBER }],
+        issues: [{ code: CODE_TYPE_NUMBER, message: MESSAGE_TYPE_NUMBER }],
       });
     });
   });

@@ -1,4 +1,4 @@
-import { CODE_TYPE, ERR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants';
+import { CODE_TYPE_FUNCTION, ERROR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants';
 import { isArray } from '../internal/lang';
 import {
   applyShape,
@@ -167,7 +167,7 @@ export class FunctionShape<
 
   ensure(fn: Function, options: ParseOptions) {
     if (this.isAsyncFunction) {
-      throw new Error(ERR_ASYNC_FUNCTION);
+      throw new Error(ERROR_ASYNC_FUNCTION);
     }
 
     const { argsShape, returnShape, thisShape } = this;
@@ -262,7 +262,7 @@ export class FunctionShape<
     (this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>
   > {
     if (typeof input !== 'function') {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_FUNCTION, Type.FUNCTION, options, this._options)];
+      return [createIssue(CODE_TYPE_FUNCTION, input, MESSAGE_TYPE_FUNCTION, undefined, options, this._options)];
     }
 
     const result = this._applyOperations(input, input, options, null) as Result;
@@ -285,7 +285,7 @@ export class FunctionShape<
   > {
     return new Promise(resolve => {
       if (typeof input !== 'function') {
-        resolve([createIssue(CODE_TYPE, input, MESSAGE_TYPE_FUNCTION, Type.FUNCTION, options, this._options)]);
+        resolve([createIssue(CODE_TYPE_FUNCTION, input, MESSAGE_TYPE_FUNCTION, undefined, options, this._options)]);
         return;
       }
 

@@ -1,8 +1,8 @@
 import type { Issue } from './types';
 
-export const ERR_SYNC_UNSUPPORTED = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
-export const ERR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';
-export const ERR_ASYNC_FUNCTION = 'The function signature is constrained by async shapes, use ensureAsync.';
+export const ERROR_SYNC_UNSUPPORTED = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
+export const ERROR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';
+export const ERROR_ASYNC_FUNCTION = 'The function signature is constrained by async shapes, use ensureAsync.';
 
 export const CODE_ANY_DENY = 'any.deny';
 export const CODE_ANY_EXCLUDE = 'any.exclude';
@@ -37,13 +37,24 @@ export const CODE_STRING_REGEX = 'string.regex';
 export const CODE_STRING_INCLUDES = 'string.includes';
 export const CODE_STRING_STARTS_WITH = 'string.startsWith';
 export const CODE_STRING_ENDS_WITH = 'string.endsWith';
-export const CODE_TYPE = 'type';
+export const CODE_TYPE_ARRAY = 'type.array';
+export const CODE_TYPE_BIGINT = 'type.bigint';
+export const CODE_TYPE_BOOLEAN = 'type.boolean';
 export const CODE_TYPE_CONST = 'type.const';
+export const CODE_TYPE_DATE = 'type.date';
 export const CODE_TYPE_ENUM = 'type.enum';
+export const CODE_TYPE_FUNCTION = 'type.function';
 export const CODE_TYPE_INSTANCE_OF = 'type.instanceOf';
 export const CODE_TYPE_INTERSECTION = 'type.intersection';
+export const CODE_TYPE_MAP = 'type.map';
 export const CODE_TYPE_NEVER = 'type.never';
+export const CODE_TYPE_NUMBER = 'type.number';
+export const CODE_TYPE_OBJECT = 'type.object';
+export const CODE_TYPE_PROMISE = 'type.promise';
 export const CODE_TYPE_TUPLE = 'type.tuple';
+export const CODE_TYPE_SET = 'type.set';
+export const CODE_TYPE_STRING = 'type.string';
+export const CODE_TYPE_SYMBOL = 'type.symbol';
 export const CODE_TYPE_UNION = 'type.union';
 
 export const MESSAGE_ANY_DENY = (issue: Issue) => 'Must not be equal to ' + issue.param;

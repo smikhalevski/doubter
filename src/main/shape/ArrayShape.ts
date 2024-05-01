@@ -1,5 +1,5 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants';
+import { CODE_TYPE_ARRAY, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
 import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import {
@@ -172,7 +172,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       return [
         headShapes.length !== 0 || restShape === null
           ? createIssue(CODE_TYPE_TUPLE, input, MESSAGE_TYPE_TUPLE, headShapes.length, options, this._options)
-          : createIssue(CODE_TYPE, input, MESSAGE_TYPE_ARRAY, Type.ARRAY, options, this._options),
+          : createIssue(CODE_TYPE_ARRAY, input, MESSAGE_TYPE_ARRAY, undefined, options, this._options),
       ];
     }
 
@@ -227,7 +227,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
         resolve([
           headShapes.length !== 0 || restShape === null
             ? createIssue(CODE_TYPE_TUPLE, input, MESSAGE_TYPE_TUPLE, headShapes.length, options, this._options)
-            : createIssue(CODE_TYPE, input, MESSAGE_TYPE_ARRAY, Type.ARRAY, options, this._options),
+            : createIssue(CODE_TYPE_ARRAY, input, MESSAGE_TYPE_ARRAY, undefined, options, this._options),
         ]);
         return;
       }

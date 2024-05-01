@@ -1,4 +1,4 @@
-import { CODE_TYPE, MESSAGE_TYPE_OBJECT } from '../constants';
+import { CODE_TYPE_OBJECT, MESSAGE_TYPE_OBJECT } from '../constants';
 import { isArray, isObject } from '../internal/lang';
 import { cloneDictHead, setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
@@ -74,7 +74,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
     nonce: number
   ): Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>> {
     if (!isObject(input)) {
-      return [createIssue(CODE_TYPE, input, MESSAGE_TYPE_OBJECT, Type.OBJECT, options, this._options)];
+      return [createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)];
     }
 
     const { keysShape, valuesShape, operations } = this;
@@ -140,7 +140,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
   ): Promise<Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
-        resolve([createIssue(CODE_TYPE, input, MESSAGE_TYPE_OBJECT, Type.OBJECT, options, this._options)]);
+        resolve([createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)]);
         return;
       }
 
