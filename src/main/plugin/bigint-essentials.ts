@@ -88,25 +88,23 @@ declare module '../core' {
 export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
   const { prototype } = ctor;
 
-  prototype.positive = function (options) {
-    return this.min(1, options);
+  prototype.positive = function (issueOptions) {
+    return this.min(1, issueOptions);
   };
 
-  prototype.negative = function (options) {
-    return this.max(-1, options);
+  prototype.negative = function (issueOptions) {
+    return this.max(-1, issueOptions);
   };
 
-  prototype.nonPositive = function (options) {
-    return this.max(0, options);
+  prototype.nonPositive = function (issueOptions) {
+    return this.max(0, issueOptions);
   };
 
-  prototype.nonNegative = function (options) {
-    return this.min(0, options);
+  prototype.nonNegative = function (issueOptions) {
+    return this.min(0, issueOptions);
   };
 
   prototype.min = function (value, issueOptions) {
-    const param = BigInt(value);
-
     return this.addOperation(
       (value, param, options) => {
         if (value >= param) {
@@ -114,13 +112,11 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
         }
         return [createIssue(CODE_BIGINT_MIN, value, MESSAGE_BIGINT_MIN, param, options, issueOptions)];
       },
-      { type: CODE_BIGINT_MIN, param }
+      { type: CODE_BIGINT_MIN, param: BigInt(value) }
     );
   };
 
   prototype.max = function (value, issueOptions) {
-    const param = BigInt(value);
-
     return this.addOperation(
       (value, param, options) => {
         if (value <= param) {
@@ -128,7 +124,7 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
         }
         return [createIssue(CODE_BIGINT_MAX, value, MESSAGE_BIGINT_MAX, param, options, issueOptions)];
       },
-      { type: CODE_BIGINT_MAX, param }
+      { type: CODE_BIGINT_MAX, param: BigInt(value) }
     );
   };
 }

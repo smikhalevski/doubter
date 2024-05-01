@@ -1,15 +1,18 @@
 import { CODE_TYPE_OBJECT, MESSAGE_TYPE_OBJECT } from '../constants';
 import { isArray, isObject } from '../internal/lang';
-import { cloneDictHead, setObjectProperty } from '../internal/objects';
+import { cloneDictHead, setSafeProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
 const recordInputs = Object.freeze([Type.OBJECT]);
 
-export const defaultKeyShape = new Shape();
+/**
+ * When this shape is used, keys of a record aren't checked.
+ */
+export const anyKeyShape = new Shape();
 
 /**
  * The shape that describes an object with string keys and values that conform the given shape.
@@ -70,7 +73,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
   protected _apply(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>> {
     if (!isObject(input)) {
@@ -89,7 +92,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
       index++;
 
-      if (keysShape !== defaultKeyShape) {
+      if (keysShape !== anyKeyShape) {
         keyResult = keysShape['_apply'](key, options, nonce);
 
         if (keyResult !== null) {
@@ -127,7 +130,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
         if (input === output) {
           output = cloneDictHead(input, index);
         }
-        setObjectProperty(output, key, value);
+        setSafeProperty(output, key, value);
       }
     }
     return this._applyOperations(input, output, options, issues) as Result;
@@ -135,7 +138,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
   protected _applyAsync(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>> {
     return new Promise(resolve => {
@@ -195,7 +198,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
           if (input === output) {
             output = cloneDictHead(input, index);
           }
-          setObjectProperty(output, key, value);
+          setSafeProperty(output, key, value);
         }
 
         return next();

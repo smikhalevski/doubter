@@ -1,5 +1,5 @@
 import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../constants';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
@@ -12,7 +12,7 @@ const neverInputs = Object.freeze([]);
  */
 export class NeverShape extends Shape<never> {
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -31,7 +31,7 @@ export class NeverShape extends Shape<never> {
     return neverInputs;
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<never> {
+  protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<never> {
     return [createIssue(CODE_TYPE_NEVER, input, MESSAGE_TYPE_NEVER, undefined, options, this._options)];
   }
 }

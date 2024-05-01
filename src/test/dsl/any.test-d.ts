@@ -2,9 +2,9 @@ import { expectNotType, expectType } from 'tsd';
 import * as d from '../../main';
 import { INPUT, OUTPUT } from '../../main/internal/shapes';
 
-expectType<111>(d.any((value): value is 111 => true)[INPUT]);
+expectType<111>(d.any((_value): _value is 111 => true)[INPUT]);
 
-expectType<111>(d.any((value): value is 111 => true)[OUTPUT]);
+expectType<111>(d.any((_value): _value is 111 => true)[OUTPUT]);
 
 expectType<string>(d.any<string>()[INPUT]);
 
@@ -16,9 +16,9 @@ expectType<string>(d.any<string>(() => true)[OUTPUT]);
 
 // refine()
 
-expectType<any>(d.any().refine((value: unknown): value is number => true)[INPUT]);
+expectType<any>(d.any().refine((_value: unknown): _value is number => true)[INPUT]);
 
-expectType<number>(d.any().refine((value: unknown): value is number => true)[OUTPUT]);
+expectType<number>(d.any().refine((_value: unknown): _value is number => true)[OUTPUT]);
 
 // ReplaceShape
 

@@ -1,11 +1,11 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION } from '../constants';
 import { isArray, isEqual } from '../internal/lang';
-import { setObjectProperty } from '../internal/objects';
+import { setSafeProperty } from '../internal/objects';
 import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { distributeTypes } from '../internal/types';
 import { Type } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
@@ -90,7 +90,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
     return distributeTypes(inputs);
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Output<Intersect<Shapes[number]>>> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<Output<Intersect<Shapes[number]>>> {
     const { shapes } = this;
     const shapesLength = shapes.length;
 
@@ -130,7 +130,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
 
   protected _applyAsync(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<Output<Intersect<Shapes[number]>>>> {
     return new Promise(resolve => {
@@ -183,7 +183,7 @@ export class IntersectionShape<Shapes extends readonly AnyShape[]>
   private _applyIntersection(
     input: any,
     outputs: any[] | null,
-    options: ApplyOptions
+    options: ParseOptions
   ): Result<Output<Intersect<Shapes[number]>>> {
     let output = input;
 
@@ -230,10 +230,10 @@ export function mergeValues(a: any, b: any): any {
     output = Object.assign({}, a);
 
     for (const key in b) {
-      if (key in output && setObjectProperty(output, key, mergeValues(output[key], b[key])) === NEVER) {
+      if (key in output && setSafeProperty(output, key, mergeValues(output[key], b[key])) === NEVER) {
         return NEVER;
       } else {
-        setObjectProperty(output, key, b[key]);
+        setSafeProperty(output, key, b[key]);
       }
     }
     return output;

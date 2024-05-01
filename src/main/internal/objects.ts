@@ -6,17 +6,17 @@ export interface Dict<T = any> {
   [key: string]: T;
 }
 
-export function overrideProperty<T>(obj: object, key: PropertyKey, value: T): T {
-  Object.defineProperty(obj, key, { value, writable: false, configurable: true });
+export function defineProperty<T>(obj: object, key: PropertyKey, value: T): T {
+  Object.defineProperty(obj, key, { value, configurable: true });
   return value;
 }
 
 /**
  * Updates object property value, prevents prototype pollution.
  */
-export function setObjectProperty<T>(obj: any, key: PropertyKey, value: T): T {
+export function setSafeProperty<T>(obj: any, key: PropertyKey, value: T): T {
   if (key === '__proto__') {
-    Object.defineProperty(obj, key, { value, writable: true, enumerable: true, configurable: true });
+    Object.defineProperty(obj, key, { value, configurable: true, writable: true, enumerable: true });
   } else {
     obj[key] = value;
   }
@@ -30,7 +30,7 @@ export function cloneDict(dict: ReadonlyDict): Dict {
   const obj = {};
 
   for (const key in dict) {
-    setObjectProperty(obj, key, dict[key]);
+    setSafeProperty(obj, key, dict[key]);
   }
   return obj;
 }
@@ -47,7 +47,7 @@ export function cloneDictHead(dict: ReadonlyDict, count: number): Dict {
     if (index >= count) {
       break;
     }
-    setObjectProperty(obj, key, dict[key]);
+    setSafeProperty(obj, key, dict[key]);
     ++index;
   }
   return obj;
@@ -61,7 +61,7 @@ export function cloneDictKeys(dict: ReadonlyDict, keys: readonly string[]): Dict
 
   for (const key of keys) {
     if (key in dict) {
-      setObjectProperty(obj, key, dict[key]);
+      setSafeProperty(obj, key, dict[key]);
     }
   }
   return obj;

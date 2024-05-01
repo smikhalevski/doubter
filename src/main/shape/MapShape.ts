@@ -3,7 +3,7 @@ import { CODE_TYPE_MAP, MESSAGE_TYPE_MAP } from '../constants';
 import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';
@@ -56,7 +56,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     this._options = options;
   }
 
-  at(key: unknown): AnyShape | null {
+  at(_key: unknown): AnyShape | null {
     return this.valueShape;
   }
 
@@ -100,7 +100,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
   protected _apply(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Result<Map<Output<KeyShape>, Output<ValueShape>>> {
     let changed = false;
@@ -169,7 +169,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
   protected _applyAsync(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<Map<Output<KeyShape>, Output<ValueShape>>>> {
     return new Promise(resolve => {

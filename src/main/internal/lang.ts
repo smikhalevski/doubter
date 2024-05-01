@@ -38,7 +38,9 @@ export function isMapEntry(value: unknown): value is [unknown, unknown] {
 /**
  * Returns primitive if
  * [an object is a wrapper](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Data_structures#primitive_values),
- * or returns value as is.
+ * is provided or returns the value as is.
+ *
+ * @param value The value to unwrap.
  */
 export function getCanonicalValue(value: unknown): unknown {
   if (

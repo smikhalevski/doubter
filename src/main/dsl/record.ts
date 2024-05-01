@@ -1,4 +1,4 @@
-import { defaultKeyShape, RecordShape } from '../shape/RecordShape';
+import { anyKeyShape, RecordShape } from '../shape/RecordShape';
 import { AnyShape, Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 
@@ -39,6 +39,6 @@ export function record(
   if (valuesShape instanceof Shape) {
     return new RecordShape(keysShape, valuesShape, options);
   } else {
-    return new RecordShape(defaultKeyShape, keysShape, options);
+    return new RecordShape(anyKeyShape, keysShape, options);
   }
 }

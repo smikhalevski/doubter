@@ -1,5 +1,5 @@
 import { AnyShape, Shape } from '../shape/Shape';
-import { ApplyOptions, Message, RefineOptions } from '../types';
+import { Message, ParseOptions, RefineOptions } from '../types';
 
 /**
  * Creates the unconstrained shape.
@@ -28,7 +28,7 @@ export function any<Value>(
    * @param value The input value.
    * @param options Parsing options.
    */
-  cb: (value: any, options: ApplyOptions) => value is Value,
+  cb: (value: any, options: ParseOptions) => value is Value,
   options?: RefineOptions | Message
 ): Shape<Value>;
 
@@ -45,11 +45,11 @@ export function any<Value = any>(
    * @param value The input value.
    * @param options Parsing options.
    */
-  cb: (value: any, options: ApplyOptions) => boolean,
+  cb: (value: any, options: ParseOptions) => boolean,
   options?: RefineOptions | Message
 ): Shape<Value>;
 
-export function any(cb?: (value: any, options: ApplyOptions) => boolean, options?: RefineOptions | Message): AnyShape {
+export function any(cb?: (value: any, options: ParseOptions) => boolean, options?: RefineOptions | Message): AnyShape {
   const shape = new Shape();
 
   return cb === null || cb === undefined ? shape : shape.refine(cb, options);

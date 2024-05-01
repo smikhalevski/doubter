@@ -1,5 +1,5 @@
 import { ConvertShape, Shape } from '../shape/Shape';
-import { ApplyOptions } from '../types';
+import { ParseOptions } from '../types';
 
 /**
  * Creates the shape that synchronously converts the input value.
@@ -15,7 +15,7 @@ export function convert<Value = any, ConvertedValue = Value>(
    * @param value The input value.
    * @param options Parsing options.
    */
-  cb: (value: any, options: ApplyOptions) => ConvertedValue
+  cb: (value: any, options: ParseOptions) => ConvertedValue
 ): Shape<Value, ConvertedValue> {
   return new ConvertShape(cb);
 }
@@ -34,7 +34,7 @@ export function convertAsync<Value = any, ConvertedValue = Value>(
    * @param value The input value.
    * @param options Parsing options.
    */
-  cb: (value: any, options: ApplyOptions) => PromiseLike<ConvertedValue>
+  cb: (value: any, options: ParseOptions) => PromiseLike<ConvertedValue>
 ): Shape<Value, ConvertedValue> {
   return new ConvertShape(cb, true);
 }

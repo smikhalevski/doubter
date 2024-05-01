@@ -47,10 +47,10 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
    *
    * Override this method along with {@link Shape._getInputs} to implement custom type coercion.
    *
-   * @param input The input value to coerce.
+   * @param _input The input value to coerce.
    * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
    */
-  protected _coerce(input: unknown): CoercedValue {
+  protected _coerce(_input: unknown): CoercedValue {
     return NEVER;
   }
 }

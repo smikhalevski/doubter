@@ -2,7 +2,6 @@ import { ERROR_SYNC_UNSUPPORTED } from '../constants';
 import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
 import {
   ApplyOperationsCallback,
-  ApplyOptions,
   CheckResult,
   Issue,
   Ok,
@@ -25,10 +24,6 @@ type Awaited<T> =
 export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
-
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, messages: undefined });
-
-export const defaultEarlyReturnApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: true, messages: undefined });
 
 export declare const INPUT: unique symbol;
 export declare const OUTPUT: unique symbol;
@@ -84,7 +79,7 @@ export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProto
 export function applyShape<T>(
   shape: AnyShape,
   input: unknown,
-  options: ApplyOptions,
+  options: ParseOptions,
   nonce: number,
   cb: (result: Result) => T
 ): T | Promise<Awaited<T>> {
@@ -124,24 +119,6 @@ export function captureIssues(error: unknown): Issue[] {
 }
 
 /**
- * Returns an error message that is composed of the captured issues and parsing options.
- */
-export function getErrorMessage(
-  issues: Issue[],
-  input: unknown,
-  options: ParseOptions | undefined
-): string | undefined {
-  const message = options?.errorMessage;
-
-  if (typeof message === 'function') {
-    return message(issues, input);
-  }
-  if (message !== undefined) {
-    return String(message);
-  }
-}
-
-/**
  * Copies operations from `baseShape` to `shape`.
  */
 export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
@@ -152,7 +129,7 @@ export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
 /**
  * The callback that converts output and issues to a {@link Result}.
  */
-export const applyOperations: ApplyOperationsCallback = (input, output, options, issues) => {
+export const applyOperations: ApplyOperationsCallback = (input, output, _options, issues) => {
   if (issues !== null) {
     return issues;
   }
@@ -242,7 +219,7 @@ export function composeApplyOperations(
   };
 }
 
-export function extractCheckResult(result: CheckResult): Result {
+export function adaptCheckResult(result: CheckResult): Result {
   if (!isObjectLike(result)) {
     return null;
   }

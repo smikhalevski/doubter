@@ -1,7 +1,7 @@
 import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST, MESSAGE_TYPE_CONST } from '../constants';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -21,7 +21,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
   protected _predicate: (input: unknown) => boolean;
 
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -64,7 +64,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     return coerceToConst(this.value, input);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
+  protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<Value> {
     let output = input;
 
     if (!this._predicate(input) && (output = this._applyCoerce(input)) === NEVER) {

@@ -383,15 +383,11 @@ The custom context that can be accessed from custom check callbacks, refinement 
 converters, and fallback functions. Refer to [Parsing context](#parsing-context) section for more details.
 
 </dd>
-<dt><code>errorMessage</code></dt>
+<dt><code>messages</code></dt>
 <dd>
 
-It configures a `ValidationError` message. If a callback is provided it receives issues and an input value, and must
-return a string message. If a string is provided, it is used as is. You can also configure global issue formatter that
-is used by `ValidationError`, refer to [Global error message formatter](#global-error-message-formatter) section for
-more details.
-
-This option is for `parse` and `parseAsync` methods.
+An object that maps an issue code to a default message. Refer to [Override default messages](#override-default-messages)
+section for more details.
 
 </dd>
 </dl>
@@ -484,7 +480,7 @@ with the array of issues:
       input: 'seventeen',
       message: 'Must be a number',
       param: undefined,
-      meta: undefied
+      meta: undefined
     }
   ]
 }
@@ -589,34 +585,11 @@ for more details.
 | `type.number`       | [`d.number()`](#number)                             | —                                                     |
 | `type.object`       | [`d.object()`](#object)                             | —                                                     |
 | `type.promise`      | [`d.promise()`](#promise)                           | —                                                     |
-| `type.tuple`        | [`d.tuple([…])`](#tuple)                            | The expected tuple length                             |
+| `type.tuple`        | [`d.tuple(…)`](#tuple)                              | The expected tuple length                             |
 | `type.set`          | [`d.set()`](#set)                                   | —                                                     |
 | `type.string`       | [`d.string()`](#string)                             | —                                                     |
 | `type.symbol`       | [`d.symbol()`](#symbol)                             | —                                                     |
 | `type.union`        | [`d.or(…)`](#union-or)                              | [Issues raised by a union](#issues-raised-by-a-union) |
-
-## Global error message formatter
-
-By default, `ValidationError` uses `JSON.stringify` to produce an error message from an array of issues. While you can
-provide a custom error message by passing [`errorMessage`](#parsing-and-trying) option to `parse` and `parseAsync`, you
-also can configure the global formatter.
-
-```ts
-d.ValidationError.formatIssues = issues => {
-  // Return a human-readable error message that describes issues
-  return 'Something went wrong';
-};
-
-new d.ValidationError([]).message;
-// ⮕ 'Something went wrong'
-
-new d.ValidationError([], 'Kaputs').message;
-// ⮕ 'Kaputs'
-```
-
-`formatIssues` is called whenever a
-[`message`](https://smikhalevski.github.io/doubter/next/classes/core.ValidationError.html#constructor) constructor
-argument is omitted.
 
 # Operations
 
@@ -902,7 +875,7 @@ returned:
       input: 'Pluto',
       message: 'Must have the maximum length of 4',
       param: 4,
-      meta: undefied
+      meta: undefined
     },
     {
       code: 'string.regex',
@@ -910,7 +883,7 @@ returned:
       input: 'Pluto',
       message: 'Must match the pattern /a/',
       param: /a/,
-      meta: undefied
+      meta: undefined
     }
   ]
 }
@@ -1116,7 +1089,7 @@ Refer to [Async shapes](#async-shapes) section for more details on when shapes c
 
 By default, Doubter collects all issues during parsing. In some cases, you may want to halt parsing and raise a
 validation error as soon as the first issue was encountered. To do this, pass the
-[`earlyReturn`](https://smikhalevski.github.io/doubter/next/interfaces/core.ApplyOptions.html#earlyReturn)
+[`earlyReturn`](https://smikhalevski.github.io/doubter/next/interfaces/core.ParseOptions.html#earlyReturn)
 option to the [parsing methods](#parsing-and-trying).
 
 ```ts
@@ -1135,11 +1108,11 @@ only one issue:
   issues: [
     {
       code: 'string.max',
-      path: undefied,
+      path: undefined,
       input: 'Pluto',
       message: 'Must have the maximum length of 4',
       param: 4,
-      meta: undefied
+      meta: undefined
     }
   ]
 }
@@ -1193,7 +1166,7 @@ processing. For example, during [localization](#localization).
 Inside [operation](#operations) callbacks, [check](#checks) callbacks, [refinement predicates](#refinements),
 [alteration](#alterations) callbacks, [converters](#conversions), [fallback](#fallback-value) functions, and
 [message](#localization) callbacks you can access options passed to the parser. The
-[`context`](https://smikhalevski.github.io/doubter/next/interfaces/core.ApplyOptions.html#context) option may
+[`context`](https://smikhalevski.github.io/doubter/next/interfaces/core.ParseOptions.html#context) option may
 store an arbitrary data, which is `undefined` by default.
 
 For example, here's how you can use context to convert numbers to formatted strings:
@@ -1594,7 +1567,7 @@ shape2.parse('Mars');
 ```
 
 Fallback functions receive an input value, an array of issues and
-[parsing options](https://smikhalevski.github.io/doubter/next/interfaces/core.ApplyOptions.html) (so you can
+[parsing options](https://smikhalevski.github.io/doubter/next/interfaces/core.ParseOptions.html) (so you can
 access your [custom context](#parsing-context) if needed).
 
 ```ts
@@ -1990,18 +1963,10 @@ shape.at('bar')
 
 # Localization
 
-All shape factories and built-in checks support custom issue messages:
+All shape factories and built-in checks support a custom issue messages:
 
 ```ts
 d.string('Hey, string here').min(3, 'Too short');
-```
-
-[Built-in checks that have a param](#validation-errors), such as
-[`min`](https://smikhalevski.github.io/doubter/next/classes/core.StringShape.html#min) constraint in the example above,
-can use a `%s` placeholder that would be interpolated with the param value.
-
-```ts
-d.string().min(3, 'Minimum length is %s');
 ```
 
 [Pass a function as a message](https://smikhalevski.github.io/doubter/next/types/core.MessageCallback.html), and
@@ -2009,26 +1974,26 @@ it would receive an [issue](#validation-errors) that would be raised, and parsin
 `issue.message` or return a message. For example, when using with React you may return a JSX element:
 
 ```tsx
-const message: d.Message = (issue, options) => (
+const reactMessage: d.Message = (issue, options) => (
   <span style={{ color: 'red' }}>
-    Minimum length is {issue.param}
+    The minimum length is {issue.param}
   </span>
 );
 
-d.number().min(5, message);
+d.number().min(5, reactMessage);
 ```
 
 Semantics described above are applied to the
-[`message` option](https://smikhalevski.github.io/doubter/next/interfaces/core.ConstraintOptions.html#message)
-as well:
+[`message`](https://smikhalevski.github.io/doubter/next/interfaces/core.IssueOptions.html#message) option as well:
 
 ```ts
-d.string().length(3, { message: 'Expected length is %s' })
+d.string().length(3, { message: 'Invalid length' })
 ```
 
 ## Override default messages
 
-Default issue messages can be overridden:
+Default issue messages can be overridden by
+[`messages`](https://smikhalevski.github.io/doubter/next/interfaces/core.ParseOptions.html#messages) option:
 
 ```ts
 import * as d from 'doubter';
@@ -2040,6 +2005,8 @@ d.string().parse(42, {
 });
 // ❌ ValidationError: type at /: Yo, not a string!
 ```
+
+The full list of issue codes can be found in [Validation errors](#validation-errors) section.
 
 # Plugins
 
@@ -2316,7 +2283,7 @@ Let's create a custom shape that parses an input string as a number:
 ```ts
 class NumberLikeShape extends d.Shape<string, number> {
 
-  protected _apply(input: unknown, options: d.ApplyOptions, nonce: number): d.Result<number> {
+  protected _apply(input: unknown, options: d.ParseOptions, nonce: number): d.Result<number> {
 
     // 1️⃣ Validate the input and return issues if it is invalid
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {
@@ -2410,7 +2377,6 @@ The table below highlights features that are unique to Doubter and its peers.
 <tr><td><a href="#circular-object-references">Circular objects</a>          </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
 <tr><td><a href="#nested-shapes">Derive sub-shapes</a>                      </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
 <tr><td><a href="#key-relationships">Object key relationships</a>           </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
-<tr><td><a href="#global-error-message-formatter">Error formatter</a>       </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
 <tr><td><a href="#parsing-context">Parsing context</a>                      </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
 
 <tr><td colspan="4"><br><b>Async flow</b></td></tr>

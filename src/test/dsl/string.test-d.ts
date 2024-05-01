@@ -6,7 +6,7 @@ expectType<string>(d.string().alter((): 'aaa' => 'aaa')[OUTPUT]);
 
 const x = { param: 111 };
 
-d.string().alter((value, param) => (value === 'aaa' ? 'aaa' : 'bbb'), x);
+d.string().alter((value, _param) => (value === 'aaa' ? 'aaa' : 'bbb'), x);
 
 const stringShape = d.string().alter(value => (value === 'aaa' ? 'aaa' : 'bbb'));
 
@@ -14,9 +14,9 @@ expectType<string>(stringShape[INPUT]);
 
 expectType<string>(stringShape[OUTPUT]);
 
-expectType<'bbb'>(stringShape.refine((value): value is 'bbb' => true)[OUTPUT]);
+expectType<'bbb'>(stringShape.refine((_value): _value is 'bbb' => true)[OUTPUT]);
 
-expectType<string>(stringShape.refine((value): value is 'bbb' => true).max(2)[OUTPUT]);
+expectType<string>(stringShape.refine((_value): _value is 'bbb' => true).max(2)[OUTPUT]);
 
 expectType<string>(
   d.string().alter(
@@ -28,4 +28,4 @@ expectType<string>(
   )[OUTPUT]
 );
 
-expectType<'aaa' | 'bbb'>(d.string().refine((value): value is 'aaa' | 'bbb' => true)[OUTPUT]);
+expectType<'aaa' | 'bbb'>(d.string().refine((_value): _value is 'aaa' | 'bbb' => true)[OUTPUT]);

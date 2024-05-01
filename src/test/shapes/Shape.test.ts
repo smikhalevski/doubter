@@ -1074,21 +1074,6 @@ describe('Shape', () => {
 
       expect(() => shape.parse('aaa')).toThrow(new ValidationError([{ code: 'xxx' }]));
     });
-
-    test('uses string errorMessage option', () => {
-      const shape = new Shape().check(() => [{ code: 'xxx' }]);
-
-      expect(() => shape.parse(111, { errorMessage: 'aaa' })).toThrow(new ValidationError([{ code: 'xxx' }], 'aaa'));
-    });
-
-    test('invokes an errorMessage callback', () => {
-      const shape = new Shape().check(() => [{ code: 'xxx' }]);
-      const cbMock = jest.fn(() => 'aaa');
-
-      expect(() => shape.parse(111, { errorMessage: cbMock })).toThrow(new ValidationError([{ code: 'xxx' }], 'aaa'));
-      expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, [{ code: 'xxx' }], 111);
-    });
   });
 
   describe('parseOrDefault', () => {

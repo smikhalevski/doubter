@@ -163,8 +163,8 @@ declare module '../core' {
 export default function enableStringEssentials(ctor: typeof StringShape): void {
   const { prototype } = ctor;
 
-  prototype.length = function (length, options) {
-    return this.min(length, options).max(length, options);
+  prototype.length = function (length, issueOptions) {
+    return this.min(length, issueOptions).max(length, issueOptions);
   };
 
   prototype.min = function (length, issueOptions) {
@@ -251,13 +251,13 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.nonEmpty = function (options) {
-    return this.min(1, options);
+  prototype.nonEmpty = function (issueOptions) {
+    return this.min(1, issueOptions);
   };
 
   prototype.trim = function () {
     return this.addOperation(
-      (value, param, options) => {
+      (value, _param, _options) => {
         return { ok: true, value: value.trim() };
       },
       { type: 'string.trim' }
@@ -266,7 +266,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
 
   prototype.toLowerCase = function () {
     return this.addOperation(
-      (value, param, options) => {
+      (value, _param, _options) => {
         return { ok: true, value: value.toLowerCase() };
       },
       { type: 'string.toLowerCase' }
@@ -275,7 +275,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
 
   prototype.toUpperCase = function () {
     return this.addOperation(
-      (value, param, options) => {
+      (value, _param, _options) => {
         return { ok: true, value: value.toUpperCase() };
       },
       { type: 'string.toUpperCase' }

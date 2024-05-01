@@ -1,6 +1,6 @@
 import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../constants';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
@@ -13,7 +13,7 @@ const symbolInputs = Object.freeze([Type.SYMBOL]);
  */
 export class SymbolShape extends Shape<symbol> {
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -32,7 +32,7 @@ export class SymbolShape extends Shape<symbol> {
     return symbolInputs;
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {
+  protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<symbol> {
     if (typeof input !== 'symbol') {
       return [createIssue(CODE_TYPE_SYMBOL, input, MESSAGE_TYPE_SYMBOL, undefined, options, this._options)];
     }

@@ -1,8 +1,8 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 import { identity, isArray } from '../internal/lang';
-import { overrideProperty } from '../internal/objects';
+import { defineProperty } from '../internal/objects';
 import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes';
-import { Any, ApplyOptions, Result } from '../types';
+import { Any, ParseOptions, Result } from '../types';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
 
 /**
@@ -44,7 +44,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     /**
      * The provider callback that returns the value that is used instead of a circular reference.
      */
-    readonly pointerProvider: (value: Input<ProvidedShape>, options: ApplyOptions) => Pointer
+    readonly pointerProvider: (value: Input<ProvidedShape>, options: ParseOptions) => Pointer
   ) {
     super();
 
@@ -65,7 +65,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * The lazy-loaded shape.
    */
   get providedShape(): ProvidedShape {
-    return overrideProperty(this, 'providedShape', this._cachingShapeProvider());
+    return defineProperty(this, 'providedShape', this._cachingShapeProvider());
   }
 
   at(key: unknown): AnyShape | null {
@@ -87,7 +87,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * @returns The clone of the shape.
    */
   circular<Pointer extends Any>(
-    pointer: Pointer | ((value: Input<ProvidedShape>, options: ApplyOptions) => Pointer)
+    pointer: Pointer | ((value: Input<ProvidedShape>, options: ParseOptions) => Pointer)
   ): LazyShape<ProvidedShape, Pointer> {
     return copyOperations(
       this,
@@ -109,7 +109,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     return shape;
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<ProvidedShape> | Pointer> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<ProvidedShape> | Pointer> {
     const { _stackMap } = this;
 
     let output = input;
@@ -151,7 +151,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
 
   protected _applyAsync(
     input: unknown,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<Output<ProvidedShape> | Pointer>> {
     const { _stackMap } = this;
