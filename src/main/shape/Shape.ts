@@ -7,14 +7,14 @@ import {
   MESSAGE_ANY_REFINE,
 } from '../constants';
 import { isArray, isEqual } from '../internal/lang';
-import { Dict, ReadonlyDict, setReadonlyProperty } from '../internal/objects';
+import { defineProperty, Dict, ReadonlyDict } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
+  adaptCheckResult,
   applyOperations,
   applyShape,
   captureIssues,
   composeApplyOperations,
-  adaptCheckResult,
   nextNonce,
   ok,
   Promisify,
@@ -1005,6 +1005,7 @@ export interface Shape<InputValue, OutputValue> {
   ): Promisify<OutputValue | DefaultValue>;
 }
 
+// Define getter separately for cleaner generated docs and overloaded signatures
 Object.defineProperties(Shape.prototype, {
   _applyOperations: {
     configurable: true,
@@ -1019,7 +1020,7 @@ Object.defineProperties(Shape.prototype, {
         cb = composeApplyOperations(operation, cb, async);
       }
 
-      return setReadonlyProperty(this, '_applyOperations', cb);
+      return defineProperty(this, '_applyOperations', cb);
     },
   },
 
@@ -1027,9 +1028,9 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      setReadonlyProperty(this, 'inputs', []);
+      defineProperty(this, 'inputs', []);
 
-      return setReadonlyProperty(this, 'inputs', Object.freeze(unionTypes(this._getInputs())));
+      return defineProperty(this, 'inputs', Object.freeze(unionTypes(this._getInputs())));
     },
   },
 
@@ -1037,7 +1038,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      setReadonlyProperty(this, 'isAsync', false);
+      defineProperty(this, 'isAsync', false);
 
       let async = this._isAsync();
 
@@ -1045,7 +1046,7 @@ Object.defineProperties(Shape.prototype, {
         async ||= this.operations[i].isAsync;
       }
 
-      return setReadonlyProperty(this, 'isAsync', async);
+      return defineProperty(this, 'isAsync', async);
     },
   },
 
@@ -1053,7 +1054,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return setReadonlyProperty<Shape['try']>(
+      return defineProperty<Shape['try']>(
         this,
         'try',
         this.isAsync
@@ -1077,7 +1078,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return setReadonlyProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
+      return defineProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
         return this._applyAsync(input, options || { earlyReturn: false }, nextNonce()).then(result => {
           if (result === null) {
             return ok(input);
@@ -1095,7 +1096,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return setReadonlyProperty<Shape['parse']>(
+      return defineProperty<Shape['parse']>(
         this,
         'parse',
         this.isAsync
@@ -1119,7 +1120,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return setReadonlyProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
+      return defineProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
         return this._applyAsync(input, options || { earlyReturn: false }, nextNonce()).then(result => {
           if (result === null) {
             return input;
@@ -1137,7 +1138,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return setReadonlyProperty(
+      return defineProperty(
         this,
         'parseOrDefault',
         this.isAsync
@@ -1161,7 +1162,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return setReadonlyProperty(
+      return defineProperty(
         this,
         'parseOrDefaultAsync',
         (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {

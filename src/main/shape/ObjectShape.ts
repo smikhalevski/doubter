@@ -1,14 +1,7 @@
 import { CODE_OBJECT_EXACT, CODE_TYPE_OBJECT, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants';
 import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
 import { isArray, isObject } from '../internal/lang';
-import {
-  cloneDict,
-  cloneDictKeys,
-  Dict,
-  setReadonlyProperty,
-  ReadonlyDict,
-  setObjectProperty,
-} from '../internal/objects';
+import { cloneDict, cloneDictKeys, defineProperty, Dict, ReadonlyDict, setSafeProperty } from '../internal/objects';
 import {
   applyShape,
   concatIssues,
@@ -150,7 +143,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * The enum shape that describes object keys.
    */
   get keysShape(): EnumShape<keyof PropShapes> {
-    return setReadonlyProperty(this, 'keysShape', new EnumShape(this.keys));
+    return defineProperty(this, 'keysShape', new EnumShape(this.keys));
   }
 
   at(key: any): AnyShape | null {
@@ -473,7 +466,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
             if (input === output) {
               output = cloneDict(input);
             }
-            setObjectProperty(output, key, result.value);
+            setSafeProperty(output, key, result.value);
           }
         }
         return next();
@@ -526,7 +519,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         if (input === output) {
           output = cloneDict(input);
         }
-        setObjectProperty(output, key, result.value);
+        setSafeProperty(output, key, result.value);
       }
     }
     return this._applyOperations(input, output, options, issues) as Result;
@@ -582,7 +575,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           if (input === output) {
             output = restShape === null ? cloneDictKeys(input, keys) : cloneDict(input);
           }
-          setObjectProperty(output, key, result.value);
+          setSafeProperty(output, key, result.value);
         }
         continue;
       }
@@ -652,7 +645,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           if (input === output) {
             output = cloneDict(input);
           }
-          setObjectProperty(output, key, result.value);
+          setSafeProperty(output, key, result.value);
         }
       }
     }

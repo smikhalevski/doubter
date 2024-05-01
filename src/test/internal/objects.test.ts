@@ -1,10 +1,10 @@
-import { cloneDict, cloneDictHead, cloneDictKeys, setObjectProperty } from '../../main/internal/objects';
+import { cloneDict, cloneDictHead, cloneDictKeys, setSafeProperty } from '../../main/internal/objects';
 
-describe('setObjectProperty', () => {
+describe('setSafeProperty', () => {
   test('sets object value', () => {
     const obj: any = {};
 
-    setObjectProperty(obj, 'aaa', 111);
+    setSafeProperty(obj, 'aaa', 111);
 
     expect(obj.hasOwnProperty('aaa')).toBe(true);
     expect(obj.aaa).toBe(111);
@@ -13,7 +13,7 @@ describe('setObjectProperty', () => {
   test('sets __proto__ value', () => {
     const obj: any = {};
 
-    setObjectProperty(obj, '__proto__', 111);
+    setSafeProperty(obj, '__proto__', 111);
 
     expect(obj.hasOwnProperty('__proto__')).toBe(true);
     expect(obj.__proto__).toBe(111);

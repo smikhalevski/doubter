@@ -170,18 +170,20 @@ export class FunctionShape<
 
     const { argsShape, returnShape, thisShape } = this;
 
-    options ||= this._parseOptions || { earlyReturn: false };
+    const parseOptionsBase = options || this._parseOptions || { earlyReturn: false };
 
     return function (this: any, ...args: any) {
-      const parseOptions = Object.assign({}, options);
+      const parseOptions = Object.assign({}, parseOptionsBase);
 
       const fnValue = fn.apply(
-        thisShape !== null ? getValue(KEY_THIS, thisShape['_apply'](this, parseOptions, nextNonce()), this) : this,
-        getValue(KEY_ARGS, argsShape['_apply'](args, parseOptions, nextNonce()), args)
+        thisShape !== null
+          ? getResultValue(KEY_THIS, thisShape['_apply'](this, parseOptions, nextNonce()), this)
+          : this,
+        getResultValue(KEY_ARGS, argsShape['_apply'](args, parseOptions, nextNonce()), args)
       );
 
       if (returnShape !== null) {
-        return getValue(KEY_RETURN, returnShape['_apply'](fnValue, parseOptions, nextNonce()), fnValue);
+        return getResultValue(KEY_RETURN, returnShape['_apply'](fnValue, parseOptions, nextNonce()), fnValue);
       }
 
       return fnValue;
@@ -217,32 +219,32 @@ export class FunctionShape<
   ensureAsync(fn: Function, options?: ParseOptions) {
     const { argsShape, returnShape, thisShape } = this;
 
-    options ||= this._parseOptions || { earlyReturn: false };
+    const parseOptionsBase = options || this._parseOptions || { earlyReturn: false };
 
     return function (this: any, ...args: any) {
       return new Promise(resolve => {
-        const parseOptions = Object.assign({}, options);
+        const parseOptions = Object.assign({}, parseOptionsBase);
 
         let fnValue: unknown;
 
         if (thisShape !== null) {
           fnValue = applyShape(thisShape, this, parseOptions, nextNonce(), thisResult => {
-            const thisValue = getValue(KEY_THIS, thisResult, this);
+            const thisValue = getResultValue(KEY_THIS, thisResult, this);
 
             return applyShape(argsShape, args, parseOptions, nextNonce(), argsResult =>
-              fn.apply(thisValue, getValue(KEY_ARGS, argsResult, args))
+              fn.apply(thisValue, getResultValue(KEY_ARGS, argsResult, args))
             );
           });
         } else {
           fnValue = applyShape(argsShape, args, parseOptions, nextNonce(), argsResult =>
-            fn.apply(this, getValue(KEY_ARGS, argsResult, args))
+            fn.apply(this, getResultValue(KEY_ARGS, argsResult, args))
           );
         }
 
         if (returnShape !== null) {
           resolve(
             applyShape(returnShape, fnValue, parseOptions, nextNonce(), resultResult =>
-              getValue(KEY_RETURN, resultResult, fnValue)
+              getResultValue(KEY_RETURN, resultResult, fnValue)
             )
           );
         } else {
@@ -306,7 +308,7 @@ export class FunctionShape<
   }
 }
 
-function getValue(key: string, result: Result, input: unknown): unknown {
+function getResultValue(key: string, result: Result, input: unknown): unknown {
   if (result === null) {
     return input;
   }
