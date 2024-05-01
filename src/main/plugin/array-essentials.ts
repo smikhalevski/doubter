@@ -21,7 +21,7 @@ import {
 } from '../constants';
 import { ArrayShape } from '../shape/ArrayShape';
 import { AnyShape, Shape } from '../shape/Shape';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 
 declare module '../core' {
@@ -134,7 +134,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     }
 
     if (value.isAsync) {
-      const next = (value: unknown[], shape: Shape, options: ApplyOptions, index: number): Promise<Result> => {
+      const next = (value: unknown[], shape: Shape, options: ParseOptions, index: number): Promise<Result> => {
         if (index === value.length) {
           return Promise.resolve([
             createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, shape, options, issueOptions),

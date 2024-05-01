@@ -5,7 +5,7 @@ import { unique } from '../internal/arrays';
 import { getCanonicalValue, isArray } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -22,7 +22,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   readonly values: readonly Value[];
 
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -80,7 +80,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     return NEVER;
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Value> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<Value> {
     let output = input;
 
     if (!this.values.includes(output) && (output = this._applyCoerce(input)) === NEVER) {

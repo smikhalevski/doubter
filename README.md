@@ -383,17 +383,6 @@ The custom context that can be accessed from custom check callbacks, refinement 
 converters, and fallback functions. Refer to [Parsing context](#parsing-context) section for more details.
 
 </dd>
-<dt><code>errorMessage</code></dt>
-<dd>
-
-It configures a `ValidationError` message. If a callback is provided it receives issues and an input value, and must
-return a string message. If a string is provided, it is used as is. You can also configure global issue formatter that
-is used by `ValidationError`, refer to [Global error message formatter](#global-error-message-formatter) section for
-more details.
-
-This option is for `parse` and `parseAsync` methods.
-
-</dd>
 </dl>
 
 ## Static type inference
@@ -594,29 +583,6 @@ for more details.
 | `type.string`       | [`d.string()`](#string)                             | —                                                     |
 | `type.symbol`       | [`d.symbol()`](#symbol)                             | —                                                     |
 | `type.union`        | [`d.or(…)`](#union-or)                              | [Issues raised by a union](#issues-raised-by-a-union) |
-
-## Global error message formatter
-
-By default, `ValidationError` uses `JSON.stringify` to produce an error message from an array of issues. While you can
-provide a custom error message by passing [`errorMessage`](#parsing-and-trying) option to `parse` and `parseAsync`, you
-also can configure the global formatter.
-
-```ts
-d.ValidationError.formatIssues = issues => {
-  // Return a human-readable error message that describes issues
-  return 'Something went wrong';
-};
-
-new d.ValidationError([]).message;
-// ⮕ 'Something went wrong'
-
-new d.ValidationError([], 'Kaputs').message;
-// ⮕ 'Kaputs'
-```
-
-`formatIssues` is called whenever a
-[`message`](https://smikhalevski.github.io/doubter/next/classes/core.ValidationError.html#constructor) constructor
-argument is omitted.
 
 # Operations
 
@@ -2307,7 +2273,7 @@ Let's create a custom shape that parses an input string as a number:
 ```ts
 class NumberLikeShape extends d.Shape<string, number> {
 
-  protected _apply(input: unknown, options: d.ApplyOptions, nonce: number): d.Result<number> {
+  protected _apply(input: unknown, options: d.ParseOptions, nonce: number): d.Result<number> {
 
     // 1️⃣ Validate the input and return issues if it is invalid
     if (typeof input !== 'string' || isNaN(parseFloat(input))) {
@@ -2401,7 +2367,6 @@ The table below highlights features that are unique to Doubter and its peers.
 <tr><td><a href="#circular-object-references">Circular objects</a>          </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
 <tr><td><a href="#nested-shapes">Derive sub-shapes</a>                      </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
 <tr><td><a href="#key-relationships">Object key relationships</a>           </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
-<tr><td><a href="#global-error-message-formatter">Error formatter</a>       </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
 <tr><td><a href="#parsing-context">Parsing context</a>                      </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
 
 <tr><td colspan="4"><br><b>Async flow</b></td></tr>

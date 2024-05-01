@@ -2,7 +2,7 @@ import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleInputs } from '../coerce/number';
 import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants';
 import { Type } from '../Type';
-import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { Any, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AllowShape, ReplaceShape } from './Shape';
@@ -16,7 +16,7 @@ const numberInputs = Object.freeze([Type.NUMBER]);
  */
 export class NumberShape extends CoercibleShape<number> {
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -51,7 +51,7 @@ export class NumberShape extends CoercibleShape<number> {
     return this.isCoercing ? numberCoercibleInputs : numberInputs;
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<number> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<number> {
     let output = input;
 
     if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {

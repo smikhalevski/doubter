@@ -3,7 +3,7 @@ import { isArray, isObject } from '../internal/lang';
 import { cloneDictHead, setObjectProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
@@ -70,7 +70,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
   protected _apply(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>> {
     if (!isObject(input)) {
@@ -135,7 +135,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
   protected _applyAsync(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>> {
     return new Promise(resolve => {

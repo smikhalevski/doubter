@@ -8,7 +8,7 @@
  * @module utils
  */
 
-import type { ApplyOptions, Issue, IssueOptions, Message } from './core';
+import type { Issue, IssueOptions, Message, ParseOptions } from './core';
 
 /**
  * Creates a new issue.
@@ -26,7 +26,7 @@ export function createIssue(
   input: unknown,
   defaultMessage: Message,
   param: unknown,
-  applyOptions: ApplyOptions,
+  applyOptions: ParseOptions,
   issueOptions?: IssueOptions | Message
 ): Issue {
   const issue: Issue = { code, path: undefined, input, message: undefined, param, meta: undefined };

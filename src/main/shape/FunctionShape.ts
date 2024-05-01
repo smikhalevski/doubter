@@ -5,7 +5,6 @@ import {
   Awaitable,
   copyOperations,
   defaultApplyOptions,
-  getErrorMessage,
   INPUT,
   nextNonce,
   ok,
@@ -14,7 +13,7 @@ import {
   unshiftIssuesPath,
 } from '../internal/shapes';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, ParseOptions, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';
@@ -56,7 +55,7 @@ export class FunctionShape<
   isStrict = false;
 
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -176,12 +175,12 @@ export class FunctionShape<
 
     return function (this: any, ...args: any) {
       const fnValue = fn.apply(
-        thisShape !== null ? getValue(KEY_THIS, thisShape['_apply'](this, options, nextNonce()), this, options) : this,
-        getValue(KEY_ARGS, argsShape['_apply'](args, options, nextNonce()), args, options)
+        thisShape !== null ? getValue(KEY_THIS, thisShape['_apply'](this, options, nextNonce()), this) : this,
+        getValue(KEY_ARGS, argsShape['_apply'](args, options, nextNonce()), args)
       );
 
       if (returnShape !== null) {
-        return getValue(KEY_RETURN, returnShape['_apply'](fnValue, options, nextNonce()), fnValue, options);
+        return getValue(KEY_RETURN, returnShape['_apply'](fnValue, options, nextNonce()), fnValue);
       }
 
       return fnValue;
@@ -225,22 +224,22 @@ export class FunctionShape<
 
         if (thisShape !== null) {
           fnValue = applyShape(thisShape, this, options, nextNonce(), thisResult => {
-            const thisValue = getValue(KEY_THIS, thisResult, this, options);
+            const thisValue = getValue(KEY_THIS, thisResult, this);
 
             return applyShape(argsShape, args, options, nextNonce(), argsResult =>
-              fn.apply(thisValue, getValue(KEY_ARGS, argsResult, args, options))
+              fn.apply(thisValue, getValue(KEY_ARGS, argsResult, args))
             );
           });
         } else {
           fnValue = applyShape(argsShape, args, options, nextNonce(), argsResult =>
-            fn.apply(this, getValue(KEY_ARGS, argsResult, args, options))
+            fn.apply(this, getValue(KEY_ARGS, argsResult, args))
           );
         }
 
         if (returnShape !== null) {
           resolve(
             applyShape(returnShape, fnValue, options, nextNonce(), resultResult =>
-              getValue(KEY_RETURN, resultResult, fnValue, options)
+              getValue(KEY_RETURN, resultResult, fnValue)
             )
           );
         } else {
@@ -256,7 +255,7 @@ export class FunctionShape<
 
   protected _apply(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Result<
     (this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>
@@ -278,7 +277,7 @@ export class FunctionShape<
 
   protected _applyAsync(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<
     Result<(this: InferOrDefault<ThisShape, INPUT>, ...args: Input<ArgsShape>) => InferOrDefault<ReturnShape, OUTPUT>>
@@ -304,13 +303,13 @@ export class FunctionShape<
   }
 }
 
-function getValue(key: string, result: Result, input: unknown, options: ParseOptions): unknown {
+function getValue(key: string, result: Result, input: unknown): unknown {
   if (result === null) {
     return input;
   }
   if (isArray(result)) {
     unshiftIssuesPath(result, key);
-    throw new ValidationError(result, getErrorMessage(result, input, options));
+    throw new ValidationError(result);
   }
   return result.value;
 }

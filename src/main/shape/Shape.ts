@@ -17,7 +17,6 @@ import {
   defaultApplyOptions,
   defaultEarlyReturnApplyOptions,
   extractCheckResult,
-  getErrorMessage,
   nextNonce,
   ok,
   Promisify,
@@ -29,7 +28,6 @@ import { Type } from '../Type';
 import {
   Any,
   ApplyOperationsCallback,
-  ApplyOptions,
   CheckResult,
   Err,
   Issue,
@@ -646,7 +644,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
      * @param value The shape output value.
      * @param options Parsing options.
      */
-    cb: (value: OutputValue, options: ApplyOptions) => ConvertedValue
+    cb: (value: OutputValue, options: ParseOptions) => ConvertedValue
   ): Shape<InputValue, ConvertedValue> {
     return this.to(new ConvertShape(cb));
   }
@@ -668,7 +666,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
      * @param value The shape output value.
      * @param options Parsing options.
      */
-    cb: (value: OutputValue, options: ApplyOptions) => PromiseLike<ConvertedValue>
+    cb: (value: OutputValue, options: ParseOptions) => PromiseLike<ConvertedValue>
   ): Shape<InputValue, ConvertedValue> {
     return this.to(new ConvertShape(cb, true));
   }
@@ -803,11 +801,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Returns the fallback value if parsing fails.
    *
    * @param fallback The value or a callback that returns a value that is returned if parsing has failed. A callback
-   * receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
+   * receives an input value, an array of raised issues, and {@link ParseOptions parsing options}.
    * @template FallbackValue The fallback value.
    */
   catch<FallbackValue extends Any>(
-    fallback: FallbackValue | ((input: any, issues: Issue[], options: ApplyOptions) => FallbackValue)
+    fallback: FallbackValue | ((input: any, issues: Issue[], options: ParseOptions) => FallbackValue)
   ): CatchShape<this, FallbackValue>;
 
   catch(fallback?: unknown): Shape {
@@ -882,7 +880,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns `null` if input matches the output, {@link Ok} that wraps the output, or an array of captured issues.
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<OutputValue> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<OutputValue> {
     return this._applyOperations(input, input, options, null) as Result;
   }
 
@@ -895,7 +893,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns `null` if input matches the output, {@link Ok} that wraps the output, or an array of captured issues.
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<OutputValue>> {
+  protected _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result<OutputValue>> {
     return new Promise(resolve => {
       resolve(this._apply(input, options, nonce));
     });
@@ -936,7 +934,7 @@ export interface Shape<InputValue, OutputValue> {
    * @returns The {@link Ok} instance if parsing has succeeded or {@link Err} if parsing has failed.
    * @throws {@link !Error Error} if the shape doesn't support the sync parsing, see {@link Shape.isAsync}.
    */
-  try(input: unknown, options?: ApplyOptions): Ok<OutputValue> | Err;
+  try(input: unknown, options?: ParseOptions): Ok<OutputValue> | Err;
 
   /**
    * Asynchronously parses the value and returns {@link Ok} or {@link Err} object that wraps the result.
@@ -945,7 +943,7 @@ export interface Shape<InputValue, OutputValue> {
    * @param options Parsing options.
    * @returns The {@link Ok} instance if parsing has succeeded or {@link Err} if parsing has failed.
    */
-  tryAsync(input: unknown, options?: ApplyOptions): Promise<Ok<OutputValue> | Err>;
+  tryAsync(input: unknown, options?: ParseOptions): Promise<Ok<OutputValue> | Err>;
 
   /**
    * Synchronously parses the value.
@@ -990,7 +988,7 @@ export interface Shape<InputValue, OutputValue> {
   parseOrDefault<DefaultValue>(
     input: unknown,
     defaultValue: DefaultValue,
-    options?: ApplyOptions
+    options?: ParseOptions
   ): OutputValue | DefaultValue;
 
   /**
@@ -1013,7 +1011,7 @@ export interface Shape<InputValue, OutputValue> {
   parseOrDefaultAsync<DefaultValue>(
     input: unknown,
     defaultValue: DefaultValue,
-    options?: ApplyOptions
+    options?: ParseOptions
   ): Promisify<OutputValue | DefaultValue>;
 }
 
@@ -1119,7 +1117,7 @@ Object.defineProperties(Shape.prototype, {
                 return input;
               }
               if (isArray(result)) {
-                throw new ValidationError(result, getErrorMessage(result, input, options));
+                throw new ValidationError(result);
               }
               return result.value;
             }
@@ -1137,7 +1135,7 @@ Object.defineProperties(Shape.prototype, {
             return input;
           }
           if (isArray(result)) {
-            throw new ValidationError(result, getErrorMessage(result, input, options));
+            throw new ValidationError(result);
           }
           return result.value;
         });
@@ -1215,7 +1213,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
      * @param value The input value.
      * @param options Parsing options.
      */
-    readonly converter: (value: any, options: ApplyOptions) => PromiseLike<ConvertedValue> | ConvertedValue,
+    readonly converter: (value: any, options: ParseOptions) => PromiseLike<ConvertedValue> | ConvertedValue,
     async?: boolean
   ) {
     super();
@@ -1225,7 +1223,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
     }
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<ConvertedValue> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<ConvertedValue> {
     let output;
     try {
       output = this.converter(input, options) as ConvertedValue;
@@ -1235,7 +1233,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
     return this._applyOperations(input, output, options, null) as Result;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<ConvertedValue>> {
+  protected _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result<ConvertedValue>> {
     return new Promise(resolve => {
       resolve(this.converter(input, options));
     }).then(output => this._applyOperations(input, output, options, null), captureIssues);
@@ -1286,7 +1284,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     return this.inputShape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<OutputShape>> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<OutputShape>> {
     const { inputShape, outputShape } = this;
 
     let output = input;
@@ -1311,7 +1309,7 @@ export class PipeShape<InputShape extends AnyShape, OutputShape extends AnyShape
     return this._applyOperations(input, output, options, null) as Result;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<OutputShape>>> {
+  protected _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result<Output<OutputShape>>> {
     return this.inputShape['_applyAsync'](input, options, nonce).then(inputResult => {
       let output = input;
 
@@ -1392,7 +1390,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
 
   protected _apply(
     input: unknown,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue> {
     let output = input;
@@ -1410,7 +1408,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
 
   protected _applyAsync(
     input: unknown,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<ExcludeLiteral<Output<BaseShape>, InputValue> | OutputValue>> {
     const handleResult = (result: Result) => {
@@ -1487,7 +1485,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
 
   protected _apply(
     input: unknown,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>> {
     const { deniedValue } = this;
@@ -1515,7 +1513,7 @@ export class DenyShape<BaseShape extends AnyShape, DeniedValue>
 
   protected _applyAsync(
     input: unknown,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<ExcludeLiteral<Output<BaseShape>, DeniedValue>>> {
     const { deniedValue } = this;
@@ -1555,7 +1553,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
   extends Shape<Input<BaseShape>, Output<BaseShape> | FallbackValue>
   implements DeepPartialProtocol<CatchShape<DeepPartialShape<BaseShape>, FallbackValue>>
 {
-  private _resultProvider: (input: unknown, issues: Issue[], options: ApplyOptions) => Ok<FallbackValue>;
+  private _resultProvider: (input: unknown, issues: Issue[], options: ParseOptions) => Ok<FallbackValue>;
 
   /**
    * Creates the new {@link CatchShape} instance.
@@ -1573,9 +1571,9 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     /**
      * The value or a callback that returns a value that is returned if parsing has failed.
      *
-     *  A callback receives an input value, an array of raised issues, and {@link ApplyOptions parsing options}.
+     *  A callback receives an input value, an array of raised issues, and {@link ParseOptions parsing options}.
      */
-    readonly fallback: FallbackValue | ((input: any, issues: Issue[], options: ApplyOptions) => FallbackValue)
+    readonly fallback: FallbackValue | ((input: any, issues: Issue[], options: ParseOptions) => FallbackValue)
   ) {
     super();
 
@@ -1599,7 +1597,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
     return this.baseShape.inputs.slice(0);
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<BaseShape> | FallbackValue> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<BaseShape> | FallbackValue> {
     let output = input;
     let result = this.baseShape['_apply'](input, options, nonce);
 
@@ -1618,7 +1616,7 @@ export class CatchShape<BaseShape extends AnyShape, FallbackValue>
 
   protected _applyAsync(
     input: unknown,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<Output<BaseShape> | FallbackValue>> {
     return this.baseShape['_applyAsync'](input, options, nonce).then(result => {
@@ -1694,7 +1692,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
 
   protected _apply(
     input: unknown,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>> {
     const { baseShape, excludedShape } = this;
@@ -1717,7 +1715,7 @@ export class ExcludeShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
 
   protected _applyAsync(
     input: unknown,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<Exclude<Output<BaseShape>, Input<ExcludedShape>>>> {
     const { baseShape, excludedShape } = this;

@@ -4,7 +4,7 @@ import { toArrayIndex, unique } from '../internal/arrays';
 import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output } from './Shape';
@@ -22,7 +22,7 @@ export class SetShape<ValueShape extends AnyShape>
   implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<ValueShape>>>
 {
   /**
-   * The type constraint options or the type issue message.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -77,7 +77,7 @@ export class SetShape<ValueShape extends AnyShape>
     return [input];
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Set<Output<ValueShape>>> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<Set<Output<ValueShape>>> {
     let changed = false;
     let values;
     let issues = null;
@@ -117,7 +117,7 @@ export class SetShape<ValueShape extends AnyShape>
     return this._applyOperations(input, changed ? new Set(values) : input, options, issues) as Result;
   }
 
-  protected _applyAsync(input: any, options: ApplyOptions, nonce: number): Promise<Result<Set<Output<ValueShape>>>> {
+  protected _applyAsync(input: any, options: ParseOptions, nonce: number): Promise<Result<Set<Output<ValueShape>>>> {
     return new Promise(resolve => {
       let changed = false;
       let values: unknown[];

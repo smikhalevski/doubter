@@ -138,23 +138,22 @@ export type Message = MessageCallback | string;
  * to the  {@link Issue.message} property.
  * @group Issues
  */
-export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
+export type MessageCallback = (issue: Issue, options: ParseOptions) => any;
 
 /**
  * A callback that applies operations to the shape output.
  *
  * @param input The input value to which the shape was applied.
- * @param output The shape output value to which the operation must be applied.
+ * @param output The output value to which the operation must be applied.
  * @param options Parsing options.
  * @param issues The mutable array of issues captured by a shape, or `null` if there were no issues raised yet.
  * @returns The result of the operation.
- * @template ReturnValue The cumulative result of applied operations.
  * @group Operations
  */
 export type ApplyOperationsCallback = (
   input: unknown,
   output: unknown,
-  options: ApplyOptions,
+  options: ParseOptions,
   issues: Issue[] | null
 ) => Result | Promise<Result>;
 
@@ -237,7 +236,7 @@ export type OperationTolerance = 'skip' | 'abort' | 'auto';
 export type OperationCallback<ReturnValue = any, Value = any, Param = any> = (
   value: Value,
   param: Param,
-  options: ApplyOptions
+  options: ParseOptions
 ) => ReturnValue;
 
 /**
@@ -306,7 +305,7 @@ export interface ParameterizedOperationOptions<Param> extends OperationOptions {
 export type RefinePredicate<Value = any, RefinedValue extends Value = Value, Param = any> = (
   value: Value,
   param: Param,
-  options: ApplyOptions
+  options: ParseOptions
 ) => value is RefinedValue;
 
 /**
@@ -334,51 +333,27 @@ export interface ParameterizedRefineOptions<Param> extends RefineOptions {
 }
 
 /**
- * Options used when a shape is applied to an input value.
+ * Options used during parsing.
  *
- * @see {@link Shape._apply}
- * @see {@link Shape._applyAsync}
  * @group Other
  */
-export interface ApplyOptions {
+export interface ParseOptions {
   /**
    * If `true` then parsing is aborted after the first issue is encountered.
    *
    * @default false
    */
-  readonly earlyReturn?: boolean;
+  earlyReturn?: boolean;
 
   /**
    * The custom context.
    */
-  readonly context?: any;
+  context?: any;
 
   /**
    * The map from an error code to a default issue message.
    */
-  readonly messages?: { [code: string | number]: Message | Any };
-}
-
-/**
- * Returns a human-readable message that describes issues that were raised during input parsing.
- *
- * @param issues The array of issues that were raised.
- * @param input The input value that was parsed.
- * @see {@link ParseOptions.errorMessage}
- * @group Other
- */
-export type ErrorMessageCallback = (issues: Issue[], input: any) => string;
-
-/**
- * Options used during parsing.
- *
- * @group Other
- */
-export interface ParseOptions extends ApplyOptions {
-  /**
-   * A message that is passed to {@link ValidationError} if issues are raised during parsing.
-   */
-  readonly errorMessage?: ErrorMessageCallback | string;
+  messages?: { [code: string | number]: Message | Any };
 }
 
 /**
@@ -389,7 +364,7 @@ export interface ParseOptions extends ApplyOptions {
 export type Any = object | string | number | bigint | boolean | symbol | null | undefined;
 
 /**
- * The result returned by a {@link Shape.check check operation}.
+ * The result returned by a {@link Shape.check check operation callback}.
  *
  * @group Other
  */

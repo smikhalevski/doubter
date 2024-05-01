@@ -1,4 +1,4 @@
-import { ApplyOptions, Result, Shape } from '../../main';
+import { ParseOptions, Result, Shape } from '../../main';
 
 export class MockShape extends Shape {
   constructor() {
@@ -9,13 +9,13 @@ export class MockShape extends Shape {
 }
 
 export interface MockShape {
-  _apply(input: unknown, options: ApplyOptions, nonce: number): Result;
+  _apply(input: unknown, options: ParseOptions, nonce: number): Result;
 
-  _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result>;
+  _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result>;
 }
 
 export class AsyncMockShape extends MockShape {
-  _applyAsync(input: unknown, options: ApplyOptions, nonce: number) {
+  _applyAsync(input: unknown, options: ParseOptions, nonce: number) {
     return new Promise<Result>(resolve => {
       resolve(Shape.prototype['_apply'].call(this, input, options, nonce));
     });

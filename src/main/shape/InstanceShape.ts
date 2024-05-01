@@ -1,7 +1,7 @@
 import { CODE_TYPE_INSTANCE_OF, MESSAGE_TYPE_INSTANCE_OF } from '../constants';
 import { isEqualOrSubclass } from '../internal/lang';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
@@ -21,7 +21,7 @@ const setInputs = Object.freeze([Type.SET]);
  */
 export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape<InstanceType<Ctor>> {
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -65,7 +65,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
     return objectInputs;
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<InstanceType<Ctor>> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<InstanceType<Ctor>> {
     if (!(input instanceof this.ctor)) {
       return [createIssue(CODE_TYPE_INSTANCE_OF, input, MESSAGE_TYPE_INSTANCE_OF, this.ctor, options, this._options)];
     }

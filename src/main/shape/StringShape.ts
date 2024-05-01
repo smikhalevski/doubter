@@ -2,7 +2,7 @@ import { NEVER } from '../coerce/never';
 import { coerceToString, stringCoercibleInputs } from '../coerce/string';
 import { CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../constants';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -15,7 +15,7 @@ const stringInputs = Object.freeze([Type.STRING]);
  */
 export class StringShape extends CoercibleShape<string> {
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -34,7 +34,7 @@ export class StringShape extends CoercibleShape<string> {
     return this.isCoercing ? stringCoercibleInputs : stringInputs;
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<string> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<string> {
     let output = input;
 
     if (typeof output !== 'string' && (output = this._applyCoerce(input)) === NEVER) {

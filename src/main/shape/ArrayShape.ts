@@ -12,7 +12,7 @@ import {
   unshiftIssuesPath,
 } from '../internal/shapes';
 import { Type } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
@@ -53,7 +53,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   implements DeepPartialProtocol<DeepPartialArrayShape<HeadShapes, RestShape>>
 {
   /**
-   * The type constraint options or the type issue message.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -152,7 +152,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
   protected _apply(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Result<InferArray<HeadShapes, RestShape, OUTPUT>> {
     const { headShapes, restShape, operations } = this;
@@ -207,7 +207,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
   protected _applyAsync(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {

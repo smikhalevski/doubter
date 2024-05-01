@@ -3,7 +3,7 @@ import { NEVER } from '../coerce/never';
 import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../constants';
 import { isValidDate } from '../internal/lang';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -15,7 +15,7 @@ const dateInputs = Object.freeze([Type.DATE]);
  */
 export class DateShape extends CoercibleShape<Date> {
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -34,7 +34,7 @@ export class DateShape extends CoercibleShape<Date> {
     return this.isCoercing ? dateCoercibleInputs : dateInputs;
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<Date> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<Date> {
     let output = input;
 
     if (!isValidDate(input) && (output = this._applyCoerce(input)) === NEVER) {

@@ -2,7 +2,7 @@ import { bigintCoercibleInputs, coerceToBigInt } from '../coerce/bigint';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../constants';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -15,7 +15,7 @@ const bigintInputs = Object.freeze([Type.BIGINT]);
  */
 export class BigIntShape extends CoercibleShape<bigint> {
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -34,7 +34,7 @@ export class BigIntShape extends CoercibleShape<bigint> {
     return this.isCoercing ? bigintCoercibleInputs : bigintInputs;
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<bigint> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<bigint> {
     let output = input;
 
     if (typeof output !== 'bigint' && (output = this._applyCoerce(input)) === NEVER) {

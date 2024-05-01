@@ -3,7 +3,7 @@ import { CODE_TYPE_PROMISE, MESSAGE_TYPE_PROMISE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, unknownInputs } from './Shape';
@@ -29,7 +29,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   implements DeepPartialProtocol<DeepPartialPromiseShape<ValueShape>>
 {
   /**
-   * The type constraint options or the type issue message.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -73,7 +73,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     return Promise.resolve(input);
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
     let output = input;
 
     if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
@@ -84,7 +84,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
 
   protected _applyAsync(
     input: any,
-    options: ApplyOptions,
+    options: ParseOptions,
     nonce: number
   ): Promise<Result<InferPromise<ValueShape, OUTPUT>>> {
     let output = input;

@@ -2,7 +2,6 @@ import { ERROR_SYNC_UNSUPPORTED } from '../constants';
 import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
 import {
   ApplyOperationsCallback,
-  ApplyOptions,
   CheckResult,
   Issue,
   Ok,
@@ -26,9 +25,9 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, messages: undefined });
+export const defaultApplyOptions = Object.freeze<ParseOptions>({ earlyReturn: false, messages: undefined });
 
-export const defaultEarlyReturnApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: true, messages: undefined });
+export const defaultEarlyReturnApplyOptions = Object.freeze<ParseOptions>({ earlyReturn: true, messages: undefined });
 
 export declare const INPUT: unique symbol;
 export declare const OUTPUT: unique symbol;
@@ -84,7 +83,7 @@ export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProto
 export function applyShape<T>(
   shape: AnyShape,
   input: unknown,
-  options: ApplyOptions,
+  options: ParseOptions,
   nonce: number,
   cb: (result: Result) => T
 ): T | Promise<Awaited<T>> {
@@ -121,24 +120,6 @@ export function captureIssues(error: unknown): Issue[] {
     return error.issues;
   }
   throw error;
-}
-
-/**
- * Returns an error message that is composed of the captured issues and parsing options.
- */
-export function getErrorMessage(
-  issues: Issue[],
-  input: unknown,
-  options: ParseOptions | undefined
-): string | undefined {
-  const message = options?.errorMessage;
-
-  if (typeof message === 'function') {
-    return message(issues, input);
-  }
-  if (message !== undefined) {
-    return String(message);
-  }
 }
 
 /**

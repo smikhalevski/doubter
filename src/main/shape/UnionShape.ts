@@ -5,7 +5,7 @@ import { overrideProperty, ReadonlyDict } from '../internal/objects';
 import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
 import { isType } from '../internal/types';
 import { Type } from '../Type';
-import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { ObjectShape } from './ObjectShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
@@ -91,7 +91,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return inputs;
   }
 
-  protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Output<Shapes[number]>> {
+  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<Shapes[number]>> {
     let result = null;
     let output = input;
     let issues = null;
@@ -138,7 +138,7 @@ export class UnionShape<Shapes extends readonly AnyShape[]>
     return this._applyOperations(input, output, options, null) as Result;
   }
 
-  protected _applyAsync(input: unknown, options: ApplyOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {
+  protected _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result<Output<Shapes[number]>>> {
     return new Promise(resolve => {
       const shapes = this._lookup(input);
       const shapesLength = shapes.length;

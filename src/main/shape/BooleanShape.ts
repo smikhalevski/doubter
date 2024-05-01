@@ -2,7 +2,7 @@ import { booleanCoercibleInputs, coerceToBoolean } from '../coerce/boolean';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../constants';
 import { Type } from '../Type';
-import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
 
@@ -15,7 +15,7 @@ const booleanInputs = Object.freeze([Type.BOOLEAN]);
  */
 export class BooleanShape extends CoercibleShape<boolean> {
   /**
-   * Returns issues associated with an invalid input value type.
+   * The type issue options or the type issue message.
    */
   protected _options;
 
@@ -34,7 +34,7 @@ export class BooleanShape extends CoercibleShape<boolean> {
     return this.isCoercing ? booleanCoercibleInputs : booleanInputs;
   }
 
-  protected _apply(input: any, options: ApplyOptions, nonce: number): Result<boolean> {
+  protected _apply(input: any, options: ParseOptions, nonce: number): Result<boolean> {
     let output = input;
 
     if (typeof output !== 'boolean' && (output = this._applyCoerce(input)) === NEVER) {
