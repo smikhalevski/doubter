@@ -1990,18 +1990,10 @@ shape.at('bar')
 
 # Localization
 
-All shape factories and built-in checks support custom issue messages:
+All shape factories and built-in checks support a custom issue messages:
 
 ```ts
 d.string('Hey, string here').min(3, 'Too short');
-```
-
-[Built-in checks that have a param](#validation-errors), such as
-[`min`](https://smikhalevski.github.io/doubter/next/classes/core.StringShape.html#min) constraint in the example above,
-can use a `%s` placeholder that would be interpolated with the param value.
-
-```ts
-d.string().min(3, 'Minimum length is %s');
 ```
 
 [Pass a function as a message](https://smikhalevski.github.io/doubter/next/types/core.MessageCallback.html), and
@@ -2019,11 +2011,10 @@ d.number().min(5, message);
 ```
 
 Semantics described above are applied to the
-[`message` option](https://smikhalevski.github.io/doubter/next/interfaces/core.ConstraintOptions.html#message)
-as well:
+[`message`](https://smikhalevski.github.io/doubter/next/interfaces/core.ConstraintOptions.html#message) option as well:
 
 ```ts
-d.string().length(3, { message: 'Expected length is %s' })
+d.string().length(3, { message: 'Invalid length' })
 ```
 
 ## Override default messages

@@ -123,8 +123,6 @@ export interface IssueOptions {
 /**
  * A callback that returns an issue message, or an issue message string.
  *
- * `%s` placeholder in string messages is replaced with the {@link Issue.param}.
- *
  * @group Issues
  */
 export type Message = MessageCallback | string;
@@ -136,8 +134,8 @@ export type Message = MessageCallback | string;
  *
  * @param issue The issue for which the message should be produced.
  * @param options The parsing options.
- * @returns The value that should be used as an issue message. The returned value is ignored if `issue.message` was
- * assigned a non-`undefined` value inside the callback.
+ * @returns The value that should be used as an issue message. If a non-`undefined` value is returned, it is assigned
+ * to the  {@link Issue.message} property.
  * @group Issues
  */
 export type MessageCallback = (issue: Issue, options: ApplyOptions) => any;
