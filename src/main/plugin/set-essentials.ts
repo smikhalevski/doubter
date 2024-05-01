@@ -10,25 +10,13 @@
  *
  * @module plugin/set-essentials
  */
-import { CODE_SET_MAX, CODE_SET_MIN } from '../constants';
+import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
 import { SetShape } from '../shape/SetShape';
 import { AnyShape } from '../shape/Shape';
-import { Any, IssueOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
+import { IssueOptions, Message } from '../types';
+import { createIssue } from '../utils';
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must have the minimum size of %s"
-     */
-    'set.min': Message | Any;
-
-    /**
-     * @default "Must have the maximum size of %s"
-     */
-    'set.max': Message | Any;
-  }
-
   export interface SetShape<ValueShape extends AnyShape> {
     /**
      * Constrains the set size.
@@ -79,38 +67,31 @@ declare module '../core' {
  * Enhances {@link core!SetShape SetShape} with additional methods.
  */
 export default function enableSetEssentials(ctor: typeof SetShape): void {
-  const { messages, prototype } = ctor;
-
-  messages[CODE_SET_MIN] = 'Must have the minimum size of %s';
-  messages[CODE_SET_MAX] = 'Must have the maximum size of %s';
+  const { prototype } = ctor;
 
   prototype.size = function (size, options) {
     return this.min(size, options).max(size, options);
   };
 
-  prototype.min = function (size, options) {
-    const issueFactory = createIssueFactory(CODE_SET_MIN, ctor.messages[CODE_SET_MIN], options, size);
-
+  prototype.min = function (size, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.size >= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_SET_MIN, value, MESSAGE_SET_MIN, param, options, issueOptions)];
       },
       { type: CODE_SET_MIN, param: size }
     );
   };
 
-  prototype.max = function (size, options) {
-    const issueFactory = createIssueFactory(CODE_SET_MAX, ctor.messages[CODE_SET_MAX], options, size);
-
+  prototype.max = function (size, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.size <= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_SET_MAX, value, MESSAGE_SET_MAX, param, options, issueOptions)];
       },
       { type: CODE_SET_MAX, param: size }
     );

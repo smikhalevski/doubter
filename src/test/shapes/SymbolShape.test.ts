@@ -1,5 +1,5 @@
-import { Shape, SymbolShape } from '../../main';
-import { CODE_TYPE } from '../../main/constants';
+import { SymbolShape } from '../../main';
+import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../../main/constants';
 import { Type } from '../../main/Type';
 
 describe('SymbolShape', () => {
@@ -19,14 +19,14 @@ describe('SymbolShape', () => {
   test('raises an issue if an input is not a symbol', () => {
     expect(new SymbolShape().try('aaa')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'aaa', param: Type.SYMBOL, message: Shape.messages['type.symbol'] }],
+      issues: [{ code: CODE_TYPE_SYMBOL, input: 'aaa', message: MESSAGE_TYPE_SYMBOL }],
     });
   });
 
   test('overrides a message for a type issue', () => {
     expect(new SymbolShape({ message: 'aaa', meta: 'bbb' }).try(111)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 111, param: Type.SYMBOL, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE_SYMBOL, input: 111, message: 'aaa', meta: 'bbb' }],
     });
   });
 });

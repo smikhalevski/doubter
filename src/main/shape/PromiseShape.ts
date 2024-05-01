@@ -1,12 +1,12 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE } from '../constants';
+import { CODE_TYPE_PROMISE, MESSAGE_TYPE_PROMISE } from '../constants';
 import { isArray } from '../internal/lang';
 import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, unknownInputs } from './Shape';
 
 const promiseInputs = Object.freeze([Type.PROMISE]);
 
@@ -34,11 +34,6 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates a new {@link PromiseShape} instance.
    *
    * @param valueShape The shape of the resolved value, or `null` if resolved value shouldn't be parsed.
@@ -52,7 +47,6 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.promise'], options, Type.PROMISE);
   }
 
   deepPartial(): DeepPartialPromiseShape<ValueShape> {
@@ -83,7 +77,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     let output = input;
 
     if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_PROMISE, input, MESSAGE_TYPE_PROMISE, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }
@@ -96,7 +90,9 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     let output = input;
 
     if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
-      return Promise.resolve([this._typeIssueFactory(input, options)]);
+      return Promise.resolve([
+        createIssue(CODE_TYPE_PROMISE, input, MESSAGE_TYPE_PROMISE, undefined, options, this._options),
+      ]);
     }
 
     return output.then((value: unknown) =>

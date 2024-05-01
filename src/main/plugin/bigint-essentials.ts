@@ -11,24 +11,12 @@
  * @module plugin/bigint-essentials
  */
 
-import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../constants';
+import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
 import { BigIntShape } from '../shape/BigIntShape';
-import { Any, IssueOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
+import { IssueOptions, Message } from '../types';
+import { createIssue } from '../utils';
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must be greater than or equal to %s"
-     */
-    'bigint.min': Message | Any;
-
-    /**
-     * @default "Must be less than or equal to %s"
-     */
-    'bigint.max': Message | Any;
-  }
-
   export interface BigIntShape {
     /**
      * Constrains the bigint to be greater than zero.
@@ -98,10 +86,7 @@ declare module '../core' {
  * Enhances {@link core!BigIntShape BigIntShape} with additional methods.
  */
 export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
-  const { messages, prototype } = ctor;
-
-  messages[CODE_BIGINT_MIN] = 'Must be greater than or equal to %s';
-  messages[CODE_BIGINT_MAX] = 'Must be less than or equal to %s';
+  const { prototype } = ctor;
 
   prototype.positive = function (options) {
     return this.min(1, options);
@@ -119,31 +104,29 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
     return this.min(0, options);
   };
 
-  prototype.min = function (value, options) {
+  prototype.min = function (value, issueOptions) {
     const param = BigInt(value);
-    const issueFactory = createIssueFactory(CODE_BIGINT_MIN, ctor.messages[CODE_BIGINT_MIN], options, param);
 
     return this.addOperation(
       (value, param, options) => {
         if (value >= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_BIGINT_MIN, value, MESSAGE_BIGINT_MIN, param, options, issueOptions)];
       },
       { type: CODE_BIGINT_MIN, param }
     );
   };
 
-  prototype.max = function (value, options) {
+  prototype.max = function (value, issueOptions) {
     const param = BigInt(value);
-    const issueFactory = createIssueFactory(CODE_BIGINT_MAX, ctor.messages[CODE_BIGINT_MAX], options, param);
 
     return this.addOperation(
       (value, param, options) => {
         if (value <= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_BIGINT_MAX, value, MESSAGE_BIGINT_MAX, param, options, issueOptions)];
       },
       { type: CODE_BIGINT_MAX, param }
     );

@@ -479,11 +479,11 @@ with the array of issues:
   ok: false,
   issues: [
     {
-      code: 'type',
+      code: 'type.number',
       path: ['age'],
       input: 'seventeen',
       message: 'Must be a number',
-      param: Type.NUMBER,
+      param: undefined,
       meta: undefied
     }
   ]
@@ -575,13 +575,24 @@ for more details.
 | `string.includes`   | [`d.string().includes(x)`](#string)                 | The included string `x`                               |
 | `string.startsWith` | [`d.string().startsWith(x)`](#string)               | The substring `x`                                     |
 | `string.endsWith`   | [`d.string().endsWith(x)`](#string)                 | The substring `x`                                     |
-| `type`              | All shapes                                          | The expected [input value type](#introspection)       |
+| `type.array`        | [`d.array()`](#array)                               | —                                                     |
+| `type.bigint`       | [`d.bigint()`](#bigint)                             | —                                                     |
+| `type.boolean`      | [`d.boolean()`](#boolean-bool)                      | —                                                     |
 | `type.const`        | [`d.const(x)`](#const)                              | The expected constant value `x`                       |
+| `type.date`         | [`d.date()`](#date)                                 | —                                                     |
 | `type.enum`         | [`d.enum(…)`](#enum)                                | The array of unique value                             |
+| `type.function`     | [`d.function()`](#function-fn)                      | —                                                     |
 | `type.instanceOf`   | [`d.instanceOf(Class)`](#instanceof)                | The class constructor `Class`                         |
 | `type.intersection` | [`d.and(…)`](#intersection-and)                     | —                                                     |
+| `type.map`          | [`d.map()`](#map)                                   | —                                                     |
 | `type.never`        | [`d.never()`](#never)                               | —                                                     |
+| `type.number`       | [`d.number()`](#number)                             | —                                                     |
+| `type.object`       | [`d.object()`](#object)                             | —                                                     |
+| `type.promise`      | [`d.promise()`](#promise)                           | —                                                     |
 | `type.tuple`        | [`d.tuple([…])`](#tuple)                            | The expected tuple length                             |
+| `type.set`          | [`d.set()`](#set)                                   | —                                                     |
+| `type.string`       | [`d.string()`](#string)                             | —                                                     |
+| `type.symbol`       | [`d.symbol()`](#symbol)                             | —                                                     |
 | `type.union`        | [`d.or(…)`](#union-or)                              | [Issues raised by a union](#issues-raised-by-a-union) |
 
 ## Global error message formatter
@@ -2017,34 +2028,17 @@ d.string().length(3, { message: 'Expected length is %s' })
 
 ## Override default messages
 
-Default issue messages can be overridden globally:
+Default issue messages can be overridden:
 
 ```ts
 import * as d from 'doubter';
 
-d.Shape.messages['type.string'] = 'Yo, not a string!';
-
-d.string().parse(42);
+d.string().parse(42, {
+  messages: {
+    'type.string': 'Yo, not a string!'
+  }
+});
 // ❌ ValidationError: type at /: Yo, not a string!
-```
-
-[Default issue messages](https://smikhalevski.github.io/doubter/next/interfaces/core.Messages.html) can be callbacks and
-support `%s` placeholder. For example, you can implement a context-based message defaults using callbacks:
-
-```ts
-d.Shape.messages['type.boolean'] = (issue, options) => {
-  return options.context?.i18n?.bool || 'Must be a boolean';
-};
-
-d.boolean().parse(42);
-// ❌ ValidationError: type at /: Must be a boolean
-
-const greek = {
-  bool: 'Πρέπει να είναι boolean'
-};
-
-d.boolean({ context: { i18n: greek } }).parse(42);
-// ❌ ValidationError: type at /: Πρέπει να είναι boolean
 ```
 
 # Plugins
@@ -2377,8 +2371,8 @@ second (greater is better).
 
 <p align="center"><picture>
   <source media="(prefers-color-scheme: dark)" srcset="./assets/perf-dark.svg" />
-  <source media="(prefers-color-scheme: light)" srcset="./assets/perf.svg" />
-  <img alt="Performance comparison chart" src="./assets/perf.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="./assets/perf-light.svg" />
+  <img alt="Performance comparison chart" src="./assets/perf-light.svg" />
 </picture></p>
 
 Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast#readme) on Apple M1 with Node.js v20.4.0.
@@ -4068,20 +4062,18 @@ The result of `try` would contain a grouping issue:
     issueGroups: [
       [
         {
-          code: 'type',
+          code: 'type.string',
           path: ['name'],
           input: 47,
-          message: 'Must be a string',
-          param: Type.STRING
+          message: 'Must be a string'
         }
       ],
       [
         {
-          code: 'type',
+          code: 'type.number',
           path: ['age'],
           input: null,
-          message: 'Must be a number',
-          param: Type.NUMBER
+          message: 'Must be a number'
         }
       ]
     ]

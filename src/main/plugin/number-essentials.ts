@@ -19,10 +19,17 @@ import {
   CODE_NUMBER_LT,
   CODE_NUMBER_LTE,
   CODE_NUMBER_MULTIPLE_OF,
+  MESSAGE_NUMBER_FINITE,
+  MESSAGE_NUMBER_GT,
+  MESSAGE_NUMBER_GTE,
+  MESSAGE_NUMBER_INT,
+  MESSAGE_NUMBER_LT,
+  MESSAGE_NUMBER_LTE,
+  MESSAGE_NUMBER_MULTIPLE_OF,
 } from '../constants';
 import { NumberShape } from '../shape/NumberShape';
-import { Any, IssueOptions, Message } from '../types';
-import { createIssueFactory, extractOptions } from '../utils';
+import { IssueOptions, Message } from '../types';
+import { createIssue } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**
@@ -46,43 +53,6 @@ export interface MultipleOfOptions extends IssueOptions {
 }
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must be a finite number"
-     */
-    'number.finite': Message | Any;
-
-    /**
-     * @default "Must be an integer"
-     */
-    'number.int': Message | Any;
-
-    /**
-     * @default "Must be greater than %s"
-     */
-    'number.gt': Message | Any;
-
-    /**
-     * @default "Must be greater than or equal to %s"
-     */
-    'number.gte': Message | Any;
-
-    /**
-     * @default "Must be less than %s"
-     */
-    'number.lt': Message | Any;
-
-    /**
-     * @default "Must be less than or equal to %s"
-     */
-    'number.lte': Message | Any;
-
-    /**
-     * @default "Must be a multiple of %s"
-     */
-    'number.multipleOf': Message | Any;
-  }
-
   export interface NumberShape {
     /**
      * Constrains the number to be a finite number.
@@ -251,40 +221,29 @@ declare module '../core' {
  * Enhances {@link core!NumberShape NumberShape} with additional methods.
  */
 export default function enableNumberEssentials(ctor: typeof NumberShape): void {
-  const { messages, prototype } = ctor;
+  const { prototype } = ctor;
 
-  messages[CODE_NUMBER_FINITE] = 'Must be a finite number';
-  messages[CODE_NUMBER_INT] = 'Must be an integer';
-  messages[CODE_NUMBER_GT] = 'Must be greater than %s';
-  messages[CODE_NUMBER_GTE] = 'Must be greater than or equal to %s';
-  messages[CODE_NUMBER_LT] = 'Must be less than %s';
-  messages[CODE_NUMBER_LTE] = 'Must be less than or equal to %s';
-  messages[CODE_NUMBER_MULTIPLE_OF] = 'Must be a multiple of %s';
-
-  prototype.finite = function (options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_FINITE, ctor.messages[CODE_NUMBER_FINITE], options, undefined);
-
+  prototype.finite = function (issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (isFinite(value)) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_NUMBER_FINITE, value, MESSAGE_NUMBER_FINITE, param, options, issueOptions)];
       },
       { type: CODE_NUMBER_FINITE }
     );
   };
 
-  prototype.int = function (options) {
+  prototype.int = function (issueOptions) {
     const { isInteger } = Number;
-    const issueFactory = createIssueFactory(CODE_NUMBER_INT, ctor.messages[CODE_NUMBER_INT], options, undefined);
 
     return this.addOperation(
       (value, param, options) => {
         if (isInteger(value)) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_NUMBER_INT, value, MESSAGE_NUMBER_INT, param, options, issueOptions)];
       },
       { type: CODE_NUMBER_INT }
     );
@@ -310,57 +269,49 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     return this.gte(minValue, options).lte(maxValue, options);
   };
 
-  prototype.gt = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_GT, ctor.messages[CODE_NUMBER_GT], options, value);
-
+  prototype.gt = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value > param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_NUMBER_GT, value, MESSAGE_NUMBER_GT, param, options, issueOptions)];
       },
       { type: CODE_NUMBER_GT, param: value }
     );
   };
 
-  prototype.lt = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_LT, ctor.messages[CODE_NUMBER_LT], options, value);
-
+  prototype.lt = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value < param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_NUMBER_LT, value, MESSAGE_NUMBER_LT, param, options, issueOptions)];
       },
       { type: CODE_NUMBER_LT, param: value }
     );
   };
 
-  prototype.gte = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_GTE, ctor.messages[CODE_NUMBER_GTE], options, value);
-
+  prototype.gte = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value >= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_NUMBER_GTE, value, MESSAGE_NUMBER_GTE, param, options, issueOptions)];
       },
       { type: CODE_NUMBER_GTE, param: value }
     );
   };
 
-  prototype.lte = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_NUMBER_LTE, ctor.messages[CODE_NUMBER_LTE], options, value);
-
+  prototype.lte = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value <= param) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_NUMBER_LTE, value, MESSAGE_NUMBER_LTE, param, options, issueOptions)];
       },
       { type: CODE_NUMBER_LTE, param: value }
     );
@@ -370,25 +321,20 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
 
   prototype.max = prototype.lte;
 
-  prototype.multipleOf = function (divisor, options) {
+  prototype.multipleOf = function (divisor, issueOptions) {
     const { abs, round } = Math;
-    const { precision } = extractOptions(options);
 
-    const epsilon = precision !== undefined ? Math.pow(10, -precision) : -1;
-
-    const issueFactory = createIssueFactory(
-      CODE_NUMBER_MULTIPLE_OF,
-      ctor.messages[CODE_NUMBER_MULTIPLE_OF],
-      options,
-      divisor
-    );
+    const epsilon =
+      issueOptions !== undefined && typeof issueOptions === 'object' && issueOptions.precision !== undefined
+        ? Math.pow(10, -issueOptions.precision)
+        : -1;
 
     return this.addOperation(
       (value, param, options) => {
         if (epsilon !== -1 ? abs(round(value / param) - value / param) <= epsilon : value % param === 0) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_NUMBER_MULTIPLE_OF, value, MESSAGE_NUMBER_MULTIPLE_OF, param, options, issueOptions)];
       },
       { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
     );

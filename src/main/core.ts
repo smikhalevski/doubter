@@ -66,5 +66,4 @@ export type {
   Output,
   RefineShape,
 } from './shape/Shape';
-export type { Messages } from './messages';
 export type * from './types';

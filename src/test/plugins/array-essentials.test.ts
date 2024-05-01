@@ -1,5 +1,5 @@
 import { ArrayShape, ConstShape, Shape } from '../../main';
-import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN } from '../../main/constants';
+import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN, MESSAGE_ARRAY_INCLUDES } from '../../main/constants';
 
 describe('length', () => {
   test('checks length', () => {
@@ -56,7 +56,7 @@ describe('includes', () => {
     expect(shape.try([111])).toEqual({ ok: true, value: [111] });
     expect(shape.try([222])).toEqual({
       ok: false,
-      issues: [{ code: CODE_ARRAY_INCLUDES, input: [222], message: Shape.messages[CODE_ARRAY_INCLUDES], param: 111 }],
+      issues: [{ code: CODE_ARRAY_INCLUDES, input: [222], message: MESSAGE_ARRAY_INCLUDES, param: 111 }],
     });
   });
 
@@ -71,7 +71,7 @@ describe('includes', () => {
         {
           code: CODE_ARRAY_INCLUDES,
           input: [222],
-          message: Shape.messages[CODE_ARRAY_INCLUDES],
+          message: MESSAGE_ARRAY_INCLUDES,
           param: expect.any(ConstShape),
         },
       ],
@@ -90,7 +90,7 @@ describe('includes', () => {
         {
           code: CODE_ARRAY_INCLUDES,
           input: [111, 333],
-          message: Shape.messages[CODE_ARRAY_INCLUDES],
+          message: MESSAGE_ARRAY_INCLUDES,
           param: expect.any(ConstShape),
         },
       ],

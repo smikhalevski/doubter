@@ -97,21 +97,21 @@
     "@badrap/valita": "^0.3.8",
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/jest": "^29.5.12",
-    "@types/qs": "^6.9.14",
-    "ajv": "^8.12.0",
+    "@types/qs": "^6.9.15",
+    "ajv": "^8.13.0",
     "jest": "^29.7.0",
     "myzod": "^1.11.0",
     "prettier": "^3.2.5",
-    "qs": "^6.12.0",
+    "qs": "^6.12.1",
     "rimraf": "^5.0.5",
-    "rollup": "^4.13.2",
+    "rollup": "^4.17.2",
     "toofast": "^2.0.0",
     "ts-jest": "^29.1.2",
     "tsd": "^0.31.0",
     "tslib": "^2.6.2",
-    "typedoc": "^0.25.12",
+    "typedoc": "^0.25.13",
     "typedoc-custom-css": "github:smikhalevski/typedoc-custom-css#master",
-    "typescript": "^5.4.3",
-    "zod": "^3.22.4"
+    "typescript": "^5.4.5",
+    "zod": "^3.23.5"
   }
 }

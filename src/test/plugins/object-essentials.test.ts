@@ -1,10 +1,11 @@
-import { ObjectShape, Shape } from '../../main';
+import { ObjectShape } from '../../main';
 import {
   CODE_OBJECT_ALL_KEYS,
   CODE_OBJECT_OR_KEYS,
   CODE_OBJECT_OXOR_KEYS,
   CODE_OBJECT_PLAIN,
   CODE_OBJECT_XOR_KEYS,
+  MESSAGE_OBJECT_PLAIN,
 } from '../../main/constants';
 import { MockShape } from '../shapes/mocks';
 
@@ -16,7 +17,7 @@ describe('plain', () => {
 
     expect(shape.try(new (class {})())).toEqual({
       ok: false,
-      issues: [{ code: CODE_OBJECT_PLAIN, input: {}, message: Shape.messages[CODE_OBJECT_PLAIN], param: undefined }],
+      issues: [{ code: CODE_OBJECT_PLAIN, input: {}, message: MESSAGE_OBJECT_PLAIN, param: undefined }],
     });
   });
 

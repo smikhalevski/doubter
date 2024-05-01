@@ -7,7 +7,7 @@ import {
   StringShape,
   ValidationError,
 } from '../../main';
-import { ERR_SHAPE_EXPECTED } from '../../main/constants';
+import { CODE_TYPE_STRING, ERROR_SHAPE_EXPECTED, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { identity } from '../../main/internal/lang';
 import { nextNonce, resetNonce } from '../../main/internal/shapes';
 import { Type } from '../../main/Type';
@@ -111,13 +111,13 @@ describe('LazyShape', () => {
     test('throws an exception on premature access', () => {
       const shape: LazyShape<any, any> = new LazyShape(() => shape.providedShape, identity);
 
-      expect(() => shape.providedShape).toThrow(new Error(ERR_SHAPE_EXPECTED));
+      expect(() => shape.providedShape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
 
     test('throws an exception if shape is accessed from the provider', () => {
       const shape: LazyShape<any, any> = new LazyShape(() => shape.check(() => null).providedShape, identity);
 
-      expect(() => shape.providedShape).toThrow(new Error(ERR_SHAPE_EXPECTED));
+      expect(() => shape.providedShape).toThrow(new Error(ERROR_SHAPE_EXPECTED));
     });
   });
 
@@ -185,11 +185,8 @@ describe('LazyShape', () => {
         ok: false,
         issues: [
           {
-            code: 'type',
-            message: 'Must be a string',
-            param: {
-              name: 'string',
-            },
+            code: CODE_TYPE_STRING,
+            message: MESSAGE_TYPE_STRING,
             path: ['key3'],
           },
         ],

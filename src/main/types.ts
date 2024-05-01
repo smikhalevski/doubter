@@ -354,6 +354,11 @@ export interface ApplyOptions {
    * The custom context.
    */
   readonly context?: any;
+
+  /**
+   * The map from an error code to a default issue message.
+   */
+  readonly messages?: { [code: string | number]: Message | Any };
 }
 
 /**

@@ -11,30 +11,20 @@
  * @module plugin/array-essentials
  */
 
-import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN } from '../constants';
+import {
+  CODE_ARRAY_INCLUDES,
+  CODE_ARRAY_MAX,
+  CODE_ARRAY_MIN,
+  MESSAGE_ARRAY_INCLUDES,
+  MESSAGE_ARRAY_MAX,
+  MESSAGE_ARRAY_MIN,
+} from '../constants';
 import { ArrayShape } from '../shape/ArrayShape';
 import { AnyShape, Shape } from '../shape/Shape';
-import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { ApplyOptions, IssueOptions, Message, Result } from '../types';
+import { createIssue } from '../utils';
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must include a value"
-     */
-    'array.includes': Message | Any;
-
-    /**
-     * @default "Must have the maximum length of %s"
-     */
-    'array.max': Message | Any;
-
-    /**
-     * @default "Must have the minimum length of %s"
-     */
-    'array.min': Message | Any;
-  }
-
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
     /**
      * Constrains the array length.
@@ -96,39 +86,31 @@ declare module '../core' {
  * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
  */
 export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
-  const { messages, prototype } = ctor;
-
-  messages[CODE_ARRAY_INCLUDES] = 'Must include a value';
-  messages[CODE_ARRAY_MAX] = 'Must have the maximum length of %s';
-  messages[CODE_ARRAY_MIN] = 'Must have the minimum length of %s';
+  const { prototype } = ctor;
 
   prototype.length = function (length, options) {
     return this.min(length, options).max(length, options);
   };
 
-  prototype.min = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MIN, ctor.messages[CODE_ARRAY_MIN], options, length);
-
+  prototype.min = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length >= length) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_ARRAY_MIN, value, MESSAGE_ARRAY_MIN, param, options, issueOptions)];
       },
       { type: CODE_ARRAY_MIN, param: length }
     );
   };
 
-  prototype.max = function (length, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_MAX, ctor.messages[CODE_ARRAY_MAX], options, length);
-
+  prototype.max = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length <= length) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_ARRAY_MAX, value, MESSAGE_ARRAY_MAX, param, options, issueOptions)];
       },
       { type: CODE_ARRAY_MAX, param: length }
     );
@@ -138,16 +120,14 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     return this.min(1, options);
   };
 
-  prototype.includes = function (value, options) {
-    const issueFactory = createIssueFactory(CODE_ARRAY_INCLUDES, ctor.messages[CODE_ARRAY_INCLUDES], options, value);
-
+  prototype.includes = function (value, issueOptions) {
     if (!(value instanceof Shape)) {
       return this.addOperation(
         (value, param, options) => {
           if (value.includes(param)) {
             return null;
           }
-          return [issueFactory(value, options)];
+          return [createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, param, options, issueOptions)];
         },
         { type: CODE_ARRAY_INCLUDES, param: value }
       );
@@ -156,7 +136,9 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     if (value.isAsync) {
       const next = (value: unknown[], shape: Shape, options: ApplyOptions, index: number): Promise<Result> => {
         if (index === value.length) {
-          return Promise.resolve([issueFactory(value, options)]);
+          return Promise.resolve([
+            createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, shape, options, issueOptions),
+          ]);
         }
 
         return shape.tryAsync(value[index]).then(result => {
@@ -180,7 +162,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
             return null;
           }
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, param, options, issueOptions)];
       },
       { type: CODE_ARRAY_INCLUDES, param: value }
     );

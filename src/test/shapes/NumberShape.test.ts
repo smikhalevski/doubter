@@ -1,6 +1,6 @@
-import { NumberShape, Shape } from '../../main';
+import { NumberShape } from '../../main';
 import { numberCoercibleInputs } from '../../main/coerce/number';
-import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE } from '../../main/constants';
+import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../../main/constants';
 import { Type } from '../../main/Type';
 
 describe('NumberShape', () => {
@@ -18,12 +18,12 @@ describe('NumberShape', () => {
   test('raises if value is not a number', () => {
     expect(new NumberShape().try('111')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: '111', param: Type.NUMBER, message: Shape.messages['type.number'] }],
+      issues: [{ code: CODE_TYPE_NUMBER, input: '111', message: MESSAGE_TYPE_NUMBER }],
     });
 
     expect(new NumberShape().try(NaN)).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: NaN, param: Type.NUMBER, message: expect.any(String) }],
+      issues: [{ code: CODE_TYPE_NUMBER, input: NaN, message: expect.any(String) }],
     });
 
     expect(new NumberShape().gt(2).parse(3)).toBe(3);
@@ -36,7 +36,7 @@ describe('NumberShape', () => {
   test('overrides message for type issue', () => {
     expect(new NumberShape({ message: 'aaa', meta: 'bbb' }).try('ccc')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE, input: 'ccc', param: Type.NUMBER, message: 'aaa', meta: 'bbb' }],
+      issues: [{ code: CODE_TYPE_NUMBER, input: 'ccc', message: 'aaa', meta: 'bbb' }],
     });
   });
 
@@ -95,7 +95,7 @@ describe('NumberShape', () => {
     test('raises an issue if coercion fails', () => {
       expect(new NumberShape().coerce().try(['aaa'])).toEqual({
         ok: false,
-        issues: [{ code: CODE_TYPE, input: ['aaa'], message: Shape.messages['type.number'], param: Type.NUMBER }],
+        issues: [{ code: CODE_TYPE_NUMBER, input: ['aaa'], message: MESSAGE_TYPE_NUMBER }],
       });
     });
   });

@@ -1,11 +1,11 @@
 import { NEVER } from '../coerce/never';
 import { coerceToNumber, numberCoercibleInputs } from '../coerce/number';
-import { CODE_TYPE } from '../constants';
+import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants';
 import { Type } from '../Type';
 import { Any, ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AllowShape, ReplaceShape, Shape } from './Shape';
+import { AllowShape, ReplaceShape } from './Shape';
 
 const numberInputs = Object.freeze([Type.NUMBER]);
 
@@ -18,7 +18,7 @@ export class NumberShape extends CoercibleShape<number> {
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates a new {@link NumberShape} instance.
@@ -28,7 +28,7 @@ export class NumberShape extends CoercibleShape<number> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.number'], options, Type.NUMBER);
+    this._options = options;
   }
 
   /**
@@ -55,7 +55,7 @@ export class NumberShape extends CoercibleShape<number> {
     let output = input;
 
     if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_NUMBER, input, MESSAGE_TYPE_NUMBER, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }

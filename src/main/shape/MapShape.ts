@@ -1,20 +1,12 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE } from '../constants';
+import { CODE_TYPE_MAP, MESSAGE_TYPE_MAP } from '../constants';
 import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import {
-  AnyShape,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  Input,
-  OptionalDeepPartialShape,
-  Output,
-  Shape,
-} from './Shape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';
 
 const mapInputs = Object.freeze([Type.MAP]);
 const mapCoercibleInputs = Object.freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
@@ -40,11 +32,6 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates a new {@link MapShape} instance.
    *
    * @param keyShape The key shape.
@@ -67,7 +54,6 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.map'], options, Type.MAP);
   }
 
   at(key: unknown): AnyShape | null {
@@ -126,7 +112,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // No coercion or not coercible
       !(changed = (entries = this._applyCoerce(input)) !== NEVER)
     ) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_MAP, input, MESSAGE_TYPE_MAP, undefined, options, this._options)];
     }
 
     const { keyShape, valueShape, operations } = this;
@@ -196,7 +182,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // No coercion or not coercible
         !(changed = (entries = this._applyCoerce(input)) !== NEVER)
       ) {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve([createIssue(CODE_TYPE_MAP, input, MESSAGE_TYPE_MAP, undefined, options, this._options)]);
         return;
       }
 

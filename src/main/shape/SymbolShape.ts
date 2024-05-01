@@ -1,7 +1,7 @@
-import { CODE_TYPE } from '../constants';
+import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../constants';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
 const symbolInputs = Object.freeze([Type.SYMBOL]);
@@ -15,7 +15,7 @@ export class SymbolShape extends Shape<symbol> {
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates a new {@link SymbolShape} instance.
@@ -25,7 +25,7 @@ export class SymbolShape extends Shape<symbol> {
   constructor(options?: IssueOptions | Message) {
     super();
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.symbol'], options, Type.SYMBOL);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -34,7 +34,7 @@ export class SymbolShape extends Shape<symbol> {
 
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<symbol> {
     if (typeof input !== 'symbol') {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_SYMBOL, input, MESSAGE_TYPE_SYMBOL, undefined, options, this._options)];
     }
     return this._applyOperations(input, input, options, null) as Result;
   }

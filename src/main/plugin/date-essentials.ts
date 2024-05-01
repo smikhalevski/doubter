@@ -11,25 +11,13 @@
  * @module plugin/date-essentials
  */
 
-import { CODE_DATE_MAX, CODE_DATE_MIN } from '../constants';
+import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
 import { DateShape } from '../shape/DateShape';
 import { Shape } from '../shape/Shape';
-import { Any, IssueOptions, Message } from '../types';
-import { createIssueFactory } from '../utils';
+import { IssueOptions, Message } from '../types';
+import { createIssue } from '../utils';
 
 declare module '../core' {
-  export interface Messages {
-    /**
-     * @default "Must be after %s"
-     */
-    'date.min': Message | Any;
-
-    /**
-     * @default "Must be before %s"
-     */
-    'date.max': Message | Any;
-  }
-
   export interface DateShape {
     /**
      * Constrains the input date to be greater than or equal to another date.
@@ -99,38 +87,33 @@ declare module '../core' {
  * Enhances {@link core!DateShape DateShape} with additional methods.
  */
 export default function enableDateEssentials(ctor: typeof DateShape): void {
-  const { messages, prototype } = ctor;
+  const { prototype } = ctor;
 
-  messages[CODE_DATE_MIN] = 'Must be after %s';
-  messages[CODE_DATE_MAX] = 'Must be before %s';
-
-  prototype.min = function (value, options) {
+  prototype.min = function (value, issueOptions) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MIN, ctor.messages[CODE_DATE_MIN], options, param);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.getTime() >= timestamp) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_DATE_MIN, value, MESSAGE_DATE_MIN, param, options, issueOptions)];
       },
       { type: CODE_DATE_MIN, param }
     );
   };
 
-  prototype.max = function (value, options) {
+  prototype.max = function (value, issueOptions) {
     const param = new Date(value);
     const timestamp = param.getTime();
-    const issueFactory = createIssueFactory(CODE_DATE_MAX, ctor.messages[CODE_DATE_MAX], options, param);
 
     return this.addOperation(
       (value, param, options) => {
         if (value.getTime() <= timestamp) {
           return null;
         }
-        return [issueFactory(value, options)];
+        return [createIssue(CODE_DATE_MAX, value, MESSAGE_DATE_MAX, param, options, issueOptions)];
       },
       { type: CODE_DATE_MAX, param }
     );

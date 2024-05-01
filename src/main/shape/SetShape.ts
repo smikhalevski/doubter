@@ -1,13 +1,13 @@
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE } from '../constants';
+import { CODE_TYPE_SET, MESSAGE_TYPE_SET } from '../constants';
 import { toArrayIndex, unique } from '../internal/arrays';
 import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape';
+import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output } from './Shape';
 
 const setInputs = Object.freeze([Type.SET]);
 
@@ -27,11 +27,6 @@ export class SetShape<ValueShape extends AnyShape>
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Creates a new {@link SetShape} instance.
    *
    * @param valueShape The value shape.
@@ -48,7 +43,6 @@ export class SetShape<ValueShape extends AnyShape>
     super();
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.set'], options, Type.SET);
   }
 
   at(key: unknown): AnyShape | null {
@@ -94,7 +88,7 @@ export class SetShape<ValueShape extends AnyShape>
       // No coercion or not coercible
       !(changed = (values = this._applyCoerce(input)) !== NEVER)
     ) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_SET, input, MESSAGE_TYPE_SET, undefined, options, this._options)];
     }
 
     const { valueShape } = this;
@@ -134,7 +128,7 @@ export class SetShape<ValueShape extends AnyShape>
         // No coercion or not coercible
         !(changed = (values = this._applyCoerce(input)) !== NEVER)
       ) {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve([createIssue(CODE_TYPE_SET, input, MESSAGE_TYPE_SET, undefined, options, this._options)]);
         return;
       }
 

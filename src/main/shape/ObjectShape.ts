@@ -1,4 +1,4 @@
-import { CODE_OBJECT_EXACT, CODE_TYPE } from '../constants';
+import { CODE_OBJECT_EXACT, CODE_TYPE_OBJECT, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants';
 import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
 import { isArray, isObject } from '../internal/lang';
 import { cloneDict, cloneDictKeys, Dict, overrideProperty, ReadonlyDict, setObjectProperty } from '../internal/objects';
@@ -14,7 +14,7 @@ import {
 } from '../internal/shapes';
 import { Type } from '../Type';
 import { ApplyOptions, Issue, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue } from '../utils';
 import { EnumShape } from './EnumShape';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
 
@@ -90,14 +90,9 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   protected _options;
 
   /**
-   * Returns issues associated with an invalid input value type.
-   */
-  protected _typeIssueFactory;
-
-  /**
    * Returns issues which describe that an object has unknown properties.
    */
-  protected _exactIssueFactory?: (input: unknown, options: ApplyOptions, param: unknown) => Issue;
+  protected _exactOptions: IssueOptions | Message | undefined = undefined;
 
   /**
    * Creates a new {@link ObjectShape} instance.
@@ -142,7 +137,6 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     this.valueShapes = Object.values(propShapes);
 
     this._options = options;
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE, Shape.messages['type.object'], options, Type.OBJECT);
   }
 
   /**
@@ -313,7 +307,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   exact(options?: IssueOptions | Message): ObjectShape<PropShapes, null> {
     const shape = new ObjectShape(this.propShapes, null, this._options, 'exact');
 
-    shape._exactIssueFactory = createIssueFactory(CODE_OBJECT_EXACT, Shape.messages[CODE_OBJECT_EXACT], options);
+    shape._exactOptions = options;
 
     return copyOperations(this, shape);
   }
@@ -363,7 +357,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     nonce: number
   ): Result<InferObject<PropShapes, RestShape, OUTPUT>> {
     if (!isObject(input)) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)];
     }
     if (this.keysMode === 'preserved' && this.restShape === null) {
       return this._applyRestUnchecked(input, options, nonce);
@@ -379,7 +373,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   ): Promise<Result<InferObject<PropShapes, RestShape, OUTPUT>>> {
     return new Promise(resolve => {
       if (!isObject(input)) {
-        resolve([this._typeIssueFactory(input, options)]);
+        resolve([createIssue(CODE_TYPE_OBJECT, input, MESSAGE_TYPE_OBJECT, undefined, options, this._options)]);
         return;
       }
 
@@ -435,7 +429,9 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
 
       if (unknownKeys !== null) {
-        issues = [this._exactIssueFactory!(input, options, unknownKeys)];
+        issues = [
+          createIssue(CODE_OBJECT_EXACT, input, MESSAGE_OBJECT_EXACT, unknownKeys, options, this._exactOptions),
+        ];
 
         if (options.earlyReturn) {
           resolve(issues);
@@ -607,7 +603,14 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
     // Raise unknown keys issue
     if (unknownKeys !== null) {
-      const issue = this._exactIssueFactory!(input, options, unknownKeys);
+      const issue = createIssue(
+        CODE_OBJECT_EXACT,
+        input,
+        MESSAGE_OBJECT_EXACT,
+        unknownKeys,
+        options,
+        this._exactOptions
+      );
 
       if (options.earlyReturn) {
         return [issue];

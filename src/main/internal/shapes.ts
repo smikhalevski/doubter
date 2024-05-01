@@ -1,4 +1,4 @@
-import { ERR_SYNC_UNSUPPORTED } from '../constants';
+import { ERROR_SYNC_UNSUPPORTED } from '../constants';
 import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
 import {
   ApplyOperationsCallback,
@@ -26,9 +26,9 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
-export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false });
+export const defaultApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: false, messages: undefined });
 
-export const defaultEarlyReturnApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: true });
+export const defaultEarlyReturnApplyOptions = Object.freeze<ApplyOptions>({ earlyReturn: true, messages: undefined });
 
 export declare const INPUT: unique symbol;
 export declare const OUTPUT: unique symbol;
@@ -253,5 +253,5 @@ export function extractCheckResult(result: CheckResult): Result {
 }
 
 export function throwSyncUnsupported(): never {
-  throw new Error(ERR_SYNC_UNSUPPORTED);
+  throw new Error(ERROR_SYNC_UNSUPPORTED);
 }

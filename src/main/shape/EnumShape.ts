@@ -1,14 +1,13 @@
 import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
 import { NEVER } from '../coerce/never';
-import { CODE_TYPE_ENUM } from '../constants';
+import { CODE_TYPE_ENUM, MESSAGE_TYPE_ENUM } from '../constants';
 import { unique } from '../internal/arrays';
 import { getCanonicalValue, isArray } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
 import { Type } from '../Type';
 import { ApplyOptions, IssueOptions, Message, Result } from '../types';
-import { createIssueFactory } from '../utils';
+import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { Shape } from './Shape';
 
 /**
  * The shape of a value enumeration.
@@ -25,7 +24,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   /**
    * Returns issues associated with an invalid input value type.
    */
-  protected _typeIssueFactory;
+  protected _options;
 
   /**
    * Creates a new {@link EnumShape} instance.
@@ -45,7 +44,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
 
     this.values = getEnumValues(source);
 
-    this._typeIssueFactory = createIssueFactory(CODE_TYPE_ENUM, Shape.messages[CODE_TYPE_ENUM], options, this.values);
+    this._options = options;
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -85,7 +84,7 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     let output = input;
 
     if (!this.values.includes(output) && (output = this._applyCoerce(input)) === NEVER) {
-      return [this._typeIssueFactory(input, options)];
+      return [createIssue(CODE_TYPE_ENUM, input, MESSAGE_TYPE_ENUM, this.values, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }
