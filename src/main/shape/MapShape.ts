@@ -56,7 +56,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     this._options = options;
   }
 
-  at(key: unknown): AnyShape | null {
+  at(_key: unknown): AnyShape | null {
     return this.valueShape;
   }
 

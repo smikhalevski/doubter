@@ -10,6 +10,10 @@
 
 import type { Issue, IssueOptions, Message, ParseOptions } from './core';
 
+export function toIssueOptions<T extends IssueOptions>(options: T | Message | undefined): Partial<T> {
+  return options !== null && typeof options === 'object' ? options : ({ message: options } as T);
+}
+
 /**
  * Creates a new issue.
  *
@@ -17,7 +21,7 @@ import type { Issue, IssueOptions, Message, ParseOptions } from './core';
  * @param input The input value that caused an issue.
  * @param defaultMessage The default message that is used if there's no {@link IssueOptions.message}
  * @param param The issue param that is also passed to the message callback.
- * @param applyOptions The options passed to the {@link core!Shape._apply Shape._apply} or
+ * @param parseOptions The options passed to the {@link core!Shape._apply Shape._apply} or
  * {@link core!Shape._applyAsync Shape._applyAsync}
  * @param issueOptions The issue options or `undefined` if there's no specific issue options.
  */
@@ -26,7 +30,7 @@ export function createIssue(
   input: unknown,
   defaultMessage: Message,
   param: unknown,
-  applyOptions: ParseOptions,
+  parseOptions: ParseOptions,
   issueOptions?: IssueOptions | Message
 ): Issue {
   const issue: Issue = { code, path: undefined, input, message: undefined, param, meta: undefined };
@@ -39,14 +43,14 @@ export function createIssue(
       typeof issueOptions === 'function' ||
         typeof issueOptions === 'string' ||
         ((issue.meta = issueOptions.meta), (message = issueOptions.message)) !== undefined)) ||
-    (applyOptions !== undefined &&
-      applyOptions.messages !== undefined &&
-      (message = applyOptions.messages[code]) !== undefined)
+    (parseOptions !== undefined &&
+      parseOptions.messages !== undefined &&
+      (message = parseOptions.messages[code]) !== undefined)
       ? message
       : defaultMessage;
 
   if (
-    (typeof message === 'function' && ((message = message(issue, applyOptions)), issue.message === undefined)) ||
+    (typeof message === 'function' && ((message = message(issue, parseOptions)), issue.message === undefined)) ||
     message !== undefined
   ) {
     issue.message = message;

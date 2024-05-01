@@ -202,7 +202,7 @@ test('Circular object references', () => {
 describe('Advanced shapes', () => {
   test('NumberLikeShape', () => {
     class NumberLikeShape extends d.Shape<string, number> {
-      protected _apply(input: unknown, options: d.ParseOptions, nonce: number): d.Result<number> {
+      protected _apply(input: unknown, options: d.ParseOptions, _nonce: number): d.Result<number> {
         // 1️⃣ Validate the input and return issues if it is invalid
         if (typeof input !== 'string' || isNaN(parseFloat(input))) {
           return [

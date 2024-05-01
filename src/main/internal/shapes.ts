@@ -25,10 +25,6 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
-export const defaultApplyOptions = Object.freeze<ParseOptions>({ earlyReturn: false, messages: undefined });
-
-export const defaultEarlyReturnApplyOptions = Object.freeze<ParseOptions>({ earlyReturn: true, messages: undefined });
-
 export declare const INPUT: unique symbol;
 export declare const OUTPUT: unique symbol;
 
@@ -133,7 +129,7 @@ export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
 /**
  * The callback that converts output and issues to a {@link Result}.
  */
-export const applyOperations: ApplyOperationsCallback = (input, output, options, issues) => {
+export const applyOperations: ApplyOperationsCallback = (input, output, _options, issues) => {
   if (issues !== null) {
     return issues;
   }
@@ -223,7 +219,7 @@ export function composeApplyOperations(
   };
 }
 
-export function extractCheckResult(result: CheckResult): Result {
+export function adaptCheckResult(result: CheckResult): Result {
   if (!isObjectLike(result)) {
     return null;
   }

@@ -1,13 +1,13 @@
 import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE_OBJECT, CODE_TYPE_STRING, MESSAGE_TYPE_OBJECT, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { defaultKeyShape } from '../../main/shape/RecordShape';
+import { anyKeyShape } from '../../main/shape/RecordShape';
 import { AsyncMockShape } from './mocks';
 
 describe('RecordShape', () => {
   test('raises an issue for a non-object input value', () => {
     const valueShape = new Shape();
 
-    const shape = new RecordShape(defaultKeyShape, valueShape);
+    const shape = new RecordShape(anyKeyShape, valueShape);
 
     expect(shape.try('')).toEqual({
       ok: false,
@@ -18,7 +18,7 @@ describe('RecordShape', () => {
   test('checks values', () => {
     const valueShape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const shape = new RecordShape(defaultKeyShape, valueShape);
+    const shape = new RecordShape(anyKeyShape, valueShape);
 
     expect(shape.try({ key1: 'aaa', key2: 'bbb' })).toEqual({
       ok: false,
@@ -87,7 +87,7 @@ describe('RecordShape', () => {
   });
 
   test('applies operations', () => {
-    const shape = new RecordShape(defaultKeyShape, new Shape()).check(() => [{ code: 'xxx' }]);
+    const shape = new RecordShape(anyKeyShape, new Shape()).check(() => [{ code: 'xxx' }]);
 
     expect(shape.try({})).toEqual({
       ok: false,
@@ -98,7 +98,7 @@ describe('RecordShape', () => {
   describe('at', () => {
     test('returns value shape for string and number keys', () => {
       const valueShape = new Shape();
-      const shape = new RecordShape(defaultKeyShape, valueShape);
+      const shape = new RecordShape(anyKeyShape, valueShape);
 
       expect(shape.at('aaa')).toBe(valueShape);
       expect(shape.at(111)).toBe(valueShape);
@@ -147,7 +147,7 @@ describe('RecordShape', () => {
 
   describe('async', () => {
     test('raises an issue for a non-object input value', async () => {
-      const shape = new RecordShape(defaultKeyShape, new AsyncMockShape());
+      const shape = new RecordShape(anyKeyShape, new AsyncMockShape());
 
       await expect(shape.tryAsync('')).resolves.toEqual({
         ok: false,
@@ -158,7 +158,7 @@ describe('RecordShape', () => {
     test('checks values', async () => {
       const valueShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
 
-      const shape = new RecordShape(defaultKeyShape, valueShape);
+      const shape = new RecordShape(anyKeyShape, valueShape);
 
       await expect(shape.tryAsync({ key1: 'aaa', key2: 'bbb' })).resolves.toEqual({
         ok: false,
@@ -252,7 +252,7 @@ describe('RecordShape', () => {
     });
 
     test('applies operations', async () => {
-      const shape = new RecordShape(defaultKeyShape, new AsyncMockShape()).check(() => [{ code: 'xxx' }]);
+      const shape = new RecordShape(anyKeyShape, new AsyncMockShape()).check(() => [{ code: 'xxx' }]);
 
       await expect(shape.tryAsync({})).resolves.toEqual({
         ok: false,

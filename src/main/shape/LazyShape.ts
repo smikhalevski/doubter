@@ -1,6 +1,6 @@
 import { ERROR_SHAPE_EXPECTED } from '../constants';
 import { identity, isArray } from '../internal/lang';
-import { overrideProperty } from '../internal/objects';
+import { setReadonlyProperty } from '../internal/objects';
 import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes';
 import { Any, ParseOptions, Result } from '../types';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
@@ -65,7 +65,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
    * The lazy-loaded shape.
    */
   get providedShape(): ProvidedShape {
-    return overrideProperty(this, 'providedShape', this._cachingShapeProvider());
+    return setReadonlyProperty(this, 'providedShape', this._cachingShapeProvider());
   }
 
   at(key: unknown): AnyShape | null {

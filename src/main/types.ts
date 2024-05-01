@@ -357,7 +357,7 @@ export interface ParseOptions {
 }
 
 /**
- * A literal value of any type.
+ * A literal value of any type. This type is used to enforce the narrowing of generic types.
  *
  * @group Other
  */

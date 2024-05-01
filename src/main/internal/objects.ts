@@ -6,7 +6,7 @@ export interface Dict<T = any> {
   [key: string]: T;
 }
 
-export function overrideProperty<T>(obj: object, key: PropertyKey, value: T): T {
+export function setReadonlyProperty<T>(obj: object, key: PropertyKey, value: T): T {
   Object.defineProperty(obj, key, { value, writable: false, configurable: true });
   return value;
 }

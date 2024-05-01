@@ -69,8 +69,8 @@ declare module '../core' {
 export default function enableSetEssentials(ctor: typeof SetShape): void {
   const { prototype } = ctor;
 
-  prototype.size = function (size, options) {
-    return this.min(size, options).max(size, options);
+  prototype.size = function (size, issueOptions) {
+    return this.min(size, issueOptions).max(size, issueOptions);
   };
 
   prototype.min = function (size, issueOptions) {
@@ -97,7 +97,7 @@ export default function enableSetEssentials(ctor: typeof SetShape): void {
     );
   };
 
-  prototype.nonEmpty = function (options) {
-    return this.min(1, options);
+  prototype.nonEmpty = function (issueOptions) {
+    return this.min(1, issueOptions);
   };
 }

@@ -9,7 +9,10 @@ import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from '
 
 const recordInputs = Object.freeze([Type.OBJECT]);
 
-export const defaultKeyShape = new Shape();
+/**
+ * When this shape is used, keys of a record aren't checked.
+ */
+export const anyKeyShape = new Shape();
 
 /**
  * The shape that describes an object with string keys and values that conform the given shape.
@@ -89,7 +92,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
       index++;
 
-      if (keysShape !== defaultKeyShape) {
+      if (keysShape !== anyKeyShape) {
         keyResult = keysShape['_apply'](key, options, nonce);
 
         if (keyResult !== null) {

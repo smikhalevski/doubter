@@ -35,11 +35,9 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
   const { prototype } = ctor;
 
   prototype.plain = function (issueOptions) {
-    const { getPrototypeOf } = Object;
-
     return this.addOperation(
       (value, param, options) => {
-        const prototype = getPrototypeOf(value);
+        const prototype = Object.getPrototypeOf(value);
 
         if (prototype === null || prototype.constructor === Object) {
           return null;
@@ -53,9 +51,9 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
   prototype.allKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
-        const keyCount = getKeyCount(value, keys, keys.length);
+        const keyCount = getKeyCount(value, param, param.length);
 
-        if (keyCount === 0 || keyCount === keys.length) {
+        if (keyCount === 0 || keyCount === param.length) {
           return null;
         }
         return [createIssue(CODE_OBJECT_ALL_KEYS, value, MESSAGE_OBJECT_ALL_KEYS, param, options, issueOptions)];
@@ -67,7 +65,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
   prototype.notAllKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
-        if (getKeyCount(value, keys, keys.length) !== keys.length) {
+        if (getKeyCount(value, param, param.length) !== param.length) {
           return null;
         }
         return [
@@ -81,7 +79,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
   prototype.orKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
-        if (getKeyCount(value, keys, 1) !== 0) {
+        if (getKeyCount(value, param, 1) !== 0) {
           return null;
         }
         return [createIssue(CODE_OBJECT_OR_KEYS, value, MESSAGE_OBJECT_OR_KEYS, param, options, issueOptions)];
@@ -93,7 +91,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
   prototype.xorKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
-        if (getKeyCount(value, keys, 2) === 1) {
+        if (getKeyCount(value, param, 2) === 1) {
           return null;
         }
         return [createIssue(CODE_OBJECT_XOR_KEYS, value, MESSAGE_OBJECT_XOR_KEYS, param, options, issueOptions)];
@@ -105,7 +103,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
   prototype.oxorKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
-        if (getKeyCount(value, keys, 2) <= 1) {
+        if (getKeyCount(value, param, 2) <= 1) {
           return null;
         }
         return [createIssue(CODE_OBJECT_OXOR_KEYS, value, MESSAGE_OBJECT_OXOR_KEYS, param, options, issueOptions)];

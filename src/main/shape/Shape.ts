@@ -7,16 +7,14 @@ import {
   MESSAGE_ANY_REFINE,
 } from '../constants';
 import { isArray, isEqual } from '../internal/lang';
-import { Dict, overrideProperty, ReadonlyDict } from '../internal/objects';
+import { Dict, ReadonlyDict, setReadonlyProperty } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
   applyOperations,
   applyShape,
   captureIssues,
   composeApplyOperations,
-  defaultApplyOptions,
-  defaultEarlyReturnApplyOptions,
-  extractCheckResult,
+  adaptCheckResult,
   nextNonce,
   ok,
   Promisify,
@@ -44,7 +42,7 @@ import {
   RefinePredicate,
   Result,
 } from '../types';
-import { createIssue } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export const unknownInputs = Object.freeze([Type.UNKNOWN]);
@@ -147,6 +145,7 @@ export type OptionalDeepPartialShape<S extends AnyShape> = AllowShape<DeepPartia
  *
  * @template S The shape that parses the input without the replaced value.
  * @template AllowedValue The value that is allowed as an input and output.
+ * @see {@link Shape.allow}
  * @group Shapes
  */
 export type AllowShape<S extends AnyShape, AllowedValue> = ReplaceShape<S, AllowedValue, AllowedValue>;
@@ -156,6 +155,7 @@ export type AllowShape<S extends AnyShape, AllowedValue> = ReplaceShape<S, Allow
  *
  * @template BaseShape The base shape.
  * @template ExcludedShape The shape to which the output must not conform.
+ * @see {@link Shape.not}
  * @group Shapes
  */
 export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
@@ -213,10 +213,10 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
    * sub-shape.
    *
-   * @param key The key for which the sub-shape must be retrieved.
+   * @param _key The key for which the sub-shape must be retrieved.
    * @returns The sub-shape or `null` if there's no such key in the shape.
    */
-  at(key: unknown): AnyShape | null {
+  at(_key: unknown): AnyShape | null {
     return null;
   }
 
@@ -352,7 +352,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   check(cb: OperationCallback<CheckResult>, options: OperationOptions = {}): this {
     const { type = cb, param, tolerance = 'auto' } = options;
 
-    return this.addOperation((value, param, options) => extractCheckResult(cb(value, param, options)), {
+    return this.addOperation((value, param, options) => adaptCheckResult(cb(value, param, options)), {
       type,
       param,
       tolerance,
@@ -400,7 +400,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   checkAsync(cb: OperationCallback<PromiseLike<CheckResult>>, options: OperationOptions = {}): this {
     const { type = cb, param, tolerance = 'auto' } = options;
 
-    return this.addAsyncOperation((value, param, options) => cb(value, param, options).then(extractCheckResult), {
+    return this.addAsyncOperation((value, param, options) => cb(value, param, options).then(adaptCheckResult), {
       type,
       param,
       tolerance,
@@ -471,12 +471,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refine(cb: OperationCallback<unknown, OutputValue>, options?: RefineOptions | Message): this;
 
   refine(cb: OperationCallback<unknown>, issueOptions?: RefineOptions | Message): Shape {
-    const {
-      type = cb,
-      param,
-      tolerance = 'auto',
-      code = CODE_ANY_REFINE,
-    } = issueOptions !== undefined && typeof issueOptions === 'object' ? issueOptions : ({} as RefineOptions);
+    const { type = cb, param, tolerance, code = CODE_ANY_REFINE } = toIssueOptions(issueOptions);
 
     return this.addOperation(
       (value, param, options) => {
@@ -522,12 +517,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   refineAsync(cb: OperationCallback<PromiseLike<unknown>, OutputValue>, options?: RefineOptions | Message): this;
 
   refineAsync(cb: OperationCallback<PromiseLike<unknown>>, issueOptions: RefineOptions | Message = {}): Shape {
-    const {
-      type = cb,
-      param,
-      tolerance = 'auto',
-      code = CODE_ANY_REFINE,
-    } = issueOptions !== undefined && typeof issueOptions === 'object' ? issueOptions : ({} as RefineOptions);
+    const { type = cb, param, tolerance, code = CODE_ANY_REFINE } = toIssueOptions(issueOptions);
 
     return this.addAsyncOperation(
       (value, param, options) =>
@@ -576,7 +566,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alter(cb: OperationCallback<OutputValue, OutputValue>, options?: OperationOptions): this;
 
   alter(cb: OperationCallback<OutputValue>, options: OperationOptions = {}): Shape {
-    const { type = cb, param, tolerance = 'auto' } = options;
+    const { type = cb, param, tolerance } = options;
 
     return this.addOperation((value, param, options) => ok(cb(value, param, options)), { type, param, tolerance });
   }
@@ -618,7 +608,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   alterAsync(cb: OperationCallback<PromiseLike<OutputValue>, OutputValue>, options?: OperationOptions): this;
 
   alterAsync(cb: OperationCallback<PromiseLike<OutputValue>>, options: OperationOptions = {}): Shape {
-    const { type = cb, param, tolerance = 'auto' } = options;
+    const { type = cb, param, tolerance } = options;
 
     return this.addAsyncOperation((value, param, options) => cb(value, param, options).then(ok), {
       type,
@@ -876,11 +866,11 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @param input The shape input to parse.
    * @param options Parsing options.
-   * @param nonce The globally unique number that identifies the parsing process.
+   * @param _nonce The globally unique number that identifies the parsing process.
    * @returns `null` if input matches the output, {@link Ok} that wraps the output, or an array of captured issues.
    * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
    */
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<OutputValue> {
+  protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<OutputValue> {
     return this._applyOperations(input, input, options, null) as Result;
   }
 
@@ -1029,7 +1019,7 @@ Object.defineProperties(Shape.prototype, {
         cb = composeApplyOperations(operation, cb, async);
       }
 
-      return overrideProperty(this, '_applyOperations', cb);
+      return setReadonlyProperty(this, '_applyOperations', cb);
     },
   },
 
@@ -1037,9 +1027,9 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      overrideProperty(this, 'inputs', []);
+      setReadonlyProperty(this, 'inputs', []);
 
-      return overrideProperty(this, 'inputs', Object.freeze(unionTypes(this._getInputs())));
+      return setReadonlyProperty(this, 'inputs', Object.freeze(unionTypes(this._getInputs())));
     },
   },
 
@@ -1047,7 +1037,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      overrideProperty(this, 'isAsync', false);
+      setReadonlyProperty(this, 'isAsync', false);
 
       let async = this._isAsync();
 
@@ -1055,7 +1045,7 @@ Object.defineProperties(Shape.prototype, {
         async ||= this.operations[i].isAsync;
       }
 
-      return overrideProperty(this, 'isAsync', async);
+      return setReadonlyProperty(this, 'isAsync', async);
     },
   },
 
@@ -1063,13 +1053,13 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return overrideProperty<Shape['try']>(
+      return setReadonlyProperty<Shape['try']>(
         this,
         'try',
         this.isAsync
           ? throwSyncUnsupported
           : (input, options) => {
-              const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+              const result = this._apply(input, options || { earlyReturn: false }, nextNonce());
 
               if (result === null) {
                 return ok(input);
@@ -1087,8 +1077,8 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return overrideProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
-        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
+      return setReadonlyProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
+        return this._applyAsync(input, options || { earlyReturn: false }, nextNonce()).then(result => {
           if (result === null) {
             return ok(input);
           }
@@ -1105,13 +1095,13 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return overrideProperty<Shape['parse']>(
+      return setReadonlyProperty<Shape['parse']>(
         this,
         'parse',
         this.isAsync
           ? throwSyncUnsupported
           : (input, options) => {
-              const result = this._apply(input, options || defaultApplyOptions, nextNonce());
+              const result = this._apply(input, options || { earlyReturn: false }, nextNonce());
 
               if (result === null) {
                 return input;
@@ -1129,8 +1119,8 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return overrideProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
-        return this._applyAsync(input, options || defaultApplyOptions, nextNonce()).then(result => {
+      return setReadonlyProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
+        return this._applyAsync(input, options || { earlyReturn: false }, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
@@ -1147,13 +1137,13 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return overrideProperty(
+      return setReadonlyProperty(
         this,
         'parseOrDefault',
         this.isAsync
           ? throwSyncUnsupported
           : (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-              const result = this._apply(input, options || defaultEarlyReturnApplyOptions, nextNonce());
+              const result = this._apply(input, options || { earlyReturn: true }, nextNonce());
 
               if (result === null) {
                 return input;
@@ -1171,11 +1161,11 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return overrideProperty(
+      return setReadonlyProperty(
         this,
         'parseOrDefaultAsync',
         (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-          return this._applyAsync(input, options || defaultEarlyReturnApplyOptions, nextNonce()).then(result => {
+          return this._applyAsync(input, options || { earlyReturn: true }, nextNonce()).then(result => {
             if (result === null) {
               return input;
             }
@@ -1223,7 +1213,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
     }
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<ConvertedValue> {
+  protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<ConvertedValue> {
     let output;
     try {
       output = this.converter(input, options) as ConvertedValue;
@@ -1233,7 +1223,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
     return this._applyOperations(input, output, options, null) as Result;
   }
 
-  protected _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result<ConvertedValue>> {
+  protected _applyAsync(input: unknown, options: ParseOptions, _nonce: number): Promise<Result<ConvertedValue>> {
     return new Promise(resolve => {
       resolve(this.converter(input, options));
     }).then(output => this._applyOperations(input, output, options, null), captureIssues);

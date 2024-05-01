@@ -31,7 +31,7 @@ export class NeverShape extends Shape<never> {
     return neverInputs;
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<never> {
+  protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<never> {
     return [createIssue(CODE_TYPE_NEVER, input, MESSAGE_TYPE_NEVER, undefined, options, this._options)];
   }
 }

@@ -73,7 +73,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     return Promise.resolve(input);
   }
 
-  protected _apply(input: any, options: ParseOptions, nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
+  protected _apply(input: any, options: ParseOptions, _nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
     let output = input;
 
     if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {

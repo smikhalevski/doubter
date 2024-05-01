@@ -65,7 +65,7 @@ export class InstanceShape<Ctor extends new (...args: any) => any> extends Shape
     return objectInputs;
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<InstanceType<Ctor>> {
+  protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<InstanceType<Ctor>> {
     if (!(input instanceof this.ctor)) {
       return [createIssue(CODE_TYPE_INSTANCE_OF, input, MESSAGE_TYPE_INSTANCE_OF, this.ctor, options, this._options)];
     }

@@ -27,9 +27,6 @@ export class AsyncMockShape extends MockShape {
 }
 
 export function spyOnShape(shape: Shape): MockShape {
-  // Ensure that _apply* methods of the shape are overridden if needed
-  shape.isAsync;
-
   shape['_apply'] = jest.fn(shape['_apply']);
   shape['_applyAsync'] = jest.fn(shape['_applyAsync']);
 

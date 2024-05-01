@@ -34,7 +34,7 @@ export class DateShape extends CoercibleShape<Date> {
     return this.isCoercing ? dateCoercibleInputs : dateInputs;
   }
 
-  protected _apply(input: any, options: ParseOptions, nonce: number): Result<Date> {
+  protected _apply(input: any, options: ParseOptions, _nonce: number): Result<Date> {
     let output = input;
 
     if (!isValidDate(input) && (output = this._applyCoerce(input)) === NEVER) {

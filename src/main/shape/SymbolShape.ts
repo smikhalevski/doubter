@@ -32,7 +32,7 @@ export class SymbolShape extends Shape<symbol> {
     return symbolInputs;
   }
 
-  protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<symbol> {
+  protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<symbol> {
     if (typeof input !== 'symbol') {
       return [createIssue(CODE_TYPE_SYMBOL, input, MESSAGE_TYPE_SYMBOL, undefined, options, this._options)];
     }

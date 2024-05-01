@@ -88,14 +88,14 @@ declare module '../core' {
 export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
   const { prototype } = ctor;
 
-  prototype.length = function (length, options) {
-    return this.min(length, options).max(length, options);
+  prototype.length = function (length, issueOptions) {
+    return this.min(length, issueOptions).max(length, issueOptions);
   };
 
   prototype.min = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
-        if (value.length >= length) {
+        if (value.length >= param) {
           return null;
         }
         return [createIssue(CODE_ARRAY_MIN, value, MESSAGE_ARRAY_MIN, param, options, issueOptions)];
@@ -107,7 +107,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
   prototype.max = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
-        if (value.length <= length) {
+        if (value.length <= param) {
           return null;
         }
         return [createIssue(CODE_ARRAY_MAX, value, MESSAGE_ARRAY_MAX, param, options, issueOptions)];
@@ -116,8 +116,8 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     );
   };
 
-  prototype.nonEmpty = function (options) {
-    return this.min(1, options);
+  prototype.nonEmpty = function (issueOptions) {
+    return this.min(1, issueOptions);
   };
 
   prototype.includes = function (value, issueOptions) {

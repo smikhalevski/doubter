@@ -90,32 +90,26 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
   const { prototype } = ctor;
 
   prototype.min = function (value, issueOptions) {
-    const param = new Date(value);
-    const timestamp = param.getTime();
-
     return this.addOperation(
       (value, param, options) => {
-        if (value.getTime() >= timestamp) {
+        if (value.getTime() >= param.getTime()) {
           return null;
         }
         return [createIssue(CODE_DATE_MIN, value, MESSAGE_DATE_MIN, param, options, issueOptions)];
       },
-      { type: CODE_DATE_MIN, param }
+      { type: CODE_DATE_MIN, param: new Date(value) }
     );
   };
 
   prototype.max = function (value, issueOptions) {
-    const param = new Date(value);
-    const timestamp = param.getTime();
-
     return this.addOperation(
       (value, param, options) => {
-        if (value.getTime() <= timestamp) {
+        if (value.getTime() <= param.getTime()) {
           return null;
         }
         return [createIssue(CODE_DATE_MAX, value, MESSAGE_DATE_MAX, param, options, issueOptions)];
       },
-      { type: CODE_DATE_MAX, param }
+      { type: CODE_DATE_MAX, param: new Date(value) }
     );
   };
 

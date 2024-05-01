@@ -34,7 +34,7 @@ export class StringShape extends CoercibleShape<string> {
     return this.isCoercing ? stringCoercibleInputs : stringInputs;
   }
 
-  protected _apply(input: any, options: ParseOptions, nonce: number): Result<string> {
+  protected _apply(input: any, options: ParseOptions, _nonce: number): Result<string> {
     let output = input;
 
     if (typeof output !== 'string' && (output = this._applyCoerce(input)) === NEVER) {

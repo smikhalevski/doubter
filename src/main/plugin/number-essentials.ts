@@ -29,7 +29,7 @@ import {
 } from '../constants';
 import { NumberShape } from '../shape/NumberShape';
 import { IssueOptions, Message } from '../types';
-import { createIssue } from '../utils';
+import { createIssue, toIssueOptions } from '../utils';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**
@@ -236,11 +236,9 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   };
 
   prototype.int = function (issueOptions) {
-    const { isInteger } = Number;
-
     return this.addOperation(
       (value, param, options) => {
-        if (isInteger(value)) {
+        if (Number.isInteger(value)) {
           return null;
         }
         return [createIssue(CODE_NUMBER_INT, value, MESSAGE_NUMBER_INT, param, options, issueOptions)];
@@ -249,24 +247,24 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.positive = function (options) {
-    return this.gt(0, options);
+  prototype.positive = function (issueOptions) {
+    return this.gt(0, issueOptions);
   };
 
-  prototype.negative = function (options) {
-    return this.lt(0, options);
+  prototype.negative = function (issueOptions) {
+    return this.lt(0, issueOptions);
   };
 
-  prototype.nonPositive = function (options) {
-    return this.lte(0, options);
+  prototype.nonPositive = function (issueOptions) {
+    return this.lte(0, issueOptions);
   };
 
-  prototype.nonNegative = function (options) {
-    return this.gte(0, options);
+  prototype.nonNegative = function (issueOptions) {
+    return this.gte(0, issueOptions);
   };
 
-  prototype.between = function (minValue, maxValue, options) {
-    return this.gte(minValue, options).lte(maxValue, options);
+  prototype.between = function (minValue, maxValue, issueOptions) {
+    return this.gte(minValue, issueOptions).lte(maxValue, issueOptions);
   };
 
   prototype.gt = function (value, issueOptions) {
@@ -322,16 +320,13 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
   prototype.max = prototype.lte;
 
   prototype.multipleOf = function (divisor, issueOptions) {
-    const { abs, round } = Math;
+    const { precision } = toIssueOptions(issueOptions);
 
-    const epsilon =
-      issueOptions !== undefined && typeof issueOptions === 'object' && issueOptions.precision !== undefined
-        ? Math.pow(10, -issueOptions.precision)
-        : -1;
+    const epsilon = precision !== undefined ? 10 ** -precision : 0;
 
     return this.addOperation(
       (value, param, options) => {
-        if (epsilon !== -1 ? abs(round(value / param) - value / param) <= epsilon : value % param === 0) {
+        if (epsilon === 0 ? value % param === 0 : Math.abs(Math.round(value / param) - value / param) <= epsilon) {
           return null;
         }
         return [createIssue(CODE_NUMBER_MULTIPLE_OF, value, MESSAGE_NUMBER_MULTIPLE_OF, param, options, issueOptions)];
@@ -340,7 +335,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.safe = function (options) {
-    return this.min(Number.MIN_SAFE_INTEGER, options).max(Number.MAX_SAFE_INTEGER, options);
+  prototype.safe = function (issueOptions) {
+    return this.min(Number.MIN_SAFE_INTEGER, issueOptions).max(Number.MAX_SAFE_INTEGER, issueOptions);
   };
 }

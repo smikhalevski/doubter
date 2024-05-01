@@ -51,7 +51,7 @@ export class NumberShape extends CoercibleShape<number> {
     return this.isCoercing ? numberCoercibleInputs : numberInputs;
   }
 
-  protected _apply(input: any, options: ParseOptions, nonce: number): Result<number> {
+  protected _apply(input: any, options: ParseOptions, _nonce: number): Result<number> {
     let output = input;
 
     if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {
