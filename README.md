@@ -575,13 +575,24 @@ for more details.
 | `string.includes`   | [`d.string().includes(x)`](#string)                 | The included string `x`                               |
 | `string.startsWith` | [`d.string().startsWith(x)`](#string)               | The substring `x`                                     |
 | `string.endsWith`   | [`d.string().endsWith(x)`](#string)                 | The substring `x`                                     |
-| `type`              | All shapes                                          | The expected [input value type](#introspection)       |
+| `type.array`        | [`d.array()`](#array)                               | —                                                     |
+| `type.bigint`       | [`d.bigint()`](#bigint)                             | —                                                     |
+| `type.boolean`      | [`d.boolean()`](#boolean-bool)                      | —                                                     |
 | `type.const`        | [`d.const(x)`](#const)                              | The expected constant value `x`                       |
+| `type.date`         | [`d.date()`](#date)                                 | —                                                     |
 | `type.enum`         | [`d.enum(…)`](#enum)                                | The array of unique value                             |
+| `type.function`     | [`d.function()`](#function-fn)                      | —                                                     |
 | `type.instanceOf`   | [`d.instanceOf(Class)`](#instanceof)                | The class constructor `Class`                         |
 | `type.intersection` | [`d.and(…)`](#intersection-and)                     | —                                                     |
+| `type.map`          | [`d.map()`](#map)                                   | —                                                     |
 | `type.never`        | [`d.never()`](#never)                               | —                                                     |
+| `type.number`       | [`d.number()`](#number)                             | —                                                     |
+| `type.object`       | [`d.object()`](#object)                             | —                                                     |
+| `type.promise`      | [`d.promise()`](#promise)                           | —                                                     |
 | `type.tuple`        | [`d.tuple([…])`](#tuple)                            | The expected tuple length                             |
+| `type.set`          | [`d.set()`](#set)                                   | —                                                     |
+| `type.string`       | [`d.string()`](#string)                             | —                                                     |
+| `type.symbol`       | [`d.symbol()`](#symbol)                             | —                                                     |
 | `type.union`        | [`d.or(…)`](#union-or)                              | [Issues raised by a union](#issues-raised-by-a-union) |
 
 ## Global error message formatter
