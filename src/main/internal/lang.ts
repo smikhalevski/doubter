@@ -53,7 +53,3 @@ export function getCanonicalValue(value: unknown): unknown {
   }
   return value;
 }
-
-export function returnTrue(): boolean {
-  return true;
-}

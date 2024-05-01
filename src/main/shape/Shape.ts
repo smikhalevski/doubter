@@ -6,7 +6,7 @@ import {
   MESSAGE_ANY_EXCLUDE,
   MESSAGE_ANY_REFINE,
 } from '../constants';
-import { isArray, isEqual, returnTrue } from '../internal/lang';
+import { isArray, isEqual } from '../internal/lang';
 import { Dict, overrideProperty, ReadonlyDict } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
@@ -1213,7 +1213,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
     super();
 
     if (async) {
-      this._isAsync = returnTrue;
+      this._isAsync = () => true;
     }
   }
 
