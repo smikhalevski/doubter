@@ -323,17 +323,18 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
 
   prototype.multipleOf = function (divisor, issueOptions) {
     const { abs, round } = Math;
+
     const epsilon =
       issueOptions !== undefined && typeof issueOptions === 'object' && issueOptions.precision !== undefined
         ? Math.pow(10, -issueOptions.precision)
         : -1;
 
     return this.addOperation(
-      (value, param, _options) => {
+      (value, param, options) => {
         if (epsilon !== -1 ? abs(round(value / param) - value / param) <= epsilon : value % param === 0) {
           return null;
         }
-        return [createIssue(CODE_NUMBER_MULTIPLE_OF, value, MESSAGE_NUMBER_MULTIPLE_OF, param, _options, issueOptions)];
+        return [createIssue(CODE_NUMBER_MULTIPLE_OF, value, MESSAGE_NUMBER_MULTIPLE_OF, param, options, issueOptions)];
       },
       { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
     );

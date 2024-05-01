@@ -2041,8 +2041,6 @@ d.string().parse(42, {
 // ❌ ValidationError: type at /: Yo, not a string!
 ```
 
-Issue messages can be callbacks.
-
 # Plugins
 
 By default, when you import Doubter, you also get all [built-in plugins](#built-in-plugins) as well:

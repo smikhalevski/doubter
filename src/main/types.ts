@@ -355,6 +355,9 @@ export interface ApplyOptions {
    */
   readonly context?: any;
 
+  /**
+   * The map from an error code to a default issue message.
+   */
   readonly messages?: { [code: string | number]: Message | Any };
 }
 

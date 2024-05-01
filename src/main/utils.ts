@@ -2,7 +2,7 @@
  * The module with the utility functions that can be used for plugin development.
  *
  * ```ts
- * import { toIssueOptions, createIssue } from 'doubter/utils';
+ * import { createIssue } from 'doubter/utils';
  * ```
  *
  * @module utils
@@ -17,7 +17,8 @@ import type { ApplyOptions, Issue, IssueOptions, Message } from './core';
  * @param input The input value that caused an issue.
  * @param defaultMessage The default message that is used if there's no {@link IssueOptions.message}
  * @param param The issue param that is also passed to the message callback.
- * @param applyOptions The options passed to the {@link Shape._apply} or {@link Shape._applyAsync}
+ * @param applyOptions The options passed to the {@link core!Shape._apply Shape._apply} or
+ * {@link core!Shape._applyAsync Shape._applyAsync}
  * @param issueOptions The issue options or `undefined` if there's no specific issue options.
  */
 export function createIssue(

@@ -18,7 +18,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
   /**
    * Returns `true` if an input is equal to the const value, or `false` otherwise.
    */
-  protected _typePredicate: (input: unknown) => boolean;
+  protected _predicate: (input: unknown) => boolean;
 
   /**
    * Returns issues associated with an invalid input value type.
@@ -42,7 +42,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     super();
 
     this._options = options;
-    this._typePredicate = value !== value ? Number.isNaN : input => value === input;
+    this._predicate = value !== value ? Number.isNaN : input => value === input;
   }
 
   protected _getInputs(): readonly unknown[] {
@@ -67,7 +67,7 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
   protected _apply(input: unknown, options: ApplyOptions, nonce: number): Result<Value> {
     let output = input;
 
-    if (!this._typePredicate(input) && (output = this._applyCoerce(input)) === NEVER) {
+    if (!this._predicate(input) && (output = this._applyCoerce(input)) === NEVER) {
       return [createIssue(CODE_TYPE_CONST, input, MESSAGE_TYPE_CONST, this.value, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
