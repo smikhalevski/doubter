@@ -21,6 +21,7 @@ export class ValidationError extends Error {
     message?: string
   ) {
     super(message);
-    this.name = 'ValidationError';
   }
 }
+
+ValidationError.prototype.name = 'ValidationError';
