@@ -10,7 +10,7 @@ import { CoercibleShape } from './CoercibleShape';
 const dateInputs = Object.freeze([Type.DATE]);
 
 /**
- * The shape of the {@link !Date Date} object.
+ * The shape of the {@link !Date} object.
  * @group Shapes
  */
 export class DateShape extends CoercibleShape<Date> {

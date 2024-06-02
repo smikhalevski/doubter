@@ -12,7 +12,7 @@ import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output 
 const setInputs = Object.freeze([Type.SET]);
 
 /**
- * The shape of a {@link !Set Set} instance.
+ * The shape of a {@link !Set} instance.
  *
  * @template ValueShape The value shape.
  * @group Shapes
