@@ -20,8 +20,18 @@ export class ValidationError extends Error {
     public issues: Issue[],
     message?: string
   ) {
+    if (message === undefined) {
+      try {
+        message = JSON.stringify(issues, replacer, 2);
+      } catch {}
+    }
+
     super(message);
   }
 }
 
 ValidationError.prototype.name = 'ValidationError';
+
+function replacer(_k: any, v: any): any {
+  return typeof v === 'symbol' || typeof v === 'bigint' || v instanceof Symbol || v instanceof BigInt ? String(v) : v;
+}
