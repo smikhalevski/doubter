@@ -6,6 +6,9 @@ const valibot = require('valibot');
 const doubter = require('../../../lib');
 
 describe('Overall', () => {
+  const isSuccessMeasureEnabled = true;
+  const isFailureMeasureEnabled = true;
+
   const validValue = {
     a1: [1, 2, 3],
     a2: 'foo',
@@ -25,9 +28,6 @@ describe('Overall', () => {
       a42: '3.1415',
     },
   };
-
-  const isSuccessMeasureEnabled = true;
-  const isFailureMeasureEnabled = true;
 
   describe('Loose validation', () => {
     test('Ajv', measure => {
