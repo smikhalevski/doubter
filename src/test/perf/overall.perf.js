@@ -2,6 +2,7 @@ const Ajv = require('ajv');
 const zod = require('zod');
 const myzod = require('myzod');
 const valita = require('@badrap/valita');
+const valibot = require('valibot');
 const doubter = require('../../../lib');
 
 describe('Overall', () => {
@@ -24,6 +25,9 @@ describe('Overall', () => {
       a42: '3.1415',
     },
   };
+
+  const successMeasureEnabled = true;
+  const failureMeasureEnabled = true;
 
   describe('Loose validation', () => {
     test('Ajv', measure => {
@@ -64,13 +68,17 @@ describe('Overall', () => {
 
       const validate = ajv.compile(schema);
 
-      measure(() => {
-        validate(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          validate(validValue);
+        });
+      }
 
-      measure(() => {
-        validate(invalidValue);
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          validate(invalidValue);
+        });
+      }
     });
 
     test('zod', measure => {
@@ -88,13 +96,17 @@ describe('Overall', () => {
         })
         .passthrough();
 
-      measure(() => {
-        type.parse(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          type.parse(validValue);
+        });
+      }
 
-      measure(() => {
-        type.safeParse(invalidValue);
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          type.safeParse(invalidValue);
+        });
+      }
     });
 
     test('myzod', measure => {
@@ -114,13 +126,17 @@ describe('Overall', () => {
         { allowUnknown: true }
       );
 
-      measure(() => {
-        type.parse(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          type.parse(validValue);
+        });
+      }
 
-      measure(() => {
-        type.try(invalidValue);
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          type.try(invalidValue);
+        });
+      }
     });
 
     test('valita', measure => {
@@ -136,13 +152,41 @@ describe('Overall', () => {
 
       const options = { mode: 'passthrough' };
 
-      measure(() => {
-        type.parse(validValue, options);
+      if (successMeasureEnabled) {
+        measure(() => {
+          type.parse(validValue, options);
+        });
+      }
+
+      if (failureMeasureEnabled) {
+        measure(() => {
+          type.try(invalidValue, options).issues;
+        });
+      }
+    });
+
+    test('valibot', measure => {
+      const schema = valibot.object({
+        a1: valibot.array(valibot.number([valibot.integer()])),
+        a2: valibot.string([valibot.custom(value => value.length >= 3)]),
+        a3: valibot.boolean(),
+        a4: valibot.object({
+          a41: valibot.union([valibot.literal('foo'), valibot.literal('bar')]),
+          a42: valibot.number(),
+        }),
       });
 
-      measure(() => {
-        type.try(invalidValue, options).issues;
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          valibot.parse(schema, validValue);
+        });
+      }
+
+      if (failureMeasureEnabled) {
+        measure(() => {
+          valibot.safeParse(schema, validValue);
+        });
+      }
     });
 
     test('doubter', measure => {
@@ -156,13 +200,17 @@ describe('Overall', () => {
         }),
       });
 
-      measure(() => {
-        shape.parse(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          shape.parse(validValue);
+        });
+      }
 
-      measure(() => {
-        shape.try(invalidValue);
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          shape.try(invalidValue);
+        });
+      }
     });
   });
 
@@ -207,13 +255,17 @@ describe('Overall', () => {
 
       const validate = ajv.compile(schema);
 
-      measure(() => {
-        validate(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          validate(validValue);
+        });
+      }
 
-      measure(() => {
-        validate(invalidValue);
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          validate(invalidValue);
+        });
+      }
     });
 
     test('zod', measure => {
@@ -227,13 +279,17 @@ describe('Overall', () => {
         }),
       });
 
-      measure(() => {
-        type.parse(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          type.parse(validValue);
+        });
+      }
 
-      measure(() => {
-        type.safeParse(invalidValue);
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          type.safeParse(invalidValue);
+        });
+      }
     });
 
     test('myzod', measure => {
@@ -247,13 +303,17 @@ describe('Overall', () => {
         }),
       });
 
-      measure(() => {
-        type.parse(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          type.parse(validValue);
+        });
+      }
 
-      measure(() => {
-        type.try(invalidValue);
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          type.try(invalidValue);
+        });
+      }
     });
 
     test('valita', measure => {
@@ -267,13 +327,44 @@ describe('Overall', () => {
         }),
       });
 
-      measure(() => {
-        type.parse(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          type.parse(validValue);
+        });
+      }
 
-      measure(() => {
-        type.try(invalidValue).issues;
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          type.try(invalidValue).issues;
+        });
+      }
+    });
+
+    test('valibot', measure => {
+      const schema = valibot.object(
+        {
+          a1: valibot.array(valibot.number([valibot.integer()])),
+          a2: valibot.string([valibot.custom(value => value.length >= 3)]),
+          a3: valibot.boolean(),
+          a4: valibot.object({
+            a41: valibot.union([valibot.literal('foo'), valibot.literal('bar')]),
+            a42: valibot.number(),
+          }),
+        },
+        valibot.never()
+      );
+
+      if (successMeasureEnabled) {
+        measure(() => {
+          valibot.parse(schema, validValue);
+        });
+      }
+
+      if (failureMeasureEnabled) {
+        measure(() => {
+          valibot.safeParse(schema, validValue);
+        });
+      }
     });
 
     test('doubter', measure => {
@@ -291,13 +382,17 @@ describe('Overall', () => {
         })
         .exact();
 
-      measure(() => {
-        shape.parse(validValue);
-      });
+      if (successMeasureEnabled) {
+        measure(() => {
+          shape.parse(validValue);
+        });
+      }
 
-      measure(() => {
-        shape.try(invalidValue);
-      });
+      if (failureMeasureEnabled) {
+        measure(() => {
+          shape.try(invalidValue);
+        });
+      }
     });
   });
 });
@@ -442,6 +537,26 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
+    test('valibot', measure => {
+      const schema = valibot.object({
+        a1: valibot.number(),
+        a2: valibot.number(),
+        a3: valibot.number(),
+        a4: valibot.string(),
+        a5: valibot.string(),
+        a6: valibot.boolean(),
+        a7: valibot.object({
+          a71: valibot.string(),
+          a72: valibot.number(),
+          a73: valibot.boolean(),
+        }),
+      });
+
+      measure(() => {
+        valibot.parse(schema, value);
+      });
+    });
+
     test('doubter', measure => {
       const shape = doubter.object({
         a1: doubter.number(),
@@ -575,6 +690,29 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
 
       measure(() => {
         type.parse(value);
+      });
+    });
+
+    test('valibot', measure => {
+      const schema = valibot.object(
+        {
+          a1: valibot.number(),
+          a2: valibot.number(),
+          a3: valibot.number(),
+          a4: valibot.string(),
+          a5: valibot.string(),
+          a6: valibot.boolean(),
+          a7: valibot.object({
+            a71: valibot.string(),
+            a72: valibot.number(),
+            a73: valibot.boolean(),
+          }),
+        },
+        valibot.never()
+      );
+
+      measure(() => {
+        valibot.parse(schema, value);
       });
     });
 
