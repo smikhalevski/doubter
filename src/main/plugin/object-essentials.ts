@@ -20,7 +20,7 @@ import { enableObjectLikeEssentials } from './object-utils';
 declare module '../core' {
   export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
     /**
-     * Constrains an object to have a `null` or {@link !Object Object} prototype.
+     * Constrains an object to have a `null` or {@link !Object} prototype.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.

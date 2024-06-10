@@ -176,7 +176,7 @@ userShape.parse({
   name: 'Peter Parker',
   age: 'seventeen'
 });
-// ❌ ValidationError: type at /age: Must be a number
+// ❌ ValidationError: type.number at /age: Must be a number
 ```
 
 Currently, the only constraint applied to the "age" property value is that it must be a number. Let's modify the shape
@@ -310,7 +310,7 @@ shape.parse(42);
 // ⮕ 42
 
 shape.parse('Mars');
-// ❌ ValidationError: type at /: Must be a number
+// ❌ ValidationError: type.number at /: Must be a number
 ```
 
 It isn't always convenient to write a try-catch blocks to handle validation errors. Use the
@@ -409,7 +409,7 @@ shape1.parse('Pluto');
 // ⮕ 'Pluto'
 
 shape1.parse(undefined);
-// ❌ ValidationError: type at /: Must be a string
+// ❌ ValidationError: type.string at /: Must be a string
 ```
 
 Let's derive a new shape that would [replace `undefined`](#optional-and-non-optional) input values with a default value
@@ -712,7 +712,7 @@ const shape = d.string().addOperation(value => {
 
 // 🟡 Operation isn't executed because 42 isn't a string
 shape.parse(42);
-// ❌ ValidationError: type at /: Must be a string
+// ❌ ValidationError: type.string at /: Must be a string
 ```
 
 For composite shapes, operations may become non-type-safe. Let's consider an object shape with an operation:
@@ -1516,7 +1516,7 @@ shape2.parse({ name: 'Frodo' });
 // ⮕ { name: 'Frodo' }
 
 shape2.parse({ name: 8080 });
-// ❌ ValidationError: type at /name: Must be a string
+// ❌ ValidationError: type.string at /name: Must be a string
 ```
 
 Deep partial isn't applied to [converted shapes](#conversions):
@@ -1686,7 +1686,7 @@ d.array(yesNoShape).parse([true, 'no']);
 // ⮕ [true, false]
 
 yesNoShape.parse('true');
-// ❌ ValidationError: type at /: Must be a boolean
+// ❌ ValidationError: type.boolean at /: Must be a boolean
 ```
 
 Or you can use [`d.convert`](#convert-convertasync) to preprocess all input values:
@@ -1709,7 +1709,7 @@ yesNoShape.parse('yes');
 // ⮕ true
 
 yesNoShape.parse('true');
-// ❌ ValidationError: type at /: Must be a boolean
+// ❌ ValidationError: type.boolean at /: Must be a boolean
 ```
 
 # Introspection
@@ -1907,7 +1907,7 @@ right-hand side of the pipe:
 
 ```ts
 fuzzyShape.parse(undefined);
-// ❌ ValidationError: type at /: Must be a string
+// ❌ ValidationError: type.string at /: Must be a string
 ```
 
 ## Nested shapes
@@ -2003,7 +2003,7 @@ d.string().parse(42, {
     'type.string': 'Yo, not a string!'
   }
 });
-// ❌ ValidationError: type at /: Yo, not a string!
+// ❌ ValidationError: type.string at /: Yo, not a string!
 ```
 
 The full list of issue codes can be found in [Validation errors](#validation-errors) section.
@@ -2538,7 +2538,7 @@ shape.parse('18588');
 // ⮕ BigInt(18588)
 
 shape.parse('Unexpected')
-// ❌ ValidationError: type at /: Must be a bigint
+// ❌ ValidationError: type.bigint at /: Must be a bigint
 ```
 
 Arrays with a single element are unwrapped and the value is coerced:
@@ -2548,7 +2548,7 @@ shape.parse([0xdea]);
 // ⮕ BigInt(3562)
 
 shape.parse([BigInt(1), BigInt(2)]);
-// ❌ ValidationError: type at /: Must be a bigint
+// ❌ ValidationError: type.bigint at /: Must be a bigint
 ```
 
 # `boolean`, `bool`
@@ -2583,7 +2583,7 @@ shape.parse('true');
 // ⮕ true
 
 shape.parse('yes');
-// ❌ ValidationError: type at /: Must be a boolean
+// ❌ ValidationError: type.boolean at /: Must be a boolean
 ```
 
 Arrays with a single element are unwrapped and the value is coerced:
@@ -2593,7 +2593,7 @@ shape.parse([undefined]);
 // ⮕ false
 
 shape.parse([0, 1]);
-// ❌ ValidationError: type at /: Must be a boolean
+// ❌ ValidationError: type.boolean at /: Must be a boolean
 ```
 
 # `const`
@@ -2639,7 +2639,7 @@ shape1.parse([users]);
 // ⮕ users
 
 shape1.parse(new Set(['Bill']));
-// ❌ ValidationError: type at /: Must be equal to [object Set]
+// ❌ ValidationError: type.set at /: Must be equal to [object Set]
 ```
 
 # `convert`, `convertAsync`
@@ -2709,7 +2709,7 @@ shape.parse('2023-01-22');
 // ⮕ Date
 
 shape.parse('Yesterday');
-// ❌ ValidationError: type at /: Must be a Date
+// ❌ ValidationError: type.date at /: Must be a Date
 ```
 
 Arrays with a single element are unwrapped and the value is coerced:
@@ -2719,7 +2719,7 @@ shape.parse([1674352106419]);
 // ⮕ Date
 
 shape.parse(['2021-12-03', '2023-01-22']);
-// ❌ ValidationError: type at /: Must be a Date
+// ❌ ValidationError: type.date at /: Must be a Date
 ```
 
 # `enum`
@@ -2874,7 +2874,7 @@ shape1.parse(() => 42);
 // ⮕ () => any
 
 shape1.parse('Mars');
-// ❌ ValidationError: type at /: Must be a function
+// ❌ ValidationError: type.function at /: Must be a function
 ```
 
 By default, the input function is returned as-is during parsing. If you want a parsed function to be type-safe at
@@ -2919,10 +2919,10 @@ sum(2, 3);
 
 ```ts
 sum(2, '3');
-// ❌ ValidationError: type at /arguments/1: Must be a number
+// ❌ ValidationError: type.number at /arguments/1: Must be a number
 
 sum(NaN, 2);
-// ❌ ValidationError: type at /arguments/0: Must be an number
+// ❌ ValidationError: type.number at /arguments/0: Must be an number
 
 sum(1, 2, 3);
 // ❌ ValidationError: array.max at /arguments: Must have the maximum length of 2
@@ -2953,7 +2953,7 @@ But if an index is out of bounds, an error is thrown:
 
 ```ts
 callback.call(['James', 'Bob'], 33);
-// ❌ ValidationError: type at /return: Must be a string
+// ❌ ValidationError: type.string at /return: Must be a string
 ```
 
 An error is thrown if an argument isn't an integer:
@@ -3268,7 +3268,7 @@ shape.parse([
 // ⮕ Map { 'Mars' → 0.1199, 'Pluto' → 5.3361 }
 
 shape.parse(['Jake', 'Bill']);
-// ❌ ValidationError: type at /: Must be a Map
+// ❌ ValidationError: type.map at /: Must be a Map
 ```
 
 Other objects are converted to an array of entries via `new Map(Object.entries(value))`:
@@ -3415,7 +3415,7 @@ shape.parse('42');
 // ⮕ 42
 
 shape.parse('seventeen');
-// ❌ ValidationError: type at /: Must be a number
+// ❌ ValidationError: type.number at /: Must be a number
 ```
 
 Arrays with a single element are unwrapped and the value is coerced:
@@ -3425,7 +3425,7 @@ shape.parse([new Date('2023-01-22')]);
 // ⮕ 1674345600000
 
 shape.parse([1997, 1998]);
-// ❌ ValidationError: type at /: Must be a number
+// ❌ ValidationError: type.number at /: Must be a number
 ```
 
 # `object`
@@ -3830,7 +3830,7 @@ shape.parse(8080);
 // ⮕ '8080'
 
 shape.parse(-Infinity);
-// ❌ ValidationError: type at /: Must be a string
+// ❌ ValidationError: type.string at /: Must be a string
 ```
 
 Valid dates are converted to an ISO formatted string:
@@ -3840,7 +3840,7 @@ shape.parse(new Date(1674352106419));
 // ⮕ '2023-01-22T01:48:26.419Z'
 
 shape.parse(new Date(NaN));
-// ❌ ValidationError: type at /: Must be a string
+// ❌ ValidationError: type.string at /: Must be a string
 ```
 
 Arrays with a single element are unwrapped and the value is coerced:
@@ -3850,7 +3850,7 @@ shape.parse([undefined]);
 // ⮕ ''
 
 shape.parse(['Jill', 'Sarah']);
-// ❌ ValidationError: type at /: Must be a string
+// ❌ ValidationError: type.string at /: Must be a string
 ```
 
 # `symbol`

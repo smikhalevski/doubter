@@ -20,7 +20,7 @@ import { enableObjectLikeEssentials } from './object-utils';
 declare module '../core' {
   export interface RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesShape extends AnyShape> {
     /**
-     * Constrains a record to have a `null` or {@link !Object Object} prototype.
+     * Constrains a record to have a `null` or {@link !Object} prototype.
      *
      * @param options The issue options or the issue message.
      * @returns The clone of the shape.

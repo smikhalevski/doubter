@@ -6,6 +6,9 @@ const valibot = require('valibot');
 const doubter = require('../../../lib');
 
 describe('Overall', () => {
+  const isSuccessMeasureEnabled = true;
+  const isFailureMeasureEnabled = true;
+
   const validValue = {
     a1: [1, 2, 3],
     a2: 'foo',
@@ -25,9 +28,6 @@ describe('Overall', () => {
       a42: '3.1415',
     },
   };
-
-  const successMeasureEnabled = true;
-  const failureMeasureEnabled = true;
 
   describe('Loose validation', () => {
     test('Ajv', measure => {
@@ -68,13 +68,13 @@ describe('Overall', () => {
 
       const validate = ajv.compile(schema);
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           validate(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           validate(invalidValue);
         });
@@ -96,13 +96,13 @@ describe('Overall', () => {
         })
         .passthrough();
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           type.parse(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           type.safeParse(invalidValue);
         });
@@ -126,13 +126,13 @@ describe('Overall', () => {
         { allowUnknown: true }
       );
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           type.parse(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           type.try(invalidValue);
         });
@@ -152,13 +152,13 @@ describe('Overall', () => {
 
       const options = { mode: 'passthrough' };
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           type.parse(validValue, options);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           type.try(invalidValue, options).issues;
         });
@@ -176,13 +176,13 @@ describe('Overall', () => {
         }),
       });
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           valibot.parse(schema, validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           valibot.safeParse(schema, validValue);
         });
@@ -200,13 +200,13 @@ describe('Overall', () => {
         }),
       });
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           shape.parse(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           shape.try(invalidValue);
         });
@@ -255,13 +255,13 @@ describe('Overall', () => {
 
       const validate = ajv.compile(schema);
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           validate(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           validate(invalidValue);
         });
@@ -279,13 +279,13 @@ describe('Overall', () => {
         }),
       });
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           type.parse(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           type.safeParse(invalidValue);
         });
@@ -303,13 +303,13 @@ describe('Overall', () => {
         }),
       });
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           type.parse(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           type.try(invalidValue);
         });
@@ -327,13 +327,13 @@ describe('Overall', () => {
         }),
       });
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           type.parse(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           type.try(invalidValue).issues;
         });
@@ -354,13 +354,13 @@ describe('Overall', () => {
         valibot.never()
       );
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           valibot.parse(schema, validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           valibot.safeParse(schema, validValue);
         });
@@ -382,13 +382,13 @@ describe('Overall', () => {
         })
         .exact();
 
-      if (successMeasureEnabled) {
+      if (isSuccessMeasureEnabled) {
         measure(() => {
           shape.parse(validValue);
         });
       }
 
-      if (failureMeasureEnabled) {
+      if (isFailureMeasureEnabled) {
         measure(() => {
           shape.try(invalidValue);
         });

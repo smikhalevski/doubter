@@ -12,7 +12,7 @@ const mapInputs = Object.freeze([Type.MAP]);
 const mapCoercibleInputs = Object.freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
 
 /**
- * The shape of a {@link !Map Map} instance.
+ * The shape of a {@link !Map} instance.
  *
  * @template KeyShape The key shape.
  * @template ValueShape The value shape.
