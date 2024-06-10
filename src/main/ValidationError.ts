@@ -20,18 +20,56 @@ export class ValidationError extends Error {
     public issues: Issue[],
     message?: string
   ) {
-    if (message === undefined) {
-      try {
-        message = JSON.stringify(issues, replacer, 2);
-      } catch {}
-    }
-
-    super(message);
+    super(message !== undefined ? message : stringify(issues));
   }
 }
 
 ValidationError.prototype.name = 'ValidationError';
 
-function replacer(_k: any, v: any): any {
-  return typeof v === 'symbol' || typeof v === 'bigint' || v instanceof Symbol || v instanceof BigInt ? String(v) : v;
+export function stringify(value: any): string {
+  const ancestors: any[] = [];
+
+  let depth = 0;
+
+  return JSON.stringify(
+    value,
+    function (_key, value) {
+      if (typeof value === 'symbol' || value instanceof Symbol || value instanceof RegExp) {
+        return String(value);
+      }
+
+      if (typeof value === 'bigint' || (typeof BigInt !== 'undefined' && value instanceof BigInt)) {
+        return value + 'n';
+      }
+
+      if (typeof value === 'function' || value instanceof Function) {
+        return 'ƒ ' + (value.name || '') + '()';
+      }
+
+      if (
+        value === null ||
+        typeof value !== 'object' ||
+        value instanceof Boolean ||
+        value instanceof Date ||
+        value instanceof Number ||
+        value instanceof String
+      ) {
+        return value;
+      }
+
+      while (depth !== 0 && ancestors[depth - 1] !== this) {
+        depth--;
+      }
+
+      for (let i = 0; i < depth; i++) {
+        if (ancestors[i] === value) {
+          return '[Circular]';
+        }
+      }
+
+      ancestors[depth++] = value;
+      return value;
+    },
+    2
+  );
 }
