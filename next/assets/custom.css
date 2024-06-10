@@ -602,6 +602,10 @@ code.tsd-tag {
     margin-right: 0.2rem;
 }
 
+.tsd-accordion-summary:has(a.current) + .tsd-accordion-details a.current {
+    background: none;
+}
+
 .tsd-small-nested-navigation {
     margin: 0 0 0 var(--menu-spacing-horizontal);
 }
