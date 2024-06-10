@@ -191,7 +191,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * The array of operations that are applied to the shape output.
    *
    * @see {@link Shape.addOperation}
-   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   * @see [Operations](https://github.com/smikhalevski/doubter/tree/latest#operations)
    */
   operations: readonly Operation[] = [];
 
@@ -249,7 +249,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options The operation options.
    * @returns The clone of the shape.
    * @template Param The param that is passed to the operation when it is applied.
-   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   * @see [Operations](https://github.com/smikhalevski/doubter/tree/latest#operations)
    */
   addOperation<Param>(
     cb: OperationCallback<Result<OutputValue>, OutputValue, Param>,
@@ -262,7 +262,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that synchronously applies an operation to the shape output value.
    * @param options The operation options.
    * @returns The clone of the shape.
-   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   * @see [Operations](https://github.com/smikhalevski/doubter/tree/latest#operations)
    */
   addOperation(cb: OperationCallback<Result<OutputValue>, OutputValue>, options?: OperationOptions): this;
 
@@ -281,7 +281,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options The operation options.
    * @returns The clone of the shape.
    * @template Param The param that is passed to the operation when it is applied.
-   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   * @see [Operations](https://github.com/smikhalevski/doubter/tree/latest#operations)
    */
   addAsyncOperation<Param>(
     cb: OperationCallback<PromiseLike<Result<OutputValue>>, OutputValue, Param>,
@@ -293,7 +293,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that asynchronously applies an operation to the shape output value.
    * @param options The operation options.
    * @returns The clone of the shape.
-   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   * @see [Operations](https://github.com/smikhalevski/doubter/tree/latest#operations)
    */
   addAsyncOperation(
     cb: OperationCallback<PromiseLike<Result<OutputValue>>, OutputValue>,
@@ -305,7 +305,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param cb The callback that asynchronously applies an operation to the shape output value.
    * @param options The operation options.
    * @returns The clone of the shape.
-   * @see [Operations](https://github.com/smikhalevski/doubter#operations)
+   * @see [Operations](https://github.com/smikhalevski/doubter/tree/latest#operations)
    */
   addAsyncOperation(cb: OperationCallback, options: OperationOptions = {}): this {
     const { type = cb, param, tolerance = 'auto' } = options;
@@ -327,7 +327,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.refine}
    * @see {@link Shape.checkAsync}
-   * @see [Checks](https://github.com/smikhalevski/doubter#checks)
+   * @see [Checks](https://github.com/smikhalevski/doubter/tree/latest#checks)
    */
   check<Param>(
     cb: OperationCallback<CheckResult, OutputValue, Param>,
@@ -345,7 +345,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@link Shape.refine}
    * @see {@link Shape.checkAsync}
-   * @see [Checks](https://github.com/smikhalevski/doubter#checks)
+   * @see [Checks](https://github.com/smikhalevski/doubter/tree/latest#checks)
    */
   check(cb: OperationCallback<CheckResult, OutputValue>, options?: OperationOptions): this;
 
@@ -373,7 +373,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.check}
    * @see {@link Shape.refineAsync}
-   * @see [Checks](https://github.com/smikhalevski/doubter#checks)
+   * @see [Checks](https://github.com/smikhalevski/doubter/tree/latest#checks)
    */
   checkAsync<Param>(
     cb: OperationCallback<PromiseLike<CheckResult>, OutputValue, Param>,
@@ -393,7 +393,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@link Shape.check}
    * @see {@link Shape.refineAsync}
-   * @see [Checks](https://github.com/smikhalevski/doubter#checks)
+   * @see [Checks](https://github.com/smikhalevski/doubter/tree/latest#checks)
    */
   checkAsync(cb: OperationCallback<PromiseLike<CheckResult>, OutputValue>, options?: OperationOptions): this;
 
@@ -418,7 +418,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.check}
    * @see {@link Shape.refineAsync}
-   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
+   * @see [Refinements](https://github.com/smikhalevski/doubter/tree/latest#refinements)
    */
   refine<RefinedValue extends OutputValue, Param>(
     cb: RefinePredicate<OutputValue, RefinedValue, Param>,
@@ -435,7 +435,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template RefinedValue The narrowed output value.
    * @see {@link Shape.check}
    * @see {@link Shape.refineAsync}
-   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
+   * @see [Refinements](https://github.com/smikhalevski/doubter/tree/latest#refinements)
    */
   refine<RefinedValue extends OutputValue>(
     cb: RefinePredicate<OutputValue, RefinedValue>,
@@ -451,7 +451,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.check}
    * @see {@link Shape.refineAsync}
-   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
+   * @see [Refinements](https://github.com/smikhalevski/doubter/tree/latest#refinements)
    */
   refine<Param>(
     cb: OperationCallback<unknown, OutputValue, Param>,
@@ -466,7 +466,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@link Shape.check}
    * @see {@link Shape.refineAsync}
-   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
+   * @see [Refinements](https://github.com/smikhalevski/doubter/tree/latest#refinements)
    */
   refine(cb: OperationCallback<unknown, OutputValue>, options?: RefineOptions | Message): this;
 
@@ -495,7 +495,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.checkAsync}
    * @see {@link Shape.refine}
-   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
+   * @see [Refinements](https://github.com/smikhalevski/doubter/tree/latest#refinements)
    */
   refineAsync<Param>(
     cb: OperationCallback<PromiseLike<unknown>, OutputValue, Param>,
@@ -512,7 +512,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@link Shape.checkAsync}
    * @see {@link Shape.refine}
-   * @see [Refinements](https://github.com/smikhalevski/doubter#refinements)
+   * @see [Refinements](https://github.com/smikhalevski/doubter/tree/latest#refinements)
    */
   refineAsync(cb: OperationCallback<PromiseLike<unknown>, OutputValue>, options?: RefineOptions | Message): this;
 
@@ -543,7 +543,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.convert}
    * @see {@link Shape.alterAsync}
-   * @see [Alterations](https://github.com/smikhalevski/doubter#alterations)
+   * @see [Alterations](https://github.com/smikhalevski/doubter/tree/latest#alterations)
    */
   alter<Param>(
     cb: OperationCallback<OutputValue, OutputValue, Param>,
@@ -561,7 +561,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@link Shape.convert}
    * @see {@link Shape.alterAsync}
-   * @see [Alterations](https://github.com/smikhalevski/doubter#alterations)
+   * @see [Alterations](https://github.com/smikhalevski/doubter/tree/latest#alterations)
    */
   alter(cb: OperationCallback<OutputValue, OutputValue>, options?: OperationOptions): this;
 
@@ -584,7 +584,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @template Param The param that is passed to the operation when it is applied.
    * @see {@link Shape.convertAsync}
    * @see {@link Shape.alter}
-   * @see [Alterations](https://github.com/smikhalevski/doubter#alterations)
+   * @see [Alterations](https://github.com/smikhalevski/doubter/tree/latest#alterations)
    */
   alterAsync<Param>(
     cb: OperationCallback<PromiseLike<OutputValue>, OutputValue, Param>,
@@ -603,7 +603,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @returns The clone of the shape.
    * @see {@link Shape.convertAsync}
    * @see {@link Shape.alter}
-   * @see [Alterations](https://github.com/smikhalevski/doubter#alterations)
+   * @see [Alterations](https://github.com/smikhalevski/doubter/tree/latest#alterations)
    */
   alterAsync(cb: OperationCallback<PromiseLike<OutputValue>, OutputValue>, options?: OperationOptions): this;
 
@@ -837,7 +837,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * Must return `true` if the shape must be used in async context only, otherwise the shape can be used in both sync
    * and async contexts. Override this method to implement a custom shape.
    *
-   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter/tree/latest#advanced-shapes)
    */
   protected _isAsync(): boolean {
     return false;
@@ -846,7 +846,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Returns input types and literal values that this shape can accept as an input.
    *
-   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter/tree/latest#advanced-shapes)
    */
   protected _getInputs(): readonly unknown[] {
     return unknownInputs;
@@ -855,7 +855,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
    * Clones the shape.
    *
-   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter/tree/latest#advanced-shapes)
    */
   protected _clone(): this {
     return Object.assign(Object.create(Object.getPrototypeOf(this)), this);
@@ -868,7 +868,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options Parsing options.
    * @param _nonce The globally unique number that identifies the parsing process.
    * @returns `null` if input matches the output, {@link Ok} that wraps the output, or an array of captured issues.
-   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter/tree/latest#advanced-shapes)
    */
   protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<OutputValue> {
     return this._applyOperations(input, input, options, null) as Result;
@@ -881,7 +881,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    * @param options Parsing options.
    * @param nonce The globally unique number that identifies the parsing process.
    * @returns `null` if input matches the output, {@link Ok} that wraps the output, or an array of captured issues.
-   * @see [Advanced shapes](https://github.com/smikhalevski/doubter#advanced-shapes)
+   * @see [Advanced shapes](https://github.com/smikhalevski/doubter/tree/latest#advanced-shapes)
    */
   protected _applyAsync(input: unknown, options: ParseOptions, nonce: number): Promise<Result<OutputValue>> {
     return new Promise(resolve => {
