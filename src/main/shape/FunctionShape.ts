@@ -125,9 +125,8 @@ export class FunctionShape<
 
   /**
    * Enables input function wrapping during parsing to ensure runtime signature type-safety. Wrapper ensures that input
-   * function receives arguments and `this` values that conform {@link FunctionShape.argsShape} and
-   * {@link FunctionShape.thisShape} respectively, and returns the value that conforms
-   * {@link FunctionShape.returnShape}.
+   * function receives arguments and `this` values that conform the {@link argsShape} and {@link thisShape} respectively,
+   * and returns the value that conforms {@link returnShape}.
    *
    * @param options Options that are used by the wrapper. If omitted then default options are applied: no early-return,
    * no type coercion.
@@ -141,12 +140,11 @@ export class FunctionShape<
   }
 
   /**
-   * Creates a function that ensures that `fn` receives arguments and `this` value that conform the
-   * {@linkcode FunctionShape.argsShape} and the {@linkcode FunctionShape.thisShape} respectively, and _synchronously_
-   * returns the value that conforms the {@linkcode FunctionShape.returnShape}.
+   * Creates a function that ensures that `fn` receives arguments and `this` value that conform the {@link argsShape}
+   * and the {@link thisShape} respectively, and _synchronously_ returns the value that conforms the {@link returnShape}.
    *
    * @param fn The underlying function.
-   * @param options Parsing options. By default, options provided to {@linkcode FunctionShape.strict} are used.
+   * @param options Parsing options. By default, options provided to the {@link strict} method are used.
    * @returns The wrapper function.
    * @template F The function to which signature must be ensured.
    */
@@ -191,15 +189,14 @@ export class FunctionShape<
   }
 
   /**
-   * Creates a function that ensures that `fn` receives arguments and `this` value that conform the
-   * {@linkcode FunctionShape.argsShape} and the {@linkcode FunctionShape.thisShape} respectively, and _asynchronously_
-   * returns the value that conforms the {@linkcode FunctionShape.returnShape}.
+   * Creates a function that ensures that `fn` receives arguments and `this` value that conform the {@link argsShape}
+   * and the {@link thisShape} respectively, and _asynchronously_ returns the value that conforms the {@link returnShape}.
    *
-   * Use this method if {@link FunctionShape.isAsyncFunction some shapes that describe the function signature} are
+   * Use this method if {@link isAsyncFunction some shapes that describe the function signature} are
    * {@link Shape.isAsync async}.
    *
    * @param fn The underlying function.
-   * @param options Parsing options. By default, options provided to {@linkcode FunctionShape.strict} are used.
+   * @param options Parsing options. By default, options provided to the {@link strict} method are used.
    * @returns The wrapper function.
    * @template F The function to which signature must be ensured.
    */

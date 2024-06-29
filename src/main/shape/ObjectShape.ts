@@ -116,14 +116,14 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
      * The shape that constrains values of
      * [a string index signature](https://www.typescriptlang.org/docs/handbook/2/objects.html#index-signatures).
      *
-     * @see {@link ObjectShape.rest}
+     * @see {@link rest}
      */
     readonly restShape: RestShape,
     options?: IssueOptions | Message,
     /**
      * The mode of unknown keys handling.
      *
-     * - If `preserved` then unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape}.
+     * - If `preserved` then unknown object keys are preserved as-is or checked with {@link restShape}.
      * - If `stripped` then the input object is cloned and unknown keys are removed from it.
      * - If `exact` then an issue is raised if an unknown key is met.
      *
@@ -156,7 +156,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * **Note:** This method returns a shape without any operations.
    *
    * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
-   * this shape and its {@link ObjectShape.keysMode} is preserved intact.
+   * this shape and its {@link keysMode} is preserved intact.
    *
    * @param shape The object shape which properties must be added to this object shape.
    * @returns The new object shape.
@@ -172,7 +172,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * **Note:** This method returns a shape without any operations.
    *
    * If a property with the same key already exists on this object shape then it is overwritten. The index signature of
-   * this shape and its {@link ObjectShape.keysMode} is preserved intact.
+   * this shape and its {@link keysMode} is preserved intact.
    *
    * @param shapes The properties to add.
    * @returns The new object shape.
@@ -526,7 +526,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   /**
-   * Unknown keys are either parsed with a {@link ObjectShape.restShape}, stripped, or cause an issue.
+   * Unknown keys are either parsed with a {@link restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ParseOptions, nonce: number): Result {
     const { keys, keysMode, restShape, operations, valueShapes } = this;

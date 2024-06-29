@@ -20,13 +20,13 @@ export class ValidationError extends Error {
     public issues: Issue[],
     message?: string
   ) {
-    super(message !== undefined ? message : stringify(issues));
+    super(message !== undefined ? message : inspect(issues));
   }
 }
 
 ValidationError.prototype.name = 'ValidationError';
 
-export function stringify(value: any): string {
+export function inspect(value: any): string {
   const ancestors: any[] = [];
 
   let depth = 0;
@@ -42,7 +42,7 @@ export function stringify(value: any): string {
         return value + 'n';
       }
 
-      if (typeof value === 'function' || value instanceof Function) {
+      if (typeof value === 'function') {
         return 'ƒ ' + (value.name || '') + '()';
       }
 

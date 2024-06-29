@@ -1,5 +1,5 @@
 import { ValidationError } from '../main';
-import { stringify } from '../main/ValidationError';
+import { inspect } from '../main/ValidationError';
 
 describe('ValidationError', () => {
   test('creates message from issues', () => {
@@ -28,9 +28,9 @@ describe('ValidationError', () => {
   });
 });
 
-describe('stringify', () => {
+describe('inspect', () => {
   test('stringifies symbol and bigint values to string', () => {
-    expect(stringify([Symbol('aaa'), BigInt('111')])).toBe(`[
+    expect(inspect([Symbol('aaa'), BigInt('111')])).toBe(`[
   "Symbol(aaa)",
   "111n"
 ]`);
@@ -45,7 +45,7 @@ describe('stringify', () => {
     aaa.fff = {};
     aaa.fff.ggg = aaa.fff;
 
-    expect(stringify(aaa)).toBe(`{
+    expect(inspect(aaa)).toBe(`{
   "bbb": {
     "xxx": 111
   },
@@ -67,8 +67,8 @@ describe('stringify', () => {
   });
 
   test('stringifies functions', () => {
-    expect(stringify(function () {})).toBe('"ƒ ()"');
+    expect(inspect(function () {})).toBe('"ƒ ()"');
 
-    expect(stringify(function xxx() {})).toBe('"ƒ xxx()"');
+    expect(inspect(function xxx() {})).toBe('"ƒ xxx()"');
   });
 });
