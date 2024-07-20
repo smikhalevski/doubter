@@ -192,11 +192,16 @@ export interface Operation {
   /**
    * The operation tolerance for issues that are raised during validation.
    *
-   * - If `skip` then if preceding operations have raised issues, then this operation is skipped but consequent
-   * operations are still applied.
-   * - If `abort` then if preceding operations have raised issues, then this operation is skipped and consequent
-   * operations aren't applied. Also, if this operation itself raises issues then consequent operations aren't applied.
-   * - If `auto` then the operation is applied regardless of previously raised issues.
+   * <dl>
+   *   <dt>"skip"</dt>
+   *   <dd>If preceding operations have raised issues, then this operation is skipped but consequent operations are
+   *   still applied.</dd>
+   *   <dt>"abort"</dt>
+   *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
+   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+   *   <dt>"auto"</dt>
+   *   <dd>The operation is applied regardless of previously raised issues.</dd>
+   * </dl>
    */
   readonly tolerance: OperationTolerance;
 
@@ -209,11 +214,16 @@ export interface Operation {
 /**
  * Defines the operation tolerance for issues that are raised during validation.
  *
- * - If `skip` then if preceding operations have raised issues, then this operation is skipped but consequent operations
- * are still applied.
- * - If `abort` then if preceding operations have raised issues, then this operation is skipped and consequent operations
- * aren't applied. Also, if this operation itself raises issues then consequent operations aren't applied.
- * - If `auto` then the operation is applied regardless of previously raised issues.
+ * <dl>
+ *   <dt>"skip"</dt>
+ *   <dd>If preceding operations have raised issues, then this operation is skipped but consequent operations are
+ *   still applied.</dd>
+ *   <dt>"abort"</dt>
+ *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
+ *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+ *   <dt>"auto"</dt>
+ *   <dd>The operation is applied regardless of previously raised issues.</dd>
+ * </dl>
  *
  * @see {@link Operation.tolerance}
  * @group Operations
@@ -265,11 +275,16 @@ export interface OperationOptions {
   /**
    * The operation tolerance for issues that are raised during validation.
    *
-   * - If `skip` then if preceding operations have raised issues, then this operation is skipped but consequent
-   * operations are still applied.
-   * - If `abort` then if preceding operations have raised issues, then this operation is skipped and consequent
-   * operations aren't applied. Also, if this operation itself raises issues then consequent operations aren't applied.
-   * - If `auto` then the operation is applied regardless of previously raised issues.
+   * <dl>
+   *   <dt>"skip"</dt>
+   *   <dd>If preceding operations have raised issues, then this operation is skipped but consequent operations are
+   *   still applied.</dd>
+   *   <dt>"abort"</dt>
+   *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
+   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+   *   <dt>"auto"</dt>
+   *   <dd>The operation is applied regardless of previously raised issues.</dd>
+   * </dl>
    *
    * @see {@link Operation.tolerance}
    * @default 'auto'

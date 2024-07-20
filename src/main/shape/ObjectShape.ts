@@ -52,9 +52,14 @@ type DeepPartialObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape
 /**
  * Defines how unknown object keys are handled.
  *
- * - If `preserved` then unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape}.
- * - If `stripped` then the input object is cloned and unknown keys are removed from it.
- * - If `exact` then an issue is raised if an unknown key is met.
+ * <dl>
+ *   <dt>"preserved"</dt>
+ *   <dd>Unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape}.</dd>
+ *   <dt>"stripped"</dt>
+ *   <dd>The input object is cloned and unknown keys are removed from it.</dd>
+ *   <dt>"exact"</dt>
+ *   <dd>An issue is raised if an unknown key is met.</dd>
+ * </dl>
  *
  * @see {@link ObjectShape.keysMode}
  * @group Other
@@ -123,9 +128,14 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     /**
      * The mode of unknown keys handling.
      *
-     * - If `preserved` then unknown object keys are preserved as-is or checked with {@link restShape}.
-     * - If `stripped` then the input object is cloned and unknown keys are removed from it.
-     * - If `exact` then an issue is raised if an unknown key is met.
+     * <dl>
+     *   <dt>"preserved"</dt>
+     *   <dd>Unknown object keys are preserved as-is or checked with {@link restShape}.</dd>
+     *   <dt>"stripped"</dt>
+     *   <dd>The input object is cloned and unknown keys are removed from it.</dd>
+     *   <dt>"exact"</dt>
+     *   <dd>An issue is raised if an unknown key is met.</dd>
+     * </dl>
      *
      * @default 'preserved'
      */
