@@ -6,7 +6,7 @@ import { Issue } from './types';
  *
  * @group Other
  */
-export class ValidationError extends Error {
+export class ValidationError extends TypeError {
   /**
    * Creates a new {@link ValidationError} instance.
    *
