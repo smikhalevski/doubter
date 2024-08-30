@@ -32,9 +32,7 @@ interface ObjectLikeShape extends Shape<any, any> {
 }
 
 export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape }): void {
-  const { prototype } = ctor;
-
-  prototype.plain = function (issueOptions) {
+  ctor.prototype.plain = function (issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         const prototype = Object.getPrototypeOf(value);
@@ -48,7 +46,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
     );
   };
 
-  prototype.allKeys = function (keys, issueOptions) {
+  ctor.prototype.allKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         const keyCount = getKeyCount(value, param, param.length);
@@ -62,7 +60,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
     );
   };
 
-  prototype.notAllKeys = function (keys, issueOptions) {
+  ctor.prototype.notAllKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (getKeyCount(value, param, param.length) !== param.length) {
@@ -76,7 +74,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
     );
   };
 
-  prototype.orKeys = function (keys, issueOptions) {
+  ctor.prototype.orKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (getKeyCount(value, param, 1) !== 0) {
@@ -88,7 +86,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
     );
   };
 
-  prototype.xorKeys = function (keys, issueOptions) {
+  ctor.prototype.xorKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (getKeyCount(value, param, 2) === 1) {
@@ -100,7 +98,7 @@ export function enableObjectLikeEssentials(ctor: { prototype: ObjectLikeShape })
     );
   };
 
-  prototype.oxorKeys = function (keys, issueOptions) {
+  ctor.prototype.oxorKeys = function (keys, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (getKeyCount(value, param, 2) <= 1) {

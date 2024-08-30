@@ -67,13 +67,11 @@ declare module '../core' {
  * Enhances {@link core!SetShape SetShape} with additional methods.
  */
 export default function enableSetEssentials(ctor: typeof SetShape): void {
-  const { prototype } = ctor;
-
-  prototype.size = function (size, issueOptions) {
+  ctor.prototype.size = function (size, issueOptions) {
     return this.min(size, issueOptions).max(size, issueOptions);
   };
 
-  prototype.min = function (size, issueOptions) {
+  ctor.prototype.min = function (size, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.size >= param) {
@@ -85,7 +83,7 @@ export default function enableSetEssentials(ctor: typeof SetShape): void {
     );
   };
 
-  prototype.max = function (size, issueOptions) {
+  ctor.prototype.max = function (size, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.size <= param) {
@@ -97,7 +95,7 @@ export default function enableSetEssentials(ctor: typeof SetShape): void {
     );
   };
 
-  prototype.nonEmpty = function (issueOptions) {
+  ctor.prototype.nonEmpty = function (issueOptions) {
     return this.min(1, issueOptions);
   };
 }

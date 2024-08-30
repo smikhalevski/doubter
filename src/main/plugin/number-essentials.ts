@@ -221,9 +221,7 @@ declare module '../core' {
  * Enhances {@link core!NumberShape NumberShape} with additional methods.
  */
 export default function enableNumberEssentials(ctor: typeof NumberShape): void {
-  const { prototype } = ctor;
-
-  prototype.finite = function (issueOptions) {
+  ctor.prototype.finite = function (issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (isFinite(value)) {
@@ -235,7 +233,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.int = function (issueOptions) {
+  ctor.prototype.int = function (issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (Number.isInteger(value)) {
@@ -247,27 +245,27 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.positive = function (issueOptions) {
+  ctor.prototype.positive = function (issueOptions) {
     return this.gt(0, issueOptions);
   };
 
-  prototype.negative = function (issueOptions) {
+  ctor.prototype.negative = function (issueOptions) {
     return this.lt(0, issueOptions);
   };
 
-  prototype.nonPositive = function (issueOptions) {
+  ctor.prototype.nonPositive = function (issueOptions) {
     return this.lte(0, issueOptions);
   };
 
-  prototype.nonNegative = function (issueOptions) {
+  ctor.prototype.nonNegative = function (issueOptions) {
     return this.gte(0, issueOptions);
   };
 
-  prototype.between = function (minValue, maxValue, issueOptions) {
+  ctor.prototype.between = function (minValue, maxValue, issueOptions) {
     return this.gte(minValue, issueOptions).lte(maxValue, issueOptions);
   };
 
-  prototype.gt = function (value, issueOptions) {
+  ctor.prototype.gt = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value > param) {
@@ -279,7 +277,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.lt = function (value, issueOptions) {
+  ctor.prototype.lt = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value < param) {
@@ -291,7 +289,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.gte = function (value, issueOptions) {
+  ctor.prototype.gte = ctor.prototype.min = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value >= param) {
@@ -303,7 +301,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.lte = function (value, issueOptions) {
+  ctor.prototype.lte = ctor.prototype.max = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value <= param) {
@@ -315,11 +313,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.min = prototype.gte;
-
-  prototype.max = prototype.lte;
-
-  prototype.multipleOf = function (divisor, issueOptions) {
+  ctor.prototype.multipleOf = function (divisor, issueOptions) {
     const { precision } = toIssueOptions(issueOptions);
 
     const epsilon = precision !== undefined ? 10 ** -precision : 0;
@@ -335,7 +329,7 @@ export default function enableNumberEssentials(ctor: typeof NumberShape): void {
     );
   };
 
-  prototype.safe = function (issueOptions) {
+  ctor.prototype.safe = function (issueOptions) {
     return this.min(Number.MIN_SAFE_INTEGER, issueOptions).max(Number.MAX_SAFE_INTEGER, issueOptions);
   };
 }

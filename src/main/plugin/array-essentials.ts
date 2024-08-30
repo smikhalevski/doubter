@@ -86,13 +86,11 @@ declare module '../core' {
  * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
  */
 export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
-  const { prototype } = ctor;
-
-  prototype.length = function (length, issueOptions) {
+  ctor.prototype.length = function (length, issueOptions) {
     return this.min(length, issueOptions).max(length, issueOptions);
   };
 
-  prototype.min = function (length, issueOptions) {
+  ctor.prototype.min = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length >= param) {
@@ -104,7 +102,7 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     );
   };
 
-  prototype.max = function (length, issueOptions) {
+  ctor.prototype.max = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length <= param) {
@@ -116,11 +114,11 @@ export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
     );
   };
 
-  prototype.nonEmpty = function (issueOptions) {
+  ctor.prototype.nonEmpty = function (issueOptions) {
     return this.min(1, issueOptions);
   };
 
-  prototype.includes = function (value, issueOptions) {
+  ctor.prototype.includes = function (value, issueOptions) {
     if (!(value instanceof Shape)) {
       return this.addOperation(
         (value, param, options) => {

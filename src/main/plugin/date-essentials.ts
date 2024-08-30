@@ -87,9 +87,7 @@ declare module '../core' {
  * Enhances {@link core!DateShape DateShape} with additional methods.
  */
 export default function enableDateEssentials(ctor: typeof DateShape): void {
-  const { prototype } = ctor;
-
-  prototype.min = function (value, issueOptions) {
+  ctor.prototype.min = ctor.prototype.after = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.getTime() >= param.getTime()) {
@@ -101,7 +99,7 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
     );
   };
 
-  prototype.max = function (value, issueOptions) {
+  ctor.prototype.max = ctor.prototype.before = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.getTime() <= param.getTime()) {
@@ -113,15 +111,11 @@ export default function enableDateEssentials(ctor: typeof DateShape): void {
     );
   };
 
-  prototype.after = prototype.min;
-
-  prototype.before = prototype.max;
-
-  prototype.toISOString = function () {
+  ctor.prototype.toISOString = function () {
     return this.convert(toISOString);
   };
 
-  prototype.toTimestamp = function () {
+  ctor.prototype.toTimestamp = function () {
     return this.convert(toTimestamp);
   };
 }

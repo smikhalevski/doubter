@@ -161,13 +161,11 @@ declare module '../core' {
  * Enhances {@link core!StringShape StringShape} with additional methods.
  */
 export default function enableStringEssentials(ctor: typeof StringShape): void {
-  const { prototype } = ctor;
-
-  prototype.length = function (length, issueOptions) {
+  ctor.prototype.length = function (length, issueOptions) {
     return this.min(length, issueOptions).max(length, issueOptions);
   };
 
-  prototype.min = function (length, issueOptions) {
+  ctor.prototype.min = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length >= param) {
@@ -179,7 +177,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.max = function (length, issueOptions) {
+  ctor.prototype.max = function (length, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.length <= param) {
@@ -191,7 +189,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.regex = function (re, issueOptions) {
+  ctor.prototype.regex = function (re, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (param.test(value)) {
@@ -203,7 +201,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.includes = function (value, issueOptions) {
+  ctor.prototype.includes = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.includes(param)) {
@@ -215,7 +213,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.startsWith = function (value, issueOptions) {
+  ctor.prototype.startsWith = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.startsWith(param)) {
@@ -227,7 +225,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.endsWith = function (value, issueOptions) {
+  ctor.prototype.endsWith = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.endsWith(param)) {
@@ -239,7 +237,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.nonBlank = function (issueOptions) {
+  ctor.prototype.nonBlank = function (issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value.trim().length !== 0) {
@@ -251,11 +249,11 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.nonEmpty = function (issueOptions) {
+  ctor.prototype.nonEmpty = function (issueOptions) {
     return this.min(1, issueOptions);
   };
 
-  prototype.trim = function () {
+  ctor.prototype.trim = function () {
     return this.addOperation(
       (value, _param, _options) => {
         return { ok: true, value: value.trim() };
@@ -264,7 +262,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.toLowerCase = function () {
+  ctor.prototype.toLowerCase = function () {
     return this.addOperation(
       (value, _param, _options) => {
         return { ok: true, value: value.toLowerCase() };
@@ -273,7 +271,7 @@ export default function enableStringEssentials(ctor: typeof StringShape): void {
     );
   };
 
-  prototype.toUpperCase = function () {
+  ctor.prototype.toUpperCase = function () {
     return this.addOperation(
       (value, _param, _options) => {
         return { ok: true, value: value.toUpperCase() };

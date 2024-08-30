@@ -86,25 +86,23 @@ declare module '../core' {
  * Enhances {@link core!BigIntShape BigIntShape} with additional methods.
  */
 export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
-  const { prototype } = ctor;
-
-  prototype.positive = function (issueOptions) {
+  ctor.prototype.positive = function (issueOptions) {
     return this.min(1, issueOptions);
   };
 
-  prototype.negative = function (issueOptions) {
+  ctor.prototype.negative = function (issueOptions) {
     return this.max(-1, issueOptions);
   };
 
-  prototype.nonPositive = function (issueOptions) {
+  ctor.prototype.nonPositive = function (issueOptions) {
     return this.max(0, issueOptions);
   };
 
-  prototype.nonNegative = function (issueOptions) {
+  ctor.prototype.nonNegative = function (issueOptions) {
     return this.min(0, issueOptions);
   };
 
-  prototype.min = function (value, issueOptions) {
+  ctor.prototype.min = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value >= param) {
@@ -116,7 +114,7 @@ export default function enableBigIntEssentials(ctor: typeof BigIntShape): void {
     );
   };
 
-  prototype.max = function (value, issueOptions) {
+  ctor.prototype.max = function (value, issueOptions) {
     return this.addOperation(
       (value, param, options) => {
         if (value <= param) {
