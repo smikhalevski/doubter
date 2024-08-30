@@ -54,7 +54,7 @@ export class SetShape<ValueShape extends AnyShape>
   }
 
   /**
-   * Marks {@link !Set} as readonly.
+   * Marks a {@link !Set} as readonly.
    *
    * **Note:** This doesn't have any effect at runtime.
    */

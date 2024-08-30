@@ -64,7 +64,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
   }
 
   /**
-   * Marks record as readonly: properties cannot be added, removed or updated at runtime.
+   * Makes a record readonly: properties cannot be added, removed or updated at runtime.
    */
   readonly(): Shape<
     Record<KeysShape[INPUT], ValuesShape[INPUT]>,

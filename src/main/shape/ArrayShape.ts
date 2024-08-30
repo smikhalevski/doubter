@@ -116,7 +116,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   }
 
   /**
-   * Marks array as readonly: array elements cannot be added, removed or updated at runtime.
+   * Makes an array readonly: array elements cannot be added, removed or updated at runtime.
    */
   readonly(): Shape<InferArray<HeadShapes, RestShape, INPUT>, Readonly<InferArray<HeadShapes, RestShape, OUTPUT>>> {
     return this.alter(Object.freeze);

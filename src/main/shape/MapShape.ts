@@ -77,7 +77,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   }
 
   /**
-   * Marks {@link !Map} as readonly.
+   * Marks a {@link !Map} as readonly.
    *
    * **Note:** This doesn't have any effect at runtime.
    */

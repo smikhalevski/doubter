@@ -1921,7 +1921,7 @@ const userShape = d.object({
 // ⮕ Shape<{ name: string, age: number }>
 
 userShape.propShapes.name;
-// ⮕ Shape<number>
+// ⮕ Shape<string>
 
 const userOrNameShape = d.or([userShape, d.string()]);
 // ⮕ Shape<{ name: string, age: number } | string>
@@ -1931,7 +1931,7 @@ userOrNameShape.shapes[0];
 ```
 
 [`Shape.at`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#at) method derives a sub-shape at the
-given type, and if there's no such type then `null` is returned:
+given key, and if there's no such key then `null` is returned:
 
 ```ts
 userShape.at('age');
@@ -2447,7 +2447,7 @@ The table below highlights features that are unique to Doubter and its peers.
 2. Zod schemas are class instances so introspection is possible, but there's no way to get
    [a list of types accepted by a schema](#introspection).
 
-3. Zod supports only deep partial on objects. Doubter allows any shape to implement
+3. Zod supports [`deepPartial`](https://zod.dev/?id=deeppartial) for objects only. Doubter allows any shape to implement
    [`DeepPartialProtocol`](#implementing-deep-partial-support) and all shapes (except for primitives) support it
    out-of-the-box.
 
@@ -2517,6 +2517,13 @@ Convert array values during parsing:
 ```ts
 d.array(d.string().convert(parseFloat));
 // ⮕ Shape<string[], number[]>
+```
+
+Make an array readonly:
+
+```ts
+d.array(d.string()).readonly();
+// ⮕ Shape<string[], readonly string[]>
 ```
 
 ## Coerce to an array
@@ -3285,6 +3292,16 @@ d.map(d.string(), d.number());
 // ⮕ Shape<Map<string, number>>
 ```
 
+Mark a `Map` as readonly:
+
+```ts
+d.map(d.string(), d.number()).readonly();
+// ⮕ Shape<Map<string, number>, ReadonlyMap<string, number>>
+```
+
+> [!NOTE]\
+> Marking a `Map` as readonly, only affects type checking. At runtime, you would still be able to set and delete items.
+
 ## Coerce to a `Map`
 
 Arrays, iterables and array-like objects that withhold entry-like elements (a tuple with two elements) are converted to
@@ -3473,6 +3490,15 @@ d.object({
   age: d.number()
 });
 // ⮕ Shape<{ name: string, age: number }>
+```
+
+Make an object readonly:
+
+```ts
+d.object({
+  name: d.string()
+}).readonly();
+// ⮕ Shape<{ name: string }, { readonly name: string }>
 ```
 
 ## Optional properties
@@ -3769,6 +3795,13 @@ d.record(keysShape, d.number());
 // ⮕ Shape<Record<'foo' | 'bar', number>>
 ```
 
+Make a record readonly:
+
+```ts
+d.record(d.number()).readonly();
+// ⮕ Shape<Record<string, number>, Readonly<Record<string, number>>>
+```
+
 # `set`
 
 [`d.set`](https://smikhalevski.github.io/doubter/next/functions/core.set.html) returns a
@@ -3792,6 +3825,16 @@ Limit both minimum and maximum size at the same time:
 ```ts
 d.set(d.string()).size(5);
 ```
+
+Mark a `Set` as readonly:
+
+```ts
+d.set(d.string()).readonly();
+// ⮕ Shape<Set<string>, ReadonlySet<string>>
+```
+
+> [!NOTE]\
+> Marking a `Set` as readonly, only affects type checking. At runtime, you would still be able to add and delete items.
 
 ## Coerce to a `Set`
 
@@ -3937,6 +3980,13 @@ d.tuple([d.string(), d.number()], d.boolean());
 // Or
 d.tuple([d.string(), d.number()]).rest(d.boolean());
 // ⮕ Shape<[string, number, ...boolean]>
+```
+
+Make a tuple readonly:
+
+```ts
+d.tuple([d.string()]).readonly();
+// ⮕ Shape<[string], readonly [string]>
 ```
 
 Tuples follow [array type coercion rules](#coerce-to-an-array).

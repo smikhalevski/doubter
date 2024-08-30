@@ -354,7 +354,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   /**
-   * Marks object as readonly: properties cannot be added, removed or updated at runtime.
+   * Makes an object readonly: properties cannot be added, removed or updated at runtime.
    */
   readonly(): Shape<InferObject<PropShapes, RestShape, INPUT>, Readonly<InferObject<PropShapes, RestShape, OUTPUT>>> {
     return this.alter(Object.freeze);
