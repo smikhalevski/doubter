@@ -34,6 +34,10 @@ export class StringShape extends CoercibleShape<string> {
     return this.isCoercing ? stringCoercibleInputs : stringInputs;
   }
 
+  protected _coerce(input: unknown): string {
+    return coerceToString(input);
+  }
+
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<string> {
     let output = input;
 
@@ -43,5 +47,3 @@ export class StringShape extends CoercibleShape<string> {
     return this._applyOperations(input, output, options, null) as Result;
   }
 }
-
-StringShape.prototype['_coerce'] = coerceToString;

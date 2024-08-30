@@ -34,6 +34,10 @@ export class BigIntShape extends CoercibleShape<bigint> {
     return this.isCoercing ? bigintCoercibleInputs : bigintInputs;
   }
 
+  protected _coerce(input: unknown): bigint {
+    return coerceToBigInt(input);
+  }
+
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<bigint> {
     let output = input;
 
@@ -43,5 +47,3 @@ export class BigIntShape extends CoercibleShape<bigint> {
     return this._applyOperations(input, output, options, null) as Result;
   }
 }
-
-BigIntShape.prototype['_coerce'] = coerceToBigInt;

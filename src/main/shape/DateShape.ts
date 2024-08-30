@@ -35,6 +35,10 @@ export class DateShape extends CoercibleShape<Date> {
     return this.isCoercing ? dateCoercibleInputs : dateInputs;
   }
 
+  protected _coerce(input: unknown): Date {
+    return coerceToDate(input);
+  }
+
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<Date> {
     let output = input;
 
@@ -44,5 +48,3 @@ export class DateShape extends CoercibleShape<Date> {
     return this._applyOperations(input, output, options, null) as Result;
   }
 }
-
-DateShape.prototype['_coerce'] = coerceToDate;

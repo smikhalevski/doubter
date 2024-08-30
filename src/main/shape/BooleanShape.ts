@@ -34,6 +34,10 @@ export class BooleanShape extends CoercibleShape<boolean> {
     return this.isCoercing ? booleanCoercibleInputs : booleanInputs;
   }
 
+  protected _coerce(input: unknown): boolean {
+    return coerceToBoolean(input);
+  }
+
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<boolean> {
     let output = input;
 
@@ -43,5 +47,3 @@ export class BooleanShape extends CoercibleShape<boolean> {
     return this._applyOperations(input, output, options, null) as Result;
   }
 }
-
-BooleanShape.prototype['_coerce'] = coerceToBoolean;
