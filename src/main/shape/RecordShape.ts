@@ -63,6 +63,16 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
     return new RecordShape<any, any>(this.keysShape, toDeepPartialShape(this.valuesShape).optional(), this._options);
   }
 
+  /**
+   * Marks record as readonly: properties cannot be added, removed or updated at runtime.
+   */
+  readonly(): Shape<
+    Record<KeysShape[INPUT], ValuesShape[INPUT]>,
+    Readonly<Record<KeysShape[OUTPUT], ValuesShape[OUTPUT]>>
+  > {
+    return this.alter(Object.freeze);
+  }
+
   protected _isAsync(): boolean {
     return this.keysShape?.isAsync || this.valuesShape.isAsync;
   }

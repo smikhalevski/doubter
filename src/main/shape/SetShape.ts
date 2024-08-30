@@ -7,7 +7,7 @@ import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output } from './Shape';
+import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape';
 
 const setInputs = Object.freeze([Type.SET]);
 
@@ -51,6 +51,15 @@ export class SetShape<ValueShape extends AnyShape>
 
   deepPartial(): SetShape<OptionalDeepPartialShape<ValueShape>> {
     return new SetShape<any>(toDeepPartialShape(this.valueShape).optional(), this._options);
+  }
+
+  /**
+   * Marks {@link !Set} as readonly.
+   *
+   * **Note:** This doesn't have any effect at runtime.
+   */
+  readonly(): Shape<Set<Input<ValueShape>>, ReadonlySet<Output<ValueShape>>> {
+    return this;
   }
 
   protected _isAsync(): boolean {

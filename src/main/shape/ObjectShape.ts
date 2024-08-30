@@ -353,6 +353,13 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
     return copyOperations(this, new ObjectShape(this.propShapes, restShape, this._options));
   }
 
+  /**
+   * Marks object as readonly: properties cannot be added, removed or updated at runtime.
+   */
+  readonly(): Shape<InferObject<PropShapes, RestShape, INPUT>, Readonly<InferObject<PropShapes, RestShape, OUTPUT>>> {
+    return this.alter(Object.freeze);
+  }
+
   protected _isAsync(): boolean {
     return this.restShape?.isAsync || isAsyncShapes(this.valueShapes);
   }
