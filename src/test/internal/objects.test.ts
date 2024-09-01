@@ -1,10 +1,10 @@
-import { cloneDict, cloneDictHead, cloneDictKeys, setSafeProperty } from '../../main/internal/objects';
+import { cloneObject, cloneRecord, pickKeys, setProperty } from '../../main/internal/objects';
 
-describe('setSafeProperty', () => {
+describe('setProperty', () => {
   test('sets object value', () => {
     const obj: any = {};
 
-    setSafeProperty(obj, 'aaa', 111);
+    setProperty(obj, 'aaa', 111);
 
     expect(obj.hasOwnProperty('aaa')).toBe(true);
     expect(obj.aaa).toBe(111);
@@ -13,27 +13,27 @@ describe('setSafeProperty', () => {
   test('sets __proto__ value', () => {
     const obj: any = {};
 
-    setSafeProperty(obj, '__proto__', 111);
+    setProperty(obj, '__proto__', 111);
 
     expect(obj.hasOwnProperty('__proto__')).toBe(true);
     expect(obj.__proto__).toBe(111);
   });
 });
 
-describe('cloneDict', () => {
+describe('cloneObject', () => {
   test('clones all keys', () => {
     const dict = { aaa: 111, bbb: 222 };
-    const obj = cloneDict(dict);
+    const obj = cloneObject(dict);
 
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({ aaa: 111, bbb: 222 });
   });
 });
 
-describe('cloneDictHead', () => {
+describe('cloneRecord', () => {
   test('clones limited number of keys', () => {
     const dict = { aaa: 111, bbb: 222 };
-    const obj = cloneDictHead(dict, 1);
+    const obj = cloneRecord(dict, 1);
 
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({ aaa: 111 });
@@ -41,17 +41,17 @@ describe('cloneDictHead', () => {
 
   test('does not copy keys', () => {
     const dict = { aaa: 111, bbb: 222 };
-    const obj = cloneDictHead(dict, 0);
+    const obj = cloneRecord(dict, 0);
 
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({});
   });
 });
 
-describe('cloneDictKeys', () => {
+describe('pickKeys', () => {
   test('clones existing keys', () => {
     const dict = { aaa: 111, bbb: 222 };
-    const obj = cloneDictKeys(dict, ['bbb']);
+    const obj = pickKeys(dict, ['bbb']);
 
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({ bbb: 222 });
@@ -59,7 +59,7 @@ describe('cloneDictKeys', () => {
 
   test('clones known keys', () => {
     const dict = { aaa: 111, bbb: 222 };
-    const obj = cloneDictKeys(dict, ['aaa', 'ccc']);
+    const obj = pickKeys(dict, ['aaa', 'ccc']);
 
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({ aaa: 111 });

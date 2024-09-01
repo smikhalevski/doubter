@@ -14,7 +14,7 @@ export function defineProperty<T>(obj: object, key: PropertyKey, value: T): T {
 /**
  * Updates object property value, prevents prototype pollution.
  */
-export function setSafeProperty<T>(obj: any, key: PropertyKey, value: T): T {
+export function setProperty<T>(obj: any, key: PropertyKey, value: T): T {
   if (key === '__proto__') {
     Object.defineProperty(obj, key, { value, configurable: true, writable: true, enumerable: true });
   } else {
@@ -24,21 +24,35 @@ export function setSafeProperty<T>(obj: any, key: PropertyKey, value: T): T {
 }
 
 /**
- * Clones a dictionary-like object.
+ * Shallow-clones a dictionary-like object.
  */
-export function cloneDict(dict: ReadonlyDict): Dict {
+export function cloneObject(dict: ReadonlyDict): Dict {
   const obj = Object.create(Object.getPrototypeOf(dict));
 
   for (const key in dict) {
-    setSafeProperty(obj, key, dict[key]);
+    setProperty(obj, key, dict[key]);
   }
   return obj;
 }
 
 /**
- * Clones the first `count` keys of a dictionary-like object.
+ * Shallow-clones a dictionary-like object picking only a given set of keys.
  */
-export function cloneDictHead(dict: ReadonlyDict, count: number): Dict {
+export function pickKeys(dict: ReadonlyDict, keys: readonly string[]): Dict {
+  const obj = Object.create(Object.getPrototypeOf(dict));
+
+  for (const key of keys) {
+    if (key in dict) {
+      setProperty(obj, key, dict[key]);
+    }
+  }
+  return obj;
+}
+
+/**
+ * Shallow-clones a dictionary-like object picking only the first `count` number of keys.
+ */
+export function cloneRecord(dict: ReadonlyDict, count: number): Dict {
   const obj = Object.create(Object.getPrototypeOf(dict));
 
   let index = 0;
@@ -47,22 +61,8 @@ export function cloneDictHead(dict: ReadonlyDict, count: number): Dict {
     if (index >= count) {
       break;
     }
-    setSafeProperty(obj, key, dict[key]);
+    setProperty(obj, key, dict[key]);
     ++index;
-  }
-  return obj;
-}
-
-/**
- * Clones known keys of a dictionary-like object.
- */
-export function cloneDictKeys(dict: ReadonlyDict, keys: readonly string[]): Dict {
-  const obj = Object.create(Object.getPrototypeOf(dict));
-
-  for (const key of keys) {
-    if (key in dict) {
-      setSafeProperty(obj, key, dict[key]);
-    }
   }
   return obj;
 }
