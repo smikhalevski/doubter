@@ -6,15 +6,8 @@ import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
-import {
-  AnyShape,
-  DeepPartialProtocol,
-  DeepPartialShape,
-  Input,
-  OptionalDeepPartialShape,
-  Output,
-  Shape,
-} from './Shape';
+import { ReadonlyShape } from './ReadonlyShape';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';
 
 const mapInputs = Object.freeze([Type.MAP]);
 const mapCoercibleInputs = Object.freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
@@ -81,8 +74,8 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
    *
    * **Note:** This doesn't have any effect at runtime.
    */
-  readonly(): Shape<Map<Input<KeyShape>, Input<ValueShape>>, ReadonlyMap<Output<KeyShape>, Output<ValueShape>>> {
-    return this;
+  readonly(): ReadonlyShape<this> {
+    return new ReadonlyShape(this);
   }
 
   protected _isAsync(): boolean {

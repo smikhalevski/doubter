@@ -318,6 +318,16 @@ describe('ObjectShape', () => {
     });
   });
 
+  describe('readonly', () => {
+    test('', () => {
+      const shape = new ObjectShape({}, null).readonly();
+      const input = {};
+
+      expect(Object.isFrozen(shape.parse(input))).toBe(true);
+      expect(shape.parse(input)).not.toBe(input);
+    });
+  });
+
   describe('_applyRestUnchecked', () => {
     test('checks known keys', () => {
       const valueShape1 = new MockShape();

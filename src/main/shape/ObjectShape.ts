@@ -16,6 +16,7 @@ import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { EnumShape } from './EnumShape';
+import { ReadonlyShape } from './ReadonlyShape';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
 
 const objectInputs = Object.freeze([Type.OBJECT]);
@@ -356,8 +357,8 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   /**
    * Makes an object readonly: properties cannot be added, removed or updated at runtime.
    */
-  readonly(): Shape<InferObject<PropShapes, RestShape, INPUT>, Readonly<InferObject<PropShapes, RestShape, OUTPUT>>> {
-    return this.alter(Object.freeze);
+  readonly(): ReadonlyShape<this> {
+    return new ReadonlyShape(this);
   }
 
   protected _isAsync(): boolean {
