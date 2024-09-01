@@ -27,7 +27,7 @@ export function setSafeProperty<T>(obj: any, key: PropertyKey, value: T): T {
  * Clones a dictionary-like object.
  */
 export function cloneDict(dict: ReadonlyDict): Dict {
-  const obj = {};
+  const obj = Object.create(Object.getPrototypeOf(dict));
 
   for (const key in dict) {
     setSafeProperty(obj, key, dict[key]);
@@ -39,7 +39,7 @@ export function cloneDict(dict: ReadonlyDict): Dict {
  * Clones the first `count` keys of a dictionary-like object.
  */
 export function cloneDictHead(dict: ReadonlyDict, count: number): Dict {
-  const obj = {};
+  const obj = Object.create(Object.getPrototypeOf(dict));
 
   let index = 0;
 
@@ -57,7 +57,7 @@ export function cloneDictHead(dict: ReadonlyDict, count: number): Dict {
  * Clones known keys of a dictionary-like object.
  */
 export function cloneDictKeys(dict: ReadonlyDict, keys: readonly string[]): Dict {
-  const obj = {};
+  const obj = Object.create(Object.getPrototypeOf(dict));
 
   for (const key of keys) {
     if (key in dict) {
