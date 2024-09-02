@@ -7,7 +7,7 @@ import {
   MESSAGE_ANY_REFINE,
 } from '../constants';
 import { isArray, isEqual } from '../internal/lang';
-import { defineProperty, Dict, ReadonlyDict } from '../internal/objects';
+import { defineReadonlyProperty, Dict, ReadonlyDict } from '../internal/objects';
 import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
   adaptCheckResult,
@@ -1020,7 +1020,7 @@ Object.defineProperties(Shape.prototype, {
         cb = composeApplyOperations(operation, cb, isAsync);
       }
 
-      return defineProperty(this, '_applyOperations', cb);
+      return defineReadonlyProperty(this, '_applyOperations', cb);
     },
   },
 
@@ -1028,9 +1028,9 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      defineProperty(this, 'inputs', []);
+      defineReadonlyProperty(this, 'inputs', []);
 
-      return defineProperty(this, 'inputs', Object.freeze(unionTypes(this._getInputs())));
+      return defineReadonlyProperty(this, 'inputs', Object.freeze(unionTypes(this._getInputs())));
     },
   },
 
@@ -1038,15 +1038,15 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      defineProperty(this, 'isAsync', false);
+      defineReadonlyProperty(this, 'isAsync', false);
 
-      let async = this._isAsync();
+      let isAsync = this._isAsync();
 
-      for (let i = 0; !async && i < this.operations.length; ++i) {
-        async ||= this.operations[i].isAsync;
+      for (let i = 0; !isAsync && i < this.operations.length; ++i) {
+        isAsync ||= this.operations[i].isAsync;
       }
 
-      return defineProperty(this, 'isAsync', async);
+      return defineReadonlyProperty(this, 'isAsync', isAsync);
     },
   },
 
@@ -1054,7 +1054,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineProperty<Shape['try']>(
+      return defineReadonlyProperty<Shape['try']>(
         this,
         'try',
         this.isAsync
@@ -1078,7 +1078,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
+      return defineReadonlyProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
         return this._applyAsync(input, options || { earlyReturn: false }, nextNonce()).then(result => {
           if (result === null) {
             return ok(input);
@@ -1096,7 +1096,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineProperty<Shape['parse']>(
+      return defineReadonlyProperty<Shape['parse']>(
         this,
         'parse',
         this.isAsync
@@ -1120,7 +1120,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
+      return defineReadonlyProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
         return this._applyAsync(input, options || { earlyReturn: false }, nextNonce()).then(result => {
           if (result === null) {
             return input;
@@ -1138,7 +1138,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineProperty(
+      return defineReadonlyProperty(
         this,
         'parseOrDefault',
         this.isAsync
@@ -1162,7 +1162,7 @@ Object.defineProperties(Shape.prototype, {
     configurable: true,
 
     get(this: Shape) {
-      return defineProperty(
+      return defineReadonlyProperty(
         this,
         'parseOrDefaultAsync',
         (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
@@ -1193,7 +1193,7 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
    *
    * @param converter The callback that converts the input value. Converters can throw or reject with a
    * {@link ValidationError} to notify that the conversion cannot be successfully completed.
-   * @param async If `true` then the convert shape waits for the promise returned from the callback to be fulfilled.
+   * @param isAsync If `true` then the convert shape waits for the promise returned from the callback to be fulfilled.
    * Otherwise, the value that is synchronously returned from the callback is used as an output.
    * @template ConvertedValue The output value of the callback that converts the input value.
    */
@@ -1205,11 +1205,11 @@ export class ConvertShape<ConvertedValue> extends Shape<any, ConvertedValue> {
      * @param options Parsing options.
      */
     readonly converter: (value: any, options: ParseOptions) => PromiseLike<ConvertedValue> | ConvertedValue,
-    async?: boolean
+    isAsync?: boolean
   ) {
     super();
 
-    if (async) {
+    if (isAsync) {
       this._isAsync = () => true;
     }
   }

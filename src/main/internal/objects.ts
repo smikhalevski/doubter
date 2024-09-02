@@ -6,7 +6,7 @@ export interface Dict<T = any> {
   [key: string]: T;
 }
 
-export function defineProperty<T>(obj: object, key: PropertyKey, value: T): T {
+export function defineReadonlyProperty<T>(obj: object, key: PropertyKey, value: T): T {
   Object.defineProperty(obj, key, { value, configurable: true });
   return value;
 }
