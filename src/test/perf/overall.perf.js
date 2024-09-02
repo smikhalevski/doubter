@@ -6,343 +6,189 @@ const valibot = require('valibot');
 const doubter = require('../../../lib');
 
 describe('Overall', () => {
-  const isSuccessMeasureEnabled = true;
-  const isFailureMeasureEnabled = true;
+  const createOverallTests = (isSuccessMeasureEnabled, isFailureMeasureEnabled) => {
+    const validValue = {
+      a1: [1, 2, 3],
+      a2: 'foo',
+      a3: false,
+      a4: {
+        a41: 'bar',
+        a42: 3.1415,
+      },
+    };
 
-  const validValue = {
-    a1: [1, 2, 3],
-    a2: 'foo',
-    a3: false,
-    a4: {
-      a41: 'bar',
-      a42: 3.1415,
-    },
-  };
+    const invalidValue = {
+      a1: [1, 2, '3'],
+      a2: 0xf00,
+      a3: false,
+      a4: {
+        a41: 'bar',
+        a42: '3.1415',
+      },
+    };
 
-  const invalidValue = {
-    a1: [1, 2, '3'],
-    a2: 0xf00,
-    a3: false,
-    a4: {
-      a41: 'bar',
-      a42: '3.1415',
-    },
-  };
-
-  describe('Loose validation', () => {
-    test('Ajv', measure => {
-      const ajv = new Ajv();
-
-      const schema = {
-        $id: 'test',
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'object',
-        properties: {
-          a1: {
-            type: 'array',
-            items: {
-              type: 'integer',
-            },
-          },
-          a2: {
-            type: 'string',
-          },
-          a3: {
-            type: 'boolean',
-          },
-          a4: {
-            type: 'object',
-            properties: {
-              a41: {
-                enum: ['foo', 'bar'],
-              },
-              a42: {
-                type: 'number',
-              },
-            },
-            required: ['a41', 'a42'],
-          },
-        },
-        required: ['a1', 'a2', 'a3', 'a4'],
-      };
-
-      const validate = ajv.compile(schema);
-
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          validate(validValue);
+    describe('Loose validation', () => {
+      test('doubter', measure => {
+        const shape = doubter.object({
+          a1: doubter.array(doubter.number().int()),
+          a2: doubter.string().min(3),
+          a3: doubter.boolean(),
+          a4: doubter.object({
+            a41: doubter.enum(['foo', 'bar']),
+            a42: doubter.number(),
+          }),
         });
-      }
 
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          validate(invalidValue);
-        });
-      }
-    });
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            shape.parse(validValue);
+          });
+        }
 
-    test('zod', measure => {
-      const type = zod
-        .object({
-          a1: zod.array(zod.number().int()),
-          a2: zod.string().min(3),
-          a3: zod.boolean(),
-          a4: zod
-            .object({
-              a41: zod.enum(['foo', 'bar']),
-              a42: zod.number(),
-            })
-            .passthrough(),
-        })
-        .passthrough();
-
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          type.parse(validValue);
-        });
-      }
-
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          type.safeParse(invalidValue);
-        });
-      }
-    });
-
-    test('myzod', measure => {
-      const type = myzod.object(
-        {
-          a1: myzod.array(myzod.number().withPredicate(Number.isInteger)),
-          a2: myzod.string().min(3),
-          a3: myzod.boolean(),
-          a4: myzod.object(
-            {
-              a41: myzod.enum(['foo', 'bar']),
-              a42: myzod.number(),
-            },
-            { allowUnknown: true }
-          ),
-        },
-        { allowUnknown: true }
-      );
-
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          type.parse(validValue);
-        });
-      }
-
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          type.try(invalidValue);
-        });
-      }
-    });
-
-    test('valita', measure => {
-      const type = valita.object({
-        a1: valita.array(valita.number().assert(Number.isInteger)),
-        a2: valita.string().assert(value => value.length >= 3),
-        a3: valita.boolean(),
-        a4: valita.object({
-          a41: valita.union(valita.literal('foo'), valita.literal('bar')),
-          a42: valita.number(),
-        }),
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            shape.try(invalidValue);
+          });
+        }
       });
 
-      const options = { mode: 'passthrough' };
+      test('Ajv', measure => {
+        const ajv = new Ajv();
 
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          type.parse(validValue, options);
-        });
-      }
-
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          type.try(invalidValue, options).issues;
-        });
-      }
-    });
-
-    test('valibot', measure => {
-      const schema = valibot.object({
-        a1: valibot.array(valibot.number([valibot.integer()])),
-        a2: valibot.string([valibot.custom(value => value.length >= 3)]),
-        a3: valibot.boolean(),
-        a4: valibot.object({
-          a41: valibot.union([valibot.literal('foo'), valibot.literal('bar')]),
-          a42: valibot.number(),
-        }),
-      });
-
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          valibot.parse(schema, validValue);
-        });
-      }
-
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          valibot.safeParse(schema, validValue);
-        });
-      }
-    });
-
-    test('doubter', measure => {
-      const shape = doubter.object({
-        a1: doubter.array(doubter.number().int()),
-        a2: doubter.string().min(3),
-        a3: doubter.boolean(),
-        a4: doubter.object({
-          a41: doubter.enum(['foo', 'bar']),
-          a42: doubter.number(),
-        }),
-      });
-
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          shape.parse(validValue);
-        });
-      }
-
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          shape.try(invalidValue);
-        });
-      }
-    });
-  });
-
-  describe('Strict validation', () => {
-    test('Ajv', measure => {
-      const ajv = new Ajv();
-
-      const schema = {
-        $id: 'test',
-        $schema: 'http://json-schema.org/draft-07/schema#',
-        type: 'object',
-        properties: {
-          a1: {
-            type: 'array',
-            items: {
-              type: 'integer',
-            },
-          },
-          a2: {
-            type: 'string',
-          },
-          a3: {
-            type: 'boolean',
-          },
-          a4: {
-            type: 'object',
-            properties: {
-              a41: {
-                enum: ['foo', 'bar'],
-              },
-              a42: {
-                type: 'number',
+        const schema = {
+          $id: 'test',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'object',
+          properties: {
+            a1: {
+              type: 'array',
+              items: {
+                type: 'integer',
               },
             },
-            required: ['a41', 'a42'],
-            additionalProperties: false,
+            a2: {
+              type: 'string',
+            },
+            a3: {
+              type: 'boolean',
+            },
+            a4: {
+              type: 'object',
+              properties: {
+                a41: {
+                  enum: ['foo', 'bar'],
+                },
+                a42: {
+                  type: 'number',
+                },
+              },
+              required: ['a41', 'a42'],
+            },
           },
-        },
-        required: ['a1', 'a2', 'a3', 'a4'],
-        additionalProperties: false,
-      };
+          required: ['a1', 'a2', 'a3', 'a4'],
+        };
 
-      const validate = ajv.compile(schema);
+        const validate = ajv.compile(schema);
 
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          validate(validValue);
-        });
-      }
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            validate(validValue);
+          });
+        }
 
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          validate(invalidValue);
-        });
-      }
-    });
-
-    test('zod', measure => {
-      const type = zod.object({
-        a1: zod.array(zod.number().int()),
-        a2: zod.string().min(3),
-        a3: zod.boolean(),
-        a4: zod.object({
-          a41: zod.enum(['foo', 'bar']),
-          a42: zod.number(),
-        }),
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            validate(invalidValue);
+          });
+        }
       });
 
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          type.parse(validValue);
-        });
-      }
+      test('zod', measure => {
+        const type = zod
+          .object({
+            a1: zod.array(zod.number().int()),
+            a2: zod.string().min(3),
+            a3: zod.boolean(),
+            a4: zod
+              .object({
+                a41: zod.enum(['foo', 'bar']),
+                a42: zod.number(),
+              })
+              .passthrough(),
+          })
+          .passthrough();
 
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          type.safeParse(invalidValue);
-        });
-      }
-    });
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            type.parse(validValue);
+          });
+        }
 
-    test('myzod', measure => {
-      const type = myzod.object({
-        a1: myzod.array(myzod.number().withPredicate(Number.isInteger)),
-        a2: myzod.string().min(3),
-        a3: myzod.boolean(),
-        a4: myzod.object({
-          a41: myzod.enum(['foo', 'bar']),
-          a42: myzod.number(),
-        }),
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            type.safeParse(invalidValue);
+          });
+        }
       });
 
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          type.parse(validValue);
-        });
-      }
+      test('myzod', measure => {
+        const type = myzod.object(
+          {
+            a1: myzod.array(myzod.number().withPredicate(Number.isInteger)),
+            a2: myzod.string().min(3),
+            a3: myzod.boolean(),
+            a4: myzod.object(
+              {
+                a41: myzod.enum(['foo', 'bar']),
+                a42: myzod.number(),
+              },
+              { allowUnknown: true }
+            ),
+          },
+          { allowUnknown: true }
+        );
 
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          type.try(invalidValue);
-        });
-      }
-    });
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            type.parse(validValue);
+          });
+        }
 
-    test('valita', measure => {
-      const type = valita.object({
-        a1: valita.array(valita.number().assert(Number.isInteger)),
-        a2: valita.string().assert(value => value.length >= 3),
-        a3: valita.boolean(),
-        a4: valita.object({
-          a41: valita.union(valita.literal('foo'), valita.literal('bar')),
-          a42: valita.number(),
-        }),
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            type.try(invalidValue);
+          });
+        }
       });
 
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          type.parse(validValue);
+      test('valita', measure => {
+        const type = valita.object({
+          a1: valita.array(valita.number().assert(Number.isInteger)),
+          a2: valita.string().assert(value => value.length >= 3),
+          a3: valita.boolean(),
+          a4: valita.object({
+            a41: valita.union(valita.literal('foo'), valita.literal('bar')),
+            a42: valita.number(),
+          }),
         });
-      }
 
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          type.try(invalidValue).issues;
-        });
-      }
-    });
+        const options = { mode: 'passthrough' };
 
-    test('valibot', measure => {
-      const schema = valibot.object(
-        {
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            type.parse(validValue, options);
+          });
+        }
+
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            type.try(invalidValue, options).issues;
+          });
+        }
+      });
+
+      test('valibot', measure => {
+        const schema = valibot.object({
           a1: valibot.array(valibot.number([valibot.integer()])),
           a2: valibot.string([valibot.custom(value => value.length >= 3)]),
           a3: valibot.boolean(),
@@ -350,51 +196,208 @@ describe('Overall', () => {
             a41: valibot.union([valibot.literal('foo'), valibot.literal('bar')]),
             a42: valibot.number(),
           }),
-        },
-        valibot.never()
-      );
-
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          valibot.parse(schema, validValue);
         });
-      }
 
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          valibot.safeParse(schema, validValue);
-        });
-      }
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            valibot.parse(schema, validValue);
+          });
+        }
+
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            valibot.safeParse(schema, validValue);
+          });
+        }
+      });
     });
 
-    test('doubter', measure => {
-      const shape = doubter
-        .object({
-          a1: doubter.array(doubter.number().int()),
-          a2: doubter.string().min(3),
-          a3: doubter.boolean(),
-          a4: doubter
-            .object({
-              a41: doubter.enum(['foo', 'bar']),
-              a42: doubter.number(),
-            })
-            .exact(),
-        })
-        .exact();
+    describe('Strict validation', () => {
+      test('doubter', measure => {
+        const shape = doubter
+          .object({
+            a1: doubter.array(doubter.number().int()),
+            a2: doubter.string().min(3),
+            a3: doubter.boolean(),
+            a4: doubter
+              .object({
+                a41: doubter.enum(['foo', 'bar']),
+                a42: doubter.number(),
+              })
+              .exact(),
+          })
+          .exact();
 
-      if (isSuccessMeasureEnabled) {
-        measure(() => {
-          shape.parse(validValue);
-        });
-      }
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            shape.parse(validValue);
+          });
+        }
 
-      if (isFailureMeasureEnabled) {
-        measure(() => {
-          shape.try(invalidValue);
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            shape.try(invalidValue);
+          });
+        }
+      });
+
+      test('Ajv', measure => {
+        const ajv = new Ajv();
+
+        const schema = {
+          $id: 'test',
+          $schema: 'http://json-schema.org/draft-07/schema#',
+          type: 'object',
+          properties: {
+            a1: {
+              type: 'array',
+              items: {
+                type: 'integer',
+              },
+            },
+            a2: {
+              type: 'string',
+            },
+            a3: {
+              type: 'boolean',
+            },
+            a4: {
+              type: 'object',
+              properties: {
+                a41: {
+                  enum: ['foo', 'bar'],
+                },
+                a42: {
+                  type: 'number',
+                },
+              },
+              required: ['a41', 'a42'],
+              additionalProperties: false,
+            },
+          },
+          required: ['a1', 'a2', 'a3', 'a4'],
+          additionalProperties: false,
+        };
+
+        const validate = ajv.compile(schema);
+
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            validate(validValue);
+          });
+        }
+
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            validate(invalidValue);
+          });
+        }
+      });
+
+      test('zod', measure => {
+        const type = zod.object({
+          a1: zod.array(zod.number().int()),
+          a2: zod.string().min(3),
+          a3: zod.boolean(),
+          a4: zod.object({
+            a41: zod.enum(['foo', 'bar']),
+            a42: zod.number(),
+          }),
         });
-      }
+
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            type.parse(validValue);
+          });
+        }
+
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            type.safeParse(invalidValue);
+          });
+        }
+      });
+
+      test('myzod', measure => {
+        const type = myzod.object({
+          a1: myzod.array(myzod.number().withPredicate(Number.isInteger)),
+          a2: myzod.string().min(3),
+          a3: myzod.boolean(),
+          a4: myzod.object({
+            a41: myzod.enum(['foo', 'bar']),
+            a42: myzod.number(),
+          }),
+        });
+
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            type.parse(validValue);
+          });
+        }
+
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            type.try(invalidValue);
+          });
+        }
+      });
+
+      test('valita', measure => {
+        const type = valita.object({
+          a1: valita.array(valita.number().assert(Number.isInteger)),
+          a2: valita.string().assert(value => value.length >= 3),
+          a3: valita.boolean(),
+          a4: valita.object({
+            a41: valita.union(valita.literal('foo'), valita.literal('bar')),
+            a42: valita.number(),
+          }),
+        });
+
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            type.parse(validValue);
+          });
+        }
+
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            type.try(invalidValue).issues;
+          });
+        }
+      });
+
+      test('valibot', measure => {
+        const schema = valibot.object(
+          {
+            a1: valibot.array(valibot.number([valibot.integer()])),
+            a2: valibot.string([valibot.custom(value => value.length >= 3)]),
+            a3: valibot.boolean(),
+            a4: valibot.object({
+              a41: valibot.union([valibot.literal('foo'), valibot.literal('bar')]),
+              a42: valibot.number(),
+            }),
+          },
+          valibot.never()
+        );
+
+        if (isSuccessMeasureEnabled) {
+          measure(() => {
+            valibot.parse(schema, validValue);
+          });
+        }
+
+        if (isFailureMeasureEnabled) {
+          measure(() => {
+            valibot.safeParse(schema, validValue);
+          });
+        }
+      });
     });
-  });
+  };
+
+  describe('Success path', () => createOverallTests(true, false));
+
+  describe('Failure path', () => createOverallTests(false, true));
 });
 
 describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {

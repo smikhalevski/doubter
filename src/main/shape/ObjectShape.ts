@@ -501,6 +501,10 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
    * Unknown keys are preserved as is and aren't checked.
    */
   private _applyRestUnchecked(input: ReadonlyDict, options: ParseOptions, nonce: number): Result {
+    if (ObjectShape.isEvalEnabled) {
+      return (this._applyRestUnchecked = this._compileApplyRestUnchecked()).call(this, input, options, nonce);
+    }
+
     const { keys, operations, valueShapes } = this;
 
     const keysLength = keys.length;
@@ -660,5 +664,36 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       }
     }
     return this._applyOperations(input, output, options, issues) as Result;
+  }
+
+  private _compileApplyRestUnchecked() {
+    let source = 'return function(input, options, nonce) { var issues = null, output = input, result;';
+
+    for (const key in this.propShapes) {
+      const keyStr = JSON.stringify(key);
+
+      source +=
+        'if ((result = shape.propShapes[' +
+        keyStr +
+        ']._apply(input[' +
+        keyStr +
+        '], options, nonce)) !== null)' +
+        'if (Array.isArray(result)) {' +
+        'unshiftIssuesPath(result, ' +
+        keyStr +
+        ');' +
+        'if (options.earlyReturn) return result;' +
+        'issues = concatIssues(issues, result);' +
+        '} else if (issues === null || shape.operations.length !== 0)' +
+        'setProperty(input === output ? output = cloneObject(input) : output, ' +
+        keyStr +
+        ', result.value);';
+    }
+
+    source += 'return shape._applyOperations(input, output, options, issues)}';
+
+    const factory = new Function('shape', 'unshiftIssuesPath', 'concatIssues', 'cloneObject', 'setProperty', source);
+
+    return factory(this, unshiftIssuesPath, concatIssues, cloneObject, setProperty);
   }
 }
