@@ -28,6 +28,21 @@ describe('cloneObject', () => {
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({ aaa: 111, bbb: 222 });
   });
+
+  test('preserves prototype', () => {
+    class TestClass {
+      aaa = 111;
+    }
+
+    const dict = new TestClass();
+    dict.aaa = 222;
+
+    const obj = cloneObject(dict);
+
+    expect(dict).not.toBe(obj);
+    expect(obj).toBeInstanceOf(TestClass);
+    expect(obj.aaa).toBe(222);
+  });
 });
 
 describe('cloneRecord', () => {
@@ -46,6 +61,21 @@ describe('cloneRecord', () => {
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({});
   });
+
+  test('preserves prototype', () => {
+    class TestClass {
+      aaa = 111;
+    }
+
+    const dict = new TestClass();
+    dict.aaa = 222;
+
+    const obj = cloneRecord(dict, 1);
+
+    expect(dict).not.toBe(obj);
+    expect(obj).toBeInstanceOf(TestClass);
+    expect(obj.aaa).toBe(222);
+  });
 });
 
 describe('pickKeys', () => {
@@ -63,5 +93,20 @@ describe('pickKeys', () => {
 
     expect(dict).not.toBe(obj);
     expect(obj).toEqual({ aaa: 111 });
+  });
+
+  test('preserves prototype', () => {
+    class TestClass {
+      aaa = 111;
+      bbb = 222;
+    }
+
+    const dict = new TestClass();
+    const obj = pickKeys(dict, ['aaa']);
+
+    expect(dict).not.toBe(obj);
+    expect(obj).toBeInstanceOf(TestClass);
+    expect(obj.aaa).toBe(111);
+    expect(obj.bbb).toBeUndefined();
   });
 });
