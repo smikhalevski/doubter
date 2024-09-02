@@ -26,7 +26,6 @@ Runtime validation and transformation library.
 - [Runtime type introspection](#introspection);
 - [Human-oriented type coercion](#type-coercion);
 - [High performance and low memory consumption](#performance);
-- No dynamic code evaluation;
 - Zero dependencies;
 - [Pluggable architecture](#plugins);
 - Tree-shakable: [3 — 12 kB gzipped](https://bundlephobia.com/result?p=doubter) depending on what features you use;
