@@ -181,22 +181,6 @@ export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyS
  */
 export class Shape<InputValue = any, OutputValue = InputValue> {
   /**
-   * `true` if code evaluation is enabled.
-   *
-   * Shapes can compile code fragments to increase runtime performance.
-   *
-   * @alpha
-   */
-  static isEvalEnabled = (() => {
-    try {
-      new Function('');
-      return true;
-    } catch {
-      return false;
-    }
-  })();
-
-  /**
    * The dictionary of shape annotations.
    *
    * @see {@link Shape.annotate}
