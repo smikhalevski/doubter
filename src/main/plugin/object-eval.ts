@@ -1,7 +1,20 @@
+/**
+ * The plugin that enables runtime optimization of {@link core!ObjectShape ObjectShape}. Object shapes would dynamically
+ * compile code fragments to increase runtime performance.
+ *
+ * ```ts
+ * import { ObjectShape } from 'doubter/core';
+ * import enableObjectEval from 'doubter/plugin/object-eval';
+ *
+ * enableObjectEval(ObjectShape);
+ * ```
+ *
+ * @module plugin/object-eval
+ */
+
 import { cloneObject, defineReadonlyProperty, setProperty } from '../internal/objects';
 import { concatIssues, unshiftIssuesPath } from '../internal/shapes';
 import { ObjectShape } from '../shape/ObjectShape';
-import { isEvalSupported } from './shape-utils';
 
 /**
  * Enables runtime optimization of {@link core!ObjectShape ObjectShape}. Object shapes would dynamically compile code
@@ -10,8 +23,10 @@ import { isEvalSupported } from './shape-utils';
  * @alpha
  */
 export default function enableObjectEval(ctor: typeof ObjectShape): void {
-  if (!isEvalSupported) {
-    // No runtime compilation
+  try {
+    new Function('');
+  } catch {
+    // Code evaluation isn't supported
     return;
   }
 
