@@ -42,6 +42,16 @@ describe('ObjectShape', () => {
     });
   });
 
+  test('preserves null prototype', () => {
+    const shape = new ObjectShape({}, null).strip();
+    const input = Object.create(null);
+
+    input.key1 = 'value1';
+
+    expect(shape.parse(input)).not.toBe(input);
+    expect(Object.getPrototypeOf(shape.parse(input))).toBe(null);
+  });
+
   describe('rest', () => {
     test('adds rest signature', () => {
       const restShape = new Shape();

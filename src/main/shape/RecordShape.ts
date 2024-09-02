@@ -1,6 +1,6 @@
 import { CODE_TYPE_OBJECT, MESSAGE_TYPE_OBJECT } from '../constants';
 import { isArray, isObject } from '../internal/lang';
-import { cloneDictHead, setSafeProperty } from '../internal/objects';
+import { cloneRecord, setProperty } from '../internal/objects';
 import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
@@ -128,9 +128,9 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
       if ((issues === null || operations.length !== 0) && (keyResult !== null || valueResult !== null)) {
         if (input === output) {
-          output = cloneDictHead(input, index);
+          output = cloneRecord(input, index);
         }
-        setSafeProperty(output, key, value);
+        setProperty(output, key, value);
       }
     }
     return this._applyOperations(input, output, options, issues) as Result;
@@ -196,9 +196,9 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
         if ((issues === null || operations.length !== 0) && (keyChanged || valueResult !== null)) {
           if (input === output) {
-            output = cloneDictHead(input, index);
+            output = cloneRecord(input, index);
           }
-          setSafeProperty(output, key, value);
+          setProperty(output, key, value);
         }
 
         return next();

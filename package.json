@@ -113,6 +113,7 @@
     "typedoc-custom-css": "github:smikhalevski/typedoc-custom-css#master",
     "typedoc-plugin-mdn-links": "^3.1.28",
     "typescript": "^5.4.5",
+    "valibot": "^0.41.0",
     "zod": "^3.23.8"
   }
 }
