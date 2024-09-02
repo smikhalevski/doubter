@@ -1013,11 +1013,11 @@ Object.defineProperties(Shape.prototype, {
     get(this: Shape) {
       let cb = applyOperations;
 
-      for (let i = this.operations.length - 1, async = false; i >= 0; --i) {
+      for (let i = this.operations.length - 1, isAsync = false; i >= 0; --i) {
         const operation = this.operations[i];
 
-        async ||= operation.isAsync;
-        cb = composeApplyOperations(operation, cb, async);
+        isAsync ||= operation.isAsync;
+        cb = composeApplyOperations(operation, cb, isAsync);
       }
 
       return defineProperty(this, '_applyOperations', cb);

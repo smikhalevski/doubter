@@ -144,17 +144,17 @@ export const applyOperations: ApplyOperationsCallback = (input, output, _options
  *
  * @param operation The operation to apply.
  * @param next The callback that applies the next operation.
- * @param async If `true` then both operation and next operation are called asynchronously.
+ * @param isAsync If `true` then both operation and next operation are called asynchronously.
  * @returns The callback that applies the operation.
  */
 export function composeApplyOperations(
   operation: Operation,
   next: ApplyOperationsCallback,
-  async: boolean
+  isAsync: boolean
 ): ApplyOperationsCallback {
   const { param, callback, tolerance } = operation;
 
-  if (async) {
+  if (isAsync) {
     return (input, output, options, issues) => {
       if (issues !== null) {
         switch (tolerance) {
