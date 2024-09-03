@@ -46,11 +46,6 @@
       "import": "./plugin/object-essentials.mjs",
       "require": "./plugin/object-essentials.js"
     },
-    "./plugin/record-essentials": {
-      "types": "./plugin/record-essentials.d.ts",
-      "import": "./plugin/record-essentials.mjs",
-      "require": "./plugin/record-essentials.js"
-    },
     "./plugin/set-essentials": {
       "types": "./plugin/set-essentials.d.ts",
       "import": "./plugin/set-essentials.mjs",
@@ -64,8 +59,22 @@
     "./package.json": "./package.json"
   },
   "sideEffects": [
+    "./index.js",
     "./index.mjs",
-    "./index.js"
+    "./plugin/array-essentials.js",
+    "./plugin/array-essentials.mjs",
+    "./plugin/bigint-essentials.js",
+    "./plugin/bigint-essentials.mjs",
+    "./plugin/date-essentials.js",
+    "./plugin/date-essentials.mjs",
+    "./plugin/number-essentials.js",
+    "./plugin/number-essentials.mjs",
+    "./plugin/object-essentials.js",
+    "./plugin/object-essentials.mjs",
+    "./plugin/set-essentials.js",
+    "./plugin/set-essentials.mjs",
+    "./plugin/string-essentials.js",
+    "./plugin/string-essentials.mjs"
   ],
   "scripts": {
     "build": "rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",

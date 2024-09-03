@@ -2033,9 +2033,7 @@ You can cherry-pick plugins that you need:
 
 ```ts
 import * as d from 'doubter/core';
-import enableStringEssentials from 'doubter/plugin/string-essentials';
-
-enableStringEssentials(d.StringShape.prototype);
+import 'doubter/plugin/string-essentials';
 
 d.string().min(2); // ✅ min is defined
 
