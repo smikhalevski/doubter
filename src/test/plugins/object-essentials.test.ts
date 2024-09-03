@@ -54,7 +54,7 @@ describe('allKeys', () => {
         {
           code: CODE_OBJECT_ALL_KEYS,
           input: { key1: 111, key2: 222, key3: 333 },
-          message: 'Must contain all or no keys: key1,key3,key4',
+          message: 'Must contain all or no keys: "key1", "key3", "key4"',
           param: ['key1', 'key3', 'key4'],
         },
       ],
@@ -80,7 +80,7 @@ describe('orKeys', () => {
         {
           code: CODE_OBJECT_OR_KEYS,
           input: { key2: 222 },
-          message: 'Must contain at least one key: key1,key3,key4',
+          message: 'Must contain at least one key: "key1", "key3", "key4"',
           param: ['key1', 'key3', 'key4'],
         },
       ],
@@ -106,7 +106,7 @@ describe('xorKeys', () => {
         {
           code: CODE_OBJECT_XOR_KEYS,
           input: { key2: 222 },
-          message: 'Must contain exactly one key: key1,key3,key4',
+          message: 'Must contain exactly one key: "key1", "key3", "key4"',
           param: ['key1', 'key3', 'key4'],
         },
       ],
@@ -132,7 +132,7 @@ describe('oxorKeys', () => {
         {
           code: CODE_OBJECT_OXOR_KEYS,
           input: { key1: 111, key3: 333 },
-          message: 'Must contain one or no keys: key1,key3,key4',
+          message: 'Must contain one or no keys: "key1", "key3", "key4"',
           param: ['key1', 'key3', 'key4'],
         },
       ],

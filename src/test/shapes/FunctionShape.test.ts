@@ -125,6 +125,7 @@ describe('FunctionShape', () => {
             input: ['aaa'],
             message: 'Must be a tuple of length 0',
             param: 0,
+            meta: undefined,
           },
         ])
       );
@@ -171,6 +172,8 @@ describe('FunctionShape', () => {
             path: ['this', 'key1'],
             input: 111,
             message: MESSAGE_TYPE_STRING,
+            param: undefined,
+            meta: undefined,
           },
         ])
       );
@@ -186,6 +189,8 @@ describe('FunctionShape', () => {
             path: ['arguments', 0],
             input: 111,
             message: MESSAGE_TYPE_STRING,
+            param: undefined,
+            meta: undefined,
           },
         ])
       );
@@ -201,12 +206,16 @@ describe('FunctionShape', () => {
             path: ['arguments', 0],
             input: 111,
             message: MESSAGE_TYPE_STRING,
+            param: undefined,
+            meta: undefined,
           },
           {
             code: CODE_TYPE_NUMBER,
             path: ['arguments', 1],
             input: 'aaa',
             message: MESSAGE_TYPE_NUMBER,
+            param: undefined,
+            meta: undefined,
           },
         ])
       );
@@ -216,7 +225,16 @@ describe('FunctionShape', () => {
       const shape = new FunctionShape(new ArrayShape([], null), new StringShape(), null);
 
       expect(() => shape.ensure(() => 111 as any)()).toThrow(
-        new ValidationError([{ code: CODE_TYPE_STRING, path: ['return'], input: 111, message: MESSAGE_TYPE_STRING }])
+        new ValidationError([
+          {
+            code: CODE_TYPE_STRING,
+            path: ['return'],
+            input: 111,
+            message: MESSAGE_TYPE_STRING,
+            param: undefined,
+            meta: undefined,
+          },
+        ])
       );
     });
   });
@@ -261,6 +279,8 @@ describe('FunctionShape', () => {
             path: ['this', 'key1'],
             input: 111,
             message: MESSAGE_TYPE_STRING,
+            param: undefined,
+            meta: undefined,
           },
         ])
       );
@@ -276,6 +296,8 @@ describe('FunctionShape', () => {
             path: ['arguments', 0],
             input: 111,
             message: MESSAGE_TYPE_STRING,
+            param: undefined,
+            meta: undefined,
           },
         ])
       );
@@ -291,12 +313,16 @@ describe('FunctionShape', () => {
             path: ['arguments', 0],
             input: 111,
             message: MESSAGE_TYPE_STRING,
+            param: undefined,
+            meta: undefined,
           },
           {
             code: CODE_TYPE_NUMBER,
             path: ['arguments', 1],
             input: 'aaa',
             message: MESSAGE_TYPE_NUMBER,
+            param: undefined,
+            meta: undefined,
           },
         ])
       );
@@ -306,7 +332,16 @@ describe('FunctionShape', () => {
       const shape = new FunctionShape(new ArrayShape([], null), new StringShape(), null);
 
       await expect(shape.ensureAsync(() => 111 as any)()).rejects.toEqual(
-        new ValidationError([{ code: CODE_TYPE_STRING, path: ['return'], input: 111, message: MESSAGE_TYPE_STRING }])
+        new ValidationError([
+          {
+            code: CODE_TYPE_STRING,
+            path: ['return'],
+            input: 111,
+            message: MESSAGE_TYPE_STRING,
+            param: undefined,
+            meta: undefined,
+          },
+        ])
       );
     });
   });

@@ -17,7 +17,7 @@ describe('ConstShape', () => {
   test('raises an issue if an input does not equal to the value', () => {
     expect(new ConstShape('aaa').try('bbb')).toEqual({
       ok: false,
-      issues: [{ code: CODE_TYPE_CONST, input: 'bbb', message: 'Must be equal to aaa', param: 'aaa' }],
+      issues: [{ code: CODE_TYPE_CONST, input: 'bbb', message: 'Must be equal to "aaa"', param: 'aaa' }],
     });
   });
 
