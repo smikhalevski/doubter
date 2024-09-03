@@ -2090,14 +2090,6 @@ d.number().gte(3); // ❌ gte is undefined
   [`xorKeys`](https://smikhalevski.github.io/doubter/next/classes/core.ObjectShape.html#xorKeys)
   [`oxorKeys`](https://smikhalevski.github.io/doubter/next/classes/core.ObjectShape.html#oxorKeys)
 
-- [**Record essentials**](https://smikhalevski.github.io/doubter/next/modules/plugin_record_essentials.html)<br/>
-  [`plain`](https://smikhalevski.github.io/doubter/next/classes/core.RecordShape.html#plain)
-  [`allKeys`](https://smikhalevski.github.io/doubter/next/classes/core.RecordShape.html#allKeys)
-  [`notAllKeys`](https://smikhalevski.github.io/doubter/next/classes/core.RecordShape.html#notAllKeys)
-  [`orKeys`](https://smikhalevski.github.io/doubter/next/classes/core.RecordShape.html#orKeys)
-  [`xorKeys`](https://smikhalevski.github.io/doubter/next/classes/core.RecordShape.html#xorKeys)
-  [`oxorKeys`](https://smikhalevski.github.io/doubter/next/classes/core.RecordShape.html#oxorKeys)
-
 - [**Set essentials**](https://smikhalevski.github.io/doubter/next/modules/plugin_set_essentials.html)<br/>
   [`size`](https://smikhalevski.github.io/doubter/next/classes/core.SetShape.html#size)
   [`min`](https://smikhalevski.github.io/doubter/next/classes/core.SetShape.html#min)
