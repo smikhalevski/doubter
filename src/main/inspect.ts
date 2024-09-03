@@ -8,7 +8,7 @@ import { isArray } from './internal/lang';
  * @param wrapAt The number of characters in a single line after which a code is wrapped.
  */
 export function inspect(value: any, indent = 2, wrapAt = 80): string {
-  return inspectValue(value, new Map(), '#', '', indent === 2 ? '  ' : ' '.repeat(indent), wrapAt);
+  return inspectValue(value, new Map(), '#', '', 0, indent, indent === 2 ? '  ' : ' '.repeat(indent), wrapAt);
 }
 
 function inspectValue(
@@ -16,6 +16,8 @@ function inspectValue(
   objectPaths: Map<object, string>,
   parentPath: string,
   key: string | number,
+  depth: number,
+  indent: number,
   space: string,
   wrapAt: number
 ): string {
@@ -65,7 +67,7 @@ function inspectValue(
 
   parentPath += '/';
 
-  let length = 2;
+  let length = depth * indent + 2;
   let opening = '[';
   let closing = ']';
   let padding = '';
@@ -76,10 +78,10 @@ function inspectValue(
     const constructorName = getConstructorName(value);
 
     if (constructorName === '') {
-      length = 4;
+      length += 2;
       opening = '{';
     } else {
-      length = constructorName.length + 5;
+      length += constructorName.length + 3;
       opening = constructorName + ' {';
     }
 
@@ -93,7 +95,7 @@ function inspectValue(
 
   if (isArray(value)) {
     for (let i = 0; i < value.length; i++) {
-      const chunk = inspectValue(value[i], objectPaths, parentPath, i, space, wrapAt);
+      const chunk = inspectValue(value[i], objectPaths, parentPath, i, depth + 1, indent, space, wrapAt);
 
       chunks.push(chunk);
       length += chunk.length;
@@ -101,7 +103,8 @@ function inspectValue(
   } else {
     for (const key in value) {
       const keyChunk = isUnquotedKey(key) ? key : JSON.stringify(key);
-      const chunk = keyChunk + ': ' + inspectValue(value[key], objectPaths, parentPath, keyChunk, space, wrapAt);
+      const chunk =
+        keyChunk + ': ' + inspectValue(value[key], objectPaths, parentPath, keyChunk, depth + 1, indent, space, wrapAt);
 
       chunks.push(chunk);
       length += chunk.length;

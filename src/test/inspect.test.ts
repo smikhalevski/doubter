@@ -93,13 +93,6 @@ describe('inspect', () => {
 
   test('stringifies Map', () => {
     expect(inspect(new Map().set('aaa', 111).set('bbb', 222))).toBe('Map { ["aaa", 111], ["bbb", 222] }');
-    expect(inspect(new Map().set('a'.repeat(80), 111).set(222, 333))).toBe(`Map {
-  [
-    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    111
-  ],
-  [222, 333]
-}`);
   });
 
   test('stringifies Set', () => {
@@ -124,5 +117,15 @@ describe('inspect', () => {
       aaa = 111;
     }
     expect(inspect(new TestClass())).toBe('TestClass { aaa: 111 }');
+  });
+
+  test('wraps children', () => {
+    expect(inspect(new Map().set('aaa', 111).set(222, 333), 2, 11)).toBe(`Map {
+  [
+    "aaa",
+    111
+  ],
+  [222, 333]
+}`);
   });
 });
