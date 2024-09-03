@@ -65,34 +65,26 @@ function inspectValue(
 
   parentPath += '/';
 
-  let length;
-  let opening;
-  let closing;
-  let padding;
-  let keyChunk;
-  let chunk;
+  let length = 2;
+  let opening = '[';
+  let closing = ']';
+  let padding = '';
 
   const chunks = [];
 
-  if (isArray(value)) {
-    length = 2;
-    opening = '[';
-    closing = ']';
-    padding = '';
-  } else {
-    length = 4;
-    padding = ' ';
+  if (!isArray(value)) {
+    const constructorName = getConstructorName(value);
 
-    const prototype = Object.getPrototypeOf(value);
-
-    if (prototype !== null && prototype !== Object.prototype && prototype.constructor.name) {
-      opening = prototype.constructor.name + ' {';
-      length = opening.length + 1;
-    } else {
+    if (constructorName === '') {
+      length = 4;
       opening = '{';
+    } else {
+      length = constructorName.length + 5;
+      opening = constructorName + ' {';
     }
 
     closing = '}';
+    padding = ' ';
 
     if (value instanceof Map || value instanceof Set) {
       value = Array.from(value);
@@ -101,15 +93,15 @@ function inspectValue(
 
   if (isArray(value)) {
     for (let i = 0; i < value.length; i++) {
-      chunk = inspectValue(value[i], objectPaths, parentPath, i, space, wrapAt);
+      const chunk = inspectValue(value[i], objectPaths, parentPath, i, space, wrapAt);
 
       chunks.push(chunk);
       length += chunk.length;
     }
   } else {
     for (const key in value) {
-      keyChunk = isUnquotedKey(key) ? key : JSON.stringify(key);
-      chunk = keyChunk + ': ' + inspectValue(value[key], objectPaths, parentPath, keyChunk, space, wrapAt);
+      const keyChunk = isUnquotedKey(key) ? key : JSON.stringify(key);
+      const chunk = keyChunk + ': ' + inspectValue(value[key], objectPaths, parentPath, keyChunk, space, wrapAt);
 
       chunks.push(chunk);
       length += chunk.length;
@@ -123,8 +115,17 @@ function inspectValue(
     : opening + padding + chunks.join(', ') + padding + closing;
 }
 
+function getConstructorName(obj: object): string {
+  const prototype = Object.getPrototypeOf(obj);
+
+  if (prototype === null || typeof prototype.constructor !== 'function' || prototype.constructor === Object) {
+    return '';
+  }
+  return prototype.constructor.name;
+}
+
 /**
- * Returns `true` if key doesn't require quotes in an object literal.
+ * Returns `true` if key doesn't require quotes.
  */
 export function isUnquotedKey(key: string): boolean {
   const keyLength = key.length;
