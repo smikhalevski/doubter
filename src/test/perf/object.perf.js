@@ -30,6 +30,17 @@ describe('object({ foo: string(), bar: number() })', () => {
     });
   });
 
+  test('doubter', measure => {
+    const shape = doubter.object({
+      foo: doubter.string(),
+      bar: doubter.number(),
+    });
+
+    measure(() => {
+      shape.parse(value);
+    });
+  });
+
   test('zod', measure => {
     const type = zod
       .object({
@@ -67,17 +78,6 @@ describe('object({ foo: string(), bar: number() })', () => {
 
     measure(() => {
       type.parse(value, options);
-    });
-  });
-
-  test('doubter', measure => {
-    const shape = doubter.object({
-      foo: doubter.string(),
-      bar: doubter.number(),
-    });
-
-    measure(() => {
-      shape.parse(value);
     });
   });
 });

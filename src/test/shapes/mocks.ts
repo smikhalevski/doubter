@@ -1,4 +1,4 @@
-import { ParseOptions, Result, Shape } from '../../main';
+import { ParseOptions, Result, Shape } from '../../main/core';
 
 export class MockShape extends Shape {
   constructor() {
