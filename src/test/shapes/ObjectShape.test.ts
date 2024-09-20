@@ -113,20 +113,20 @@ describe('ObjectShape', () => {
       test('returns an enum of keys', () => {
         const keysShape = new ObjectShape({ key1: new Shape(), key2: new Shape() }, null).keysShape;
 
-      expect(keysShape.try('key1')).toEqual({ ok: true, value: 'key1' });
-      expect(keysShape.try('key2')).toEqual({ ok: true, value: 'key2' });
-      expect(keysShape.try('xxx')).toEqual({
-        ok: false,
-        issues: [
-          {
-            code: CODE_TYPE_ENUM,
-            input: 'xxx',
-            message: 'Must be equal to one of: "key1", "key2"',
-            param: ['key1', 'key2'],
-          },
-        ],
+        expect(keysShape.try('key1')).toEqual({ ok: true, value: 'key1' });
+        expect(keysShape.try('key2')).toEqual({ ok: true, value: 'key2' });
+        expect(keysShape.try('xxx')).toEqual({
+          ok: false,
+          issues: [
+            {
+              code: CODE_TYPE_ENUM,
+              input: 'xxx',
+              message: 'Must be equal to one of: "key1", "key2"',
+              param: ['key1', 'key2'],
+            },
+          ],
+        });
       });
-    });
 
       test('returns the same shape every time', () => {
         const shape = new ObjectShape({ key1: new Shape(), key2: new Shape() }, null);
@@ -504,18 +504,18 @@ describe('ObjectShape', () => {
 
         const result = shape.try(input, { earlyReturn: true });
 
-      expect(result).toEqual({
-        ok: false,
-        issues: [
-          {
-            code: CODE_OBJECT_EXACT,
-            input,
-            message: 'Must not have unknown keys: "key2"',
-            param: ['key2'],
-          },
-        ],
+        expect(result).toEqual({
+          ok: false,
+          issues: [
+            {
+              code: CODE_OBJECT_EXACT,
+              input,
+              message: 'Must not have unknown keys: "key2"',
+              param: ['key2'],
+            },
+          ],
+        });
       });
-    });
 
       test('raises an issue if with all unknown properties', () => {
         const valueShape1 = new Shape();
@@ -526,18 +526,18 @@ describe('ObjectShape', () => {
 
         const result = shape.try(input);
 
-      expect(result).toEqual({
-        ok: false,
-        issues: [
-          {
-            code: CODE_OBJECT_EXACT,
-            input,
-            message: 'Must not have unknown keys: "key2", "key3"',
-            param: ['key2', 'key3'],
-          },
-        ],
+        expect(result).toEqual({
+          ok: false,
+          issues: [
+            {
+              code: CODE_OBJECT_EXACT,
+              input,
+              message: 'Must not have unknown keys: "key2", "key3"',
+              param: ['key2', 'key3'],
+            },
+          ],
+        });
       });
-    });
 
       test('applies operations', () => {
         const shape = new ObjectShape({}, new Shape()).check(() => [{ code: 'xxx' }]);
@@ -642,18 +642,18 @@ describe('ObjectShape', () => {
 
         const result = await shape.tryAsync(input, { earlyReturn: true });
 
-      expect(result).toEqual({
-        ok: false,
-        issues: [
-          {
-            code: CODE_OBJECT_EXACT,
-            input,
-            message: 'Must not have unknown keys: "key2"',
-            param: ['key2'],
-          },
-        ],
+        expect(result).toEqual({
+          ok: false,
+          issues: [
+            {
+              code: CODE_OBJECT_EXACT,
+              input,
+              message: 'Must not have unknown keys: "key2"',
+              param: ['key2'],
+            },
+          ],
+        });
       });
-    });
 
       test('raises an issue if with all unknown properties', async () => {
         const shape = new ObjectShape({ key1: new AsyncMockShape() }, null).exact();
@@ -662,18 +662,18 @@ describe('ObjectShape', () => {
 
         const result = await shape.tryAsync(input);
 
-      expect(result).toEqual({
-        ok: false,
-        issues: [
-          {
-            code: CODE_OBJECT_EXACT,
-            input,
-            message: 'Must not have unknown keys: "key2", "key3"',
-            param: ['key2', 'key3'],
-          },
-        ],
+        expect(result).toEqual({
+          ok: false,
+          issues: [
+            {
+              code: CODE_OBJECT_EXACT,
+              input,
+              message: 'Must not have unknown keys: "key2", "key3"',
+              param: ['key2', 'key3'],
+            },
+          ],
+        });
       });
-    });
 
       test('applies operations', async () => {
         const shape = new ObjectShape({}, new AsyncMockShape()).check(() => [{ code: 'xxx' }]);
