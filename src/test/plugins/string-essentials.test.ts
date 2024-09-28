@@ -76,7 +76,7 @@ describe('includes', () => {
   test('raises if string does not include a substring', () => {
     expect(new StringShape().includes('aaa').try('bbb')).toEqual({
       ok: false,
-      issues: [{ code: CODE_STRING_INCLUDES, input: 'bbb', param: 'aaa', message: 'Must include: aaa' }],
+      issues: [{ code: CODE_STRING_INCLUDES, input: 'bbb', param: 'aaa', message: 'Must include "aaa"' }],
     });
 
     expect(new StringShape().includes('aaa').parse('bbbaaabbb')).toBe('bbbaaabbb');
@@ -87,7 +87,7 @@ describe('startsWith', () => {
   test('raises if string does not start with a substring', () => {
     expect(new StringShape().startsWith('aaa').try('bbb')).toEqual({
       ok: false,
-      issues: [{ code: CODE_STRING_STARTS_WITH, input: 'bbb', param: 'aaa', message: 'Must start with: aaa' }],
+      issues: [{ code: CODE_STRING_STARTS_WITH, input: 'bbb', param: 'aaa', message: 'Must start with "aaa"' }],
     });
 
     expect(new StringShape().startsWith('aaa').parse('aaabbb')).toBe('aaabbb');
@@ -98,7 +98,7 @@ describe('endsWith', () => {
   test('raises if string does not end with a substring', () => {
     expect(new StringShape().endsWith('aaa').try('bbb')).toEqual({
       ok: false,
-      issues: [{ code: CODE_STRING_ENDS_WITH, input: 'bbb', param: 'aaa', message: 'Must end with: aaa' }],
+      issues: [{ code: CODE_STRING_ENDS_WITH, input: 'bbb', param: 'aaa', message: 'Must end with "aaa"' }],
     });
 
     expect(new StringShape().endsWith('aaa').parse('bbbaaa')).toBe('bbbaaa');

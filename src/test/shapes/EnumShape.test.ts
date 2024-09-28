@@ -53,7 +53,7 @@ describe('EnumShape', () => {
           code: CODE_TYPE_ENUM,
           input: 2,
           param: [NumberMockEnum.AAA, NumberMockEnum.BBB],
-          message: 'Must be equal to one of 0, 1',
+          message: 'Must be equal to one of: 0, 1',
         },
       ],
     });
@@ -67,7 +67,7 @@ describe('EnumShape', () => {
           code: CODE_TYPE_ENUM,
           input: 'AAA',
           param: [NumberMockEnum.AAA, NumberMockEnum.BBB],
-          message: 'Must be equal to one of 0, 1',
+          message: 'Must be equal to one of: 0, 1',
         },
       ],
     });
@@ -81,7 +81,7 @@ describe('EnumShape', () => {
           code: CODE_TYPE_ENUM,
           input: 'ccc',
           param: [StringMockEnum.AAA, StringMockEnum.BBB],
-          message: 'Must be equal to one of aaa, bbb',
+          message: 'Must be equal to one of: "aaa", "bbb"',
         },
       ],
     });
@@ -99,7 +99,7 @@ describe('EnumShape', () => {
     expect(new EnumShape(['aaa', 'bbb']).try('ccc')).toEqual({
       ok: false,
       issues: [
-        { code: CODE_TYPE_ENUM, input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of aaa, bbb' },
+        { code: CODE_TYPE_ENUM, input: 'ccc', param: ['aaa', 'bbb'], message: 'Must be equal to one of: "aaa", "bbb"' },
       ],
     });
   });

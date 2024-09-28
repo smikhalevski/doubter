@@ -6,7 +6,7 @@ describe('min', () => {
     expect(new BigIntShape().min(2).try(BigInt(1))).toEqual({
       ok: false,
       issues: [
-        { code: CODE_BIGINT_MIN, input: BigInt(1), param: BigInt(2), message: 'Must be greater than or equal to 2' },
+        { code: CODE_BIGINT_MIN, input: BigInt(1), param: BigInt(2), message: 'Must be greater than or equal to 2n' },
       ],
     });
 
@@ -26,14 +26,14 @@ describe('max', () => {
     expect(new BigIntShape().max(2).try(BigInt(3))).toEqual({
       ok: false,
       issues: [
-        { code: CODE_BIGINT_MAX, input: BigInt(3), param: BigInt(2), message: 'Must be less than or equal to 2' },
+        { code: CODE_BIGINT_MAX, input: BigInt(3), param: BigInt(2), message: 'Must be less than or equal to 2n' },
       ],
     });
 
     expect(new BigIntShape().max(2).try(BigInt(3))).toEqual({
       ok: false,
       issues: [
-        { code: CODE_BIGINT_MAX, input: BigInt(3), param: BigInt(2), message: 'Must be less than or equal to 2' },
+        { code: CODE_BIGINT_MAX, input: BigInt(3), param: BigInt(2), message: 'Must be less than or equal to 2n' },
       ],
     });
 

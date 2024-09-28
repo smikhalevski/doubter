@@ -121,7 +121,7 @@ describe('ObjectShape', () => {
             {
               code: CODE_TYPE_ENUM,
               input: 'xxx',
-              message: 'Must be equal to one of key1, key2',
+              message: 'Must be equal to one of: "key1", "key2"',
               param: ['key1', 'key2'],
             },
           ],
@@ -510,7 +510,7 @@ describe('ObjectShape', () => {
             {
               code: CODE_OBJECT_EXACT,
               input,
-              message: 'Must not have unknown keys: key2',
+              message: 'Must not have unknown keys: "key2"',
               param: ['key2'],
             },
           ],
@@ -532,7 +532,7 @@ describe('ObjectShape', () => {
             {
               code: CODE_OBJECT_EXACT,
               input,
-              message: 'Must not have unknown keys: key2,key3',
+              message: 'Must not have unknown keys: "key2", "key3"',
               param: ['key2', 'key3'],
             },
           ],
@@ -648,7 +648,7 @@ describe('ObjectShape', () => {
             {
               code: CODE_OBJECT_EXACT,
               input,
-              message: 'Must not have unknown keys: key2',
+              message: 'Must not have unknown keys: "key2"',
               param: ['key2'],
             },
           ],
@@ -668,7 +668,7 @@ describe('ObjectShape', () => {
             {
               code: CODE_OBJECT_EXACT,
               input,
-              message: 'Must not have unknown keys: key2,key3',
+              message: 'Must not have unknown keys: "key2", "key3"',
               param: ['key2', 'key3'],
             },
           ],

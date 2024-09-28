@@ -10,6 +10,8 @@
 
 import type { Issue, IssueOptions, Message, ParseOptions } from './core';
 
+export { inspect } from './inspect';
+
 export function toIssueOptions<T extends IssueOptions>(options: T | Message | undefined): Partial<T> {
   return options !== null && typeof options === 'object' ? options : ({ message: options } as T);
 }
