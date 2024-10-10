@@ -44,6 +44,7 @@ export { NeverShape } from './shape/NeverShape';
 export { NumberShape } from './shape/NumberShape';
 export { ObjectShape } from './shape/ObjectShape';
 export { PromiseShape } from './shape/PromiseShape';
+export { ReadonlyShape } from './shape/ReadonlyShape';
 export { RecordShape } from './shape/RecordShape';
 export { SetShape } from './shape/SetShape';
 export { CatchShape, DenyShape, ExcludeShape, PipeShape, ReplaceShape, Shape, ConvertShape } from './shape/Shape';

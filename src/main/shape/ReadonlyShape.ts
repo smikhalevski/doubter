@@ -10,13 +10,32 @@ type ToReadonly<T> =
   T extends Array<infer V> ? readonly V[] :
   T extends Set<infer V> ? ReadonlySet<V> :
   T extends Map<infer K, infer V> ? ReadonlyMap<K, V> :
+  T extends object ? Readonly<T> :
   T;
 
+/**
+ * The shape that makes the output readonly. Only freezes plain objects and arrays at runtime, other object types are
+ * left intact.
+ *
+ * @template BaseShape The shape that parses the input.
+ * @group Shapes
+ */
 export class ReadonlyShape<BaseShape extends AnyShape>
   extends Shape<Input<BaseShape>, ToReadonly<Output<BaseShape>>>
   implements DeepPartialProtocol<ReadonlyShape<DeepPartialShape<BaseShape>>>
 {
-  constructor(readonly baseShape: BaseShape) {
+  /**
+   * Creates the new {@link ReadonlyShape} instance.
+   *
+   * @param baseShape The shape that parses the input.
+   * @template BaseShape The shape that parses the input.
+   */
+  constructor(
+    /**
+     * The shape that parses the input.
+     */
+    readonly baseShape: BaseShape
+  ) {
     super();
   }
 

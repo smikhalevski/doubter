@@ -1,6 +1,6 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { OUTPUT } from '../../main/internal/shapes';
+import { INPUT, OUTPUT } from '../../main/internal/shapes';
 
 expectType<Record<string, number>>(d.record(d.number())[OUTPUT]);
 
@@ -21,3 +21,9 @@ d.record(
   d.string().convert(x => x as 'aaa' | 'bbb'),
   d.number()
 ).notAllKeys(['bbb']);
+
+d.record(d.number()).notAllKeys(['bbb']);
+
+expectType<{ [key: string]: number }>(d.record(d.number()).readonly()[INPUT]);
+
+expectType<{ readonly [key: string]: number }>(d.record(d.number()).readonly()[OUTPUT]);
