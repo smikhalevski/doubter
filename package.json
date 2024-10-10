@@ -71,6 +71,8 @@
     "./plugin/number-essentials.mjs",
     "./plugin/object-essentials.js",
     "./plugin/object-essentials.mjs",
+    "./plugin/object-eval.js",
+    "./plugin/object-eval.mjs",
     "./plugin/set-essentials.js",
     "./plugin/set-essentials.mjs",
     "./plugin/string-essentials.js",
