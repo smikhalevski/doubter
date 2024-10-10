@@ -2341,6 +2341,49 @@ npm run build
 npm run perf -- -t overall
 ```
 
+<details>
+<summary>Detailed results</summary>
+
+```
+Success path
+
+  Loose validation
+    ● doubter    7.9 MHz ± 0.5%    128.4 B  ± 0.11%
+    ● Ajv       15.8 MHz ± 1.33%   156.2 B  ± 0.01%
+    ● zod        1.1 MHz ± 0.5%      4.2 kB ± 0.01%
+    ● myzod      2.4 MHz ± 0.5%    506.4 B  ± 0.04%
+    ● valita     4.4 MHz ± 0.5%    117.9 B  ± 0.07%
+    ● valibot    3.0 MHz ± 0.5%      1.3 kB ± 0.01%
+
+  Strict validation
+    ● doubter    4.3 MHz ± 0.5%    149.9 B  ± 0.06%
+    ● Ajv       13.1 MHz ± 1.15%   152.3 B  ± 0.01%
+    ● zod        1.2 MHz ± 0.5%      4.2 kB ± 0.01%
+    ● myzod      2.5 MHz ± 0.5%    316.7 B  ± 0.13%
+    ● valita     4.3 MHz ± 0.5%    120.7 B  ± 0.46%
+    ● valibot    3.0 MHz ± 0.5%      1.3 kB ± 0%
+
+Failure path
+
+  Loose validation
+    ● doubter    4.2 MHz ± 0.6%      1.2 kB ± 0.01%
+    ● Ajv       13.3 MHz ± 1.11%   356.4 B  ± 0.01%
+    ● zod      175.0 kHz ± 1.04%    11.0 kB ± 0.22%
+    ● myzod     76.9 kHz ± 0.5%      2.8 kB ± 0.09%
+    ● valita     3.1 MHz ± 0.5%      1.5 kB ± 0%
+    ● valibot    3.0 MHz ± 0.53%     1.3 kB ± 0.02%
+
+  Strict validation
+    ● doubter    2.9 MHz ± 0.5%      1.2 kB ± 0.01%
+    ● Ajv       12.6 MHz ± 1.25%   331.6 B  ± 0%
+    ● zod      178.0 kHz ± 1.08%    10.8 kB ± 0.22%
+    ● myzod     64.5 kHz ± 0.5%      2.8 kB ± 0.17%
+    ● valita     3.0 MHz ± 0.5%      1.4 kB ± 0%
+    ● valibot    3.0 MHz ± 0.5%      1.3 kB ± 0%
+```
+
+</details>
+
 # Comparison with peers
 
 The table below highlights features that are unique to Doubter and its peers.
