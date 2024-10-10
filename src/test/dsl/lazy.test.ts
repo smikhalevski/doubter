@@ -1,5 +1,5 @@
 import * as d from '../../main';
-import { AsyncMockShape } from '../shapes/mocks';
+import { AsyncMockShape } from '../shape/mocks';
 
 describe('lazy', () => {
   test('returns a lazy shape', () => {

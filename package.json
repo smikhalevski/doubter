@@ -46,11 +46,6 @@
       "import": "./plugin/object-essentials.mjs",
       "require": "./plugin/object-essentials.js"
     },
-    "./plugin/record-essentials": {
-      "types": "./plugin/record-essentials.d.ts",
-      "import": "./plugin/record-essentials.mjs",
-      "require": "./plugin/record-essentials.js"
-    },
     "./plugin/set-essentials": {
       "types": "./plugin/set-essentials.d.ts",
       "import": "./plugin/set-essentials.mjs",
@@ -64,8 +59,24 @@
     "./package.json": "./package.json"
   },
   "sideEffects": [
+    "./index.js",
     "./index.mjs",
-    "./index.js"
+    "./plugin/array-essentials.js",
+    "./plugin/array-essentials.mjs",
+    "./plugin/bigint-essentials.js",
+    "./plugin/bigint-essentials.mjs",
+    "./plugin/date-essentials.js",
+    "./plugin/date-essentials.mjs",
+    "./plugin/number-essentials.js",
+    "./plugin/number-essentials.mjs",
+    "./plugin/object-essentials.js",
+    "./plugin/object-essentials.mjs",
+    "./plugin/object-eval.js",
+    "./plugin/object-eval.mjs",
+    "./plugin/set-essentials.js",
+    "./plugin/set-essentials.mjs",
+    "./plugin/string-essentials.js",
+    "./plugin/string-essentials.mjs"
   ],
   "scripts": {
     "build": "rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
@@ -94,26 +105,26 @@
   },
   "homepage": "https://github.com/smikhalevski/doubter#readme",
   "devDependencies": {
-    "@badrap/valita": "^0.3.8",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@types/jest": "^29.5.12",
-    "@types/qs": "^6.9.15",
-    "ajv": "^8.14.0",
+    "@badrap/valita": "^0.3.9",
+    "@rollup/plugin-typescript": "^12.1.0",
+    "@types/jest": "^29.5.13",
+    "@types/qs": "^6.9.16",
+    "ajv": "^8.17.1",
     "jest": "^29.7.0",
-    "myzod": "^1.11.0",
-    "prettier": "^3.3.0",
-    "qs": "^6.12.1",
-    "rimraf": "^5.0.7",
-    "rollup": "^4.18.0",
+    "myzod": "^1.12.0",
+    "prettier": "^3.3.3",
+    "qs": "^6.13.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.24.0",
     "toofast": "^2.0.0",
-    "ts-jest": "^29.1.4",
-    "tsd": "^0.31.0",
-    "tslib": "^2.6.2",
-    "typedoc": "^0.26.4",
+    "ts-jest": "^29.2.5",
+    "tsd": "^0.31.2",
+    "tslib": "^2.7.0",
+    "typedoc": "^0.26.8",
     "typedoc-custom-css": "github:smikhalevski/typedoc-custom-css#master",
-    "typedoc-plugin-mdn-links": "^3.1.28",
-    "typescript": "^5.4.5",
-    "valibot": "^0.41.0",
+    "typedoc-plugin-mdn-links": "^3.3.2",
+    "typescript": "^5.6.3",
+    "valibot": "^0.42.1",
     "zod": "^3.23.8"
   }
 }

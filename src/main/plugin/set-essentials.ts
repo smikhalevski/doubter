@@ -2,10 +2,10 @@
  * The plugin that enhances {@link core!SetShape SetShape} with additional methods.
  *
  * ```ts
- * import { SetShape } from 'doubter/core';
- * import enableSetEssentials from 'doubter/plugin/set-essentials';
+ * import * as d from 'doubter/core';
+ * import 'doubter/plugin/set-essentials';
  *
- * enableSetEssentials(SetShape);
+ * d.set(d.string()).size(5);
  * ```
  *
  * @module plugin/set-essentials
@@ -63,39 +63,34 @@ declare module '../core' {
   }
 }
 
-/**
- * Enhances {@link core!SetShape SetShape} with additional methods.
- */
-export default function enableSetEssentials(ctor: typeof SetShape): void {
-  ctor.prototype.size = function (size, issueOptions) {
-    return this.min(size, issueOptions).max(size, issueOptions);
-  };
+SetShape.prototype.size = function (size, issueOptions) {
+  return this.min(size, issueOptions).max(size, issueOptions);
+};
 
-  ctor.prototype.min = function (size, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.size >= param) {
-          return null;
-        }
-        return [createIssue(CODE_SET_MIN, value, MESSAGE_SET_MIN, param, options, issueOptions)];
-      },
-      { type: CODE_SET_MIN, param: size }
-    );
-  };
+SetShape.prototype.min = function (size, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.size >= param) {
+        return null;
+      }
+      return [createIssue(CODE_SET_MIN, value, MESSAGE_SET_MIN, param, options, issueOptions)];
+    },
+    { type: CODE_SET_MIN, param: size }
+  );
+};
 
-  ctor.prototype.max = function (size, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.size <= param) {
-          return null;
-        }
-        return [createIssue(CODE_SET_MAX, value, MESSAGE_SET_MAX, param, options, issueOptions)];
-      },
-      { type: CODE_SET_MAX, param: size }
-    );
-  };
+SetShape.prototype.max = function (size, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.size <= param) {
+        return null;
+      }
+      return [createIssue(CODE_SET_MAX, value, MESSAGE_SET_MAX, param, options, issueOptions)];
+    },
+    { type: CODE_SET_MAX, param: size }
+  );
+};
 
-  ctor.prototype.nonEmpty = function (issueOptions) {
-    return this.min(1, issueOptions);
-  };
-}
+SetShape.prototype.nonEmpty = function (issueOptions) {
+  return this.min(1, issueOptions);
+};

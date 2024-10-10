@@ -2,10 +2,10 @@
  * The plugin that enhances {@link core!DateShape DateShape} with additional methods.
  *
  * ```ts
- * import { DateShape } from 'doubter/core';
- * import enableDateEssentials from 'doubter/plugin/date-essentials';
+ * import * as d from 'doubter/core';
+ * import 'doubter/plugin/date-essentials';
  *
- * enableDateEssentials(DateShape);
+ * d.date().after(Date.now());
  * ```
  *
  * @module plugin/date-essentials
@@ -83,42 +83,37 @@ declare module '../core' {
   }
 }
 
-/**
- * Enhances {@link core!DateShape DateShape} with additional methods.
- */
-export default function enableDateEssentials(ctor: typeof DateShape): void {
-  ctor.prototype.min = ctor.prototype.after = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.getTime() >= param.getTime()) {
-          return null;
-        }
-        return [createIssue(CODE_DATE_MIN, value, MESSAGE_DATE_MIN, param, options, issueOptions)];
-      },
-      { type: CODE_DATE_MIN, param: new Date(value) }
-    );
-  };
+DateShape.prototype.min = DateShape.prototype.after = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.getTime() >= param.getTime()) {
+        return null;
+      }
+      return [createIssue(CODE_DATE_MIN, value, MESSAGE_DATE_MIN, param, options, issueOptions)];
+    },
+    { type: CODE_DATE_MIN, param: new Date(value) }
+  );
+};
 
-  ctor.prototype.max = ctor.prototype.before = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.getTime() <= param.getTime()) {
-          return null;
-        }
-        return [createIssue(CODE_DATE_MAX, value, MESSAGE_DATE_MAX, param, options, issueOptions)];
-      },
-      { type: CODE_DATE_MAX, param: new Date(value) }
-    );
-  };
+DateShape.prototype.max = DateShape.prototype.before = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.getTime() <= param.getTime()) {
+        return null;
+      }
+      return [createIssue(CODE_DATE_MAX, value, MESSAGE_DATE_MAX, param, options, issueOptions)];
+    },
+    { type: CODE_DATE_MAX, param: new Date(value) }
+  );
+};
 
-  ctor.prototype.toISOString = function () {
-    return this.convert(toISOString);
-  };
+DateShape.prototype.toISOString = function () {
+  return this.convert(toISOString);
+};
 
-  ctor.prototype.toTimestamp = function () {
-    return this.convert(toTimestamp);
-  };
-}
+DateShape.prototype.toTimestamp = function () {
+  return this.convert(toTimestamp);
+};
 
 function toISOString(date: Date): string {
   return date.toISOString();

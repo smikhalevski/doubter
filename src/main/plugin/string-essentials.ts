@@ -2,10 +2,10 @@
  * The plugin that enhances {@link core!StringShape StringShape} with additional methods.
  *
  * ```ts
- * import { StringShape } from 'doubter/core';
- * import enableStringEssentials from 'doubter/plugin/string-essentials';
+ * import * as d from 'doubter/core';
+ * import 'doubter/plugin/string-essentials';
  *
- * enableStringEssentials(StringShape);
+ * d.string().min(5);
  * ```
  *
  * @module plugin/string-essentials
@@ -157,126 +157,121 @@ declare module '../core' {
   }
 }
 
-/**
- * Enhances {@link core!StringShape StringShape} with additional methods.
- */
-export default function enableStringEssentials(ctor: typeof StringShape): void {
-  ctor.prototype.length = function (length, issueOptions) {
-    return this.min(length, issueOptions).max(length, issueOptions);
-  };
+StringShape.prototype.length = function (length, issueOptions) {
+  return this.min(length, issueOptions).max(length, issueOptions);
+};
 
-  ctor.prototype.min = function (length, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.length >= param) {
-          return null;
-        }
-        return [createIssue(CODE_STRING_MIN, value, MESSAGE_STRING_MIN, param, options, issueOptions)];
-      },
-      { type: CODE_STRING_MIN, param: length }
-    );
-  };
+StringShape.prototype.min = function (length, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.length >= param) {
+        return null;
+      }
+      return [createIssue(CODE_STRING_MIN, value, MESSAGE_STRING_MIN, param, options, issueOptions)];
+    },
+    { type: CODE_STRING_MIN, param: length }
+  );
+};
 
-  ctor.prototype.max = function (length, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.length <= param) {
-          return null;
-        }
-        return [createIssue(CODE_STRING_MAX, value, MESSAGE_STRING_MAX, param, options, issueOptions)];
-      },
-      { type: CODE_STRING_MAX, param: length }
-    );
-  };
+StringShape.prototype.max = function (length, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.length <= param) {
+        return null;
+      }
+      return [createIssue(CODE_STRING_MAX, value, MESSAGE_STRING_MAX, param, options, issueOptions)];
+    },
+    { type: CODE_STRING_MAX, param: length }
+  );
+};
 
-  ctor.prototype.regex = function (re, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (param.test(value)) {
-          return null;
-        }
-        return [createIssue(CODE_STRING_REGEX, value, MESSAGE_STRING_REGEX, param, options, issueOptions)];
-      },
-      { type: CODE_STRING_REGEX, param: re }
-    );
-  };
+StringShape.prototype.regex = function (re, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (param.test(value)) {
+        return null;
+      }
+      return [createIssue(CODE_STRING_REGEX, value, MESSAGE_STRING_REGEX, param, options, issueOptions)];
+    },
+    { type: CODE_STRING_REGEX, param: re }
+  );
+};
 
-  ctor.prototype.includes = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.includes(param)) {
-          return null;
-        }
-        return [createIssue(CODE_STRING_INCLUDES, value, MESSAGE_STRING_INCLUDES, param, options, issueOptions)];
-      },
-      { type: CODE_STRING_INCLUDES, param: value }
-    );
-  };
+StringShape.prototype.includes = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.includes(param)) {
+        return null;
+      }
+      return [createIssue(CODE_STRING_INCLUDES, value, MESSAGE_STRING_INCLUDES, param, options, issueOptions)];
+    },
+    { type: CODE_STRING_INCLUDES, param: value }
+  );
+};
 
-  ctor.prototype.startsWith = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.startsWith(param)) {
-          return null;
-        }
-        return [createIssue(CODE_STRING_STARTS_WITH, value, MESSAGE_STRING_STARTS_WITH, param, options, issueOptions)];
-      },
-      { type: CODE_STRING_STARTS_WITH, param: value }
-    );
-  };
+StringShape.prototype.startsWith = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.startsWith(param)) {
+        return null;
+      }
+      return [createIssue(CODE_STRING_STARTS_WITH, value, MESSAGE_STRING_STARTS_WITH, param, options, issueOptions)];
+    },
+    { type: CODE_STRING_STARTS_WITH, param: value }
+  );
+};
 
-  ctor.prototype.endsWith = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.endsWith(param)) {
-          return null;
-        }
-        return [createIssue(CODE_STRING_ENDS_WITH, value, MESSAGE_STRING_ENDS_WITH, param, options, issueOptions)];
-      },
-      { type: CODE_STRING_ENDS_WITH, param: value }
-    );
-  };
+StringShape.prototype.endsWith = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.endsWith(param)) {
+        return null;
+      }
+      return [createIssue(CODE_STRING_ENDS_WITH, value, MESSAGE_STRING_ENDS_WITH, param, options, issueOptions)];
+    },
+    { type: CODE_STRING_ENDS_WITH, param: value }
+  );
+};
 
-  ctor.prototype.nonBlank = function (issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.trim().length !== 0) {
-          return null;
-        }
-        return [createIssue(CODE_STRING_NON_BLANK, value, MESSAGE_STRING_NON_BLANK, param, options, issueOptions)];
-      },
-      { type: CODE_STRING_NON_BLANK }
-    );
-  };
+StringShape.prototype.nonBlank = function (issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.trim().length !== 0) {
+        return null;
+      }
+      return [createIssue(CODE_STRING_NON_BLANK, value, MESSAGE_STRING_NON_BLANK, param, options, issueOptions)];
+    },
+    { type: CODE_STRING_NON_BLANK }
+  );
+};
 
-  ctor.prototype.nonEmpty = function (issueOptions) {
-    return this.min(1, issueOptions);
-  };
+StringShape.prototype.nonEmpty = function (issueOptions) {
+  return this.min(1, issueOptions);
+};
 
-  ctor.prototype.trim = function () {
-    return this.addOperation(
-      (value, _param, _options) => {
-        return { ok: true, value: value.trim() };
-      },
-      { type: 'string.trim' }
-    );
-  };
+StringShape.prototype.trim = function () {
+  return this.addOperation(
+    (value, _param, _options) => {
+      return { ok: true, value: value.trim() };
+    },
+    { type: 'string.trim' }
+  );
+};
 
-  ctor.prototype.toLowerCase = function () {
-    return this.addOperation(
-      (value, _param, _options) => {
-        return { ok: true, value: value.toLowerCase() };
-      },
-      { type: 'string.toLowerCase' }
-    );
-  };
+StringShape.prototype.toLowerCase = function () {
+  return this.addOperation(
+    (value, _param, _options) => {
+      return { ok: true, value: value.toLowerCase() };
+    },
+    { type: 'string.toLowerCase' }
+  );
+};
 
-  ctor.prototype.toUpperCase = function () {
-    return this.addOperation(
-      (value, _param, _options) => {
-        return { ok: true, value: value.toUpperCase() };
-      },
-      { type: 'string.toUpperCase' }
-    );
-  };
-}
+StringShape.prototype.toUpperCase = function () {
+  return this.addOperation(
+    (value, _param, _options) => {
+      return { ok: true, value: value.toUpperCase() };
+    },
+    { type: 'string.toUpperCase' }
+  );
+};

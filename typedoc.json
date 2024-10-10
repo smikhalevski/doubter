@@ -72,7 +72,6 @@
     "ExcludeLiteral",
     "InferPromise",
     "Intersect",
-    "ObjectLikeShape",
     "OptionalDeepPartialShape",
     "OptionalKeys",
     "OptionalPropShapes",

@@ -2,10 +2,10 @@
  * The plugin that enhances {@link core!ArrayShape ArrayShape} with additional methods.
  *
  * ```ts
- * import { ArrayShape } from 'doubter/core';
- * import enableArrayEssentials from 'doubter/plugin/array-essentials';
+ * import * as d from 'doubter/core';
+ * import 'doubter/plugin/array-essentials';
  *
- * enableArrayEssentials(ArrayShape);
+ * d.array().nonEmpty();
  * ```
  *
  * @module plugin/array-essentials
@@ -82,87 +82,82 @@ declare module '../core' {
   }
 }
 
-/**
- * Enhances {@link core!ArrayShape ArrayShape} with additional methods.
- */
-export default function enableArrayEssentials(ctor: typeof ArrayShape): void {
-  ctor.prototype.length = function (length, issueOptions) {
-    return this.min(length, issueOptions).max(length, issueOptions);
-  };
+ArrayShape.prototype.length = function (length, issueOptions) {
+  return this.min(length, issueOptions).max(length, issueOptions);
+};
 
-  ctor.prototype.min = function (length, issueOptions) {
+ArrayShape.prototype.min = function (length, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.length >= param) {
+        return null;
+      }
+      return [createIssue(CODE_ARRAY_MIN, value, MESSAGE_ARRAY_MIN, param, options, issueOptions)];
+    },
+    { type: CODE_ARRAY_MIN, param: length }
+  );
+};
+
+ArrayShape.prototype.max = function (length, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value.length <= param) {
+        return null;
+      }
+      return [createIssue(CODE_ARRAY_MAX, value, MESSAGE_ARRAY_MAX, param, options, issueOptions)];
+    },
+    { type: CODE_ARRAY_MAX, param: length }
+  );
+};
+
+ArrayShape.prototype.nonEmpty = function (issueOptions) {
+  return this.min(1, issueOptions);
+};
+
+ArrayShape.prototype.includes = function (value, issueOptions) {
+  if (!(value instanceof Shape)) {
     return this.addOperation(
       (value, param, options) => {
-        if (value.length >= param) {
+        if (value.includes(param)) {
           return null;
-        }
-        return [createIssue(CODE_ARRAY_MIN, value, MESSAGE_ARRAY_MIN, param, options, issueOptions)];
-      },
-      { type: CODE_ARRAY_MIN, param: length }
-    );
-  };
-
-  ctor.prototype.max = function (length, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value.length <= param) {
-          return null;
-        }
-        return [createIssue(CODE_ARRAY_MAX, value, MESSAGE_ARRAY_MAX, param, options, issueOptions)];
-      },
-      { type: CODE_ARRAY_MAX, param: length }
-    );
-  };
-
-  ctor.prototype.nonEmpty = function (issueOptions) {
-    return this.min(1, issueOptions);
-  };
-
-  ctor.prototype.includes = function (value, issueOptions) {
-    if (!(value instanceof Shape)) {
-      return this.addOperation(
-        (value, param, options) => {
-          if (value.includes(param)) {
-            return null;
-          }
-          return [createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, param, options, issueOptions)];
-        },
-        { type: CODE_ARRAY_INCLUDES, param: value }
-      );
-    }
-
-    if (value.isAsync) {
-      const next = (value: unknown[], shape: Shape, options: ParseOptions, index: number): Promise<Result> => {
-        if (index === value.length) {
-          return Promise.resolve([
-            createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, shape, options, issueOptions),
-          ]);
-        }
-
-        return shape.tryAsync(value[index]).then(result => {
-          if (result.ok) {
-            return null;
-          }
-          return next(value, shape, options, index + 1);
-        });
-      };
-
-      return this.addAsyncOperation((value, param, options) => next(value, param, options, 0), {
-        type: CODE_ARRAY_INCLUDES,
-        param: value,
-      });
-    }
-
-    return this.addOperation(
-      (value, param, options) => {
-        for (const item of value) {
-          if (param.try(item, options).ok) {
-            return null;
-          }
         }
         return [createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, param, options, issueOptions)];
       },
       { type: CODE_ARRAY_INCLUDES, param: value }
     );
-  };
-}
+  }
+
+  if (value.isAsync) {
+    const next = (value: unknown[], shape: Shape, options: ParseOptions, index: number): Promise<Result> => {
+      if (index === value.length) {
+        return Promise.resolve([
+          createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, shape, options, issueOptions),
+        ]);
+      }
+
+      return shape.tryAsync(value[index]).then(result => {
+        if (result.ok) {
+          return null;
+        }
+        return next(value, shape, options, index + 1);
+      });
+    };
+
+    return this.addAsyncOperation((value, param, options) => next(value, param, options, 0), {
+      type: CODE_ARRAY_INCLUDES,
+      param: value,
+    });
+  }
+
+  return this.addOperation(
+    (value, param, options) => {
+      for (const item of value) {
+        if (param.try(item, options).ok) {
+          return null;
+        }
+      }
+      return [createIssue(CODE_ARRAY_INCLUDES, value, MESSAGE_ARRAY_INCLUDES, param, options, issueOptions)];
+    },
+    { type: CODE_ARRAY_INCLUDES, param: value }
+  );
+};

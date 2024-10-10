@@ -2,10 +2,10 @@
  * The plugin that enhances {@link core!NumberShape NumberShape} with additional methods.
  *
  * ```ts
- * import { NumberShape } from 'doubter/core';
- * import enableNumberEssentials from 'doubter/plugin/number-essentials';
+ * import * as d from 'doubter/core';
+ * import 'doubter/plugin/number-essentials';
  *
- * enableNumberEssentials(NumberShape);
+ * d.number().positive();
  * ```
  *
  * @module plugin/number-essentials
@@ -217,119 +217,114 @@ declare module '../core' {
   }
 }
 
-/**
- * Enhances {@link core!NumberShape NumberShape} with additional methods.
- */
-export default function enableNumberEssentials(ctor: typeof NumberShape): void {
-  ctor.prototype.finite = function (issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (isFinite(value)) {
-          return null;
-        }
-        return [createIssue(CODE_NUMBER_FINITE, value, MESSAGE_NUMBER_FINITE, param, options, issueOptions)];
-      },
-      { type: CODE_NUMBER_FINITE }
-    );
-  };
+NumberShape.prototype.finite = function (issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (isFinite(value)) {
+        return null;
+      }
+      return [createIssue(CODE_NUMBER_FINITE, value, MESSAGE_NUMBER_FINITE, param, options, issueOptions)];
+    },
+    { type: CODE_NUMBER_FINITE }
+  );
+};
 
-  ctor.prototype.int = function (issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (Number.isInteger(value)) {
-          return null;
-        }
-        return [createIssue(CODE_NUMBER_INT, value, MESSAGE_NUMBER_INT, param, options, issueOptions)];
-      },
-      { type: CODE_NUMBER_INT }
-    );
-  };
+NumberShape.prototype.int = function (issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (Number.isInteger(value)) {
+        return null;
+      }
+      return [createIssue(CODE_NUMBER_INT, value, MESSAGE_NUMBER_INT, param, options, issueOptions)];
+    },
+    { type: CODE_NUMBER_INT }
+  );
+};
 
-  ctor.prototype.positive = function (issueOptions) {
-    return this.gt(0, issueOptions);
-  };
+NumberShape.prototype.positive = function (issueOptions) {
+  return this.gt(0, issueOptions);
+};
 
-  ctor.prototype.negative = function (issueOptions) {
-    return this.lt(0, issueOptions);
-  };
+NumberShape.prototype.negative = function (issueOptions) {
+  return this.lt(0, issueOptions);
+};
 
-  ctor.prototype.nonPositive = function (issueOptions) {
-    return this.lte(0, issueOptions);
-  };
+NumberShape.prototype.nonPositive = function (issueOptions) {
+  return this.lte(0, issueOptions);
+};
 
-  ctor.prototype.nonNegative = function (issueOptions) {
-    return this.gte(0, issueOptions);
-  };
+NumberShape.prototype.nonNegative = function (issueOptions) {
+  return this.gte(0, issueOptions);
+};
 
-  ctor.prototype.between = function (minValue, maxValue, issueOptions) {
-    return this.gte(minValue, issueOptions).lte(maxValue, issueOptions);
-  };
+NumberShape.prototype.between = function (minValue, maxValue, issueOptions) {
+  return this.gte(minValue, issueOptions).lte(maxValue, issueOptions);
+};
 
-  ctor.prototype.gt = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value > param) {
-          return null;
-        }
-        return [createIssue(CODE_NUMBER_GT, value, MESSAGE_NUMBER_GT, param, options, issueOptions)];
-      },
-      { type: CODE_NUMBER_GT, param: value }
-    );
-  };
+NumberShape.prototype.gt = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value > param) {
+        return null;
+      }
+      return [createIssue(CODE_NUMBER_GT, value, MESSAGE_NUMBER_GT, param, options, issueOptions)];
+    },
+    { type: CODE_NUMBER_GT, param: value }
+  );
+};
 
-  ctor.prototype.lt = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value < param) {
-          return null;
-        }
-        return [createIssue(CODE_NUMBER_LT, value, MESSAGE_NUMBER_LT, param, options, issueOptions)];
-      },
-      { type: CODE_NUMBER_LT, param: value }
-    );
-  };
+NumberShape.prototype.lt = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value < param) {
+        return null;
+      }
+      return [createIssue(CODE_NUMBER_LT, value, MESSAGE_NUMBER_LT, param, options, issueOptions)];
+    },
+    { type: CODE_NUMBER_LT, param: value }
+  );
+};
 
-  ctor.prototype.gte = ctor.prototype.min = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value >= param) {
-          return null;
-        }
-        return [createIssue(CODE_NUMBER_GTE, value, MESSAGE_NUMBER_GTE, param, options, issueOptions)];
-      },
-      { type: CODE_NUMBER_GTE, param: value }
-    );
-  };
+NumberShape.prototype.gte = NumberShape.prototype.min = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value >= param) {
+        return null;
+      }
+      return [createIssue(CODE_NUMBER_GTE, value, MESSAGE_NUMBER_GTE, param, options, issueOptions)];
+    },
+    { type: CODE_NUMBER_GTE, param: value }
+  );
+};
 
-  ctor.prototype.lte = ctor.prototype.max = function (value, issueOptions) {
-    return this.addOperation(
-      (value, param, options) => {
-        if (value <= param) {
-          return null;
-        }
-        return [createIssue(CODE_NUMBER_LTE, value, MESSAGE_NUMBER_LTE, param, options, issueOptions)];
-      },
-      { type: CODE_NUMBER_LTE, param: value }
-    );
-  };
+NumberShape.prototype.lte = NumberShape.prototype.max = function (value, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (value <= param) {
+        return null;
+      }
+      return [createIssue(CODE_NUMBER_LTE, value, MESSAGE_NUMBER_LTE, param, options, issueOptions)];
+    },
+    { type: CODE_NUMBER_LTE, param: value }
+  );
+};
 
-  ctor.prototype.multipleOf = function (divisor, issueOptions) {
-    const { precision } = toIssueOptions(issueOptions);
+NumberShape.prototype.multipleOf = function (divisor, issueOptions) {
+  const { precision } = toIssueOptions(issueOptions);
 
-    const epsilon = precision !== undefined ? 10 ** -precision : 0;
+  const epsilon = precision !== undefined ? 10 ** -precision : 0;
 
-    return this.addOperation(
-      (value, param, options) => {
-        if (epsilon === 0 ? value % param === 0 : Math.abs(Math.round(value / param) - value / param) <= epsilon) {
-          return null;
-        }
-        return [createIssue(CODE_NUMBER_MULTIPLE_OF, value, MESSAGE_NUMBER_MULTIPLE_OF, param, options, issueOptions)];
-      },
-      { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
-    );
-  };
+  return this.addOperation(
+    (value, param, options) => {
+      if (epsilon === 0 ? value % param === 0 : Math.abs(Math.round(value / param) - value / param) <= epsilon) {
+        return null;
+      }
+      return [createIssue(CODE_NUMBER_MULTIPLE_OF, value, MESSAGE_NUMBER_MULTIPLE_OF, param, options, issueOptions)];
+    },
+    { type: CODE_NUMBER_MULTIPLE_OF, param: divisor }
+  );
+};
 
-  ctor.prototype.safe = function (issueOptions) {
-    return this.min(Number.MIN_SAFE_INTEGER, issueOptions).max(Number.MAX_SAFE_INTEGER, issueOptions);
-  };
-}
+NumberShape.prototype.safe = function (issueOptions) {
+  return this.min(Number.MIN_SAFE_INTEGER, issueOptions).max(Number.MAX_SAFE_INTEGER, issueOptions);
+};

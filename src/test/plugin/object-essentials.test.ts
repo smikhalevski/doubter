@@ -7,7 +7,7 @@ import {
   CODE_OBJECT_XOR_KEYS,
   MESSAGE_OBJECT_PLAIN,
 } from '../../main/constants';
-import { MockShape } from '../shapes/mocks';
+import { MockShape } from '../shape/mocks';
 
 describe('plain', () => {
   const shape = new ObjectShape({}, null).plain();
