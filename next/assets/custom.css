@@ -591,7 +591,7 @@ code.tsd-tag {
 }
 
 ul.tsd-nested-navigation {
-    margin: 0 0 0 calc(var(--menu-spacing-horizontal) * 2 + 0.1em);
+    margin: 0 0 0 calc(var(--menu-spacing-horizontal) * 1.5);
 }
 
 .tsd-nested-navigation > li > a {
@@ -613,7 +613,7 @@ ul.tsd-nested-navigation {
     position: relative;
     width: auto;
     display: flex;
-    align-items: baseline;
+    align-items: center;
 }
 
 .tsd-accordion-summary > h3 > svg {
@@ -625,7 +625,7 @@ ul.tsd-nested-navigation {
 }
 
 .tsd-accordion .tsd-accordion-summary > svg {
-    margin: 0 0.2em 0 0.3em;
+    margin: 0.25em 0 0 0.3em;
 }
 
 .tsd-small-nested-navigation {
@@ -634,6 +634,12 @@ ul.tsd-nested-navigation {
 
 .tsd-index-accordion {
     margin: var(--menu-spacing-vertical) 0;
+}
+
+/* ---------------------------------------------------- SIDEBAR ---------------------------------------------------- */
+
+#tsd-sidebar-links {
+    margin: 0 0 var(--menu-spacing-vertical) 1.8em;
 }
 
 /* --------------------------------------------------- SETTINGS ---------------------------------------------------- */
@@ -702,7 +708,7 @@ ul.tsd-nested-navigation {
 }
 
 .tsd-page-navigation-section > div {
-    margin: 0 0 0 1.2em;
+    margin: 0 0 0 1.5em;
 }
 
 /* --------------------------------------------------- HIERARCHY --------------------------------------------------- */
