@@ -7,7 +7,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
 
-const promiseInputs = Object.freeze([Type.PROMISE]);
+const promiseInputs = Object.freeze<unknown[]>([Type.PROMISE]);
 
 type InferPromise<ValueShape extends AnyShape | null, Leg extends INPUT | OUTPUT> = Promisify<
   ValueShape extends null | undefined ? any : ValueShape extends AnyShape ? ValueShape[Leg] : any

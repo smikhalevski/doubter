@@ -18,8 +18,8 @@ import { createIssue } from '../utils';
 import { ReadonlyShape } from './ReadonlyShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
 
-const arrayInputs = Object.freeze([Type.ARRAY]);
-const arrayCoercibleInputs = Object.freeze([Type.OBJECT, Type.ARRAY]);
+const arrayInputs = Object.freeze<unknown[]>([Type.ARRAY]);
+const arrayCoercibleInputs = Object.freeze<unknown[]>([Type.OBJECT, Type.ARRAY]);
 
 type InferArray<
   HeadShapes extends readonly AnyShape[],

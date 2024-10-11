@@ -7,7 +7,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
-const dateInputs = Object.freeze([Type.DATE]);
+const dateInputs = Object.freeze<unknown[]>([Type.DATE]);
 
 /**
  * The shape of the {@link !Date} object.

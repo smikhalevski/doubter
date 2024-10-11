@@ -6,7 +6,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
-const booleanInputs = Object.freeze([Type.BOOLEAN]);
+const booleanInputs = Object.freeze<unknown[]>([Type.BOOLEAN]);
 
 /**
  * The shape of a boolean value.

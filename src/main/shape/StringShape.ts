@@ -6,7 +6,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
-const stringInputs = Object.freeze([Type.STRING]);
+const stringInputs = Object.freeze<unknown[]>([Type.STRING]);
 
 /**
  * The shape of a string value.

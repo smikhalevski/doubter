@@ -8,7 +8,7 @@ import { createIssue } from '../utils';
 import { ReadonlyShape } from './ReadonlyShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
-const recordInputs = Object.freeze([Type.OBJECT]);
+const recordInputs = Object.freeze<unknown[]>([Type.OBJECT]);
 
 /**
  * When this shape is used, keys of a record aren't checked.

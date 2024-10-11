@@ -6,7 +6,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
-const bigintInputs = Object.freeze([Type.BIGINT]);
+const bigintInputs = Object.freeze<unknown[]>([Type.BIGINT]);
 
 /**
  * The shape of a bigint value.

@@ -10,7 +10,7 @@ import { createIssue } from '../utils';
 import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape';
 import { ReadonlyShape } from './ReadonlyShape';
 
-const setInputs = Object.freeze([Type.SET]);
+const setInputs = Object.freeze<unknown[]>([Type.SET]);
 
 /**
  * The shape of a {@link !Set} instance.

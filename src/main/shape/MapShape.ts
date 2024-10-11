@@ -17,8 +17,8 @@ import {
 } from './Shape';
 import { ReadonlyShape } from './ReadonlyShape';
 
-const mapInputs = Object.freeze([Type.MAP]);
-const mapCoercibleInputs = Object.freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
+const mapInputs = Object.freeze<unknown[]>([Type.MAP]);
+const mapCoercibleInputs = Object.freeze<unknown[]>([Type.MAP, Type.OBJECT, Type.ARRAY]);
 
 /**
  * The shape of a {@link !Map} instance.

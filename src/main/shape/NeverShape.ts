@@ -3,7 +3,7 @@ import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { Shape } from './Shape';
 
-const neverInputs = Object.freeze([]);
+const neverInputs = Object.freeze<unknown[]>([]);
 
 /**
  * The shape that doesn't match any input.
