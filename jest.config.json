@@ -1,5 +1,7 @@
 {
-  "preset": "ts-jest",
+  "transform": {
+    "^.+\\.tsx?$": "@swc/jest"
+  },
   "testMatch": [
     "<rootDir>/src/test/**/*.test.ts"
   ],

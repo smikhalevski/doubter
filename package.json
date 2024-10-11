@@ -107,6 +107,8 @@
   "devDependencies": {
     "@badrap/valita": "^0.3.9",
     "@rollup/plugin-typescript": "^12.1.0",
+    "@swc/core": "^1.7.35",
+    "@swc/jest": "^0.2.36",
     "@types/jest": "^29.5.13",
     "@types/qs": "^6.9.16",
     "ajv": "^8.17.1",
@@ -117,7 +119,6 @@
     "rimraf": "^6.0.1",
     "rollup": "^4.24.0",
     "toofast": "^2.0.0",
-    "ts-jest": "^29.2.5",
     "tsd": "^0.31.2",
     "tslib": "^2.7.0",
     "typedoc": "^0.26.8",
