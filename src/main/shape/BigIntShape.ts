@@ -19,6 +19,8 @@ export class BigIntShape extends CoercibleShape<bigint> {
    */
   protected _options;
 
+  protected _coerce = coerceToBigInt;
+
   /**
    * Creates a new {@link BigIntShape} instance.
    *
@@ -32,10 +34,6 @@ export class BigIntShape extends CoercibleShape<bigint> {
 
   protected _getInputs(): readonly unknown[] {
     return this.isCoercing ? bigintCoercibleInputs : bigintInputs;
-  }
-
-  protected _coerce(input: unknown): bigint {
-    return coerceToBigInt(input);
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<bigint> {

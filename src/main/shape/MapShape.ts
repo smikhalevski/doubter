@@ -1,6 +1,7 @@
+import { coerceToMapEntries } from '../coerce/map';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_MAP, MESSAGE_TYPE_MAP } from '../constants';
-import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
+import { isArray } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
@@ -31,6 +32,8 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
    * The issue options or the issue message.
    */
   protected _options;
+
+  protected _coerce = coerceToMapEntries;
 
   /**
    * Creates a new {@link MapShape} instance.
@@ -84,28 +87,6 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
 
   protected _getInputs(): readonly unknown[] {
     return this.isCoercing ? mapCoercibleInputs : mapInputs;
-  }
-
-  /**
-   * Coerces a value to an array of Map entries.
-   *
-   * @param input A value to coerce.
-   * @returns An array of entries, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(input: unknown): [unknown, unknown][] {
-    if (isArray(input)) {
-      return input.every(isMapEntry) ? input : NEVER;
-    }
-
-    input = getCanonicalValue(input);
-
-    if (isIterableObject(input)) {
-      return (input = Array.from(input)).every(isMapEntry) ? input : NEVER;
-    }
-    if (isObjectLike(input)) {
-      return Object.entries(input);
-    }
-    return NEVER;
   }
 
   protected _apply(

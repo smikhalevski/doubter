@@ -33,6 +33,8 @@ export class PromiseShape<ValueShape extends AnyShape | null>
    */
   protected _options;
 
+  protected _coerce = coerceToPromise;
+
   /**
    * Creates a new {@link PromiseShape} instance.
    *
@@ -67,10 +69,6 @@ export class PromiseShape<ValueShape extends AnyShape | null>
       return unknownInputs;
     }
     return this.valueShape.inputs.concat(Type.PROMISE);
-  }
-
-  protected _coerce(input: unknown): Promise<any> {
-    return Promise.resolve(input);
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
@@ -114,3 +112,5 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     );
   }
 }
+
+const coerceToPromise = Promise.resolve.bind(Promise);

@@ -20,6 +20,8 @@ export class DateShape extends CoercibleShape<Date> {
    */
   protected _options;
 
+  protected _coerce = coerceToDate;
+
   /**
    * Creates a new {@link DateShape} instance.
    *
@@ -33,10 +35,6 @@ export class DateShape extends CoercibleShape<Date> {
 
   protected _getInputs(): readonly unknown[] {
     return this.isCoercing ? dateCoercibleInputs : dateInputs;
-  }
-
-  protected _coerce(input: unknown): Date {
-    return coerceToDate(input);
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<Date> {

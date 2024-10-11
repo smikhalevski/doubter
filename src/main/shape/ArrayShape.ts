@@ -1,7 +1,8 @@
+import { coerceToArray } from '../coerce/array';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_ARRAY, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants';
 import { toArrayIndex } from '../internal/arrays';
-import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
+import { isArray } from '../internal/lang';
 import {
   applyShape,
   concatIssues,
@@ -57,6 +58,8 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
    * The type issue options or the type issue message.
    */
   protected _options;
+
+  protected _coerce = coerceToArray;
 
   /**
    * Creates a new {@link ArrayShape} instance.
@@ -143,19 +146,6 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
       return restShape.inputs.concat(Type.OBJECT, Type.ARRAY);
     }
     return unknownInputs;
-  }
-
-  /**
-   * Coerces a value to an array.
-   *
-   * @param input The value to coerce.
-   * @returns An array, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(input: unknown): unknown[] {
-    if (isIterableObject(getCanonicalValue(input))) {
-      return Array.from(input as Iterable<unknown>);
-    }
-    return [input];
   }
 
   protected _apply(

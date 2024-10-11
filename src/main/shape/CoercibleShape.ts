@@ -32,6 +32,16 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
   protected _applyCoerce: (input: unknown) => CoercedValue = coerceToNever;
 
   /**
+   * Coerces an input value to another type.
+   *
+   * Override this method along with {@link Shape._getInputs} to implement custom type coercion.
+   *
+   * @param _input The input value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _coerce: (_input: unknown) => CoercedValue = coerceToNever;
+
+  /**
    * Enables an input value coercion.
    *
    * @returns The clone of the shape.
@@ -40,17 +50,5 @@ export class CoercibleShape<InputValue = any, OutputValue = InputValue, CoercedV
     const shape = this._clone();
     shape._applyCoerce = this._coerce;
     return shape;
-  }
-
-  /**
-   * Coerces an input value to another type.
-   *
-   * Override this method along with {@link Shape._getInputs} to implement custom type coercion.
-   *
-   * @param _input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(_input: unknown): CoercedValue {
-    return NEVER;
   }
 }

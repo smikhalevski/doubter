@@ -20,6 +20,8 @@ export class NumberShape extends CoercibleShape<number> {
    */
   protected _options;
 
+  protected _coerce = coerceToNumber;
+
   /**
    * Creates a new {@link NumberShape} instance.
    *
@@ -49,10 +51,6 @@ export class NumberShape extends CoercibleShape<number> {
 
   protected _getInputs(): readonly unknown[] {
     return this.isCoercing ? numberCoercibleInputs : numberInputs;
-  }
-
-  protected _coerce(input: unknown): number {
-    return coerceToNumber(input);
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<number> {

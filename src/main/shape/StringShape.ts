@@ -19,6 +19,8 @@ export class StringShape extends CoercibleShape<string> {
    */
   protected _options;
 
+  protected _coerce = coerceToString;
+
   /**
    * Creates a new {@link StringShape} instance.
    *
@@ -32,10 +34,6 @@ export class StringShape extends CoercibleShape<string> {
 
   protected _getInputs(): readonly unknown[] {
     return this.isCoercing ? stringCoercibleInputs : stringInputs;
-  }
-
-  protected _coerce(input: unknown): string {
-    return coerceToString(input);
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<string> {

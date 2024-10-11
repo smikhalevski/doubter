@@ -19,6 +19,8 @@ export class BooleanShape extends CoercibleShape<boolean> {
    */
   protected _options;
 
+  protected _coerce = coerceToBoolean;
+
   /**
    * Creates a new {@link BooleanShape} instance.
    *
@@ -32,10 +34,6 @@ export class BooleanShape extends CoercibleShape<boolean> {
 
   protected _getInputs(): readonly unknown[] {
     return this.isCoercing ? booleanCoercibleInputs : booleanInputs;
-  }
-
-  protected _coerce(input: unknown): boolean {
-    return coerceToBoolean(input);
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<boolean> {

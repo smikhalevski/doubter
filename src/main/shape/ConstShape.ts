@@ -25,6 +25,8 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
    */
   protected _options;
 
+  protected _coerce = _coerceToConst;
+
   /**
    * Creates a new {@link ConstShape} instance.
    *
@@ -60,10 +62,6 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     return [value];
   }
 
-  protected _coerce(input: unknown): Value {
-    return coerceToConst(this.value, input);
-  }
-
   protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<Value> {
     let output = input;
 
@@ -72,4 +70,8 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     }
     return this._applyOperations(input, output, options, null) as Result;
   }
+}
+
+function _coerceToConst<Value>(this: ConstShape<Value>, input: unknown): Value {
+  return coerceToConst(this.value, input);
 }
