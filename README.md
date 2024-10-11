@@ -2110,6 +2110,10 @@ d.number().gte(3); // ❌ gte is undefined
   [`toLowerCase`](https://smikhalevski.github.io/doubter/next/classes/core.StringShape.html#toLowerCase)
   [`toUpperCase`](https://smikhalevski.github.io/doubter/next/classes/core.StringShape.html#toUpperCase)
 
+- [**Object eval**](https://smikhalevski.github.io/doubter/next/modules/plugin_object_eval.html)<br/>
+  If `new Function` calls are allowed by the environment, this plugin compiles internal methods of
+  the `ObjectShape` to boost performance.
+
 ## Recommended plugins
 
 - [@doubter/plugin-string-format](https://github.com/smikhalevski/doubter-plugin-string-format#readme)<br>
