@@ -7,6 +7,6 @@
  */
 export const NEVER = Object.freeze({} as never);
 
-export function coerceToNever() {
+export function coerceToNever(_value: unknown): never {
   return NEVER;
 }
