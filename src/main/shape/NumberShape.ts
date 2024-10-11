@@ -4,8 +4,7 @@ import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants';
 import { Type } from '../Type';
 import { Any, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
-import { AllowShape, ReplaceShape } from './Shape';
+import { AllowShape, ReplaceShape, Shape } from './Shape';
 
 const numberInputs = Object.freeze([Type.NUMBER]);
 
@@ -14,13 +13,19 @@ const numberInputs = Object.freeze([Type.NUMBER]);
  *
  * @group Shapes
  */
-export class NumberShape extends CoercibleShape<number> {
+export class NumberShape extends Shape<number> {
   /**
    * The type issue options or the type issue message.
    */
   protected _options;
 
-  protected _coerce = coerceToNumber;
+  /**
+   * Coerces an input value to a number.
+   *
+   * @param input The input value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _applyCoerce?: (input: unknown) => number = undefined;
 
   /**
    * Creates a new {@link NumberShape} instance.
@@ -31,6 +36,13 @@ export class NumberShape extends CoercibleShape<number> {
     super();
 
     this._options = options;
+  }
+
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  get isCoercing() {
+    return this._applyCoerce !== undefined;
   }
 
   /**
@@ -49,6 +61,17 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape._applyCoerce = coerceToNumber;
+    return shape;
+  }
+
   protected _getInputs(): readonly unknown[] {
     return this.isCoercing ? numberCoercibleInputs : numberInputs;
   }
@@ -56,7 +79,10 @@ export class NumberShape extends CoercibleShape<number> {
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<number> {
     let output = input;
 
-    if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {
+    if (
+      (typeof output !== 'number' || output !== output) &&
+      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
+    ) {
       return [createIssue(CODE_TYPE_NUMBER, input, MESSAGE_TYPE_NUMBER, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

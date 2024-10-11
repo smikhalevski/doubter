@@ -5,8 +5,7 @@ import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../int
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, unknownInputs } from './Shape';
+import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
 
 const promiseInputs = Object.freeze([Type.PROMISE]);
 
@@ -25,7 +24,7 @@ type DeepPartialPromiseShape<ValueShape extends AnyShape | null> = PromiseShape<
  * @group Shapes
  */
 export class PromiseShape<ValueShape extends AnyShape | null>
-  extends CoercibleShape<InferPromise<ValueShape, INPUT>, InferPromise<ValueShape, OUTPUT>, Promise<any>>
+  extends Shape<InferPromise<ValueShape, INPUT>, InferPromise<ValueShape, OUTPUT>>
   implements DeepPartialProtocol<DeepPartialPromiseShape<ValueShape>>
 {
   /**
@@ -33,7 +32,13 @@ export class PromiseShape<ValueShape extends AnyShape | null>
    */
   protected _options;
 
-  protected _coerce = coerceToPromise;
+  /**
+   * Coerces an input value to a {@link !Promise}.
+   *
+   * @param input The input value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _applyCoerce?: (input: unknown) => Promise<any> = undefined;
 
   /**
    * Creates a new {@link PromiseShape} instance.
@@ -51,10 +56,28 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     this._options = options;
   }
 
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  get isCoercing() {
+    return this._applyCoerce !== undefined;
+  }
+
   deepPartial(): DeepPartialPromiseShape<ValueShape> {
     const valueShape = this.valueShape !== null ? toDeepPartialShape(this.valueShape).optional() : null;
 
     return new PromiseShape<any>(valueShape, this._options);
+  }
+
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape._applyCoerce = coerceToPromise;
+    return shape;
   }
 
   protected _isAsync(): boolean {
@@ -74,7 +97,10 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
     let output = input;
 
-    if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
+    if (
+      !(input instanceof Promise) &&
+      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
+    ) {
       return [createIssue(CODE_TYPE_PROMISE, input, MESSAGE_TYPE_PROMISE, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
@@ -87,7 +113,10 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   ): Promise<Result<InferPromise<ValueShape, OUTPUT>>> {
     let output = input;
 
-    if (!(input instanceof Promise) && (output = this._applyCoerce(input)) === NEVER) {
+    if (
+      !(input instanceof Promise) &&
+      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
+    ) {
       return Promise.resolve([
         createIssue(CODE_TYPE_PROMISE, input, MESSAGE_TYPE_PROMISE, undefined, options, this._options),
       ]);

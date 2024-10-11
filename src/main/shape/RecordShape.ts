@@ -166,10 +166,10 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
       let key: PropertyKey;
       let value: unknown;
-      let keyChanged = false;
+      let isKeyChanged = false;
 
       const handleKeyResult = (keyResult: Result) => {
-        keyChanged = false;
+        isKeyChanged = false;
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
@@ -181,7 +181,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
             issues = concatIssues(issues, keyResult);
           } else {
             key = keyResult.value;
-            keyChanged = true;
+            isKeyChanged = true;
           }
         }
         return applyShape(valuesShape, value, options, nonce, handleValueResult);
@@ -202,7 +202,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
           }
         }
 
-        if ((issues === null || operations.length !== 0) && (keyChanged || valueResult !== null)) {
+        if ((issues === null || operations.length !== 0) && (isKeyChanged || valueResult !== null)) {
           if (input === output) {
             output = cloneRecord(input, index);
           }

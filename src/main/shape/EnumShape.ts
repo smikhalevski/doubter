@@ -7,7 +7,7 @@ import { ReadonlyDict } from '../internal/objects';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a value enumeration.
@@ -15,7 +15,7 @@ import { CoercibleShape } from './CoercibleShape';
  * @template Value The union of allowed enum values.
  * @group Shapes
  */
-export class EnumShape<Value> extends CoercibleShape<Value> {
+export class EnumShape<Value> extends Shape<Value> {
   /**
    * The array of unique enum values.
    */
@@ -26,7 +26,13 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
    */
   protected _options;
 
-  protected _coerce = coerceToEnum;
+  /**
+   * Coerces an input value to a {@link Value} type.
+   *
+   * @param input The input value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _applyCoerce?: (input: unknown) => Value = undefined;
 
   /**
    * Creates a new {@link EnumShape} instance.
@@ -49,6 +55,24 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     this._options = options;
   }
 
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  get isCoercing() {
+    return this._applyCoerce !== undefined;
+  }
+
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape._applyCoerce = coerceToEnum;
+    return shape;
+  }
+
   protected _getInputs(): readonly unknown[] {
     const inputs: unknown[] = this.values.slice(0);
 
@@ -67,7 +91,10 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<Value> {
     let output = input;
 
-    if (!this.values.includes(output) && (output = this._applyCoerce(input)) === NEVER) {
+    if (
+      !this.values.includes(output) &&
+      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
+    ) {
       return [createIssue(CODE_TYPE_ENUM, input, MESSAGE_TYPE_ENUM, this.values, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

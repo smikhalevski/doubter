@@ -5,7 +5,7 @@ import { isValidDate } from '../internal/lang';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
 const dateInputs = Object.freeze([Type.DATE]);
 
@@ -14,13 +14,19 @@ const dateInputs = Object.freeze([Type.DATE]);
  *
  * @group Shapes
  */
-export class DateShape extends CoercibleShape<Date> {
+export class DateShape extends Shape<Date> {
   /**
    * The type issue options or the type issue message.
    */
   protected _options;
 
-  protected _coerce = coerceToDate;
+  /**
+   * Coerces an input value to a date.
+   *
+   * @param input The input value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _applyCoerce?: (input: unknown) => Date = undefined;
 
   /**
    * Creates a new {@link DateShape} instance.
@@ -33,6 +39,24 @@ export class DateShape extends CoercibleShape<Date> {
     this._options = options;
   }
 
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  get isCoercing() {
+    return this._applyCoerce !== undefined;
+  }
+
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape._applyCoerce = coerceToDate;
+    return shape;
+  }
+
   protected _getInputs(): readonly unknown[] {
     return this.isCoercing ? dateCoercibleInputs : dateInputs;
   }
@@ -40,7 +64,7 @@ export class DateShape extends CoercibleShape<Date> {
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<Date> {
     let output = input;
 
-    if (!isValidDate(input) && (output = this._applyCoerce(input)) === NEVER) {
+    if (!isValidDate(input) && (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)) {
       return [createIssue(CODE_TYPE_DATE, input, MESSAGE_TYPE_DATE, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

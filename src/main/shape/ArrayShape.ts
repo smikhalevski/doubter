@@ -15,7 +15,6 @@ import {
 import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
 import { ReadonlyShape } from './ReadonlyShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
 
@@ -51,7 +50,7 @@ type DeepPartialArrayShape<HeadShapes extends readonly AnyShape[], RestShape ext
  * @group Shapes
  */
 export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null>
-  extends CoercibleShape<InferArray<HeadShapes, RestShape, INPUT>, InferArray<HeadShapes, RestShape, OUTPUT>, unknown[]>
+  extends Shape<InferArray<HeadShapes, RestShape, INPUT>, InferArray<HeadShapes, RestShape, OUTPUT>>
   implements DeepPartialProtocol<DeepPartialArrayShape<HeadShapes, RestShape>>
 {
   /**
@@ -59,7 +58,13 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
    */
   protected _options;
 
-  protected _coerce = coerceToArray;
+  /**
+   * Coerces an input value to an array.
+   *
+   * @param input The input value to coerce.
+   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
+   */
+  protected _applyCoerce?: (input: unknown) => unknown[] = undefined;
 
   /**
    * Creates a new {@link ArrayShape} instance.
@@ -84,6 +89,13 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     super();
 
     this._options = options;
+  }
+
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  get isCoercing() {
+    return this._applyCoerce !== undefined;
   }
 
   at(key: unknown): AnyShape | null {
@@ -126,6 +138,17 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     return new ReadonlyShape(this);
   }
 
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape._applyCoerce = coerceToArray;
+    return shape;
+  }
+
   protected _isAsync(): boolean {
     return isAsyncShapes(this.headShapes) || this.restShape?.isAsync || false;
   }
@@ -162,7 +185,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     if (
       // Not an array or not coercible
-      (!isArray(output) && (output = this._applyCoerce(input)) === NEVER) ||
+      (!isArray(output) && (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)) ||
       // Invalid tuple length
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
@@ -217,7 +240,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
       if (
         // Not an array or not coercible
-        (!isArray(output) && (output = this._applyCoerce(input)) === NEVER) ||
+        (!isArray(output) && (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)) ||
         // Invalid tuple length
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)
