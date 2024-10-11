@@ -15,17 +15,14 @@ const numberInputs = Object.freeze<unknown[]>([Type.NUMBER]);
  */
 export class NumberShape extends Shape<number> {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * The type issue options or the type issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to a number.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => number = undefined;
 
   /**
    * Creates a new {@link NumberShape} instance.
@@ -36,13 +33,6 @@ export class NumberShape extends Shape<number> {
     super();
 
     this._options = options;
-  }
-
-  /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
   }
 
   /**
@@ -68,7 +58,7 @@ export class NumberShape extends Shape<number> {
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = coerceToNumber;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -81,7 +71,7 @@ export class NumberShape extends Shape<number> {
 
     if (
       (typeof output !== 'number' || output !== output) &&
-      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
+      (!this.isCoercing || (output = coerceToNumber(input)) === NEVER)
     ) {
       return [createIssue(CODE_TYPE_NUMBER, input, MESSAGE_TYPE_NUMBER, undefined, options, this._options)];
     }

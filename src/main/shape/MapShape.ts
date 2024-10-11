@@ -32,17 +32,14 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
   implements DeepPartialProtocol<MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>>>
 {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * The issue options or the issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to an array of {@link !Map} entries.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => [unknown, unknown][] = undefined;
 
   /**
    * Creates a new {@link MapShape} instance.
@@ -67,13 +64,6 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     super();
 
     this._options = options;
-  }
-
-  /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
   }
 
   at(_key: unknown): AnyShape | null {
@@ -104,7 +94,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = coerceToMapEntries;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -128,7 +118,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
-      (this._applyCoerce === undefined || !(isChanged = (entries = this._applyCoerce(input)) !== NEVER))
+      (!this.isCoercing || !(isChanged = (entries = coerceToMapEntries(input)) !== NEVER))
     ) {
       return [createIssue(CODE_TYPE_MAP, input, MESSAGE_TYPE_MAP, undefined, options, this._options)];
     }
@@ -198,7 +188,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        (this._applyCoerce === undefined || !(isChanged = (entries = this._applyCoerce(input)) !== NEVER))
+        (!this.isCoercing || !(isChanged = (entries = coerceToMapEntries(input)) !== NEVER))
       ) {
         resolve([createIssue(CODE_TYPE_MAP, input, MESSAGE_TYPE_MAP, undefined, options, this._options)]);
         return;

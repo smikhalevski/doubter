@@ -28,17 +28,14 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   implements DeepPartialProtocol<DeepPartialPromiseShape<ValueShape>>
 {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * The type issue options or the type issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to a {@link !Promise}.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => Promise<any> = undefined;
 
   /**
    * Creates a new {@link PromiseShape} instance.
@@ -56,13 +53,6 @@ export class PromiseShape<ValueShape extends AnyShape | null>
     this._options = options;
   }
 
-  /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
-  }
-
   deepPartial(): DeepPartialPromiseShape<ValueShape> {
     const valueShape = this.valueShape !== null ? toDeepPartialShape(this.valueShape).optional() : null;
 
@@ -76,7 +66,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = coerceToPromise;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -97,10 +87,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<InferPromise<ValueShape, OUTPUT>> {
     let output = input;
 
-    if (
-      !(input instanceof Promise) &&
-      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
-    ) {
+    if (!(input instanceof Promise) && (!this.isCoercing || (output = coerceToPromise(input)) === NEVER)) {
       return [createIssue(CODE_TYPE_PROMISE, input, MESSAGE_TYPE_PROMISE, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
@@ -113,10 +100,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   ): Promise<Result<InferPromise<ValueShape, OUTPUT>>> {
     let output = input;
 
-    if (
-      !(input instanceof Promise) &&
-      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
-    ) {
+    if (!(input instanceof Promise) && (!this.isCoercing || (output = coerceToPromise(input)) === NEVER)) {
       return Promise.resolve([
         createIssue(CODE_TYPE_PROMISE, input, MESSAGE_TYPE_PROMISE, undefined, options, this._options),
       ]);
@@ -142,4 +126,6 @@ export class PromiseShape<ValueShape extends AnyShape | null>
   }
 }
 
-const coerceToPromise = Promise.resolve.bind(Promise);
+function coerceToPromise(input: unknown): Promise<unknown> {
+  return Promise.resolve(input);
+}

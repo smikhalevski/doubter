@@ -17,6 +17,11 @@ import { Shape } from './Shape';
  */
 export class EnumShape<Value> extends Shape<Value> {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * The array of unique enum values.
    */
   readonly values: readonly Value[];
@@ -25,14 +30,6 @@ export class EnumShape<Value> extends Shape<Value> {
    * The type issue options or the type issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to a {@link Value} type.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => Value = undefined;
 
   /**
    * Creates a new {@link EnumShape} instance.
@@ -56,20 +53,13 @@ export class EnumShape<Value> extends Shape<Value> {
   }
 
   /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
-  }
-
-  /**
    * Enables an input value coercion.
    *
    * @returns The clone of the shape.
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = coerceToEnum;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -93,7 +83,7 @@ export class EnumShape<Value> extends Shape<Value> {
 
     if (
       !this.values.includes(output) &&
-      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
+      (!this.isCoercing || (output = coerceToEnum(this.source, this.values, input)) === NEVER)
     ) {
       return [createIssue(CODE_TYPE_ENUM, input, MESSAGE_TYPE_ENUM, this.values, options, this._options)];
     }
@@ -129,9 +119,11 @@ export function getEnumValues(source: ReadonlyDict): any[] {
   return values;
 }
 
-function coerceToEnum<Value>(this: EnumShape<Value>, input: unknown): Value {
-  const { source, values } = this;
-
+function coerceToEnum<Value>(
+  source: readonly Value[] | ReadonlyDict<Value>,
+  values: readonly Value[],
+  input: unknown
+): Value {
   if (isArray(input) && input.length === 1 && values.includes((input = input[0]))) {
     return input as Value;
   }

@@ -15,17 +15,14 @@ const booleanInputs = Object.freeze<unknown[]>([Type.BOOLEAN]);
  */
 export class BooleanShape extends Shape<boolean> {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * The type issue options or the type issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to a boolean.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => boolean = undefined;
 
   /**
    * Creates a new {@link BooleanShape} instance.
@@ -39,20 +36,13 @@ export class BooleanShape extends Shape<boolean> {
   }
 
   /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
-  }
-
-  /**
    * Enables an input value coercion.
    *
    * @returns The clone of the shape.
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = coerceToBoolean;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -63,10 +53,7 @@ export class BooleanShape extends Shape<boolean> {
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<boolean> {
     let output = input;
 
-    if (
-      typeof output !== 'boolean' &&
-      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
-    ) {
+    if (typeof output !== 'boolean' && (!this.isCoercing || (output = coerceToBoolean(input)) === NEVER)) {
       return [createIssue(CODE_TYPE_BOOLEAN, input, MESSAGE_TYPE_BOOLEAN, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

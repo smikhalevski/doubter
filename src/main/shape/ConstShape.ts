@@ -16,6 +16,11 @@ const undefinedInputs = Object.freeze<unknown[]>([undefined]);
  */
 export class ConstShape<Value> extends Shape<Value> {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * Returns `true` if an input is equal to the const value, or `false` otherwise.
    */
   protected _predicate: (input: unknown) => boolean;
@@ -24,14 +29,6 @@ export class ConstShape<Value> extends Shape<Value> {
    * The type issue options or the type issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to a {@link Value} type.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => Value = undefined;
 
   /**
    * Creates a new {@link ConstShape} instance.
@@ -54,20 +51,13 @@ export class ConstShape<Value> extends Shape<Value> {
   }
 
   /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
-  }
-
-  /**
    * Enables an input value coercion.
    *
    * @returns The clone of the shape.
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = _coerceToConst;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -89,13 +79,9 @@ export class ConstShape<Value> extends Shape<Value> {
   protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<Value> {
     let output = input;
 
-    if (!this._predicate(input) && (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)) {
+    if (!this._predicate(input) && (!this.isCoercing || (output = coerceToConst(this.value, input)) === NEVER)) {
       return [createIssue(CODE_TYPE_CONST, input, MESSAGE_TYPE_CONST, this.value, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
   }
-}
-
-function _coerceToConst<Value>(this: ConstShape<Value>, input: unknown): Value {
-  return coerceToConst(this.value, input);
 }

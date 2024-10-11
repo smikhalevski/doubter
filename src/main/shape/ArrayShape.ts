@@ -54,17 +54,14 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
   implements DeepPartialProtocol<DeepPartialArrayShape<HeadShapes, RestShape>>
 {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * The type issue options or the type issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to an array.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => unknown[] = undefined;
 
   /**
    * Creates a new {@link ArrayShape} instance.
@@ -89,13 +86,6 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     super();
 
     this._options = options;
-  }
-
-  /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
   }
 
   at(key: unknown): AnyShape | null {
@@ -145,7 +135,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = coerceToArray;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -185,7 +175,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
     if (
       // Not an array or not coercible
-      (!isArray(output) && (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)) ||
+      (!isArray(output) && (!this.isCoercing || (output = coerceToArray(input)) === NEVER)) ||
       // Invalid tuple length
       (outputLength = output.length) < headShapesLength ||
       (restShape === null && outputLength !== headShapesLength)
@@ -240,7 +230,7 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
 
       if (
         // Not an array or not coercible
-        (!isArray(output) && (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)) ||
+        (!isArray(output) && (!this.isCoercing || (output = coerceToArray(input)) === NEVER)) ||
         // Invalid tuple length
         (outputLength = output.length) < headShapesLength ||
         (restShape === null && outputLength !== headShapesLength)

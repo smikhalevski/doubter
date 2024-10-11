@@ -15,17 +15,14 @@ const stringInputs = Object.freeze<unknown[]>([Type.STRING]);
  */
 export class StringShape extends Shape<string, string> {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * The type issue options or the type issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to a required type.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => string = undefined;
 
   /**
    * Creates a new {@link StringShape} instance.
@@ -39,20 +36,13 @@ export class StringShape extends Shape<string, string> {
   }
 
   /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
-  }
-
-  /**
    * Enables an input value coercion.
    *
    * @returns The clone of the shape.
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = coerceToString;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -63,10 +53,7 @@ export class StringShape extends Shape<string, string> {
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<string> {
     let output = input;
 
-    if (
-      typeof output !== 'string' &&
-      (this._applyCoerce === undefined || (output = this._applyCoerce(input)) === NEVER)
-    ) {
+    if (typeof output !== 'string' && (!this.isCoercing || (output = coerceToString(input)) === NEVER)) {
       return [createIssue(CODE_TYPE_STRING, input, MESSAGE_TYPE_STRING, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

@@ -23,17 +23,14 @@ export class SetShape<ValueShape extends AnyShape>
   implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<ValueShape>>>
 {
   /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
+  /**
    * The type issue options or the type issue message.
    */
   protected _options;
-
-  /**
-   * Coerces an input value to an array of unique values.
-   *
-   * @param input The input value to coerce.
-   * @returns The coerced value, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _applyCoerce?: (input: unknown) => unknown[] = undefined;
 
   /**
    * Creates a new {@link SetShape} instance.
@@ -52,13 +49,6 @@ export class SetShape<ValueShape extends AnyShape>
     super();
 
     this._options = options;
-  }
-
-  /**
-   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
-   */
-  get isCoercing() {
-    return this._applyCoerce !== undefined;
   }
 
   at(key: unknown): AnyShape | null {
@@ -85,7 +75,7 @@ export class SetShape<ValueShape extends AnyShape>
    */
   coerce(): this {
     const shape = this._clone();
-    shape._applyCoerce = coerceToUniqueArray;
+    shape.isCoercing = true;
     return shape;
   }
 
@@ -106,7 +96,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      (this._applyCoerce === undefined || !(isChanged = (values = this._applyCoerce(input)) !== NEVER))
+      (!this.isCoercing || !(isChanged = (values = coerceToUniqueArray(input)) !== NEVER))
     ) {
       return [createIssue(CODE_TYPE_SET, input, MESSAGE_TYPE_SET, undefined, options, this._options)];
     }
@@ -146,7 +136,7 @@ export class SetShape<ValueShape extends AnyShape>
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        (this._applyCoerce === undefined || !(isChanged = (values = this._applyCoerce(input)) !== NEVER))
+        (!this.isCoercing || !(isChanged = (values = coerceToUniqueArray(input)) !== NEVER))
       ) {
         resolve([createIssue(CODE_TYPE_SET, input, MESSAGE_TYPE_SET, undefined, options, this._options)]);
         return;
