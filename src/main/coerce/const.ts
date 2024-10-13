@@ -10,7 +10,7 @@ import { coerceToString, stringCoercibleInputs } from './string';
 /**
  * The array of inputs that are coercible to `NaN` with {@link coerceToConst}.
  */
-const nanCoercibleInputs = Object.freeze([
+const nanCoercibleInputs = Object.freeze<unknown[]>([
   Type.ARRAY,
   Type.OBJECT, // new Number(NaN)
   NaN,

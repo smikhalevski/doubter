@@ -1,16 +1,16 @@
+import { coerceToUniqueArray } from '../coerce/array';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_SET, MESSAGE_TYPE_SET } from '../constants';
-import { toArrayIndex, unique } from '../internal/arrays';
-import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
+import { toArrayIndex } from '../internal/arrays';
+import { isArray } from '../internal/lang';
 import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape';
 import { ReadonlyShape } from './ReadonlyShape';
-import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output } from './Shape';
 
-const setInputs = Object.freeze([Type.SET]);
+const setInputs = Object.freeze<unknown[]>([Type.SET]);
 
 /**
  * The shape of a {@link !Set} instance.
@@ -19,9 +19,14 @@ const setInputs = Object.freeze([Type.SET]);
  * @group Shapes
  */
 export class SetShape<ValueShape extends AnyShape>
-  extends CoercibleShape<Set<Input<ValueShape>>, Set<Output<ValueShape>>, unknown[]>
+  extends Shape<Set<Input<ValueShape>>, Set<Output<ValueShape>>>
   implements DeepPartialProtocol<SetShape<OptionalDeepPartialShape<ValueShape>>>
 {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * The type issue options or the type issue message.
    */
@@ -63,6 +68,17 @@ export class SetShape<ValueShape extends AnyShape>
     return new ReadonlyShape(this);
   }
 
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
+  }
+
   protected _isAsync(): boolean {
     return this.valueShape.isAsync;
   }
@@ -71,24 +87,8 @@ export class SetShape<ValueShape extends AnyShape>
     return this.isCoercing ? this.valueShape.inputs.concat(Type.SET, Type.OBJECT, Type.ARRAY) : setInputs;
   }
 
-  /**
-   * Coerces a value to an array of unique values.
-   *
-   * @param input The value to coerce.
-   * @returns An array, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(input: unknown): unknown[] {
-    if (isArray(input)) {
-      return unique(input);
-    }
-    if (isIterableObject(getCanonicalValue(input))) {
-      return unique(Array.from(input as Iterable<unknown>));
-    }
-    return [input];
-  }
-
   protected _apply(input: any, options: ParseOptions, nonce: number): Result<Set<Output<ValueShape>>> {
-    let changed = false;
+    let isChanged = false;
     let values;
     let issues = null;
 
@@ -96,7 +96,7 @@ export class SetShape<ValueShape extends AnyShape>
       // Not a Set
       !(input instanceof Set && (values = Array.from(input))) &&
       // No coercion or not coercible
-      !(changed = (values = this._applyCoerce(input)) !== NEVER)
+      (!this.isCoercing || !(isChanged = (values = coerceToUniqueArray(input)) !== NEVER))
     ) {
       return [createIssue(CODE_TYPE_SET, input, MESSAGE_TYPE_SET, undefined, options, this._options)];
     }
@@ -120,23 +120,23 @@ export class SetShape<ValueShape extends AnyShape>
         issues = concatIssues(issues, result);
         continue;
       }
-      changed = true;
+      isChanged = true;
       values[i] = result.value;
     }
 
-    return this._applyOperations(input, changed ? new Set(values) : input, options, issues) as Result;
+    return this._applyOperations(input, isChanged ? new Set(values) : input, options, issues) as Result;
   }
 
   protected _applyAsync(input: any, options: ParseOptions, nonce: number): Promise<Result<Set<Output<ValueShape>>>> {
     return new Promise(resolve => {
-      let changed = false;
-      let values: unknown[];
+      let isChanged = false;
+      let values;
 
       if (
         // Not a Set
         !(input instanceof Set && (values = Array.from(input))) &&
         // No coercion or not coercible
-        !(changed = (values = this._applyCoerce(input)) !== NEVER)
+        (!this.isCoercing || !(isChanged = (values = coerceToUniqueArray(input)) !== NEVER))
       ) {
         resolve([createIssue(CODE_TYPE_SET, input, MESSAGE_TYPE_SET, undefined, options, this._options)]);
         return;
@@ -158,7 +158,7 @@ export class SetShape<ValueShape extends AnyShape>
             }
             issues = concatIssues(issues, result);
           } else {
-            changed = true;
+            isChanged = true;
             values[index] = result.value;
           }
         }
@@ -171,7 +171,7 @@ export class SetShape<ValueShape extends AnyShape>
         if (index !== valuesLength) {
           return valueShape['_applyAsync'](values[index], options, nonce).then(handleResult);
         }
-        return this._applyOperations(input, changed ? new Set(values) : input, options, issues);
+        return this._applyOperations(input, isChanged ? new Set(values) : input, options, issues);
       };
 
       resolve(next());

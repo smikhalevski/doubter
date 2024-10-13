@@ -68,6 +68,7 @@ describe('Overall', () => {
             },
             a2: {
               type: 'string',
+              minLength: 3,
             },
             a3: {
               type: 'boolean',
@@ -190,10 +191,10 @@ describe('Overall', () => {
       test('valibot', measure => {
         const schema = valibot.object({
           a1: valibot.array(valibot.number([valibot.integer()])),
-          a2: valibot.string([valibot.custom(value => value.length >= 3)]),
+          a2: valibot.string([valibot.minLength(3)]),
           a3: valibot.boolean(),
           a4: valibot.object({
-            a41: valibot.union([valibot.literal('foo'), valibot.literal('bar')]),
+            a41: valibot.picklist(['foo', 'bar']),
             a42: valibot.number(),
           }),
         });
@@ -257,6 +258,7 @@ describe('Overall', () => {
             },
             a2: {
               type: 'string',
+              minLength: 3,
             },
             a3: {
               type: 'boolean',
@@ -370,10 +372,10 @@ describe('Overall', () => {
         const schema = valibot.object(
           {
             a1: valibot.array(valibot.number([valibot.integer()])),
-            a2: valibot.string([valibot.custom(value => value.length >= 3)]),
+            a2: valibot.string([valibot.minLength(3)]),
             a3: valibot.boolean(),
             a4: valibot.object({
-              a41: valibot.union([valibot.literal('foo'), valibot.literal('bar')]),
+              a41: valibot.picklist(['foo', 'bar']),
               a42: valibot.number(),
             }),
           },

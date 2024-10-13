@@ -31,7 +31,6 @@ export { void_ as void } from './dsl/void';
 export { ArrayShape } from './shape/ArrayShape';
 export { BigIntShape } from './shape/BigIntShape';
 export { BooleanShape } from './shape/BooleanShape';
-export { CoercibleShape } from './shape/CoercibleShape';
 export { ConstShape } from './shape/ConstShape';
 export { DateShape } from './shape/DateShape';
 export { EnumShape } from './shape/EnumShape';

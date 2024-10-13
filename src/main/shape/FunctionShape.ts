@@ -17,7 +17,7 @@ import { createIssue } from '../utils';
 import { ValidationError } from '../ValidationError';
 import { AnyShape, Input, Output, Shape } from './Shape';
 
-const functionInputs = Object.freeze([Type.FUNCTION]);
+const functionInputs = Object.freeze<unknown[]>([Type.FUNCTION]);
 
 const KEY_THIS = 'this';
 const KEY_ARGS = 'arguments';

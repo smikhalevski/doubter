@@ -5,16 +5,21 @@ import { isValidDate } from '../internal/lang';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
-const dateInputs = Object.freeze([Type.DATE]);
+const dateInputs = Object.freeze<unknown[]>([Type.DATE]);
 
 /**
  * The shape of the {@link !Date} object.
  *
  * @group Shapes
  */
-export class DateShape extends CoercibleShape<Date> {
+export class DateShape extends Shape<Date> {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * The type issue options or the type issue message.
    */
@@ -31,18 +36,25 @@ export class DateShape extends CoercibleShape<Date> {
     this._options = options;
   }
 
-  protected _getInputs(): readonly unknown[] {
-    return this.isCoercing ? dateCoercibleInputs : dateInputs;
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
   }
 
-  protected _coerce(input: unknown): Date {
-    return coerceToDate(input);
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? dateCoercibleInputs : dateInputs;
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<Date> {
     let output = input;
 
-    if (!isValidDate(input) && (output = this._applyCoerce(input)) === NEVER) {
+    if (!isValidDate(input) && (!this.isCoercing || (output = coerceToDate(input)) === NEVER)) {
       return [createIssue(CODE_TYPE_DATE, input, MESSAGE_TYPE_DATE, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

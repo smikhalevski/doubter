@@ -3,10 +3,10 @@ import { NEVER } from '../coerce/never';
 import { CODE_TYPE_CONST, MESSAGE_TYPE_CONST } from '../constants';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
-const nullInputs = Object.freeze([null]);
-const undefinedInputs = Object.freeze([undefined]);
+const nullInputs = Object.freeze<unknown[]>([null]);
+const undefinedInputs = Object.freeze<unknown[]>([undefined]);
 
 /**
  * The shape of a constant value.
@@ -14,7 +14,12 @@ const undefinedInputs = Object.freeze([undefined]);
  * @template Value The expected constant value.
  * @group Shapes
  */
-export class ConstShape<Value> extends CoercibleShape<Value> {
+export class ConstShape<Value> extends Shape<Value> {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * Returns `true` if an input is equal to the const value, or `false` otherwise.
    */
@@ -45,6 +50,17 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     this._predicate = value !== value ? Number.isNaN : input => value === input;
   }
 
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
+  }
+
   protected _getInputs(): readonly unknown[] {
     const { value } = this;
 
@@ -60,14 +76,10 @@ export class ConstShape<Value> extends CoercibleShape<Value> {
     return [value];
   }
 
-  protected _coerce(input: unknown): Value {
-    return coerceToConst(this.value, input);
-  }
-
   protected _apply(input: unknown, options: ParseOptions, _nonce: number): Result<Value> {
     let output = input;
 
-    if (!this._predicate(input) && (output = this._applyCoerce(input)) === NEVER) {
+    if (!this._predicate(input) && (!this.isCoercing || (output = coerceToConst(this.value, input)) === NEVER)) {
       return [createIssue(CODE_TYPE_CONST, input, MESSAGE_TYPE_CONST, this.value, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

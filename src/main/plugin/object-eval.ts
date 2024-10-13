@@ -38,7 +38,7 @@ function compileApplyRestUnchecked(shape: ObjectShape<any, any>) {
     const keyStr = JSON.stringify(key);
 
     source +=
-      'if ((result = shape.propShapes[' +
+      'if ((result = this.propShapes[' +
       keyStr +
       ']._apply(input[' +
       keyStr +
@@ -49,15 +49,15 @@ function compileApplyRestUnchecked(shape: ObjectShape<any, any>) {
       ');' +
       'if (options.earlyReturn) return result;' +
       'issues = concatIssues(issues, result);' +
-      '} else if (issues === null || shape.operations.length !== 0)' +
+      '} else if (issues === null || this.operations.length !== 0)' +
       'setProperty(input === output ? output = cloneObject(input) : output, ' +
       keyStr +
       ', result.value);';
   }
 
-  source += 'return shape._applyOperations(input, output, options, issues)}';
+  source += 'return this._applyOperations(input, output, options, issues)}';
 
-  const factory = new Function('shape', 'unshiftIssuesPath', 'concatIssues', 'cloneObject', 'setProperty', source);
+  const factory = new Function('unshiftIssuesPath', 'concatIssues', 'cloneObject', 'setProperty', source);
 
-  return factory(shape, unshiftIssuesPath, concatIssues, cloneObject, setProperty);
+  return factory(unshiftIssuesPath, concatIssues, cloneObject, setProperty);
 }

@@ -19,7 +19,7 @@ import { EnumShape } from './EnumShape';
 import { ReadonlyShape } from './ReadonlyShape';
 import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
 
-const objectInputs = Object.freeze([Type.OBJECT]);
+const objectInputs = Object.freeze<unknown[]>([Type.OBJECT]);
 
 type InferObject<
   PropShapes extends ReadonlyDict<AnyShape>,

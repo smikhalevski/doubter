@@ -157,11 +157,11 @@ export function composeApplyOperations(
   if (isAsync) {
     return (input, output, options, issues) => {
       if (issues !== null) {
-        switch (tolerance) {
-          case 'abort':
-            return issues;
-          case 'skip':
-            return next(input, output, options, issues);
+        if (tolerance === 'abort') {
+          return issues;
+        }
+        if (tolerance === 'skip') {
+          return next(input, output, options, issues);
         }
       }
 
@@ -188,11 +188,11 @@ export function composeApplyOperations(
 
   return (input, output, options, issues) => {
     if (issues !== null) {
-      switch (tolerance) {
-        case 'abort':
-          return issues;
-        case 'skip':
-          return next(input, output, options, issues);
+      if (tolerance === 'abort') {
+        return issues;
+      }
+      if (tolerance === 'skip') {
+        return next(input, output, options, issues);
       }
     }
 
