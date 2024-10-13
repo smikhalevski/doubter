@@ -15,6 +15,7 @@ import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { ReadonlyShape } from './ReadonlyShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
 
 const arrayInputs = Object.freeze([Type.ARRAY]);
@@ -113,6 +114,13 @@ export class ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extend
     const restShape = this.restShape !== null ? toDeepPartialShape(this.restShape).optional() : null;
 
     return new ArrayShape<any, any>(headShapes, restShape, this._options);
+  }
+
+  /**
+   * Makes an array readonly: array elements cannot be added, removed or updated at runtime.
+   */
+  readonly(): ReadonlyShape<this> {
+    return new ReadonlyShape(this);
   }
 
   protected _isAsync(): boolean {

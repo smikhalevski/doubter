@@ -5,6 +5,7 @@ import { applyShape, concatIssues, INPUT, OUTPUT, toDeepPartialShape, unshiftIss
 import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
+import { ReadonlyShape } from './ReadonlyShape';
 import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape } from './Shape';
 
 const recordInputs = Object.freeze([Type.OBJECT]);
@@ -61,6 +62,13 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
 
   deepPartial(): RecordShape<KeysShape, OptionalDeepPartialShape<ValuesShape>> {
     return new RecordShape<any, any>(this.keysShape, toDeepPartialShape(this.valuesShape).optional(), this._options);
+  }
+
+  /**
+   * Makes a record readonly: properties cannot be added, removed or updated at runtime.
+   */
+  readonly(): ReadonlyShape<this> {
+    return new ReadonlyShape(this);
   }
 
   protected _isAsync(): boolean {

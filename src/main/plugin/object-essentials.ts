@@ -28,6 +28,7 @@ import {
   MESSAGE_OBJECT_PLAIN,
   MESSAGE_OBJECT_XOR_KEYS,
 } from '../constants';
+import { isPlainObject } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
 import { OUTPUT } from '../internal/shapes';
 import { ObjectShape } from '../shape/ObjectShape';
@@ -177,9 +178,7 @@ declare module '../core' {
 ObjectShape.prototype.plain = RecordShape.prototype.plain = function (issueOptions): any {
   return this.addOperation(
     (value, param, options) => {
-      const prototype = Object.getPrototypeOf(value);
-
-      if (prototype === null || prototype.constructor === Object) {
+      if (isPlainObject(value)) {
         return null;
       }
       return [createIssue(CODE_OBJECT_PLAIN, value, MESSAGE_OBJECT_PLAIN, param, options, issueOptions)];

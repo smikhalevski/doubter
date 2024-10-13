@@ -1005,7 +1005,7 @@ export interface Shape<InputValue, OutputValue> {
   ): Promisify<OutputValue | DefaultValue>;
 }
 
-// Define getter separately for cleaner generated docs and overloaded signatures
+// Define getters separately for cleaner generated docs and overloaded signatures
 Object.defineProperties(Shape.prototype, {
   _applyOperations: {
     configurable: true,

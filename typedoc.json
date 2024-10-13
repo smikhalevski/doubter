@@ -80,6 +80,7 @@
     "RequiredPropShapes",
     "InferOrDefault",
     "ThisType",
+    "ToReadonly",
     "INPUT",
     "OUTPUT"
   ],

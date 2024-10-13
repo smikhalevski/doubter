@@ -1,6 +1,6 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { OUTPUT } from '../../main/internal/shapes';
+import { INPUT, OUTPUT } from '../../main/internal/shapes';
 
 expectType<{ aaa?: string }>(
   d.object({
@@ -104,3 +104,9 @@ expectType<{ aaa: string; bbb: number }>(
 );
 
 d.object({ aaa: d.string(), bbb: d.number() }).notAllKeys(['bbb']);
+
+expectType<{ aaa: string; bbb: number }>(d.object({ aaa: d.string(), bbb: d.number() }).readonly()[INPUT]);
+
+expectType<{ readonly aaa: string; readonly bbb: number }>(
+  d.object({ aaa: d.string(), bbb: d.number() }).readonly()[OUTPUT]
+);

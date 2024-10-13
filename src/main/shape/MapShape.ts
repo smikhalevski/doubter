@@ -6,6 +6,7 @@ import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { CoercibleShape } from './CoercibleShape';
+import { ReadonlyShape } from './ReadonlyShape';
 import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';
 
 const mapInputs = Object.freeze([Type.MAP]);
@@ -66,6 +67,15 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     const valueShape = toDeepPartialShape(this.valueShape).optional();
 
     return new MapShape<any, any>(keyShape, valueShape, this._options);
+  }
+
+  /**
+   * Marks a {@link !Map} as readonly.
+   *
+   * **Note:** This doesn't have any effect at runtime.
+   */
+  readonly(): ReadonlyShape<this> {
+    return new ReadonlyShape(this);
   }
 
   protected _isAsync(): boolean {

@@ -19,6 +19,10 @@ export function isObject(value: unknown): boolean {
   return isObjectLike(value) && !isArray(value);
 }
 
+export function isPlainObject(value: unknown): value is object {
+  return isObjectLike(value) && ((value = Object.getPrototypeOf(value)) === null || value === Object.prototype);
+}
+
 export function isIterableObject(value: any): value is Iterable<any> {
   return isObjectLike(value) && ((typeof Symbol !== 'undefined' && Symbol.iterator in value) || !isNaN(value.length));
 }
