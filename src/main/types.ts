@@ -198,7 +198,7 @@ export interface Operation {
    *   still applied.</dd>
    *   <dt>"abort"</dt>
    *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
-   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied either.</dd>
    *   <dt>"auto"</dt>
    *   <dd>The operation is applied regardless of previously raised issues.</dd>
    * </dl>
@@ -220,7 +220,7 @@ export interface Operation {
  *   still applied.</dd>
  *   <dt>"abort"</dt>
  *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
- *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+ *   applied. Also, if this operation itself raises issues then consequent operations aren't applied either.</dd>
  *   <dt>"auto"</dt>
  *   <dd>The operation is applied regardless of previously raised issues.</dd>
  * </dl>
@@ -281,7 +281,7 @@ export interface OperationOptions {
    *   still applied.</dd>
    *   <dt>"abort"</dt>
    *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
-   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied either.</dd>
    *   <dt>"auto"</dt>
    *   <dd>The operation is applied regardless of previously raised issues.</dd>
    * </dl>
