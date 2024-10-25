@@ -141,23 +141,6 @@ export type Message = MessageCallback | string;
 export type MessageCallback = (issue: Issue, options: ParseOptions) => any;
 
 /**
- * A callback that applies operations to the shape output.
- *
- * @param input The input value to which the shape was applied.
- * @param output The output value to which the operation must be applied.
- * @param options Parsing options.
- * @param issues The mutable array of issues captured by a shape, or `null` if there were no issues raised yet.
- * @returns The result of the operation.
- * @group Operations
- */
-export type ApplyOperationsCallback = (
-  input: unknown,
-  output: unknown,
-  options: ParseOptions,
-  issues: Issue[] | null
-) => Result | Promise<Result>;
-
-/**
  * An operation that a shape applies to its output.
  *
  * @template Value The shape output value to which the operation must be applied.
