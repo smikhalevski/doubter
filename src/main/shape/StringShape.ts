@@ -4,16 +4,21 @@ import { CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../constants';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
-const stringInputs = Object.freeze([Type.STRING]);
+const stringInputs = Object.freeze<unknown[]>([Type.STRING]);
 
 /**
  * The shape of a string value.
  *
  * @group Shapes
  */
-export class StringShape extends CoercibleShape<string> {
+export class StringShape extends Shape<string, string> {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * The type issue options or the type issue message.
    */
@@ -30,18 +35,25 @@ export class StringShape extends CoercibleShape<string> {
     this._options = options;
   }
 
-  protected _getInputs(): readonly unknown[] {
-    return this.isCoercing ? stringCoercibleInputs : stringInputs;
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
   }
 
-  protected _coerce(input: unknown): string {
-    return coerceToString(input);
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? stringCoercibleInputs : stringInputs;
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<string> {
     let output = input;
 
-    if (typeof output !== 'string' && (output = this._applyCoerce(input)) === NEVER) {
+    if (typeof output !== 'string' && (!this.isCoercing || (output = coerceToString(input)) === NEVER)) {
       return [createIssue(CODE_TYPE_STRING, input, MESSAGE_TYPE_STRING, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

@@ -1,16 +1,24 @@
+import { coerceToMapEntries } from '../coerce/map';
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_MAP, MESSAGE_TYPE_MAP } from '../constants';
-import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
+import { isArray } from '../internal/lang';
 import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import {
+  AnyShape,
+  DeepPartialProtocol,
+  DeepPartialShape,
+  Input,
+  OptionalDeepPartialShape,
+  Output,
+  Shape,
+} from './Shape';
 import { ReadonlyShape } from './ReadonlyShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, OptionalDeepPartialShape, Output } from './Shape';
 
-const mapInputs = Object.freeze([Type.MAP]);
-const mapCoercibleInputs = Object.freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
+const mapInputs = Object.freeze<unknown[]>([Type.MAP]);
+const mapCoercibleInputs = Object.freeze<unknown[]>([Type.MAP, Type.OBJECT, Type.ARRAY]);
 
 /**
  * The shape of a {@link !Map} instance.
@@ -20,13 +28,14 @@ const mapCoercibleInputs = Object.freeze([Type.MAP, Type.OBJECT, Type.ARRAY]);
  * @group Shapes
  */
 export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
-  extends CoercibleShape<
-    Map<Input<KeyShape>, Input<ValueShape>>,
-    Map<Output<KeyShape>, Output<ValueShape>>,
-    [unknown, unknown][]
-  >
+  extends Shape<Map<Input<KeyShape>, Input<ValueShape>>, Map<Output<KeyShape>, Output<ValueShape>>>
   implements DeepPartialProtocol<MapShape<DeepPartialShape<KeyShape>, OptionalDeepPartialShape<ValueShape>>>
 {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * The issue options or the issue message.
    */
@@ -78,6 +87,17 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     return new ReadonlyShape(this);
   }
 
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
+  }
+
   protected _isAsync(): boolean {
     return this.keyShape.isAsync || this.valueShape.isAsync;
   }
@@ -86,41 +106,19 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     return this.isCoercing ? mapCoercibleInputs : mapInputs;
   }
 
-  /**
-   * Coerces a value to an array of Map entries.
-   *
-   * @param input A value to coerce.
-   * @returns An array of entries, or {@link NEVER} if coercion isn't possible.
-   */
-  protected _coerce(input: unknown): [unknown, unknown][] {
-    if (isArray(input)) {
-      return input.every(isMapEntry) ? input : NEVER;
-    }
-
-    input = getCanonicalValue(input);
-
-    if (isIterableObject(input)) {
-      return (input = Array.from(input)).every(isMapEntry) ? input : NEVER;
-    }
-    if (isObjectLike(input)) {
-      return Object.entries(input);
-    }
-    return NEVER;
-  }
-
   protected _apply(
     input: any,
     options: ParseOptions,
     nonce: number
   ): Result<Map<Output<KeyShape>, Output<ValueShape>>> {
-    let changed = false;
+    let isChanged = false;
     let entries;
 
     if (
       // Not a Map
       !(input instanceof Map && (entries = Array.from(input))) &&
       // No coercion or not coercible
-      !(changed = (entries = this._applyCoerce(input)) !== NEVER)
+      (!this.isCoercing || !(isChanged = (entries = coerceToMapEntries(input)) !== NEVER))
     ) {
       return [createIssue(CODE_TYPE_MAP, input, MESSAGE_TYPE_MAP, undefined, options, this._options)];
     }
@@ -168,13 +166,13 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       }
 
       if ((issues === null || operations.length !== 0) && (keyResult !== null || valueResult !== null)) {
-        changed = true;
+        isChanged = true;
         entry[0] = key;
         entry[1] = value;
       }
     }
 
-    return this._applyOperations(input, changed ? new Map(entries) : input, options, issues) as Result;
+    return this._applyOperations(input, isChanged ? new Map(entries) : input, options, issues) as Result;
   }
 
   protected _applyAsync(
@@ -183,14 +181,14 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
     nonce: number
   ): Promise<Result<Map<Output<KeyShape>, Output<ValueShape>>>> {
     return new Promise(resolve => {
-      let changed = false;
-      let entries: [unknown, unknown][];
+      let isChanged = false;
+      let entries;
 
       if (
         // Not a Map
         !(input instanceof Map && (entries = Array.from(input))) &&
         // No coercion or not coercible
-        !(changed = (entries = this._applyCoerce(input)) !== NEVER)
+        (!this.isCoercing || !(isChanged = (entries = coerceToMapEntries(input)) !== NEVER))
       ) {
         resolve([createIssue(CODE_TYPE_MAP, input, MESSAGE_TYPE_MAP, undefined, options, this._options)]);
         return;
@@ -205,10 +203,10 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
       let entry: [unknown, unknown];
       let key: unknown;
       let value: unknown;
-      let keyChanged = false;
+      let isKeyChanged = false;
 
       const handleKeyResult = (keyResult: Result) => {
-        keyChanged = false;
+        isKeyChanged = false;
 
         if (keyResult !== null) {
           if (isArray(keyResult)) {
@@ -220,7 +218,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
             issues = concatIssues(issues, keyResult);
           } else {
             key = keyResult.value;
-            keyChanged = true;
+            isKeyChanged = true;
           }
         }
         return applyShape(valueShape, value, options, nonce, handleValueResult);
@@ -241,8 +239,8 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           }
         }
 
-        if ((issues === null || operations.length !== 0) && (keyChanged || valueResult !== null)) {
-          changed = true;
+        if ((issues === null || operations.length !== 0) && (isKeyChanged || valueResult !== null)) {
+          isChanged = true;
           entry[0] = key;
           entry[1] = value;
         }
@@ -260,7 +258,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           return applyShape(keyShape, key, options, nonce, handleKeyResult);
         }
 
-        return this._applyOperations(input, changed ? new Map(entries) : input, options, issues);
+        return this._applyOperations(input, isChanged ? new Map(entries) : input, options, issues);
       };
 
       resolve(next());

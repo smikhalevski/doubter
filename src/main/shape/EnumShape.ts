@@ -7,7 +7,7 @@ import { ReadonlyDict } from '../internal/objects';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
 /**
  * The shape of a value enumeration.
@@ -15,7 +15,12 @@ import { CoercibleShape } from './CoercibleShape';
  * @template Value The union of allowed enum values.
  * @group Shapes
  */
-export class EnumShape<Value> extends CoercibleShape<Value> {
+export class EnumShape<Value> extends Shape<Value> {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * The array of unique enum values.
    */
@@ -47,6 +52,17 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     this._options = options;
   }
 
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
+  }
+
   protected _getInputs(): readonly unknown[] {
     const inputs: unknown[] = this.values.slice(0);
 
@@ -62,28 +78,13 @@ export class EnumShape<Value> extends CoercibleShape<Value> {
     return unique(inputs.concat(Type.ARRAY));
   }
 
-  protected _coerce(input: unknown): Value {
-    const { source, values } = this;
-
-    if (isArray(input) && input.length === 1 && values.includes((input = input[0]))) {
-      return input as Value;
-    }
-    if (!isArray(source) && typeof (input = getCanonicalValue(input)) === 'string' && source.hasOwnProperty(input)) {
-      return (source as ReadonlyDict)[input];
-    }
-
-    for (const value of values) {
-      if (coerceToConst(value, input) !== NEVER) {
-        return value;
-      }
-    }
-    return NEVER;
-  }
-
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<Value> {
     let output = input;
 
-    if (!this.values.includes(output) && (output = this._applyCoerce(input)) === NEVER) {
+    if (
+      !this.values.includes(output) &&
+      (!this.isCoercing || (output = coerceToEnum(this.source, this.values, input)) === NEVER)
+    ) {
       return [createIssue(CODE_TYPE_ENUM, input, MESSAGE_TYPE_ENUM, this.values, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
@@ -116,4 +117,24 @@ export function getEnumValues(source: ReadonlyDict): any[] {
     }
   }
   return values;
+}
+
+function coerceToEnum<Value>(
+  source: readonly Value[] | ReadonlyDict<Value>,
+  values: readonly Value[],
+  input: unknown
+): Value {
+  if (isArray(input) && input.length === 1 && values.includes((input = input[0]))) {
+    return input as Value;
+  }
+  if (!isArray(source) && typeof (input = getCanonicalValue(input)) === 'string' && source.hasOwnProperty(input)) {
+    return (source as ReadonlyDict)[input];
+  }
+
+  for (const value of values) {
+    if (coerceToConst(value, input) !== NEVER) {
+      return value;
+    }
+  }
+  return NEVER;
 }

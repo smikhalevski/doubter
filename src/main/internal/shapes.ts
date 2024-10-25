@@ -1,15 +1,6 @@
 import { ERROR_SYNC_UNSUPPORTED } from '../constants';
 import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
-import {
-  ApplyOperationsCallback,
-  CheckResult,
-  Issue,
-  Ok,
-  Operation,
-  OperationCallback,
-  ParseOptions,
-  Result,
-} from '../types';
+import { CheckResult, Issue, Ok, Operation, OperationCallback, ParseOptions, Result } from '../types';
 import { ValidationError } from '../ValidationError';
 import { isArray, isEqual, isObjectLike } from './lang';
 
@@ -126,6 +117,13 @@ export function copyOperations<S extends Shape>(baseShape: Shape, shape: S): S {
   return shape;
 }
 
+type ApplyOperationsCallback = (
+  input: unknown,
+  output: unknown,
+  options: ParseOptions,
+  issues: Issue[] | null
+) => Result | Promise<Result>;
+
 /**
  * The callback that converts output and issues to a {@link Result}.
  */
@@ -157,11 +155,11 @@ export function composeApplyOperations(
   if (isAsync) {
     return (input, output, options, issues) => {
       if (issues !== null) {
-        switch (tolerance) {
-          case 'abort':
-            return issues;
-          case 'skip':
-            return next(input, output, options, issues);
+        if (tolerance === 'abort') {
+          return issues;
+        }
+        if (tolerance === 'skip') {
+          return next(input, output, options, issues);
         }
       }
 
@@ -188,11 +186,11 @@ export function composeApplyOperations(
 
   return (input, output, options, issues) => {
     if (issues !== null) {
-      switch (tolerance) {
-        case 'abort':
-          return issues;
-        case 'skip':
-          return next(input, output, options, issues);
+      if (tolerance === 'abort') {
+        return issues;
+      }
+      if (tolerance === 'skip') {
+        return next(input, output, options, issues);
       }
     }
 

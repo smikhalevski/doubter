@@ -25,7 +25,6 @@ import { isType, unionTypes } from '../internal/types';
 import { Type } from '../Type';
 import {
   Any,
-  ApplyOperationsCallback,
   CheckResult,
   Err,
   Issue,
@@ -45,7 +44,7 @@ import {
 import { createIssue, toIssueOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
 
-export const unknownInputs = Object.freeze([Type.UNKNOWN]);
+export const unknownInputs = Object.freeze<unknown[]>([Type.UNKNOWN]);
 
 /**
  * Extracts the shape input type.
@@ -196,20 +195,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   operations: readonly Operation[] = [];
 
   /**
-   * The callback that applies {@link Shape.operations} to the shape output value.
-   *
-   * This method returns a promise if there are async {@link Shape.operations}.
-   *
-   * If the shape overrides only {@link Shape._apply} and doesn't override {@link Shape._applyAsync} then it's only safe
-   * to call this method _as the last statement_ in {@link Shape._apply}. Otherwise, it may return an unexpected
-   * promise.
-   *
-   * If the shape overrides both {@link Shape._apply} and {@link Shape._applyAsync} then this method would always
-   * synchronously return a {@link Result} inside {@link Shape._apply}.
-   */
-  protected declare _applyOperations: ApplyOperationsCallback;
-
-  /**
    * Returns a sub-shape that describes a value associated with the given property name, or `null` if there's no such
    * sub-shape.
    *
@@ -271,6 +256,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
     const shape = this._clone();
     shape.operations = this.operations.concat({ type, param, isAsync: false, tolerance, callback: cb });
+    shape._applyOperations = Shape.prototype._applyOperations;
     return shape;
   }
 
@@ -312,6 +298,7 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
 
     const shape = this._clone();
     shape.operations = this.operations.concat({ type, param, isAsync: true, tolerance, callback: cb });
+    shape._applyOperations = Shape.prototype._applyOperations;
     return shape;
   }
 
@@ -888,6 +875,38 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
       resolve(this._apply(input, options, nonce));
     });
   }
+
+  /**
+   * The callback that applies {@link Shape.operations} to the shape output value.
+   *
+   * This method returns a promise if there are async {@link Shape.operations}.
+   *
+   * If the shape overrides only {@link Shape._apply} and doesn't override {@link Shape._applyAsync} then it's only safe
+   * to call this method _as the last statement_ in {@link Shape._apply}. Otherwise, it may return an unexpected
+   * promise.
+   *
+   * If the shape overrides both {@link Shape._apply} and {@link Shape._applyAsync} then this method would always
+   * synchronously return a {@link Result} inside {@link Shape._apply}.
+   */
+  protected _applyOperations(
+    input: unknown,
+    output: unknown,
+    options: ParseOptions,
+    issues: Issue[] | null
+  ): Result | Promise<Result> {
+    let cb = applyOperations;
+
+    for (let i = this.operations.length - 1, isAsync = false; i >= 0; --i) {
+      const operation = this.operations[i];
+
+      isAsync ||= operation.isAsync;
+      cb = composeApplyOperations(operation, cb, isAsync);
+    }
+
+    this._applyOperations = cb;
+
+    return cb(input, output, options, issues);
+  }
 }
 
 export interface Shape<InputValue, OutputValue> {
@@ -1007,23 +1026,6 @@ export interface Shape<InputValue, OutputValue> {
 
 // Define getters separately for cleaner generated docs and overloaded signatures
 Object.defineProperties(Shape.prototype, {
-  _applyOperations: {
-    configurable: true,
-
-    get(this: Shape) {
-      let cb = applyOperations;
-
-      for (let i = this.operations.length - 1, isAsync = false; i >= 0; --i) {
-        const operation = this.operations[i];
-
-        isAsync ||= operation.isAsync;
-        cb = composeApplyOperations(operation, cb, isAsync);
-      }
-
-      return defineReadonlyProperty(this, '_applyOperations', cb);
-    },
-  },
-
   inputs: {
     configurable: true,
 

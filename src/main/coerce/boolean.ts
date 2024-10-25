@@ -5,7 +5,7 @@ import { NEVER } from './never';
 /**
  * The array of inputs that are coercible to a boolean with {@link coerceToBoolean}.
  */
-export const booleanCoercibleInputs = Object.freeze([
+export const booleanCoercibleInputs = Object.freeze<unknown[]>([
   Type.ARRAY,
   Type.OBJECT,
   Type.BOOLEAN,

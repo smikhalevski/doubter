@@ -141,23 +141,6 @@ export type Message = MessageCallback | string;
 export type MessageCallback = (issue: Issue, options: ParseOptions) => any;
 
 /**
- * A callback that applies operations to the shape output.
- *
- * @param input The input value to which the shape was applied.
- * @param output The output value to which the operation must be applied.
- * @param options Parsing options.
- * @param issues The mutable array of issues captured by a shape, or `null` if there were no issues raised yet.
- * @returns The result of the operation.
- * @group Operations
- */
-export type ApplyOperationsCallback = (
-  input: unknown,
-  output: unknown,
-  options: ParseOptions,
-  issues: Issue[] | null
-) => Result | Promise<Result>;
-
-/**
  * An operation that a shape applies to its output.
  *
  * @template Value The shape output value to which the operation must be applied.
@@ -198,7 +181,7 @@ export interface Operation {
    *   still applied.</dd>
    *   <dt>"abort"</dt>
    *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
-   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied either.</dd>
    *   <dt>"auto"</dt>
    *   <dd>The operation is applied regardless of previously raised issues.</dd>
    * </dl>
@@ -220,7 +203,7 @@ export interface Operation {
  *   still applied.</dd>
  *   <dt>"abort"</dt>
  *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
- *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+ *   applied. Also, if this operation itself raises issues then consequent operations aren't applied either.</dd>
  *   <dt>"auto"</dt>
  *   <dd>The operation is applied regardless of previously raised issues.</dd>
  * </dl>
@@ -281,7 +264,7 @@ export interface OperationOptions {
    *   still applied.</dd>
    *   <dt>"abort"</dt>
    *   <dd>If preceding operations have raised issues, then this operation is skipped and consequent operations aren't
-   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied.</dd>
+   *   applied. Also, if this operation itself raises issues then consequent operations aren't applied either.</dd>
    *   <dt>"auto"</dt>
    *   <dd>The operation is applied regardless of previously raised issues.</dd>
    * </dl>

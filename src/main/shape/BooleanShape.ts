@@ -4,16 +4,21 @@ import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../constants';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
-const booleanInputs = Object.freeze([Type.BOOLEAN]);
+const booleanInputs = Object.freeze<unknown[]>([Type.BOOLEAN]);
 
 /**
  * The shape of a boolean value.
  *
  * @group Shapes
  */
-export class BooleanShape extends CoercibleShape<boolean> {
+export class BooleanShape extends Shape<boolean> {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * The type issue options or the type issue message.
    */
@@ -30,18 +35,25 @@ export class BooleanShape extends CoercibleShape<boolean> {
     this._options = options;
   }
 
-  protected _getInputs(): readonly unknown[] {
-    return this.isCoercing ? booleanCoercibleInputs : booleanInputs;
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
   }
 
-  protected _coerce(input: unknown): boolean {
-    return coerceToBoolean(input);
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? booleanCoercibleInputs : booleanInputs;
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<boolean> {
     let output = input;
 
-    if (typeof output !== 'boolean' && (output = this._applyCoerce(input)) === NEVER) {
+    if (typeof output !== 'boolean' && (!this.isCoercing || (output = coerceToBoolean(input)) === NEVER)) {
       return [createIssue(CODE_TYPE_BOOLEAN, input, MESSAGE_TYPE_BOOLEAN, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

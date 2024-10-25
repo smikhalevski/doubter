@@ -4,17 +4,21 @@ import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants';
 import { Type } from '../Type';
 import { Any, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
-import { AllowShape, ReplaceShape } from './Shape';
+import { AllowShape, ReplaceShape, Shape } from './Shape';
 
-const numberInputs = Object.freeze([Type.NUMBER]);
+const numberInputs = Object.freeze<unknown[]>([Type.NUMBER]);
 
 /**
  * The shape of a number value.
  *
  * @group Shapes
  */
-export class NumberShape extends CoercibleShape<number> {
+export class NumberShape extends Shape<number> {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * The type issue options or the type issue message.
    */
@@ -47,18 +51,28 @@ export class NumberShape extends CoercibleShape<number> {
     return this.replace(NaN, arguments.length === 0 ? NaN : defaultValue);
   }
 
-  protected _getInputs(): readonly unknown[] {
-    return this.isCoercing ? numberCoercibleInputs : numberInputs;
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
   }
 
-  protected _coerce(input: unknown): number {
-    return coerceToNumber(input);
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? numberCoercibleInputs : numberInputs;
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<number> {
     let output = input;
 
-    if ((typeof output !== 'number' || output !== output) && (output = this._applyCoerce(input)) === NEVER) {
+    if (
+      (typeof output !== 'number' || output !== output) &&
+      (!this.isCoercing || (output = coerceToNumber(input)) === NEVER)
+    ) {
       return [createIssue(CODE_TYPE_NUMBER, input, MESSAGE_TYPE_NUMBER, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;

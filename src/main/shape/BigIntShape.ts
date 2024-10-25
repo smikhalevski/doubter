@@ -4,16 +4,21 @@ import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../constants';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { CoercibleShape } from './CoercibleShape';
+import { Shape } from './Shape';
 
-const bigintInputs = Object.freeze([Type.BIGINT]);
+const bigintInputs = Object.freeze<unknown[]>([Type.BIGINT]);
 
 /**
  * The shape of a bigint value.
  *
  * @group Shapes
  */
-export class BigIntShape extends CoercibleShape<bigint> {
+export class BigIntShape extends Shape<bigint> {
+  /**
+   * `true` if this shape coerces input values to the required type during parsing, or `false` otherwise.
+   */
+  isCoercing = false;
+
   /**
    * The type issue options or the type issue message.
    */
@@ -30,18 +35,25 @@ export class BigIntShape extends CoercibleShape<bigint> {
     this._options = options;
   }
 
-  protected _getInputs(): readonly unknown[] {
-    return this.isCoercing ? bigintCoercibleInputs : bigintInputs;
+  /**
+   * Enables an input value coercion.
+   *
+   * @returns The clone of the shape.
+   */
+  coerce(): this {
+    const shape = this._clone();
+    shape.isCoercing = true;
+    return shape;
   }
 
-  protected _coerce(input: unknown): bigint {
-    return coerceToBigInt(input);
+  protected _getInputs(): readonly unknown[] {
+    return this.isCoercing ? bigintCoercibleInputs : bigintInputs;
   }
 
   protected _apply(input: any, options: ParseOptions, _nonce: number): Result<bigint> {
     let output = input;
 
-    if (typeof output !== 'bigint' && (output = this._applyCoerce(input)) === NEVER) {
+    if (typeof output !== 'bigint' && (!this.isCoercing || (output = coerceToBigInt(input)) === NEVER)) {
       return [createIssue(CODE_TYPE_BIGINT, input, MESSAGE_TYPE_BIGINT, undefined, options, this._options)];
     }
     return this._applyOperations(input, output, options, null) as Result;
