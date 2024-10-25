@@ -186,9 +186,11 @@ meter {
     --input-border-color-focus: var(--dark-input-border-color-focus);
 }
 
+html,
 body {
     font-family: var(--font-family-body);
     line-height: var(--line-height);
+    font-size: 16px;
 }
 
 b, strong {
@@ -210,7 +212,7 @@ select {
     font-size: 1rem;
     border: solid 1px var(--input-border-color);
     border-radius: var(--border-radius);
-    vertical-align: middle;
+    vertical-align: baseline;
 }
 
 input {
@@ -230,6 +232,10 @@ select:focus {
 
 dl, menu, ol, ul {
     margin: 0 0 var(--header-margin) 0;
+}
+
+dt {
+    font-style: italic;
 }
 
 /* -------------------------------------------------- TYPOGRAPHY --------------------------------------------------- */
@@ -354,16 +360,23 @@ button:hover {
 
 /* ---------------------------------------------------- PANELS ----------------------------------------------------- */
 
-.tsd-panel-group,
+.tsd-panel-group {
+    margin: 0;
+}
+
 .tsd-panel-group.tsd-index-group {
-    margin: var(--member-group-spacing) 0;
+    margin: var(--member-spacing) 0 0 0;
+}
+
+.tsd-panel-group > .tsd-accordion-summary {
+    margin: 0;
 }
 
 .tsd-panel-group.tsd-index-group details {
     margin: 0;
 }
 
-.tsd-panel-group.tsd-member-group > h2 {
+.tsd-panel-group.tsd-member-group > summary > h2 {
     font-size: var(--font-size-h2);
     margin: 0 0 var(--member-spacing) 0;
 }
@@ -372,9 +385,14 @@ button:hover {
     margin: 0 0 var(--paragraph-spacing) 0;
 }
 
+.tsd-panel.tsd-index-panel {
+    margin: 0;
+}
+
 /* ---------------------------------------------------- SOURCE ----------------------------------------------------- */
 
 .tsd-sources {
+    color: var(--color-text-aside);
     font-size: var(--font-size-aside);
     margin: 0 0 var(--paragraph-spacing) 0;
 }
@@ -531,7 +549,7 @@ ul.tsd-parameter-list > li > h5:last-child {
 /* Protected, optional, etc. */
 code.tsd-tag {
     padding: 0;
-    margin: 0;
+    margin: 0 0.3em 0 0;
     border: none;
     font: inherit;
     font-weight: normal;
@@ -572,8 +590,8 @@ code.tsd-tag {
     padding: 0 0 0 var(--menu-spacing-horizontal);
 }
 
-.tsd-nested-navigation {
-    margin: 0 0 0 calc(var(--menu-spacing-horizontal) * 2);
+ul.tsd-nested-navigation {
+    margin: 0 0 0 calc(var(--menu-spacing-horizontal) * 1.5);
 }
 
 .tsd-nested-navigation > li > a {
@@ -595,15 +613,19 @@ code.tsd-tag {
     position: relative;
     width: auto;
     display: flex;
-    align-items: baseline;
+    align-items: center;
 }
 
 .tsd-accordion-summary > h3 > svg {
-    margin-right: 0.2rem;
+    margin: 0 0.2em 0 0;
 }
 
 .tsd-accordion-summary:has(a.current) + .tsd-accordion-details a.current {
     background: none;
+}
+
+.tsd-accordion .tsd-accordion-summary > svg {
+    margin: 0.25em 0 0 0.3em;
 }
 
 .tsd-small-nested-navigation {
@@ -612,6 +634,12 @@ code.tsd-tag {
 
 .tsd-index-accordion {
     margin: var(--menu-spacing-vertical) 0;
+}
+
+/* ---------------------------------------------------- SIDEBAR ---------------------------------------------------- */
+
+#tsd-sidebar-links {
+    margin: 0 0 var(--menu-spacing-vertical) 1.8em;
 }
 
 /* --------------------------------------------------- SETTINGS ---------------------------------------------------- */
@@ -625,7 +653,7 @@ code.tsd-tag {
     padding: 0;
 }
 
-.tsd-filter-visibility h4 {
+.tsd-filter-visibility .settings-label {
     margin: var(--paragraph-spacing) 0 var(--term-spacing) 0;
     padding: 0;
     font-weight: normal;
@@ -645,7 +673,7 @@ code.tsd-tag {
     padding: 0;
 }
 
-.tsd-theme-toggle h4 {
+.tsd-theme-toggle .settings-label {
     margin: 0 0.5rem 0 0;
     padding: 0;
     font-weight: normal;
@@ -662,6 +690,25 @@ code.tsd-tag {
 
 .tsd-checkbox-checkmark {
     stroke: var(--color-text);
+}
+
+/* ------------------------------------------- "ON THIS PAGE" NAVIGATION ------------------------------------------- */
+
+.page-menu .tsd-accordion .tsd-accordion-summary > svg {
+    margin: 0 0.2em 0 0;
+    vertical-align: middle;
+}
+
+.tsd-page-navigation-section > summary {
+    padding: 0.25rem 0;
+}
+
+.tsd-page-navigation-section {
+    margin: 0 0 0 1.3em;
+}
+
+.tsd-page-navigation-section > div {
+    margin: 0 0 0 1.5em;
 }
 
 /* --------------------------------------------------- HIERARCHY --------------------------------------------------- */
@@ -696,12 +743,13 @@ ul.tsd-hierarchy .target {
 /* Main heading */
 .tsd-index-summary > .tsd-index-heading,
 .tsd-index-panel > .tsd-index-heading {
+    margin: 0 0 var(--member-spacing) 0;
     font-size: var(--font-size-h2);
 }
 
 .tsd-index-panel .tsd-index-list {
     padding: 0;
-    margin: 0 0 var(--paragraph-spacing) 0;
+    margin: 0 0 var(--member-spacing) 0;
 }
 
 a.tsd-index-link {
@@ -843,9 +891,9 @@ a.tsd-index-link {
     overflow-x: hidden;
 }
 
-.col-content .tsd-panel:last-child {
-    margin-bottom: var(--member-group-spacing);
-}
+/*.col-content .tsd-panel:last-child {*/
+/*    margin-bottom: var(--member-group-spacing);*/
+/*}*/
 
 @media (max-width: 769px) {
     :root {
@@ -927,4 +975,10 @@ a.tsd-index-link {
     .site-menu {
         padding: var(--paragraph-spacing) 0 var(--paragraph-spacing) var(--content-spacing);
     }
+}
+
+/* ---------------------------------------------------- FOOTER ----------------------------------------------------- */
+
+footer:empty {
+    display: none;
 }
