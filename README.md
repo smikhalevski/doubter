@@ -1713,8 +1713,8 @@ yesNoShape.parse('true');
 
 # Introspection
 
-Doubter provides various features to introspect your shapes at runtime. Let's start by accessing a shape input types
-using the [`inputs`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#inputs) property:
+Doubter provides various ways to introspect your shapes at runtime. Let's start by accessing shape input types using
+the [`inputs`](https://smikhalevski.github.io/doubter/next/classes/core.Shape.html#inputs) property:
 
 ```ts
 const shape1 = d.or([d.string(), d.boolean()]);
@@ -1731,7 +1731,7 @@ d.enum(['Mars', 42]).inputs;
 // ⮕ ['Mars', 42]
 ```
 
-Literal values are absorbed by their type in unions.
+Literal values are absorbed by matching type when combined in unions.
 
 ```ts
 const shape2 = d.or([
@@ -1794,7 +1794,7 @@ Types returned from `Type.of` are a superset of types returned from the `typeof`
 
 ```ts
 const shape1 = d.convert(parseFloat);
-// ⮕ Shape<any>
+// ⮕ Shape<any, number>
 
 shape1.inputs;
 // ⮕ [Type.UNKNOWN]
