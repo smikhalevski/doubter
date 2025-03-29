@@ -3,10 +3,6 @@
     "warmupIterationCount": 100,
     "targetRme": 0.005
   },
-  "setupFiles": [
-    "./src/test/setup.js"
-  ],
-  "include": [
-    "./src/test/**/*.perf.js"
-  ]
+  "setupFiles": ["./src/test/setup.js"],
+  "include": ["./src/test/**/*.perf.js"]
 }

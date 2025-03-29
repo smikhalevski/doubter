@@ -12,11 +12,7 @@
   "navigation": {
     "includeFolders": false
   },
-  "entryPoints": [
-    "./src/main/index.ts",
-    "./src/main/utils.ts",
-    "./src/main/plugin/*.ts"
-  ],
+  "entryPoints": ["./src/main/index.ts", "./src/main/utils.ts", "./src/main/plugin/*.ts"],
   "compilerOptions": {
     "skipLibCheck": true
   },
@@ -84,7 +80,5 @@
     "INPUT",
     "OUTPUT"
   ],
-  "plugin": [
-    "typedoc-plugin-mdn-links"
-  ]
+  "plugin": ["typedoc-plugin-mdn-links"]
 }
