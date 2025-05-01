@@ -1,5 +1,7 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { OUTPUT } from '../../main/internal/shapes';
+import { type OUTPUT } from '../../main/shape/Shape';
+
+declare const OUTPUT: OUTPUT;
 
 expectType<never>(d.never()[OUTPUT]);

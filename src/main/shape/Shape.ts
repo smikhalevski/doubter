@@ -8,7 +8,6 @@ import {
 } from '../constants';
 import { isArray, isEqual } from '../internal/lang';
 import { defineReadonlyProperty, Dict, ReadonlyDict } from '../internal/objects';
-import type { INPUT, OUTPUT } from '../internal/shapes';
 import {
   adaptCheckResult,
   applyOperations,
@@ -45,6 +44,12 @@ import { createIssue, toIssueOptions } from '../utils';
 import { ValidationError } from '../ValidationError';
 
 export const unknownInputs = Object.freeze<unknown[]>([Type.UNKNOWN]);
+
+declare const INPUT: unique symbol;
+declare const OUTPUT: unique symbol;
+
+export type INPUT = typeof INPUT;
+export type OUTPUT = typeof OUTPUT;
 
 /**
  * Extracts the shape input type.

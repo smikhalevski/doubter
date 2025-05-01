@@ -1,6 +1,9 @@
 import { expectType } from 'tsd';
 import * as d from '../../main';
-import { INPUT, OUTPUT } from '../../main/internal/shapes';
+import { type INPUT, type OUTPUT } from '../../main/shape/Shape';
+
+declare const INPUT: INPUT;
+declare const OUTPUT: OUTPUT;
 
 expectType<111 | 'aaa'>(d.enum([111, 'aaa'])[OUTPUT]);
 

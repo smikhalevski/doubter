@@ -1,6 +1,9 @@
 import { expectNotAssignable, expectType } from 'tsd';
 import * as d from '../../main';
-import { INPUT, OUTPUT } from '../../main/internal/shapes';
+import { type INPUT, type OUTPUT } from '../../main/shape/Shape';
+
+declare const INPUT: INPUT;
+declare const OUTPUT: OUTPUT;
 
 expectType<Set<string | number>>(d.set(d.or([d.string(), d.number()]))[OUTPUT]);
 

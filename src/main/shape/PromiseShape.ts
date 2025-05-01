@@ -1,11 +1,11 @@
 import { NEVER } from '../coerce/never';
 import { CODE_TYPE_PROMISE, MESSAGE_TYPE_PROMISE } from '../constants';
 import { isArray } from '../internal/lang';
-import { applyShape, INPUT, OUTPUT, Promisify, toDeepPartialShape } from '../internal/shapes';
+import { applyShape, Promisify, toDeepPartialShape } from '../internal/shapes';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
-import { AnyShape, DeepPartialProtocol, OptionalDeepPartialShape, Shape, unknownInputs } from './Shape';
+import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Shape, unknownInputs } from './Shape';
 
 const promiseInputs = Object.freeze<unknown[]>([Type.PROMISE]);
 

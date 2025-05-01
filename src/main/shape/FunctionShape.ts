@@ -1,21 +1,11 @@
 import { CODE_TYPE_FUNCTION, ERROR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants';
 import { isArray } from '../internal/lang';
-import {
-  applyShape,
-  Awaitable,
-  copyOperations,
-  INPUT,
-  nextNonce,
-  ok,
-  OUTPUT,
-  Promisify,
-  unshiftIssuesPath,
-} from '../internal/shapes';
+import { applyShape, Awaitable, copyOperations, nextNonce, ok, Promisify, unshiftIssuesPath } from '../internal/shapes';
 import { Type } from '../Type';
 import { IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { ValidationError } from '../ValidationError';
-import { AnyShape, Input, Output, Shape } from './Shape';
+import { AnyShape, INPUT, Input, OUTPUT, Output, Shape } from './Shape';
 
 const functionInputs = Object.freeze<unknown[]>([Type.FUNCTION]);
 

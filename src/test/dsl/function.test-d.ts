@@ -1,6 +1,9 @@
 import { expectNotType, expectType } from 'tsd';
 import * as d from '../../main';
-import { INPUT, OUTPUT } from '../../main/internal/shapes';
+import { type INPUT, type OUTPUT } from '../../main/shape/Shape';
+
+declare const INPUT: INPUT;
+declare const OUTPUT: OUTPUT;
 
 // Alias
 

@@ -30,10 +30,9 @@ import {
 } from '../constants';
 import { isPlainObject } from '../internal/lang';
 import { ReadonlyDict } from '../internal/objects';
-import { OUTPUT } from '../internal/shapes';
 import { ObjectShape } from '../shape/ObjectShape';
 import { RecordShape } from '../shape/RecordShape';
-import { AnyShape, Shape } from '../shape/Shape';
+import { AnyShape, OUTPUT, Shape } from '../shape/Shape';
 import { IssueOptions, Message } from '../types';
 import { createIssue } from '../utils';
 

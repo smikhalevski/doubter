@@ -16,12 +16,6 @@ export type Promisify<T> = Promise<Awaited<T>>;
 
 export type Awaitable<T> = Awaited<T> extends T ? Promise<T> | T : T;
 
-export declare const INPUT: unique symbol;
-export declare const OUTPUT: unique symbol;
-
-export type INPUT = typeof INPUT;
-export type OUTPUT = typeof OUTPUT;
-
 /**
  * Nonce is required to distinguish parallel invocations of async parsing.
  */

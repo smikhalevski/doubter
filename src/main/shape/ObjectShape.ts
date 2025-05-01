@@ -6,9 +6,7 @@ import {
   applyShape,
   concatIssues,
   copyOperations,
-  INPUT,
   isAsyncShapes,
-  OUTPUT,
   toDeepPartialShape,
   unshiftIssuesPath,
 } from '../internal/shapes';
@@ -17,7 +15,16 @@ import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
 import { createIssue } from '../utils';
 import { EnumShape } from './EnumShape';
 import { ReadonlyShape } from './ReadonlyShape';
-import { AllowShape, AnyShape, DeepPartialProtocol, DenyShape, OptionalDeepPartialShape, Shape } from './Shape';
+import {
+  AllowShape,
+  AnyShape,
+  DeepPartialProtocol,
+  DenyShape,
+  INPUT,
+  OptionalDeepPartialShape,
+  OUTPUT,
+  Shape,
+} from './Shape';
 
 const objectInputs = Object.freeze<unknown[]>([Type.OBJECT]);
 
