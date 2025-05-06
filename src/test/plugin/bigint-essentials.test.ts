@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { BigIntShape } from '../../main';
 import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../../main/constants';
 

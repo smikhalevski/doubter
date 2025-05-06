@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { NEVER } from '../../main';
 import { coerceToBigInt } from '../../main/coerce/bigint';
 

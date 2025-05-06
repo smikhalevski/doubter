@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { NEVER } from '../../main';
 import { coerceToString } from '../../main/coerce/string';
 

@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test } from 'vitest';
 import { ArrayShape, Err, NumberShape, ObjectShape, Ok, StringShape } from '../../main';
 import {
   CODE_TYPE_ARRAY,

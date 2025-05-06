@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import qs from 'qs';
 import * as d from '../main';
 import { Result } from '../main';
@@ -19,6 +20,8 @@ describe('Cookbook', () => {
   });
 
   test('Type-safe env variables', () => {
+    const processEnv = { NODE_ENV: 'test' };
+
     const envShape = d
       .object({
         NODE_ENV: d.enum(['test', 'production']),
@@ -26,7 +29,7 @@ describe('Cookbook', () => {
       })
       .strip();
 
-    expect(envShape.parse(process.env)).toEqual({
+    expect(envShape.parse(processEnv)).toEqual({
       NODE_ENV: 'test',
     });
 

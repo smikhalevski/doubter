@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { getCanonicalValue, isEqual, isEqualOrSubclass, isIterableObject, isValidDate } from '../../main/internal/lang';
 
 describe('isEqual', () => {

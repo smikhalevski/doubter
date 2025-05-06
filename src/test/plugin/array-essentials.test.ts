@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { ArrayShape, ConstShape, Shape } from '../../main';
 import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN, MESSAGE_ARRAY_INCLUDES } from '../../main/constants';
 

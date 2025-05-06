@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { SetShape, Shape } from '../../main';
 import { CODE_SET_MAX, CODE_SET_MIN } from '../../main/constants';
 

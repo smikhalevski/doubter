@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   DeepPartialProtocol,
   LazyShape,
@@ -29,7 +30,7 @@ describe('LazyShape', () => {
   });
 
   test('applies operations to converted value', () => {
-    const cbMock = jest.fn(() => [{ code: 'xxx' }]);
+    const cbMock = vi.fn(() => [{ code: 'xxx' }]);
 
     const providedShape = new StringShape().convert(parseFloat);
     const shape = new LazyShape(() => providedShape, identity).check(cbMock);
@@ -54,7 +55,7 @@ describe('LazyShape', () => {
 
   test('shape provider is called only once', () => {
     const providedShape = new NumberShape();
-    const shapeProviderMock = jest.fn(() => providedShape);
+    const shapeProviderMock = vi.fn(() => providedShape);
 
     const shape1: LazyShape<any, any> = new LazyShape(shapeProviderMock, identity);
     const shape2 = shape1.check(() => null);
@@ -131,7 +132,7 @@ describe('LazyShape', () => {
         }
       }
 
-      const shapeProviderMock = jest.fn(() => new DeepPartialAwareMockShape());
+      const shapeProviderMock = vi.fn(() => new DeepPartialAwareMockShape());
 
       const shape = new LazyShape(shapeProviderMock, identity).deepPartial();
 
@@ -216,7 +217,7 @@ describe('LazyShape', () => {
     });
 
     test('nested parse invocations are separated by nonce', () => {
-      const cbMock = jest.fn();
+      const cbMock = vi.fn();
 
       const shape: LazyShape<any, any> = new LazyShape(
         () =>

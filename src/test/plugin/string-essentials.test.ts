@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { StringShape } from '../../main';
 import {
   CODE_STRING_ENDS_WITH,

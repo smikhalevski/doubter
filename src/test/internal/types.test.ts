@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest';
 import { distributeTypes, unionTypes } from '../../main/internal/types';
 import { Type } from '../../main/Type';
 

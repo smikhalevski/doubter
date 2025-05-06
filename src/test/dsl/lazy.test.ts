@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import * as d from '../../main';
 import { AsyncMockShape } from '../shape/mocks';
 

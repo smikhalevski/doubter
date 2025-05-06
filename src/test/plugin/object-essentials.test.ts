@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { ObjectShape } from '../../main';
 import {
   CODE_OBJECT_ALL_KEYS,

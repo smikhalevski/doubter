@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { EnumShape } from '../../main';
 import { CODE_TYPE_ENUM } from '../../main/constants';
 import { getEnumValues } from '../../main/shape/EnumShape';

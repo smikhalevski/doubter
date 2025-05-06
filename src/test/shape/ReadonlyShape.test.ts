@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { ReadonlyShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../../main/constants';
 

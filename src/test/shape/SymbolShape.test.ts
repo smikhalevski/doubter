@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { SymbolShape } from '../../main';
 import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../../main/constants';
 import { Type } from '../../main/Type';

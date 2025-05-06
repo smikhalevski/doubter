@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { toArrayIndex, unique } from '../../main/internal/arrays';
 
 describe('unique', () => {

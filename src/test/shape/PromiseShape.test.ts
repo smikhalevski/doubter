@@ -1,3 +1,4 @@
+import { describe, expect, test, vi } from 'vitest';
 import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE_PROMISE, CODE_TYPE_STRING, MESSAGE_TYPE_PROMISE, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { Type } from '../../main/Type';
@@ -29,7 +30,7 @@ describe('PromiseShape', () => {
   });
 
   test('applies operations', () => {
-    const cbMock = jest.fn(() => [{ code: 'xxx' }]);
+    const cbMock = vi.fn(() => [{ code: 'xxx' }]);
 
     const input = Promise.resolve('aaa');
     const shape = new PromiseShape(null).check(cbMock);
@@ -113,7 +114,7 @@ describe('PromiseShape', () => {
     });
 
     test('applies operations', async () => {
-      const checkMock = jest.fn(() => [{ code: 'xxx' }]);
+      const checkMock = vi.fn(() => [{ code: 'xxx' }]);
 
       const input = Promise.resolve('aaa');
       const shape = new PromiseShape(new Shape()).check(checkMock);

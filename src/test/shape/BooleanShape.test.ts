@@ -1,3 +1,4 @@
+import { describe, expect, test, vi } from 'vitest';
 import { BooleanShape } from '../../main';
 import { booleanCoercibleInputs } from '../../main/coerce/boolean';
 import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../../main/constants';
@@ -51,7 +52,7 @@ describe('BooleanShape', () => {
 
   describe('async', () => {
     test('invokes async check', async () => {
-      const checkMock = jest.fn(() => Promise.resolve([{ code: 'xxx' }]));
+      const checkMock = vi.fn(() => Promise.resolve([{ code: 'xxx' }]));
 
       const shape = new BooleanShape().checkAsync(checkMock);
 

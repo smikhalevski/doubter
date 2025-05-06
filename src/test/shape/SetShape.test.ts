@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE_SET, CODE_TYPE_STRING, MESSAGE_TYPE_SET, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { resetNonce } from '../../main/internal/shapes';
@@ -71,7 +72,7 @@ describe('SetShape', () => {
   });
 
   test('returns a new set if some values were converted', () => {
-    const cbMock = jest.fn().mockReturnValueOnce('aaa').mockReturnValueOnce('bbb');
+    const cbMock = vi.fn().mockReturnValueOnce('aaa').mockReturnValueOnce('bbb');
 
     const valueShape = new Shape().convert(cbMock);
 
@@ -199,7 +200,7 @@ describe('SetShape', () => {
     });
 
     test('does not apply value shape if the previous value raised an issue in an early-return mode', async () => {
-      const cbMock = jest
+      const cbMock = vi
         .fn()
         .mockReturnValueOnce(undefined)
         .mockReturnValueOnce([{ code: 'xxx' }]);
@@ -218,7 +219,7 @@ describe('SetShape', () => {
     });
 
     test('returns a new set if some values were converted', async () => {
-      const cbMock = jest.fn();
+      const cbMock = vi.fn();
       cbMock.mockReturnValueOnce(Promise.resolve('aaa'));
       cbMock.mockReturnValueOnce(Promise.resolve('bbb'));
 

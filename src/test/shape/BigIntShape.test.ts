@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { BigIntShape } from '../../main';
 import { bigintCoercibleInputs } from '../../main/coerce/bigint';
 import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../../main/constants';

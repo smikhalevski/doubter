@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import * as d from '../../main';
 import { ArrayShape, StringShape } from '../../main';
 import { CODE_TYPE_FUNCTION } from '../../main/constants';

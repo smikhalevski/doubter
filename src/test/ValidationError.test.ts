@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { ValidationError } from '../main';
 
 describe('ValidationError', () => {

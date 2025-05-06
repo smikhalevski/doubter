@@ -1,3 +1,4 @@
+import { describe, expect, test, vi } from 'vitest';
 import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
 import { CODE_TYPE_OBJECT, CODE_TYPE_STRING, MESSAGE_TYPE_OBJECT, MESSAGE_TYPE_STRING } from '../../main/constants';
 import { anyKeyShape } from '../../main/shape/RecordShape';
@@ -272,7 +273,7 @@ describe('RecordShape', () => {
     });
 
     test('does not swallow errors thrown by key shape', async () => {
-      const keyCheck = jest
+      const keyCheck = vi
         .fn()
         .mockImplementationOnce(value => value)
         .mockImplementationOnce(() => {

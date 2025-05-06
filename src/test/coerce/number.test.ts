@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { NEVER } from '../../main';
 import { coerceToNumber } from '../../main/coerce/number';
 

@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import { NumberShape } from '../../main';
 import {
   CODE_NUMBER_FINITE,
