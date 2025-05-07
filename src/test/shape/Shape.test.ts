@@ -14,7 +14,7 @@ import {
   Shape,
   StringShape,
   ValidationError,
-} from '../../main';
+} from '../../main/index.ts';
 import {
   CODE_ANY_DENY,
   CODE_ANY_EXCLUDE,
@@ -24,10 +24,10 @@ import {
   MESSAGE_ANY_EXCLUDE,
   MESSAGE_ANY_REFINE,
   MESSAGE_TYPE_STRING,
-} from '../../main/constants';
-import { resetNonce } from '../../main/internal/shapes';
-import { Type } from '../../main/Type';
-import { AsyncMockShape, MockShape } from './mocks';
+} from '../../main/constants.ts';
+import { resetNonce } from '../../main/internal/shapes.ts';
+import { Type } from '../../main/Type.ts';
+import { AsyncMockShape, MockShape } from './mocks.ts';
 
 beforeEach(() => {
   resetNonce();

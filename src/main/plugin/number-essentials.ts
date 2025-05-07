@@ -26,10 +26,10 @@ import {
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
-} from '../constants';
-import { NumberShape } from '../shape/NumberShape';
-import { IssueOptions, Message } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+} from '../constants.ts';
+import { NumberShape } from '../shape/NumberShape.ts';
+import { IssueOptions, Message } from '../types.ts';
+import { createIssue, toIssueOptions } from '../utils.ts';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**

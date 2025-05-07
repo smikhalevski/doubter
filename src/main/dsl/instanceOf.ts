@@ -1,5 +1,5 @@
-import { InstanceShape } from '../shape/InstanceShape';
-import { IssueOptions, Message } from '../types';
+import { InstanceShape } from '../shape/InstanceShape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the class instance shape.

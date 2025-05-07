@@ -1,10 +1,10 @@
-import { NEVER } from '../coerce/never';
-import { coerceToNumber, numberCoercibleInputs } from '../coerce/number';
-import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants';
-import { Type } from '../Type';
-import { Any, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { AllowShape, ReplaceShape, Shape } from './Shape';
+import { NEVER } from '../coerce/never.ts';
+import { coerceToNumber, numberCoercibleInputs } from '../coerce/number.ts';
+import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants.ts';
+import { Type } from '../Type.ts';
+import { Any, IssueOptions, Message, ParseOptions, Result } from '../types.ts';
+import { createIssue } from '../utils.ts';
+import { AllowShape, ReplaceShape, Shape } from './Shape.ts';
 
 const numberInputs = Object.freeze<unknown[]>([Type.NUMBER]);
 

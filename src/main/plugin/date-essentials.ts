@@ -11,11 +11,11 @@
  * @module plugin/date-essentials
  */
 
-import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants';
-import { DateShape } from '../shape/DateShape';
-import { Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
-import { createIssue } from '../utils';
+import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants.ts';
+import { DateShape } from '../shape/DateShape.ts';
+import { Shape } from '../shape/Shape.ts';
+import { IssueOptions, Message } from '../types.ts';
+import { createIssue } from '../utils.ts';
 
 declare module '../core' {
   export interface DateShape {

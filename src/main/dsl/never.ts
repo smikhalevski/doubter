@@ -1,5 +1,5 @@
-import { NeverShape } from '../shape/NeverShape';
-import { IssueOptions, Message } from '../types';
+import { NeverShape } from '../shape/NeverShape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the shape that always raises an issue.

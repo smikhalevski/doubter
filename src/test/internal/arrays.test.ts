@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { toArrayIndex, unique } from '../../main/internal/arrays';
+import { toArrayIndex, unique } from '../../main/internal/arrays.ts';
 
 describe('unique', () => {
   test('returns an array as is', () => {

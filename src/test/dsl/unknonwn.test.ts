@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import * as d from '../../main';
+import * as d from '../../main/index.ts';
 
 describe('unknown', () => {
   test('returns a shape', () => {

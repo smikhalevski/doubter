@@ -1,11 +1,11 @@
-import { getCanonicalValue, isArray, isEqual } from '../internal/lang';
-import { Type } from '../Type';
-import { bigintCoercibleInputs, coerceToBigInt } from './bigint';
-import { booleanCoercibleInputs, coerceToBoolean } from './boolean';
-import { coerceToDate, dateCoercibleInputs } from './date';
-import { NEVER } from './never';
-import { coerceToNumber, numberCoercibleInputs } from './number';
-import { coerceToString, stringCoercibleInputs } from './string';
+import { getCanonicalValue, isArray, isEqual } from '../internal/lang.ts';
+import { Type } from '../Type.ts';
+import { bigintCoercibleInputs, coerceToBigInt } from './bigint.ts';
+import { booleanCoercibleInputs, coerceToBoolean } from './boolean.ts';
+import { coerceToDate, dateCoercibleInputs } from './date.ts';
+import { NEVER } from './never.ts';
+import { coerceToNumber, numberCoercibleInputs } from './number.ts';
+import { coerceToString, stringCoercibleInputs } from './string.ts';
 
 /**
  * The array of inputs that are coercible to `NaN` with {@link coerceToConst}.

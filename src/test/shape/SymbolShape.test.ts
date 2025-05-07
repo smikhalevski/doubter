@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { SymbolShape } from '../../main';
-import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { SymbolShape } from '../../main/index.ts';
+import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../../main/constants.ts';
+import { Type } from '../../main/Type.ts';
 
 describe('SymbolShape', () => {
   test('creates a SymbolShape', () => {

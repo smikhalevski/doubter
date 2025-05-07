@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
-import { distributeTypes, unionTypes } from '../../main/internal/types';
-import { Type } from '../../main/Type';
+import { distributeTypes, unionTypes } from '../../main/internal/types.ts';
+import { Type } from '../../main/Type.ts';
 
 test('unionTypes', () => {
   expect(unionTypes([])).toEqual([]);

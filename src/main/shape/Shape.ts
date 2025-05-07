@@ -5,9 +5,9 @@ import {
   MESSAGE_ANY_DENY,
   MESSAGE_ANY_EXCLUDE,
   MESSAGE_ANY_REFINE,
-} from '../constants';
-import { isArray, isEqual } from '../internal/lang';
-import { defineReadonlyProperty, Dict, ReadonlyDict } from '../internal/objects';
+} from '../constants.ts';
+import { isArray, isEqual } from '../internal/lang.ts';
+import { defineReadonlyProperty, Dict, ReadonlyDict } from '../internal/objects.ts';
 import {
   adaptCheckResult,
   applyOperations,
@@ -19,9 +19,9 @@ import {
   Promisify,
   throwSyncUnsupported,
   toDeepPartialShape,
-} from '../internal/shapes';
-import { isType, unionTypes } from '../internal/types';
-import { Type } from '../Type';
+} from '../internal/shapes.ts';
+import { isType, unionTypes } from '../internal/types.ts';
+import { Type } from '../Type.ts';
 import {
   Any,
   CheckResult,
@@ -39,9 +39,9 @@ import {
   RefineOptions,
   RefinePredicate,
   Result,
-} from '../types';
-import { createIssue, toIssueOptions } from '../utils';
-import { ValidationError } from '../ValidationError';
+} from '../types.ts';
+import { createIssue, toIssueOptions } from '../utils.ts';
+import { ValidationError } from '../ValidationError.ts';
 
 export const unknownInputs = Object.freeze<unknown[]>([Type.UNKNOWN]);
 

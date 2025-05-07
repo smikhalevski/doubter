@@ -1,13 +1,13 @@
-import { coerceToConst, getConstCoercibleInputs } from '../coerce/const';
-import { NEVER } from '../coerce/never';
-import { CODE_TYPE_ENUM, MESSAGE_TYPE_ENUM } from '../constants';
-import { unique } from '../internal/arrays';
-import { getCanonicalValue, isArray } from '../internal/lang';
-import { ReadonlyDict } from '../internal/objects';
-import { Type } from '../Type';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { Shape } from './Shape';
+import { coerceToConst, getConstCoercibleInputs } from '../coerce/const.ts';
+import { NEVER } from '../coerce/never.ts';
+import { CODE_TYPE_ENUM, MESSAGE_TYPE_ENUM } from '../constants.ts';
+import { unique } from '../internal/arrays.ts';
+import { getCanonicalValue, isArray } from '../internal/lang.ts';
+import { ReadonlyDict } from '../internal/objects.ts';
+import { Type } from '../Type.ts';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.ts';
+import { createIssue } from '../utils.ts';
+import { Shape } from './Shape.ts';
 
 /**
  * The shape of a value enumeration.

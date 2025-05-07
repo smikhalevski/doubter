@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
-import { BooleanShape } from '../../main';
-import { booleanCoercibleInputs } from '../../main/coerce/boolean';
-import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { BooleanShape } from '../../main/index.ts';
+import { booleanCoercibleInputs } from '../../main/coerce/boolean.ts';
+import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../../main/constants.ts';
+import { Type } from '../../main/Type.ts';
 
 describe('BooleanShape', () => {
   test('creates a BooleanShape', () => {

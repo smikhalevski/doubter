@@ -8,9 +8,9 @@
  * @module utils
  */
 
-import type { Issue, IssueOptions, Message, ParseOptions } from './core';
+import type { Issue, IssueOptions, Message, ParseOptions } from './core.ts';
 
-export { inspect } from './inspect';
+export { inspect } from './inspect.ts';
 
 export function toIssueOptions<T extends IssueOptions>(options: T | Message | undefined): Partial<T> {
   return options !== null && typeof options === 'object' ? options : ({ message: options } as T);

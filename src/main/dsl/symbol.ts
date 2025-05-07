@@ -1,5 +1,5 @@
-import { SymbolShape } from '../shape/SymbolShape';
-import { IssueOptions, Message } from '../types';
+import { SymbolShape } from '../shape/SymbolShape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the symbol shape.

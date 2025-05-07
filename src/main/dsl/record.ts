@@ -1,6 +1,6 @@
-import { anyKeyShape, RecordShape } from '../shape/RecordShape';
-import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { anyKeyShape, RecordShape } from '../shape/RecordShape.ts';
+import { AnyShape, Shape } from '../shape/Shape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the shape that describes an object with string keys and values that conform the given shape.

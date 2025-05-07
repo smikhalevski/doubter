@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { SetShape, Shape } from '../../main';
-import { CODE_SET_MAX, CODE_SET_MIN } from '../../main/constants';
+import { SetShape, Shape } from '../../main/index.ts';
+import { CODE_SET_MAX, CODE_SET_MIN } from '../../main/constants.ts';
 
 describe('size', () => {
   test('checks size', () => {

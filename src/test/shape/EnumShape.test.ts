@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { EnumShape } from '../../main';
-import { CODE_TYPE_ENUM } from '../../main/constants';
-import { getEnumValues } from '../../main/shape/EnumShape';
-import { Type } from '../../main/Type';
+import { EnumShape } from '../../main/index.ts';
+import { CODE_TYPE_ENUM } from '../../main/constants.ts';
+import { getEnumValues } from '../../main/shape/EnumShape.ts';
+import { Type } from '../../main/Type.ts';
 
 enum NumberMockEnum {
   AAA,

@@ -1,6 +1,6 @@
-import { MapShape } from '../shape/MapShape';
-import { AnyShape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { MapShape } from '../shape/MapShape.ts';
+import { AnyShape } from '../shape/Shape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the {@link !Map} instance shape.

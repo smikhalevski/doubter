@@ -27,14 +27,14 @@ import {
   MESSAGE_OBJECT_OXOR_KEYS,
   MESSAGE_OBJECT_PLAIN,
   MESSAGE_OBJECT_XOR_KEYS,
-} from '../constants';
-import { isPlainObject } from '../internal/lang';
-import { ReadonlyDict } from '../internal/objects';
-import { ObjectShape } from '../shape/ObjectShape';
-import { RecordShape } from '../shape/RecordShape';
-import { AnyShape, OUTPUT, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
-import { createIssue } from '../utils';
+} from '../constants.ts';
+import { isPlainObject } from '../internal/lang.ts';
+import { ReadonlyDict } from '../internal/objects.ts';
+import { ObjectShape } from '../shape/ObjectShape.ts';
+import { RecordShape } from '../shape/RecordShape.ts';
+import { AnyShape, OUTPUT, Shape } from '../shape/Shape.ts';
+import { IssueOptions, Message } from '../types.ts';
+import { createIssue } from '../utils.ts';
 
 declare module '../core' {
   export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {

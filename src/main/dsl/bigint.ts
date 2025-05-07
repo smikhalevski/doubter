@@ -1,5 +1,5 @@
-import { BigIntShape } from '../shape/BigIntShape';
-import { IssueOptions, Message } from '../types';
+import { BigIntShape } from '../shape/BigIntShape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the bigint shape.

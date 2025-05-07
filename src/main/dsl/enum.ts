@@ -1,6 +1,6 @@
-import { ReadonlyDict } from '../internal/objects';
-import { EnumShape } from '../shape/EnumShape';
-import { Any, IssueOptions, Message } from '../types';
+import { ReadonlyDict } from '../internal/objects.ts';
+import { EnumShape } from '../shape/EnumShape.ts';
+import { Any, IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the shape that constrains input with the array of values.

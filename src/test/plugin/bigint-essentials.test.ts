@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { BigIntShape } from '../../main';
-import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../../main/constants';
+import { BigIntShape } from '../../main/index.ts';
+import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../../main/constants.ts';
 
 describe('min', () => {
   test('raises if value is not greater than or equal', () => {

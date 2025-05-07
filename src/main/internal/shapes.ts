@@ -1,8 +1,8 @@
-import { ERROR_SYNC_UNSUPPORTED } from '../constants';
-import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape';
-import { CheckResult, Issue, Ok, Operation, OperationCallback, ParseOptions, Result } from '../types';
-import { ValidationError } from '../ValidationError';
-import { isArray, isEqual, isObjectLike } from './lang';
+import { ERROR_SYNC_UNSUPPORTED } from '../constants.ts';
+import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape.ts';
+import { CheckResult, Issue, Ok, Operation, OperationCallback, ParseOptions, Result } from '../types.ts';
+import { ValidationError } from '../ValidationError.ts';
+import { isArray, isEqual, isObjectLike } from './lang.ts';
 
 // Copied to support TS prior to v4.5
 // prettier-ignore
@@ -54,7 +54,7 @@ export function isAsyncShapes(shapes: readonly AnyShape[] | null | undefined): b
 export function toDeepPartialShape<S extends AnyShape & Partial<DeepPartialProtocol<any>>>(
   shape: S
 ): DeepPartialShape<S> {
-  return typeof shape.deepPartial === 'function' ? shape.deepPartial() : shape;
+  return typeof shape.deepPartial === 'function' ? shape.deepPartial() : (shape as DeepPartialShape<S>);
 }
 
 /**

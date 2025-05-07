@@ -12,9 +12,9 @@
  * @module plugin/object-eval
  */
 
-import { cloneObject, defineReadonlyProperty, setProperty } from '../internal/objects';
-import { concatIssues, unshiftIssuesPath } from '../internal/shapes';
-import { ObjectShape } from '../shape/ObjectShape';
+import { cloneObject, defineReadonlyProperty, setProperty } from '../internal/objects.ts';
+import { concatIssues, unshiftIssuesPath } from '../internal/shapes.ts';
+import { ObjectShape } from '../shape/ObjectShape.ts';
 
 try {
   // Assert code evaluation support

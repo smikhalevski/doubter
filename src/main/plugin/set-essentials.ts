@@ -10,11 +10,11 @@
  *
  * @module plugin/set-essentials
  */
-import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants';
-import { SetShape } from '../shape/SetShape';
-import { AnyShape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
-import { createIssue } from '../utils';
+import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants.ts';
+import { SetShape } from '../shape/SetShape.ts';
+import { AnyShape } from '../shape/Shape.ts';
+import { IssueOptions, Message } from '../types.ts';
+import { createIssue } from '../utils.ts';
 
 declare module '../core' {
   export interface SetShape<ValueShape extends AnyShape> {

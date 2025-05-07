@@ -1,10 +1,10 @@
-import { booleanCoercibleInputs, coerceToBoolean } from '../coerce/boolean';
-import { NEVER } from '../coerce/never';
-import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../constants';
-import { Type } from '../Type';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { Shape } from './Shape';
+import { booleanCoercibleInputs, coerceToBoolean } from '../coerce/boolean.ts';
+import { NEVER } from '../coerce/never.ts';
+import { CODE_TYPE_BOOLEAN, MESSAGE_TYPE_BOOLEAN } from '../constants.ts';
+import { Type } from '../Type.ts';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.ts';
+import { createIssue } from '../utils.ts';
+import { Shape } from './Shape.ts';
 
 const booleanInputs = Object.freeze<unknown[]>([Type.BOOLEAN]);
 

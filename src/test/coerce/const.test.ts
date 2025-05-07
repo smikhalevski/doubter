@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { NEVER } from '../../main';
-import { coerceToConst } from '../../main/coerce/const';
+import { NEVER } from '../../main/index.ts';
+import { coerceToConst } from '../../main/coerce/const.ts';
 
 describe('coerceToConst', () => {
   test('coerces to a bigint', () => {

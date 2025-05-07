@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { BigIntShape } from '../../main';
-import { bigintCoercibleInputs } from '../../main/coerce/bigint';
-import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { BigIntShape } from '../../main/index.ts';
+import { bigintCoercibleInputs } from '../../main/coerce/bigint.ts';
+import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../../main/constants.ts';
+import { Type } from '../../main/Type.ts';
 
 describe('BigIntShape', () => {
   test('creates a BigIntShape', () => {

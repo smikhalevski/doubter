@@ -5,6 +5,7 @@
   "main": "./index.js",
   "module": "./index.mjs",
   "types": "./index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./index.d.ts",
@@ -79,7 +80,7 @@
     "./plugin/string-essentials.mjs"
   ],
   "scripts": {
-    "build": "rollup --config && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
+    "build": "tsc --project tsconfig.build.json --rewriteRelativeImportExtensions && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
     "clean": "rimraf lib docs coverage",
     "test": "vitest",
     "test:definitions": "tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",

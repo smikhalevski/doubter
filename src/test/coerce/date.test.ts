@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { coerceToDate } from '../../main/coerce/date';
-import { NEVER } from '../../main/coerce/never';
+import { coerceToDate } from '../../main/coerce/date.ts';
+import { NEVER } from '../../main/coerce/never.ts';
 
 describe('coerceToDate', () => {
   test('coerces a String object', () => {

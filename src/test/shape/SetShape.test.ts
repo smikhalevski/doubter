@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE_SET, CODE_TYPE_STRING, MESSAGE_TYPE_SET, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { resetNonce } from '../../main/internal/shapes';
-import { Type } from '../../main/Type';
-import { AsyncMockShape, MockShape } from './mocks';
+import { ObjectShape, Ok, SetShape, Shape, StringShape } from '../../main/index.ts';
+import { CODE_TYPE_SET, CODE_TYPE_STRING, MESSAGE_TYPE_SET, MESSAGE_TYPE_STRING } from '../../main/constants.ts';
+import { resetNonce } from '../../main/internal/shapes.ts';
+import { Type } from '../../main/Type.ts';
+import { AsyncMockShape, MockShape } from './mocks.ts';
 
 describe('SetShape', () => {
   beforeEach(() => {

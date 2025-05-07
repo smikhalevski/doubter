@@ -1,6 +1,6 @@
-import { ArrayShape } from '../shape/ArrayShape';
-import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { ArrayShape } from '../shape/ArrayShape.ts';
+import { AnyShape, Shape } from '../shape/Shape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the tuple shape.

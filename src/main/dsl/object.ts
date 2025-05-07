@@ -1,7 +1,7 @@
-import { ReadonlyDict } from '../internal/objects';
-import { ObjectShape } from '../shape/ObjectShape';
-import { AnyShape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { ReadonlyDict } from '../internal/objects.ts';
+import { ObjectShape } from '../shape/ObjectShape.ts';
+import { AnyShape } from '../shape/Shape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the object shape.

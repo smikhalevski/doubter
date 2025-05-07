@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { ParseOptions, Result, Shape } from '../../main/core';
+import { ParseOptions, Result, Shape } from '../../main/core.ts';
 
 export class MockShape extends Shape {
   constructor() {

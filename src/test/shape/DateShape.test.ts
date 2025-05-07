@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { DateShape } from '../../main';
-import { dateCoercibleInputs } from '../../main/coerce/date';
-import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { DateShape } from '../../main/index.ts';
+import { dateCoercibleInputs } from '../../main/coerce/date.ts';
+import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../../main/constants.ts';
+import { Type } from '../../main/Type.ts';
 
 describe('DateShape', () => {
   test('creates a DateShape', () => {

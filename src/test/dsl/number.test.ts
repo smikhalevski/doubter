@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import * as d from '../../main';
-import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../../main/constants';
+import * as d from '../../main/index.ts';
+import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../../main/constants.ts';
 
 describe('number', () => {
   test('returns a number shape', () => {

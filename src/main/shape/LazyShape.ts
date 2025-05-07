@@ -1,9 +1,9 @@
-import { ERROR_SHAPE_EXPECTED } from '../constants';
-import { identity, isArray } from '../internal/lang';
-import { defineReadonlyProperty } from '../internal/objects';
-import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes';
-import { Any, ParseOptions, Result } from '../types';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
+import { ERROR_SHAPE_EXPECTED } from '../constants.ts';
+import { identity, isArray } from '../internal/lang.ts';
+import { defineReadonlyProperty } from '../internal/objects.ts';
+import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes.ts';
+import { Any, ParseOptions, Result } from '../types.ts';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.ts';
 
 /**
  * Lazily loads a shape using the provider callback.

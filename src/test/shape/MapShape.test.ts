@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
-import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
-import { CODE_TYPE_MAP, CODE_TYPE_STRING, MESSAGE_TYPE_MAP, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { Type } from '../../main/Type';
-import { AsyncMockShape } from './mocks';
+import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main/index.ts';
+import { CODE_TYPE_MAP, CODE_TYPE_STRING, MESSAGE_TYPE_MAP, MESSAGE_TYPE_STRING } from '../../main/constants.ts';
+import { Type } from '../../main/Type.ts';
+import { AsyncMockShape } from './mocks.ts';
 
 describe('MapShape', () => {
   test('creates a MapShape', () => {

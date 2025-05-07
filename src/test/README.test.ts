@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'vitest';
 import qs from 'qs';
-import * as d from '../main';
-import { Result } from '../main';
-import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../main/constants';
-import { Type } from '../main/Type';
+import * as d from '../main/index.ts';
+import { Result } from '../main/index.ts';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../main/constants.ts';
+import { Type } from '../main/Type.ts';
 
 describe('Cookbook', () => {
   test('Type-safe URL query params', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import * as d from '../../main';
-import { Type } from '../../main/Type';
+import * as d from '../../main/index.ts';
+import { Type } from '../../main/Type.ts';
 
 describe('or', () => {
   test('returns a union shape', () => {

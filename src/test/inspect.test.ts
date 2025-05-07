@@ -1,5 +1,5 @@
 import { describe, expect, test, beforeEach } from 'vitest';
-import { inspect, isUnquotedKey } from '../main/inspect';
+import { inspect, isUnquotedKey } from '../main/inspect.ts';
 
 describe('isUnquotedKey', () => {
   test('returns true if string is an identifier', () => {

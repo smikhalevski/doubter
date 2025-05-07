@@ -1,5 +1,5 @@
-import { ConstShape } from '../shape/ConstShape';
-import { Any, IssueOptions, Message } from '../types';
+import { ConstShape } from '../shape/ConstShape.ts';
+import { Any, IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the constant value shape.

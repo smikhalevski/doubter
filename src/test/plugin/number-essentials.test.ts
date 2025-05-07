@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { NumberShape } from '../../main';
+import { NumberShape } from '../../main/index.ts';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -10,7 +10,7 @@ import {
   CODE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_INT,
-} from '../../main/constants';
+} from '../../main/constants.ts';
 
 describe('finite', () => {
   test('allows finite numbers', () => {

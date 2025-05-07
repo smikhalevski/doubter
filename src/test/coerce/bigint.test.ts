@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { NEVER } from '../../main';
-import { coerceToBigInt } from '../../main/coerce/bigint';
+import { NEVER } from '../../main/index.ts';
+import { coerceToBigInt } from '../../main/coerce/bigint.ts';
 
 describe('coerceToBigInt', () => {
   test('coerces a String object', () => {

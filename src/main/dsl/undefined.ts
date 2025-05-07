@@ -1,5 +1,5 @@
-import { ConstShape } from '../shape/ConstShape';
-import { IssueOptions, Message } from '../types';
+import { ConstShape } from '../shape/ConstShape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the shape that requires an input to be equal to `undefined`.

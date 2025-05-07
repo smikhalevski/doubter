@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import * as d from '../../main';
-import { ArrayShape, StringShape } from '../../main';
-import { CODE_TYPE_FUNCTION } from '../../main/constants';
+import * as d from '../../main/index.ts';
+import { ArrayShape, StringShape } from '../../main/index.ts';
+import { CODE_TYPE_FUNCTION } from '../../main/constants.ts';
 
 describe('function', () => {
   test('returns a function shape', () => {

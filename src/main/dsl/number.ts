@@ -1,5 +1,5 @@
-import { NumberShape } from '../shape/NumberShape';
-import { IssueOptions, Message } from '../types';
+import { NumberShape } from '../shape/NumberShape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the number shape.

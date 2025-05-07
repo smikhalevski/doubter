@@ -1,5 +1,5 @@
-import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang';
-import { NEVER } from './never';
+import { getCanonicalValue, isArray, isIterableObject, isMapEntry, isObjectLike } from '../internal/lang.ts';
+import { NEVER } from './never.ts';
 
 /**
  * Coerces a value to an array of Map entries.

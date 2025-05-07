@@ -11,10 +11,10 @@
  * @module plugin/bigint-essentials
  */
 
-import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
-import { BigIntShape } from '../shape/BigIntShape';
-import { IssueOptions, Message } from '../types';
-import { createIssue } from '../utils';
+import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants.ts';
+import { BigIntShape } from '../shape/BigIntShape.ts';
+import { IssueOptions, Message } from '../types.ts';
+import { createIssue } from '../utils.ts';
 
 declare module '../core' {
   export interface BigIntShape {

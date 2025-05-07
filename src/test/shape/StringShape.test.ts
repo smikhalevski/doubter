@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { StringShape } from '../../main';
-import { stringCoercibleInputs } from '../../main/coerce/string';
-import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { StringShape } from '../../main/index.ts';
+import { stringCoercibleInputs } from '../../main/coerce/string.ts';
+import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../../main/constants.ts';
+import { Type } from '../../main/Type.ts';
 
 describe('StringShape', () => {
   test('creates a string shape', () => {

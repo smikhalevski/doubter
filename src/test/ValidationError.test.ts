@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { ValidationError } from '../main';
+import { ValidationError } from '../main/index.ts';
 
 describe('ValidationError', () => {
   test('creates message from issues', () => {

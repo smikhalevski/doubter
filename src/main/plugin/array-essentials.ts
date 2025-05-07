@@ -18,11 +18,11 @@ import {
   MESSAGE_ARRAY_INCLUDES,
   MESSAGE_ARRAY_MAX,
   MESSAGE_ARRAY_MIN,
-} from '../constants';
-import { ArrayShape } from '../shape/ArrayShape';
-import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
+} from '../constants.ts';
+import { ArrayShape } from '../shape/ArrayShape.ts';
+import { AnyShape, Shape } from '../shape/Shape.ts';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.ts';
+import { createIssue } from '../utils.ts';
 
 declare module '../core' {
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {

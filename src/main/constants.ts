@@ -1,5 +1,5 @@
-import { inspect } from './inspect';
-import type { Issue, Message } from './types';
+import { inspect } from './inspect.ts';
+import type { Issue, Message } from './types.ts';
 
 export const ERROR_SYNC_UNSUPPORTED = 'Shape is async, use tryAsync, parseAsync, or parseOrDefaultAsync.';
 export const ERROR_SHAPE_EXPECTED = 'Provider must return a shape. Are you accessing a lazy shape prematurely?';

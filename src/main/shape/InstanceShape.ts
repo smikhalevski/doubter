@@ -1,9 +1,9 @@
-import { CODE_TYPE_INSTANCE_OF, MESSAGE_TYPE_INSTANCE_OF } from '../constants';
-import { isEqualOrSubclass } from '../internal/lang';
-import { Type } from '../Type';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { Shape } from './Shape';
+import { CODE_TYPE_INSTANCE_OF, MESSAGE_TYPE_INSTANCE_OF } from '../constants.ts';
+import { isEqualOrSubclass } from '../internal/lang.ts';
+import { Type } from '../Type.ts';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.ts';
+import { createIssue } from '../utils.ts';
+import { Shape } from './Shape.ts';
 
 const arrayInputs = Object.freeze<unknown[]>([Type.ARRAY]);
 const dateInputs = Object.freeze<unknown[]>([Type.DATE]);

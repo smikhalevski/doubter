@@ -1,13 +1,13 @@
-import { NEVER } from '../coerce/never';
-import { CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION } from '../constants';
-import { isArray, isEqual } from '../internal/lang';
-import { setProperty } from '../internal/objects';
-import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
-import { distributeTypes } from '../internal/types';
-import { Type } from '../Type';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
+import { NEVER } from '../coerce/never.ts';
+import { CODE_TYPE_INTERSECTION, MESSAGE_TYPE_INTERSECTION } from '../constants.ts';
+import { isArray, isEqual } from '../internal/lang.ts';
+import { setProperty } from '../internal/objects.ts';
+import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape } from '../internal/shapes.ts';
+import { distributeTypes } from '../internal/types.ts';
+import { Type } from '../Type.ts';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.ts';
+import { createIssue } from '../utils.ts';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.ts';
 
 /**
  * Converts union to intersection.

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { NEVER } from '../../main';
-import { coerceToNumber } from '../../main/coerce/number';
+import { NEVER } from '../../main/index.ts';
+import { coerceToNumber } from '../../main/coerce/number.ts';
 
 describe('coerceToNumber', () => {
   test('coerces a Number object', () => {

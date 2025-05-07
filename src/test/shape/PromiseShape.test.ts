@@ -1,8 +1,13 @@
 import { describe, expect, test, vi } from 'vitest';
-import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE_PROMISE, CODE_TYPE_STRING, MESSAGE_TYPE_PROMISE, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { Type } from '../../main/Type';
-import { AsyncMockShape } from './mocks';
+import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main/index.ts';
+import {
+  CODE_TYPE_PROMISE,
+  CODE_TYPE_STRING,
+  MESSAGE_TYPE_PROMISE,
+  MESSAGE_TYPE_STRING,
+} from '../../main/constants.ts';
+import { Type } from '../../main/Type.ts';
+import { AsyncMockShape } from './mocks.ts';
 
 describe('PromiseShape', () => {
   test('creates a PromiseShape', () => {

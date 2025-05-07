@@ -1,5 +1,5 @@
-import { AnyShape, Shape } from '../shape/Shape';
-import { Message, ParseOptions, RefineOptions } from '../types';
+import { AnyShape, Shape } from '../shape/Shape.ts';
+import { Message, ParseOptions, RefineOptions } from '../types.ts';
 
 /**
  * Creates the unconstrained shape.

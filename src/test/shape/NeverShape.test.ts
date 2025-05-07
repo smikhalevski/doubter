@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { NeverShape } from '../../main';
-import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../../main/constants';
+import { NeverShape } from '../../main/index.ts';
+import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../../main/constants.ts';
 
 describe('NeverShape', () => {
   test('has empty inputs', () => {

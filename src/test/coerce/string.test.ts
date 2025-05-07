@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { NEVER } from '../../main';
-import { coerceToString } from '../../main/coerce/string';
+import { NEVER } from '../../main/index.ts';
+import { coerceToString } from '../../main/coerce/string.ts';
 
 describe('coerceToString', () => {
   test('returns a string as is', () => {

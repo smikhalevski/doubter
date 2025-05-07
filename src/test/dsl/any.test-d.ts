@@ -1,6 +1,6 @@
 import { expectNotType, expectType } from 'tsd';
-import * as d from '../../main';
-import { type INPUT, type OUTPUT } from '../../main/shape/Shape';
+import * as d from '../../main/index.ts';
+import { type INPUT, type OUTPUT } from '../../main/shape/Shape.ts';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;

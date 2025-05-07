@@ -1,6 +1,6 @@
-import { getCanonicalValue, isArray } from '../internal/lang';
-import { Type } from '../Type';
-import { NEVER } from './never';
+import { getCanonicalValue, isArray } from '../internal/lang.ts';
+import { Type } from '../Type.ts';
+import { NEVER } from './never.ts';
 
 /**
  * The array of inputs that are coercible to a number with {@link coerceToNumber}.

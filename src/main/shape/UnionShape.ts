@@ -1,14 +1,14 @@
-import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants';
-import { unique } from '../internal/arrays';
-import { isArray, isObject } from '../internal/lang';
-import { defineReadonlyProperty, ReadonlyDict } from '../internal/objects';
-import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes';
-import { isType } from '../internal/types';
-import { Type } from '../Type';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { ObjectShape } from './ObjectShape';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants.ts';
+import { unique } from '../internal/arrays.ts';
+import { isArray, isObject } from '../internal/lang.ts';
+import { defineReadonlyProperty, ReadonlyDict } from '../internal/objects.ts';
+import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes.ts';
+import { isType } from '../internal/types.ts';
+import { Type } from '../Type.ts';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.ts';
+import { createIssue } from '../utils.ts';
+import { ObjectShape } from './ObjectShape.ts';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.ts';
 
 type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;

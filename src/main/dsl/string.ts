@@ -1,5 +1,5 @@
-import { StringShape } from '../shape/StringShape';
-import { IssueOptions, Message } from '../types';
+import { StringShape } from '../shape/StringShape.ts';
+import { IssueOptions, Message } from '../types.ts';
 
 /**
  * Creates the string shape.

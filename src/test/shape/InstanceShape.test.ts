@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { InstanceShape } from '../../main';
-import { CODE_TYPE_INSTANCE_OF } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { InstanceShape } from '../../main/index.ts';
+import { CODE_TYPE_INSTANCE_OF } from '../../main/constants.ts';
+import { Type } from '../../main/Type.ts';
 
 describe('InstanceShape', () => {
   class TestClass {}

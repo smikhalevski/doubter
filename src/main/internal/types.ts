@@ -1,5 +1,5 @@
-import { Type } from '../Type';
-import { isEqual } from './lang';
+import { Type } from '../Type.ts';
+import { isEqual } from './lang.ts';
 
 export function isType(value: unknown): value is Type {
   return value instanceof Type;
