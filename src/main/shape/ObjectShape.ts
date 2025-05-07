@@ -138,7 +138,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
      *
      * <dl>
      *   <dt>"preserved"</dt>
-     *   <dd>Unknown object keys are preserved as-is or checked with {@link restShape}.</dd>
+     *   <dd>Unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape}.</dd>
      *   <dt>"stripped"</dt>
      *   <dd>The input object is cloned and unknown keys are removed from it.</dd>
      *   <dt>"exact"</dt>
@@ -551,7 +551,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   /**
-   * Unknown keys are either parsed with a {@link restShape}, stripped, or cause an issue.
+   * Unknown keys are either parsed with a {@link ObjectShape.restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ParseOptions, nonce: number): Result {
     const { keys, keysMode, restShape, operations, valueShapes } = this;

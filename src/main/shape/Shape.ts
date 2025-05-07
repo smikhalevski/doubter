@@ -1365,7 +1365,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
      */
     readonly inputValue: InputValue,
     /**
-     * The output value that is returned if an {@link inputValue} is received.
+     * The output value that is returned if an {@link ReplaceShape.inputValue} is received.
      */
     readonly outputValue: OutputValue
   ) {

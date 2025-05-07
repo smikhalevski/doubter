@@ -80,7 +80,7 @@
     "./plugin/string-essentials.mjs"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
+    "build": "tsc --project tsconfig.build.json && node rewrite.mjs lib && tsc --project tsconfig.build.json --module CommonJS && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
     "clean": "rimraf lib docs coverage",
     "test": "vitest run",
     "test:definitions": "tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",
