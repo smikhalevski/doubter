@@ -1,6 +1,6 @@
-import { SetShape } from '../shape/SetShape.ts';
-import { AnyShape } from '../shape/Shape.ts';
-import { IssueOptions, Message } from '../types.ts';
+import { SetShape } from '../shape/SetShape.js';
+import { AnyShape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the {@link !Set} instance shape.

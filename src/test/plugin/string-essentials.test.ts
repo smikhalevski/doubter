@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { StringShape } from '../../main/index.ts';
+import { StringShape } from '../../main/index.js';
 import {
   CODE_STRING_ENDS_WITH,
   CODE_STRING_INCLUDES,
@@ -9,7 +9,7 @@ import {
   CODE_STRING_REGEX,
   CODE_STRING_STARTS_WITH,
   MESSAGE_STRING_NON_BLANK,
-} from '../../main/constants.ts';
+} from '../../main/constants.js';
 
 describe('length', () => {
   test('raises if string length is not equal to', () => {

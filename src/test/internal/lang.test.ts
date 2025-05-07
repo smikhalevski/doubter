@@ -5,7 +5,7 @@ import {
   isEqualOrSubclass,
   isIterableObject,
   isValidDate,
-} from '../../main/internal/lang.ts';
+} from '../../main/internal/lang.js';
 
 describe('isEqual', () => {
   test('checks equality', () => {

@@ -1,4 +1,4 @@
-import { isArray } from './internal/lang.ts';
+import { isArray } from './internal/lang.js';
 
 /**
  * Returns human-readable stringified value representation.

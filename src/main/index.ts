@@ -17,12 +17,12 @@ import './plugin/object-eval';
 import './plugin/set-essentials';
 import './plugin/string-essentials';
 
-export type * from './plugin/array-essentials.ts';
-export type * from './plugin/bigint-essentials.ts';
-export type * from './plugin/date-essentials.ts';
-export type * from './plugin/number-essentials.ts';
-export type * from './plugin/object-essentials.ts';
-export type * from './plugin/set-essentials.ts';
-export type * from './plugin/string-essentials.ts';
+export type * from './plugin/array-essentials.js';
+export type * from './plugin/bigint-essentials.js';
+export type * from './plugin/date-essentials.js';
+export type * from './plugin/number-essentials.js';
+export type * from './plugin/object-essentials.js';
+export type * from './plugin/set-essentials.js';
+export type * from './plugin/string-essentials.js';
 
-export * from './core.ts';
+export * from './core.js';

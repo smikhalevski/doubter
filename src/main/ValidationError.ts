@@ -1,5 +1,5 @@
-import { inspect } from './inspect.ts';
-import { Issue } from './types.ts';
+import { inspect } from './inspect.js';
+import { Issue } from './types.js';
 
 /**
  * An error thrown if parsing failed. Custom check callbacks, refinement predicates, converters, and fallback

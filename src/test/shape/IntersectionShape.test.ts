@@ -12,7 +12,7 @@ import {
   Shape,
   StringShape,
   UnionShape,
-} from '../../main/index.ts';
+} from '../../main/index.js';
 import {
   CODE_TYPE_BOOLEAN,
   CODE_TYPE_INTERSECTION,
@@ -20,10 +20,10 @@ import {
   MESSAGE_TYPE_BOOLEAN,
   MESSAGE_TYPE_INTERSECTION,
   MESSAGE_TYPE_NUMBER,
-} from '../../main/constants.ts';
-import { mergeValues } from '../../main/shape/IntersectionShape.ts';
-import { Type } from '../../main/Type.ts';
-import { AsyncMockShape } from './mocks.ts';
+} from '../../main/constants.js';
+import { mergeValues } from '../../main/shape/IntersectionShape.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape } from './mocks.js';
 
 describe('IntersectionShape', () => {
   test('returns the input as is if it matches all intersected shapes', () => {

@@ -1,5 +1,5 @@
-import { CODE_TYPE_FUNCTION, ERROR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants.ts';
-import { isArray } from '../internal/lang.ts';
+import { CODE_TYPE_FUNCTION, ERROR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants.js';
+import { isArray } from '../internal/lang.js';
 import {
   applyShape,
   Awaitable,
@@ -8,12 +8,12 @@ import {
   ok,
   Promisify,
   unshiftIssuesPath,
-} from '../internal/shapes.ts';
-import { Type } from '../Type.ts';
-import { IssueOptions, Message, ParseOptions, Result } from '../types.ts';
-import { createIssue } from '../utils.ts';
-import { ValidationError } from '../ValidationError.ts';
-import { AnyShape, INPUT, Input, OUTPUT, Output, Shape } from './Shape.ts';
+} from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { ValidationError } from '../ValidationError.js';
+import { AnyShape, INPUT, Input, OUTPUT, Output, Shape } from './Shape.js';
 
 const functionInputs = Object.freeze<unknown[]>([Type.FUNCTION]);
 

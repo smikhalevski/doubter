@@ -1,7 +1,7 @@
-import { CODE_OBJECT_EXACT, CODE_TYPE_OBJECT, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants.ts';
-import { Bitmask, getBit, toggleBit } from '../internal/bitmasks.ts';
-import { isArray, isObject } from '../internal/lang.ts';
-import { cloneObject, defineReadonlyProperty, Dict, pickKeys, ReadonlyDict, setProperty } from '../internal/objects.ts';
+import { CODE_OBJECT_EXACT, CODE_TYPE_OBJECT, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants.js';
+import { Bitmask, getBit, toggleBit } from '../internal/bitmasks.js';
+import { isArray, isObject } from '../internal/lang.js';
+import { cloneObject, defineReadonlyProperty, Dict, pickKeys, ReadonlyDict, setProperty } from '../internal/objects.js';
 import {
   applyShape,
   concatIssues,
@@ -9,12 +9,12 @@ import {
   isAsyncShapes,
   toDeepPartialShape,
   unshiftIssuesPath,
-} from '../internal/shapes.ts';
-import { Type } from '../Type.ts';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.ts';
-import { createIssue } from '../utils.ts';
-import { EnumShape } from './EnumShape.ts';
-import { ReadonlyShape } from './ReadonlyShape.ts';
+} from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { EnumShape } from './EnumShape.js';
+import { ReadonlyShape } from './ReadonlyShape.js';
 import {
   AllowShape,
   AnyShape,
@@ -24,7 +24,7 @@ import {
   OptionalDeepPartialShape,
   OUTPUT,
   Shape,
-} from './Shape.ts';
+} from './Shape.js';
 
 const objectInputs = Object.freeze<unknown[]>([Type.OBJECT]);
 

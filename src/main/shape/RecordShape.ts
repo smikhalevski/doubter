@@ -1,12 +1,12 @@
-import { CODE_TYPE_OBJECT, MESSAGE_TYPE_OBJECT } from '../constants.ts';
-import { isArray, isObject } from '../internal/lang.ts';
-import { cloneRecord, setProperty } from '../internal/objects.ts';
-import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes.ts';
-import { Type } from '../Type.ts';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.ts';
-import { createIssue } from '../utils.ts';
-import { ReadonlyShape } from './ReadonlyShape.ts';
-import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Shape } from './Shape.ts';
+import { CODE_TYPE_OBJECT, MESSAGE_TYPE_OBJECT } from '../constants.js';
+import { isArray, isObject } from '../internal/lang.js';
+import { cloneRecord, setProperty } from '../internal/objects.js';
+import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { ReadonlyShape } from './ReadonlyShape.js';
+import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Shape } from './Shape.js';
 
 const recordInputs = Object.freeze<unknown[]>([Type.OBJECT]);
 

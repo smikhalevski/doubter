@@ -1,5 +1,5 @@
 import { expectType } from 'tsd';
-import * as d from '../../main/index.ts';
+import * as d from '../../main/index.js';
 
 expectType<Promise<any>>(d.promise().parse(Promise.resolve('aaa')));
 

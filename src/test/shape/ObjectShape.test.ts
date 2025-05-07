@@ -7,11 +7,11 @@ import {
   CODE_TYPE_STRING,
   MESSAGE_TYPE_OBJECT,
   MESSAGE_TYPE_STRING,
-} from '../../main/constants.ts';
-import { ObjectShape, Ok, Shape, StringShape } from '../../main/core.ts';
-import { resetNonce } from '../../main/internal/shapes.ts';
-import { Type } from '../../main/Type.ts';
-import { AsyncMockShape, MockShape } from './mocks.ts';
+} from '../../main/constants.js';
+import { ObjectShape, Ok, Shape, StringShape } from '../../main/core.js';
+import { resetNonce } from '../../main/internal/shapes.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape, MockShape } from './mocks.js';
 
 describe('ObjectShape', () => {
   beforeEach(() => {

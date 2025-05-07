@@ -1,5 +1,5 @@
-import { BooleanShape } from '../shape/BooleanShape.ts';
-import { IssueOptions, Message } from '../types.ts';
+import { BooleanShape } from '../shape/BooleanShape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the boolean shape.

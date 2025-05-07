@@ -1,4 +1,4 @@
-import { Shape } from '../shape/Shape.ts';
+import { Shape } from '../shape/Shape.js';
 
 /**
  * Creates the unconstrained shape with unknown value.

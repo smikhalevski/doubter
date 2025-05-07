@@ -1,11 +1,11 @@
-import { coerceToMapEntries } from '../coerce/map.ts';
-import { NEVER } from '../coerce/never.ts';
-import { CODE_TYPE_MAP, MESSAGE_TYPE_MAP } from '../constants.ts';
-import { isArray } from '../internal/lang.ts';
-import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes.ts';
-import { Type } from '../Type.ts';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.ts';
-import { createIssue } from '../utils.ts';
+import { coerceToMapEntries } from '../coerce/map.js';
+import { NEVER } from '../coerce/never.js';
+import { CODE_TYPE_MAP, MESSAGE_TYPE_MAP } from '../constants.js';
+import { isArray } from '../internal/lang.js';
+import { applyShape, concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
 import {
   AnyShape,
   DeepPartialProtocol,
@@ -14,8 +14,8 @@ import {
   OptionalDeepPartialShape,
   Output,
   Shape,
-} from './Shape.ts';
-import { ReadonlyShape } from './ReadonlyShape.ts';
+} from './Shape.js';
+import { ReadonlyShape } from './ReadonlyShape.js';
 
 const mapInputs = Object.freeze<unknown[]>([Type.MAP]);
 const mapCoercibleInputs = Object.freeze<unknown[]>([Type.MAP, Type.OBJECT, Type.ARRAY]);

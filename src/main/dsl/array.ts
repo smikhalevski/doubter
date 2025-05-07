@@ -1,6 +1,6 @@
-import { ArrayShape } from '../shape/ArrayShape.ts';
-import { AnyShape, Shape } from '../shape/Shape.ts';
-import { IssueOptions, Message } from '../types.ts';
+import { ArrayShape } from '../shape/ArrayShape.js';
+import { AnyShape, Shape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the unconstrained array shape.

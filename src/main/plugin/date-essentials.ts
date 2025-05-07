@@ -11,13 +11,13 @@
  * @module plugin/date-essentials
  */
 
-import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants.ts';
-import { DateShape } from '../shape/DateShape.ts';
-import { Shape } from '../shape/Shape.ts';
-import { IssueOptions, Message } from '../types.ts';
-import { createIssue } from '../utils.ts';
+import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants.js';
+import { DateShape } from '../shape/DateShape.js';
+import { Shape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
+import { createIssue } from '../utils.js';
 
-declare module '../core' {
+declare module '../core.js' {
   export interface DateShape {
     /**
      * Constrains the input date to be greater than or equal to another date.

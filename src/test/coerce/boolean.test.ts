@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { NEVER } from '../../main/index.ts';
-import { coerceToBoolean } from '../../main/coerce/boolean.ts';
+import { NEVER } from '../../main/index.js';
+import { coerceToBoolean } from '../../main/coerce/boolean.js';
 
 describe('coerceToBoolean', () => {
   test('coerces a Boolean object', () => {

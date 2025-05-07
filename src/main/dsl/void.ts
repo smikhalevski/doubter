@@ -1,5 +1,5 @@
-import { ConstShape } from '../shape/ConstShape.ts';
-import { IssueOptions, Message } from '../types.ts';
+import { ConstShape } from '../shape/ConstShape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates a shape that requires an input to be `undefined` at runtime and typed as `void`.

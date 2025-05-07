@@ -1,6 +1,6 @@
-import { AnyShape } from '../shape/Shape.ts';
-import { UnionShape } from '../shape/UnionShape.ts';
-import { IssueOptions, Message } from '../types.ts';
+import { AnyShape } from '../shape/Shape.js';
+import { UnionShape } from '../shape/UnionShape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates a union shape that tries to parse the input with one of the provided shapes.

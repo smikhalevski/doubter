@@ -12,11 +12,11 @@ import {
   Shape,
   StringShape,
   UnionShape,
-} from '../../main/index.ts';
-import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../../main/constants.ts';
-import { createDiscriminatorLookup, createLookup, getDiscriminator } from '../../main/shape/UnionShape.ts';
-import { Type } from '../../main/Type.ts';
-import { AsyncMockShape, MockShape, spyOnShape } from './mocks.ts';
+} from '../../main/index.js';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../../main/constants.js';
+import { createDiscriminatorLookup, createLookup, getDiscriminator } from '../../main/shape/UnionShape.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape, MockShape, spyOnShape } from './mocks.js';
 
 describe('UnionShape', () => {
   test('distributes buckets by inputs', () => {

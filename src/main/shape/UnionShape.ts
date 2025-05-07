@@ -1,14 +1,14 @@
-import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants.ts';
-import { unique } from '../internal/arrays.ts';
-import { isArray, isObject } from '../internal/lang.ts';
-import { defineReadonlyProperty, ReadonlyDict } from '../internal/objects.ts';
-import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes.ts';
-import { isType } from '../internal/types.ts';
-import { Type } from '../Type.ts';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.ts';
-import { createIssue } from '../utils.ts';
-import { ObjectShape } from './ObjectShape.ts';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.ts';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../constants.js';
+import { unique } from '../internal/arrays.js';
+import { isArray, isObject } from '../internal/lang.js';
+import { defineReadonlyProperty, ReadonlyDict } from '../internal/objects.js';
+import { applyShape, isAsyncShapes, toDeepPartialShape } from '../internal/shapes.js';
+import { isType } from '../internal/types.js';
+import { Type } from '../Type.js';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { ObjectShape } from './ObjectShape.js';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.js';
 
 type DeepPartialUnionShape<Shapes extends readonly AnyShape[]> = UnionShape<{
   [K in keyof Shapes]: DeepPartialShape<Shapes[K]>;

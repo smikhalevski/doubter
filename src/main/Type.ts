@@ -1,4 +1,4 @@
-import { isArray } from './internal/lang.ts';
+import { isArray } from './internal/lang.js';
 
 /**
  * The enum-like class that describes a value type.

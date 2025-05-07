@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import * as d from '../../main/index.ts';
-import { Type } from '../../main/Type.ts';
+import * as d from '../../main/index.js';
+import { Type } from '../../main/Type.js';
 
 describe('union', () => {
   test('returns a union shape', () => {

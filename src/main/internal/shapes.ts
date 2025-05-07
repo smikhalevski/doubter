@@ -1,8 +1,8 @@
-import { ERROR_SYNC_UNSUPPORTED } from '../constants.ts';
-import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape.ts';
-import { CheckResult, Issue, Ok, Operation, OperationCallback, ParseOptions, Result } from '../types.ts';
-import { ValidationError } from '../ValidationError.ts';
-import { isArray, isEqual, isObjectLike } from './lang.ts';
+import { ERROR_SYNC_UNSUPPORTED } from '../constants.js';
+import type { AnyShape, DeepPartialProtocol, DeepPartialShape, Shape } from '../shape/Shape.js';
+import { CheckResult, Issue, Ok, Operation, OperationCallback, ParseOptions, Result } from '../types.js';
+import { ValidationError } from '../ValidationError.js';
+import { isArray, isEqual, isObjectLike } from './lang.js';
 
 // Copied to support TS prior to v4.5
 // prettier-ignore

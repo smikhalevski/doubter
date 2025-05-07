@@ -8,17 +8,17 @@ import {
   Shape,
   StringShape,
   ValidationError,
-} from '../../main/index.ts';
+} from '../../main/index.js';
 import {
   CODE_TYPE_NUMBER,
   CODE_TYPE_STRING,
   CODE_TYPE_TUPLE,
   MESSAGE_TYPE_NUMBER,
   MESSAGE_TYPE_STRING,
-} from '../../main/constants.ts';
-import { resetNonce } from '../../main/internal/shapes.ts';
-import { Type } from '../../main/Type.ts';
-import { AsyncMockShape, MockShape } from './mocks.ts';
+} from '../../main/constants.js';
+import { resetNonce } from '../../main/internal/shapes.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape, MockShape } from './mocks.js';
 
 describe('FunctionShape', () => {
   let emptyArgsShape: AnyShape;

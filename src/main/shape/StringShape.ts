@@ -1,10 +1,10 @@
-import { NEVER } from '../coerce/never.ts';
-import { coerceToString, stringCoercibleInputs } from '../coerce/string.ts';
-import { CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../constants.ts';
-import { Type } from '../Type.ts';
-import { IssueOptions, Message, ParseOptions, Result } from '../types.ts';
-import { createIssue } from '../utils.ts';
-import { Shape } from './Shape.ts';
+import { NEVER } from '../coerce/never.js';
+import { coerceToString, stringCoercibleInputs } from '../coerce/string.js';
+import { CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../constants.js';
+import { Type } from '../Type.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { Shape } from './Shape.js';
 
 const stringInputs = Object.freeze<unknown[]>([Type.STRING]);
 

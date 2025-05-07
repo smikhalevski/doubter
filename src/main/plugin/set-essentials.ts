@@ -10,13 +10,13 @@
  *
  * @module plugin/set-essentials
  */
-import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants.ts';
-import { SetShape } from '../shape/SetShape.ts';
-import { AnyShape } from '../shape/Shape.ts';
-import { IssueOptions, Message } from '../types.ts';
-import { createIssue } from '../utils.ts';
+import { CODE_SET_MAX, CODE_SET_MIN, MESSAGE_SET_MAX, MESSAGE_SET_MIN } from '../constants.js';
+import { SetShape } from '../shape/SetShape.js';
+import { AnyShape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
+import { createIssue } from '../utils.js';
 
-declare module '../core' {
+declare module '../core.js' {
   export interface SetShape<ValueShape extends AnyShape> {
     /**
      * Constrains the set size.

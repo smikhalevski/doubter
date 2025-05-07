@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { createIssue } from '../main/utils.ts';
+import { createIssue } from '../main/utils.js';
 
 describe('createIssue', () => {
   test('uses the default message', () => {

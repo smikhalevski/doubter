@@ -1,15 +1,15 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { ArrayShape, Err, NumberShape, ObjectShape, Ok, StringShape } from '../../main/index.ts';
+import { ArrayShape, Err, NumberShape, ObjectShape, Ok, StringShape } from '../../main/index.js';
 import {
   CODE_TYPE_ARRAY,
   CODE_TYPE_NUMBER,
   CODE_TYPE_TUPLE,
   MESSAGE_TYPE_ARRAY,
   MESSAGE_TYPE_NUMBER,
-} from '../../main/constants.ts';
-import { resetNonce } from '../../main/internal/shapes.ts';
-import { Type } from '../../main/Type.ts';
-import { AsyncMockShape, MockShape } from './mocks.ts';
+} from '../../main/constants.js';
+import { resetNonce } from '../../main/internal/shapes.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape, MockShape } from './mocks.js';
 
 describe('ArrayShape', () => {
   beforeEach(() => {

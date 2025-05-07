@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import * as d from '../../main/index.ts';
+import * as d from '../../main/index.js';
 
 describe('tuple', () => {
   test('returns an array shape', () => {

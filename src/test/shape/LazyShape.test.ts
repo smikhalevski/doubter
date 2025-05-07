@@ -7,12 +7,12 @@ import {
   Shape,
   StringShape,
   ValidationError,
-} from '../../main/index.ts';
-import { CODE_TYPE_STRING, ERROR_SHAPE_EXPECTED, MESSAGE_TYPE_STRING } from '../../main/constants.ts';
-import { identity } from '../../main/internal/lang.ts';
-import { nextNonce, resetNonce } from '../../main/internal/shapes.ts';
-import { Type } from '../../main/Type.ts';
-import { AsyncMockShape, MockShape, spyOnShape } from './mocks.ts';
+} from '../../main/index.js';
+import { CODE_TYPE_STRING, ERROR_SHAPE_EXPECTED, MESSAGE_TYPE_STRING } from '../../main/constants.js';
+import { identity } from '../../main/internal/lang.js';
+import { nextNonce, resetNonce } from '../../main/internal/shapes.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape, MockShape, spyOnShape } from './mocks.js';
 
 describe('LazyShape', () => {
   beforeEach(() => {

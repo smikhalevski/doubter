@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from 'vitest';
-import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main/index.ts';
-import { CODE_TYPE_OBJECT, CODE_TYPE_STRING, MESSAGE_TYPE_OBJECT, MESSAGE_TYPE_STRING } from '../../main/constants.ts';
-import { anyKeyShape } from '../../main/shape/RecordShape.ts';
-import { AsyncMockShape } from './mocks.ts';
+import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main/index.js';
+import { CODE_TYPE_OBJECT, CODE_TYPE_STRING, MESSAGE_TYPE_OBJECT, MESSAGE_TYPE_STRING } from '../../main/constants.js';
+import { anyKeyShape } from '../../main/shape/RecordShape.js';
+import { AsyncMockShape } from './mocks.js';
 
 describe('RecordShape', () => {
   test('raises an issue for a non-object input value', () => {

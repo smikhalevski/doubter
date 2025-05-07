@@ -1,5 +1,5 @@
-import { unique } from '../internal/arrays.ts';
-import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang.ts';
+import { unique } from '../internal/arrays.js';
+import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang.js';
 
 /**
  * Coerces a value to an array.

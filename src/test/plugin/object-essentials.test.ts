@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { ObjectShape } from '../../main/index.ts';
+import { ObjectShape } from '../../main/index.js';
 import {
   CODE_OBJECT_ALL_KEYS,
   CODE_OBJECT_OR_KEYS,
@@ -7,8 +7,8 @@ import {
   CODE_OBJECT_PLAIN,
   CODE_OBJECT_XOR_KEYS,
   MESSAGE_OBJECT_PLAIN,
-} from '../../main/constants.ts';
-import { MockShape } from '../shape/mocks.ts';
+} from '../../main/constants.js';
+import { MockShape } from '../shape/mocks.js';
 
 describe('plain', () => {
   const shape = new ObjectShape({}, null).plain();

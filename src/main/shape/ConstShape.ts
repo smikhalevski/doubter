@@ -1,9 +1,9 @@
-import { coerceToConst, getConstCoercibleInputs } from '../coerce/const.ts';
-import { NEVER } from '../coerce/never.ts';
-import { CODE_TYPE_CONST, MESSAGE_TYPE_CONST } from '../constants.ts';
-import { IssueOptions, Message, ParseOptions, Result } from '../types.ts';
-import { createIssue } from '../utils.ts';
-import { Shape } from './Shape.ts';
+import { coerceToConst, getConstCoercibleInputs } from '../coerce/const.js';
+import { NEVER } from '../coerce/never.js';
+import { CODE_TYPE_CONST, MESSAGE_TYPE_CONST } from '../constants.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { Shape } from './Shape.js';
 
 const nullInputs = Object.freeze<unknown[]>([null]);
 const undefinedInputs = Object.freeze<unknown[]>([undefined]);
