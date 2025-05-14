@@ -1,5 +1,5 @@
-import { InstanceShape } from '../shape/InstanceShape';
-import { IssueOptions, Message } from '../types';
+import { InstanceShape } from '../shape/InstanceShape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the class instance shape.

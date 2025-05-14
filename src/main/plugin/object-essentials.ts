@@ -27,16 +27,16 @@ import {
   MESSAGE_OBJECT_OXOR_KEYS,
   MESSAGE_OBJECT_PLAIN,
   MESSAGE_OBJECT_XOR_KEYS,
-} from '../constants';
-import { isPlainObject } from '../internal/lang';
-import { ReadonlyDict } from '../internal/objects';
-import { ObjectShape } from '../shape/ObjectShape';
-import { RecordShape } from '../shape/RecordShape';
-import { AnyShape, OUTPUT, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
-import { createIssue } from '../utils';
+} from '../constants.js';
+import { isPlainObject } from '../internal/lang.js';
+import { ReadonlyDict } from '../internal/objects.js';
+import { ObjectShape } from '../shape/ObjectShape.js';
+import { RecordShape } from '../shape/RecordShape.js';
+import { AnyShape, OUTPUT, Shape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
+import { createIssue } from '../utils.js';
 
-declare module '../core' {
+declare module '../core.js' {
   export interface ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape extends AnyShape | null> {
     /**
      * Constrains an object to have a `null` or {@link !Object} prototype.

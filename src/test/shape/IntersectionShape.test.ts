@@ -1,3 +1,4 @@
+import { describe, expect, test } from 'vitest';
 import {
   AnyShape,
   ArrayShape,
@@ -11,7 +12,7 @@ import {
   Shape,
   StringShape,
   UnionShape,
-} from '../../main';
+} from '../../main/index.js';
 import {
   CODE_TYPE_BOOLEAN,
   CODE_TYPE_INTERSECTION,
@@ -19,10 +20,10 @@ import {
   MESSAGE_TYPE_BOOLEAN,
   MESSAGE_TYPE_INTERSECTION,
   MESSAGE_TYPE_NUMBER,
-} from '../../main/constants';
-import { mergeValues } from '../../main/shape/IntersectionShape';
-import { Type } from '../../main/Type';
-import { AsyncMockShape } from './mocks';
+} from '../../main/constants.js';
+import { mergeValues } from '../../main/shape/IntersectionShape.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape } from './mocks.js';
 
 describe('IntersectionShape', () => {
   test('returns the input as is if it matches all intersected shapes', () => {

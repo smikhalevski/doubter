@@ -1,8 +1,8 @@
-import { isArray, isPlainObject } from '../internal/lang';
-import { cloneObject } from '../internal/objects';
-import { toDeepPartialShape } from '../internal/shapes';
-import { ParseOptions, Result } from '../types';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
+import { isArray, isPlainObject } from '../internal/lang.js';
+import { cloneObject } from '../internal/objects.js';
+import { toDeepPartialShape } from '../internal/shapes.js';
+import { ParseOptions, Result } from '../types.js';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.js';
 
 // prettier-ignore
 type ToReadonly<T> =

@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   CatchShape,
   ConstShape,
@@ -13,7 +14,7 @@ import {
   Shape,
   StringShape,
   ValidationError,
-} from '../../main';
+} from '../../main/index.js';
 import {
   CODE_ANY_DENY,
   CODE_ANY_EXCLUDE,
@@ -23,10 +24,10 @@ import {
   MESSAGE_ANY_EXCLUDE,
   MESSAGE_ANY_REFINE,
   MESSAGE_TYPE_STRING,
-} from '../../main/constants';
-import { resetNonce } from '../../main/internal/shapes';
-import { Type } from '../../main/Type';
-import { AsyncMockShape, MockShape } from './mocks';
+} from '../../main/constants.js';
+import { resetNonce } from '../../main/internal/shapes.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape, MockShape } from './mocks.js';
 
 beforeEach(() => {
   resetNonce();
@@ -88,8 +89,8 @@ describe('Shape', () => {
     });
 
     test('operations are applied sequentially', () => {
-      const cb1 = jest.fn().mockReturnValue({ ok: true, value: 'bbb' });
-      const cb2 = jest.fn().mockReturnValue(null);
+      const cb1 = vi.fn().mockReturnValue({ ok: true, value: 'bbb' });
+      const cb2 = vi.fn().mockReturnValue(null);
 
       const shape = new Shape().addOperation(cb1, { param: 111 }).addOperation(cb2, { param: 222 });
 
@@ -102,8 +103,8 @@ describe('Shape', () => {
     });
 
     test('applies an operation even if the preceding operation has failed', () => {
-      const cb1 = jest.fn().mockReturnValue([{ code: 'xxx' }]);
-      const cb2 = jest.fn().mockReturnValue([{ code: 'yyy' }]);
+      const cb1 = vi.fn().mockReturnValue([{ code: 'xxx' }]);
+      const cb2 = vi.fn().mockReturnValue([{ code: 'yyy' }]);
 
       const shape = new Shape().addOperation(cb1).addOperation(cb2);
 
@@ -117,8 +118,8 @@ describe('Shape', () => {
     });
 
     test('if a non-tolerant operation fails then consequent operations are skipped', () => {
-      const cb1 = jest.fn().mockReturnValue([{ code: 'xxx' }]);
-      const cb2 = jest.fn().mockReturnValue(null);
+      const cb1 = vi.fn().mockReturnValue([{ code: 'xxx' }]);
+      const cb2 = vi.fn().mockReturnValue(null);
 
       const shape = new Shape().addOperation(cb1, { tolerance: 'abort' }).addOperation(cb2);
 
@@ -132,9 +133,9 @@ describe('Shape', () => {
     });
 
     test('skips an operation if preceding operation has failed', () => {
-      const cb1 = jest.fn().mockReturnValue([{ code: 'xxx' }]);
-      const cb2 = jest.fn().mockReturnValue(null);
-      const cb3 = jest.fn().mockReturnValue(null);
+      const cb1 = vi.fn().mockReturnValue([{ code: 'xxx' }]);
+      const cb2 = vi.fn().mockReturnValue(null);
+      const cb3 = vi.fn().mockReturnValue(null);
 
       const shape = new Shape().addOperation(cb1).addOperation(cb2, { tolerance: 'skip' }).addOperation(cb3);
 
@@ -204,8 +205,8 @@ describe('Shape', () => {
     });
 
     test('operations are applied sequentially', async () => {
-      const cb1 = jest.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'bbb' }));
-      const cb2 = jest.fn().mockReturnValue(Promise.resolve(null));
+      const cb1 = vi.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'bbb' }));
+      const cb2 = vi.fn().mockReturnValue(Promise.resolve(null));
 
       const shape = new Shape().addAsyncOperation(cb1, { param: 111 }).addAsyncOperation(cb2, { param: 222 });
 
@@ -218,8 +219,8 @@ describe('Shape', () => {
     });
 
     test('applies an operation even if the preceding operation has failed', async () => {
-      const cb1 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
-      const cb2 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'yyy' }]));
+      const cb1 = vi.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
+      const cb2 = vi.fn().mockReturnValue(Promise.resolve([{ code: 'yyy' }]));
 
       const shape = new Shape().addAsyncOperation(cb1).addAsyncOperation(cb2);
 
@@ -233,8 +234,8 @@ describe('Shape', () => {
     });
 
     test('if a non-tolerant operation fails then consequent operations are skipped', async () => {
-      const cb1 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
-      const cb2 = jest.fn().mockReturnValue(Promise.resolve(null));
+      const cb1 = vi.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
+      const cb2 = vi.fn().mockReturnValue(Promise.resolve(null));
 
       const shape = new Shape().addAsyncOperation(cb1, { tolerance: 'abort' }).addAsyncOperation(cb2);
 
@@ -248,9 +249,9 @@ describe('Shape', () => {
     });
 
     test('skips an operation if preceding operation has failed', async () => {
-      const cb1 = jest.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
-      const cb2 = jest.fn().mockReturnValue(Promise.resolve(null));
-      const cb3 = jest.fn().mockReturnValue(Promise.resolve(null));
+      const cb1 = vi.fn().mockReturnValue(Promise.resolve([{ code: 'xxx' }]));
+      const cb2 = vi.fn().mockReturnValue(Promise.resolve(null));
+      const cb3 = vi.fn().mockReturnValue(Promise.resolve(null));
 
       const shape = new Shape()
         .addAsyncOperation(cb1)
@@ -302,9 +303,9 @@ describe('Shape', () => {
     });
 
     test('sync and async operations can be mixed', async () => {
-      const cb1 = jest.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'aaa' }));
-      const cb2 = jest.fn().mockReturnValue({ ok: true, value: 'bbb' });
-      const cb3 = jest.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'ccc' }));
+      const cb1 = vi.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'aaa' }));
+      const cb2 = vi.fn().mockReturnValue({ ok: true, value: 'bbb' });
+      const cb3 = vi.fn().mockReturnValue(Promise.resolve({ ok: true, value: 'ccc' }));
 
       const shape = new Shape().addAsyncOperation(cb1).addAsyncOperation(cb2).addAsyncOperation(cb3);
 
@@ -330,7 +331,7 @@ describe('Shape', () => {
     });
 
     test('added callback is applied', () => {
-      const cbMock = jest.fn(() => null);
+      const cbMock = vi.fn(() => null);
       const shape = new Shape().check(cbMock);
 
       shape.parse('aaa');
@@ -340,7 +341,7 @@ describe('Shape', () => {
     });
 
     test('added parameterized callback is applied', () => {
-      const cbMock = jest.fn(() => null);
+      const cbMock = vi.fn(() => null);
       const shape = new Shape().check(cbMock, { param: 111 });
 
       shape.parse('aaa');
@@ -440,7 +441,7 @@ describe('Shape', () => {
 
   describe('refine', () => {
     test('applies a callback', () => {
-      const cbMock = jest.fn(value => value === 'aaa');
+      const cbMock = vi.fn(value => value === 'aaa');
 
       expect(new Shape().refine(cbMock).try('aaa')).toEqual({ ok: true, value: 'aaa' });
 
@@ -519,7 +520,7 @@ describe('Shape', () => {
     });
 
     test('adds the same callback twice', () => {
-      const cbMock = jest.fn(() => true);
+      const cbMock = vi.fn(() => true);
       const shape = new Shape().refine(cbMock).refine(cbMock);
 
       shape.parse(111);
@@ -548,8 +549,8 @@ describe('Shape', () => {
 
     test('delegates to the next operation if the preceding operation has failed', () => {
       const cbMock1 = () => false;
-      const cbMock2 = jest.fn(() => true);
-      const cbMock3 = jest.fn(() => true);
+      const cbMock2 = vi.fn(() => true);
+      const cbMock3 = vi.fn(() => true);
 
       const shape = new Shape().refine(cbMock1).refine(cbMock2).refine(cbMock3);
 
@@ -564,7 +565,7 @@ describe('Shape', () => {
 
   describe('alter', () => {
     test('applies a callback', () => {
-      const cbMock = jest.fn(() => 111);
+      const cbMock = vi.fn(() => 111);
 
       expect(new Shape().alter(cbMock).try('aaa')).toEqual({ ok: true, value: 111 });
 
@@ -573,7 +574,7 @@ describe('Shape', () => {
     });
 
     test('adds the same callback twice', () => {
-      const cbMock = jest.fn(value => value * 2);
+      const cbMock = vi.fn(value => value * 2);
       const shape = new Shape().alter(cbMock).alter(cbMock);
 
       expect(shape.parse(111)).toBe(444);
@@ -633,7 +634,7 @@ describe('Shape', () => {
     });
 
     test('pipes from an async shape to ConvertShape that synchronously returns a promise', async () => {
-      const cbMock = jest.fn();
+      const cbMock = vi.fn();
 
       const shape = new AsyncMockShape().convert(value => Promise.resolve('__' + value)).check(cbMock);
 
@@ -1014,8 +1015,8 @@ describe('Shape', () => {
     });
 
     test('check is not called if the preceding non-tolerant operation has failed', () => {
-      const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
-      const cbMock2 = jest.fn();
+      const cbMock1 = vi.fn(() => [{ code: 'xxx' }]);
+      const cbMock2 = vi.fn();
 
       const shape = new Shape().check(cbMock1, { tolerance: 'abort' }).check(cbMock2);
 
@@ -1029,8 +1030,8 @@ describe('Shape', () => {
     });
 
     test('collects all issues', () => {
-      const cbMock1 = jest.fn(() => [{ code: 'xxx' }]);
-      const cbMock2 = jest.fn(() => [{ code: 'yyy' }]);
+      const cbMock1 = vi.fn(() => [{ code: 'xxx' }]);
+      const cbMock2 = vi.fn(() => [{ code: 'yyy' }]);
 
       const shape = new Shape().check(cbMock1).check(cbMock2);
 
@@ -1196,7 +1197,7 @@ describe('Shape', () => {
 
 describe('ConvertShape', () => {
   test('converts a value', () => {
-    const cbMock = jest.fn(() => 111);
+    const cbMock = vi.fn(() => 111);
 
     const shape = new ConvertShape(cbMock);
 
@@ -1226,7 +1227,7 @@ describe('ConvertShape', () => {
   });
 
   test('applies operations', () => {
-    const cbMock = jest.fn(() => null);
+    const cbMock = vi.fn(() => null);
 
     new ConvertShape(() => 111).check(cbMock).parse('aaa');
 
@@ -1236,7 +1237,7 @@ describe('ConvertShape', () => {
 
   describe('async', () => {
     test('converts using an async callback', async () => {
-      const cbMock = jest.fn(() => Promise.resolve(111));
+      const cbMock = vi.fn(() => Promise.resolve(111));
 
       const shape = new ConvertShape(cbMock, true);
 
@@ -1292,7 +1293,7 @@ describe('PipeShape', () => {
     const inputShape = new Shape();
     const outputShape = new Shape().check(() => [{ code: 'xxx' }]);
 
-    const cbMock = jest.fn();
+    const cbMock = vi.fn();
 
     new PipeShape(inputShape, outputShape).check(cbMock).try('aaa');
 
@@ -1300,7 +1301,7 @@ describe('PipeShape', () => {
   });
 
   test('applies operations', () => {
-    const cbMock = jest.fn(() => null);
+    const cbMock = vi.fn(() => null);
 
     new PipeShape(new Shape(), new Shape()).check(cbMock).parse('aaa');
 
@@ -1356,7 +1357,7 @@ describe('PipeShape', () => {
       const inputShape = new AsyncMockShape();
       const outputShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
 
-      const cbMock = jest.fn();
+      const cbMock = vi.fn();
 
       await new PipeShape(inputShape, outputShape).check(cbMock).tryAsync('aaa');
 
@@ -1364,7 +1365,7 @@ describe('PipeShape', () => {
     });
 
     test('applies operations', async () => {
-      const cbMock = jest.fn(() => null);
+      const cbMock = vi.fn(() => null);
 
       await new PipeShape(new AsyncMockShape(), new Shape()).check(cbMock).parseAsync('aaa');
 
@@ -1410,7 +1411,7 @@ describe('ReplaceShape', () => {
   });
 
   test('applies operations to the replaced value', () => {
-    const cbMock = jest.fn();
+    const cbMock = vi.fn();
 
     new ReplaceShape(new Shape(), 111, 222).check(cbMock).try(111);
 
@@ -1464,7 +1465,7 @@ describe('ReplaceShape', () => {
     });
 
     test('applies operations to the replaced value', async () => {
-      const cbMock = jest.fn();
+      const cbMock = vi.fn();
 
       await new ReplaceShape(new AsyncMockShape(), 111, 222).check(cbMock).tryAsync(111);
 
@@ -1512,7 +1513,7 @@ describe('DenyShape', () => {
   });
 
   test('applies operations', () => {
-    const cbMock = jest.fn(() => null);
+    const cbMock = vi.fn(() => null);
 
     new DenyShape(new Shape(), 111).check(cbMock).parse('aaa');
 
@@ -1599,7 +1600,7 @@ describe('CatchShape', () => {
   });
 
   test('fallback callback receives the input value, the array of issues, and parsing options', () => {
-    const cbMock = jest.fn();
+    const cbMock = vi.fn();
 
     new CatchShape(new StringShape(), cbMock).parse(111);
 

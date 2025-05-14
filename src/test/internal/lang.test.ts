@@ -1,4 +1,11 @@
-import { getCanonicalValue, isEqual, isEqualOrSubclass, isIterableObject, isValidDate } from '../../main/internal/lang';
+import { describe, expect, test } from 'vitest';
+import {
+  getCanonicalValue,
+  isEqual,
+  isEqualOrSubclass,
+  isIterableObject,
+  isValidDate,
+} from '../../main/internal/lang.js';
 
 describe('isEqual', () => {
   test('checks equality', () => {

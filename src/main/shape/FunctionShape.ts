@@ -1,11 +1,19 @@
-import { CODE_TYPE_FUNCTION, ERROR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants';
-import { isArray } from '../internal/lang';
-import { applyShape, Awaitable, copyOperations, nextNonce, ok, Promisify, unshiftIssuesPath } from '../internal/shapes';
-import { Type } from '../Type';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { ValidationError } from '../ValidationError';
-import { AnyShape, INPUT, Input, OUTPUT, Output, Shape } from './Shape';
+import { CODE_TYPE_FUNCTION, ERROR_ASYNC_FUNCTION, MESSAGE_TYPE_FUNCTION } from '../constants.js';
+import { isArray } from '../internal/lang.js';
+import {
+  applyShape,
+  Awaitable,
+  copyOperations,
+  nextNonce,
+  ok,
+  Promisify,
+  unshiftIssuesPath,
+} from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { ValidationError } from '../ValidationError.js';
+import { AnyShape, INPUT, Input, OUTPUT, Output, Shape } from './Shape.js';
 
 const functionInputs = Object.freeze<unknown[]>([Type.FUNCTION]);
 

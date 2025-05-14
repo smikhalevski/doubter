@@ -1,8 +1,8 @@
-import { isArray } from '../internal/lang';
-import { ArrayShape } from '../shape/ArrayShape';
-import { FunctionShape } from '../shape/FunctionShape';
-import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { isArray } from '../internal/lang.js';
+import { ArrayShape } from '../shape/ArrayShape.js';
+import { FunctionShape } from '../shape/FunctionShape.js';
+import { AnyShape, Shape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates a shape of a function that has no arguments.

@@ -26,12 +26,12 @@ import {
   MESSAGE_STRING_NON_BLANK,
   MESSAGE_STRING_REGEX,
   MESSAGE_STRING_STARTS_WITH,
-} from '../constants';
-import { StringShape } from '../shape/StringShape';
-import { IssueOptions, Message } from '../types';
-import { createIssue } from '../utils';
+} from '../constants.js';
+import { StringShape } from '../shape/StringShape.js';
+import { IssueOptions, Message } from '../types.js';
+import { createIssue } from '../utils.js';
 
-declare module '../core' {
+declare module '../core.js' {
   export interface StringShape {
     /**
      * The shortcut to apply both {@link StringShape.min} and {@link StringShape.max} constraints.

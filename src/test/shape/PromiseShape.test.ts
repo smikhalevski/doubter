@@ -1,7 +1,13 @@
-import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE_PROMISE, CODE_TYPE_STRING, MESSAGE_TYPE_PROMISE, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { Type } from '../../main/Type';
-import { AsyncMockShape } from './mocks';
+import { describe, expect, test, vi } from 'vitest';
+import { ObjectShape, Ok, PromiseShape, Shape, StringShape } from '../../main/index.js';
+import {
+  CODE_TYPE_PROMISE,
+  CODE_TYPE_STRING,
+  MESSAGE_TYPE_PROMISE,
+  MESSAGE_TYPE_STRING,
+} from '../../main/constants.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape } from './mocks.js';
 
 describe('PromiseShape', () => {
   test('creates a PromiseShape', () => {
@@ -29,7 +35,7 @@ describe('PromiseShape', () => {
   });
 
   test('applies operations', () => {
-    const cbMock = jest.fn(() => [{ code: 'xxx' }]);
+    const cbMock = vi.fn(() => [{ code: 'xxx' }]);
 
     const input = Promise.resolve('aaa');
     const shape = new PromiseShape(null).check(cbMock);
@@ -113,7 +119,7 @@ describe('PromiseShape', () => {
     });
 
     test('applies operations', async () => {
-      const checkMock = jest.fn(() => [{ code: 'xxx' }]);
+      const checkMock = vi.fn(() => [{ code: 'xxx' }]);
 
       const input = Promise.resolve('aaa');
       const shape = new PromiseShape(new Shape()).check(checkMock);

@@ -1,5 +1,6 @@
-import { ConstShape } from '../../main';
-import { CODE_TYPE_CONST } from '../../main/constants';
+import { describe, expect, test } from 'vitest';
+import { ConstShape } from '../../main/index.js';
+import { CODE_TYPE_CONST } from '../../main/constants.js';
 
 describe('ConstShape', () => {
   test('parses exact value', () => {

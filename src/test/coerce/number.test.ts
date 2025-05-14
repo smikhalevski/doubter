@@ -1,5 +1,6 @@
-import { NEVER } from '../../main';
-import { coerceToNumber } from '../../main/coerce/number';
+import { describe, expect, test } from 'vitest';
+import { NEVER } from '../../main/index.js';
+import { coerceToNumber } from '../../main/coerce/number.js';
 
 describe('coerceToNumber', () => {
   test('coerces a Number object', () => {

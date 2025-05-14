@@ -1,5 +1,6 @@
-import { BigIntShape } from '../../main';
-import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../../main/constants';
+import { describe, expect, test } from 'vitest';
+import { BigIntShape } from '../../main/index.js';
+import { CODE_BIGINT_MAX, CODE_BIGINT_MIN } from '../../main/constants.js';
 
 describe('min', () => {
   test('raises if value is not greater than or equal', () => {

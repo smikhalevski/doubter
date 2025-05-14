@@ -1,11 +1,19 @@
-import { NEVER } from '../coerce/never';
-import { CODE_TYPE_PROMISE, MESSAGE_TYPE_PROMISE } from '../constants';
-import { isArray } from '../internal/lang';
-import { applyShape, Promisify, toDeepPartialShape } from '../internal/shapes';
-import { Type } from '../Type';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Shape, unknownInputs } from './Shape';
+import { NEVER } from '../coerce/never.js';
+import { CODE_TYPE_PROMISE, MESSAGE_TYPE_PROMISE } from '../constants.js';
+import { isArray } from '../internal/lang.js';
+import { applyShape, Promisify, toDeepPartialShape } from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import {
+  AnyShape,
+  DeepPartialProtocol,
+  INPUT,
+  OptionalDeepPartialShape,
+  OUTPUT,
+  Shape,
+  unknownInputs,
+} from './Shape.js';
 
 const promiseInputs = Object.freeze<unknown[]>([Type.PROMISE]);
 

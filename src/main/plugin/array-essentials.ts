@@ -18,13 +18,13 @@ import {
   MESSAGE_ARRAY_INCLUDES,
   MESSAGE_ARRAY_MAX,
   MESSAGE_ARRAY_MIN,
-} from '../constants';
-import { ArrayShape } from '../shape/ArrayShape';
-import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
+} from '../constants.js';
+import { ArrayShape } from '../shape/ArrayShape.js';
+import { AnyShape, Shape } from '../shape/Shape.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
 
-declare module '../core' {
+declare module '../core.js' {
   export interface ArrayShape<HeadShapes extends readonly AnyShape[], RestShape extends AnyShape | null> {
     /**
      * Constrains the array length.

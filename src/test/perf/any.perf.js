@@ -1,8 +1,9 @@
-const valita = require('@badrap/valita');
-const doubter = require('../../../lib');
+import { describe, test, measure } from 'toofast';
+import * as valita from '@badrap/valita';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('any().check(isNaN)', () => {
-  test('valita', measure => {
+  test('valita', () => {
     const type = valita.unknown().assert(isNaN);
 
     measure(() => {
@@ -10,7 +11,7 @@ describe('any().check(isNaN)', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.any().check(v => (isNaN(v) ? null : []));
 
     measure(() => {
@@ -20,7 +21,7 @@ describe('any().check(isNaN)', () => {
 });
 
 describe('any().refine(isNaN)', () => {
-  test('valita', measure => {
+  test('valita', () => {
     const type = valita.unknown().assert(isNaN);
 
     measure(() => {
@@ -28,7 +29,7 @@ describe('any().refine(isNaN)', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.any().refine(isNaN);
 
     measure(() => {

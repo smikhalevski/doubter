@@ -1,6 +1,6 @@
-import { ArrayShape } from '../shape/ArrayShape';
-import { AnyShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { ArrayShape } from '../shape/ArrayShape.js';
+import { AnyShape, Shape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the tuple shape.

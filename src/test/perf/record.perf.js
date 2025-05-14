@@ -1,13 +1,14 @@
-const Ajv = require('ajv');
-const zod = require('zod');
-const myzod = require('myzod');
-const valita = require('@badrap/valita');
-const doubter = require('../../../lib');
+import { describe, measure, test } from 'toofast';
+import * as valita from '@badrap/valita';
+import { Ajv } from 'ajv';
+import * as myzod from 'myzod';
+import * as zod from 'zod';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('record(string(), number())', () => {
   const value = { a: 1, b: 2, c: 3 };
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const validate = new Ajv().compile({
       $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'object',
@@ -20,7 +21,7 @@ describe('record(string(), number())', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.record(zod.string(), zod.number());
 
     measure(() => {
@@ -28,7 +29,7 @@ describe('record(string(), number())', () => {
     });
   });
 
-  test('myzod', measure => {
+  test('myzod', () => {
     const type = myzod.record(myzod.number());
 
     measure(() => {
@@ -36,7 +37,7 @@ describe('record(string(), number())', () => {
     });
   });
 
-  test('valita', measure => {
+  test('valita', () => {
     const type = valita.record(valita.number());
 
     measure(() => {
@@ -44,7 +45,7 @@ describe('record(string(), number())', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.record(doubter.string(), doubter.number());
 
     measure(() => {

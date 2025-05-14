@@ -1,5 +1,5 @@
-import { NumberShape } from '../shape/NumberShape';
-import { IssueOptions, Message } from '../types';
+import { NumberShape } from '../shape/NumberShape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the number shape.

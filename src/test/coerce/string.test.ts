@@ -1,5 +1,6 @@
-import { NEVER } from '../../main';
-import { coerceToString } from '../../main/coerce/string';
+import { describe, expect, test } from 'vitest';
+import { NEVER } from '../../main/index.js';
+import { coerceToString } from '../../main/coerce/string.js';
 
 describe('coerceToString', () => {
   test('returns a string as is', () => {

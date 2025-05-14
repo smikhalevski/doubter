@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test } from 'vitest';
 import {
   CODE_ANY_DENY,
   CODE_OBJECT_EXACT,
@@ -6,11 +7,11 @@ import {
   CODE_TYPE_STRING,
   MESSAGE_TYPE_OBJECT,
   MESSAGE_TYPE_STRING,
-} from '../../main/constants';
-import { ObjectShape, Ok, Shape, StringShape } from '../../main/core';
-import { resetNonce } from '../../main/internal/shapes';
-import { Type } from '../../main/Type';
-import { AsyncMockShape, MockShape } from './mocks';
+} from '../../main/constants.js';
+import { ObjectShape, Ok, Shape, StringShape } from '../../main/core.js';
+import { resetNonce } from '../../main/internal/shapes.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape, MockShape } from './mocks.js';
 
 describe('ObjectShape', () => {
   beforeEach(() => {

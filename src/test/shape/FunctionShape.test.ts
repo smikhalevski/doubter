@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   AnyShape,
   ArrayShape,
@@ -7,17 +8,17 @@ import {
   Shape,
   StringShape,
   ValidationError,
-} from '../../main';
+} from '../../main/index.js';
 import {
   CODE_TYPE_NUMBER,
   CODE_TYPE_STRING,
   CODE_TYPE_TUPLE,
   MESSAGE_TYPE_NUMBER,
   MESSAGE_TYPE_STRING,
-} from '../../main/constants';
-import { resetNonce } from '../../main/internal/shapes';
-import { Type } from '../../main/Type';
-import { AsyncMockShape, MockShape } from './mocks';
+} from '../../main/constants.js';
+import { resetNonce } from '../../main/internal/shapes.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape, MockShape } from './mocks.js';
 
 describe('FunctionShape', () => {
   let emptyArgsShape: AnyShape;
@@ -103,7 +104,7 @@ describe('FunctionShape', () => {
     });
 
     test('sets options', () => {
-      const cbMock = jest.fn();
+      const cbMock = vi.fn();
 
       new FunctionShape(emptyArgsShape.check(cbMock), null, null).strict({ earlyReturn: true }).ensure(() => null)();
 
@@ -134,7 +135,7 @@ describe('FunctionShape', () => {
 
   describe('ensure', () => {
     test('handles a function with 0 arguments', () => {
-      const fnMock = jest.fn();
+      const fnMock = vi.fn();
       const shape = new FunctionShape(emptyArgsShape, null, null);
 
       shape.ensure(fnMock)();
@@ -144,7 +145,7 @@ describe('FunctionShape', () => {
     });
 
     test('handles a function with 1 argument', () => {
-      const fnMock = jest.fn();
+      const fnMock = vi.fn();
 
       const argShape = new MockShape();
       const shape = new FunctionShape(new ArrayShape([argShape], null), null, null);
@@ -241,7 +242,7 @@ describe('FunctionShape', () => {
 
   describe('ensureAsync', () => {
     test('handles a function with 0 arguments', async () => {
-      const fnMock = jest.fn();
+      const fnMock = vi.fn();
       const shape = new FunctionShape(emptyArgsShape, null, null);
 
       await shape.ensureAsync(fnMock)();
@@ -251,7 +252,7 @@ describe('FunctionShape', () => {
     });
 
     test('handles a function with 1 argument', async () => {
-      const fnMock = jest.fn();
+      const fnMock = vi.fn();
 
       const argShape = new MockShape();
       const shape = new FunctionShape(new ArrayShape([argShape], null), null, null);
@@ -348,7 +349,7 @@ describe('FunctionShape', () => {
 
   describe('async', () => {
     test('invokes async check', async () => {
-      const checkMock = jest.fn(() => Promise.resolve([{ code: 'xxx' }]));
+      const checkMock = vi.fn(() => Promise.resolve([{ code: 'xxx' }]));
 
       const shape = new FunctionShape(new ArrayShape([], null), new StringShape(), null).checkAsync(checkMock);
 

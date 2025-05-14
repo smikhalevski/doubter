@@ -1,5 +1,5 @@
-import { BigIntShape } from '../shape/BigIntShape';
-import { IssueOptions, Message } from '../types';
+import { BigIntShape } from '../shape/BigIntShape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the bigint shape.

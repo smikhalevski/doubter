@@ -1,7 +1,7 @@
-import { CODE_OBJECT_EXACT, CODE_TYPE_OBJECT, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants';
-import { Bitmask, getBit, toggleBit } from '../internal/bitmasks';
-import { isArray, isObject } from '../internal/lang';
-import { cloneObject, defineReadonlyProperty, Dict, pickKeys, ReadonlyDict, setProperty } from '../internal/objects';
+import { CODE_OBJECT_EXACT, CODE_TYPE_OBJECT, MESSAGE_OBJECT_EXACT, MESSAGE_TYPE_OBJECT } from '../constants.js';
+import { Bitmask, getBit, toggleBit } from '../internal/bitmasks.js';
+import { isArray, isObject } from '../internal/lang.js';
+import { cloneObject, defineReadonlyProperty, Dict, pickKeys, ReadonlyDict, setProperty } from '../internal/objects.js';
 import {
   applyShape,
   concatIssues,
@@ -9,12 +9,12 @@ import {
   isAsyncShapes,
   toDeepPartialShape,
   unshiftIssuesPath,
-} from '../internal/shapes';
-import { Type } from '../Type';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { EnumShape } from './EnumShape';
-import { ReadonlyShape } from './ReadonlyShape';
+} from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { EnumShape } from './EnumShape.js';
+import { ReadonlyShape } from './ReadonlyShape.js';
 import {
   AllowShape,
   AnyShape,
@@ -24,7 +24,7 @@ import {
   OptionalDeepPartialShape,
   OUTPUT,
   Shape,
-} from './Shape';
+} from './Shape.js';
 
 const objectInputs = Object.freeze<unknown[]>([Type.OBJECT]);
 
@@ -138,7 +138,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
      *
      * <dl>
      *   <dt>"preserved"</dt>
-     *   <dd>Unknown object keys are preserved as-is or checked with {@link restShape}.</dd>
+     *   <dd>Unknown object keys are preserved as-is or checked with {@link ObjectShape.restShape}.</dd>
      *   <dt>"stripped"</dt>
      *   <dd>The input object is cloned and unknown keys are removed from it.</dd>
      *   <dt>"exact"</dt>
@@ -551,7 +551,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
   }
 
   /**
-   * Unknown keys are either parsed with a {@link restShape}, stripped, or cause an issue.
+   * Unknown keys are either parsed with a {@link ObjectShape.restShape}, stripped, or cause an issue.
    */
   private _applyRestChecked(input: ReadonlyDict, options: ParseOptions, nonce: number): Result {
     const { keys, keysMode, restShape, operations, valueShapes } = this;

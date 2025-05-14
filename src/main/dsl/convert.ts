@@ -1,5 +1,5 @@
-import { ConvertShape, Shape } from '../shape/Shape';
-import { ParseOptions } from '../types';
+import { ConvertShape, Shape } from '../shape/Shape.js';
+import { ParseOptions } from '../types.js';
 
 /**
  * Creates the shape that synchronously converts the input value.

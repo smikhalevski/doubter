@@ -1,8 +1,9 @@
-const zod = require('zod');
-const doubter = require('../../../lib');
+import { describe, measure, test } from 'toofast';
+import * as zod from 'zod';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('fn([number(), number()]).ensure(…)', () => {
-  test('zod', measure => {
+  test('zod', () => {
     const fn = zod.function(zod.tuple([zod.number(), zod.number()])).implement((a, b) => a + b);
 
     measure(() => {
@@ -10,7 +11,7 @@ describe('fn([number(), number()]).ensure(…)', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const fn = doubter.fn([doubter.number(), doubter.number()]).ensure((a, b) => a + b);
 
     measure(() => {

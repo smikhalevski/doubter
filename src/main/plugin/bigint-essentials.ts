@@ -11,12 +11,12 @@
  * @module plugin/bigint-essentials
  */
 
-import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants';
-import { BigIntShape } from '../shape/BigIntShape';
-import { IssueOptions, Message } from '../types';
-import { createIssue } from '../utils';
+import { CODE_BIGINT_MAX, CODE_BIGINT_MIN, MESSAGE_BIGINT_MAX, MESSAGE_BIGINT_MIN } from '../constants.js';
+import { BigIntShape } from '../shape/BigIntShape.js';
+import { IssueOptions, Message } from '../types.js';
+import { createIssue } from '../utils.js';
 
-declare module '../core' {
+declare module '../core.js' {
   export interface BigIntShape {
     /**
      * Constrains the bigint to be greater than zero.

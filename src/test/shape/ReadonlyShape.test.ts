@@ -1,5 +1,6 @@
-import { ReadonlyShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../../main/constants';
+import { describe, expect, test } from 'vitest';
+import { ReadonlyShape, Shape, StringShape } from '../../main/index.js';
+import { CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../../main/constants.js';
 
 describe('ReadonlyShape', () => {
   test('returns the value from the base shape if parsing succeeds', () => {

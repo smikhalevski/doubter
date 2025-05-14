@@ -1,4 +1,5 @@
-import { ValidationError } from '../main';
+import { describe, expect, test } from 'vitest';
+import { ValidationError } from '../main/index.js';
 
 describe('ValidationError', () => {
   test('creates message from issues', () => {

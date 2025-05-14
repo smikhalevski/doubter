@@ -1,5 +1,6 @@
-import * as d from '../../main';
-import { AsyncMockShape } from '../shape/mocks';
+import { describe, expect, test } from 'vitest';
+import * as d from '../../main/index.js';
+import { AsyncMockShape } from '../shape/mocks.js';
 
 describe('lazy', () => {
   test('returns a lazy shape', () => {

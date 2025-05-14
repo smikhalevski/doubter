@@ -1,7 +1,8 @@
-import { EnumShape } from '../../main';
-import { CODE_TYPE_ENUM } from '../../main/constants';
-import { getEnumValues } from '../../main/shape/EnumShape';
-import { Type } from '../../main/Type';
+import { describe, expect, test } from 'vitest';
+import { EnumShape } from '../../main/index.js';
+import { CODE_TYPE_ENUM } from '../../main/constants.js';
+import { getEnumValues } from '../../main/shape/EnumShape.js';
+import { Type } from '../../main/Type.js';
 
 enum NumberMockEnum {
   AAA,

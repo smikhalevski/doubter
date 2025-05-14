@@ -1,12 +1,13 @@
-const Ajv = require('ajv');
-const zod = require('zod');
-const doubter = require('../../../lib');
+import { describe, measure, test } from 'toofast';
+import { Ajv } from 'ajv';
+import * as zod from 'zod';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('set(number())', () => {
   const value = new Set([111, 222]);
   const ajvValue = Array.from(value);
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const ajv = new Ajv();
 
     const schema = {
@@ -26,7 +27,7 @@ describe('set(number())', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.set(zod.number());
 
     measure(() => {
@@ -34,7 +35,7 @@ describe('set(number())', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.set(doubter.number());
 
     measure(() => {

@@ -1,4 +1,5 @@
-import { NumberShape } from '../../main';
+import { describe, expect, test } from 'vitest';
+import { NumberShape } from '../../main/index.js';
 import {
   CODE_NUMBER_FINITE,
   CODE_NUMBER_GT,
@@ -9,7 +10,7 @@ import {
   CODE_NUMBER_MULTIPLE_OF,
   MESSAGE_NUMBER_FINITE,
   MESSAGE_NUMBER_INT,
-} from '../../main/constants';
+} from '../../main/constants.js';
 
 describe('finite', () => {
   test('allows finite numbers', () => {

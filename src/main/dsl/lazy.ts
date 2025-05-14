@@ -1,6 +1,6 @@
-import { identity } from '../internal/lang';
-import { LazyShape } from '../shape/LazyShape';
-import { AnyShape, Input } from '../shape/Shape';
+import { identity } from '../internal/lang.js';
+import { LazyShape } from '../shape/LazyShape.js';
+import { AnyShape, Input } from '../shape/Shape.js';
 
 /**
  * Creates the shape that resolves the underlying shape on-demand.

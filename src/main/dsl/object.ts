@@ -1,7 +1,7 @@
-import { ReadonlyDict } from '../internal/objects';
-import { ObjectShape } from '../shape/ObjectShape';
-import { AnyShape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { ReadonlyDict } from '../internal/objects.js';
+import { ObjectShape } from '../shape/ObjectShape.js';
+import { AnyShape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the object shape.

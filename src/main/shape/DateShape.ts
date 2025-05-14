@@ -1,11 +1,11 @@
-import { coerceToDate, dateCoercibleInputs } from '../coerce/date';
-import { NEVER } from '../coerce/never';
-import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../constants';
-import { isValidDate } from '../internal/lang';
-import { Type } from '../Type';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { Shape } from './Shape';
+import { coerceToDate, dateCoercibleInputs } from '../coerce/date.js';
+import { NEVER } from '../coerce/never.js';
+import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../constants.js';
+import { isValidDate } from '../internal/lang.js';
+import { Type } from '../Type.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { Shape } from './Shape.js';
 
 const dateInputs = Object.freeze<unknown[]>([Type.DATE]);
 

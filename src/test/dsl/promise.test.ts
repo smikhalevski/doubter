@@ -1,4 +1,5 @@
-import * as d from '../../main';
+import { describe, expect, test } from 'vitest';
+import * as d from '../../main/index.js';
 
 describe('promise', () => {
   test('returns an unconstrained Promise shape', () => {

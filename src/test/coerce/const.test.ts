@@ -1,5 +1,6 @@
-import { NEVER } from '../../main';
-import { coerceToConst } from '../../main/coerce/const';
+import { describe, expect, test } from 'vitest';
+import { NEVER } from '../../main/index.js';
+import { coerceToConst } from '../../main/coerce/const.js';
 
 describe('coerceToConst', () => {
   test('coerces to a bigint', () => {

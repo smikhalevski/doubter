@@ -1,10 +1,10 @@
-import { NEVER } from '../coerce/never';
-import { coerceToNumber, numberCoercibleInputs } from '../coerce/number';
-import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants';
-import { Type } from '../Type';
-import { Any, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { AllowShape, ReplaceShape, Shape } from './Shape';
+import { NEVER } from '../coerce/never.js';
+import { coerceToNumber, numberCoercibleInputs } from '../coerce/number.js';
+import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../constants.js';
+import { Type } from '../Type.js';
+import { Any, IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { AllowShape, ReplaceShape, Shape } from './Shape.js';
 
 const numberInputs = Object.freeze<unknown[]>([Type.NUMBER]);
 

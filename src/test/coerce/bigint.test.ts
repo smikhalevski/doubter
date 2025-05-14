@@ -1,5 +1,6 @@
-import { NEVER } from '../../main';
-import { coerceToBigInt } from '../../main/coerce/bigint';
+import { describe, expect, test } from 'vitest';
+import { NEVER } from '../../main/index.js';
+import { coerceToBigInt } from '../../main/coerce/bigint.js';
 
 describe('coerceToBigInt', () => {
   test('coerces a String object', () => {

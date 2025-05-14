@@ -1,4 +1,5 @@
-import { cloneObject, cloneRecord, pickKeys, setProperty } from '../../main/internal/objects';
+import { describe, expect, test } from 'vitest';
+import { cloneObject, cloneRecord, pickKeys, setProperty } from '../../main/internal/objects.js';
 
 describe('setProperty', () => {
   test('sets object value', () => {

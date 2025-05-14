@@ -1,8 +1,9 @@
-const Ajv = require('ajv');
-const zod = require('zod');
-const myzod = require('myzod');
-const valita = require('@badrap/valita');
-const doubter = require('../../../lib');
+import { describe, measure, test } from 'toofast';
+import * as valita from '@badrap/valita';
+import { Ajv } from 'ajv';
+import * as myzod from 'myzod';
+import * as zod from 'zod';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('object({ foo: string(), bar: number() })', () => {
   const value = {
@@ -10,7 +11,7 @@ describe('object({ foo: string(), bar: number() })', () => {
     bar: 111,
   };
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const ajv = new Ajv();
 
     const schema = {
@@ -30,7 +31,7 @@ describe('object({ foo: string(), bar: number() })', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.object({
       foo: doubter.string(),
       bar: doubter.number(),
@@ -41,7 +42,7 @@ describe('object({ foo: string(), bar: number() })', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod
       .object({
         foo: zod.string(),
@@ -54,7 +55,7 @@ describe('object({ foo: string(), bar: number() })', () => {
     });
   });
 
-  test('myzod', measure => {
+  test('myzod', () => {
     const type = myzod.object(
       {
         foo: myzod.string(),
@@ -68,7 +69,7 @@ describe('object({ foo: string(), bar: number() })', () => {
     });
   });
 
-  test('valita', measure => {
+  test('valita', () => {
     const type = valita.object({
       foo: valita.string(),
       bar: valita.number(),
@@ -88,7 +89,7 @@ describe('object({ foo: string() }).rest(string())', () => {
     bar: 'bbb',
   };
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const ajv = new Ajv();
 
     const schema = {
@@ -107,7 +108,7 @@ describe('object({ foo: string() }).rest(string())', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod
       .object({
         foo: zod.string(),
@@ -119,7 +120,7 @@ describe('object({ foo: string() }).rest(string())', () => {
     });
   });
 
-  test('valita', measure => {
+  test('valita', () => {
     const type = valita
       .object({
         foo: valita.string(),
@@ -131,7 +132,7 @@ describe('object({ foo: string() }).rest(string())', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter
       .object({
         foo: doubter.string(),
@@ -150,7 +151,7 @@ describe('object({ foo: string(), bar: number() }).exact()', () => {
     bar: 111,
   };
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const ajv = new Ajv();
 
     const schema = {
@@ -170,7 +171,7 @@ describe('object({ foo: string(), bar: number() }).exact()', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod
       .object({
         foo: zod.string(),
@@ -183,7 +184,7 @@ describe('object({ foo: string(), bar: number() }).exact()', () => {
     });
   });
 
-  test('myzod', measure => {
+  test('myzod', () => {
     const type = myzod.object({
       foo: myzod.string(),
       bar: myzod.number(),
@@ -194,7 +195,7 @@ describe('object({ foo: string(), bar: number() }).exact()', () => {
     });
   });
 
-  test('valita', measure => {
+  test('valita', () => {
     const type = valita.object({
       foo: valita.string(),
       bar: valita.number(),
@@ -205,7 +206,7 @@ describe('object({ foo: string(), bar: number() }).exact()', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter
       .object({
         foo: doubter.string(),

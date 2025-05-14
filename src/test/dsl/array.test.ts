@@ -1,5 +1,6 @@
-import * as d from '../../main';
-import { Shape } from '../../main';
+import { describe, expect, test } from 'vitest';
+import * as d from '../../main/index.js';
+import { Shape } from '../../main/index.js';
 
 describe('array', () => {
   test('returns an unconstrained array shape', () => {

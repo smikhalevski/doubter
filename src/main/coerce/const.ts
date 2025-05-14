@@ -1,11 +1,11 @@
-import { getCanonicalValue, isArray, isEqual } from '../internal/lang';
-import { Type } from '../Type';
-import { bigintCoercibleInputs, coerceToBigInt } from './bigint';
-import { booleanCoercibleInputs, coerceToBoolean } from './boolean';
-import { coerceToDate, dateCoercibleInputs } from './date';
-import { NEVER } from './never';
-import { coerceToNumber, numberCoercibleInputs } from './number';
-import { coerceToString, stringCoercibleInputs } from './string';
+import { getCanonicalValue, isArray, isEqual } from '../internal/lang.js';
+import { Type } from '../Type.js';
+import { bigintCoercibleInputs, coerceToBigInt } from './bigint.js';
+import { booleanCoercibleInputs, coerceToBoolean } from './boolean.js';
+import { coerceToDate, dateCoercibleInputs } from './date.js';
+import { NEVER } from './never.js';
+import { coerceToNumber, numberCoercibleInputs } from './number.js';
+import { coerceToString, stringCoercibleInputs } from './string.js';
 
 /**
  * The array of inputs that are coercible to `NaN` with {@link coerceToConst}.

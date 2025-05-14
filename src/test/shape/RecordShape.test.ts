@@ -1,7 +1,8 @@
-import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main';
-import { CODE_TYPE_OBJECT, CODE_TYPE_STRING, MESSAGE_TYPE_OBJECT, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { anyKeyShape } from '../../main/shape/RecordShape';
-import { AsyncMockShape } from './mocks';
+import { describe, expect, test, vi } from 'vitest';
+import { ObjectShape, Ok, RecordShape, Shape, StringShape } from '../../main/index.js';
+import { CODE_TYPE_OBJECT, CODE_TYPE_STRING, MESSAGE_TYPE_OBJECT, MESSAGE_TYPE_STRING } from '../../main/constants.js';
+import { anyKeyShape } from '../../main/shape/RecordShape.js';
+import { AsyncMockShape } from './mocks.js';
 
 describe('RecordShape', () => {
   test('raises an issue for a non-object input value', () => {
@@ -272,7 +273,7 @@ describe('RecordShape', () => {
     });
 
     test('does not swallow errors thrown by key shape', async () => {
-      const keyCheck = jest
+      const keyCheck = vi
         .fn()
         .mockImplementationOnce(value => value)
         .mockImplementationOnce(() => {

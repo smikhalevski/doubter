@@ -1,7 +1,8 @@
-import { StringShape } from '../../main';
-import { stringCoercibleInputs } from '../../main/coerce/string';
-import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { describe, expect, test } from 'vitest';
+import { StringShape } from '../../main/index.js';
+import { stringCoercibleInputs } from '../../main/coerce/string.js';
+import { CODE_STRING_MIN, CODE_STRING_REGEX, CODE_TYPE_STRING, MESSAGE_TYPE_STRING } from '../../main/constants.js';
+import { Type } from '../../main/Type.js';
 
 describe('StringShape', () => {
   test('creates a string shape', () => {

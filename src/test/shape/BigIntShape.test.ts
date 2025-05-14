@@ -1,7 +1,8 @@
-import { BigIntShape } from '../../main';
-import { bigintCoercibleInputs } from '../../main/coerce/bigint';
-import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { describe, expect, test } from 'vitest';
+import { BigIntShape } from '../../main/index.js';
+import { bigintCoercibleInputs } from '../../main/coerce/bigint.js';
+import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../../main/constants.js';
+import { Type } from '../../main/Type.js';
 
 describe('BigIntShape', () => {
   test('creates a BigIntShape', () => {

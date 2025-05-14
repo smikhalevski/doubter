@@ -1,5 +1,6 @@
-import * as d from '../../main';
-import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../../main/constants';
+import { describe, expect, test } from 'vitest';
+import * as d from '../../main/index.js';
+import { CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../../main/constants.js';
 
 describe('number', () => {
   test('returns a number shape', () => {

@@ -1,4 +1,5 @@
-import { createIssue } from '../main/utils';
+import { describe, expect, test } from 'vitest';
+import { createIssue } from '../main/utils.js';
 
 describe('createIssue', () => {
   test('uses the default message', () => {

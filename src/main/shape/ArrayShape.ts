@@ -1,14 +1,22 @@
-import { coerceToArray } from '../coerce/array';
-import { NEVER } from '../coerce/never';
-import { CODE_TYPE_ARRAY, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants';
-import { toArrayIndex } from '../internal/arrays';
-import { isArray } from '../internal/lang';
-import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { Type } from '../Type';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { ReadonlyShape } from './ReadonlyShape';
-import { AnyShape, DeepPartialProtocol, INPUT, OptionalDeepPartialShape, OUTPUT, Shape, unknownInputs } from './Shape';
+import { coerceToArray } from '../coerce/array.js';
+import { NEVER } from '../coerce/never.js';
+import { CODE_TYPE_ARRAY, CODE_TYPE_TUPLE, MESSAGE_TYPE_ARRAY, MESSAGE_TYPE_TUPLE } from '../constants.js';
+import { toArrayIndex } from '../internal/arrays.js';
+import { isArray } from '../internal/lang.js';
+import { applyShape, concatIssues, isAsyncShapes, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { ReadonlyShape } from './ReadonlyShape.js';
+import {
+  AnyShape,
+  DeepPartialProtocol,
+  INPUT,
+  OptionalDeepPartialShape,
+  OUTPUT,
+  Shape,
+  unknownInputs,
+} from './Shape.js';
 
 const arrayInputs = Object.freeze<unknown[]>([Type.ARRAY]);
 const arrayCoercibleInputs = Object.freeze<unknown[]>([Type.OBJECT, Type.ARRAY]);

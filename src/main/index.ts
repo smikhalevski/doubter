@@ -8,21 +8,21 @@
  * @module core
  */
 
-import './plugin/array-essentials';
-import './plugin/bigint-essentials';
-import './plugin/date-essentials';
-import './plugin/number-essentials';
-import './plugin/object-essentials';
-import './plugin/object-eval';
-import './plugin/set-essentials';
-import './plugin/string-essentials';
+import './plugin/array-essentials.js';
+import './plugin/bigint-essentials.js';
+import './plugin/date-essentials.js';
+import './plugin/number-essentials.js';
+import './plugin/object-essentials.js';
+import './plugin/object-eval.js';
+import './plugin/set-essentials.js';
+import './plugin/string-essentials.js';
 
-export type * from './plugin/array-essentials';
-export type * from './plugin/bigint-essentials';
-export type * from './plugin/date-essentials';
-export type * from './plugin/number-essentials';
-export type * from './plugin/object-essentials';
-export type * from './plugin/set-essentials';
-export type * from './plugin/string-essentials';
+export type * from './plugin/array-essentials.js';
+export type * from './plugin/bigint-essentials.js';
+export type * from './plugin/date-essentials.js';
+export type * from './plugin/number-essentials.js';
+export type * from './plugin/object-essentials.js';
+export type * from './plugin/set-essentials.js';
+export type * from './plugin/string-essentials.js';
 
-export * from './core';
+export * from './core.js';

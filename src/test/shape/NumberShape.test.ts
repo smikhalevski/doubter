@@ -1,7 +1,13 @@
-import { NumberShape } from '../../main';
-import { numberCoercibleInputs } from '../../main/coerce/number';
-import { CODE_NUMBER_GT, CODE_NUMBER_MULTIPLE_OF, CODE_TYPE_NUMBER, MESSAGE_TYPE_NUMBER } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { describe, expect, test } from 'vitest';
+import { NumberShape } from '../../main/index.js';
+import { numberCoercibleInputs } from '../../main/coerce/number.js';
+import {
+  CODE_NUMBER_GT,
+  CODE_NUMBER_MULTIPLE_OF,
+  CODE_TYPE_NUMBER,
+  MESSAGE_TYPE_NUMBER,
+} from '../../main/constants.js';
+import { Type } from '../../main/Type.js';
 
 describe('NumberShape', () => {
   test('creates a NumberShape', () => {

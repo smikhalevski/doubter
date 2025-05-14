@@ -1,5 +1,5 @@
-import { StringShape } from '../shape/StringShape';
-import { IssueOptions, Message } from '../types';
+import { StringShape } from '../shape/StringShape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the string shape.

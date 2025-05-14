@@ -1,4 +1,5 @@
-import { getBit, toggleBit } from '../../main/internal/bitmasks';
+import { describe, expect, test } from 'vitest';
+import { getBit, toggleBit } from '../../main/internal/bitmasks.js';
 
 describe('toggleBit', () => {
   test('sets bit', () => {

@@ -1,7 +1,7 @@
-import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../constants';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { Shape } from './Shape';
+import { CODE_TYPE_NEVER, MESSAGE_TYPE_NEVER } from '../constants.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { Shape } from './Shape.js';
 
 const neverInputs = Object.freeze<unknown[]>([]);
 

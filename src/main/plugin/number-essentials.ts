@@ -26,10 +26,10 @@ import {
   MESSAGE_NUMBER_LT,
   MESSAGE_NUMBER_LTE,
   MESSAGE_NUMBER_MULTIPLE_OF,
-} from '../constants';
-import { NumberShape } from '../shape/NumberShape';
-import { IssueOptions, Message } from '../types';
-import { createIssue, toIssueOptions } from '../utils';
+} from '../constants.js';
+import { NumberShape } from '../shape/NumberShape.js';
+import { IssueOptions, Message } from '../types.js';
+import { createIssue, toIssueOptions } from '../utils.js';
 
 export interface MultipleOfOptions extends IssueOptions {
   /**
@@ -52,7 +52,7 @@ export interface MultipleOfOptions extends IssueOptions {
   precision?: number;
 }
 
-declare module '../core' {
+declare module '../core.js' {
   export interface NumberShape {
     /**
      * Constrains the number to be a finite number.

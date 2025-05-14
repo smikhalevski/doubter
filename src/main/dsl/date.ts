@@ -1,5 +1,5 @@
-import { DateShape } from '../shape/DateShape';
-import { IssueOptions, Message } from '../types';
+import { DateShape } from '../shape/DateShape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the {@link !Date} shape.

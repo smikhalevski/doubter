@@ -1,7 +1,8 @@
-import { DateShape } from '../../main';
-import { dateCoercibleInputs } from '../../main/coerce/date';
-import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { describe, expect, test } from 'vitest';
+import { DateShape } from '../../main/index.js';
+import { dateCoercibleInputs } from '../../main/coerce/date.js';
+import { CODE_TYPE_DATE, MESSAGE_TYPE_DATE } from '../../main/constants.js';
+import { Type } from '../../main/Type.js';
 
 describe('DateShape', () => {
   test('creates a DateShape', () => {

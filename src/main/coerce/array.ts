@@ -1,5 +1,5 @@
-import { unique } from '../internal/arrays';
-import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang';
+import { unique } from '../internal/arrays.js';
+import { getCanonicalValue, isArray, isIterableObject } from '../internal/lang.js';
 
 /**
  * Coerces a value to an array.

@@ -1,6 +1,6 @@
-import { getCanonicalValue, isArray } from '../internal/lang';
-import { Type } from '../Type';
-import { NEVER } from './never';
+import { getCanonicalValue, isArray } from '../internal/lang.js';
+import { Type } from '../Type.js';
+import { NEVER } from './never.js';
 
 /**
  * The array of inputs that are coercible to a boolean with {@link coerceToBoolean}.

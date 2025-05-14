@@ -1,14 +1,14 @@
-import { coerceToUniqueArray } from '../coerce/array';
-import { NEVER } from '../coerce/never';
-import { CODE_TYPE_SET, MESSAGE_TYPE_SET } from '../constants';
-import { toArrayIndex } from '../internal/arrays';
-import { isArray } from '../internal/lang';
-import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes';
-import { Type } from '../Type';
-import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape';
-import { ReadonlyShape } from './ReadonlyShape';
+import { coerceToUniqueArray } from '../coerce/array.js';
+import { NEVER } from '../coerce/never.js';
+import { CODE_TYPE_SET, MESSAGE_TYPE_SET } from '../constants.js';
+import { toArrayIndex } from '../internal/arrays.js';
+import { isArray } from '../internal/lang.js';
+import { concatIssues, toDeepPartialShape, unshiftIssuesPath } from '../internal/shapes.js';
+import { Type } from '../Type.js';
+import { Issue, IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { AnyShape, DeepPartialProtocol, Input, OptionalDeepPartialShape, Output, Shape } from './Shape.js';
+import { ReadonlyShape } from './ReadonlyShape.js';
 
 const setInputs = Object.freeze<unknown[]>([Type.SET]);
 

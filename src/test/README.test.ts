@@ -1,8 +1,9 @@
+import { describe, expect, test } from 'vitest';
 import qs from 'qs';
-import * as d from '../main';
-import { Result } from '../main';
-import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../main/constants';
-import { Type } from '../main/Type';
+import * as d from '../main/index.js';
+import { Result } from '../main/index.js';
+import { CODE_TYPE_UNION, MESSAGE_TYPE_UNION } from '../main/constants.js';
+import { Type } from '../main/Type.js';
 
 describe('Cookbook', () => {
   test('Type-safe URL query params', () => {
@@ -19,6 +20,8 @@ describe('Cookbook', () => {
   });
 
   test('Type-safe env variables', () => {
+    const processEnv = { NODE_ENV: 'test' };
+
     const envShape = d
       .object({
         NODE_ENV: d.enum(['test', 'production']),
@@ -26,7 +29,7 @@ describe('Cookbook', () => {
       })
       .strip();
 
-    expect(envShape.parse(process.env)).toEqual({
+    expect(envShape.parse(processEnv)).toEqual({
       NODE_ENV: 'test',
     });
 

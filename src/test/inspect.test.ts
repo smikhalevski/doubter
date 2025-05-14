@@ -1,4 +1,5 @@
-import { inspect, isUnquotedKey } from '../main/inspect';
+import { describe, expect, test } from 'vitest';
+import { inspect, isUnquotedKey } from '../main/inspect.js';
 
 describe('isUnquotedKey', () => {
   test('returns true if string is an identifier', () => {

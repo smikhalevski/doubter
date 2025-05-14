@@ -1,5 +1,6 @@
-import { DateShape } from '../../main';
-import { CODE_DATE_MAX, CODE_DATE_MIN } from '../../main/constants';
+import { describe, expect, test } from 'vitest';
+import { DateShape } from '../../main/index.js';
+import { CODE_DATE_MAX, CODE_DATE_MIN } from '../../main/constants.js';
 
 const currDate = new Date(Date.UTC(2024, 8, 2, 16, 15, 53, 299));
 const prevDate = new Date(currDate.getTime() - 1);

@@ -1,4 +1,5 @@
-const { inspect } = require('../../../lib/utils');
+import { describe, measure, test } from 'toofast';
+import { inspect } from '../../../lib/utils.mjs';
 
 describe('inspect', () => {
   const value = {
@@ -11,13 +12,13 @@ describe('inspect', () => {
     },
   };
 
-  test('inspect(…)', measure => {
+  test('inspect(…)', () => {
     measure(() => {
       inspect(value);
     });
   });
 
-  test('JSON.stringify(…)', measure => {
+  test('JSON.stringify(…)', () => {
     measure(() => {
       JSON.stringify(value);
     });

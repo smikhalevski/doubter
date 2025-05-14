@@ -1,9 +1,9 @@
-import { ERROR_SHAPE_EXPECTED } from '../constants';
-import { identity, isArray } from '../internal/lang';
-import { defineReadonlyProperty } from '../internal/objects';
-import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes';
-import { Any, ParseOptions, Result } from '../types';
-import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape';
+import { ERROR_SHAPE_EXPECTED } from '../constants.js';
+import { identity, isArray } from '../internal/lang.js';
+import { defineReadonlyProperty } from '../internal/objects.js';
+import { captureIssues, copyOperations, ok, toDeepPartialShape } from '../internal/shapes.js';
+import { Any, ParseOptions, Result } from '../types.js';
+import { AnyShape, DeepPartialProtocol, DeepPartialShape, Input, Output, Shape } from './Shape.js';
 
 /**
  * Lazily loads a shape using the provider callback.

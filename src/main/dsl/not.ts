@@ -1,5 +1,5 @@
-import { AnyShape, NotShape, Shape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { AnyShape, NotShape, Shape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates the shape that only allows values that don't conform the shape.

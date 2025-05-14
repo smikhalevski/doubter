@@ -1,5 +1,6 @@
-import { distributeTypes, unionTypes } from '../../main/internal/types';
-import { Type } from '../../main/Type';
+import { expect, test } from 'vitest';
+import { distributeTypes, unionTypes } from '../../main/internal/types.js';
+import { Type } from '../../main/Type.js';
 
 test('unionTypes', () => {
   expect(unionTypes([])).toEqual([]);

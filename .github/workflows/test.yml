@@ -4,9 +4,7 @@ on:
   pull_request:
     paths:
       - "src/**"
-      - "jest.config.json"
       - "package-lock.json"
-      - "rollup.config.js"
       - "tsconfig.json"
 
 concurrency:

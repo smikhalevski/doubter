@@ -1,7 +1,8 @@
-import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main';
-import { CODE_TYPE_MAP, CODE_TYPE_STRING, MESSAGE_TYPE_MAP, MESSAGE_TYPE_STRING } from '../../main/constants';
-import { Type } from '../../main/Type';
-import { AsyncMockShape } from './mocks';
+import { describe, expect, test, vi } from 'vitest';
+import { MapShape, ObjectShape, Ok, Shape, StringShape } from '../../main/index.js';
+import { CODE_TYPE_MAP, CODE_TYPE_STRING, MESSAGE_TYPE_MAP, MESSAGE_TYPE_STRING } from '../../main/constants.js';
+import { Type } from '../../main/Type.js';
+import { AsyncMockShape } from './mocks.js';
 
 describe('MapShape', () => {
   test('creates a MapShape', () => {
@@ -407,7 +408,7 @@ describe('MapShape', () => {
     });
 
     test('does not swallow errors thrown by key shape', async () => {
-      const keyCheck = jest
+      const keyCheck = vi
         .fn()
         .mockImplementationOnce(value => value)
         .mockImplementationOnce(() => {

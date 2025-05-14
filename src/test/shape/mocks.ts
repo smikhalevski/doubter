@@ -1,4 +1,5 @@
-import { ParseOptions, Result, Shape } from '../../main/core';
+import { vi } from 'vitest';
+import { ParseOptions, Result, Shape } from '../../main/core.js';
 
 export class MockShape extends Shape {
   constructor() {
@@ -27,8 +28,8 @@ export class AsyncMockShape extends MockShape {
 }
 
 export function spyOnShape(shape: Shape): MockShape {
-  shape['_apply'] = jest.fn(shape['_apply']);
-  shape['_applyAsync'] = jest.fn(shape['_applyAsync']);
+  shape['_apply'] = vi.fn(shape['_apply']);
+  shape['_applyAsync'] = vi.fn(shape['_applyAsync']);
 
   return shape as MockShape;
 }

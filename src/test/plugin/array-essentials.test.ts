@@ -1,5 +1,6 @@
-import { ArrayShape, ConstShape, Shape } from '../../main';
-import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN, MESSAGE_ARRAY_INCLUDES } from '../../main/constants';
+import { describe, expect, test } from 'vitest';
+import { ArrayShape, ConstShape, Shape } from '../../main/index.js';
+import { CODE_ARRAY_INCLUDES, CODE_ARRAY_MAX, CODE_ARRAY_MIN, MESSAGE_ARRAY_INCLUDES } from '../../main/constants.js';
 
 describe('length', () => {
   test('checks length', () => {

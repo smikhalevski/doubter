@@ -1,10 +1,10 @@
-import { bigintCoercibleInputs, coerceToBigInt } from '../coerce/bigint';
-import { NEVER } from '../coerce/never';
-import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../constants';
-import { Type } from '../Type';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { Shape } from './Shape';
+import { bigintCoercibleInputs, coerceToBigInt } from '../coerce/bigint.js';
+import { NEVER } from '../coerce/never.js';
+import { CODE_TYPE_BIGINT, MESSAGE_TYPE_BIGINT } from '../constants.js';
+import { Type } from '../Type.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { Shape } from './Shape.js';
 
 const bigintInputs = Object.freeze<unknown[]>([Type.BIGINT]);
 

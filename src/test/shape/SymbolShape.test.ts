@@ -1,6 +1,7 @@
-import { SymbolShape } from '../../main';
-import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../../main/constants';
-import { Type } from '../../main/Type';
+import { describe, expect, test } from 'vitest';
+import { SymbolShape } from '../../main/index.js';
+import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../../main/constants.js';
+import { Type } from '../../main/Type.js';
 
 describe('SymbolShape', () => {
   test('creates a SymbolShape', () => {

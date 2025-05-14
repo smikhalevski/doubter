@@ -1,6 +1,6 @@
-import { IntersectionShape } from '../shape/IntersectionShape';
-import { AnyShape } from '../shape/Shape';
-import { IssueOptions, Message } from '../types';
+import { IntersectionShape } from '../shape/IntersectionShape.js';
+import { AnyShape } from '../shape/Shape.js';
+import { IssueOptions, Message } from '../types.js';
 
 /**
  * Creates an intersection shape that tries to parse the input with all provided shapes and merge parsing results.

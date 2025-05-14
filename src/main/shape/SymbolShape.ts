@@ -1,8 +1,8 @@
-import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../constants';
-import { Type } from '../Type';
-import { IssueOptions, Message, ParseOptions, Result } from '../types';
-import { createIssue } from '../utils';
-import { Shape } from './Shape';
+import { CODE_TYPE_SYMBOL, MESSAGE_TYPE_SYMBOL } from '../constants.js';
+import { Type } from '../Type.js';
+import { IssueOptions, Message, ParseOptions, Result } from '../types.js';
+import { createIssue } from '../utils.js';
+import { Shape } from './Shape.js';
 
 const symbolInputs = Object.freeze<unknown[]>([Type.SYMBOL]);
 

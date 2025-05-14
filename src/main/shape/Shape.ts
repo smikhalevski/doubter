@@ -5,9 +5,9 @@ import {
   MESSAGE_ANY_DENY,
   MESSAGE_ANY_EXCLUDE,
   MESSAGE_ANY_REFINE,
-} from '../constants';
-import { isArray, isEqual } from '../internal/lang';
-import { defineReadonlyProperty, Dict, ReadonlyDict } from '../internal/objects';
+} from '../constants.js';
+import { isArray, isEqual } from '../internal/lang.js';
+import { defineReadonlyProperty, Dict, ReadonlyDict } from '../internal/objects.js';
 import {
   adaptCheckResult,
   applyOperations,
@@ -19,9 +19,9 @@ import {
   Promisify,
   throwSyncUnsupported,
   toDeepPartialShape,
-} from '../internal/shapes';
-import { isType, unionTypes } from '../internal/types';
-import { Type } from '../Type';
+} from '../internal/shapes.js';
+import { isType, unionTypes } from '../internal/types.js';
+import { Type } from '../Type.js';
 import {
   Any,
   CheckResult,
@@ -39,9 +39,9 @@ import {
   RefineOptions,
   RefinePredicate,
   Result,
-} from '../types';
-import { createIssue, toIssueOptions } from '../utils';
-import { ValidationError } from '../ValidationError';
+} from '../types.js';
+import { createIssue, toIssueOptions } from '../utils.js';
+import { ValidationError } from '../ValidationError.js';
 
 export const unknownInputs = Object.freeze<unknown[]>([Type.UNKNOWN]);
 
@@ -1365,7 +1365,7 @@ export class ReplaceShape<BaseShape extends AnyShape, InputValue, OutputValue>
      */
     readonly inputValue: InputValue,
     /**
-     * The output value that is returned if an {@link inputValue} is received.
+     * The output value that is returned if an {@link ReplaceShape.inputValue} is received.
      */
     readonly outputValue: OutputValue
   ) {
