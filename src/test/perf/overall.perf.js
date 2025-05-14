@@ -1,9 +1,10 @@
-const Ajv = require('ajv');
-const zod = require('zod');
-const myzod = require('myzod');
-const valita = require('@badrap/valita');
-const valibot = require('valibot');
-const doubter = require('../../../lib');
+import { describe, measure, test } from 'toofast';
+import * as valita from '@badrap/valita';
+import { Ajv } from 'ajv';
+import * as myzod from 'myzod';
+import * as valibot from 'valibot';
+import * as zod from 'zod';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('Overall', () => {
   const createOverallTests = (isSuccessMeasureEnabled, isFailureMeasureEnabled) => {
@@ -28,7 +29,7 @@ describe('Overall', () => {
     };
 
     describe('Loose validation', () => {
-      test('doubter', measure => {
+      test('doubter', () => {
         const shape = doubter.object({
           a1: doubter.array(doubter.number().int()),
           a2: doubter.string().min(3),
@@ -52,7 +53,7 @@ describe('Overall', () => {
         }
       });
 
-      test('Ajv', measure => {
+      test('Ajv', () => {
         const ajv = new Ajv();
 
         const schema = {
@@ -104,7 +105,7 @@ describe('Overall', () => {
         }
       });
 
-      test('zod', measure => {
+      test('zod', () => {
         const type = zod
           .object({
             a1: zod.array(zod.number().int()),
@@ -132,7 +133,7 @@ describe('Overall', () => {
         }
       });
 
-      test('myzod', measure => {
+      test('myzod', () => {
         const type = myzod.object(
           {
             a1: myzod.array(myzod.number().withPredicate(Number.isInteger)),
@@ -162,7 +163,7 @@ describe('Overall', () => {
         }
       });
 
-      test('valita', measure => {
+      test('valita', () => {
         const type = valita.object({
           a1: valita.array(valita.number().assert(Number.isInteger)),
           a2: valita.string().assert(value => value.length >= 3),
@@ -188,10 +189,10 @@ describe('Overall', () => {
         }
       });
 
-      test('valibot', measure => {
+      test('valibot', () => {
         const schema = valibot.object({
-          a1: valibot.array(valibot.number([valibot.integer()])),
-          a2: valibot.string([valibot.minLength(3)]),
+          a1: valibot.array(valibot.pipe(valibot.number(), valibot.integer())),
+          a2: valibot.pipe(valibot.string(), valibot.minLength(3)),
           a3: valibot.boolean(),
           a4: valibot.object({
             a41: valibot.picklist(['foo', 'bar']),
@@ -214,7 +215,7 @@ describe('Overall', () => {
     });
 
     describe('Strict validation', () => {
-      test('doubter', measure => {
+      test('doubter', () => {
         const shape = doubter
           .object({
             a1: doubter.array(doubter.number().int()),
@@ -242,7 +243,7 @@ describe('Overall', () => {
         }
       });
 
-      test('Ajv', measure => {
+      test('Ajv', () => {
         const ajv = new Ajv();
 
         const schema = {
@@ -296,7 +297,7 @@ describe('Overall', () => {
         }
       });
 
-      test('zod', measure => {
+      test('zod', () => {
         const type = zod.object({
           a1: zod.array(zod.number().int()),
           a2: zod.string().min(3),
@@ -320,7 +321,7 @@ describe('Overall', () => {
         }
       });
 
-      test('myzod', measure => {
+      test('myzod', () => {
         const type = myzod.object({
           a1: myzod.array(myzod.number().withPredicate(Number.isInteger)),
           a2: myzod.string().min(3),
@@ -344,7 +345,7 @@ describe('Overall', () => {
         }
       });
 
-      test('valita', measure => {
+      test('valita', () => {
         const type = valita.object({
           a1: valita.array(valita.number().assert(Number.isInteger)),
           a2: valita.string().assert(value => value.length >= 3),
@@ -368,19 +369,16 @@ describe('Overall', () => {
         }
       });
 
-      test('valibot', measure => {
-        const schema = valibot.object(
-          {
-            a1: valibot.array(valibot.number([valibot.integer()])),
-            a2: valibot.string([valibot.minLength(3)]),
-            a3: valibot.boolean(),
-            a4: valibot.object({
-              a41: valibot.picklist(['foo', 'bar']),
-              a42: valibot.number(),
-            }),
-          },
-          valibot.never()
-        );
+      test('valibot', () => {
+        const schema = valibot.strictObject({
+          a1: valibot.array(valibot.pipe(valibot.number(), valibot.integer())),
+          a2: valibot.pipe(valibot.string(), valibot.minLength(3)),
+          a3: valibot.boolean(),
+          a4: valibot.object({
+            a41: valibot.picklist(['foo', 'bar']),
+            a42: valibot.number(),
+          }),
+        });
 
         if (isSuccessMeasureEnabled) {
           measure(() => {
@@ -418,7 +416,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
   };
 
   describe('Loose validation', () => {
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const ajv = new Ajv();
 
       const schema = {
@@ -470,7 +468,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod
         .object({
           a1: zod.number(),
@@ -494,7 +492,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.object(
         {
           a1: myzod.number(),
@@ -520,7 +518,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.object({
         a1: valita.number(),
         a2: valita.number(),
@@ -542,7 +540,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('valibot', measure => {
+    test('valibot', () => {
       const schema = valibot.object({
         a1: valibot.number(),
         a2: valibot.number(),
@@ -562,7 +560,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.object({
         a1: doubter.number(),
         a2: doubter.number(),
@@ -584,7 +582,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
   });
 
   describe('Strict validation', () => {
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const ajv = new Ajv();
 
       const schema = {
@@ -638,7 +636,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.object({
         a1: zod.number(),
         a2: zod.number(),
@@ -658,7 +656,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.object({
         a1: myzod.number(),
         a2: myzod.number(),
@@ -678,7 +676,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.object({
         a1: valita.number(),
         a2: valita.number(),
@@ -698,30 +696,27 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
       });
     });
 
-    test('valibot', measure => {
-      const schema = valibot.object(
-        {
-          a1: valibot.number(),
-          a2: valibot.number(),
-          a3: valibot.number(),
-          a4: valibot.string(),
-          a5: valibot.string(),
-          a6: valibot.boolean(),
-          a7: valibot.object({
-            a71: valibot.string(),
-            a72: valibot.number(),
-            a73: valibot.boolean(),
-          }),
-        },
-        valibot.never()
-      );
+    test('valibot', () => {
+      const schema = valibot.strictObject({
+        a1: valibot.number(),
+        a2: valibot.number(),
+        a3: valibot.number(),
+        a4: valibot.string(),
+        a5: valibot.string(),
+        a6: valibot.boolean(),
+        a7: valibot.object({
+          a71: valibot.string(),
+          a72: valibot.number(),
+          a73: valibot.boolean(),
+        }),
+      });
 
       measure(() => {
         valibot.parse(schema, value);
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter
         .object({
           a1: doubter.number(),

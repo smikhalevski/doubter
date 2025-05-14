@@ -1,12 +1,13 @@
-const Ajv = require('ajv');
-const zod = require('zod');
-const myzod = require('myzod');
-const valita = require('@badrap/valita');
-const doubter = require('../../../lib');
+import { describe, measure, test } from 'toofast';
+import * as valita from '@badrap/valita';
+import { Ajv } from 'ajv';
+import * as myzod from 'myzod';
+import * as zod from 'zod';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('or([string(), number(), boolean()])', () => {
   const createTests = value => {
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const ajv = new Ajv({ allowUnionTypes: true });
 
       const schema = {
@@ -22,7 +23,7 @@ describe('or([string(), number(), boolean()])', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.union([zod.string(), zod.number(), zod.boolean()]);
 
       measure(() => {
@@ -30,7 +31,7 @@ describe('or([string(), number(), boolean()])', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.union([myzod.string(), myzod.number(), myzod.boolean()]);
 
       measure(() => {
@@ -38,7 +39,7 @@ describe('or([string(), number(), boolean()])', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.union(valita.string(), valita.number(), valita.boolean());
 
       measure(() => {
@@ -46,7 +47,7 @@ describe('or([string(), number(), boolean()])', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.or([doubter.string(), doubter.number(), doubter.boolean()]);
 
       measure(() => {
@@ -64,7 +65,7 @@ describe('or([string(), number(), boolean()])', () => {
 
 describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
   const createTests = value => {
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const ajv = new Ajv({ allowUnionTypes: true });
 
       const schema = {
@@ -95,7 +96,7 @@ describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.union([
         zod.object({ foo: zod.string() }).passthrough(),
         zod.object({ bar: zod.number() }).passthrough(),
@@ -106,7 +107,7 @@ describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.union([
         myzod.object({ foo: myzod.string() }, { allowUnknown: true }),
         myzod.object({ bar: myzod.number() }, { allowUnknown: true }),
@@ -117,7 +118,7 @@ describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.union(valita.object({ foo: valita.string() }), valita.object({ bar: valita.number() }));
       const options = { mode: 'passthrough' };
 
@@ -126,7 +127,7 @@ describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.or([doubter.object({ foo: doubter.string() }), doubter.object({ bar: doubter.number() })]);
 
       measure(() => {
@@ -142,7 +143,7 @@ describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
 
 describe('or([object({ foo: string() }), array(number())])', () => {
   const createTests = value => {
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const ajv = new Ajv({ allowUnionTypes: true });
 
       const schema = {
@@ -172,7 +173,7 @@ describe('or([object({ foo: string() }), array(number())])', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.union([zod.object({ foo: zod.string() }).passthrough(), zod.array(zod.number())]);
 
       measure(() => {
@@ -180,7 +181,7 @@ describe('or([object({ foo: string() }), array(number())])', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.union([
         myzod.object({ foo: myzod.string() }, { allowUnknown: true }),
         myzod.array(myzod.number()),
@@ -191,7 +192,7 @@ describe('or([object({ foo: string() }), array(number())])', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.union(valita.object({ foo: valita.string() }), valita.array(valita.number()));
       const options = { mode: 'passthrough' };
 
@@ -200,7 +201,7 @@ describe('or([object({ foo: string() }), array(number())])', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.or([doubter.object({ foo: doubter.string() }), doubter.array(doubter.number())]);
 
       measure(() => {
@@ -216,7 +217,7 @@ describe('or([object({ foo: string() }), array(number())])', () => {
 
 describe('or([object({ type: const("foo") }), object({ type: const("bar") })])', () => {
   const createTests = value => {
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const ajv = new Ajv({ allowUnionTypes: true });
 
       const schema = {
@@ -247,7 +248,7 @@ describe('or([object({ type: const("foo") }), object({ type: const("bar") })])',
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.discriminatedUnion('type', [
         zod.object({ type: zod.literal('foo') }).passthrough(),
         zod.object({ type: zod.literal('bar') }).passthrough(),
@@ -258,7 +259,7 @@ describe('or([object({ type: const("foo") }), object({ type: const("bar") })])',
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.union([
         myzod.object({ type: myzod.literal('foo') }, { allowUnknown: true }),
         myzod.object({ type: myzod.literal('bar') }, { allowUnknown: true }),
@@ -269,7 +270,7 @@ describe('or([object({ type: const("foo") }), object({ type: const("bar") })])',
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.union(
         valita.object({ type: valita.literal('foo') }),
         valita.object({ type: valita.literal('bar') })
@@ -282,7 +283,7 @@ describe('or([object({ type: const("foo") }), object({ type: const("bar") })])',
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.or([
         doubter.object({ type: doubter.const('foo') }),
         doubter.object({ type: doubter.const('bar') }),

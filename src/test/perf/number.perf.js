@@ -1,13 +1,14 @@
-const Ajv = require('ajv');
-const zod = require('zod');
-const myzod = require('myzod');
-const valita = require('@badrap/valita');
-const doubter = require('../../../lib');
+import { describe, measure, test } from 'toofast';
+import * as valita from '@badrap/valita';
+import { Ajv } from 'ajv';
+import * as myzod from 'myzod';
+import * as zod from 'zod';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('number()', () => {
   const value = 4;
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const validate = new Ajv().compile({
       $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'number',
@@ -18,7 +19,7 @@ describe('number()', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.number();
 
     measure(() => {
@@ -26,7 +27,7 @@ describe('number()', () => {
     });
   });
 
-  test('myzod', measure => {
+  test('myzod', () => {
     const type = myzod.number();
 
     measure(() => {
@@ -34,7 +35,7 @@ describe('number()', () => {
     });
   });
 
-  test('valita', measure => {
+  test('valita', () => {
     const type = valita.number();
 
     measure(() => {
@@ -42,7 +43,7 @@ describe('number()', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.number();
 
     measure(() => {
@@ -54,7 +55,7 @@ describe('number()', () => {
 describe('number().multipleOf(1)', () => {
   const value = 49;
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const validate = new Ajv().compile({
       $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'number',
@@ -66,7 +67,7 @@ describe('number().multipleOf(1)', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.number().multipleOf(1);
 
     measure(() => {
@@ -74,7 +75,7 @@ describe('number().multipleOf(1)', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.number().multipleOf(1);
 
     measure(() => {
@@ -86,7 +87,7 @@ describe('number().multipleOf(1)', () => {
 describe('number().gte(1).lte(5)', () => {
   const value = 4;
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const validate = new Ajv().compile({
       $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'number',
@@ -99,7 +100,7 @@ describe('number().gte(1).lte(5)', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.number().min(1).max(5);
 
     measure(() => {
@@ -107,7 +108,7 @@ describe('number().gte(1).lte(5)', () => {
     });
   });
 
-  test('myzod', measure => {
+  test('myzod', () => {
     const type = myzod.number().min(1).max(5);
 
     measure(() => {
@@ -115,7 +116,7 @@ describe('number().gte(1).lte(5)', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.number().gte(1).lte(5);
 
     measure(() => {
@@ -127,7 +128,7 @@ describe('number().gte(1).lte(5)', () => {
 describe('number().int()', () => {
   const value = 4;
 
-  test('Ajv', measure => {
+  test('Ajv', () => {
     const validate = new Ajv().compile({
       $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'integer',
@@ -138,7 +139,7 @@ describe('number().int()', () => {
     });
   });
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.number().int();
 
     measure(() => {
@@ -146,7 +147,7 @@ describe('number().int()', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.number().int();
 
     measure(() => {

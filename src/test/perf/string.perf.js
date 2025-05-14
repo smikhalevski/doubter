@@ -1,14 +1,15 @@
-const Ajv = require('ajv');
-const zod = require('zod');
-const myzod = require('myzod');
-const valita = require('@badrap/valita');
-const doubter = require('../../../lib');
+import { describe, measure, test } from 'toofast';
+import * as valita from '@badrap/valita';
+import { Ajv } from 'ajv';
+import * as myzod from 'myzod';
+import * as zod from 'zod';
+import * as doubter from '../../../lib/index.mjs';
 
 describe('string()', () => {
   describe('"aaa"', () => {
     const value = 'aaa';
 
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const validate = new Ajv().compile({
         $schema: 'http://json-schema.org/draft-07/schema#',
         type: 'string',
@@ -19,7 +20,7 @@ describe('string()', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.string();
 
       measure(() => {
@@ -27,7 +28,7 @@ describe('string()', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.string();
 
       measure(() => {
@@ -35,7 +36,7 @@ describe('string()', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.string();
 
       measure(() => {
@@ -43,7 +44,7 @@ describe('string()', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.string();
 
       measure(() => {
@@ -55,7 +56,7 @@ describe('string()', () => {
   describe('111', () => {
     const value = 111;
 
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const validate = new Ajv().compile({
         $schema: 'http://json-schema.org/draft-07/schema#',
         type: 'string',
@@ -66,7 +67,7 @@ describe('string()', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.string();
 
       measure(() => {
@@ -74,7 +75,7 @@ describe('string()', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.string();
 
       measure(() => {
@@ -82,7 +83,7 @@ describe('string()', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.string();
 
       measure(() => {
@@ -90,7 +91,7 @@ describe('string()', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.string();
 
       measure(() => {
@@ -104,7 +105,7 @@ describe('string().min(3)', () => {
   const createTests = () => {
     const value = 'aaa';
 
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const validate = new Ajv().compile({
         $schema: 'http://json-schema.org/draft-07/schema#',
         type: 'string',
@@ -116,7 +117,7 @@ describe('string().min(3)', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.string().min(3);
 
       measure(() => {
@@ -124,7 +125,7 @@ describe('string().min(3)', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.string().min(3);
 
       measure(() => {
@@ -132,7 +133,7 @@ describe('string().min(3)', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita.string().assert(v => v.length >= 3);
 
       measure(() => {
@@ -140,7 +141,7 @@ describe('string().min(3)', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.string().min(3);
 
       measure(() => {
@@ -158,7 +159,7 @@ describe('string().min(3).max(3)', () => {
   const createTests = () => {
     const value = 'aaa';
 
-    test('Ajv', measure => {
+    test('Ajv', () => {
       const validate = new Ajv().compile({
         $schema: 'http://json-schema.org/draft-07/schema#',
         type: 'string',
@@ -171,7 +172,7 @@ describe('string().min(3).max(3)', () => {
       });
     });
 
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.string().min(3).max(3);
 
       measure(() => {
@@ -179,7 +180,7 @@ describe('string().min(3).max(3)', () => {
       });
     });
 
-    test('myzod', measure => {
+    test('myzod', () => {
       const type = myzod.string().min(3).max(3);
 
       measure(() => {
@@ -187,7 +188,7 @@ describe('string().min(3).max(3)', () => {
       });
     });
 
-    test('valita', measure => {
+    test('valita', () => {
       const type = valita
         .string()
         .assert(v => v.length >= 3)
@@ -198,7 +199,7 @@ describe('string().min(3).max(3)', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.string().min(3).max(3);
 
       measure(() => {
@@ -214,7 +215,7 @@ describe('string().min(3).max(3)', () => {
 
 describe('string().coerce()', () => {
   const createTests = value => {
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.coerce.string();
 
       measure(() => {
@@ -222,7 +223,7 @@ describe('string().coerce()', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.string().coerce();
 
       measure(() => {
@@ -241,7 +242,7 @@ describe('string().coerce()', () => {
 describe('string().optional()', () => {
   const value = 'aaa';
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.string().optional();
 
     measure(() => {
@@ -249,7 +250,7 @@ describe('string().optional()', () => {
     });
   });
 
-  test('myzod', measure => {
+  test('myzod', () => {
     const type = myzod.string().optional();
 
     measure(() => {
@@ -257,15 +258,15 @@ describe('string().optional()', () => {
     });
   });
 
-  test('valita', measure => {
-    const type = valita.string().optional();
+  test('valita', () => {
+    const type = valita.string().optional().type;
 
     measure(() => {
       type.parse(value);
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.string().optional();
 
     measure(() => {
@@ -277,7 +278,7 @@ describe('string().optional()', () => {
 describe('string().to(string())', () => {
   const value = 'aaa';
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.string().pipe(zod.string());
 
     measure(() => {
@@ -285,7 +286,7 @@ describe('string().to(string())', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.string().to(doubter.string());
 
     measure(() => {
@@ -297,7 +298,7 @@ describe('string().to(string())', () => {
 describe('string().convert(() => 111)', () => {
   const value = 'aaa';
 
-  test('zod', measure => {
+  test('zod', () => {
     const type = zod.string().transform(() => 111);
 
     measure(() => {
@@ -305,7 +306,7 @@ describe('string().convert(() => 111)', () => {
     });
   });
 
-  test('myzod', measure => {
+  test('myzod', () => {
     const type = myzod.string().map(() => 111);
 
     measure(() => {
@@ -313,7 +314,7 @@ describe('string().convert(() => 111)', () => {
     });
   });
 
-  test('valita', measure => {
+  test('valita', () => {
     const type = valita.string().map(() => 111);
 
     measure(() => {
@@ -321,7 +322,7 @@ describe('string().convert(() => 111)', () => {
     });
   });
 
-  test('doubter', measure => {
+  test('doubter', () => {
     const shape = doubter.string().convert(() => 111);
 
     measure(() => {
@@ -332,7 +333,7 @@ describe('string().convert(() => 111)', () => {
 
 describe('string().catch("foo")', () => {
   const createTests = value => {
-    test('zod', measure => {
+    test('zod', () => {
       const type = zod.string().catch('foo');
 
       measure(() => {
@@ -340,7 +341,7 @@ describe('string().catch("foo")', () => {
       });
     });
 
-    test('doubter', measure => {
+    test('doubter', () => {
       const shape = doubter.string().catch('foo');
 
       measure(() => {
