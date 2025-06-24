@@ -1,0 +1,46 @@
+name: docs
+
+on:
+  - workflow_dispatch
+  - workflow_call
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Configure git user
+        run: |
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+      - run: npm ci
+      - run: npm run docs
+
+      - name: Publish docs
+        run: |
+          set -x
+
+          mv ./docs /tmp/docs
+
+          git reset HEAD --hard
+          git fetch origin ghpages:ghpages
+          git checkout ghpages
+          git rm -rf --ignore-unmatch .
+          git clean -fxd
+
+          cp -R /tmp/docs/. .
+
+          git add .
+
+          ! git diff --staged --quiet --exit-code || exit 0
+
+          git commit -m "Updated docs (${GITHUB_SHA::7})"
+          git push origin ghpages
