@@ -1,0 +1,45 @@
+name: release
+
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run test:definitions
+
+      - name: Publish package
+        working-directory: ./lib
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Update latest tag
+        run: |
+          set -x
+
+          git push origin :refs/tags/latest
+          git tag --force latest
+          git push origin tag latest
+
+      - name: Create release draft
+        run: gh release create ${{ github.ref_name }} --generate-notes --draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  docs:
+    needs: [release]
+    uses: ./.github/workflows/docs.yml

@@ -1,0 +1,41 @@
+name: prerelease
+
+on:
+  workflow_dispatch:
+    inputs:
+      npm_tag:
+        type: string
+        description: npm tag
+        default: next
+        required: true
+
+jobs:
+  prerelease:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Update version
+        run: |
+          VERSION="$(npm pkg get version | xargs)-${{ github.event.inputs.npm_tag }}.${GITHUB_SHA::7}"
+
+          npm version --no-git-tag-version ${VERSION}
+
+          echo "::notice title=Package::npm install $(npm pkg get name | xargs)@${VERSION}"
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+      - run: npm run test:definitions
+
+      - name: Publish package
+        working-directory: ./lib
+        run: npm publish --tag ${{ github.event.inputs.npm_tag }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
