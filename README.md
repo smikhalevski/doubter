@@ -17,6 +17,7 @@
 
 <br>
 
+<!--OVERVIEW-->
 Runtime validation and transformation library.
 
 - TypeScript first;
@@ -34,6 +35,7 @@ Runtime validation and transformation library.
 ```shell
 npm install --save-prod doubter
 ```
+<!--/OVERVIEW-->
 
 > [!TIP]\
 > Docs of the latest stable release can be found under
@@ -41,6 +43,7 @@ npm install --save-prod doubter
 
 <br>
 
+<!--TOC-->
 🚀&ensp;**Features**
 
 - [Introduction](#introduction)
@@ -68,7 +71,7 @@ npm install --save-prod doubter
 
 🍿&ensp;[**Comparison with peers**](#comparison-with-peers)
 
-🎯&ensp;**Data types**
+🧩&ensp;**Data types**
 
 - Strings<br>
   [`string`](#string)
@@ -85,7 +88,7 @@ npm install --save-prod doubter
 - Symbols<br>
   [`symbol`](#symbol)
 
-- Literal values<br>
+- Literals<br>
   [`enum`](#enum)
   [`const`](#const)
   [`null`](#null)
@@ -113,14 +116,14 @@ npm install --save-prod doubter
   [`function`](#function-fn)
   [`fn`](#function-fn)
 
-- Shape composition<br>
+- Composition<br>
   [`union`](#union-or)
   [`or`](#union-or)
   [`intersection`](#intersection-and)
   [`and`](#intersection-and)
   [`not`](#not)
 
-- Unconstrained values<br>
+- Unconstrained<br>
   [`any`](#any)
   [`unknown`](#unknown)
 
@@ -137,7 +140,9 @@ npm install --save-prod doubter
 - [Type-safe `localStorage`](#type-safe-localstorage)
 - [Rename object keys](#rename-object-keys)
 - [Conditionally applied shapes](#conditionally-applied-shapes)
+<!--/TOC-->
 
+<!--ARTICLE-->
 # Introduction
 
 Let's create a simple shape of a user:
@@ -4452,6 +4457,7 @@ shape.parse(42);
 shape.parse(-273.15);
 // ❌ ValidationError: number.gte at /: Must be greater than 0
 ```
+<!--/ARTICLE-->
 
 <hr/>
 
