@@ -329,7 +329,7 @@ shape.try('Mars');
 Read more about issues in [Validation errors](#validation-errors) section.
 
 Sometimes you don't care about validation errors, and want a default value to be returned if things go south. Use the
-[`parseOrDefault`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseOrDefault) method for that:
+[`parseOrDefault`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseordefault) method for that:
 
 ```ts
 shape.parseOrDefault(42);
@@ -345,9 +345,9 @@ shape.parseOrDefault('Pluto', 5.3361);
 If you need a fallback value for a nested shape consider using the [`catch`](#fallback-value) method.
 
 For [asynchronous shapes](#async-shapes) there's an alternative for each of those methods:
-[`parseAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseAsync),
-[`tryAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#tryAsync), and
-[`parseOrDefaultAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseOrDefaultAsync).
+[`parseAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseasync),
+[`tryAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#tryasync), and
+[`parseOrDefaultAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseordefaultasync).
 
 Methods listed in this section can be safely detached from the shape instance:
 
@@ -612,7 +612,7 @@ shape1.parse('  Space  ');
 // ⮕ 'Space'
 ```
 
-Operations added via [`addOperation`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#addOperation)
+Operations added via [`addOperation`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#addoperation)
 must return a [`Result`](https://smikhalevski.github.io/doubter/types/core.Result.html):
 
 - `null` if the value is valid and unchanged;
@@ -813,9 +813,9 @@ shape.parseAsync('Hello');
 ```
 
 Adding an async operation to the shape, makes shape itself async, so use
-[`parseAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseAsync),
-[`tryAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#tryAsync), or
-[`parseOrDefaultAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseOrDefaultAsync).
+[`parseAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseasync),
+[`tryAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#tryasync), or
+[`parseOrDefaultAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#parseordefaultasync).
 
 ## Checks
 
@@ -842,7 +842,7 @@ A check callback receives the shape output value and must return an issue or an 
 If the value is valid, a check callback must return `null`, `undefined`, or an empty array.
 
 Add asynchronous checks using
-[`checkAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#checkAsync). This method has the same
+[`checkAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#checkasync). This method has the same
 semantics as [`check`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#check) but returns a promise
 and [makes the shape asynchronous](#async-shapes).
 
@@ -912,7 +912,7 @@ shape1.parse('Mars');
 ```
 
 Add asynchronous refinements using
-[`refineAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#refineAsync). This method has the
+[`refineAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#refineasync). This method has the
 same semantics as [`refine`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#refine) but returns a
 promise and [makes the shape asynchronous](#async-shapes).
 
@@ -960,7 +960,7 @@ d.string()
 ```
 
 Add asynchronous alterations using
-[`alterAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#alterAsync). This method has the
+[`alterAsync`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#alterasync). This method has the
 same semantics as [`alter`](https://smikhalevski.github.io/doubter/classes/core.Shape.html#alter) but returns a
 promise and [makes the shape asynchronous](#async-shapes).
 
@@ -1091,7 +1091,7 @@ Refer to [Async shapes](#async-shapes) section for more details on when shapes c
 
 By default, Doubter collects all issues during parsing. In some cases, you may want to halt parsing and raise a
 validation error as soon as the first issue was encountered. To do this, pass the
-[`earlyReturn`](https://smikhalevski.github.io/doubter/interfaces/core.ParseOptions.html#earlyReturn)
+[`earlyReturn`](https://smikhalevski.github.io/doubter/interfaces/core.ParseOptions.html#earlyreturn)
 option to the [parsing methods](#parsing-and-trying).
 
 ```ts
@@ -2045,36 +2045,36 @@ d.number().gte(3); // ❌ gte is undefined
 
 ## Built-in plugins
 
-- [**Array essentials**](https://smikhalevski.github.io/doubter/modules/plugin_array_essentials.html)<br/>
+- [**Array essentials**](https://smikhalevski.github.io/doubter/modules/plugin_array-essentials.html)<br/>
   [`length`](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#length)
   [`min`](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#min)
   [`max`](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#max)
-  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#nonEmpty)
+  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#nonempty)
   [`includes`](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#includes)
 
-- [**Bigint essentials**](https://smikhalevski.github.io/doubter/modules/plugin_bigint_essentials.html)<br/>
+- [**Bigint essentials**](https://smikhalevski.github.io/doubter/modules/plugin_bigint-essentials.html)<br/>
   [`positive`](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#positive)
   [`negative`](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#negative)
-  [`nonPositive`](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#nonPositive)
-  [`nonNegative`](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#nonNegative)
+  [`nonPositive`](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#nonpositive)
+  [`nonNegative`](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#nonnegative)
   [`min`](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#min)
   [`max`](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#max)
 
-- [**Date essentials**](https://smikhalevski.github.io/doubter/modules/plugin_date_essentials.html)<br/>
+- [**Date essentials**](https://smikhalevski.github.io/doubter/modules/plugin_date-essentials.html)<br/>
   [`min`](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#min)
   [`max`](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#max)
   [`after`](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#after)
   [`before`](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#before)
-  [`toISOString`](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#toISOString)
-  [`toTimestamp`](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#toTimestamp)
+  [`toISOString`](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#toisostring)
+  [`toTimestamp`](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#totimestamp)
 
-- [**Number essentials**](https://smikhalevski.github.io/doubter/modules/plugin_number_essentials.html)<br/>
+- [**Number essentials**](https://smikhalevski.github.io/doubter/modules/plugin_number-essentials.html)<br/>
   [`finite`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#finite)
   [`int`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#int)
   [`positive`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#positive)
   [`negative`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#negative)
-  [`nonPositive`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#nonPositive)
-  [`nonNegative`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#nonNegative)
+  [`nonPositive`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#nonpositive)
+  [`nonNegative`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#nonnegative)
   [`between`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#between)
   [`gt`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#gt)
   [`lt`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#lt)
@@ -2082,38 +2082,38 @@ d.number().gte(3); // ❌ gte is undefined
   [`lte`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#lte)
   [`min`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#min)
   [`max`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#max)
-  [`multipleOf`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#multipleOf)
+  [`multipleOf`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#multipleof)
   [`safe`](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#safe)
 
-- [**Object essentials**](https://smikhalevski.github.io/doubter/modules/plugin_object_essentials.html)<br/>
+- [**Object essentials**](https://smikhalevski.github.io/doubter/modules/plugin_object-essentials.html)<br/>
   [`plain`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#plain)
-  [`allKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#allKeys)
-  [`notAllKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#notAllKeys)
-  [`orKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#orKeys)
-  [`xorKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#xorKeys)
-  [`oxorKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#oxorKeys)
+  [`allKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#allkeys)
+  [`notAllKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#notallkeys)
+  [`orKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#orkeys)
+  [`xorKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#xorkeys)
+  [`oxorKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#oxorkeys)
 
-- [**Set essentials**](https://smikhalevski.github.io/doubter/modules/plugin_set_essentials.html)<br/>
+- [**Set essentials**](https://smikhalevski.github.io/doubter/modules/plugin_set-essentials.html)<br/>
   [`size`](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#size)
   [`min`](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#min)
   [`max`](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#max)
-  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#nonEmpty)
+  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#nonempty)
 
-- [**String essentials**](https://smikhalevski.github.io/doubter/modules/plugin_string_essentials.html)<br/>
+- [**String essentials**](https://smikhalevski.github.io/doubter/modules/plugin_string-essentials.html)<br/>
   [`length`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#length)
   [`min`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#min)
   [`max`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#max)
   [`regex`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#regex)
   [`includes`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#includes)
-  [`startsWith`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#startsWith)
-  [`endsWith`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#endsWith)
-  [`nonBlank`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#nonBlank)
-  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#nonEmpty)
+  [`startsWith`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#startswith)
+  [`endsWith`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#endswith)
+  [`nonBlank`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#nonblank)
+  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#nonempty)
   [`trim`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#trim)
-  [`toLowerCase`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#toLowerCase)
-  [`toUpperCase`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#toUpperCase)
+  [`toLowerCase`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#tolowercase)
+  [`toUpperCase`](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#touppercase)
 
-- [**Object eval**](https://smikhalevski.github.io/doubter/modules/plugin_object_eval.html)<br/>
+- [**Object eval**](https://smikhalevski.github.io/doubter/modules/plugin_object-eval.html)<br/>
   If `new Function` calls are allowed by the environment, this plugin compiles internal methods of
   the `ObjectShape` to boost performance.
 
@@ -2238,7 +2238,7 @@ the [`Result`](https://smikhalevski.github.io/doubter/types/core.Result.html):
 
 </dd>
 <dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_applyAsync">
+  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_applyasync">
     <code>_applyAsync(input, options, nonce)</code>
   </a>
 </dt>
@@ -2249,7 +2249,7 @@ You need to override this method only if you have a separate logic for async par
 
 </dd>
 <dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_isAsync">
+  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_isasync">
     <code>_isAsync()</code>
   </a>
 </dt>
@@ -2262,7 +2262,7 @@ The value returned from this method is toggles which method is used for parsing:
 
 </dd>
 <dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_getInputs">
+  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_getinputs">
     <code>_getInputs()</code>
   </a>
 </dt>
@@ -3715,11 +3715,11 @@ shape.keysShape;
 ## Key relationships
 
 Declare relationships between object keys using
-[`allKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#allKeys)
-[`notAllKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#notAllKeys)
-[`orKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#orKeys)
-[`xorKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#xorKeys)
-[`oxorKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#oxorKeys)
+[`allKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#allkeys)
+[`notAllKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#notallkeys)
+[`orKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#orkeys)
+[`xorKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#xorkeys)
+[`oxorKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#oxorkeys)
 
 ```ts
 const shape = d.object({
