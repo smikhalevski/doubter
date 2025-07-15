@@ -23,6 +23,7 @@ export type * from './plugin/date-essentials.js';
 export type * from './plugin/number-essentials.js';
 export type * from './plugin/object-essentials.js';
 export type * from './plugin/set-essentials.js';
+export type * from './plugin/standard-schema.js';
 export type * from './plugin/string-essentials.js';
 
 export * from './core.js';

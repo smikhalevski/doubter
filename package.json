@@ -107,6 +107,7 @@
   "homepage": "https://github.com/smikhalevski/doubter#readme",
   "devDependencies": {
     "@badrap/valita": "^0.4.5",
+    "@standard-schema/spec": "^1.0.0",
     "@types/qs": "^6.14.0",
     "ajv": "^8.17.1",
     "myzod": "^1.12.1",

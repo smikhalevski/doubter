@@ -76,5 +76,10 @@
     "INPUT",
     "OUTPUT"
   ],
-  "plugin": ["typedoc-plugin-mdn-links"]
+  "plugin": ["typedoc-plugin-mdn-links"],
+  "externalSymbolLinkMappings": {
+    "doubter": {
+      "StandardSchemaV1.Props": "https://github.com/standard-schema/standard-schema#readme"
+    }
+  }
 }

@@ -13,7 +13,6 @@
 
 import { CODE_DATE_MAX, CODE_DATE_MIN, MESSAGE_DATE_MAX, MESSAGE_DATE_MIN } from '../constants.js';
 import { DateShape } from '../shape/DateShape.js';
-import { Shape } from '../shape/Shape.js';
 import { IssueOptions, Message } from '../types.js';
 import { createIssue } from '../utils.js';
 
