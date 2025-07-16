@@ -3,7 +3,7 @@ import * as valita from '@badrap/valita';
 import { Ajv } from 'ajv';
 import * as myzod from 'myzod';
 import * as zod from 'zod';
-import * as doubter from '../../../lib/index.mjs';
+import * as doubter from '../../../lib/index.js';
 
 describe('string()', () => {
   describe('"aaa"', () => {

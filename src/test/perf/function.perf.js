@@ -1,6 +1,6 @@
 import { describe, measure, test } from 'toofast';
 import * as zod from 'zod';
-import * as doubter from '../../../lib/index.mjs';
+import * as doubter from '../../../lib/index.js';
 
 describe('fn([number(), number()]).ensure(…)', () => {
   test('zod', () => {
