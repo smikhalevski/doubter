@@ -116,9 +116,9 @@ describe('Overall', () => {
                 a41: zod.enum(['foo', 'bar']),
                 a42: zod.number(),
               })
-              .passthrough(),
+              .loose(),
           })
-          .passthrough();
+          .loose();
 
         if (isSuccessMeasureEnabled) {
           measure(() => {
@@ -208,7 +208,7 @@ describe('Overall', () => {
 
         if (isFailureMeasureEnabled) {
           measure(() => {
-            valibot.safeParse(schema, validValue);
+            valibot.safeParse(schema, invalidValue);
           });
         }
       });
@@ -388,12 +388,14 @@ describe('Overall', () => {
 
         if (isFailureMeasureEnabled) {
           measure(() => {
-            valibot.safeParse(schema, validValue);
+            valibot.safeParse(schema, invalidValue);
           });
         }
       });
     });
   };
+
+  describe('Average path', () => createOverallTests(true, true));
 
   describe('Success path', () => createOverallTests(true, false));
 
@@ -483,9 +485,9 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
               a72: zod.number(),
               a73: zod.boolean(),
             })
-            .passthrough(),
+            .loose(),
         })
-        .passthrough();
+        .loose();
 
       measure(() => {
         type.parse(value);

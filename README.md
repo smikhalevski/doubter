@@ -2339,57 +2339,69 @@ second (greater is better).
   <img alt="Performance comparison chart" src="./assets/perf-light.svg" />
 </picture></p>
 
-Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast#readme) on Apple M1 with Node.js v20.4.0.
+Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast#readme) on Apple M1 with Node.js v23.11.1.
 
 To reproduce [the performance test suite](./src/test/perf/overall.perf.js) results, clone this repo and run:
 
 ```shell
 npm ci
 npm run build
-npm run perf -- -t overall
+npm run perf -- 'overall*'
 ```
 
 <details>
 <summary>Detailed results</summary>
+<pre>
+<table>
+<tr><th colspan="3">Success path</th></tr>
 
-```
-Success path
+<tr><td colspan="3">🔵 <i>Loose validation</i></td></tr>
+<tr><td>doubter   </td><td align="right"> 8.4 MHz ± 0.58%</td><td align="right"> 64.2 B  ± 0.04%</td> 
+<tr><td>valita    </td><td align="right"> 4.4 MHz ± 0.14%</td><td align="right">176.0 B  ± 0.02%</td> 
+<tr><td>myzod     </td><td align="right"> 3.1 MHz ± 0.4% </td><td align="right">487.8 B  ± 0.03%</td> 
+<tr><td>zod       </td><td align="right"> 2.5 MHz ± 0.38%</td><td align="right">  1.4 kB ± 0.01%</td> 
+<tr><td>valibot   </td><td align="right"> 1.5 MHz ± 0.3% </td><td align="right">  1.1 kB ± 0.01%</td> 
 
-  Loose validation
-    ● doubter    7.9 MHz ± 0.5%    128.4 B  ± 0.11%
-    ● Ajv       15.8 MHz ± 1.33%   156.2 B  ± 0.01%
-    ● zod        1.1 MHz ± 0.5%      4.2 kB ± 0.01%
-    ● myzod      2.4 MHz ± 0.5%    506.4 B  ± 0.04%
-    ● valita     4.4 MHz ± 0.5%    117.9 B  ± 0.07%
-    ● valibot    3.0 MHz ± 0.5%      1.3 kB ± 0.01%
+<tr><td colspan="3">🔴 <i>Strict validation</i></td></tr>
+<tr><td>doubter   </td><td align="right"> 4.4 MHz ± 0.38%</td><td align="right">173.9 B  ± 0.04%</td> 
+<tr><td>valita    </td><td align="right"> 4.2 MHz ± 0.1% </td><td align="right"> 79.3 B  ± 0.13%</td> 
+<tr><td>myzod     </td><td align="right"> 3.6 MHz ± 0.2% </td><td align="right">231.1 B  ± 0.02%</td> 
+<tr><td>zod       </td><td align="right"> 2.9 MHz ± 0.6% </td><td align="right">  1.2 kB ± 0.01%</td> 
+<tr><td>valibot   </td><td align="right"> 1.5 MHz ± 0.27%</td><td align="right">  1.3 kB ± 0.01%</td> 
 
-  Strict validation
-    ● doubter    4.3 MHz ± 0.5%    149.9 B  ± 0.06%
-    ● Ajv       13.1 MHz ± 1.15%   152.3 B  ± 0.01%
-    ● zod        1.2 MHz ± 0.5%      4.2 kB ± 0.01%
-    ● myzod      2.5 MHz ± 0.5%    316.7 B  ± 0.13%
-    ● valita     4.3 MHz ± 0.5%    120.7 B  ± 0.46%
-    ● valibot    3.0 MHz ± 0.5%      1.3 kB ± 0%
+<tr><th colspan="3"><br>Failure path</th></tr>
 
-Failure path
+<tr><td colspan="3">🔵 <i>Loose validation</i></td></tr>
+<tr><td>doubter  </td><td align="right">  4.3 MHz ± 0.52%</td><td align="right">  1.2 kB ± 0.01%</td> 
+<tr><td>valita   </td><td align="right">  2.1 MHz ± 0.28%</td><td align="right">  1.4 kB ± 0.01%</td> 
+<tr><td>myzod    </td><td align="right"> 72.4 kHz ± 0.1% </td><td align="right">  3.1 kB ± 0.02%</td> 
+<tr><td>zod      </td><td align="right"> 75.4 kHz ± 0.93%</td><td align="right"> 10.6 kB ± 0.19%</td> 
+<tr><td>valibot  </td><td align="right">952.0 kHz ± 0.25%</td><td align="right">  3.3 kB ± 0.01%</td> 
 
-  Loose validation
-    ● doubter    4.2 MHz ± 0.6%      1.2 kB ± 0.01%
-    ● Ajv       13.3 MHz ± 1.11%   356.4 B  ± 0.01%
-    ● zod      175.0 kHz ± 1.04%    11.0 kB ± 0.22%
-    ● myzod     76.9 kHz ± 0.5%      2.8 kB ± 0.09%
-    ● valita     3.1 MHz ± 0.5%      1.5 kB ± 0%
-    ● valibot    3.0 MHz ± 0.53%     1.3 kB ± 0.02%
+<tr><td colspan="3">🔴 <i>Strict validation</i></td></tr>
+<tr><td>doubter  </td><td align="right">  3.0 MHz ± 0.42%</td><td align="right">  1.2 kB ± 0.01%</td> 
+<tr><td>valita   </td><td align="right">  2.0 MHz ± 0.54%</td><td align="right">  1.5 kB ± 0%</td>    
+<tr><td>myzod    </td><td align="right"> 65.8 kHz ± 0.1% </td><td align="right">  3.0 kB ± 0.01%</td> 
+<tr><td>zod      </td><td align="right"> 77.8 kHz ± 0.97%</td><td align="right"> 10.4 kB ± 0.2%</td>  
+<tr><td>valibot  </td><td align="right">902.3 kHz ± 0.25%</td><td align="right">  3.3 kB ± 0.01%</td>
 
-  Strict validation
-    ● doubter    2.9 MHz ± 0.5%      1.2 kB ± 0.01%
-    ● Ajv       12.6 MHz ± 1.25%   331.6 B  ± 0%
-    ● zod      178.0 kHz ± 1.08%    10.8 kB ± 0.22%
-    ● myzod     64.5 kHz ± 0.5%      2.8 kB ± 0.17%
-    ● valita     3.0 MHz ± 0.5%      1.4 kB ± 0%
-    ● valibot    3.0 MHz ± 0.5%      1.3 kB ± 0%
-```
+<tr><th colspan="3"><br>Average path (Success + Failure) / 2</th></tr>
 
+<tr><td colspan="3">🔵 <i>Loose validation</i></td></tr>
+<tr><td>doubter  </td><td align="right">  5.1 MHz ± 0.37%</td><td align="right">639.9 B  ± 0.05%</td> 
+<tr><td>valita   </td><td align="right">  2.9 MHz ± 0.16%</td><td align="right">684.7 B  ± 0.08%</td> 
+<tr><td>myzod    </td><td align="right">610.2 kHz ± 0.32%</td><td align="right">545.3 B  ± 0.12%</td> 
+<tr><td>zod      </td><td align="right">483.5 kHz ± 0.99%</td><td align="right">  2.6 kB ± 0.16%</td> 
+<tr><td>valibot  </td><td align="right">  1.1 MHz ± 0.18%</td><td align="right">  2.2 kB ± 0.04%</td> 
+
+<tr><td colspan="3">🔴 <i>Strict validation</i></td></tr>
+<tr><td>doubter   </td><td align="right">  3.2 MHz ± 0.39%</td><td align="right">727.1 B  ± 0.05%</td> 
+<tr><td>valita    </td><td align="right">  2.7 MHz ± 0.2% </td><td align="right">804.1 B  ± 0.06%</td> 
+<tr><td>myzod     </td><td align="right">455.3 kHz ± 0.32%</td><td align="right">498.8 B  ± 0.15%</td> 
+<tr><td>zod       </td><td align="right">502.8 kHz ± 1.06%</td><td align="right">  2.3 kB ± 0.18%</td> 
+<tr><td>valibot   </td><td align="right">  1.1 MHz ± 0.25%</td><td align="right">  2.2 kB ± 0.04%</td> 
+</table>
+</pre>
 </details>
 
 # Comparison with peers
@@ -2441,7 +2453,7 @@ The table below highlights features that are unique to Doubter and its peers.
 
 <tr><td colspan="4"><br><b>Other</b></td></tr>
 <tr><td><a href="#plugins">Plugin-centric</a>                               </td><th>🟢</th><th>🔴</th><th>🔴</th></tr>
-<tr><td>Tree-shakeable                                                      </td><th>🟢</th><th>🔴</th><th>🟢</th></tr>
+<tr><td>Tree-shakeable                                                      </td><th>🟢</th><th>🟢</th><th>🟢</th></tr>
 
 </tbody>
 </table>
