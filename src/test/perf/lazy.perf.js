@@ -1,5 +1,5 @@
 import { describe, measure, test } from 'toofast';
-import * as doubter from '../../../lib/index.mjs';
+import * as doubter from '../../../lib/index.js';
 
 describe('lazy(() => object(…))', () => {
   const value = {};

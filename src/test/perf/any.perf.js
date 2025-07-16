@@ -1,6 +1,6 @@
 import { describe, test, measure } from 'toofast';
 import * as valita from '@badrap/valita';
-import * as doubter from '../../../lib/index.mjs';
+import * as doubter from '../../../lib/index.js';
 
 describe('any().check(isNaN)', () => {
   test('valita', () => {

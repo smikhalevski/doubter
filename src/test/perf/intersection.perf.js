@@ -1,7 +1,7 @@
 import { describe, measure, test } from 'toofast';
 import * as myzod from 'myzod';
 import * as zod from 'zod';
-import * as doubter from '../../../lib/index.mjs';
+import * as doubter from '../../../lib/index.js';
 
 describe('and([object({ foo: string() }), object({ bar: number() })])', () => {
   const value = { foo: 'aaa', bar: 123 };
