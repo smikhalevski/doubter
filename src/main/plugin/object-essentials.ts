@@ -32,7 +32,7 @@ import { isPlainObject } from '../internal/lang.js';
 import { ReadonlyDict } from '../internal/objects.js';
 import { ObjectShape } from '../shape/ObjectShape.js';
 import { RecordShape } from '../shape/RecordShape.js';
-import { AnyShape, OUTPUT, Shape } from '../shape/Shape.js';
+import { AnyShape, OUTPUT } from '../shape/Shape.js';
 import { IssueOptions, Message } from '../types.js';
 import { createIssue } from '../utils.js';
 

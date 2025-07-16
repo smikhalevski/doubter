@@ -29,6 +29,7 @@ Runtime validation and transformation library.
 - [High performance and low memory consumption](#performance);
 - Zero dependencies;
 - [Pluggable architecture](#plugins);
+- Compatible with [Standard Schema](https://github.com/standard-schema/standard-schema#readme);
 - Tree-shakable: [3 — 12 kB gzipped](https://bundlephobia.com/result?p=doubter) depending on what features you use;
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
