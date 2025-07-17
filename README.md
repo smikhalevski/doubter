@@ -45,7 +45,9 @@ npm install --save-prod doubter
 <br>
 
 <!--TOC-->
-🚀&ensp;**Features**
+<span class="toc-icon">🔥&ensp;</span>[**Live example** ↗](https://codesandbox.io/s/y5kec4)
+
+<span class="toc-icon">🚀&ensp;</span>**Features**
 
 - [Introduction](#introduction)
 - [Validation errors](#validation-errors)
@@ -68,11 +70,11 @@ npm install --save-prod doubter
 - [Plugins](#plugins)
 - [Advanced shapes](#advanced-shapes)
 
-⏱&ensp;[**Performance**](#performance)
+<span class="toc-icon">⏱&ensp;</span>[**Performance**](#performance)
 
-🍿&ensp;[**Comparison with peers**](#comparison-with-peers)
+<span class="toc-icon">🍿&ensp;</span>[**Comparison with peers**](#comparison-with-peers)
 
-🧩&ensp;**Data types**
+<span class="toc-icon">🧩&ensp;</span>**Data types**
 
 - Strings<br>
   [`string`](#string)
@@ -133,7 +135,7 @@ npm install --save-prod doubter
   [`lazy`](#lazy)
   [`never`](#never)
 
-🍪&ensp;**Cookbook**
+<span class="toc-icon">🍪&ensp;</span>**Cookbook**
 
 - [Type-safe URL query params](#type-safe-url-query-params)
 - [Type-safe environment variables](#type-safe-environment-variables)
@@ -2351,8 +2353,7 @@ npm run perf -- 'overall*'
 
 <details>
 <summary>Detailed results</summary>
-<pre>
-<table>
+<pre><table>
 <tr><th colspan="3">Success path</th></tr>
 
 <tr><td colspan="3">🔵 <i>Loose validation</i></td></tr>
@@ -2400,8 +2401,7 @@ npm run perf -- 'overall*'
 <tr><td>myzod     </td><td align="right">455.3 kHz ± 0.32%</td><td align="right">498.8 B  ± 0.15%</td> 
 <tr><td>zod       </td><td align="right">502.8 kHz ± 1.06%</td><td align="right">  2.3 kB ± 0.18%</td> 
 <tr><td>valibot   </td><td align="right">  1.1 MHz ± 0.25%</td><td align="right">  2.2 kB ± 0.04%</td> 
-</table>
-</pre>
+</table></pre>
 </details>
 
 # Comparison with peers
