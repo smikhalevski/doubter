@@ -2049,94 +2049,95 @@ d.number().gte(3); // ❌ gte is undefined
 
 ## Built-in plugins
 
-- [`plugin/array-essentials`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_array-essentials.html)
+- [**plugin/array-essentials**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_array-essentials.html)
 
-  [`length`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#length)
-  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#min)
-  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#max)
-  [`nonEmpty`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#nonempty)
+  [`length`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#length)<br>
+  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#min)<br>
+  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#max)<br>
+  [`nonEmpty`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#nonempty)<br>
   [`includes`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ArrayShape.html#includes)
 
-- [`plugin/bigint-essentials`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_bigint-essentials.html)
+- [**plugin/bigint-essentials**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_bigint-essentials.html)
 
-  [`positive`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#positive)
-  [`negative`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#negative)
-  [`nonPositive`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#nonpositive)
-  [`nonNegative`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#nonnegative)
-  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#min)
+  [`positive`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#positive)<br>
+  [`negative`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#negative)<br>
+  [`nonPositive`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#nonpositive)<br>
+  [`nonNegative`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#nonnegative)<br>
+  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#min)<br>
   [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.BigIntShape.html#max)
 
-- [`plugin/date-essentials`\*\*`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_date-essentials.html)
+- [**plugin/date-essentials**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_date-essentials.html)
 
-  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#min)
-  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#max)
-  [`after`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#after)
-  [`before`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#before)
-  [`toISOString`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#toisostring)
+  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#min)<br>
+  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#max)<br>
+  [`after`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#after)<br>
+  [`before`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#before)<br>
+  [`toISOString`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#toisostring)<br>
   [`toTimestamp`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.DateShape.html#totimestamp)
 
-- [`plugin/number-essentials`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_number-essentials.html)
+- [**plugin/number-essentials**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_number-essentials.html)
 
-  [`finite`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#finite)
-  [`int`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#int)
-  [`positive`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#positive)
-  [`negative`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#negative)
-  [`nonPositive`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#nonpositive)
-  [`nonNegative`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#nonnegative)
-  [`between`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#between)
-  [`gt`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#gt)
-  [`lt`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#lt)
-  [`gte`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#gte)
-  [`lte`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#lte)
-  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#min)
-  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#max)
-  [`multipleOf`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#multipleof)
+  [`finite`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#finite)<br>
+  [`int`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#int)<br>
+  [`positive`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#positive)<br>
+  [`negative`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#negative)<br>
+  [`nonPositive`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#nonpositive)<br>
+  [`nonNegative`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#nonnegative)<br>
+  [`between`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#between)<br>
+  [`gt`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#gt)<br>
+  [`lt`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#lt)<br>
+  [`gte`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#gte)<br>
+  [`lte`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#lte)<br>
+  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#min)<br>
+  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#max)<br>
+  [`multipleOf`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#multipleof)<br>
   [`safe`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.NumberShape.html#safe)
 
-- [`plugin/object-essentials`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_object-essentials.html)
+- [**plugin/object-essentials**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_object-essentials.html)
 
-  [`plain`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#plain)
-  [`allKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#allkeys)
-  [`notAllKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#notallkeys)
-  [`orKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#orkeys)
-  [`xorKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#xorkeys)
+  [`plain`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#plain)<br>
+  [`allKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#allkeys)<br>
+  [`notAllKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#notallkeys)<br>
+  [`orKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#orkeys)<br>
+  [`xorKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#xorkeys)<br>
   [`oxorKeys`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#oxorkeys)
 
-- [`plugin/set-essentials`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_set-essentials.html)
+- [**plugin/set-essentials**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_set-essentials.html)
 
-  [`size`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#size)
-  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#min)
-  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#max)
+  [`size`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#size)<br>
+  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#min)<br>
+  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#max)<br>
   [`nonEmpty`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.SetShape.html#nonempty)
 
-- [`plugin/string-essentials`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_string-essentials.html)
+- [**plugin/string-essentials**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_string-essentials.html)
 
-  [`length`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#length)
-  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#min)
-  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#max)
-  [`regex`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#regex)
-  [`includes`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#includes)
-  [`startsWith`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#startswith)
-  [`endsWith`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#endswith)
-  [`nonBlank`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#nonblank)
-  [`nonEmpty`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#nonempty)
-  [`trim`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#trim)
-  [`toLowerCase`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#tolowercase)
+  [`length`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#length)<br>
+  [`min`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#min)<br>
+  [`max`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#max)<br>
+  [`regex`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#regex)<br>
+  [`includes`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#includes)<br>
+  [`startsWith`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#startswith)<br>
+  [`endsWith`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#endswith)<br>
+  [`nonBlank`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#nonblank)<br>
+  [`nonEmpty`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#nonempty)<br>
+  [`trim`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#trim)<br>
+  [`toLowerCase`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#tolowercase)<br>
   [`toUpperCase`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.StringShape.html#touppercase)
 
-- [`plugin/standard-schema`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_standard-schema.html)
+- [**plugin/standard-schema**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_standard-schema.html)
 
   Enables [Standard Schema&#8239;<sup>↗</sup>](https://github.com/standard-schema/standard-schema#readme) API for all
   shapes.
 
-- [`plugin/object-eval`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_object-eval.html)
+- [**plugin/object-eval**&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/modules/plugin_object-eval.html)
 
   If `new Function` calls are allowed by the environment, this plugin compiles internal methods of
   the `ObjectShape` to boost performance.
 
 ## Recommended plugins
 
-- [@doubter/plugin-string-format&#8239;<sup>↗</sup>](https://github.com/smikhalevski/doubter-plugin-string-format#readme)<br>
+- [**@doubter/plugin-string-format**&#8239;<sup>↗</sup>](https://github.com/smikhalevski/doubter-plugin-string-format#readme)<br>
+
   Extends `StringShape` with email, FQDN, MIME, BIC, ISIN, Luhn, and many other format checks.
 
 ## Integrations
