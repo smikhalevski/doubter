@@ -2238,60 +2238,31 @@ You can create custom shapes by extending the
 
 `Shape` has several protected methods that you can override to change different aspects of the shape logic.
 
-<dl>
-<dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_apply">
-    <code>_apply(input, options, nonce)</code>
-  </a>
-</dt>
-<dd>
+- [`_apply(input, options, nonce)`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.Shape.html#_apply)
 
-Synchronous input parsing is delegated to this method. It receives an `input` that must be parsed and should return
-the [`Result`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/types/core.Result.html):
+  Synchronous input parsing is delegated to this method. It receives an `input` that must be parsed and should return
+  the [`Result`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/types/core.Result.html):
+  - `null` if the output value is the same as the input value;
+  - an [`Ok`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/interfaces/core.Ok.html) object (as in example
+    above) if the output contains a new value;
+  - an array of [`Issue`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/interfaces/core.Issue.html) objects if
+    parsing has failed.
 
-- `null` if the output value is the same as the input value;
-- an [`Ok`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/interfaces/core.Ok.html) object (as in example
-  above) if the output contains a new value;
-- an array of [`Issue`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/interfaces/core.Issue.html) objects if
-  parsing has failed.
+- [`_applyAsync(input, options, nonce)`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.Shape.html#_applyasync)
 
-</dd>
-<dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_applyasync">
-    <code>_applyAsync(input, options, nonce)</code>
-  </a>
-</dt>
-<dd>
+  Asynchronous input parsing is delegated to this method. It has the same semantics as `_apply` but returns a `Promise`.
+  You need to override this method only if you have a separate logic for async parsing.
 
-Asynchronous input parsing is delegated to this method. It has the same semantics as `_apply` but returns a `Promise`.
-You need to override this method only if you have a separate logic for async parsing.
+- [`_isAsync()`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.Shape.html#_isasync)
 
-</dd>
-<dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_isasync">
-    <code>_isAsync()</code>
-  </a>
-</dt>
-<dd>
+  The value returned from this method is toggles which method is used for parsing:
+  - if `true` then `_applyAsync` would be used for parsing, and `_apply` would always throw an error;
+  - if `false` then `_apply` can be used for parsing along with `_applyAsync`.
 
-The value returned from this method is toggles which method is used for parsing:
+- [`__getInputs()`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/classes/core.Shape.html#_getinputs)
 
-- if `true` then `_applyAsync` would be used for parsing, and `_apply` would always throw an error;
-- if `false` then `_apply` can be used for parsing along with `_applyAsync`.
-
-</dd>
-<dt>
-  <a href="https://smikhalevski.github.io/doubter/classes/core.Shape.html#_getinputs">
-    <code>_getInputs()</code>
-  </a>
-</dt>
-<dd>
-
-Must return an array of types and values that can be processed by the shape. Elements of the returned array don't have
-to be unique. Refer to [Introspection](#introspection) section for more details about types.
-
-</dd>
-</dl>
+  Must return an array of types and values that can be processed by the shape. Elements of the returned array don't have
+  to be unique. Refer to [Introspection](#introspection) section for more details about types.
 
 Let's create a custom shape that parses an input string as a number:
 
