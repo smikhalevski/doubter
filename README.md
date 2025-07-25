@@ -21,18 +21,18 @@
 
 Runtime validation and transformation library.
 
-- TypeScript first;
-- Sync and async validation and transformation flows;
-- [Circular object references support](#circular-object-references);
-- Collect all validation issues, or [exit early](#early-return);
-- [Runtime type introspection](#introspection);
-- [Human-oriented type coercion](#type-coercion);
-- [High performance and low memory consumption](#performance);
-- Zero dependencies;
-- [Pluggable architecture](#plugins);
-- Compatible with [Standard Schema&#8239;<sup>↗</sup>](https://github.com/standard-schema/standard-schema#readme);
-- Tree-shakable: [3&#8239;—&#8239;12&#8239;kB gzipped&#8239;<sup>↗</sup>](https://bundlephobia.com/result?p=doubter)
-  depending on what features you use;
+- TypeScript first.
+- Sync and async validation and transformation flows.
+- [Circular object references support.](#circular-object-references)
+- Collect all validation issues, or [exit early](#early-return).
+- [Runtime type introspection.](#introspection)
+- [Human-oriented type coercion.](#type-coercion)
+- [High performance and low memory consumption.](#performance)
+- Zero dependencies.
+- [Pluggable architecture.](#plugins)
+- Compatible with [Standard Schema&#8239;<sup>↗</sup>](https://github.com/standard-schema/standard-schema#readme).
+- Tree-shakable. [3&#8239;—&#8239;12&#8239;kB gzipped&#8239;<sup>↗</sup>](https://bundlephobia.com/result?p=doubter)
+  depending on [what features you use](#plugins).
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
 ```shell
