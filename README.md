@@ -49,9 +49,11 @@ npm install --save-prod doubter
 
 <!--TOC-->
 
-<span class="toc-icon">🔥&ensp;</span>[**Live example**&#8239;<sup>↗</sup>](https://codesandbox.io/s/y5kec4)
+<span class="toc-icon">&emsp;&ensp;</span>[API docs&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/)
 
-<span class="toc-icon">🚀&ensp;</span>**Features**
+<span class="toc-icon">&emsp;&ensp;</span>[Live example&#8239;<sup>↗</sup>](https://codesandbox.io/s/y5kec4)
+
+<span class="toc-icon">🔰&ensp;</span>**Features**
 
 - [Introduction](#introduction)
 - [Validation errors](#validation-errors)
