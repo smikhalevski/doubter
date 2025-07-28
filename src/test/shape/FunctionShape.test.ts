@@ -106,10 +106,10 @@ describe('FunctionShape', () => {
     test('sets options', () => {
       const cbMock = vi.fn();
 
-      new FunctionShape(emptyArgsShape.check(cbMock), null, null).strict({ earlyReturn: true }).ensure(() => null)();
+      new FunctionShape(emptyArgsShape.check(cbMock), null, null).strict({ isEarlyReturn: true }).ensure(() => null)();
 
       expect(cbMock).toHaveBeenCalledTimes(1);
-      expect(cbMock).toHaveBeenNthCalledWith(1, [], undefined, { earlyReturn: true });
+      expect(cbMock).toHaveBeenNthCalledWith(1, [], undefined, { isEarlyReturn: true });
     });
 
     test('ensures a function signature', () => {
@@ -156,7 +156,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(argShape._apply).toHaveBeenCalledTimes(1);
-      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
+      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { isEarlyReturn: false }, 0);
     });
 
     test('raises an issue if this is invalid', () => {
@@ -183,7 +183,7 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid in an early-return mode', () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      expect(() => shape.ensure(() => null, { earlyReturn: true }).call(undefined, 111, 'aaa')).toThrow(
+      expect(() => shape.ensure(() => null, { isEarlyReturn: true }).call(undefined, 111, 'aaa')).toThrow(
         new ValidationError([
           {
             code: CODE_TYPE_STRING,
@@ -263,7 +263,7 @@ describe('FunctionShape', () => {
       expect(fnMock).toHaveBeenNthCalledWith(1, 'aaa');
 
       expect(argShape._apply).toHaveBeenCalledTimes(1);
-      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
+      expect(argShape._apply).toHaveBeenNthCalledWith(1, 'aaa', { isEarlyReturn: false }, 0);
     });
 
     test('raises an issue if this is invalid', async () => {
@@ -290,7 +290,7 @@ describe('FunctionShape', () => {
     test('raises an issue if an argument is invalid in an early-return mode', async () => {
       const shape = new FunctionShape(new ArrayShape([new StringShape(), new NumberShape()], null), null, null);
 
-      await expect(shape.ensureAsync(() => null, { earlyReturn: true }).call(undefined, 111, 'aaa')).rejects.toEqual(
+      await expect(shape.ensureAsync(() => null, { isEarlyReturn: true }).call(undefined, 111, 'aaa')).rejects.toEqual(
         new ValidationError([
           {
             code: CODE_TYPE_STRING,

@@ -53,7 +53,7 @@ describe('RecordShape', () => {
 
     const shape = new RecordShape(keyShape, valueShape);
 
-    expect(shape.try({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true })).toEqual({
+    expect(shape.try({ key1: 'aaa', key2: 'bbb' }, { isEarlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: ['key1'] }],
     });
@@ -191,7 +191,7 @@ describe('RecordShape', () => {
       const keyShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
       const valueShape = new AsyncMockShape();
 
-      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true });
+      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' }, { isEarlyReturn: true });
 
       expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
       expect(valueShape._applyAsync).not.toHaveBeenCalled();
@@ -201,7 +201,7 @@ describe('RecordShape', () => {
       const keyShape = new AsyncMockShape();
       const valueShape = new AsyncMockShape().check(() => [{ code: 'xxx' }]);
 
-      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' }, { earlyReturn: true });
+      await new RecordShape(keyShape, valueShape).tryAsync({ key1: 'aaa', key2: 'bbb' }, { isEarlyReturn: true });
 
       expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
       expect(valueShape._applyAsync).toHaveBeenCalledTimes(1);

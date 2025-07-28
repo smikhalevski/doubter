@@ -46,7 +46,7 @@ describe('PromiseShape', () => {
     });
 
     expect(cbMock).toHaveBeenCalledTimes(1);
-    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false });
+    expect(cbMock).toHaveBeenNthCalledWith(1, input, undefined, { isEarlyReturn: false });
   });
 
   test('returns the same promise if the resolved value did not change', () => {
@@ -130,7 +130,7 @@ describe('PromiseShape', () => {
       });
 
       expect(checkMock).toHaveBeenCalledTimes(1);
-      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { earlyReturn: false });
+      expect(checkMock).toHaveBeenNthCalledWith(1, input, undefined, { isEarlyReturn: false });
     });
 
     test('returns the same promise if the resolved value did not change', async () => {

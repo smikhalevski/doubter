@@ -442,7 +442,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
           unknownKeys = [key];
 
-          if (options.earlyReturn) {
+          if (options.isEarlyReturn) {
             break;
           }
           continue;
@@ -458,7 +458,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           createIssue(CODE_OBJECT_EXACT, input, MESSAGE_OBJECT_EXACT, unknownKeys, options, this._exactOptions),
         ];
 
-        if (options.earlyReturn) {
+        if (options.isEarlyReturn) {
           resolve(issues);
           return;
         }
@@ -483,7 +483,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
           if (isArray(result)) {
             unshiftIssuesPath(result, key);
 
-            if (options.earlyReturn) {
+            if (options.isEarlyReturn) {
               return result;
             }
             issues = concatIssues(issues, result);
@@ -534,7 +534,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
       if (isArray(result)) {
         unshiftIssuesPath(result, key);
 
-        if (options.earlyReturn) {
+        if (options.isEarlyReturn) {
           return result;
         }
         issues = concatIssues(issues, result);
@@ -590,7 +590,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         if (isArray(result)) {
           unshiftIssuesPath(result, key);
 
-          if (options.earlyReturn) {
+          if (options.isEarlyReturn) {
             return result;
           }
           issues = concatIssues(issues, result);
@@ -614,7 +614,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
 
         unknownKeys = [key];
 
-        if (options.earlyReturn) {
+        if (options.isEarlyReturn) {
           break;
         }
         continue;
@@ -637,7 +637,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         this._exactOptions
       );
 
-      if (options.earlyReturn) {
+      if (options.isEarlyReturn) {
         return [issue];
       }
       (issues ||= []).push(issue);
@@ -660,7 +660,7 @@ export class ObjectShape<PropShapes extends ReadonlyDict<AnyShape>, RestShape ex
         if (isArray(result)) {
           unshiftIssuesPath(result, key);
 
-          if (options.earlyReturn) {
+          if (options.isEarlyReturn) {
             return result;
           }
           issues = concatIssues(issues, result);

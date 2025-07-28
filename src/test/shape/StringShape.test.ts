@@ -43,7 +43,7 @@ describe('StringShape', () => {
   });
 
   test('raises a single issue in an early-return mode', () => {
-    expect(new StringShape().min(3).regex(/aaaa/).try('aa', { earlyReturn: true })).toEqual({
+    expect(new StringShape().min(3).regex(/aaaa/).try('aa', { isEarlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: CODE_STRING_MIN, input: 'aa', param: 3, message: 'Must have the minimum length of 3' }],
     });

@@ -107,7 +107,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
 
-            if (options.earlyReturn) {
+            if (options.isEarlyReturn) {
               return keyResult;
             }
             issues = concatIssues(issues, keyResult);
@@ -124,7 +124,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
         if (isArray(valueResult)) {
           unshiftIssuesPath(valueResult, key);
 
-          if (options.earlyReturn) {
+          if (options.isEarlyReturn) {
             return valueResult;
           }
           issues = concatIssues(issues, valueResult);
@@ -175,7 +175,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
 
-            if (options.earlyReturn) {
+            if (options.isEarlyReturn) {
               return keyResult;
             }
             issues = concatIssues(issues, keyResult);
@@ -192,7 +192,7 @@ export class RecordShape<KeysShape extends Shape<string, PropertyKey>, ValuesSha
           if (isArray(valueResult)) {
             unshiftIssuesPath(valueResult, key);
 
-            if (options.earlyReturn) {
+            if (options.isEarlyReturn) {
               return valueResult;
             }
             issues = concatIssues(issues, valueResult);

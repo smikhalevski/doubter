@@ -139,7 +139,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         if (isArray(keyResult)) {
           unshiftIssuesPath(keyResult, key);
 
-          if (options.earlyReturn) {
+          if (options.isEarlyReturn) {
             return keyResult;
           }
           issues = concatIssues(issues, keyResult);
@@ -155,7 +155,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
         if (isArray(valueResult)) {
           unshiftIssuesPath(valueResult, key);
 
-          if (options.earlyReturn) {
+          if (options.isEarlyReturn) {
             return valueResult;
           }
           issues = concatIssues(issues, valueResult);
@@ -212,7 +212,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           if (isArray(keyResult)) {
             unshiftIssuesPath(keyResult, key);
 
-            if (options.earlyReturn) {
+            if (options.isEarlyReturn) {
               return keyResult;
             }
             issues = concatIssues(issues, keyResult);
@@ -229,7 +229,7 @@ export class MapShape<KeyShape extends AnyShape, ValueShape extends AnyShape>
           if (isArray(valueResult)) {
             unshiftIssuesPath(valueResult, key);
 
-            if (options.earlyReturn) {
+            if (options.isEarlyReturn) {
               return valueResult;
             }
             issues = concatIssues(issues, valueResult);

@@ -1067,7 +1067,7 @@ Object.defineProperties(Shape.prototype, {
         this.isAsync
           ? throwSyncUnsupported
           : (input, options) => {
-              const result = this._apply(input, options || { earlyReturn: false }, nextNonce());
+              const result = this._apply(input, options || { isEarlyReturn: false }, nextNonce());
 
               if (result === null) {
                 return ok(input);
@@ -1086,7 +1086,7 @@ Object.defineProperties(Shape.prototype, {
 
     get(this: Shape) {
       return defineReadonlyProperty<Shape['tryAsync']>(this, 'tryAsync', (input, options) => {
-        return this._applyAsync(input, options || { earlyReturn: false }, nextNonce()).then(result => {
+        return this._applyAsync(input, options || { isEarlyReturn: false }, nextNonce()).then(result => {
           if (result === null) {
             return ok(input);
           }
@@ -1109,7 +1109,7 @@ Object.defineProperties(Shape.prototype, {
         this.isAsync
           ? throwSyncUnsupported
           : (input, options) => {
-              const result = this._apply(input, options || { earlyReturn: false }, nextNonce());
+              const result = this._apply(input, options || { isEarlyReturn: false }, nextNonce());
 
               if (result === null) {
                 return input;
@@ -1128,7 +1128,7 @@ Object.defineProperties(Shape.prototype, {
 
     get(this: Shape) {
       return defineReadonlyProperty<Shape['parseAsync']>(this, 'parseAsync', (input, options) => {
-        return this._applyAsync(input, options || { earlyReturn: false }, nextNonce()).then(result => {
+        return this._applyAsync(input, options || { isEarlyReturn: false }, nextNonce()).then(result => {
           if (result === null) {
             return input;
           }
@@ -1151,7 +1151,7 @@ Object.defineProperties(Shape.prototype, {
         this.isAsync
           ? throwSyncUnsupported
           : (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-              const result = this._apply(input, options || { earlyReturn: true }, nextNonce());
+              const result = this._apply(input, options || { isEarlyReturn: true }, nextNonce());
 
               if (result === null) {
                 return input;
@@ -1173,7 +1173,7 @@ Object.defineProperties(Shape.prototype, {
         this,
         'parseOrDefaultAsync',
         (input: unknown, defaultValue?: unknown, options?: ParseOptions) => {
-          return this._applyAsync(input, options || { earlyReturn: true }, nextNonce()).then(result => {
+          return this._applyAsync(input, options || { isEarlyReturn: true }, nextNonce()).then(result => {
             if (result === null) {
               return input;
             }

@@ -51,9 +51,9 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: input });
     expect(result.value).toBe(input);
     expect(headShape1._apply).toHaveBeenCalledTimes(1);
-    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
+    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: false }, 0);
     expect(headShape2._apply).toHaveBeenCalledTimes(1);
-    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { earlyReturn: false }, 0);
+    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { isEarlyReturn: false }, 0);
   });
 
   test('parses rest elements', () => {
@@ -67,8 +67,8 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: input });
     expect(result.value).toBe(input);
     expect(restShape._apply).toHaveBeenCalledTimes(2);
-    expect(restShape._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
-    expect(restShape._apply).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(2, 222, { isEarlyReturn: false }, 0);
   });
 
   test('parses both head and rest elements', () => {
@@ -84,12 +84,12 @@ describe('ArrayShape', () => {
     expect(result).toEqual({ ok: true, value: arr });
     expect(result.value).toBe(arr);
     expect(headShape1._apply).toHaveBeenCalledTimes(1);
-    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
+    expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: false }, 0);
     expect(headShape2._apply).toHaveBeenCalledTimes(1);
-    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { earlyReturn: false }, 0);
+    expect(headShape2._apply).toHaveBeenNthCalledWith(1, 222, { isEarlyReturn: false }, 0);
     expect(restShape._apply).toHaveBeenCalledTimes(2);
-    expect(restShape._apply).toHaveBeenNthCalledWith(1, 333, { earlyReturn: false }, 0);
-    expect(restShape._apply).toHaveBeenNthCalledWith(2, 444, { earlyReturn: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(1, 333, { isEarlyReturn: false }, 0);
+    expect(restShape._apply).toHaveBeenNthCalledWith(2, 444, { isEarlyReturn: false }, 0);
   });
 
   test('raises an issue if the tuple length does not match head shapes', () => {
@@ -132,7 +132,7 @@ describe('ArrayShape', () => {
     const restShape = new MockShape().check(() => [{ code: 'xxx' }]);
     const shape = new ArrayShape([], restShape);
 
-    expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
+    expect(shape.try(['aaa', 'bbb'], { isEarlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
@@ -158,7 +158,7 @@ describe('ArrayShape', () => {
 
     const shape = new ArrayShape([headShape1, headShape2], null);
 
-    expect(shape.try(['aaa', 'bbb'], { earlyReturn: true })).toEqual({
+    expect(shape.try(['aaa', 'bbb'], { isEarlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
@@ -442,9 +442,9 @@ describe('ArrayShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(headShape1._apply).toHaveBeenCalledTimes(1);
-      expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
+      expect(headShape1._apply).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: false }, 0);
       expect(headShape2._applyAsync).toHaveBeenCalledTimes(1);
-      expect(headShape2._applyAsync).toHaveBeenNthCalledWith(1, 222, { earlyReturn: false }, 0);
+      expect(headShape2._applyAsync).toHaveBeenNthCalledWith(1, 222, { isEarlyReturn: false }, 0);
     });
 
     test('does not apply head element shape if previous shape raised an issue in an early-return mode', async () => {
@@ -454,11 +454,11 @@ describe('ArrayShape', () => {
       const shape = new ArrayShape([headShape1, headShape2], null);
 
       const input = [111, 222];
-      const result = (await shape.tryAsync(input, { earlyReturn: true })) as Err;
+      const result = (await shape.tryAsync(input, { isEarlyReturn: true })) as Err;
 
       expect(result).toEqual({ ok: false, issues: [{ code: 'xxx', path: [0] }] });
       expect(headShape1._applyAsync).toHaveBeenCalledTimes(1);
-      expect(headShape1._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: true }, 0);
+      expect(headShape1._applyAsync).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: true }, 0);
       expect(headShape2._applyAsync).not.toHaveBeenCalled();
     });
 
@@ -473,8 +473,8 @@ describe('ArrayShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(restShape._applyAsync).toHaveBeenCalledTimes(2);
-      expect(restShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
-      expect(restShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false }, 0);
+      expect(restShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: false }, 0);
+      expect(restShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { isEarlyReturn: false }, 0);
     });
 
     test('clones an array if a tuple element was converted', async () => {

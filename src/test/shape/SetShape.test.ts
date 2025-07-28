@@ -42,8 +42,8 @@ describe('SetShape', () => {
     expect(result).toEqual({ ok: true, value: input });
     expect(result.value).toBe(input);
     expect(valueShape._apply).toHaveBeenCalledTimes(2);
-    expect(valueShape._apply).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
-    expect(valueShape._apply).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false }, 0);
+    expect(valueShape._apply).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: false }, 0);
+    expect(valueShape._apply).toHaveBeenNthCalledWith(2, 222, { isEarlyReturn: false }, 0);
   });
 
   test('raises a single issue captured by the value shape in an early-return mode', () => {
@@ -51,7 +51,7 @@ describe('SetShape', () => {
 
     const shape = new SetShape(valueShape);
 
-    expect(shape.try(new Set(['aaa', 'bbb']), { earlyReturn: true })).toEqual({
+    expect(shape.try(new Set(['aaa', 'bbb']), { isEarlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx', path: [0] }],
     });
@@ -195,8 +195,8 @@ describe('SetShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape._applyAsync).toHaveBeenCalledTimes(2);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: false }, 0);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { earlyReturn: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: false }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { isEarlyReturn: false }, 0);
     });
 
     test('does not apply value shape if the previous value raised an issue in an early-return mode', async () => {
@@ -211,11 +211,11 @@ describe('SetShape', () => {
 
       const input = new Set([111, 222, 333]);
 
-      await shape.tryAsync(input, { earlyReturn: true });
+      await shape.tryAsync(input, { isEarlyReturn: true });
 
       expect(valueShape._applyAsync).toHaveBeenCalledTimes(2);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { earlyReturn: true }, 0);
-      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { earlyReturn: true }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(1, 111, { isEarlyReturn: true }, 0);
+      expect(valueShape._applyAsync).toHaveBeenNthCalledWith(2, 222, { isEarlyReturn: true }, 0);
     });
 
     test('returns a new set if some values were converted', async () => {

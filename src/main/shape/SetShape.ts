@@ -114,7 +114,7 @@ export class SetShape<ValueShape extends AnyShape>
       if (isArray(result)) {
         unshiftIssuesPath(result, i);
 
-        if (options.earlyReturn) {
+        if (options.isEarlyReturn) {
           return result;
         }
         issues = concatIssues(issues, result);
@@ -153,7 +153,7 @@ export class SetShape<ValueShape extends AnyShape>
           if (isArray(result)) {
             unshiftIssuesPath(result, index);
 
-            if (options.earlyReturn) {
+            if (options.isEarlyReturn) {
               return result;
             }
             issues = concatIssues(issues, result);

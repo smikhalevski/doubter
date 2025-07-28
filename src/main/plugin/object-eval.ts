@@ -47,7 +47,7 @@ function compileApplyRestUnchecked(shape: ObjectShape<any, any>) {
       'unshiftIssuesPath(result, ' +
       keyStr +
       ');' +
-      'if (options.earlyReturn) return result;' +
+      'if (options.isEarlyReturn) return result;' +
       'issues = concatIssues(issues, result);' +
       '} else if (issues === null || this.operations.length !== 0)' +
       'setProperty(input === output ? output = cloneObject(input) : output, ' +
