@@ -1971,7 +1971,7 @@ shape.at('bar');
 
 # Localization
 
-All shape factories and built-in checks support a custom issue messages:
+All shape factories and built-in checks support custom issue messages:
 
 ```ts
 d.string('Hey, string here').min(3, 'Too short');
