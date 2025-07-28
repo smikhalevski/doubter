@@ -35,23 +35,20 @@ Runtime validation and transformation library.
   depending on [what features you use](#plugins).
 - Check out the [Cookbook](#cookbook) for real-life examples!
 
+<!--/OVERVIEW-->
+
+<br>
+
 ```shell
 npm install --save-prod doubter
 ```
-
-<!--/OVERVIEW-->
-
-> [!TIP]\
-> Docs of the latest stable release can be found under
-> the [`latest`](https://github.com/smikhalevski/doubter/tree/refs/tags/latest#readme) tag.
 
 <br>
 
 <!--TOC-->
 
-<span class="toc-icon">&emsp;&ensp;</span>[API docs&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/)
-
-<span class="toc-icon">&emsp;&ensp;</span>[Live example&#8239;<sup>↗</sup>](https://codesandbox.io/s/y5kec4)
+- [API docs&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/)
+- [Live example&#8239;<sup>↗</sup>](https://codesandbox.io/s/y5kec4)
 
 <span class="toc-icon">🔰&ensp;</span>**Features**
 
@@ -374,14 +371,14 @@ parseOrDefault(42);
 All parsing methods accept options argument.
 
 ```ts
-d.number().parse('42', { earlyReturn: true });
+d.number().parse('42', { isEarlyReturn: true });
 // ⮕ 42
 ```
 
 Following options are available:
 
 <dl>
-<dt><code>earlyReturn</code></dt>
+<dt><code>isEarlyReturn</code></dt>
 <dd>
 
 If `true` then parsing is aborted after the first issue is encountered. Refer to [Early return](#early-return) section
@@ -1092,7 +1089,7 @@ Refer to [Async shapes](#async-shapes) section for more details on when shapes c
 
 By default, Doubter collects all issues during parsing. In some cases, you may want to halt parsing and raise a
 validation error as soon as the first issue was encountered. To do this, pass the
-[`earlyReturn`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/interfaces/core.ParseOptions.html#earlyreturn)
+[`isEarlyReturn`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/interfaces/core.ParseOptions.html#isearlyreturn)
 option to the [parsing methods](#parsing-and-trying).
 
 <!-- prettier-ignore -->
@@ -1100,7 +1097,7 @@ option to the [parsing methods](#parsing-and-trying).
 d.string()
   .max(4)
   .regex(/a/)
-  .try('Pluto', { earlyReturn: true });
+  .try('Pluto', { isEarlyReturn: true });
 ```
 
 This would return the [`Err`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/interfaces/core.Err.html) object
