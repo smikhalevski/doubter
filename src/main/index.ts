@@ -15,6 +15,7 @@ import './plugin/number-essentials.js';
 import './plugin/object-essentials.js';
 import './plugin/object-eval.js';
 import './plugin/set-essentials.js';
+import './plugin/standard-schema.js';
 import './plugin/string-essentials.js';
 
 export type * from './plugin/array-essentials.js';
