@@ -31,13 +31,7 @@ Object.defineProperty(Shape.prototype, '~standard', {
     return defineReadonlyProperty(this, '~standard', {
       vendor: 'doubter',
       version: 1,
-
-      validate: (input: unknown) => {
-        // Doubter doesn't constrain validation issue message type, while standard schema requires every issue to have
-        // a _string_ message. By default, all issues produced by Doubter built-in plugins have string messages. So it's
-        // safe to assume full runtime compatibility up to the point where custom non-string messages are used.
-        return this.isAsync ? this.tryAsync(input) : this.try(input);
-      },
+      validate: this.isAsync ? this.tryAsync : this.try,
     });
   },
 });

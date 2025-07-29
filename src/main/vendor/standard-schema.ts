@@ -1,3 +1,5 @@
+import { ParseOptions } from '../types.js';
+
 /**
  * The Standard Schema interface.
  */
@@ -17,14 +19,17 @@ export declare namespace StandardSchemaV1 {
      * The version number of the standard.
      */
     readonly version: 1;
+
     /**
      * The vendor name of the schema library.
      */
     readonly vendor: string;
+
     /**
      * Validates unknown input values.
      */
-    readonly validate: (value: unknown) => Result<Output> | Promise<Result<Output>>;
+    readonly validate: (value: unknown, options?: ParseOptions) => Result<Output> | Promise<Result<Output>>;
+
     /**
      * Inferred types associated with the schema.
      */
@@ -44,6 +49,7 @@ export declare namespace StandardSchemaV1 {
      * The typed output value.
      */
     readonly value: Output;
+
     /**
      * The non-existent issues.
      */
@@ -67,7 +73,8 @@ export declare namespace StandardSchemaV1 {
     /**
      * The error message of the issue.
      */
-    readonly message: string;
+    readonly message: any;
+
     /**
      * The path of the issue, if any.
      */
@@ -92,6 +99,7 @@ export declare namespace StandardSchemaV1 {
      * The input type of the schema.
      */
     readonly input: Input;
+
     /**
      * The output type of the schema.
      */
