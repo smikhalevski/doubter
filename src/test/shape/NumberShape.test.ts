@@ -47,7 +47,7 @@ describe('NumberShape', () => {
   });
 
   test('raises a single issue in an early-return mode', () => {
-    expect(new NumberShape().gt(2).multipleOf(3).try(1, { earlyReturn: true })).toEqual({
+    expect(new NumberShape().gt(2).multipleOf(3).try(1, { isEarlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: CODE_NUMBER_GT, input: 1, param: 2, message: 'Must be greater than 2' }],
     });

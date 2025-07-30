@@ -166,7 +166,7 @@ export function composeApplyOperations(
             if (isArray(result)) {
               issues = concatIssues(issues, result);
 
-              if (tolerance === 'abort' || options.earlyReturn) {
+              if (tolerance === 'abort' || options.isEarlyReturn) {
                 return issues;
               }
             } else {
@@ -199,7 +199,7 @@ export function composeApplyOperations(
       if (isArray(result)) {
         issues = concatIssues(issues, result);
 
-        if (tolerance === 'abort' || options.earlyReturn) {
+        if (tolerance === 'abort' || options.isEarlyReturn) {
           return issues;
         }
       } else {

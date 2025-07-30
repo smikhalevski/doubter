@@ -63,7 +63,7 @@ describe('IntersectionShape', () => {
   test('raises an issue if an input does not conform one of shapes in an early-return mode', () => {
     const shape = new IntersectionShape([new NumberShape(), new NumberShape()]);
 
-    expect(shape.try('aaa', { earlyReturn: true })).toEqual({
+    expect(shape.try('aaa', { isEarlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: CODE_TYPE_NUMBER, input: 'aaa', message: MESSAGE_TYPE_NUMBER }],
     });
@@ -126,7 +126,7 @@ describe('IntersectionShape', () => {
 
     const shape = new IntersectionShape([shape1, shape2]).check(() => [{ code: 'yyy' }]);
 
-    expect(shape.try({}, { earlyReturn: true })).toEqual({
+    expect(shape.try({}, { isEarlyReturn: true })).toEqual({
       ok: false,
       issues: [{ code: 'xxx' }],
     });

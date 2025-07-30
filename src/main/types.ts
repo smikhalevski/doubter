@@ -341,7 +341,7 @@ export interface ParseOptions {
    *
    * @default false
    */
-  earlyReturn?: boolean;
+  isEarlyReturn?: boolean;
 
   /**
    * The custom context.

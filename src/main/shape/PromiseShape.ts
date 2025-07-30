@@ -120,7 +120,7 @@ export class PromiseShape<ValueShape extends AnyShape | null>
 
         if (result !== null) {
           if (isArray(result)) {
-            if (options.earlyReturn || this.operations.length === 0) {
+            if (options.isEarlyReturn || this.operations.length === 0) {
               return result;
             }
             issues = result;

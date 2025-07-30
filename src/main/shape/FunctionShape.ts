@@ -166,7 +166,7 @@ export class FunctionShape<
 
     const { argsShape, returnShape, thisShape } = this;
 
-    const parseOptionsBase = options || this._parseOptions || { earlyReturn: false };
+    const parseOptionsBase = options || this._parseOptions || { isEarlyReturn: false };
 
     return function (this: any, ...args: any) {
       const parseOptions = Object.assign({}, parseOptionsBase);
@@ -214,7 +214,7 @@ export class FunctionShape<
   ensureAsync(fn: Function, options?: ParseOptions) {
     const { argsShape, returnShape, thisShape } = this;
 
-    const parseOptionsBase = options || this._parseOptions || { earlyReturn: false };
+    const parseOptionsBase = options || this._parseOptions || { isEarlyReturn: false };
 
     return function (this: any, ...args: any) {
       return new Promise(resolve => {

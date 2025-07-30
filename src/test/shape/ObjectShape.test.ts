@@ -212,7 +212,7 @@ describe('ObjectShape', () => {
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null).partial();
       const input = {};
 
-      expect(shape.try(input, { earlyReturn: true })).toEqual({ ok: true, value: input });
+      expect(shape.try(input, { isEarlyReturn: true })).toEqual({ ok: true, value: input });
     });
 
     test('marks all properties with given keys as optional', () => {
@@ -222,7 +222,7 @@ describe('ObjectShape', () => {
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null).partial(['key2']);
       const input = {};
 
-      expect(shape.try(input, { earlyReturn: true })).toEqual({
+      expect(shape.try(input, { isEarlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: CODE_TYPE_STRING, message: MESSAGE_TYPE_STRING, path: ['key1'] }],
       });
@@ -253,7 +253,7 @@ describe('ObjectShape', () => {
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null).required(['key1']);
       const input = {};
 
-      expect(shape.try(input, { earlyReturn: true })).toEqual({
+      expect(shape.try(input, { isEarlyReturn: true })).toEqual({
         ok: false,
         issues: [{ code: CODE_ANY_DENY, message: 'Must not be equal to undefined', path: ['key1'] }],
       });
@@ -342,7 +342,7 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape1._apply).toHaveBeenCalledTimes(1);
-      expect(valueShape1._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
+      expect(valueShape1._apply).toHaveBeenNthCalledWith(1, 'aaa', { isEarlyReturn: false }, 0);
     });
 
     test('raises the first issue only in an early-return mode', () => {
@@ -351,7 +351,7 @@ describe('ObjectShape', () => {
 
       const shape = new ObjectShape({ key1: valueShape1, key2: valueShape2 }, null);
 
-      const result = shape.try({}, { earlyReturn: true }) as Ok;
+      const result = shape.try({}, { isEarlyReturn: true }) as Ok;
 
       expect(result).toEqual({
         ok: false,
@@ -434,11 +434,11 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape1._apply).toHaveBeenCalledTimes(1);
-      expect(valueShape1._apply).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
+      expect(valueShape1._apply).toHaveBeenNthCalledWith(1, 'aaa', { isEarlyReturn: false }, 0);
       expect(valueShape2._apply).toHaveBeenCalledTimes(1);
-      expect(valueShape2._apply).toHaveBeenNthCalledWith(1, undefined, { earlyReturn: false }, 0);
+      expect(valueShape2._apply).toHaveBeenNthCalledWith(1, undefined, { isEarlyReturn: false }, 0);
       expect(restShape._apply).toHaveBeenCalledTimes(1);
-      expect(restShape._apply).toHaveBeenNthCalledWith(1, 'bbb', { earlyReturn: false }, 0);
+      expect(restShape._apply).toHaveBeenNthCalledWith(1, 'bbb', { isEarlyReturn: false }, 0);
     });
 
     test('raises multiple issues', () => {
@@ -511,7 +511,7 @@ describe('ObjectShape', () => {
 
       const input = { key1: 'aaa', key2: 'bbb', key3: 'ccc' };
 
-      const result = shape.try(input, { earlyReturn: true });
+      const result = shape.try(input, { isEarlyReturn: true });
 
       expect(result).toEqual({
         ok: false,
@@ -582,11 +582,11 @@ describe('ObjectShape', () => {
       expect(result).toEqual({ ok: true, value: input });
       expect(result.value).toBe(input);
       expect(valueShape1._applyAsync).toHaveBeenCalledTimes(1);
-      expect(valueShape1._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { earlyReturn: false }, 0);
+      expect(valueShape1._applyAsync).toHaveBeenNthCalledWith(1, 'aaa', { isEarlyReturn: false }, 0);
       expect(valueShape2._apply).toHaveBeenCalledTimes(1);
-      expect(valueShape2._apply).toHaveBeenNthCalledWith(1, undefined, { earlyReturn: false }, 0);
+      expect(valueShape2._apply).toHaveBeenNthCalledWith(1, undefined, { isEarlyReturn: false }, 0);
       expect(restShape._apply).toHaveBeenCalledTimes(1);
-      expect(restShape._apply).toHaveBeenNthCalledWith(1, 'bbb', { earlyReturn: false }, 0);
+      expect(restShape._apply).toHaveBeenNthCalledWith(1, 'bbb', { isEarlyReturn: false }, 0);
     });
 
     test('raises multiple issues', async () => {
@@ -649,7 +649,7 @@ describe('ObjectShape', () => {
 
       const input = { key1: 'aaa', key2: 'bbb', key3: 'ccc' };
 
-      const result = await shape.tryAsync(input, { earlyReturn: true });
+      const result = await shape.tryAsync(input, { isEarlyReturn: true });
 
       expect(result).toEqual({
         ok: false,

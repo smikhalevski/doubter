@@ -63,7 +63,7 @@ describe('MapShape', () => {
           ['key1', 'aaa'],
           ['key2', 'bbb'],
         ]),
-        { earlyReturn: true }
+        { isEarlyReturn: true }
       )
     ).toEqual({
       ok: false,
@@ -289,7 +289,7 @@ describe('MapShape', () => {
           ['key1', 'aaa'],
           ['key2', 'bbb'],
         ]),
-        { earlyReturn: true }
+        { isEarlyReturn: true }
       );
 
       expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
@@ -305,7 +305,7 @@ describe('MapShape', () => {
           ['key1', 'aaa'],
           ['key2', 'bbb'],
         ]),
-        { earlyReturn: true }
+        { isEarlyReturn: true }
       );
 
       expect(keyShape._applyAsync).toHaveBeenCalledTimes(1);
