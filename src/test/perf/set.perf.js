@@ -1,7 +1,7 @@
 import { describe, measure, test } from 'toofast';
 import { Ajv } from 'ajv';
 import * as zod from 'zod';
-import * as doubter from '../../../lib/index.mjs';
+import * as doubter from '../../../lib/index.js';
 
 describe('set(number())', () => {
   const value = new Set([111, 222]);

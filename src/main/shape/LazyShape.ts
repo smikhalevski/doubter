@@ -24,7 +24,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
   /**
    * The map from nonce to an array of inputs seen during parsing.
    */
-  private _stackMap = new Map<number, unknown[]>();
+  private _seenInputsMap = new Map<number, unknown[]>();
 
   /**
    * Creates a new {@link LazyShape} instance.
@@ -105,23 +105,21 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
 
   protected _clone(): this {
     const shape = super._clone();
-    shape._stackMap = new Map();
+    shape._seenInputsMap = new Map();
     return shape;
   }
 
   protected _apply(input: unknown, options: ParseOptions, nonce: number): Result<Output<ProvidedShape> | Pointer> {
-    const { _stackMap } = this;
+    const { _seenInputsMap } = this;
 
     let output = input;
     let result;
-    let stack = _stackMap.get(nonce);
+    let seenInputs = _seenInputsMap.get(nonce);
 
-    const leading = stack === undefined;
-
-    if (stack === undefined) {
-      stack = [input];
-      _stackMap.set(nonce, stack);
-    } else if (stack.includes(input)) {
+    if (seenInputs === undefined) {
+      seenInputs = [input];
+      _seenInputsMap.set(nonce, seenInputs);
+    } else if (seenInputs.includes(input)) {
       try {
         output = this.pointerProvider(input, options);
       } catch (error) {
@@ -129,15 +127,13 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
       }
       return input === output ? null : ok(output);
     } else {
-      stack.push(input);
+      seenInputs.push(input);
     }
 
     try {
       result = this.providedShape['_apply'](input, options, nonce);
     } finally {
-      if (leading) {
-        _stackMap.delete(nonce);
-      }
+      _seenInputsMap.delete(nonce);
     }
 
     if (result !== null) {
@@ -154,17 +150,15 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
     options: ParseOptions,
     nonce: number
   ): Promise<Result<Output<ProvidedShape> | Pointer>> {
-    const { _stackMap } = this;
+    const { _seenInputsMap } = this;
 
     let output = input;
-    let stack = _stackMap.get(nonce);
+    let seenInputs = _seenInputsMap.get(nonce);
 
-    const leading = stack === undefined;
-
-    if (stack === undefined) {
-      stack = [input];
-      _stackMap.set(nonce, stack);
-    } else if (stack.includes(input)) {
+    if (seenInputs === undefined) {
+      seenInputs = [input];
+      _seenInputsMap.set(nonce, seenInputs);
+    } else if (seenInputs.includes(input)) {
       return new Promise(resolve => {
         try {
           output = this.pointerProvider(input, options);
@@ -175,14 +169,13 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
         resolve(input === output ? null : ok(output));
       });
     } else {
-      stack.push(input);
+      seenInputs.push(input);
     }
 
     return this.providedShape['_applyAsync'](input, options, nonce).then(
       result => {
-        if (leading) {
-          _stackMap.delete(nonce);
-        }
+        _seenInputsMap.delete(nonce);
+
         if (result !== null) {
           if (isArray(result)) {
             return result;
@@ -192,9 +185,7 @@ export class LazyShape<ProvidedShape extends AnyShape, Pointer>
         return this._applyOperations(input, output, options, null);
       },
       error => {
-        if (leading) {
-          _stackMap.delete(nonce);
-        }
+        _seenInputsMap.delete(nonce);
         throw error;
       }
     );

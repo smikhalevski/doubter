@@ -1,5 +1,5 @@
 import { describe, measure, test } from 'toofast';
-import { inspect } from '../../../lib/utils.mjs';
+import { inspect } from '../../../lib/utils.js';
 
 describe('inspect', () => {
   const value = {

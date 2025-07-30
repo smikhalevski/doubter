@@ -159,7 +159,7 @@ describe('LazyShape', () => {
       const shape: LazyShape<any, any> = new LazyShape(() => shape, identity);
 
       expect(shape.parse(111)).toBe(111);
-      expect(shape['_stackMap'].size).toBe(0);
+      expect(shape['_seenInputsMap'].size).toBe(0);
     });
 
     test('parses cyclic shapes', () => {
@@ -169,7 +169,7 @@ describe('LazyShape', () => {
       input.key1 = input;
 
       expect(shape.parse(input)).toBe(input);
-      expect(shape['_stackMap'].size).toBe(0);
+      expect(shape['_seenInputsMap'].size).toBe(0);
     });
 
     test('shows issues only for the first input value', () => {
@@ -212,8 +212,8 @@ describe('LazyShape', () => {
       input.key1 = input;
 
       expect(() => shape.parse(input)).toThrow('expected');
-      expect(shape['_stackMap'].size).toBe(0);
-      expect(shape.providedShape.propShapes.key1['_stackMap'].size).toBe(0);
+      expect(shape['_seenInputsMap'].size).toBe(0);
+      expect(shape.providedShape.propShapes.key1['_seenInputsMap'].size).toBe(0);
     });
 
     test('nested parse invocations are separated by nonce', () => {
@@ -263,8 +263,8 @@ describe('LazyShape', () => {
 
       await expect(shape.parseAsync(input)).rejects.toEqual(new Error('expected'));
 
-      expect(shape['_stackMap'].size).toBe(0);
-      expect(shape.providedShape.propShapes.key1['_stackMap'].size).toBe(0);
+      expect(shape['_seenInputsMap'].size).toBe(0);
+      expect(shape.providedShape.propShapes.key1['_seenInputsMap'].size).toBe(0);
     });
 
     test('parallel parse calls of cyclic shapes are separated by nonce', async () => {

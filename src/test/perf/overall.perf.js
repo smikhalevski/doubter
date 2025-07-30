@@ -4,7 +4,7 @@ import { Ajv } from 'ajv';
 import * as myzod from 'myzod';
 import * as valibot from 'valibot';
 import * as zod from 'zod';
-import * as doubter from '../../../lib/index.mjs';
+import * as doubter from '../../../lib/index.js';
 
 describe('Overall', () => {
   const createOverallTests = (isSuccessMeasureEnabled, isFailureMeasureEnabled) => {

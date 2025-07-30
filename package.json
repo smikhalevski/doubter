@@ -2,85 +2,38 @@
   "name": "doubter",
   "version": "5.1.1",
   "description": "Runtime validation and transformation library.",
-  "main": "./index.js",
-  "module": "./index.mjs",
-  "types": "./index.d.ts",
   "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "exports": {
-    ".": {
-      "types": "./index.d.ts",
-      "import": "./index.mjs",
-      "require": "./index.js"
-    },
-    "./core": {
-      "types": "./core.d.ts",
-      "import": "./core.mjs",
-      "require": "./core.js"
-    },
-    "./utils": {
-      "types": "./utils.d.ts",
-      "import": "./utils.mjs",
-      "require": "./utils.js"
-    },
-    "./plugin/array-essentials": {
-      "types": "./plugin/array-essentials.d.ts",
-      "import": "./plugin/array-essentials.mjs",
-      "require": "./plugin/array-essentials.js"
-    },
-    "./plugin/bigint-essentials": {
-      "types": "./plugin/bigint-essentials.d.ts",
-      "import": "./plugin/bigint-essentials.mjs",
-      "require": "./plugin/bigint-essentials.js"
-    },
-    "./plugin/date-essentials": {
-      "types": "./plugin/date-essentials.d.ts",
-      "import": "./plugin/date-essentials.mjs",
-      "require": "./plugin/date-essentials.js"
-    },
-    "./plugin/number-essentials": {
-      "types": "./plugin/number-essentials.d.ts",
-      "import": "./plugin/number-essentials.mjs",
-      "require": "./plugin/number-essentials.js"
-    },
-    "./plugin/object-essentials": {
-      "types": "./plugin/object-essentials.d.ts",
-      "import": "./plugin/object-essentials.mjs",
-      "require": "./plugin/object-essentials.js"
-    },
-    "./plugin/set-essentials": {
-      "types": "./plugin/set-essentials.d.ts",
-      "import": "./plugin/set-essentials.mjs",
-      "require": "./plugin/set-essentials.js"
-    },
-    "./plugin/string-essentials": {
-      "types": "./plugin/string-essentials.d.ts",
-      "import": "./plugin/string-essentials.mjs",
-      "require": "./plugin/string-essentials.js"
-    },
+    ".": "./index.js",
+    "./core": "./core.js",
+    "./utils": "./utils.js",
+    "./plugin/array-essentials": "./plugin/array-essentials.js",
+    "./plugin/bigint-essentials": "./plugin/bigint-essentials.js",
+    "./plugin/date-essentials": "./plugin/date-essentials.js",
+    "./plugin/number-essentials": "./plugin/number-essentials.js",
+    "./plugin/object-essentials": "./plugin/object-essentials.js",
+    "./plugin/object-eval": "./plugin/object-eval.js",
+    "./plugin/set-essentials": "./plugin/set-essentials.js",
+    "./plugin/standard-schema": "./plugin/standard-schema.js",
+    "./plugin/string-essentials": "./plugin/string-essentials.js",
     "./package.json": "./package.json"
   },
   "sideEffects": [
     "./index.js",
-    "./index.mjs",
     "./plugin/array-essentials.js",
-    "./plugin/array-essentials.mjs",
     "./plugin/bigint-essentials.js",
-    "./plugin/bigint-essentials.mjs",
     "./plugin/date-essentials.js",
-    "./plugin/date-essentials.mjs",
     "./plugin/number-essentials.js",
-    "./plugin/number-essentials.mjs",
     "./plugin/object-essentials.js",
-    "./plugin/object-essentials.mjs",
     "./plugin/object-eval.js",
-    "./plugin/object-eval.mjs",
     "./plugin/set-essentials.js",
-    "./plugin/set-essentials.mjs",
-    "./plugin/string-essentials.js",
-    "./plugin/string-essentials.mjs"
+    "./plugin/standard-schema.js",
+    "./plugin/string-essentials.js"
   ],
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && node rewrite.mjs lib && tsc --project tsconfig.build.json --module CommonJS && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete type scripts devDependencies",
+    "build": "tsc --project tsconfig.build.json && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
     "clean": "rimraf lib docs coverage",
     "test": "vitest run",
     "test:definitions": "tsd --typings lib/index.d.ts --files 'src/test/**/*.test-d.ts'",
