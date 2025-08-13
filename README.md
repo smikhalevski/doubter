@@ -17,6 +17,8 @@
 
 <br>
 
+<!--ARTICLE-->
+
 <!--OVERVIEW-->
 
 Runtime validation and transformation library.
@@ -44,6 +46,8 @@ npm install --save-prod doubter
 ```
 
 <br>
+
+<!--/ARTICLE-->
 
 <!--TOC-->
 
@@ -749,21 +753,21 @@ Use [`tolerance`&#8239;<sup>↗</sup>](https://smikhalevski.github.io/doubter/ty
 operation option to change how the operation behaves in case there are issues caused by the shape it is added to:
 
 <dl>
-<dt><code>"skip"</code></dt>
+<dt>"skip"</dt>
 <dd>
 
 If the shape or preceding operations have raised issues, then the operation is skipped but consequent operations are
 still applied.
 
 </dd>
-<dt><code>"abort"</code></dt>
+<dt>"abort"</dt>
 <dd>
 
 If the shape or preceding operations have raised issues, then the operation is skipped and consequent operations aren't
 applied. Also, if this operation itself raises issues then consequent operations aren't applied.
 
 </dd>
-<dt><code>"auto"</code></dt>
+<dt>"auto"</dt>
 <dd>
 
 The operation is applied regardless of previously raised issues. This is the default behavior.
