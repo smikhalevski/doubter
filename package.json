@@ -57,7 +57,7 @@
   "bugs": {
     "url": "https://github.com/smikhalevski/doubter/issues"
   },
-  "homepage": "https://github.com/smikhalevski/doubter#readme",
+  "homepage": "https://megastack.dev/doubter",
   "devDependencies": {
     "@badrap/valita": "^0.4.5",
     "@standard-schema/spec": "^1.0.0",
