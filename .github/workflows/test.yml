@@ -11,6 +11,9 @@ on:
     paths-ignore:
       - 'README.md'
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref }}
   cancel-in-progress: true
@@ -19,14 +22,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
+
       - run: npm ci
       - run: npm run build
       - run: npm test
+      - run: npm run test:definitions
 
   test-definitions:
     needs: test
@@ -36,11 +42,13 @@ jobs:
         typescript: ['4.1', '4.9', '5.0', '5.8']
     name: typescript@${{ matrix.typescript }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: npm
+
       - run: npm ci
       - run: npm run build
       - run: npm install --save-exact typescript@${{ matrix.typescript }}
