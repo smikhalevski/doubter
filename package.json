@@ -59,22 +59,22 @@
   },
   "homepage": "https://megastack.dev/doubter",
   "devDependencies": {
-    "@badrap/valita": "^0.4.5",
+    "@badrap/valita": "^0.4.6",
     "@standard-schema/spec": "^1.0.0",
     "@types/qs": "^6.14.0",
     "ajv": "^8.17.1",
     "myzod": "^1.12.1",
-    "prettier": "^3.6.0",
-    "qs": "^6.14.0",
-    "rimraf": "^6.0.1",
+    "prettier": "^3.7.4",
+    "qs": "^6.14.1",
+    "rimraf": "^6.1.2",
     "toofast": "^3.0.3",
-    "tsd": "^0.32.0",
+    "tsd": "^0.33.0",
     "tslib": "^2.8.1",
-    "typedoc": "^0.28.5",
-    "typedoc-plugin-mdn-links": "^5.0.2",
-    "typescript": "^5.8.3",
-    "valibot": "^1.1.0",
-    "vitest": "^3.2.4",
-    "zod": "^4.0.5"
+    "typedoc": "^0.28.15",
+    "typedoc-plugin-mdn-links": "^5.0.10",
+    "typescript": "^5.9.3",
+    "valibot": "^1.2.0",
+    "vitest": "^4.0.16",
+    "zod": "^4.3.5"
   }
 }
