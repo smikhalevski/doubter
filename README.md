@@ -2084,6 +2084,9 @@ d.number().gte(3); // ❌ gte is undefined
 - [**plugin/object-essentials**](https://smikhalevski.github.io/doubter/modules/plugin_object-essentials.html)
 
   [`plain`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#plain)<br>
+  [`minKeyCount`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#minkeycount)<br>
+  [`maxKeyCount`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#maxkeycount)<br>
+  [`nonEmpty`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#nonempty)<br>
   [`allKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#allkeys)<br>
   [`notAllKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#notallkeys)<br>
   [`orKeys`](https://smikhalevski.github.io/doubter/classes/core.ObjectShape.html#orkeys)<br>
