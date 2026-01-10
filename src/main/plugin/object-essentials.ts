@@ -16,12 +16,16 @@
 
 import {
   CODE_OBJECT_ALL_KEYS,
+  CODE_OBJECT_MAX_KEY_COUNT,
+  CODE_OBJECT_MIN_KEY_COUNT,
   CODE_OBJECT_NOT_ALL_KEYS,
   CODE_OBJECT_OR_KEYS,
   CODE_OBJECT_OXOR_KEYS,
   CODE_OBJECT_PLAIN,
   CODE_OBJECT_XOR_KEYS,
   MESSAGE_OBJECT_ALL_KEYS,
+  MESSAGE_OBJECT_MAX_KEY_COUNT,
+  MESSAGE_OBJECT_MIN_KEY_COUNT,
   MESSAGE_OBJECT_NOT_ALL_KEYS,
   MESSAGE_OBJECT_OR_KEYS,
   MESSAGE_OBJECT_OXOR_KEYS,
@@ -47,6 +51,38 @@ declare module '../core.js' {
      * @plugin {@link plugin/object-essentials! plugin/object-essentials}
      */
     plain(options?: IssueOptions | Message): this;
+
+    /**
+     * Constrains the minimum number of keys that an {@link !Object} must have.
+     *
+     * @param size The minimum number of keys.
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     */
+    minKeyCount(size: number, options?: IssueOptions | Message): this;
+
+    /**
+     * Constrains the maximum number of keys that an {@link !Object} must have.
+     *
+     * @param size The maximum number of keys.
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     */
+    maxKeyCount(size: number, options?: IssueOptions | Message): this;
+
+    /**
+     * Constrains the {@link !Object} to contain at least one key.
+     *
+     * @param options The issue options or the issue message.
+     * @returns The clone of the shape.
+     * @group Plugin Methods
+     * @plugin {@link plugin/object-essentials! plugin/object-essentials}
+     */
+    nonEmpty(options?: IssueOptions | Message): this;
 
     /**
      * Defines an all-or-nothing relationship between keys where if one of the keys is present, all of them are
@@ -186,10 +222,42 @@ ObjectShape.prototype.plain = RecordShape.prototype.plain = function (issueOptio
   );
 };
 
+ObjectShape.prototype.minKeyCount = function (size, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (getKeyCount(value) >= param) {
+        return null;
+      }
+      return [
+        createIssue(CODE_OBJECT_MIN_KEY_COUNT, value, MESSAGE_OBJECT_MIN_KEY_COUNT, param, options, issueOptions),
+      ];
+    },
+    { type: CODE_OBJECT_MIN_KEY_COUNT, param: size }
+  );
+};
+
+ObjectShape.prototype.maxKeyCount = function (size, issueOptions) {
+  return this.addOperation(
+    (value, param, options) => {
+      if (getKeyCount(value) <= param) {
+        return null;
+      }
+      return [
+        createIssue(CODE_OBJECT_MAX_KEY_COUNT, value, MESSAGE_OBJECT_MAX_KEY_COUNT, param, options, issueOptions),
+      ];
+    },
+    { type: CODE_OBJECT_MAX_KEY_COUNT, param: size }
+  );
+};
+
+ObjectShape.prototype.nonEmpty = function (issueOptions) {
+  return this.minKeyCount(1, issueOptions);
+};
+
 ObjectShape.prototype.allKeys = RecordShape.prototype.allKeys = function (keys, issueOptions): any {
   return this.addOperation(
     (value, param, options) => {
-      const keyCount = getKeyCount(value, param, param.length);
+      const keyCount = getKnownKeyCount(value, param, param.length);
 
       if (keyCount === 0 || keyCount === param.length) {
         return null;
@@ -203,7 +271,7 @@ ObjectShape.prototype.allKeys = RecordShape.prototype.allKeys = function (keys, 
 ObjectShape.prototype.notAllKeys = RecordShape.prototype.notAllKeys = function (keys, issueOptions): any {
   return this.addOperation(
     (value, param, options) => {
-      if (getKeyCount(value, param, param.length) !== param.length) {
+      if (getKnownKeyCount(value, param, param.length) !== param.length) {
         return null;
       }
       return [createIssue(CODE_OBJECT_NOT_ALL_KEYS, value, MESSAGE_OBJECT_NOT_ALL_KEYS, param, options, issueOptions)];
@@ -215,7 +283,7 @@ ObjectShape.prototype.notAllKeys = RecordShape.prototype.notAllKeys = function (
 ObjectShape.prototype.orKeys = RecordShape.prototype.orKeys = function (keys, issueOptions): any {
   return this.addOperation(
     (value, param, options) => {
-      if (getKeyCount(value, param, 1) !== 0) {
+      if (getKnownKeyCount(value, param, 1) !== 0) {
         return null;
       }
       return [createIssue(CODE_OBJECT_OR_KEYS, value, MESSAGE_OBJECT_OR_KEYS, param, options, issueOptions)];
@@ -227,7 +295,7 @@ ObjectShape.prototype.orKeys = RecordShape.prototype.orKeys = function (keys, is
 ObjectShape.prototype.xorKeys = RecordShape.prototype.xorKeys = function (keys, issueOptions): any {
   return this.addOperation(
     (value, param, options) => {
-      if (getKeyCount(value, param, 2) === 1) {
+      if (getKnownKeyCount(value, param, 2) === 1) {
         return null;
       }
       return [createIssue(CODE_OBJECT_XOR_KEYS, value, MESSAGE_OBJECT_XOR_KEYS, param, options, issueOptions)];
@@ -239,7 +307,7 @@ ObjectShape.prototype.xorKeys = RecordShape.prototype.xorKeys = function (keys, 
 ObjectShape.prototype.oxorKeys = RecordShape.prototype.oxorKeys = function (keys, issueOptions): any {
   return this.addOperation(
     (value, param, options) => {
-      if (getKeyCount(value, param, 2) <= 1) {
+      if (getKnownKeyCount(value, param, 2) <= 1) {
         return null;
       }
       return [createIssue(CODE_OBJECT_OXOR_KEYS, value, MESSAGE_OBJECT_OXOR_KEYS, param, options, issueOptions)];
@@ -248,13 +316,17 @@ ObjectShape.prototype.oxorKeys = RecordShape.prototype.oxorKeys = function (keys
   );
 };
 
-function getKeyCount(output: ReadonlyDict, keys: readonly string[], maxCount: number): number {
-  let count = 0;
+function getKeyCount(value: ReadonlyDict): number {
+  return Object.keys(value).length;
+}
 
-  for (let i = 0; i < keys.length && count < maxCount; ++i) {
-    if (output[keys[i]] !== undefined) {
-      ++count;
+function getKnownKeyCount(value: ReadonlyDict, keys: readonly string[], maxKeyCount: number): number {
+  let keyCount = 0;
+
+  for (let i = 0; i < keys.length && keyCount < maxKeyCount; ++i) {
+    if (value[keys[i]] !== undefined) {
+      ++keyCount;
     }
   }
-  return count;
+  return keyCount;
 }

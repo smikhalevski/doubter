@@ -2,6 +2,8 @@ import { describe, expect, test } from 'vitest';
 import { ObjectShape } from '../../main/index.js';
 import {
   CODE_OBJECT_ALL_KEYS,
+  CODE_OBJECT_MAX_KEY_COUNT,
+  CODE_OBJECT_MIN_KEY_COUNT,
   CODE_OBJECT_OR_KEYS,
   CODE_OBJECT_OXOR_KEYS,
   CODE_OBJECT_PLAIN,
@@ -35,6 +37,98 @@ describe('plain', () => {
 
   test('returns false for non-Object objects', () => {
     expect(shape.try(Error).ok).toBe(false);
+  });
+});
+
+describe('minKeyCount', () => {
+  test('raises if object contains excessive number of keys', () => {
+    const shape = new ObjectShape({ key1: new MockShape(), key2: new MockShape(), key3: new MockShape() }, null)
+      .partial()
+      .minKeyCount(2);
+
+    expect(shape.try({ key1: 111, key2: 222 }).ok).toBe(true);
+    expect(shape.try({ key1: 111, key2: 222, key3: 333 }).ok).toBe(true);
+
+    expect(shape.try({ key1: 111 })).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_OBJECT_MIN_KEY_COUNT,
+          input: { key1: 111 },
+          message: 'Must have a minimum of 2 keys',
+          param: 2,
+        },
+      ],
+    });
+  });
+
+  test('pluralizes word "key" in default issue message', () => {
+    const shape = new ObjectShape({ key1: new MockShape(), key2: new MockShape() }, null).partial().minKeyCount(1);
+
+    expect(shape.try({})).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_OBJECT_MIN_KEY_COUNT,
+          input: {},
+          message: 'Must have a minimum of 1 key',
+          param: 1,
+        },
+      ],
+    });
+  });
+});
+
+describe('maxKeyCount', () => {
+  test('raises if object contains insufficient number of keys', () => {
+    const shape = new ObjectShape(
+      { key1: new MockShape(), key2: new MockShape(), key3: new MockShape(), key4: new MockShape() },
+      null
+    )
+      .partial()
+      .maxKeyCount(3);
+
+    expect(shape.try({}).ok).toBe(true);
+    expect(shape.try({ key1: 111, key2: 222 }).ok).toBe(true);
+    expect(shape.try({ key1: 111, key2: 222, key3: 333 }).ok).toBe(true);
+
+    expect(shape.try({ key1: 111, key2: 222, key3: 333, key4: 444 })).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_OBJECT_MAX_KEY_COUNT,
+          input: { key1: 111, key2: 222, key3: 333, key4: 444 },
+          message: 'Must have a maximum of 3 keys',
+          param: 3,
+        },
+      ],
+    });
+  });
+
+  test('pluralizes word "key" in default issue message', () => {
+    const shape = new ObjectShape({ key1: new MockShape(), key2: new MockShape() }, null).partial().maxKeyCount(1);
+
+    expect(shape.try({ key1: 111, key2: 222 })).toEqual({
+      ok: false,
+      issues: [
+        {
+          code: CODE_OBJECT_MAX_KEY_COUNT,
+          input: { key1: 111, key2: 222 },
+          message: 'Must have a maximum of 1 key',
+          param: 1,
+        },
+      ],
+    });
+  });
+});
+
+describe('nonEmpty', () => {
+  test('raises if object does not have at least one key', () => {
+    const shape = new ObjectShape({ key1: new MockShape(), key2: new MockShape() }, null).partial().nonEmpty();
+
+    expect(shape.try({}).ok).toBe(false);
+    expect(shape.try({ key1: 111 }).ok).toBe(true);
+    expect(shape.try({ key1: 111, key2: 222 }).ok).toBe(true);
   });
 });
 

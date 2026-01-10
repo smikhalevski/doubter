@@ -22,6 +22,8 @@ export const CODE_NUMBER_GTE = 'number.gte';
 export const CODE_NUMBER_LT = 'number.lt';
 export const CODE_NUMBER_LTE = 'number.lte';
 export const CODE_NUMBER_MULTIPLE_OF = 'number.multipleOf';
+export const CODE_OBJECT_MIN_KEY_COUNT = 'object.minKeyCount';
+export const CODE_OBJECT_MAX_KEY_COUNT = 'object.maxKeyCount';
 export const CODE_OBJECT_ALL_KEYS = 'object.allKeys';
 export const CODE_OBJECT_NOT_ALL_KEYS = 'object.notAllKeys';
 export const CODE_OBJECT_OR_KEYS = 'object.orKeys';
@@ -75,6 +77,10 @@ export const MESSAGE_NUMBER_GTE: Message = issue => 'Must be greater than or equ
 export const MESSAGE_NUMBER_LT: Message = issue => 'Must be less than ' + inspect(issue.param);
 export const MESSAGE_NUMBER_LTE: Message = issue => 'Must be less than or equal to ' + inspect(issue.param);
 export const MESSAGE_NUMBER_MULTIPLE_OF: Message = issue => 'Must be a multiple of ' + inspect(issue.param);
+export const MESSAGE_OBJECT_MIN_KEY_COUNT: Message = issue =>
+  'Must have a minimum of ' + inspect(issue.param) + (issue.param === 1 ? ' key' : ' keys');
+export const MESSAGE_OBJECT_MAX_KEY_COUNT: Message = issue =>
+  'Must have a maximum of ' + inspect(issue.param) + (issue.param === 1 ? ' key' : ' keys');
 export const MESSAGE_OBJECT_ALL_KEYS: Message = issue => 'Must contain all or no keys: ' + inspectArray(issue);
 export const MESSAGE_OBJECT_NOT_ALL_KEYS: Message = issue => 'Must contain not all or no keys: ' + inspectArray(issue);
 export const MESSAGE_OBJECT_OR_KEYS: Message = issue => 'Must contain at least one key: ' + inspectArray(issue);
