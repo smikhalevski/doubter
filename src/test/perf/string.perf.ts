@@ -87,7 +87,7 @@ describe('string()', () => {
       const type = valita.string();
 
       measure(() => {
-        type.try(value).issues;
+        (type.try(value) as valita.Err).issues;
       });
     });
 
@@ -102,9 +102,7 @@ describe('string()', () => {
 });
 
 describe('string().min(3)', () => {
-  const createTests = () => {
-    const value = 'aaa';
-
+  const createTests = (value: string) => {
     test('Ajv', () => {
       const validate = new Ajv().compile({
         $schema: 'http://json-schema.org/draft-07/schema#',
@@ -156,9 +154,7 @@ describe('string().min(3)', () => {
 });
 
 describe('string().min(3).max(3)', () => {
-  const createTests = () => {
-    const value = 'aaa';
-
+  const createTests = (value: string) => {
     test('Ajv', () => {
       const validate = new Ajv().compile({
         $schema: 'http://json-schema.org/draft-07/schema#',
@@ -214,7 +210,7 @@ describe('string().min(3).max(3)', () => {
 });
 
 describe('string().coerce()', () => {
-  const createTests = value => {
+  const createTests = (value: unknown) => {
     test('zod', () => {
       const type = zod.coerce.string();
 
@@ -332,7 +328,7 @@ describe('string().convert(() => 111)', () => {
 });
 
 describe('string().catch("foo")', () => {
-  const createTests = value => {
+  const createTests = (value: string | number) => {
     test('zod', () => {
       const type = zod.string().catch('foo');
 

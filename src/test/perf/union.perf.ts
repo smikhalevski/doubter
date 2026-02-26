@@ -6,7 +6,7 @@ import * as zod from 'zod';
 import * as doubter from '../../../lib/index.js';
 
 describe('or([string(), number(), boolean()])', () => {
-  const createTests = value => {
+  const createTests = (value: unknown) => {
     test('Ajv', () => {
       const ajv = new Ajv({ allowUnionTypes: true });
 
@@ -64,7 +64,7 @@ describe('or([string(), number(), boolean()])', () => {
 });
 
 describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
-  const createTests = value => {
+  const createTests = (value: unknown) => {
     test('Ajv', () => {
       const ajv = new Ajv({ allowUnionTypes: true });
 
@@ -120,7 +120,7 @@ describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
 
     test('valita', () => {
       const type = valita.union(valita.object({ foo: valita.string() }), valita.object({ bar: valita.number() }));
-      const options = { mode: 'passthrough' };
+      const options: valita.ParseOptions = { mode: 'passthrough' };
 
       measure(() => {
         type.parse(value, options);
@@ -142,7 +142,7 @@ describe('or([object({ foo: string() }), object({ bar: number() })])', () => {
 });
 
 describe('or([object({ foo: string() }), array(number())])', () => {
-  const createTests = value => {
+  const createTests = (value: unknown) => {
     test('Ajv', () => {
       const ajv = new Ajv({ allowUnionTypes: true });
 
@@ -194,7 +194,7 @@ describe('or([object({ foo: string() }), array(number())])', () => {
 
     test('valita', () => {
       const type = valita.union(valita.object({ foo: valita.string() }), valita.array(valita.number()));
-      const options = { mode: 'passthrough' };
+      const options: valita.ParseOptions = { mode: 'passthrough' };
 
       measure(() => {
         type.parse(value, options);
@@ -216,7 +216,7 @@ describe('or([object({ foo: string() }), array(number())])', () => {
 });
 
 describe('or([object({ type: const("foo") }), object({ type: const("bar") })])', () => {
-  const createTests = value => {
+  const createTests = (value: unknown) => {
     test('Ajv', () => {
       const ajv = new Ajv({ allowUnionTypes: true });
 
@@ -276,7 +276,7 @@ describe('or([object({ type: const("foo") }), object({ type: const("bar") })])',
         valita.object({ type: valita.literal('bar') })
       );
 
-      const options = { mode: 'passthrough' };
+      const options: valita.ParseOptions = { mode: 'passthrough' };
 
       measure(() => {
         type.parse(value, options);

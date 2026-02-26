@@ -4,7 +4,7 @@ import * as doubter from '../../../lib/index.js';
 
 describe('fn([number(), number()]).ensure(…)', () => {
   test('zod', () => {
-    const fn = zod.function(zod.tuple([zod.number(), zod.number()])).implement((a, b) => a + b);
+    const fn = zod.function({ input: zod.tuple([zod.number(), zod.number()]) }).implement((a, b) => a + b);
 
     measure(() => {
       fn(1, 2);

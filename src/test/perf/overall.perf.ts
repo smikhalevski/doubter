@@ -7,7 +7,7 @@ import * as zod from 'zod';
 import * as doubter from '../../../lib/index.js';
 
 describe('Overall', () => {
-  const createOverallTests = (isSuccessMeasureEnabled, isFailureMeasureEnabled) => {
+  const createOverallTests = (isSuccessMeasureEnabled: boolean, isFailureMeasureEnabled: boolean) => {
     const validValue = {
       a1: [1, 2, 3],
       a2: 'foo',
@@ -174,7 +174,7 @@ describe('Overall', () => {
           }),
         });
 
-        const options = { mode: 'passthrough' };
+        const options: valita.ParseOptions = { mode: 'passthrough' };
 
         if (isSuccessMeasureEnabled) {
           measure(() => {
@@ -184,7 +184,7 @@ describe('Overall', () => {
 
         if (isFailureMeasureEnabled) {
           measure(() => {
-            type.try(invalidValue, options).issues;
+            (type.try(invalidValue, options) as valita.Err).issues;
           });
         }
       });
@@ -364,7 +364,7 @@ describe('Overall', () => {
 
         if (isFailureMeasureEnabled) {
           measure(() => {
-            type.try(invalidValue).issues;
+            (type.try(invalidValue) as valita.Err).issues;
           });
         }
       });
@@ -535,7 +535,7 @@ describe('https://moltar.github.io/typescript-runtime-type-benchmarks/', () => {
         }),
       });
 
-      const options = { mode: 'passthrough' };
+      const options: valita.ParseOptions = { mode: 'passthrough' };
 
       measure(() => {
         type.parse(value, options);

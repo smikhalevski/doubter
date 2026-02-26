@@ -2316,7 +2316,7 @@ second (greater is better).
 
 Tests were conducted using [TooFast](https://github.com/smikhalevski/toofast#readme) on Apple M1 with Node.js v23.11.1.
 
-To reproduce [the performance test suite](./src/test/perf/overall.perf.js) results, clone this repo and run:
+To reproduce [the performance test suite](./src/test/perf/overall.perf.ts) results, clone this repo and run:
 
 ```shell
 npm ci

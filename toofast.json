@@ -3,5 +3,5 @@
     "warmupIterationCount": 100,
     "targetRme": 0.001
   },
-  "include": ["./src/test/**/*.perf.js"]
+  "include": ["./src/test/**/*.perf.ts"]
 }

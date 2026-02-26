@@ -36,6 +36,7 @@
     "build": "tsc --project tsconfig.build.json && cp package.json README.md LICENSE.txt lib/ && cd lib && npm pkg delete scripts devDependencies",
     "clean": "rimraf lib docs coverage",
     "test": "vitest run",
+    "typecheck": "tsc",
     "perf": "toofast",
     "docs": "typedoc"
   },

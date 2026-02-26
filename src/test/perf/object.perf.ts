@@ -75,7 +75,7 @@ describe('object({ foo: string(), bar: number() })', () => {
       bar: valita.number(),
     });
 
-    const options = { mode: 'passthrough' };
+    const options: valita.ParseOptions = { mode: 'passthrough' };
 
     measure(() => {
       type.parse(value, options);
