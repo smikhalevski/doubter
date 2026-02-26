@@ -58,7 +58,6 @@ export type { ObjectKeysMode } from './shape/ObjectShape.js';
 export type {
   AllowShape,
   AnyShape,
-  Branded,
   DeepPartialProtocol,
   DeepPartialShape,
   Input,

@@ -81,20 +81,6 @@ type ExcludeLiteral<T, U> =
   Exclude<T, U>;
 
 /**
- * The ephemeral unique symbol that is used for type branding by {@link Branded}.
- */
-declare const BRAND: unique symbol;
-
-/**
- * The branded type.
- *
- * @template Value The value to brand.
- * @template Brand The brand value.
- * @group Other
- */
-export type Branded<Value, Brand> = Value & { [BRAND]: Brand };
-
-/**
  * A shape should implement {@link DeepPartialProtocol} to support conversion to a deep partial alternative.
  *
  * @template S The deep partial alternative of the shape.
@@ -163,7 +149,8 @@ export type AllowShape<S extends AnyShape, AllowedValue> = ReplaceShape<S, Allow
  * @group Shapes
  */
 export interface NotShape<BaseShape extends AnyShape, ExcludedShape extends AnyShape>
-  extends Shape<Input<BaseShape>, Output<BaseShape>>,
+  extends
+    Shape<Input<BaseShape>, Output<BaseShape>>,
     DeepPartialProtocol<NotShape<DeepPartialShape<BaseShape>, ExcludedShape>> {
   /**
    * The base shape.
@@ -400,6 +387,13 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
   }
 
   /**
+   * Returns a shape that narrows the output type.
+   *
+   * @returns The shape with the narrowed output.
+   */
+  refine<RefinedValue extends OutputValue>(): RefineShape<this, RefinedValue>;
+
+  /**
    * Adds {@link Shape.addOperation a synchronous operation} that refines the shape output type with the
    * [narrowing predicate](https://www.typescriptlang.org/docs/handbook/2/narrowing.html).
    *
@@ -462,7 +456,12 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   refine(cb: OperationCallback<unknown, OutputValue>, options?: RefineOptions | Message): this;
 
-  refine(cb: OperationCallback<unknown>, issueOptions?: RefineOptions | Message): Shape {
+  refine(cb?: OperationCallback<unknown>, issueOptions?: RefineOptions | Message): Shape {
+    if (cb === undefined) {
+      // Unchecked refinement
+      return this;
+    }
+
     const { type = cb, param, tolerance, code = CODE_ANY_REFINE } = toIssueOptions(issueOptions);
 
     return this.addOperation(
@@ -661,16 +660,6 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    */
   to<OutputShape extends AnyShape>(shape: OutputShape): PipeShape<this, OutputShape> {
     return new PipeShape(this, shape);
-  }
-
-  /**
-   * Returns a shape that adds a brand to the output type.
-   *
-   * @returns A shape with the branded output type.
-   * @template Brand The brand value.
-   */
-  brand<Brand extends string | number | symbol>(): RefineShape<this, Branded<OutputValue, Brand>> {
-    return this as any;
   }
 
   /**

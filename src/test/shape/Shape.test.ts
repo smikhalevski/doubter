@@ -561,6 +561,12 @@ describe('Shape', () => {
       expect(cbMock2).toHaveBeenCalledTimes(1);
       expect(cbMock3).toHaveBeenCalledTimes(1);
     });
+
+    test('branding does not change shape identity', () => {
+      const shape = new Shape();
+
+      expect(shape.refine()).toBe(shape);
+    });
   });
 
   describe('alter', () => {
@@ -670,14 +676,6 @@ describe('Shape', () => {
       expect(shape).toBeInstanceOf(PipeShape);
       expect(shape.inputShape).toBe(inputShape);
       expect(shape.outputShape).toBe(outputShape);
-    });
-  });
-
-  describe('brand', () => {
-    test('branding does not change shape identity', () => {
-      const shape = new Shape();
-
-      expect(shape.brand()).toBe(shape);
     });
   });
 

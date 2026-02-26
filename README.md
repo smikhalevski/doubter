@@ -1601,13 +1601,13 @@ bookTicket('Bill');
 ```
 
 In some cases, it can be desirable to simulate nominal typing inside TypeScript. For instance, you may wish to write a
-function that only accepts an input that has been validated by Doubter. This can be achieved with branded types:
+function that only accepts an input that has been validated by Doubter. This can be achieved with unchecked refinements:
 
 ```ts
-const flightCodeShape = d.string().refine(isFlightCode).brand<'flightCode'>();
-// ⮕ Shape<string, Branded<string, 'flightCode'>>
+type FlightCode = string & { __brand__: 'FlightCode' };
 
-type FlightCode = d.Output<typeof flightCodeShape>;
+const flightCodeShape = d.string().refine<FlightCode>();
+// ⮕ Shape<string, FlightCode>
 
 // 🟡 Note that the argument type isn't a plain string
 function bookTicket(flightCode: FlightCode): void {
@@ -1618,7 +1618,7 @@ bookTicket(flightCodeShape.parse('BA2490'));
 // Ok, valid flight code
 
 bookTicket('Bill');
-// ❌ Error: Expected BRAND to be flightCode
+// ❌ Error: Missing property __brand__
 ```
 
 > [!NOTE]\

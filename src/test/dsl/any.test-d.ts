@@ -85,9 +85,7 @@ expectType<{ aaa?: string } | 111>(d.object({ aaa: d.string() }).catch(111).deep
 
 // BrandShape
 
-expectType<d.Branded<string, 'foo'>>(d.string().brand<'foo'>()[OUTPUT]);
-
-const brandShape = d.any<string>().brand();
+const brandShape = d.any<string>().refine<string & { BRAND: 'zzz' }>();
 
 expectType<d.Output<typeof brandShape>>(brandShape[OUTPUT]);
 
@@ -95,13 +93,13 @@ expectType<d.Output<typeof brandShape>>(brandShape.parse('aaa'));
 
 expectNotType<d.Output<typeof brandShape>>('aaa');
 
-expectNotType<d.Output<typeof brandShape>>(d.any<string>().brand<'bbb'>()[OUTPUT]);
+expectNotType<d.Output<typeof brandShape>>(d.any<string>().refine<string & { BRAND: 'bbb' }>()[OUTPUT]);
 
 // deepPartial is visible on branded shapes
-expectType<{ aaa?: string }>(d.object({ aaa: d.string() }).brand().deepPartial()[OUTPUT]);
+expectType<{ aaa?: string }>(d.object({ aaa: d.string() }).refine().deepPartial()[OUTPUT]);
 
 // Branded shapes are transparent for deepPartial
-expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string() }).brand() }).deepPartial()[OUTPUT]);
+expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string() }).refine() }).deepPartial()[OUTPUT]);
 
 // not()
 
