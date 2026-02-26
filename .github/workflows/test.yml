@@ -32,7 +32,6 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - run: npm run test:definitions
 
   test-definitions:
     needs: test
@@ -52,4 +51,3 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm install --save-exact typescript@${{ matrix.typescript }}
-      - run: npm run test:definitions

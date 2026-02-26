@@ -1,32 +1,36 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<Record<string, number>>(d.record(d.number())[OUTPUT]);
+test('expected types', () => {
+  expectTypeOf(d.record(d.number())[OUTPUT]).toEqualTypeOf<Record<string, number>>();
 
-expectType<{ bbb: number }>(
+  expectTypeOf(
+    d.record(
+      d.string().convert((): 'bbb' => 'bbb'),
+      d.number()
+    )[OUTPUT]
+  ).toEqualTypeOf<{ bbb: number }>();
+
+  expectTypeOf(d.record(d.string(), d.boolean().optional())[OUTPUT]).toEqualTypeOf<
+    Record<string, boolean | undefined>
+  >();
+
+  d.record(d.number()).notAllKeys(['bbb']);
+
+  d.record(d.enum(['aaa', 'bbb']), d.number()).notAllKeys(['bbb']);
+
   d.record(
-    d.string().convert((): 'bbb' => 'bbb'),
+    d.string().convert(x => x as 'aaa' | 'bbb'),
     d.number()
-  )[OUTPUT]
-);
+  ).notAllKeys(['bbb']);
 
-expectType<Record<string, boolean | undefined>>(d.record(d.string(), d.boolean().optional())[OUTPUT]);
+  d.record(d.number()).notAllKeys(['bbb']);
 
-d.record(d.number()).notAllKeys(['bbb']);
+  expectTypeOf(d.record(d.number()).readonly()[INPUT]).toEqualTypeOf<{ [key: string]: number }>();
 
-d.record(d.enum(['aaa', 'bbb']), d.number()).notAllKeys(['bbb']);
-
-d.record(
-  d.string().convert(x => x as 'aaa' | 'bbb'),
-  d.number()
-).notAllKeys(['bbb']);
-
-d.record(d.number()).notAllKeys(['bbb']);
-
-expectType<{ [key: string]: number }>(d.record(d.number()).readonly()[INPUT]);
-
-expectType<{ readonly [key: string]: number }>(d.record(d.number()).readonly()[OUTPUT]);
+  expectTypeOf(d.record(d.number()).readonly()[OUTPUT]).toEqualTypeOf<{ readonly [key: string]: number }>();
+});

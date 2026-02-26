@@ -1,13 +1,15 @@
-import { expectNotType, expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const OUTPUT: OUTPUT;
 
-expectType<[string, number]>(d.tuple([d.string(), d.number()])[OUTPUT]);
+test('expected types', () => {
+  expectTypeOf(d.tuple([d.string(), d.number()])[OUTPUT]).toEqualTypeOf<[string, number]>();
 
-expectNotType<[string, number, ...unknown[]]>(d.tuple([d.string(), d.number()])[OUTPUT]);
+  expectTypeOf(d.tuple([d.string(), d.number()])[OUTPUT]).not.toEqualTypeOf<[string, number, ...unknown[]]>();
 
-expectType<number>(d.tuple([d.string(), d.number()]).headShapes[1][OUTPUT]);
+  expectTypeOf(d.tuple([d.string(), d.number()]).headShapes[1][OUTPUT]).toEqualTypeOf<number>();
 
-expectType<[string, number, ...boolean[]]>(d.tuple([d.string(), d.number()], d.boolean())[OUTPUT]);
+  expectTypeOf(d.tuple([d.string(), d.number()], d.boolean())[OUTPUT]).toEqualTypeOf<[string, number, ...boolean[]]>();
+});

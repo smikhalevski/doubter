@@ -1,10 +1,12 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<Date>(d.date().toISOString()[INPUT]);
+test('expected types', () => {
+  expectTypeOf(d.date().toISOString()[INPUT]).toEqualTypeOf<Date>();
 
-expectType<string>(d.date().toISOString()[OUTPUT]);
+  expectTypeOf(d.date().toISOString()[OUTPUT]).toEqualTypeOf<string>();
+});

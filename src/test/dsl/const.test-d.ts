@@ -1,7 +1,9 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const OUTPUT: OUTPUT;
 
-expectType<111>(d.const(111)[OUTPUT]);
+test('expected types', () => {
+  expectTypeOf(d.const(111)[OUTPUT]).toEqualTypeOf<111>();
+});

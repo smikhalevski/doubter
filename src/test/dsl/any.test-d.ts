@@ -1,134 +1,146 @@
-import { expectNotType, expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<111>(d.any((_value): _value is 111 => true)[INPUT]);
+test('expected types', () => {
+  expectTypeOf(d.any((_value): _value is 111 => true)[INPUT]).toEqualTypeOf<111>();
 
-expectType<111>(d.any((_value): _value is 111 => true)[OUTPUT]);
+  expectTypeOf(d.any((_value): _value is 111 => true)[OUTPUT]).toEqualTypeOf<111>();
 
-expectType<string>(d.any<string>()[INPUT]);
+  expectTypeOf(d.any<string>()[INPUT]).toEqualTypeOf<string>();
 
-expectType<string>(d.any<string>()[OUTPUT]);
+  expectTypeOf(d.any<string>()[OUTPUT]).toEqualTypeOf<string>();
 
-expectType<string>(d.any<string>(() => true)[INPUT]);
+  expectTypeOf(d.any<string>(() => true)[INPUT]).toEqualTypeOf<string>();
 
-expectType<string>(d.any<string>(() => true)[OUTPUT]);
+  expectTypeOf(d.any<string>(() => true)[OUTPUT]).toEqualTypeOf<string>();
+});
 
-// refine()
+test('refine', () => {
+  expectTypeOf(d.any().refine((_value: unknown): _value is number => true)[INPUT]).toEqualTypeOf<any>();
 
-expectType<any>(d.any().refine((_value: unknown): _value is number => true)[INPUT]);
+  expectTypeOf(d.any().refine((_value: unknown): _value is number => true)[OUTPUT]).toEqualTypeOf<number>();
+});
 
-expectType<number>(d.any().refine((_value: unknown): _value is number => true)[OUTPUT]);
+test('ReplaceShape', () => {
+  expectTypeOf(d.any<string>().nullable()[OUTPUT]).toEqualTypeOf<string | null>();
 
-// ReplaceShape
+  expectTypeOf(d.any<string>().nullable(111)[OUTPUT]).toEqualTypeOf<string | 111>();
 
-expectType<string | null>(d.any<string>().nullable()[OUTPUT]);
+  expectTypeOf(d.any<111 | 222>().replace(222, 333)[OUTPUT]).toEqualTypeOf<111 | 333>();
 
-expectType<string | 111>(d.any<string>().nullable(111)[OUTPUT]);
+  expectTypeOf(d.any<111 | 222>().replace(222 as number, 333)[OUTPUT]).toEqualTypeOf<111 | 222 | 333>();
 
-expectType<111 | 333>(d.any<111 | 222>().replace(222, 333)[OUTPUT]);
+  expectTypeOf(d.any<111 | 222>().replace(NaN, 333)[INPUT]).toEqualTypeOf<number>();
 
-expectType<111 | 222 | 333>(d.any<111 | 222>().replace(222 as number, 333)[OUTPUT]);
+  expectTypeOf(d.any<111 | 222>().replace(NaN, 333)[OUTPUT]).toEqualTypeOf<111 | 222 | 333>();
+});
 
-expectType<number>(d.any<111 | 222>().replace(NaN, 333)[INPUT]);
+test('parse', () => {
+  expectTypeOf(d.any<string>().parseOrDefault(111)).toEqualTypeOf<string | undefined>();
 
-expectType<111 | 222 | 333>(d.any<111 | 222>().replace(NaN, 333)[OUTPUT]);
+  expectTypeOf<string | true>(d.any<string>().parseOrDefault(111, true)).toEqualTypeOf<string | true>();
+});
 
-// parse()
+test('CatchShape', () => {
+  expectTypeOf(d.number().catch()[OUTPUT]).toEqualTypeOf<number | undefined>();
 
-expectType<string | undefined>(d.any<string>().parseOrDefault(111));
+  expectTypeOf(d.number().catch('aaa')[OUTPUT]).toEqualTypeOf<number | 'aaa'>();
 
-expectType<string | true>(d.any<string>().parseOrDefault(111, true));
+  expectTypeOf(d.number().catch(() => 'aaa')[OUTPUT]).toEqualTypeOf<number | 'aaa'>();
+});
 
-// CatchShape
+test('deepPartial', () => {
+  // ConvertShape is opaque for deepPartial
+  expectTypeOf(
+    d.object({ aaa: d.object({ bbb: d.number() }).convert(value => value) }).deepPartial()[OUTPUT]
+  ).toEqualTypeOf<{ aaa?: { bbb: number } }>();
 
-expectType<number | undefined>(d.number().catch()[OUTPUT]);
+  expectTypeOf(
+    d
+      .object({ aaa: d.string().convert(parseFloat) })
+      .to(d.object({ aaa: d.number() }))
+      .deepPartial()[INPUT]
+  ).toEqualTypeOf<{ aaa?: string }>();
 
-expectType<number | 'aaa'>(d.number().catch('aaa')[OUTPUT]);
+  expectTypeOf(
+    d
+      .object({ aaa: d.string().convert(parseFloat) })
+      .to(d.object({ aaa: d.number() }))
+      .deepPartial()[OUTPUT]
+  ).toEqualTypeOf<{ aaa?: number }>();
 
-expectType<number | 'aaa'>(d.number().catch(() => 'aaa')[OUTPUT]);
+  expectTypeOf(
+    d
+      .or([d.object({ aaa: d.string() }), d.const(111)])
+      .deny(111)
+      .deepPartial()[OUTPUT]
+  ).toEqualTypeOf<{ aaa?: string }>();
 
-// deepPartial()
+  expectTypeOf(d.object({ aaa: d.string() }).catch().deepPartial()[OUTPUT]).toEqualTypeOf<
+    { aaa?: string } | undefined
+  >();
 
-// ConvertShape is opaque for deepPartial
-expectType<{ aaa?: { bbb: number } }>(
-  d.object({ aaa: d.object({ bbb: d.number() }).convert(value => value) }).deepPartial()[OUTPUT]
-);
+  expectTypeOf(d.object({ aaa: d.string() }).catch(111).deepPartial()[OUTPUT]).toEqualTypeOf<{ aaa?: string } | 111>();
+});
 
-expectType<{ aaa?: string }>(
-  d
-    .object({ aaa: d.string().convert(parseFloat) })
-    .to(d.object({ aaa: d.number() }))
-    .deepPartial()[INPUT]
-);
+test('BrandShape', () => {
+  const brandShape = d.any<string>().refine<string & { BRAND: 'zzz' }>();
 
-expectType<{ aaa?: number }>(
-  d
-    .object({ aaa: d.string().convert(parseFloat) })
-    .to(d.object({ aaa: d.number() }))
-    .deepPartial()[OUTPUT]
-);
+  expectTypeOf(brandShape[OUTPUT]).toEqualTypeOf<d.Output<typeof brandShape>>();
 
-expectType<{ aaa?: string }>(
-  d
-    .or([d.object({ aaa: d.string() }), d.const(111)])
-    .deny(111)
-    .deepPartial()[OUTPUT]
-);
+  expectTypeOf(brandShape.parse('aaa')).toEqualTypeOf<d.Output<typeof brandShape>>();
 
-expectType<{ aaa?: string } | undefined>(d.object({ aaa: d.string() }).catch().deepPartial()[OUTPUT]);
+  expectTypeOf('aaa').not.toEqualTypeOf<d.Output<typeof brandShape>>();
 
-expectType<{ aaa?: string } | 111>(d.object({ aaa: d.string() }).catch(111).deepPartial()[OUTPUT]);
+  expectTypeOf(d.any<string>().refine<string & { BRAND: 'bbb' }>()[OUTPUT]).not.toEqualTypeOf<
+    d.Output<typeof brandShape>
+  >();
 
-// BrandShape
+  // deepPartial is visible on branded shapes
+  expectTypeOf(d.object({ aaa: d.string() }).refine().deepPartial()[OUTPUT]).toEqualTypeOf<{ aaa?: string }>();
 
-const brandShape = d.any<string>().refine<string & { BRAND: 'zzz' }>();
+  // Branded shapes are transparent for deepPartial
+  expectTypeOf(d.object({ aaa: d.object({ bbb: d.string() }).refine() }).deepPartial()[OUTPUT]).toEqualTypeOf<{
+    aaa?: { bbb?: string };
+  }>();
+});
 
-expectType<d.Output<typeof brandShape>>(brandShape[OUTPUT]);
+test('not', () => {
+  expectTypeOf(d.enum([111, 222]).not(d.number())[INPUT]).toEqualTypeOf<111 | 222>();
 
-expectType<d.Output<typeof brandShape>>(brandShape.parse('aaa'));
+  expectTypeOf(d.enum([111, 222]).not(d.number())[OUTPUT]).toEqualTypeOf<111 | 222>();
 
-expectNotType<d.Output<typeof brandShape>>('aaa');
+  expectTypeOf(d.enum([111, 222]).not(d.const(222))[INPUT]).toEqualTypeOf<111 | 222>();
 
-expectNotType<d.Output<typeof brandShape>>(d.any<string>().refine<string & { BRAND: 'bbb' }>()[OUTPUT]);
+  expectTypeOf(d.enum([111, 222]).not(d.const(222))[OUTPUT]).toEqualTypeOf<111 | 222>();
+});
 
-// deepPartial is visible on branded shapes
-expectType<{ aaa?: string }>(d.object({ aaa: d.string() }).refine().deepPartial()[OUTPUT]);
+test('exclude', () => {
+  expectTypeOf(d.enum([111, 222]).exclude(d.number())[INPUT]).toEqualTypeOf<111 | 222>();
 
-// Branded shapes are transparent for deepPartial
-expectType<{ aaa?: { bbb?: string } }>(d.object({ aaa: d.object({ bbb: d.string() }).refine() }).deepPartial()[OUTPUT]);
+  expectTypeOf(d.enum([111, 222]).exclude(d.number())[OUTPUT]).toEqualTypeOf<never>();
 
-// not()
+  expectTypeOf(d.enum([111, 222]).exclude(d.const(222))[INPUT]).toEqualTypeOf<111 | 222>();
 
-expectType<111 | 222>(d.enum([111, 222]).not(d.number())[INPUT]);
+  expectTypeOf(d.enum([111, 222]).exclude(d.const(222))[OUTPUT]).toEqualTypeOf<111>();
+});
 
-expectType<111 | 222>(d.enum([111, 222]).not(d.number())[OUTPUT]);
+test('parseOrDefault', () => {
+  expectTypeOf<111 | 222 | 333>(d.enum([111, 222]).parseOrDefault('aaa', 333)).toEqualTypeOf<111 | 222 | 333>();
 
-expectType<111 | 222>(d.enum([111, 222]).not(d.const(222))[INPUT]);
+  expectTypeOf<string | 111>(d.string().parseOrDefault('aaa', 111)).toEqualTypeOf<string | 111>();
+});
 
-expectType<111 | 222>(d.enum([111, 222]).not(d.const(222))[OUTPUT]);
+test('parseOrDefaultAsync', () => {
+  expectTypeOf<Promise<111 | 222 | 333>>(d.enum([111, 222]).parseOrDefaultAsync('aaa', 333)).toEqualTypeOf<
+    Promise<111 | 222 | 333>
+  >();
 
-// exclude()
-
-expectType<111 | 222>(d.enum([111, 222]).exclude(d.number())[INPUT]);
-
-expectType<never>(d.enum([111, 222]).exclude(d.number())[OUTPUT]);
-
-expectType<111 | 222>(d.enum([111, 222]).exclude(d.const(222))[INPUT]);
-
-expectType<111>(d.enum([111, 222]).exclude(d.const(222))[OUTPUT]);
-
-// parseOrDefault()
-
-expectType<111 | 222 | 333>(d.enum([111, 222]).parseOrDefault('aaa', 333));
-
-expectType<string | 111>(d.string().parseOrDefault('aaa', 111));
-
-// parseOrDefaultAsync()
-
-expectType<Promise<111 | 222 | 333>>(d.enum([111, 222]).parseOrDefaultAsync('aaa', 333));
-
-expectType<Promise<string | 111>>(d.string().parseOrDefaultAsync('aaa', 111));
+  expectTypeOf<Promise<string | 111>>(d.string().parseOrDefaultAsync('aaa', 111)).toEqualTypeOf<
+    Promise<string | 111>
+  >();
+});

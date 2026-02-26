@@ -1,30 +1,32 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<{ key1: string } & { key2: number }>(
-  d.and([d.object({ key1: d.string() }), d.object({ key2: d.number() })])[OUTPUT]
-);
+test('expected types', () => {
+  expectTypeOf(d.and([d.object({ key1: d.string() }), d.object({ key2: d.number() })])[OUTPUT]).toEqualTypeOf<
+    { key1: string } & { key2: number }
+  >();
 
-expectType<string>(d.and([d.string(), d.string()])[OUTPUT]);
+  expectTypeOf(d.and([d.string(), d.string()])[OUTPUT]).toEqualTypeOf<string>();
 
-expectType<string>(d.and([d.or([d.string(), d.number()]), d.string()])[OUTPUT]);
+  expectTypeOf(d.and([d.or([d.string(), d.number()]), d.string()])[OUTPUT]).toEqualTypeOf<string>();
 
-expectType<string | number>(
-  d.and([d.or([d.string(), d.number(), d.boolean()]), d.or([d.string(), d.number()])])[OUTPUT]
-);
+  expectTypeOf(
+    d.and([d.or([d.string(), d.number(), d.boolean()]), d.or([d.string(), d.number()])])[OUTPUT]
+  ).toEqualTypeOf<string | number>();
 
-expectType<never>(d.and([d.or([d.string(), d.never()]), d.number()])[OUTPUT]);
+  expectTypeOf(d.and([d.or([d.string(), d.never()]), d.number()])[OUTPUT]).toEqualTypeOf<never>();
 
-expectType<any>(d.and([d.any(), d.string()])[OUTPUT]);
+  expectTypeOf(d.and([d.any(), d.string()])[OUTPUT]).toEqualTypeOf<any>();
 
-expectType<never>(d.and([d.never(), d.string()])[OUTPUT]);
+  expectTypeOf(d.and([d.never(), d.string()])[OUTPUT]).toEqualTypeOf<never>();
 
-expectType<never>(d.and([d.never(), d.any()])[OUTPUT]);
+  expectTypeOf(d.and([d.never(), d.any()])[OUTPUT]).toEqualTypeOf<never>();
 
-expectType<never>(d.and([d.never()])[INPUT]);
+  expectTypeOf(d.and([d.never()])[INPUT]).toEqualTypeOf<never>();
 
-expectType<never>(d.and([d.never()])[OUTPUT]);
+  expectTypeOf(d.and([d.never()])[OUTPUT]).toEqualTypeOf<never>();
+});

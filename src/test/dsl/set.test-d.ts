@@ -1,16 +1,18 @@
-import { expectNotAssignable, expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<Set<string | number>>(d.set(d.or([d.string(), d.number()]))[OUTPUT]);
+test('expected types', () => {
+  expectTypeOf(d.set(d.or([d.string(), d.number()]))[OUTPUT]).toEqualTypeOf<Set<string | number>>();
 
-expectType<Set<111>>(d.set(d.const(111))[OUTPUT]);
+  expectTypeOf(d.set(d.const(111))[OUTPUT]).toEqualTypeOf<Set<111>>();
 
-expectType<Set<string>>(d.set(d.string()).readonly()[INPUT]);
+  expectTypeOf(d.set(d.string()).readonly()[INPUT]).toEqualTypeOf<Set<string>>();
 
-expectNotAssignable<Set<string>>(d.set(d.string()).readonly()[OUTPUT]);
+  expectTypeOf(d.set(d.string()).readonly()[OUTPUT]).not.toExtend<Set<string>>();
 
-expectType<ReadonlySet<string>>(d.set(d.string()).readonly()[OUTPUT]);
+  expectTypeOf(d.set(d.string()).readonly()[OUTPUT]).toEqualTypeOf<ReadonlySet<string>>();
+});

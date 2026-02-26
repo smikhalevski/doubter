@@ -1,20 +1,22 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<any>(d.convert(() => 'aaa')[INPUT]);
+test('expected types', () => {
+  expectTypeOf(d.convert(() => 'aaa')[INPUT]).toEqualTypeOf<any>();
 
-expectType<string>(d.convert(() => 'aaa')[OUTPUT]);
+  expectTypeOf(d.convert(() => 'aaa')[OUTPUT]).toEqualTypeOf<string>();
 
-const shape = d
-  .object({
-    years: d.array(d.string()).convert(years => years.map(parseFloat)),
-  })
-  .deepPartial();
+  const shape = d
+    .object({
+      years: d.array(d.string()).convert(years => years.map(parseFloat)),
+    })
+    .deepPartial();
 
-expectType<{ years?: string[] }>(shape[INPUT]);
+  expectTypeOf(shape[INPUT]).toEqualTypeOf<{ years?: string[] }>();
 
-expectType<{ years?: number[] }>(shape[OUTPUT]);
+  expectTypeOf(shape[OUTPUT]).toEqualTypeOf<{ years?: number[] }>();
+});

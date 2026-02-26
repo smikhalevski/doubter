@@ -1,24 +1,28 @@
-import { expectNotAssignable, expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<any[]>(d.array()[INPUT]);
+test('expected types', () => {
+  expectTypeOf(d.array()[INPUT]).toEqualTypeOf<any[]>();
 
-expectType<any[]>(d.array()[OUTPUT]);
+  expectTypeOf(d.array()[OUTPUT]).toEqualTypeOf<any[]>();
 
-expectType<111[]>(d.array(d.const(111))[INPUT]);
+  expectTypeOf(d.array(d.const(111))[INPUT]).toEqualTypeOf<111[]>();
 
-expectType<111[]>(d.array(d.const(111))[OUTPUT]);
+  expectTypeOf(d.array(d.const(111))[OUTPUT]).toEqualTypeOf<111[]>();
 
-expectType<Array<number | undefined>>(d.array(d.number()).deepPartial()[OUTPUT]);
+  expectTypeOf(d.array(d.number()).deepPartial()[OUTPUT]).toEqualTypeOf<Array<number | undefined>>();
 
-expectType<Array<{ aaa?: number } | undefined>>(d.array(d.object({ aaa: d.number() })).deepPartial()[OUTPUT]);
+  expectTypeOf(d.array(d.object({ aaa: d.number() })).deepPartial()[OUTPUT]).toEqualTypeOf<
+    Array<{ aaa?: number } | undefined>
+  >();
 
-expectType<string[]>(d.array(d.string()).readonly()[INPUT]);
+  expectTypeOf(d.array(d.string()).readonly()[INPUT]).toEqualTypeOf<string[]>();
 
-expectNotAssignable<string[]>(d.array(d.string()).readonly()[OUTPUT]);
+  expectTypeOf(d.array(d.string()).readonly()[OUTPUT]).not.toExtend<string[]>();
 
-expectType<readonly string[]>(d.array(d.string()).readonly()[OUTPUT]);
+  expectTypeOf(d.array(d.string()).readonly()[OUTPUT]).toEqualTypeOf<readonly string[]>();
+});

@@ -1,9 +1,11 @@
 import { StandardSchemaV1 } from '@standard-schema/spec';
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 
-const shape = d.array(d.const(111).convert(() => 'aaa'));
+test('expected types', () => {
+  const shape = d.array(d.const(111).convert(() => 'aaa'));
 
-expectType<111[]>(null! as StandardSchemaV1.InferInput<typeof shape>);
+  expectTypeOf(null! as StandardSchemaV1.InferInput<typeof shape>).toEqualTypeOf<111[]>();
 
-expectType<string[]>(null! as StandardSchemaV1.InferOutput<typeof shape>);
+  expectTypeOf(null! as StandardSchemaV1.InferOutput<typeof shape>).toEqualTypeOf<string[]>();
+});

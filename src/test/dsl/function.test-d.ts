@@ -1,242 +1,242 @@
-import { expectNotType, expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-// Alias
+test('alias', () => {
+  expectTypeOf(d.function()[OUTPUT]).toEqualTypeOf<() => any>();
+});
 
-expectType<() => any>(d.function()[OUTPUT]);
+test('arguments', () => {
+  expectTypeOf(d.fn()[OUTPUT]).toEqualTypeOf<() => any>();
 
-// Arguments
+  expectTypeOf(d.fn([d.string()])[OUTPUT]).toEqualTypeOf<(arg: string) => any>();
 
-expectType<() => any>(d.fn()[OUTPUT]);
+  expectTypeOf(d.fn([d.string(), d.number()])[OUTPUT]).toEqualTypeOf<(arg1: string, arg2: number) => any>();
 
-expectType<(arg: string) => any>(d.fn([d.string()])[OUTPUT]);
+  expectTypeOf(d.fn(d.tuple([d.string()]))[OUTPUT]).toEqualTypeOf<(arg: string) => any>();
 
-expectType<(arg1: string, arg2: number) => any>(d.fn([d.string(), d.number()])[OUTPUT]);
+  expectTypeOf(d.fn(d.tuple([d.string(), d.number()]))[OUTPUT]).toEqualTypeOf<(arg1: string, arg2: number) => any>();
 
-expectType<(arg: string) => any>(d.fn(d.tuple([d.string()]))[OUTPUT]);
+  expectTypeOf(d.fn(d.tuple([d.string(), d.number()]).rest(d.boolean()))[OUTPUT]).toEqualTypeOf<
+    (arg1: string, arg2: number, ...args: boolean[]) => any
+  >();
 
-expectType<(arg1: string, arg2: number) => any>(d.fn(d.tuple([d.string(), d.number()]))[OUTPUT]);
+  expectTypeOf(d.fn(d.array())[OUTPUT]).toEqualTypeOf<(...args: any[]) => any>();
 
-expectType<(arg1: string, arg2: number, ...args: boolean[]) => any>(
-  d.fn(d.tuple([d.string(), d.number()]).rest(d.boolean()))[OUTPUT]
-);
+  expectTypeOf(d.fn(d.array(d.string()))[OUTPUT]).toEqualTypeOf<(...args: string[]) => any>();
 
-expectType<(...args: any[]) => any>(d.fn(d.array())[OUTPUT]);
+  expectTypeOf(d.fn(d.or([d.array(d.string()), d.tuple([d.string(), d.number()])]))[OUTPUT]).toEqualTypeOf<
+    (...args: string[] | [string, number]) => any
+  >();
 
-expectType<(...args: string[]) => any>(d.fn(d.array(d.string()))[OUTPUT]);
+  expectTypeOf(d.fn([d.string().convert(parseFloat)])[OUTPUT]).toEqualTypeOf<(arg: string) => any>();
 
-expectType<(...args: string[] | [string, number]) => any>(
-  d.fn(d.or([d.array(d.string()), d.tuple([d.string(), d.number()])]))[OUTPUT]
-);
+  expectTypeOf(d.fn([d.string().convert(parseFloat)])[INPUT]).toEqualTypeOf<(arg: number) => any>();
 
-expectType<(arg: string) => any>(d.fn([d.string().convert(parseFloat)])[OUTPUT]);
+  expectTypeOf(d.fn([d.string().convert(parseFloat)])[INPUT]).toEqualTypeOf<(arg: number) => any>();
 
-expectType<(arg: number) => any>(d.fn([d.string().convert(parseFloat)])[INPUT]);
+  expectTypeOf(d.fn([d.string().convert(parseFloat)])[OUTPUT]).toEqualTypeOf<(arg: string) => any>();
+});
 
-expectType<(arg: number) => any>(d.fn([d.string().convert(parseFloat)])[INPUT]);
+test('return', () => {
+  expectTypeOf(d.fn().return(d.string())[OUTPUT]).toEqualTypeOf<() => string>();
 
-expectType<(arg: string) => any>(d.fn([d.string().convert(parseFloat)])[OUTPUT]);
+  expectTypeOf(d.fn().return(d.promise(d.string()))[OUTPUT]).toEqualTypeOf<() => Promise<string>>();
 
-// Return
+  expectTypeOf(d.fn().return(d.string().convert(parseFloat))[INPUT]).toEqualTypeOf<() => string>();
 
-expectType<() => string>(d.fn().return(d.string())[OUTPUT]);
+  expectTypeOf(d.fn().return(d.string().convert(parseFloat))[OUTPUT]).toEqualTypeOf<() => number>();
+});
 
-expectType<() => Promise<string>>(d.fn().return(d.promise(d.string()))[OUTPUT]);
+test('this', () => {
+  expectTypeOf(d.fn().this(d.string())[OUTPUT]).toEqualTypeOf<(this: string) => any>();
 
-expectType<() => string>(d.fn().return(d.string().convert(parseFloat))[INPUT]);
+  expectTypeOf(d.fn().this(d.string().convert(parseFloat))[INPUT]).toEqualTypeOf<(this: number) => any>();
 
-expectType<() => number>(d.fn().return(d.string().convert(parseFloat))[OUTPUT]);
+  expectTypeOf(d.fn().this(d.string().convert(parseFloat))[OUTPUT]).toEqualTypeOf<(this: string) => any>();
+});
 
-// This
+test('ensure', () => {
+  expectTypeOf(
+    d
+      .fn([d.boolean().convert(() => 111)])
+      .this(d.number().convert(() => 'aaa'))
+      .return(d.string().convert(() => true))
+      .ensure(function (arg) {
+        expectTypeOf(this).toEqualTypeOf<string>();
+        expectTypeOf(arg).toEqualTypeOf<number>();
 
-expectType<(this: string) => any>(d.fn().this(d.string())[OUTPUT]);
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number, arg: boolean) => boolean>();
 
-expectType<(this: number) => any>(d.fn().this(d.string().convert(parseFloat))[INPUT]);
+  // arg2 is excessive
+  expectTypeOf(
+    d
+      .fn([d.boolean()])
+      .this(d.number())
+      .return(d.string())
+      .ensure(function () {
+        expectTypeOf(this).toEqualTypeOf<number>();
+        return 'aaa';
+      })
+  ).not.toEqualTypeOf<(this: number, arg1: boolean, arg2: unknown) => string>();
 
-expectType<(this: string) => any>(d.fn().this(d.string().convert(parseFloat))[OUTPUT]);
+  expectTypeOf(
+    d
+      .fn([d.boolean()])
+      .this(d.number())
+      .return(d.string())
+      .ensure(function () {
+        expectTypeOf(this).toEqualTypeOf<number>();
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number, arg: boolean) => string>();
 
-// ensure
+  expectTypeOf(
+    d
+      .fn()
+      .this(d.number())
+      .return(d.string())
+      .ensure(function () {
+        expectTypeOf(this).toEqualTypeOf<number>();
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number) => string>();
 
-expectType<(this: number, arg: boolean) => boolean>(
-  d
-    .fn([d.boolean().convert(() => 111)])
-    .this(d.number().convert(() => 'aaa'))
-    .return(d.string().convert(() => true))
-    .ensure(function (arg) {
-      expectType<string>(this);
-      expectType<number>(arg);
+  expectTypeOf(
+    d
+      .fn()
+      .return(d.string())
+      .ensure(function (this: number) {
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number) => string>();
 
+  expectTypeOf(
+    d.fn().ensure(function (this: number) {
       return 'aaa';
     })
-);
+  ).toEqualTypeOf<(this: number) => string>();
 
-// arg2 is excessive
-expectNotType<(this: number, arg1: boolean, arg2: unknown) => string>(
-  d
-    .fn([d.boolean()])
-    .this(d.number())
-    .return(d.string())
-    .ensure(function () {
-      expectType<number>(this);
+  expectTypeOf(d.fn().ensure(() => 111)).toEqualTypeOf<() => number>();
+});
+
+test('ensureasync', () => {
+  expectTypeOf(
+    d
+      .fn()
+      .return(d.promise(d.string()))
+      .ensureAsync(async function () {
+        return 'aaa';
+      })
+  ).toEqualTypeOf<() => Promise<string>>();
+
+  expectTypeOf(
+    d
+      .fn([d.boolean().convert(() => 111)])
+      .this(d.number().convert(() => 'aaa'))
+      .return(d.string().convert(() => true))
+      .ensureAsync(function (arg) {
+        expectTypeOf(this).toEqualTypeOf<string>();
+        expectTypeOf(arg).toEqualTypeOf<number>();
+
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number, arg: boolean) => Promise<boolean>>();
+
+  expectTypeOf(
+    d
+      .fn([d.boolean().convert(() => 111)])
+      .this(d.number().convert(() => 'aaa'))
+      .return(d.string().convert(() => true))
+      .ensureAsync(async function (arg) {
+        expectTypeOf(this).toEqualTypeOf<string>();
+        expectTypeOf(arg).toEqualTypeOf<number>();
+
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number, arg: boolean) => Promise<boolean>>();
+
+  expectTypeOf(
+    d
+      .fn([d.boolean().convertAsync(() => Promise.resolve(111))])
+      .this(d.number().convert(() => 'aaa'))
+      .return(d.string().convert(() => true))
+      .ensureAsync(function (arg) {
+        expectTypeOf(this).toEqualTypeOf<string>();
+        expectTypeOf(arg).toEqualTypeOf<number>();
+
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number, arg: boolean) => Promise<boolean>>();
+
+  // arg2 is excessive
+  expectTypeOf(
+    d
+      .fn([d.boolean()])
+      .this(d.number())
+      .return(d.string())
+      .ensureAsync(function () {
+        expectTypeOf(this).toEqualTypeOf<number>();
+        return 'aaa';
+      })
+  ).not.toEqualTypeOf<(this: number, arg1: boolean, arg2: unknown) => Promise<string>>();
+
+  expectTypeOf(
+    d
+      .fn([d.boolean()])
+      .this(d.number())
+      .return(d.string())
+      .ensureAsync(function () {
+        expectTypeOf(this).toEqualTypeOf<number>();
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number, arg: boolean) => Promise<string>>();
+
+  expectTypeOf(
+    d
+      .fn()
+      .this(d.number())
+      .return(d.string())
+      .ensureAsync(function () {
+        expectTypeOf(this).toEqualTypeOf<number>();
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number) => Promise<string>>();
+
+  expectTypeOf(
+    d
+      .fn()
+      .return(d.string())
+      .ensureAsync(function (this: number) {
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number) => Promise<string>>();
+
+  expectTypeOf(
+    d
+      .fn()
+      .return(d.promise(d.string()))
+      .ensureAsync(async function (this: number) {
+        return 'aaa';
+      })
+  ).toEqualTypeOf<(this: number) => Promise<string>>();
+
+  expectTypeOf(
+    d.fn().ensureAsync(function (this: number) {
       return 'aaa';
     })
-);
+  ).toEqualTypeOf<(this: number) => Promise<string>>();
 
-expectType<(this: number, arg: boolean) => string>(
-  d
-    .fn([d.boolean()])
-    .this(d.number())
-    .return(d.string())
-    .ensure(function () {
-      expectType<number>(this);
+  expectTypeOf(
+    d.fn().ensureAsync(async function () {
       return 'aaa';
     })
-);
+  ).toEqualTypeOf<() => Promise<string>>();
 
-expectType<(this: number) => string>(
-  d
-    .fn()
-    .this(d.number())
-    .return(d.string())
-    .ensure(function () {
-      expectType<number>(this);
-      return 'aaa';
-    })
-);
-
-expectType<(this: number) => string>(
-  d
-    .fn()
-    .return(d.string())
-    .ensure(function (this: number) {
-      return 'aaa';
-    })
-);
-
-expectType<(this: number) => string>(
-  d.fn().ensure(function (this: number) {
-    return 'aaa';
-  })
-);
-
-expectType<() => number>(d.fn().ensure(() => 111));
-
-// ensureAsync
-
-expectType<() => Promise<string>>(
-  d
-    .fn()
-    .return(d.promise(d.string()))
-    .ensureAsync(async function () {
-      return 'aaa';
-    })
-);
-
-expectType<(this: number, arg: boolean) => Promise<boolean>>(
-  d
-    .fn([d.boolean().convert(() => 111)])
-    .this(d.number().convert(() => 'aaa'))
-    .return(d.string().convert(() => true))
-    .ensureAsync(function (arg) {
-      expectType<string>(this);
-      expectType<number>(arg);
-
-      return 'aaa';
-    })
-);
-
-expectType<(this: number, arg: boolean) => Promise<boolean>>(
-  d
-    .fn([d.boolean().convert(() => 111)])
-    .this(d.number().convert(() => 'aaa'))
-    .return(d.string().convert(() => true))
-    .ensureAsync(async function (arg) {
-      expectType<string>(this);
-      expectType<number>(arg);
-
-      return 'aaa';
-    })
-);
-
-expectType<(this: number, arg: boolean) => Promise<boolean>>(
-  d
-    .fn([d.boolean().convertAsync(() => Promise.resolve(111))])
-    .this(d.number().convert(() => 'aaa'))
-    .return(d.string().convert(() => true))
-    .ensureAsync(function (arg) {
-      expectType<string>(this);
-      expectType<number>(arg);
-
-      return 'aaa';
-    })
-);
-
-// arg2 is excessive
-expectNotType<(this: number, arg1: boolean, arg2: unknown) => Promise<string>>(
-  d
-    .fn([d.boolean()])
-    .this(d.number())
-    .return(d.string())
-    .ensureAsync(function () {
-      expectType<number>(this);
-      return 'aaa';
-    })
-);
-
-expectType<(this: number, arg: boolean) => Promise<string>>(
-  d
-    .fn([d.boolean()])
-    .this(d.number())
-    .return(d.string())
-    .ensureAsync(function () {
-      expectType<number>(this);
-      return 'aaa';
-    })
-);
-
-expectType<(this: number) => Promise<string>>(
-  d
-    .fn()
-    .this(d.number())
-    .return(d.string())
-    .ensureAsync(function () {
-      expectType<number>(this);
-      return 'aaa';
-    })
-);
-
-expectType<(this: number) => Promise<string>>(
-  d
-    .fn()
-    .return(d.string())
-    .ensureAsync(function (this: number) {
-      return 'aaa';
-    })
-);
-
-expectType<(this: number) => Promise<string>>(
-  d
-    .fn()
-    .return(d.promise(d.string()))
-    .ensureAsync(async function (this: number) {
-      return 'aaa';
-    })
-);
-
-expectType<(this: number) => Promise<string>>(
-  d.fn().ensureAsync(function (this: number) {
-    return 'aaa';
-  })
-);
-
-expectType<() => Promise<string>>(
-  d.fn().ensureAsync(async function () {
-    return 'aaa';
-  })
-);
-
-expectType<() => Promise<number>>(d.fn().ensureAsync(() => 111));
+  expectTypeOf(d.fn().ensureAsync(() => 111)).toEqualTypeOf<() => Promise<number>>();
+});

@@ -1,13 +1,15 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const OUTPUT: OUTPUT;
 
-expectType<string | number | boolean>(d.or([d.string(), d.number(), d.boolean()])[OUTPUT]);
+test('expected types', () => {
+  expectTypeOf(d.or([d.string(), d.number(), d.boolean()])[OUTPUT]).toEqualTypeOf<string | number | boolean>();
 
-expectType<string>(d.or([d.string(), d.never()])[OUTPUT]);
+  expectTypeOf(d.or([d.string(), d.never()])[OUTPUT]).toEqualTypeOf<string>();
 
-expectType<any>(d.or([d.string(), d.any()])[OUTPUT]);
+  expectTypeOf(d.or([d.string(), d.any()])[OUTPUT]).toEqualTypeOf<any>();
 
-expectType<unknown>(d.or([d.string(), d.unknown()])[OUTPUT]);
+  expectTypeOf(d.or([d.string(), d.unknown()])[OUTPUT]).toEqualTypeOf<unknown>();
+});

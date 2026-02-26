@@ -1,34 +1,36 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<string>(d.string().alter((): 'aaa' => 'aaa')[OUTPUT]);
+test('expected types', () => {
+  expectTypeOf(d.string().alter((): 'aaa' => 'aaa')[OUTPUT]).toEqualTypeOf<string>();
 
-const x = { param: 111 };
+  const x = { param: 111 };
 
-d.string().alter((value, _param) => (value === 'aaa' ? 'aaa' : 'bbb'), x);
+  d.string().alter((value, _param) => (value === 'aaa' ? 'aaa' : 'bbb'), x);
 
-const stringShape = d.string().alter(value => (value === 'aaa' ? 'aaa' : 'bbb'));
+  const stringShape = d.string().alter(value => (value === 'aaa' ? 'aaa' : 'bbb'));
 
-expectType<string>(stringShape[INPUT]);
+  expectTypeOf(stringShape[INPUT]).toEqualTypeOf<string>();
 
-expectType<string>(stringShape[OUTPUT]);
+  expectTypeOf(stringShape[OUTPUT]).toEqualTypeOf<string>();
 
-expectType<'bbb'>(stringShape.refine((_value): _value is 'bbb' => true)[OUTPUT]);
+  expectTypeOf(stringShape.refine((_value): _value is 'bbb' => true)[OUTPUT]).toEqualTypeOf<'bbb'>();
 
-expectType<string>(stringShape.refine((_value): _value is 'bbb' => true).max(2)[OUTPUT]);
+  expectTypeOf(stringShape.refine((_value): _value is 'bbb' => true).max(2)[OUTPUT]).toEqualTypeOf<string>();
 
-expectType<string>(
-  d.string().alter(
-    (value, param) => {
-      expectType<number>(param);
-      return value;
-    },
-    { param: 111 }
-  )[OUTPUT]
-);
+  expectTypeOf(
+    d.string().alter(
+      (value, param) => {
+        expectTypeOf(param).toEqualTypeOf<number>();
+        return value;
+      },
+      { param: 111 }
+    )[OUTPUT]
+  ).toEqualTypeOf<string>();
 
-expectType<'aaa' | 'bbb'>(d.string().refine((_value): _value is 'aaa' | 'bbb' => true)[OUTPUT]);
+  expectTypeOf(d.string().refine((_value): _value is 'aaa' | 'bbb' => true)[OUTPUT]).toEqualTypeOf<'aaa' | 'bbb'>();
+});

@@ -1,6 +1,8 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 
-expectType<Promise<any>>(d.promise().parse(Promise.resolve('aaa')));
+test('expected types', () => {
+  expectTypeOf(d.promise().parse(Promise.resolve('aaa'))).toEqualTypeOf<Promise<any>>();
 
-expectType<Promise<string>>(d.promise(d.string()).parseAsync(Promise.resolve('aaa')));
+  expectTypeOf(d.promise(d.string()).parseAsync(Promise.resolve('aaa'))).toEqualTypeOf<Promise<string>>();
+});

@@ -1,27 +1,29 @@
-import { expectNotAssignable, expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type INPUT, type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const INPUT: INPUT;
 declare const OUTPUT: OUTPUT;
 
-expectType<Map<string, number>>(d.map(d.string(), d.number())[OUTPUT]);
+test('expected types', () => {
+  expectTypeOf(d.map(d.string(), d.number())[OUTPUT]).toEqualTypeOf<Map<string, number>>();
 
-expectType<Map<'bbb', number>>(
-  d.map(
-    d.string().convert((): 'bbb' => 'bbb'),
-    d.number()
-  )[OUTPUT]
-);
+  expectTypeOf(
+    d.map(
+      d.string().convert((): 'bbb' => 'bbb'),
+      d.number()
+    )[OUTPUT]
+  ).toEqualTypeOf<Map<'bbb', number>>();
 
-expectType<Map<string, number | undefined>>(d.map(d.string(), d.number()).deepPartial()[OUTPUT]);
+  expectTypeOf(d.map(d.string(), d.number()).deepPartial()[OUTPUT]).toEqualTypeOf<Map<string, number | undefined>>();
 
-expectType<Map<{ aaa?: string }, { bbb?: number } | undefined>>(
-  d.map(d.object({ aaa: d.string() }), d.object({ bbb: d.number() })).deepPartial()[OUTPUT]
-);
+  expectTypeOf(d.map(d.object({ aaa: d.string() }), d.object({ bbb: d.number() })).deepPartial()[OUTPUT]).toEqualTypeOf<
+    Map<{ aaa?: string }, { bbb?: number } | undefined>
+  >();
 
-expectType<Map<string, string>>(d.map(d.string(), d.string()).readonly()[INPUT]);
+  expectTypeOf(d.map(d.string(), d.string()).readonly()[INPUT]).toEqualTypeOf<Map<string, string>>();
 
-expectNotAssignable<Map<string, string>>(d.map(d.string(), d.string()).readonly()[OUTPUT]);
+  expectTypeOf(d.map(d.string(), d.string()).readonly()[OUTPUT]).not.toExtend<Map<string, string>>();
 
-expectType<ReadonlyMap<string, string>>(d.map(d.string(), d.string()).readonly()[OUTPUT]);
+  expectTypeOf(d.map(d.string(), d.string()).readonly()[OUTPUT]).toEqualTypeOf<ReadonlyMap<string, string>>();
+});

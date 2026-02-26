@@ -1,37 +1,39 @@
-import { expectType } from 'tsd';
+import { expectTypeOf, test } from 'vitest';
 import * as d from '../../main/index.js';
 import { type OUTPUT } from '../../main/shape/Shape.js';
 
 declare const OUTPUT: OUTPUT;
 
-expectType<number | string>(d.or([d.number(), d.string()])[OUTPUT]);
+test('expected types', () => {
+  expectTypeOf(d.or([d.number(), d.string()])[OUTPUT]).toEqualTypeOf<number | string>();
 
-expectType<{ key1: string } | { key2: number }>(
-  d.or([d.object({ key1: d.string() }), d.object({ key2: d.number() })])[OUTPUT]
-);
+  expectTypeOf(d.or([d.object({ key1: d.string() }), d.object({ key2: d.number() })])[OUTPUT]).toEqualTypeOf<
+    { key1: string } | { key2: number }
+  >();
 
-expectType<{ aaa?: string } | { bbb?: number }>(
-  d
-    .or([
-      d.object({
-        aaa: d.string(),
-      }),
-      d.object({
-        bbb: d.number(),
-      }),
-    ])
-    .deepPartial()[OUTPUT]
-);
+  expectTypeOf(
+    d
+      .or([
+        d.object({
+          aaa: d.string(),
+        }),
+        d.object({
+          bbb: d.number(),
+        }),
+      ])
+      .deepPartial()[OUTPUT]
+  ).toEqualTypeOf<{ aaa?: string } | { bbb?: number }>();
 
-expectType<{ aaa?: Array<string | undefined> } | { bbb?: number }>(
-  d
-    .or([
-      d.object({
-        aaa: d.array(d.string()),
-      }),
-      d.object({
-        bbb: d.number(),
-      }),
-    ])
-    .deepPartial()[OUTPUT]
-);
+  expectTypeOf(
+    d
+      .or([
+        d.object({
+          aaa: d.array(d.string()),
+        }),
+        d.object({
+          bbb: d.number(),
+        }),
+      ])
+      .deepPartial()[OUTPUT]
+  ).toEqualTypeOf<{ aaa?: Array<string | undefined> } | { bbb?: number }>();
+});
