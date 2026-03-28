@@ -1604,10 +1604,11 @@ In some cases, it can be desirable to simulate nominal typing inside TypeScript.
 function that only accepts an input that has been validated by Doubter. This can be achieved with unchecked refinements:
 
 ```ts
-type FlightCode = string & { __brand__: 'FlightCode' };
-
-const flightCodeShape = d.string().refine<FlightCode>();
+const flightCodeShape = d.string().brand<{ __brand__: 'FlightCode' }>();
 // ⮕ Shape<string, FlightCode>
+
+type FlightCode = d.Output<typeof flightCodeShape>;
+// ⮕ string & { __brand__: 'FlightCode' }
 
 // 🟡 Note that the argument type isn't a plain string
 function bookTicket(flightCode: FlightCode): void {

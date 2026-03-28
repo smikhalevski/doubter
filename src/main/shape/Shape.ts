@@ -114,6 +114,20 @@ export type AnyShape = Shape | Shape<never>;
 export type RefineShape<S extends AnyShape, RefinedValue> = Shape<Input<S>, RefinedValue> & Omit<S, keyof Shape>;
 
 /**
+ * Returns the shape that brand the shape input and output.
+ *
+ * @template S The base shape.
+ * @template InputBrand The brand intersected with the input.
+ * @template OutputBrand The brand intersected with the output.
+ * @group Shapes
+ */
+export type BrandShape<S extends AnyShape, InputBrand, OutputBrand> = Shape<
+  Input<S> & InputBrand,
+  Output<S> & OutputBrand
+> &
+  Omit<S, keyof Shape>;
+
+/**
  * Returns the deep partial alternative of the shape if it implements {@link DeepPartialProtocol}, or returns shape as
  * is if it doesn't.
  *
@@ -391,7 +405,18 @@ export class Shape<InputValue = any, OutputValue = InputValue> {
    *
    * @returns The shape with the narrowed output.
    */
-  refine<RefinedValue extends OutputValue>(): RefineShape<this, RefinedValue>;
+  brand<OutputBrand>(): BrandShape<this, unknown, OutputBrand>;
+
+  /**
+   * Returns a shape that narrows both the input and output type.
+   *
+   * @returns The shape with the narrowed input and output.
+   */
+  brand<InputBrand, OutputBrand>(): BrandShape<this, InputBrand, OutputBrand>;
+
+  brand() {
+    return this;
+  }
 
   /**
    * Adds {@link Shape.addOperation a synchronous operation} that refines the shape output type with the

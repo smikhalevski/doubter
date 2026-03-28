@@ -88,7 +88,7 @@ test('deepPartial', () => {
 });
 
 test('BrandShape', () => {
-  const brandShape = d.any<string>().refine<string & { BRAND: 'zzz' }>();
+  const brandShape = d.any<string>().brand<{ BRAND: 'zzz' }>();
 
   expectTypeOf(brandShape[OUTPUT]).toEqualTypeOf<d.Output<typeof brandShape>>();
 
@@ -96,15 +96,13 @@ test('BrandShape', () => {
 
   expectTypeOf('aaa').not.toEqualTypeOf<d.Output<typeof brandShape>>();
 
-  expectTypeOf(d.any<string>().refine<string & { BRAND: 'bbb' }>()[OUTPUT]).not.toEqualTypeOf<
-    d.Output<typeof brandShape>
-  >();
+  expectTypeOf(d.any<string>().brand<{ BRAND: 'bbb' }>()[OUTPUT]).not.toEqualTypeOf<d.Output<typeof brandShape>>();
 
   // deepPartial is visible on branded shapes
-  expectTypeOf(d.object({ aaa: d.string() }).refine().deepPartial()[OUTPUT]).toEqualTypeOf<{ aaa?: string }>();
+  expectTypeOf(d.object({ aaa: d.string() }).brand().deepPartial()[OUTPUT]).toEqualTypeOf<{ aaa?: string }>();
 
   // Branded shapes are transparent for deepPartial
-  expectTypeOf(d.object({ aaa: d.object({ bbb: d.string() }).refine() }).deepPartial()[OUTPUT]).toEqualTypeOf<{
+  expectTypeOf(d.object({ aaa: d.object({ bbb: d.string() }).brand() }).deepPartial()[OUTPUT]).toEqualTypeOf<{
     aaa?: { bbb?: string };
   }>();
 });
