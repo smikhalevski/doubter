@@ -28,10 +28,15 @@ declare module '../core.js' {
 
 Object.defineProperty(Shape.prototype, '~standard', {
   get(this: Shape) {
+    const validate = this.isAsync ? this.tryAsync : this.try;
+
     return defineReadonlyProperty(this, '~standard', {
       vendor: 'doubter',
       version: 1,
-      validate: this.isAsync ? this.tryAsync : this.try,
+
+      validate(value: unknown, options?: StandardSchemaV1.Options | undefined) {
+        return validate(value, options?.libraryOptions);
+      },
     });
   },
 });
