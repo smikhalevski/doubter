@@ -10,11 +10,22 @@ describe('coerceToBoolean', () => {
 
   test('coerces a String object', () => {
     expect(coerceToBoolean(String('true'))).toBe(true);
+    expect(coerceToBoolean(String('1'))).toBe(true);
+    expect(coerceToBoolean(String('TRUE'))).toBe(true);
+
     expect(coerceToBoolean([String('false')])).toBe(false);
+    expect(coerceToBoolean([String('0')])).toBe(false);
+    expect(coerceToBoolean([String('FALSE')])).toBe(false);
   });
 
   test('coerces a string', () => {
     expect(coerceToBoolean('true')).toBe(true);
+    expect(coerceToBoolean('1')).toBe(true);
+    expect(coerceToBoolean('TRUE')).toBe(true);
+
+    expect(coerceToBoolean(['false'])).toBe(false);
+    expect(coerceToBoolean(['0'])).toBe(false);
+    expect(coerceToBoolean(['FALSE'])).toBe(false);
 
     expect(coerceToBoolean('aaa')).toBe(NEVER);
   });

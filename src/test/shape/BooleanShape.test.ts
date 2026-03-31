@@ -37,9 +37,16 @@ describe('BooleanShape', () => {
 
     test('coerces an input', () => {
       expect(new BooleanShape().coerce().parse(1)).toBe(true);
+      expect(new BooleanShape().coerce().parse('1')).toBe(true);
       expect(new BooleanShape().coerce().parse(new Boolean(true))).toBe(true);
       expect(new BooleanShape().coerce().parse([new Boolean(true)])).toBe(true);
       expect(new BooleanShape().coerce().parse('true')).toBe(true);
+
+      expect(new BooleanShape().coerce().parse(0)).toBe(false);
+      expect(new BooleanShape().coerce().parse('0')).toBe(false);
+      expect(new BooleanShape().coerce().parse(new Boolean(false))).toBe(false);
+      expect(new BooleanShape().coerce().parse([new Boolean(false)])).toBe(false);
+      expect(new BooleanShape().coerce().parse('false')).toBe(false);
     });
 
     test('raises an issue if coercion fails', () => {

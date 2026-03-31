@@ -2599,7 +2599,7 @@ d.bool();
 
 ## Coerce to a boolean
 
-`null`, `undefined`, `'false'` and 0 are converted to `false`:
+`null`, `undefined`, `'0'`, 0, and case-insensitive string `'false'` are converted to `false`:
 
 ```ts
 const shape = d.boolean().coerce();
@@ -2608,7 +2608,7 @@ shape.parse(null);
 // ⮕ false
 ```
 
-`'true'` and 1 are converted to `true`:
+`'1'`, 1, and case-insensitive string `'true'` are converted to `true`:
 
 ```ts
 shape.parse('true');

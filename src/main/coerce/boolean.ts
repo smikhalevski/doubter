@@ -30,10 +30,24 @@ export function coerceToBoolean(input: unknown): boolean {
 
   input = getCanonicalValue(input);
 
-  if (input === 0 || input === 'false' || input === false || input === null || input === undefined) {
+  if (
+    input === false ||
+    input === null ||
+    input === undefined ||
+    input === 0 ||
+    input === '0' ||
+    input === 'false' ||
+    (typeof input === 'string' && input.length === 5 && input.toLowerCase() === 'false')
+  ) {
     return false;
   }
-  if (input === 1 || input === 'true' || input === true) {
+  if (
+    input === true ||
+    input === 1 ||
+    input === '1' ||
+    input === 'true' ||
+    (typeof input === 'string' && input.length === 4 && input.toLowerCase() === 'true')
+  ) {
     return true;
   }
   return NEVER;
